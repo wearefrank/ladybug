@@ -307,7 +307,7 @@ public class TestTool {
 	 * 
 	 * @param checkpoint
 	 * @param strategy
-	 * @return
+	 * @return whether the checkpoint should be stubbed
 	 */	
 	public boolean stub(Checkpoint checkpoint, String strategy) {
 		return debugger.stub(checkpoint, strategy);

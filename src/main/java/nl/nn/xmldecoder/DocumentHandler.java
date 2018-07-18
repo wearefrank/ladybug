@@ -191,8 +191,7 @@ public final class DocumentHandler extends DefaultHandler {
      * Indicates whether the variable with specified identifier is defined.
      *
      * @param id  the identifier
-     * @return @{code true} if the variable is defined;
-     *         @{code false} otherwise
+     * @return true if the variable is defined; false otherwise
      */
     public boolean hasVariable(String id) {
         return this.environment.containsKey(id);
