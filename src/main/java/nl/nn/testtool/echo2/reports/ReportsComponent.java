@@ -61,6 +61,7 @@ import echopointng.tree.DefaultTreeCellRenderer;
 public class ReportsComponent extends Column implements BeanParent, ActionListener {
 	private static final long serialVersionUID = 1L;
 	Logger log = LogUtil.getLogger(this);
+	protected Logger secLog = LogUtil.getLogger("security");
 	private List<String> changeReportGeneratorEnabledRoles;
 	// TODO testTool overbodig maken nu we storage van view halen?
 	private TestTool testTool;
@@ -579,11 +580,17 @@ public class ReportsComponent extends Column implements BeanParent, ActionListen
 			optionsWindow.setVisible(true);
 		} else if (e.getActionCommand().equals("UpdateGeneratorEnabled")) {
 			if (echo2Application.isUserInRoles(changeReportGeneratorEnabledRoles)) {
+				String msg = "Report generator has been ";
 				if ("Yes".equals(reportGeneratorEnabledSelectField.getSelectedItem())) {
 					testTool.setReportGeneratorEnabled(true);
+					msg = msg + "enabled";
 				} else if ("No".equals(reportGeneratorEnabledSelectField.getSelectedItem())) {
 					testTool.setReportGeneratorEnabled(false);
+					msg = msg + "disabled";
 				}
+				msg = msg + " by" + echo2Application.getCommandIssuedBy();
+				secLog.info(msg);
+				//TODO: 'audit' logging to regular log?
 			} else {
 				reportGeneratorEnabledErrorLabel.setText("Not allowed");
 				reportGeneratorEnabledErrorLabel.setVisible(true);
