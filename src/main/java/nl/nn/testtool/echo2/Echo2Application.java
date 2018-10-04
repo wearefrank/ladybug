@@ -571,4 +571,14 @@ public class Echo2Application extends ApplicationInstance implements Application
 		return false;
 	}
 
+	public String getCommandIssuedBy() {
+		ContainerContext containerContext = getContainerContext();
+		if (containerContext != null) {
+			String commandIssuedBy = " remoteHost [" + containerContext.getClientProperties().getString("remoteHost")
+			+ "]";
+			commandIssuedBy += " remoteUser [" + getUserPrincipal() + "]";
+			return commandIssuedBy;
+		}
+		return null;
+	}
 }
