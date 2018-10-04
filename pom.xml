@@ -10,7 +10,7 @@
     <spring.version>3.2.16.RELEASE</spring.version>
   </properties>
 
-  <name>ibis-ladybug</name>
+  <name>Ladybug Test Tool</name>
   <description>Ladybug adds functional/message based debugging to your Java application. 
 Call the Ladybug at certain checkpoints in you code (either directly or using AOP) to generate tree based reports. 
 Implement a rerun method to be able to rerun reports and optionally stub certain checkpoints.</description>
@@ -111,6 +111,19 @@ Implement a rerun method to be able to rerun reports and optionally stub certain
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <version>2.4</version>
+        <configuration>
+          <archive>
+            <manifest>
+              <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
+              <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+            </manifest>
+          </archive>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-source-plugin</artifactId>
         <version>2.2.1</version>
         <executions>
@@ -192,7 +205,7 @@ Implement a rerun method to be able to rerun reports and optionally stub certain
 
   <profiles>
     <profile>
-      <id>release</id>
+      <id>ossrh</id>
       <build>
         <plugins>
           <plugin>
