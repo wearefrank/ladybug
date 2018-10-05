@@ -6,21 +6,18 @@
  */
 package nl.nn.testtool;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.rmi.server.UID;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
+
+import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
 
 import nl.nn.testtool.storage.LogStorage;
 import nl.nn.testtool.transform.MessageTransformer;
 import nl.nn.testtool.util.LogUtil;
-
-import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
 
 /**
  * @author m00f069
@@ -363,38 +360,17 @@ public class TestTool {
 	public static String getName() {
 		return Package.getPackage("nl.nn.testtool").getSpecificationTitle();
 	}
-	
+
 	public static String getVersion() {
-		String version;
-		String state = getProperty("version.state");
-		if ("final".equals(state)) {
-			version = getReleaseVersion();
-		} else {
-			version = getImplementationVersion() + " " + state + " " + getProperty("version.timestamp");
-		}
-		return version;
+		return getImplementationVersion();
 	}
 
 	public static String getSpecificationVersion() {
 		return Package.getPackage("nl.nn.testtool").getSpecificationVersion();
 	}
 
-	public static String getReleaseVersion() {
-		return Package.getPackage("nl.nn.testtool").getSpecificationVersion() + "." + getProperty("version.release");
-	}
-
 	public static String getImplementationVersion() {
 		return Package.getPackage("nl.nn.testtool").getImplementationVersion();
 	}
 
-	public static String getProperty(String property) {
-		Properties properties = new Properties();
-		InputStream inputStream = TestTool.class.getResourceAsStream("/nl/nn/testtool/TestTool.properties");
-		try {
-			properties.load(inputStream);
-		} catch(IOException e) {
-		}
-		return properties.getProperty(property);
-	}
-	
 }
