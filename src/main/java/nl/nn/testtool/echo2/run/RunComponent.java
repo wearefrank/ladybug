@@ -9,6 +9,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.TooManyListenersException;
 
+import org.apache.log4j.Logger;
+
+import echopointng.tree.DefaultMutableTreeNode;
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.CheckBox;
 import nextapp.echo2.app.Column;
@@ -38,10 +41,6 @@ import nl.nn.testtool.storage.Storage;
 import nl.nn.testtool.storage.StorageException;
 import nl.nn.testtool.transform.ReportXmlTransformer;
 import nl.nn.testtool.util.LogUtil;
-
-import org.apache.log4j.Logger;
-
-import echopointng.tree.DefaultMutableTreeNode;
 
 /**
  * @author m00f069
@@ -528,6 +527,11 @@ public class RunComponent extends Column implements BeanParent, ActionListener {
 					runResultReport.setDescription(report.getDescription());
 					runResultReport.setPath(report.getPath());
 					errorMessage = Echo2Application.store(runStorage, runResultReport);
+					runResult.remove(storageId);
+					row.setId(runResultReport.getStorageId().toString());
+					row.getComponent(4).setVisible(false);
+					row.remove(5);
+					row.add(new Label(runResultReport.getName()));
 				}
 				if (errorMessage == null) {
 					errorMessage = Echo2Application.delete(runStorage, report);
