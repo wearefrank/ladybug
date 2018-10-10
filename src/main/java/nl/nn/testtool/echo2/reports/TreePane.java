@@ -46,7 +46,6 @@ public class TreePane extends ContentPane implements TreeSelectionListener {
 	private static final String ROOT_NODE_NAME = "Reports";
 	private DefaultMutableTreeNode rootNode;
 	private Tree tree;
-	private boolean sortReports = false;
 
 	public TreePane() {
 		super();
@@ -66,10 +65,6 @@ public class TreePane extends ContentPane implements TreeSelectionListener {
 
 	public void setReportsTreeCellRenderer(ReportsTreeCellRenderer reportsTreeCellRenderer) {
 		this.reportsTreeCellRenderer = reportsTreeCellRenderer;
-	}
-
-	public void setSortReports(boolean sortReports) {
-		this.sortReports = sortReports;
 	}
 
 	/**
@@ -237,8 +232,8 @@ public class TreePane extends ContentPane implements TreeSelectionListener {
 		}
 	}
 
-	// Made synchronized because it is called from ReportUploadListener // TODO gebeurt dit nog wel?
-	synchronized public void addReport(Report report, View view) {
+	// Made synchronized because it is called from ReportUploadListener
+	synchronized public DefaultMutableTreeNode addReport(Report report, View view, boolean sortReports) {
 		int insertPosition = 0;
 		if (sortReports) {
 			insertPosition = -1;
@@ -258,6 +253,7 @@ public class TreePane extends ContentPane implements TreeSelectionListener {
 		addCheckpoints(reportNode, view);
 		DefaultMutableTreeNode nodeToSelect = expandOnlyChilds(reportNode);
 		selectNode(nodeToSelect);
+		return reportNode;
 	}
 
 	public DefaultMutableTreeNode expandOnlyChilds(DefaultMutableTreeNode node) {

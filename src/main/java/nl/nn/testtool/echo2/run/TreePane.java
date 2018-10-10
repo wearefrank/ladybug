@@ -41,7 +41,6 @@ public class TreePane extends ContentPane implements BeanParent, TreeSelectionLi
 	private static final String ROOT_NODE_NAME = "Reports";
 	private DefaultMutableTreeNode rootNode;
 	private Tree tree;
-	private boolean sortReports = false;
 	private BeanParent beanParent;
 
 	private List reportsWithDirtyPaths = new ArrayList();
@@ -58,10 +57,6 @@ public class TreePane extends ContentPane implements BeanParent, TreeSelectionLi
 	
 	public void setReportsTreeCellRenderer(ReportsTreeCellRenderer reportsTreeCellRenderer) {
 		this.reportsTreeCellRenderer = reportsTreeCellRenderer;
-	}
-
-	public void setSortReports(boolean sortReports) {
-		this.sortReports = sortReports;
 	}
 
 	public void setStorage(Storage storage) {
@@ -332,29 +327,6 @@ public class TreePane extends ContentPane implements BeanParent, TreeSelectionLi
 			node = (DefaultMutableTreeNode)enumeration.nextElement();
 			tree.collapsePath(new TreePath(node.getPath()));
 		}
-	}
-
-	// Made synchronized because it is called from ReportUploadListener // TODO gebeurt dit nog wel?
-	synchronized public void addReport(Report report, View view) {
-		int insertPosition = 0;
-		if (sortReports) {
-			insertPosition = -1;
-			for (int i = rootNode.getChildCount() - 1; i > -1 && insertPosition == -1; i--) {
-				DefaultMutableTreeNode currentReportNode = (DefaultMutableTreeNode)rootNode.getChildAt(i);
-				Report currentReport = (Report)currentReportNode.getUserObject();
-				if (report.toXml().compareTo(currentReport.toXml()) > 0) {
-					insertPosition = i + 1;
-				}
-			}
-			if (insertPosition == -1) {
-				insertPosition = 0;
-			}
-		}
-		DefaultMutableTreeNode reportNode = new DefaultMutableTreeNode(report);
-		rootNode.insert(reportNode, insertPosition);
-		addCheckpoints(reportNode, view);
-		DefaultMutableTreeNode nodeToSelect = expandOnlyChilds(reportNode);
-		selectNode(nodeToSelect);
 	}
 
 	public DefaultMutableTreeNode expandOnlyChilds(DefaultMutableTreeNode node) {

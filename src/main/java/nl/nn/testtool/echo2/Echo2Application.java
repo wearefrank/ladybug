@@ -3,6 +3,12 @@ package nl.nn.testtool.echo2;
 import java.security.Principal;
 import java.util.List;
 
+import org.apache.log4j.Logger;
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+
+import echopointng.tree.DefaultMutableTreeNode;
 import nextapp.echo2.app.ApplicationInstance;
 import nextapp.echo2.app.Border;
 import nextapp.echo2.app.Button;
@@ -37,11 +43,6 @@ import nl.nn.testtool.storage.CrudStorage;
 import nl.nn.testtool.storage.StorageException;
 import nl.nn.testtool.transform.ReportXmlTransformer;
 import nl.nn.testtool.util.LogUtil;
-
-import org.apache.log4j.Logger;
-import org.springframework.beans.BeansException;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 
 public class Echo2Application extends ApplicationInstance implements ApplicationContextAware, BeanParent, SecurityContext {
 	private static final long serialVersionUID = 1L;
@@ -319,7 +320,7 @@ public class Echo2Application extends ApplicationInstance implements Application
 			reportsComponent.initBean(this);
 			
 			// TODO reportsComponent.openReport in reportPane (initBean) doen?
-			reportsComponent.openReport(report, true);
+			reportsComponent.openReport(report);
 		}
 	}
 
@@ -335,17 +336,18 @@ public class Echo2Application extends ApplicationInstance implements Application
 
 	public void openReportCompare(Report report1, Report report2) {
 		tabPane.setActiveTabIndex(2);
-		// TODO openen in aparte tab (nieuwe comparePane aanmaken)?
 		ComparePane comparePane = null;
 		for (Tab tab : tabs) {
 			if (tab instanceof ComparePane) {
 				comparePane = (ComparePane)tab;
 			}
 		}
-		comparePane.getTreePane1().addReport(report1, comparePane.getReportsComponent1().getViews().getDefaultView());
-		comparePane.getTreePane2().addReport(report2, comparePane.getReportsComponent2().getViews().getDefaultView());
-		// TODO alleen voor de twee zojuist toegevoegde laten doen?
-		comparePane.compare();
+		DefaultMutableTreeNode reportNode1;
+		DefaultMutableTreeNode reportNode2;
+		reportNode1 = comparePane.getTreePane1().addReport(report1, comparePane.getReportsComponent1().getViews().getDefaultView(), false);
+		reportNode2 = comparePane.getTreePane2().addReport(report2, comparePane.getReportsComponent2().getViews().getDefaultView(), false);
+		comparePane.compare(report1, report2);
+		comparePane.getTreePane1().selectNode(reportNode1);
 	}
 
 	public static String store(CrudStorage storage, Report report) {

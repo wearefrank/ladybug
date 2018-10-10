@@ -560,7 +560,7 @@ public class ReportsComponent extends Column implements BeanParent, ActionListen
 			String isOpenReportAllowed = view.isOpenReportAllowed(firstValueOfLastSelectedRow);
 			if ("Allowed".equals(isOpenReportAllowed)) {
 				Storage storage = view.getStorage();
-				openReport(storage, (Integer)firstValueOfLastSelectedRow, true);
+				openReport(storage, (Integer)firstValueOfLastSelectedRow);
 			} else {
 				displayError(isOpenReportAllowed);
 			}
@@ -623,13 +623,13 @@ public class ReportsComponent extends Column implements BeanParent, ActionListen
 					max = size;
 				}
 				for (int i = max - 1; i > -1; i--) {
-					openReport(storage, (Integer)storageIds.get(i), false);
+					openReport(storage, (Integer)storageIds.get(i));
 				}
 			}
 		} else if (e.getActionCommand().equals("OpenReportInProgress")) {
 			Report report = (Report)testTool.getReportInProgress(integerFieldOpenReportInProgress.getValue() - 1);
 			if (report != null) {
-				openReport(report, true);
+				openReport(report, checkBoxExcludeReportsWithEmptyReportXml.isSelected(), false);
 			}
 		} else if (e.getActionCommand().equals("OpenUploadWindow")) {
 			uploadWindow.setVisible(true);
@@ -714,6 +714,10 @@ public class ReportsComponent extends Column implements BeanParent, ActionListen
 		}
 	}
 
+	private void openReport(Storage storage, Integer storageId) {
+		openReport(storage, storageId, false);
+	}
+
 	private void openReport(Storage storage, Integer storageId,
 			boolean ignoreExcludeReportsWithEmptyReportXml) {
 		Report report = null;
@@ -727,23 +731,20 @@ public class ReportsComponent extends Column implements BeanParent, ActionListen
 		}
 		if (report != null) {
 			report.setTestTool(testTool);
-			openReport(report, ignoreExcludeReportsWithEmptyReportXml);
+			openReport(report);
 		}
 	}
-	
-	public void openReport(Report report, boolean ignoreExcludeReportsWithEmptyReportXml) {
+
+	public void openReport(Report report) {
+		openReport(report, false, false);
+	}
+
+	public void openReport(Report report, boolean excludeReportsWithEmptyReportXml, boolean sortReports) {
 		if (checkBoxTransformReportXml.isSelected()) {
 			report.setReportXmlTransformer(reportXmlTransformer);
 		}
-		boolean exclude = false;
-		if (!ignoreExcludeReportsWithEmptyReportXml
-				&& checkBoxExcludeReportsWithEmptyReportXml.isSelected()) {
-			if (report.toXml().length() < 1) {
-				exclude = true;
-			}
-		}
-		if (!exclude) {
-			treePane.addReport(report, getSelectedView());
+		if (!(excludeReportsWithEmptyReportXml && report.toXml().length() < 1)) {
+			treePane.addReport(report, getSelectedView(), sortReports);
 		}
 	}
 

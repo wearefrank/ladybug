@@ -79,7 +79,7 @@ public class ReportUploadListener implements UploadListener {
 			try {
 				List storageIds = storage.getStorageIds();
 				for (int i = storageIds.size() - 1; i > -1; i--) {
-					reportsComponent.openReport(storage.getReport((Integer)storageIds.get(i)), true);
+					reportsComponent.openReport(storage.getReport((Integer)storageIds.get(i)), false, true);
 				}
 			} catch (StorageException e) {
 				// TODO iets doen, errorMessage vullen?

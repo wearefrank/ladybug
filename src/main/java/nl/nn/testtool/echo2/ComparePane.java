@@ -156,13 +156,11 @@ public class ComparePane extends Tab implements BeanParent {
 		treePane1.setInfoPane(infoPane1);
 		treePane1.setTreePaneCounterpart(treePane2);
 		treePane1.setReportsTreeCellRenderer(reportsTreeCellRenderer);
-		treePane1.setSortReports(true);
 
 		treePane2.setTestTool(testTool);
 		treePane2.setInfoPane(infoPane2);
 		treePane2.setTreePaneCounterpart(treePane1);
 		treePane2.setReportsTreeCellRenderer(reportsTreeCellRenderer);
-		treePane2.setSortReports(true);
 
 		infoPane1.setReportsComponent(reportsComponent1);
 		infoPane1.setReportComponent(reportComponent1);
@@ -242,6 +240,18 @@ public class ComparePane extends Tab implements BeanParent {
 		reportsComponent2.initBean(this);
 		infoPane1.initBean(this);
 		infoPane2.initBean(this);
+	}
+
+	public void compare(Report report1, Report report2) {
+		if (report1.toXml().equals(report2.toXml())) {
+			report1.setDifferenceFound(false);
+			report2.setDifferenceFound(false);
+		} else {
+			report1.setDifferenceFound(true);
+			report2.setDifferenceFound(true);
+		}
+		report1.setDifferenceChecked(true);
+		report2.setDifferenceChecked(true);
 	}
 
 	public void compare() {
