@@ -42,7 +42,7 @@ public interface Storage {
 	 */
 	// TODO bij de implementaties ook numberOfRecords -> maxNumberOfRecords
 	// TODO andere params ook documenteren (voor searchValues verwijzen naar SearchUtil.matches(resultRecord, searchValues)?)
-	public List<List<String>> getMetadata(int maxNumberOfRecords, List<String> metadataNames,
+	public List<List<Object>> getMetadata(int maxNumberOfRecords, List<String> metadataNames,
 			List<String> searchValues, int metadataValueType) throws StorageException;
 
 	// TODO een StorageByMetadata en StorageByFolders maken?

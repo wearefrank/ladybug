@@ -416,7 +416,7 @@ public class RunComponent extends Column implements BeanParent, ActionListener {
 			echo2Application.getContentPane().add(popupWindow);
 		} else if (e.getActionCommand().equals("DeleteAllOk")) {
 			errorMessage = Echo2Application.deleteAll(runStorage);
-			treePane.redisplayReports(null);
+			treePane.redisplayReports((String)null);
 		} else if (e.getActionCommand().equals("DeleteSelected")) {
 			if (minimalOneSelected()) {
 				for (int i = numberOfComponentsToSkipForRowManipulation; i < getComponentCount(); i++) {

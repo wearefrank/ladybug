@@ -47,21 +47,16 @@ import echopointng.tree.TreeSelectionModel;
  * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
  */
 public class TreePane extends ContentPane implements TreeSelectionListener {
-	private Logger log = LogUtil.getLogger(this);
-	private TestTool testTool;
-	private InfoPane infoPane;
+	protected Logger log = LogUtil.getLogger(this);
+	protected InfoPane infoPane;
 	private TreePane treePaneCounterpart;
 	private ReportsTreeCellRenderer reportsTreeCellRenderer;
 	private static final String ROOT_NODE_NAME = "Reports";
-	private DefaultMutableTreeNode rootNode;
-	private Tree tree;
+	protected DefaultMutableTreeNode rootNode;
+	protected Tree tree;
 
 	public TreePane() {
 		super();
-	}
-
-	public void setTestTool(TestTool testTool) {
-		this.testTool = testTool;
 	}
 
 	public void setInfoPane(InfoPane infoPane) {
@@ -168,7 +163,7 @@ public class TreePane extends ContentPane implements TreeSelectionListener {
 		selectNode(node, counterpartNode, compare);
 	}
 
-	private void selectNode(DefaultMutableTreeNode node,
+	protected void selectNode(DefaultMutableTreeNode node,
 			DefaultMutableTreeNode nodeFromOtherTree, boolean compare) {
 		if (node != null) {
 			Object userObject = node.getUserObject();
@@ -334,12 +329,9 @@ public class TreePane extends ContentPane implements TreeSelectionListener {
 	}
 
 	public void valueChanged(TreeSelectionEvent e) {
-		if (e.getNewLeadSelectionPath() == null) {
-//			infoPane.displayNothing();
-		} else {
+		if (e.getNewLeadSelectionPath() != null) {
 			TreePath treePath = e.getNewLeadSelectionPath();
 			DefaultMutableTreeNode node = (DefaultMutableTreeNode)treePath.getLastPathComponent();
-			Object userObject = node.getUserObject();
 			selectNode(node);
 		}
 	}
@@ -364,15 +356,6 @@ public class TreePane extends ContentPane implements TreeSelectionListener {
 		}
 		return storage;
 	}
-
-//	public List getReports() throws StorageException {
-//		List reports = new ArrayList();
-//		for (int i = 0; i < rootNode.getChildCount(); i++) {
-//			DefaultMutableTreeNode node = (DefaultMutableTreeNode)rootNode.getChildAt(i);
-//			reports.add((Report)node.getUserObject());
-//		}
-//		return reports;
-//	}
 
 	public void redisplayReports(View view) {
 		if (rootNode.getChildCount() > 0) {

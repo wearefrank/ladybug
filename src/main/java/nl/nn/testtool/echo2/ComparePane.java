@@ -167,12 +167,10 @@ public class ComparePane extends Tab implements BeanParent {
 		setInfoPane1(infoPane1);
 		setInfoPane2(infoPane2);
 
-		treePane1.setTestTool(testTool);
 		treePane1.setInfoPane(infoPane1);
 		treePane1.setTreePaneCounterpart(treePane2);
 		treePane1.setReportsTreeCellRenderer(reportsTreeCellRenderer);
 
-		treePane2.setTestTool(testTool);
 		treePane2.setInfoPane(infoPane2);
 		treePane2.setTreePaneCounterpart(treePane1);
 		treePane2.setReportsTreeCellRenderer(reportsTreeCellRenderer);

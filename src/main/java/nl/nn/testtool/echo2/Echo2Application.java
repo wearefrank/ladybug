@@ -290,7 +290,6 @@ public class Echo2Application extends ApplicationInstance implements Application
 			}
 			tabPaneLayoutReportPane.setTitle(title);
 	
-			treePane.setTestTool(testTool);
 			treePane.setInfoPane(infoPane);
 			treePane.setReportsTreeCellRenderer(reportsTreeCellRenderer);
 

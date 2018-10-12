@@ -126,7 +126,6 @@ public class DebugPane extends Tab implements BeanParent {
 		setTreePane(treePane);
 		setInfoPane(infoPane);
 		
-		treePane.setTestTool(testTool);
 		treePane.setInfoPane(infoPane);
 		treePane.setReportsTreeCellRenderer(reportsTreeCellRenderer);
 
