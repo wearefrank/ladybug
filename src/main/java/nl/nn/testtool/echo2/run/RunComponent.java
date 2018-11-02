@@ -19,14 +19,16 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TooManyListenersException;
 
 import org.apache.log4j.Logger;
 
-import echopointng.tree.DefaultMutableTreeNode;
+import echopointng.ProgressBar;
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.CheckBox;
 import nextapp.echo2.app.Column;
@@ -71,25 +73,16 @@ public class RunComponent extends Column implements BeanParent, ActionListener {
 	private CrudStorage runStorage; // TODO juiste naam? overal consequent doen?
 	private Echo2Application echo2Application;
 	private TreePane treePane;
-	private DefaultMutableTreeNode node;
-//	private Report report;
-//	private Label nameLabel;
-//	private Label pathLabel;
-	TextField pathTextField;
 	private Label errorLabel;
-
+	private Label okayLabel;
+	private ProgressBar progressBar;
+	private ReportRunner reportRunner;
+	private TextField pathTextField;
 	private ReportXmlTransformer reportXmlTransformer = null;
-
-	private Map runResult = new HashMap();
-
 	private WindowPane uploadWindow;
-
 	private UploadSelect uploadSelect;
-	
 	private int numberOfComponentsToSkipForRowManipulation = 0;
-
 	private String lastDisplayedPath;
-
 	private BeanParent beanParent;
 
 	public RunComponent() {
@@ -122,9 +115,6 @@ public class RunComponent extends Column implements BeanParent, ActionListener {
 		
 		// Construct
 
-		errorLabel = Echo2Application.createErrorLabelWithColumnLayoutData();
-		errorLabel.setVisible(false);
-
 		// TODO code voor aanmaken upload window en ander zaken gaan delen met ReportsComponent
 		Column uploadColumn = new Column();
 
@@ -154,6 +144,24 @@ public class RunComponent extends Column implements BeanParent, ActionListener {
 		Echo2Application.decorateButton(runSelectedButton);
 		buttonRow.add(runSelectedButton);
 
+		Button resetSelectedButton = new Button("Reset");
+		resetSelectedButton.setActionCommand("Reset");
+		resetSelectedButton.addActionListener(this);
+		Echo2Application.decorateButton(resetSelectedButton);
+		buttonRow.add(resetSelectedButton);
+
+		Button selectAllButton = new Button("Select all");
+		selectAllButton.setActionCommand("SelectAll");
+		selectAllButton.addActionListener(this);
+		Echo2Application.decorateButton(selectAllButton);
+		buttonRow.add(selectAllButton);
+
+		Button deselectAllButton = new Button("Deselect all");
+		deselectAllButton.setActionCommand("DeselectAll");
+		deselectAllButton.addActionListener(this);
+		Echo2Application.decorateButton(deselectAllButton);
+		buttonRow.add(deselectAllButton);
+
 		Button moveSelectedButton = new Button("Move");
 		moveSelectedButton.setActionCommand("MoveSelected");
 		moveSelectedButton.addActionListener(this);
@@ -172,12 +180,6 @@ public class RunComponent extends Column implements BeanParent, ActionListener {
 		Echo2Application.decorateButton(deleteSelectedButton);
 		buttonRow.add(deleteSelectedButton);
 
-		Button deleteAllButton = new Button("Delete all");
-		deleteAllButton.setActionCommand("DeleteAll");
-		deleteAllButton.addActionListener(this);
-		Echo2Application.decorateButton(deleteAllButton);
-		buttonRow.add(deleteAllButton);
-
 		Button downloadAllButton = new Button("Download all");
 		downloadAllButton.setActionCommand("DownloadAll");
 		downloadAllButton.addActionListener(this);
@@ -189,6 +191,11 @@ public class RunComponent extends Column implements BeanParent, ActionListener {
 		Echo2Application.decorateButton(prepareUploadButton);
 		prepareUploadButton.addActionListener(this);
 		buttonRow.add(prepareUploadButton);
+
+		progressBar = new ProgressBar();
+		buttonRow.add(progressBar);
+		reportRunner = new ReportRunner();
+		reportRunner.setTestTool(testTool);
 
 		Row uploadSelectRow = new Row();
 
@@ -216,6 +223,12 @@ public class RunComponent extends Column implements BeanParent, ActionListener {
 		pathTextField.setWidth(new Extent(400));
 		pathRow.add(pathTextField);
 
+		errorLabel = Echo2Application.createErrorLabelWithColumnLayoutData();
+		errorLabel.setVisible(false);
+
+		okayLabel = Echo2Application.createOkayLabelWithColumnLayoutData();
+		okayLabel.setVisible(false);
+
 		// Wire
 
 		uploadSelectRow.add(new Label("Upload"));
@@ -230,6 +243,9 @@ public class RunComponent extends Column implements BeanParent, ActionListener {
 
 		add(errorLabel);
 		numberOfComponentsToSkipForRowManipulation++;
+
+		add(okayLabel);
+		numberOfComponentsToSkipForRowManipulation++;
 	}
 
 	/**
@@ -241,35 +257,46 @@ public class RunComponent extends Column implements BeanParent, ActionListener {
 		echo2Application.getContentPane().add(uploadWindow);
 		RunPane runPane = (RunPane)beanParent.getBeanParent();
 		treePane = runPane.getTreePane();
+		reportRunner.setEcho2Application(echo2Application);
 	}
 
 	public BeanParent getBeanParent() {
 		return beanParent;
 	}
 
-	public void display(String path) {
+	public void display(String path, Set<String> selectedStorageIds) {
 		while (getComponentCount() > numberOfComponentsToSkipForRowManipulation) {
 			remove(numberOfComponentsToSkipForRowManipulation);
 		}
-//		int totalCounter = 0;
-//		int directChildCounter = 0;
-		List metadata = null;
+		List<List<Object>> metadata = new ArrayList<List<Object>>();
+		List<String> metadataNames = new ArrayList<String>();
+		metadataNames.add("storageId");
+		metadataNames.add("path");
+		metadataNames.add("name");
+		metadataNames.add("description");
+		List<String> searchValues = new ArrayList<String>();
+		searchValues.add(null);
+		searchValues.add("[" + path + "*]");
+			searchValues.add(null);
+			searchValues.add(null);
+			try {
+			metadata = runStorage.getMetadata(-1, metadataNames, searchValues, MetadataExtractor.VALUE_TYPE_STRING);
+		} catch (StorageException e) {
+			log.error(e);
+			displayError(e.getMessage());
+		}
 		if (path.equals("/")) {
-			metadata = new ArrayList();
-			Iterator iterator = treePane.getReportsWithDirtyPaths().iterator();
+			Iterator<Integer> iterator = treePane.getReportsWithDirtyPaths().iterator();
 			while (iterator.hasNext()) {
 				Integer storageId = (Integer)iterator.next();
-				// TODO name via metadata ophalen
 				try {
-					List metadataRecord = new ArrayList();
-//					addReport(storageId.toString(), runStorage.getReport(storageId).getName());
+					List<Object> metadataRecord = new ArrayList<Object>();
 					metadataRecord.add(storageId.toString());
 					metadataRecord.add("/");
 					Report report = runStorage.getReport(storageId);
 					metadataRecord.add(report.getName());
 					metadataRecord.add(report.getDescription());
 					metadata.add(metadataRecord);
-//					directChildCounter++;
 				} catch (NumberFormatException e) {
 					log.error(e);
 					displayError(e.getMessage());
@@ -278,57 +305,53 @@ public class RunComponent extends Column implements BeanParent, ActionListener {
 					displayError(e.getMessage());
 				}
 			}
-		} else {
-			List metadataNames = new ArrayList();
-			metadataNames.add("storageId");
-			metadataNames.add("path");
-			metadataNames.add("name");
-			metadataNames.add("description");
-			List searchValues = new ArrayList();
-			searchValues.add(null);
-			searchValues.add(path + "*");
-			searchValues.add(null);
-			searchValues.add(null);
-			try {
-				metadata = runStorage.getMetadata(-1, metadataNames, searchValues, MetadataExtractor.VALUE_TYPE_STRING);
-			} catch (StorageException e) {
-				log.error(e);
-				displayError(e.getMessage());
-			}
 		}
-		Collections.sort(metadata, new MetadataNameComparator());
-		Iterator metadataIterator = metadata.iterator();
+		boolean directChildReportsPresent = false;
+		Collections.sort(metadata, new MetadataComparator());
+		Iterator<List<Object>> metadataIterator = metadata.iterator();
 		while (metadataIterator.hasNext()) {
-			List metadataRecord = (List)metadataIterator.next();
+			List<Object> metadataRecord = (List<Object>)metadataIterator.next();
 			String metadataPath = (String)metadataRecord.get(1);
 			if (path.equals(metadataPath)) {
-				addReport((String)metadataRecord.get(0), (String)metadataRecord.get(2), (String)metadataRecord.get(3));
-//				directChildCounter++;
+				boolean selected = true;
+				if (selectedStorageIds != null) {
+					selected = selectedStorageIds.contains(metadataRecord.get(0));
+				}
+				displayReport(metadataRecord, selected);
+				directChildReportsPresent = true;
 			}
-//			totalCounter++;
 		}
-
-//		progressBar.setMaximum(directChildCounter);
-//		progressBar.setMinimum(0);
-//		progressBar.setValue(0);
-
-//		nameLabel.setText(/* "Name FOLDER: " +*/ path /*+ " direct: " + directChildCounter + " total: " + totalCounter*/);
+		metadataIterator = metadata.iterator();
+		while (metadataIterator.hasNext()) {
+			List<Object> metadataRecord = (List<Object>)metadataIterator.next();
+			String metadataPath = (String)metadataRecord.get(1);
+			if (!path.equals(metadataPath)) {
+				boolean selected = true;
+				if (selectedStorageIds != null) {
+					selected = !directChildReportsPresent;
+				}
+				displayReport(metadataRecord, selected);
+			}
+		}
 		pathTextField.setText(path);
-		
-//		pathLabel.setText("Path: " + path);
-//		estimatedMemoryUsageLabel.setText("EstimatedMemoryUsage: " + report.getEstimatedMemoryUsage() + " bytes");
-//		errorLabel.setVisible(false);
-
 		lastDisplayedPath = path;
 	}
 
-	private void addReport(String storageId, String name, String description) {
+	private void displayReport(List<Object> metadataRecord, boolean selected) {
+		String storageId = (String)metadataRecord.get(0);
+		String path2 = (String)metadataRecord.get(1);
+		String name = (String)metadataRecord.get(2);
+		String description= (String)metadataRecord.get(3);
+		displayReport(storageId, path2 + name, description, selected);
+	}
+
+	private void displayReport(String storageId, String name, String description, boolean selected) {
 		Row row = Echo2Application.getNewRow();
 		row.setId(storageId);
 		row.setInsets(new Insets(0, 5, 0, 0));
 
 		CheckBox checkBox = new CheckBox("");
-		checkBox.setSelected(true);
+		checkBox.setSelected(selected);
 		row.add(checkBox);
 
 		Button button = new Button("Run");
@@ -356,8 +379,42 @@ public class RunComponent extends Column implements BeanParent, ActionListener {
 		Echo2Application.decorateButton(button);
 		row.add(button);
 
-		row.add(new Label(name));
+		Label label = new Label(name);
+		RunResult runResult = reportRunner.getResults().get(Integer.parseInt(storageId));
+		if (runResult != null) {
+			Report runResultReport = getRunResultReport(runResult.correlationId);
+			if (runResultReport == null) {
+				label.setText("Result report not found. Report generator not enabled?");
+				label.setForeground(Echo2Application.getDifferenceFoundTextColor());
+			} else {
+				Report report = null;
+				try {
+					report = runStorage.getReport(Integer.parseInt(storageId));
+				} catch (StorageException e) {
+					log.error(e);
+					displayError(e.getMessage());
+				}
+				if (report != null) {
+					String stubInfo = "";
+					if (!"Never".equals(report.getStubStrategy())) {
+						stubInfo = " (" + report.getStubStrategy() + ")";
+					}
+					label.setText(name + " (" + (report.getEndTime() - report.getStartTime()) + " >> "
+							+ (runResultReport.getEndTime() - runResultReport.getStartTime()) + " ms)" + stubInfo);
+					report.setReportXmlTransformer(reportXmlTransformer);
+					runResultReport.setReportXmlTransformer(reportXmlTransformer);
+					if (report.toXml().equals(runResultReport.toXml())) {
+						label.setForeground(Echo2Application.getNoDifferenceFoundTextColor());
+					} else {
+						label.setForeground(Echo2Application.getDifferenceFoundTextColor());
+					}
+					Button replaceButton = (Button)row.getComponent(4);
+					replaceButton.setVisible(true);
+				}
+			}
+		}
 
+		row.add(label);
 		add(row);
 
 		// TODO runStorage.getMetadata geeft blijkbaar "null" terug, fixen
@@ -380,64 +437,77 @@ public class RunComponent extends Column implements BeanParent, ActionListener {
 	 * @see nextapp.echo2.app.event.ActionListener#actionPerformed(nextapp.echo2.app.event.ActionEvent)
 	 */
 	public void actionPerformed(ActionEvent e) {
-		hideErrorMessage();
+		hideMessages();
 		String errorMessage = null;
 		if (e.getActionCommand().equals("Refresh")) {
-			treePane.redisplayReports(lastDisplayedPath);
-			runResult.clear();
+			refresh();
+		} else if (e.getActionCommand().equals("Reset")) {
+			errorMessage = reportRunner.reset();
+			refresh();
+		} else if (e.getActionCommand().equals("SelectAll") || e.getActionCommand().equals("DeselectAll")) {
+			for (int i = numberOfComponentsToSkipForRowManipulation; i < getComponentCount(); i++) {
+				Component component = getComponent(i);
+				Row row = (Row)component;
+				CheckBox checkbox = (CheckBox)row.getComponent(0);
+				if (e.getActionCommand().equals("SelectAll")) {
+					checkbox.setSelected(true);
+				} else {
+					checkbox.setSelected(false);
+				}
+			}
 		} else if (e.getActionCommand().equals("RunSelected")) {
 			if (minimalOneSelected()) {
+				List<Row> rows = new ArrayList<Row>();
 				for (int i = numberOfComponentsToSkipForRowManipulation; i < getComponentCount(); i++) {
 					Component component = getComponent(i);
 					Row row = (Row)component;
 					CheckBox checkbox = (CheckBox)row.getComponent(0);
 					if (checkbox.isSelected()) {
-						run(row);
+						rows.add(row);
 					}
 				}
+				List<Report> reports = new ArrayList<Report>();
+				for (Row row : rows) {
+					Report report = getReport(row);
+					if (report != null) {
+						reports.add(report);
+					}
+				}
+				errorMessage = reportRunner.run(reports, true, false);
+				displayOkay("Report runner started, use Refresh to see results");
 			}
 		} else if (e.getActionCommand().equals("DownloadAll")) {
 			errorMessage = Download.download(runStorage);
 		} else if (e.getActionCommand().equals("OpenUploadWindow")) {
 			uploadWindow.setVisible(true);
-		} else if (e.getActionCommand().equals("DeleteAll")) {
-			List actionLabels = new ArrayList();
-			List actionCommands = new ArrayList();
-			List actionListeners = new ArrayList();
-			actionLabels.add("Yes, delete all reports");
-			actionCommands.add("DeleteAllOk");
-			actionListeners.add(this);
-			actionLabels.add("No, cancel this action");
-			actionCommands.add("DeleteAllCancel");
-			actionListeners.add(this);
-			PopupWindow popupWindow = new PopupWindow("",
-					"Are you sure you want to delete all reports in all folders?", 425, 100,
-					actionLabels, actionCommands, actionListeners);
-			echo2Application.getContentPane().add(popupWindow);
-		} else if (e.getActionCommand().equals("DeleteAllOk")) {
-			errorMessage = Echo2Application.deleteAll(runStorage);
-			treePane.redisplayReports((String)null);
 		} else if (e.getActionCommand().equals("DeleteSelected")) {
 			if (minimalOneSelected()) {
-				for (int i = numberOfComponentsToSkipForRowManipulation; i < getComponentCount(); i++) {
-					Component component = getComponent(i);
-					Row row = (Row)component;
-					CheckBox checkbox = (CheckBox)row.getComponent(0);
-					if (checkbox.isSelected()) {
-						Integer storageId = new Integer(row.getId());
-						Report report = null;
-						try {
-							report = runStorage.getReport(storageId);
-						} catch (StorageException exception) {
-							log.error(exception);
-							errorMessage = exception.getMessage();
-						}
+				List<String> actionLabels = new ArrayList<String>();
+				List<String> actionCommands = new ArrayList<String>();
+				List<ActionListener> actionListeners = new ArrayList<ActionListener>();
+				actionLabels.add("Yes, delete all selected reports");
+				actionCommands.add("DeleteOk");
+				actionListeners.add(this);
+				actionLabels.add("No, cancel this action");
+				actionCommands.add("DeleteCancel");
+				actionListeners.add(this);
+				PopupWindow popupWindow = new PopupWindow("",
+						"Are you sure you want to delete all selected reports?", 450, 100,
+						actionLabels, actionCommands, actionListeners);
+				echo2Application.getContentPane().add(popupWindow);
+			}
+		} else if (e.getActionCommand().equals("DeleteOk")) {
+			for (int i = numberOfComponentsToSkipForRowManipulation; i < getComponentCount(); i++) {
+				Component component = getComponent(i);
+				Row row = (Row)component;
+				CheckBox checkbox = (CheckBox)row.getComponent(0);
+				if (checkbox.isSelected()) {
+					Report report = getReport(row);
+					if (report != null) {
+						errorMessage = Echo2Application.delete(runStorage, report);
 						if (errorMessage == null) {
-							errorMessage = Echo2Application.delete(runStorage, report);
-							if (errorMessage == null) {
-								remove(row);
-								i--;
-							}
+							remove(row);
+							i--;
 						}
 					}
 				}
@@ -453,15 +523,15 @@ public class RunComponent extends Column implements BeanParent, ActionListener {
 						movePath(row, newPath);
 					}
 				}
-				treePane.redisplayReports(newPath);
+				treePane.redisplayReports(newPath, null);
 			}
-		} else if (e.getActionCommand().equals("CopySelected")) {
+		} else if (e.getActionCommand().equals("CopySelected") || e.getActionCommand().equals("CopyPathOk")) {
 			if (minimalOneSelected()) {
 				String newPath = normalizePath(pathTextField.getText());
-				if (newPath.equals(lastDisplayedPath)) {
-					List actionLabels = new ArrayList();
-					List actionCommands = new ArrayList();
-					List actionListeners = new ArrayList();
+				if (newPath.equals(lastDisplayedPath) && !e.getActionCommand().equals("CopyPathOk")) {
+					List<String> actionLabels = new ArrayList<String>();
+					List<String> actionCommands = new ArrayList<String>();
+					List<ActionListener> actionListeners = new ArrayList<ActionListener>();
 					actionLabels.add("Yes, duplicate reports");
 					actionCommands.add("CopyPathOk");
 					actionListeners.add(this);
@@ -474,75 +544,48 @@ public class RunComponent extends Column implements BeanParent, ActionListener {
 					echo2Application.getContentPane().add(popupWindow);
 				} else {
 					copyPath(newPath);
-					treePane.redisplayReports(newPath);
+					treePane.redisplayReports(newPath, null);
 				}
-			}
-		} else if (e.getActionCommand().equals("CopyPathOk")) {
-			if (minimalOneSelected()) {
-				String newPath = normalizePath(pathTextField.getText());
-				copyPath(newPath);
-				treePane.redisplayReports(newPath);
 			}
 		} else if (e.getActionCommand().equals("Run")) {
 			Button button = (Button)e.getSource();
 			Row row = (Row)button.getParent();
-			run(row);
+			Report report = getReport(row);
+			if (report != null) {
+				List<Report> reports = new ArrayList<Report>();
+				reports.add(report);
+				errorMessage = reportRunner.run(reports, false, true);
+				refresh();
+			}
 		} else if (e.getActionCommand().equals("Open")) {
-
 			Button button = (Button)e.getSource();
 			Row row = (Row)button.getParent();
-			Integer storageId = new Integer(row.getId());
-			
-			Report report = null;
-			try {
-				report = runStorage.getReport(storageId);
-			} catch (StorageException exception) {
-				log.error(exception);
-				exception.printStackTrace();
-			}
-
-			// TODO tweede argument wel goed? openReport via pane of echo2 app laten gaan?
-//			reportsComponent.openReport(report, false);
-			
-			
-//			Echo2ApplicationEvent echo2ApplicationEvent = new Echo2ApplicationEvent(this);
-//			echo2ApplicationEvent.setCommand("OpenReport");
-//			echo2ApplicationEvent.setCustomObject(report);
-//			applicationContext.publishEvent(echo2ApplicationEvent);
-
-			Report runResultReport = getRunResult((String)runResult.get(storageId));
+			Report report = getReport(row);
 			report.setReportXmlTransformer(reportXmlTransformer);
-			if (runResultReport == null) {
+			Integer storageId = new Integer(row.getId());
+			RunResult runResult = reportRunner.getResults().get(storageId);
+			if (runResult == null) {
 				echo2Application.openReport(report);
 			} else {
-				runResultReport.setReportXmlTransformer(reportXmlTransformer);
-				echo2Application.openReportCompare(report, runResultReport);
+				Report runResultReport = getRunResultReport(runResult.correlationId);
+				if (runResultReport != null) {
+					runResultReport.setReportXmlTransformer(reportXmlTransformer);
+					echo2Application.openReportCompare(report, runResultReport);
+				}
 			}
-			
-//			echo2Application.setActiveTabIndex(0);
-//			echo2Application.setActiveTabIndex(1);
-//			echo2Application.setActiveTabIndex(2);
-//			echo2Application.setActiveTabIndex(3);
-			
 		} else if (e.getActionCommand().equals("Delete")
 				|| e.getActionCommand().equals("Replace")) {
 			Button button = (Button)e.getSource();
 			Row row = (Row)button.getParent();
-			Integer storageId = new Integer(row.getId());
- 			Report report = null;
-			try {
-				report = runStorage.getReport(storageId);
-			} catch (StorageException exception) {
-				log.error(exception);
-				errorMessage = exception.getMessage();
-			}
-			if (errorMessage == null) {
+ 			Report report = getReport(row);
+			if (report != null) {
 				if (e.getActionCommand().startsWith("Replace")) {
-					Report runResultReport = getRunResult((String)runResult.get(storageId));
+					Integer storageId = new Integer(row.getId());
+					Report runResultReport = getRunResultReport(reportRunner.getResults().get(storageId).correlationId);
 					runResultReport.setDescription(report.getDescription());
 					runResultReport.setPath(report.getPath());
 					errorMessage = Echo2Application.store(runStorage, runResultReport);
-					runResult.remove(storageId);
+					reportRunner.getResults().remove(storageId);
 					row.setId(runResultReport.getStorageId().toString());
 					row.getComponent(4).setVisible(false);
 					row.remove(5);
@@ -562,107 +605,86 @@ public class RunComponent extends Column implements BeanParent, ActionListener {
 		}
 	}
 
-	void run(Row row) {
-		String errorMessage = null;
-		Integer storageId = new Integer(row.getId());
-		Report report = null;
-		try {
-			report = runStorage.getReport(storageId);
-		} catch (StorageException e) {
-			log.error(e);
-			displayError(e.getMessage());
-		}
-		if (report != null) {
-			String correlationId = TestTool.getCorrelationId();
-			errorMessage = testTool.rerun(correlationId, report, echo2Application);
-			if (errorMessage != null) {
-				displayError(errorMessage);
-			}
-			runResult.put(storageId, correlationId);
-			Report runResultReport = getRunResult(correlationId);
-			Label label = (Label)row.getComponent(5);
-			if (runResultReport == null) {
-				label.setText("Result report not found. Report generator not enabled?");
-				label.setForeground(Echo2Application.getDifferenceFoundTextColor());
-			} else {
-				String stubInfo = "";
-				if (!"Never".equals(report.getStubStrategy())) {
-					stubInfo = " (" + report.getStubStrategy() + ")";
-				}
-				label.setText(report.getName() + " ("
-						+ (report.getEndTime() - report.getStartTime())
-						+ " >> "
-						+ (runResultReport.getEndTime() - runResultReport.getStartTime())
-						+ " ms)" + stubInfo);
-				report.setReportXmlTransformer(reportXmlTransformer);
-				runResultReport.setReportXmlTransformer(reportXmlTransformer);
-				if (report.toXml().equals(runResultReport.toXml())) {
-					label.setForeground(Echo2Application.getNoDifferenceFoundTextColor());
-				} else {
-					label.setForeground(Echo2Application.getDifferenceFoundTextColor());
-				}
-				Button replaceButton = (Button)row.getComponent(4);
-				replaceButton.setVisible(true);
-			}
-		}
+	private void refresh() {
+		treePane.redisplayReports(lastDisplayedPath, getSelectedStorageIds());
+		progressBar.setMaximum(reportRunner.getMaximum());
+		progressBar.setValue(reportRunner.getProgressValue());
+		progressBar.setToolTipText(reportRunner.getProgressValue() + " / " + reportRunner.getMaximum());
 	}
 
-	Report getRunResult(String runResultCorrelationId) {
-		Report report = null;
-		if (runResultCorrelationId != null) {
-			List metadataNames = new ArrayList();
-			metadataNames.add("storageId");
-			metadataNames.add("correlationId");
-			List searchValues = new ArrayList();
-			searchValues.add(null);
-			searchValues.add(runResultCorrelationId);
-			List metadata = null;
-			try {
-				// TODO in Reader.getMetadata kun je ook i < numberOfRecords veranderen in result.size() < numberOfRecords zodat je hier 1 i.p.v. -1 mee kunt geven maar als je dan zoekt op iets dat niet te vinden is gaat hij alle records door. misschien debugStorage.getMetadata een extra paremter geven, numberOfRecordsToConsider en numberOfRecordsToReturn i.p.v. numberOfRecords? (let op: logica ook in mem storage aanpassen)
-				metadata = debugStorage.getMetadata(-1, metadataNames, searchValues,
-						MetadataExtractor.VALUE_TYPE_OBJECT);
-				if (metadata != null && metadata.size() > 0) {
-					Integer runResultStorageId = (Integer)((List)metadata.get(0)).get(0);
-					report = debugStorage.getReport(runResultStorageId);
-				}
-			} catch(StorageException e) {
-				log.error(e);
-				displayError(e.getMessage());
-			}
-		}
-		return report;
-	}
-
-	private boolean minimalOneSelected() {
+	private Set<String> getSelectedStorageIds() {
+		Set<String> selectedStorageIds = new HashSet<String>();
 		for (int i = numberOfComponentsToSkipForRowManipulation; i < getComponentCount(); i++) {
 			Component component = getComponent(i);
 			Row row = (Row)component;
 			CheckBox checkbox = (CheckBox)row.getComponent(0);
 			if (checkbox.isSelected()) {
-				return true;
+				selectedStorageIds.add(row.getId());
 			}
 		}
-		displayError("No reports selected");
-		return false;
+		return selectedStorageIds;
+	}
+
+	private boolean minimalOneSelected() {
+		if (getSelectedStorageIds().size() > 0) {
+			return true;
+		} else {
+			displayError("No reports selected");
+			return false;
+		}
+	}
+
+	private Report getReport(Row row) {
+		Integer storageId = new Integer(row.getId());
+		Report report = null;
+		try {
+			report = runStorage.getReport(storageId);
+		} catch (StorageException storageException) {
+			log.error(storageException);
+			displayError(storageException.getMessage());
+		}
+		return report;
+	}
+
+	private Report getRunResultReport(String runResultCorrelationId) {
+		Report report = null;
+		List<String> metadataNames = new ArrayList<String>();
+		metadataNames.add("storageId");
+		metadataNames.add("correlationId");
+		List<String> searchValues = new ArrayList<String>();
+		searchValues.add(null);
+		searchValues.add(runResultCorrelationId);
+		List<List<Object>> metadata = null;
+		try {
+			// TODO in Reader.getMetadata kun je ook i < numberOfRecords veranderen in result.size() < numberOfRecords zodat je hier 1 i.p.v. -1 mee kunt geven maar als je dan zoekt op iets dat niet te vinden is gaat hij alle records door. misschien debugStorage.getMetadata een extra paremter geven, numberOfRecordsToConsider en numberOfRecordsToReturn i.p.v. numberOfRecords? (let op: logica ook in mem storage aanpassen)
+			metadata = debugStorage.getMetadata(-1, metadataNames, searchValues,
+					MetadataExtractor.VALUE_TYPE_OBJECT);
+			if (metadata != null && metadata.size() > 0) {
+				Integer runResultStorageId = (Integer)((List<Object>)metadata.get(0)).get(0);
+				report = debugStorage.getReport(runResultStorageId);
+			}
+		} catch(StorageException e) {
+			log.error(e);
+			displayError(e.getMessage());
+		}
+		return report;
 	}
 
 	private String normalizePath(String path) {
+		if (!path.startsWith("/")) {
+			path = "/" + path;
+		}
 		if (!path.endsWith("/")) {
 			path = path + "/";
+		}
+		while (path.indexOf("//") != -1) {
+			path = path.substring(0, path.indexOf("//")) + path.substring(path.indexOf("//") +1);
 		}
 		return path;
 	}
 
 	private void movePath(Row row, String path) {
-		Integer storageId = new Integer(row.getId());
-		
-		Report report = null;
-		try {
-			report = runStorage.getReport(storageId);
-		} catch (StorageException e) {
-			log.error(e);
-			displayError(e.getMessage());
-		}
+		Report report = getReport(row);
 		if (report != null) {
 			report.setPath(path);
 			try {
@@ -686,15 +708,9 @@ public class RunComponent extends Column implements BeanParent, ActionListener {
 	}
 
 	private void copyPath(Row row, String newPath) {
-		Integer storageId = new Integer(row.getId());
-		Report report = null;
-		try {
-			report = runStorage.getReport(storageId);
-		} catch (StorageException e) {
-			log.error(e);
-			displayError(e.getMessage());
-		}
+		Report report = getReport(row);
 		if (report != null) {
+			Integer storageId = new Integer(row.getId());
 			log.debug("Copy report " + storageId + " from '" + report.getPath() + "' to '" + newPath + "'");
 			Report clone;
 			try {
@@ -723,8 +739,14 @@ public class RunComponent extends Column implements BeanParent, ActionListener {
 		}
 	}
 
-	public void hideErrorMessage() {
+	public void displayOkay(String message) {
+		okayLabel.setText(message);
+		okayLabel.setVisible(true);
+	}
+
+	public void hideMessages() {
 		errorLabel.setVisible(false);
+		okayLabel.setVisible(false);
 	}
 
 	public WindowPane getUploadOptionsWindow() {
@@ -733,14 +755,91 @@ public class RunComponent extends Column implements BeanParent, ActionListener {
 
 }
 
-class MetadataNameComparator implements Comparator {
+class MetadataComparator implements Comparator<List<Object>> {
 
-	public int compare(Object arg0, Object arg1) {
-		List list0 = (List)arg0;
-		List list1 = (List)arg1;
-		String string0 = (String)list0.get(2);
-		String string1 = (String)list1.get(2);
+	public int compare(List<Object> arg0, List<Object> arg1) {
+		String string0 = (String)arg0.get(1) + (String)arg0.get(2);
+		String string1 = (String)arg1.get(1) + (String)arg1.get(2);
 		return string0.compareTo(string1);
 	}
 	
+}
+
+class ReportRunner implements Runnable {
+	private TestTool testTool;
+	private Echo2Application echo2Application;
+	private List<Report> reportsTodo = new ArrayList<Report>();
+	private int maximum = 1;
+	private Map<Integer, RunResult> results = Collections.synchronizedMap(new HashMap<Integer, RunResult>());
+	private boolean running = false;
+
+	public void setTestTool(TestTool testTool) {
+		this.testTool = testTool;
+	}
+
+	public void setEcho2Application(Echo2Application echo2Application) {
+		this.echo2Application = echo2Application;
+	}
+
+	public synchronized String run(List<Report> reports, boolean reset, boolean wait) {
+		if (running) {
+			return "Already running!";
+		} else {
+			if (reset) {
+				reset();
+			}
+			running = true;
+			reportsTodo.addAll(reports);
+			maximum = reportsTodo.size();
+			if (wait) {
+				run();
+			} else {
+				Thread thread = new Thread(this);
+				thread.start();
+			}
+			return null;
+		}
+	}
+
+	public synchronized String reset() {
+		if (running) {
+			return "Still running!";
+		} else {
+			results.clear();
+			return null;
+		}
+	}
+
+	@Override
+	public void run() {
+		for (Report report : reportsTodo) {
+			run(report);
+		}
+		reportsTodo.clear();
+		running = false;
+	}
+
+	private void run(Report report) {
+		RunResult runResult = new RunResult();
+		runResult.correlationId = TestTool.getCorrelationId();
+		runResult.errorMessage = testTool.rerun(runResult.correlationId, report, echo2Application);
+		results.put(report.getStorageId(), runResult);
+	}
+
+	public int getMaximum() {
+		return maximum;
+	}
+
+	public int getProgressValue() {
+		return results.size();
+	}
+
+	public Map<Integer, RunResult> getResults() {
+		return results;
+	}
+}
+
+class RunResult {
+	String errorMessage;
+	String correlationId;
 }

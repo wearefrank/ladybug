@@ -31,9 +31,10 @@ import nextapp.echo2.app.layout.ColumnLayoutData;
 import nl.nn.testtool.echo2.Echo2Application;
 
 public class PopupWindow extends WindowPane implements ActionListener {
+	private static final long serialVersionUID = 1L;
 
 	public PopupWindow(String title, String message, int with, int height,
-			List actionLabels, List actionCommands, List actionListeners) {
+			List<String> actionLabels, List<String> actionCommands, List<ActionListener> actionListeners) {
 		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 		setModal(true);
 		setTitle(title);
@@ -47,9 +48,9 @@ public class PopupWindow extends WindowPane implements ActionListener {
 		label.setLayoutData(columnLayoutData);
 
 		Row buttonRow = Echo2Application.getNewRow();
-		Iterator actionLabelsIterator = actionLabels.iterator();
-		Iterator actionCommandsIterator = actionCommands.iterator();
-		Iterator actionListenersIterator = actionListeners.iterator();
+		Iterator<String> actionLabelsIterator = actionLabels.iterator();
+		Iterator<String> actionCommandsIterator = actionCommands.iterator();
+		Iterator<ActionListener> actionListenersIterator = actionListeners.iterator();
 		while (actionCommandsIterator.hasNext() && actionListenersIterator.hasNext()) {
 			String actionLabel = (String)actionLabelsIterator.next();
 			String actionCommand = (String)actionCommandsIterator.next();

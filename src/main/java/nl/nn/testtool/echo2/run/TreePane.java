@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import echopointng.tree.DefaultMutableTreeNode;
 import echopointng.tree.TreePath;
@@ -65,22 +66,30 @@ public class TreePane extends nl.nn.testtool.echo2.reports.TreePane implements B
 	@Override
 	public void init() {
 		super.init();
-		redisplayReports((String)null);
+		redisplayReports((String)null, null);
 	}
 
 	@Override
-	protected void selectNode(DefaultMutableTreeNode node,
-			DefaultMutableTreeNode nodeFromOtherTree, boolean compare) {
+	public void selectNode(DefaultMutableTreeNode node) {
+		selectNode(node, null);
+	}
+
+	@Override
+	protected void selectNode(DefaultMutableTreeNode node, DefaultMutableTreeNode nodeFromOtherTree, boolean compare) {
+		selectNode(node, null);
+	}
+
+	protected void selectNode(DefaultMutableTreeNode node, Set<String> selectedStorageIds) {
 		if (node != null) {
 			TreePath treePath = new TreePath(node.getPath());
 			tree.setSelectionPath(treePath);
-				String path = "";
-				for (int i = 1; i < treePath.getPath().length; i++) {
-					path = path + "/" + treePath.getPath()[i];
-				}
-				path = path + "/";
-				log.debug("Display: " + path);
-				infoPane.display(path);
+			String path = "";
+			for (int i = 1; i < treePath.getPath().length; i++) {
+				path = path + "/" + treePath.getPath()[i];
+			}
+			path = path + "/";
+			log.debug("Display: " + path);
+			infoPane.display(path, selectedStorageIds);
 		}
 	}
 
@@ -99,7 +108,7 @@ public class TreePane extends nl.nn.testtool.echo2.reports.TreePane implements B
 		throw new RuntimeException("Not implemented");
 	}
 
-	public void redisplayReports(String selectPath) {
+	public void redisplayReports(String selectPath, Set<String> selectedStorageIds) {
 		rootNode.removeAllChildren();
 		reportsWithDirtyPaths.clear();
 		List<String> metadataNames = new ArrayList<String>();
@@ -112,25 +121,24 @@ public class TreePane extends nl.nn.testtool.echo2.reports.TreePane implements B
 			// TODO iets doen
 			e.printStackTrace();
 		}
-		List<String> cleanedPaths = new ArrayList<String>();
+		List<String> pathsToAdd = new ArrayList<String>();
 		Iterator<List<Object>> metadataIterator = metadata.iterator();
 		while (metadataIterator.hasNext()) {
 			List<Object> metadataRecord = metadataIterator.next();
 			Integer storageId = (Integer)metadataRecord.get(0);
 			String path = (String)metadataRecord.get(1);
-			if (path != null && path.startsWith("/") && path.endsWith("/") && path.length() > 1) {
-				// TODO nog checken op dubbele slashes?
-				cleanedPaths.add(path);
-			} else {
+			if (path == null || !path.startsWith("/") || !path.endsWith("/") || path.indexOf("//") != -1) {
 				reportsWithDirtyPaths.add(storageId);
+			} else if (path.length() > 1) {
+				pathsToAdd.add(path);
 			}
 		}
-		Collections.sort(cleanedPaths);
-		DefaultMutableTreeNode selectNode = addPaths(cleanedPaths, rootNode, selectPath);
+		Collections.sort(pathsToAdd);
+		DefaultMutableTreeNode selectNode = addPaths(pathsToAdd, rootNode, selectPath);
 		if (selectNode == null) {
 			selectNode = rootNode;
 		}
-		selectNode(selectNode);
+		selectNode(selectNode, selectedStorageIds);
 		tree.collapseAll();
 		tree.expandAll();
 	}

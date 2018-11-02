@@ -15,6 +15,8 @@
 */
 package nl.nn.testtool.echo2.run;
 
+import java.util.Set;
+
 import nextapp.echo2.app.ContentPane;
 import nl.nn.testtool.echo2.BeanParent;
 
@@ -52,9 +54,9 @@ public class InfoPane extends ContentPane implements BeanParent {
 	}
 
 
-	public void display(String path) {
+	public void display(String path, Set<String> selectedStorageIds) {
 		// TODO direct op runComponent doen?
-		runComponent.display(path);
+		runComponent.display(path, selectedStorageIds);
 		// TODO toch altijd hetzelfde component dus niet telkens verwijderen en toevoegen?
 		removeAll();
 		add(runComponent, 0);

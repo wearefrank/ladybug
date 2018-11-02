@@ -41,6 +41,7 @@ public class SearchUtil {
 			+ " When the search value consists of the 2 characters \"\" it will match the empty string."
 			+ " When the search value consists of the 4 characters null it will match when the object searched for is null."
 			+ " Otherwise the search value is considered a case insensitive wildcard search using * as the wildcard character"
+			+ " (if the search value starts [ and ends with ] the search value is considered case sensitive)"
 			+ " (if the search value doesn't contain the wildcard character it is interpreted as having a wildcard at the beginning and the end)."
 			+ " In wildcard mode and regular expression mode the null object equals the empty string."
 			+ " The toString() method will be called on the object the search value is matched against.";
@@ -70,6 +71,11 @@ public class SearchUtil {
 					}
 				} else {
 					// Wildcard search
+					boolean caseInsensitive = true;
+					if (query.startsWith("[") && query.endsWith("]")) {
+						query = query.substring(1, query.length() -1);
+						caseInsensitive = false;
+					}
 					if (query.indexOf('*') == -1) {
 						query = "*" + query + "*";
 					}
@@ -79,8 +85,10 @@ public class SearchUtil {
 					} else {
 						valueAsString = value.toString();
 					}
-					valueAsString = valueAsString.toLowerCase();
-					query = query.toLowerCase();
+					if (caseInsensitive) {
+						query = query.toLowerCase();
+						valueAsString = valueAsString.toLowerCase();
+					}
 					boolean queryStartsWithWildcard = query.startsWith("*");
 					boolean queryEndsWithWildcard = query.endsWith("*");
 					int j = 0;

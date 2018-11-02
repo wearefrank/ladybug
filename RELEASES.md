@@ -6,6 +6,12 @@ Ladybug Test Tool release notes
 Upcoming
 --------
 
+- Show reports in child folders too in Test tab
+- Run reports in Test tab in background
+- Add (de)select all to Test tab
+- Make it possible to search case sensitive
+- Add ProgressBar to Test tab
+
 
 
 2.0.4
