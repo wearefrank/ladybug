@@ -639,9 +639,15 @@ public class RunComponent extends Column implements BeanParent, ActionListener {
 		Report report = null;
 		try {
 			report = runStorage.getReport(storageId);
+			if (report == null) {
+				displayError("Report with storage id '" + storageId + "' not found");
+			}
 		} catch (StorageException storageException) {
 			log.error(storageException);
 			displayError(storageException.getMessage());
+		}
+		if (report != null) {
+			report.setTestTool(testTool);
 		}
 		return report;
 	}
