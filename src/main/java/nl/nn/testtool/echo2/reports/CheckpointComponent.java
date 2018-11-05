@@ -56,8 +56,6 @@ public class CheckpointComponent extends MessageComponent implements ActionListe
 	private Label messageHasBeenStubbedLabel;
 	private SelectField downloadSelectField;
 	private Label estimatedMemoryUsageLabel;
-	private Label errorLabel;
-	private Label okayLabel;
 	private Report report;
 	private BeanParent beanParent;
 	private Echo2Application echo2Application;
@@ -80,7 +78,6 @@ public class CheckpointComponent extends MessageComponent implements ActionListe
 	public void initBean() {
 		super.initBeanPre();
 
-		setInsets(new Insets(10));
 		Row buttonRow = Echo2Application.getNewRow();
 		add(buttonRow);
 
@@ -161,12 +158,8 @@ public class CheckpointComponent extends MessageComponent implements ActionListe
 		optionsRow.add(new Label("Download:"));
 		optionsRow.add(downloadSelectField);
 
-		errorLabel = Echo2Application.createErrorLabelWithColumnLayoutData();
-		errorLabel.setVisible(false);
 		add(errorLabel);
 
-		okayLabel = Echo2Application.createOkayLabelWithColumnLayoutData();
-		okayLabel.setVisible(false);
 		add(okayLabel);
 
 		messageHasBeenStubbedLabel = Echo2Application.createInfoLabelWithColumnLayoutData();

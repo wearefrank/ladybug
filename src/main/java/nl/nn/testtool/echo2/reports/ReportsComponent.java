@@ -21,6 +21,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.TooManyListenersException;
 
+import org.apache.log4j.Logger;
+
+import echopointng.SelectFieldEx;
+import echopointng.table.DefaultSortableTableModel;
+import echopointng.table.SortableTable;
+import echopointng.tree.DefaultTreeCellRenderer;
 import nextapp.echo2.app.Border;
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.CheckBox;
@@ -48,6 +54,7 @@ import nextapp.echo2.app.table.DefaultTableModel;
 import nl.nn.testtool.MetadataExtractor;
 import nl.nn.testtool.Report;
 import nl.nn.testtool.TestTool;
+import nl.nn.testtool.echo2.BaseComponent;
 import nl.nn.testtool.echo2.BeanParent;
 import nl.nn.testtool.echo2.ComparePane;
 import nl.nn.testtool.echo2.Echo2Application;
@@ -60,22 +67,14 @@ import nl.nn.testtool.storage.StorageException;
 import nl.nn.testtool.transform.ReportXmlTransformer;
 import nl.nn.testtool.util.LogUtil;
 
-import org.apache.log4j.Logger;
-
-import echopointng.SelectFieldEx;
-import echopointng.table.DefaultSortableTableModel;
-import echopointng.table.SortableTable;
-import echopointng.tree.DefaultTreeCellRenderer;
-
 /**
  * @author m00f069
  *
  * To change the template for this generated type comment go to
  * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
  */
-public class ReportsComponent extends Column implements BeanParent, ActionListener {
+public class ReportsComponent extends BaseComponent implements BeanParent, ActionListener {
 	private static final long serialVersionUID = 1L;
-	Logger log = LogUtil.getLogger(this);
 	protected Logger secLog = LogUtil.getLogger("security");
 	private List<String> changeReportGeneratorEnabledRoles;
 	// TODO testTool overbodig maken nu we storage van view halen?
@@ -99,7 +98,6 @@ public class ReportsComponent extends Column implements BeanParent, ActionListen
 	private SortableTable metadataTable;
 	private Label numberOfReportsInProgressLabel;
 	private Label estimatedMemoryUsageReportsInProgressLabel;
-	private Label errorLabel;
 	private ReportXmlTransformer reportXmlTransformer = null;
 	private SelectField reportGeneratorEnabledSelectField;
 	private Label reportGeneratorEnabledErrorLabel;
@@ -162,7 +160,7 @@ public class ReportsComponent extends Column implements BeanParent, ActionListen
 	 * @see nl.nn.testtool.echo2.Echo2Application#initBean()
 	 */
 	public void initBean() {
-		setInsets(new Insets(10));
+		super.initBean();
 
 		// Construct
 
@@ -265,10 +263,6 @@ public class ReportsComponent extends Column implements BeanParent, ActionListen
 			optionsRow.setInsets(new Insets(0, 5, 0, 0));
 		}
 
-		errorLabel = Echo2Application.createErrorLabelWithColumnLayoutData();
-		errorLabel.setVisible(false);
-		add(errorLabel);
-
 		Row uploadSelectRow = new Row();
 
 		ReportUploadListener reportUploadListener = new ReportUploadListener();
@@ -280,8 +274,7 @@ public class ReportsComponent extends Column implements BeanParent, ActionListen
 		try {
 			uploadSelect.addUploadListener(reportUploadListener);
 		} catch (TooManyListenersException e) {
-			String message = "TooManyListenersException: " + e.getMessage();
-			displayError(message, e);
+			displayError(e);
 		}
 
 		Button buttonRefresh  = new Button("Refresh");
@@ -425,6 +418,8 @@ public class ReportsComponent extends Column implements BeanParent, ActionListen
 		openReportInProgressRow.add(integerFieldOpenReportInProgress);
 
 		// Wire
+
+		add(errorLabel);
 
 		buttonRow.add(buttonRefresh);
 		buttonRow.add(optionsButtonWindow);
@@ -730,22 +725,8 @@ public class ReportsComponent extends Column implements BeanParent, ActionListen
 	}
 
 	private void openReport(Storage storage, Integer storageId) {
-		openReport(storage, storageId, false);
-	}
-
-	private void openReport(Storage storage, Integer storageId,
-			boolean ignoreExcludeReportsWithEmptyReportXml) {
-		Report report = null;
-		try {
-			report = storage.getReport(storageId);
-			if (report == null) {
-				displayError("Report with storage id '" + storageId + "' not found");
-			}
-		} catch(StorageException storageException) {
-			displayError(storageException);
-		}
+		Report report = echo2Application.getReport(storage, storageId, this);
 		if (report != null) {
-			report.setTestTool(testTool);
 			openReport(report);
 		}
 	}
@@ -878,29 +859,6 @@ public class ReportsComponent extends Column implements BeanParent, ActionListen
 		nameLabel.setText("Name: " + storage.getName());
 		numberOfReportsInProgressLabel.setText("Number of reports in progress: " + testTool.getNumberOfReportsInProgress());
 		estimatedMemoryUsageReportsInProgressLabel.setText("Estimated memory usage reports in progress: " + testTool.getReportsInProgressEstimatedMemoryUsage() + " bytes");
-	}
-
-	protected void displayError(Throwable t) {
-		displayError(t.getMessage(), t);
-	}
-
-	protected void displayError(String message, Throwable t) {
-		log.error(message, t);
-		displayError(t.getMessage());
-	}
-
-	protected void displayError(String message) {
-		log.error(message);
-		if (errorLabel.isVisible()) {
-			errorLabel.setText(errorLabel.getText() + " [" + message + "]");
-		} else {
-			errorLabel.setText("[" + message + "]");
-			errorLabel.setVisible(true);
-		}
-	}
-
-	protected void hideErrorMessage() {
-		errorLabel.setVisible(false);
 	}
 
 	public WindowPane getUploadOptionsWindow() {

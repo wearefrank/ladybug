@@ -59,8 +59,6 @@ public class ReportComponent extends MessageComponent implements ActionListener 
 	private SelectField copyToSelectField;
 	private SelectField downloadSelectField;
 	private Label estimatedMemoryUsageLabel;
-	private Label errorLabel;
-	private Label okayLabel;
 	private TextField nameTextField;
 	private TextArea descriptionTextArea;
 	private TextField pathTextField;
@@ -91,7 +89,6 @@ public class ReportComponent extends MessageComponent implements ActionListener 
 	public void initBean() {
 		super.initBeanPre();
 
-		setInsets(new Insets(10));
 		Row buttonRow = Echo2Application.getNewRow();
 		add(buttonRow);
 
@@ -175,12 +172,8 @@ public class ReportComponent extends MessageComponent implements ActionListener 
 		optionsRow.add(new Label("Download:"));
 		optionsRow.add(downloadSelectField);
 
-		errorLabel = Echo2Application.createErrorLabelWithColumnLayoutData();
-		errorLabel.setVisible(false);
 		add(errorLabel);
 
-		okayLabel = Echo2Application.createOkayLabelWithColumnLayoutData();
-		okayLabel.setVisible(false);
 		add(okayLabel);
 
 		add(messageColumn);

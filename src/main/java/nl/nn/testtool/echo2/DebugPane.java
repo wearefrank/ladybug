@@ -20,7 +20,6 @@ import nextapp.echo2.app.SplitPane;
 import nextapp.echo2.extras.app.layout.TabPaneLayoutData;
 import nl.nn.testtool.TestTool;
 import nl.nn.testtool.echo2.reports.CheckpointComponent;
-import nl.nn.testtool.echo2.reports.ErrorMessageComponent;
 import nl.nn.testtool.echo2.reports.InfoPane;
 import nl.nn.testtool.echo2.reports.PathComponent;
 import nl.nn.testtool.echo2.reports.ReportComponent;
@@ -112,7 +111,6 @@ public class DebugPane extends Tab implements BeanParent {
 		reportComponent = new ReportComponent();
 		PathComponent pathComponent = new PathComponent();
 		checkpointComponent = new CheckpointComponent();
-		ErrorMessageComponent errorMessageComponent = new ErrorMessageComponent();
 
 		SplitPane splitPane1 = new SplitPane(SplitPane.ORIENTATION_VERTICAL);
 		splitPane1.setResizable(true);
@@ -133,7 +131,6 @@ public class DebugPane extends Tab implements BeanParent {
 		infoPane.setReportComponent(reportComponent);
 		infoPane.setPathComponent(pathComponent);
 		infoPane.setCheckpointComponent(checkpointComponent);
-		infoPane.setErrorMessageComponent(errorMessageComponent);
 
 		reportsComponent.setTreePane(treePane);
 		reportsComponent.setReportXmlTransformer(reportXmlTransformer);
@@ -161,7 +158,6 @@ public class DebugPane extends Tab implements BeanParent {
 		reportComponent.initBean();
 		pathComponent.initBean();
 		checkpointComponent.initBean();
-		errorMessageComponent.initBean();
 	}
 
 	/**

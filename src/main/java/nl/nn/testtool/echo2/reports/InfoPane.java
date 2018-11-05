@@ -35,7 +35,6 @@ public class InfoPane extends ContentPane implements BeanParent {
 	private ReportComponent reportComponent;
 	private PathComponent pathComponent;
 	private CheckpointComponent checkpointComponent;
-	private ErrorMessageComponent errorMessageComponent;
 	private boolean showLineNumbers = false;
 	private boolean edit = false;
 	private BeanParent beanParent;
@@ -54,10 +53,6 @@ public class InfoPane extends ContentPane implements BeanParent {
 
 	public void setCheckpointComponent(CheckpointComponent checkpointComponent) {
 		this.checkpointComponent = checkpointComponent;
-	}
-
-	public void setErrorMessageComponent(ErrorMessageComponent errorMessageComponent) {
-		this.errorMessageComponent = errorMessageComponent;
 	}
 
 	/**
@@ -126,11 +121,6 @@ public class InfoPane extends ContentPane implements BeanParent {
 		add(pathComponent, 0);
 	}
 
-	public void displayErrorMessage(String errorMessage) {
-		errorMessageComponent.displayErrorMessage(errorMessage);
-		removeAll();
-		add(errorMessageComponent, 0);
-	}
 
 	public void displayNothing() {
 		removeAll();

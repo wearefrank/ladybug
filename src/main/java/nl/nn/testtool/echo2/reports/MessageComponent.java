@@ -28,6 +28,7 @@ import nextapp.echo2.app.Label;
 import nextapp.echo2.app.Row;
 import nextapp.echo2.app.TextArea;
 import nextapp.echo2.app.layout.RowLayoutData;
+import nl.nn.testtool.echo2.BaseComponent;
 import nl.nn.testtool.echo2.Echo2Application;
 
 /**
@@ -36,7 +37,8 @@ import nl.nn.testtool.echo2.Echo2Application;
  * To change the template for this generated type comment go to
  * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
  */
-public class MessageComponent extends Column {
+public class MessageComponent extends BaseComponent {
+	private static final long serialVersionUID = 1L;
 	private static final char REPLACE_NON_XML_CHAR = 0x00BF; // Inverted question mark.
 	private String message;
 	private String messageCompare;
@@ -52,6 +54,7 @@ public class MessageComponent extends Column {
 	 * @see nl.nn.testtool.echo2.Echo2Application#initBean()
 	 */
 	protected void initBeanPre() {
+		super.initBean();
 		messageColumn = new Column();
 		messageColumn.setInsets(new Insets(0, 5, 0, 0));
 		editTextArea = new TextArea();

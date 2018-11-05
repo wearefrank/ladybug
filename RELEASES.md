@@ -6,6 +6,7 @@ Ladybug Test Tool release notes
 Upcoming
 --------
 
+- Refactor code for errorLabel, okayLabel and getReport
 - Fix NPE on Open report (from Test tab), Edit, Save 
 - Show reports in child folders too in Test tab
 - Run reports in Test tab in background

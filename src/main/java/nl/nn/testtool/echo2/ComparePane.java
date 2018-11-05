@@ -24,7 +24,6 @@ import nextapp.echo2.extras.app.layout.TabPaneLayoutData;
 import nl.nn.testtool.Report;
 import nl.nn.testtool.TestTool;
 import nl.nn.testtool.echo2.reports.CheckpointComponent;
-import nl.nn.testtool.echo2.reports.ErrorMessageComponent;
 import nl.nn.testtool.echo2.reports.InfoPane;
 import nl.nn.testtool.echo2.reports.PathComponent;
 import nl.nn.testtool.echo2.reports.ReportComponent;
@@ -141,11 +140,9 @@ public class ComparePane extends Tab implements BeanParent {
 		reportComponent1 = new ReportComponent();
 		PathComponent pathComponent1 = new PathComponent();
 		checkpointComponent1 = new CheckpointComponent();
-		ErrorMessageComponent errorMessageComponent1 = new ErrorMessageComponent();
 		reportComponent2 = new ReportComponent();
 		PathComponent pathComponent2 = new PathComponent();
 		checkpointComponent2 = new CheckpointComponent();
-		ErrorMessageComponent errorMessageComponent2 = new ErrorMessageComponent();
 
 		SplitPane splitPane1 = new SplitPane(SplitPane.ORIENTATION_HORIZONTAL);
 		splitPane1.setResizable(true);
@@ -179,13 +176,11 @@ public class ComparePane extends Tab implements BeanParent {
 		infoPane1.setReportComponent(reportComponent1);
 		infoPane1.setPathComponent(pathComponent1);
 		infoPane1.setCheckpointComponent(checkpointComponent1);
-		infoPane1.setErrorMessageComponent(errorMessageComponent1);
 
 		infoPane2.setReportsComponent(reportsComponent2);
 		infoPane2.setReportComponent(reportComponent2);
 		infoPane2.setPathComponent(pathComponent2);
 		infoPane2.setCheckpointComponent(checkpointComponent2);
-		infoPane2.setErrorMessageComponent(errorMessageComponent2);
 
 		reportsComponent1.setTreePane(treePane1);
 		reportsComponent1.setReportXmlTransformer(reportXmlTransformer);
@@ -227,12 +222,10 @@ public class ComparePane extends Tab implements BeanParent {
 		reportComponent1.initBean();
 		pathComponent1.initBean();
 		checkpointComponent1.initBean();
-		errorMessageComponent1.initBean();
 
 		reportComponent2.initBean();
 		pathComponent2.initBean();
 		checkpointComponent2.initBean();
-		errorMessageComponent2.initBean();
 
 		treePane1.initBean();
 		treePane2.initBean();

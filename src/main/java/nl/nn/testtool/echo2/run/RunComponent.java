@@ -26,8 +26,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TooManyListenersException;
 
-import org.apache.log4j.Logger;
-
 import echopointng.ProgressBar;
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.CheckBox;
@@ -47,6 +45,7 @@ import nextapp.echo2.app.filetransfer.UploadSelect;
 import nl.nn.testtool.MetadataExtractor;
 import nl.nn.testtool.Report;
 import nl.nn.testtool.TestTool;
+import nl.nn.testtool.echo2.BaseComponent;
 import nl.nn.testtool.echo2.BeanParent;
 import nl.nn.testtool.echo2.Echo2Application;
 import nl.nn.testtool.echo2.RunPane;
@@ -57,7 +56,6 @@ import nl.nn.testtool.storage.CrudStorage;
 import nl.nn.testtool.storage.Storage;
 import nl.nn.testtool.storage.StorageException;
 import nl.nn.testtool.transform.ReportXmlTransformer;
-import nl.nn.testtool.util.LogUtil;
 
 /**
  * @author m00f069
@@ -65,16 +63,13 @@ import nl.nn.testtool.util.LogUtil;
  * To change the template for this generated type comment go to
  * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
  */
-public class RunComponent extends Column implements BeanParent, ActionListener {
+public class RunComponent extends BaseComponent implements BeanParent, ActionListener {
 	private static final long serialVersionUID = 1L;
-	private Logger log = LogUtil.getLogger(this);
 	private TestTool testTool;
 	private Storage debugStorage; // TODO juiste naam? overal consequent doen?
 	private CrudStorage runStorage; // TODO juiste naam? overal consequent doen?
 	private Echo2Application echo2Application;
 	private TreePane treePane;
-	private Label errorLabel;
-	private Label okayLabel;
 	private ProgressBar progressBar;
 	private ReportRunner reportRunner;
 	private TextField pathTextField;
@@ -109,10 +104,8 @@ public class RunComponent extends Column implements BeanParent, ActionListener {
 	 * @see nl.nn.testtool.echo2.Echo2Application#initBean()
 	 */
 	public void initBean() {
-//		super.initBeanPre();
-//		
-		setInsets(new Insets(10));
-		
+		super.initBean();
+
 		// Construct
 
 		// TODO code voor aanmaken upload window en ander zaken gaan delen met ReportsComponent
@@ -209,9 +202,7 @@ public class RunComponent extends Column implements BeanParent, ActionListener {
 		try {
 			uploadSelect.addUploadListener(reportUploadListener);
 		} catch (TooManyListenersException e) {
-			String message = "TooManyListenersException: " + e.getMessage();
-			log.error(message, e);
-			displayError(message);
+			displayError(e);
 		}
 
 		Row pathRow = Echo2Application.getNewRow();
@@ -222,12 +213,6 @@ public class RunComponent extends Column implements BeanParent, ActionListener {
 		pathTextField = new TextField();
 		pathTextField.setWidth(new Extent(400));
 		pathRow.add(pathTextField);
-
-		errorLabel = Echo2Application.createErrorLabelWithColumnLayoutData();
-		errorLabel.setVisible(false);
-
-		okayLabel = Echo2Application.createOkayLabelWithColumnLayoutData();
-		okayLabel.setVisible(false);
 
 		// Wire
 
@@ -277,13 +262,12 @@ public class RunComponent extends Column implements BeanParent, ActionListener {
 		List<String> searchValues = new ArrayList<String>();
 		searchValues.add(null);
 		searchValues.add("[" + path + "*]");
-			searchValues.add(null);
-			searchValues.add(null);
-			try {
+		searchValues.add(null);
+		searchValues.add(null);
+		try {
 			metadata = runStorage.getMetadata(-1, metadataNames, searchValues, MetadataExtractor.VALUE_TYPE_STRING);
 		} catch (StorageException e) {
-			log.error(e);
-			displayError(e.getMessage());
+			displayError(e);
 		}
 		if (path.equals("/")) {
 			Iterator<Integer> iterator = treePane.getReportsWithDirtyPaths().iterator();
@@ -298,11 +282,9 @@ public class RunComponent extends Column implements BeanParent, ActionListener {
 					metadataRecord.add(report.getDescription());
 					metadata.add(metadataRecord);
 				} catch (NumberFormatException e) {
-					log.error(e);
-					displayError(e.getMessage());
+					displayError(e);
 				} catch (StorageException e) {
-					log.error(e);
-					displayError(e.getMessage());
+					displayError(e);
 				}
 			}
 		}
@@ -391,8 +373,7 @@ public class RunComponent extends Column implements BeanParent, ActionListener {
 				try {
 					report = runStorage.getReport(Integer.parseInt(storageId));
 				} catch (StorageException e) {
-					log.error(e);
-					displayError(e.getMessage());
+					displayError(e);
 				}
 				if (report != null) {
 					String stubInfo = "";
@@ -636,20 +617,7 @@ public class RunComponent extends Column implements BeanParent, ActionListener {
 
 	private Report getReport(Row row) {
 		Integer storageId = new Integer(row.getId());
-		Report report = null;
-		try {
-			report = runStorage.getReport(storageId);
-			if (report == null) {
-				displayError("Report with storage id '" + storageId + "' not found");
-			}
-		} catch (StorageException storageException) {
-			log.error(storageException);
-			displayError(storageException.getMessage());
-		}
-		if (report != null) {
-			report.setTestTool(testTool);
-		}
-		return report;
+		return echo2Application.getReport(runStorage, storageId, this);
 	}
 
 	private Report getRunResultReport(String runResultCorrelationId) {
@@ -670,8 +638,7 @@ public class RunComponent extends Column implements BeanParent, ActionListener {
 				report = debugStorage.getReport(runResultStorageId);
 			}
 		} catch(StorageException e) {
-			log.error(e);
-			displayError(e.getMessage());
+			displayError(e);
 		}
 		return report;
 	}
@@ -696,8 +663,7 @@ public class RunComponent extends Column implements BeanParent, ActionListener {
 			try {
 				runStorage.update(report);
 			} catch (StorageException e) {
-				log.error(e);
-				displayError(e.getMessage());
+				displayError(e);
 			}
 		}
 	}
@@ -725,34 +691,12 @@ public class RunComponent extends Column implements BeanParent, ActionListener {
 				try {
 					runStorage.store(clone);
 				} catch (StorageException e) {
-					log.error(e);
-					displayError(e.getMessage());
+					displayError(e);
 				}
 			} catch (CloneNotSupportedException e) {
-				log.error(e);
-				displayError(e.getMessage());
+				displayError(e);
 			}
 		}
-	}
-
-	public void displayError(String message) {
-		log.error(message);
-		if (errorLabel.isVisible()) {
-			errorLabel.setText(errorLabel.getText() + " [" + message + "]");
-		} else {
-			errorLabel.setText("[" + message + "]");
-			errorLabel.setVisible(true);
-		}
-	}
-
-	public void displayOkay(String message) {
-		okayLabel.setText(message);
-		okayLabel.setVisible(true);
-	}
-
-	public void hideMessages() {
-		errorLabel.setVisible(false);
-		okayLabel.setVisible(false);
 	}
 
 	public WindowPane getUploadOptionsWindow() {

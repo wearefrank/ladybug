@@ -47,7 +47,6 @@ import nl.nn.testtool.Report;
 import nl.nn.testtool.SecurityContext;
 import nl.nn.testtool.TestTool;
 import nl.nn.testtool.echo2.reports.CheckpointComponent;
-import nl.nn.testtool.echo2.reports.ErrorMessageComponent;
 import nl.nn.testtool.echo2.reports.InfoPane;
 import nl.nn.testtool.echo2.reports.PathComponent;
 import nl.nn.testtool.echo2.reports.ReportComponent;
@@ -55,6 +54,7 @@ import nl.nn.testtool.echo2.reports.ReportsComponent;
 import nl.nn.testtool.echo2.reports.ReportsTreeCellRenderer;
 import nl.nn.testtool.echo2.reports.TreePane;
 import nl.nn.testtool.storage.CrudStorage;
+import nl.nn.testtool.storage.Storage;
 import nl.nn.testtool.storage.StorageException;
 import nl.nn.testtool.transform.ReportXmlTransformer;
 import nl.nn.testtool.util.LogUtil;
@@ -243,6 +243,22 @@ public class Echo2Application extends ApplicationInstance implements Application
 		return window;
 	}
 
+	public Report getReport(Storage storage, Integer storageId, BaseComponent baseComponent) {
+		Report report = null;
+		try {
+			report = storage.getReport(storageId);
+			if (report == null) {
+				baseComponent.displayError("Report with storage id '" + storageId + "' not found");
+			}
+		} catch(StorageException storageException) {
+			baseComponent.displayError(storageException);
+		}
+		if (report != null) {
+			report.setTestTool(testTool);
+		}
+		return report;
+	}
+
 	public void openReport(Report report) {
 //		tabPane.setActiveTabIndex(0);
 //		reportsComponent.openReport(report, false);
@@ -271,11 +287,9 @@ public class Echo2Application extends ApplicationInstance implements Application
 			TreePane treePane = new TreePane();
 	
 			InfoPane infoPane = new InfoPane();
-			
+
 			PathComponent pathComponent = new PathComponent();
-	
-			ErrorMessageComponent errorMessageComponent = new ErrorMessageComponent();
-	
+
 			// Wire
 	
 			// TODO op reportPane zou reportsComponent gezet moeten worden en op reportsComponent de setTree en setInfo?
@@ -309,14 +323,13 @@ public class Echo2Application extends ApplicationInstance implements Application
 			checkpointComponent.setInfoPane(infoPane);
 			checkpointComponent.initBean();
 			checkpointComponent.initBean(this);
-			
+
 			infoPane.setReportComponent(reportComponent);
 			infoPane.setPathComponent(pathComponent);
 			infoPane.setCheckpointComponent(checkpointComponent);
-			infoPane.setErrorMessageComponent(errorMessageComponent);
-	
-			
+
 			// Init
+
 			reportPane.initBean();
 			treePane.initBean();
 			infoPane.initBean();
