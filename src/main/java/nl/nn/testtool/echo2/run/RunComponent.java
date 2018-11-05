@@ -324,6 +324,8 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 		}
 		pathTextField.setText(path);
 		lastDisplayedPath = path;
+		// Update progress bar also when node in tree is selected
+		updateProgressBar();
 	}
 
 	private void displayReport(List<Object> metadataRecord, boolean selected) {
@@ -588,16 +590,20 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 				}
 			}
 		}
+		updateProgressBar();
 		if (errorMessage != null) {
 			displayError(errorMessage);
 		}
 	}
 
-	private void refresh() {
-		treePane.redisplayReports(lastDisplayedPath, getSelectedStorageIds());
+	private void updateProgressBar() {
 		progressBar.setMaximum(reportRunner.getMaximum());
 		progressBar.setValue(reportRunner.getProgressValue());
 		progressBar.setToolTipText(reportRunner.getProgressValue() + " / " + reportRunner.getMaximum());
+	}
+
+	private void refresh() {
+		treePane.redisplayReports(lastDisplayedPath, getSelectedStorageIds());
 	}
 
 	private Set<String> getSelectedStorageIds() {
