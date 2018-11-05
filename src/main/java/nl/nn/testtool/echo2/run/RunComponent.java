@@ -290,26 +290,33 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 		}
 		boolean directChildReportsPresent = false;
 		Collections.sort(metadata, new MetadataComparator());
-		Iterator<List<Object>> metadataIterator = metadata.iterator();
+		Iterator<List<Object>> metadataIterator;
+		// First direct child's (path.equals(metadataPath))
+		metadataIterator = metadata.iterator();
 		while (metadataIterator.hasNext()) {
 			List<Object> metadataRecord = (List<Object>)metadataIterator.next();
 			String metadataPath = (String)metadataRecord.get(1);
 			if (path.equals(metadataPath)) {
-				boolean selected = true;
+				boolean selected;
 				if (selectedStorageIds != null) {
 					selected = selectedStorageIds.contains(metadataRecord.get(0));
+				} else {
+					selected = true;
 				}
 				displayReport(metadataRecord, selected);
 				directChildReportsPresent = true;
 			}
 		}
+		// Then remaining child's (!path.equals(metadataPath))
 		metadataIterator = metadata.iterator();
 		while (metadataIterator.hasNext()) {
 			List<Object> metadataRecord = (List<Object>)metadataIterator.next();
 			String metadataPath = (String)metadataRecord.get(1);
 			if (!path.equals(metadataPath)) {
-				boolean selected = true;
+				boolean selected;
 				if (selectedStorageIds != null) {
+					selected = selectedStorageIds.contains(metadataRecord.get(0));
+				} else {
 					selected = !directChildReportsPresent;
 				}
 				displayReport(metadataRecord, selected);
