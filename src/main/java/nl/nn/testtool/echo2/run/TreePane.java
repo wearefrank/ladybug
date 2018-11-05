@@ -154,11 +154,15 @@ public class TreePane extends nl.nn.testtool.echo2.reports.TreePane implements B
 			rootNode.add(subNode);
 			String subPathOfNodeToReturn = null;
 			if (pathOfNodeToReturn != null) {
-				if (path.equals(pathOfNodeToReturn)) {
-					returnNode = subNode;
-				}
-				if (pathOfNodeToReturn.startsWith(path)) {
-					subPathOfNodeToReturn = pathOfNodeToReturn.substring(firstElement.length() + 1);
+				if (pathOfNodeToReturn.equals("/")) {
+					returnNode = rootNode;
+				} else {
+					if (path.startsWith(pathOfNodeToReturn)) {
+						returnNode = subNode;
+					}
+					if (pathOfNodeToReturn.startsWith(path)) {
+						subPathOfNodeToReturn = pathOfNodeToReturn.substring(firstElement.length() + 1);
+					}
 				}
 			}
 			// For all paths with the same first element call this method
