@@ -6,6 +6,8 @@ Ladybug Test Tool release notes
 Upcoming
 --------
 
+- Copy report name from original report on Replace
+
 
 
 2.0.5

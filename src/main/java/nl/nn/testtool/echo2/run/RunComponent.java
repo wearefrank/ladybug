@@ -572,6 +572,7 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 				if (e.getActionCommand().startsWith("Replace")) {
 					Integer storageId = new Integer(row.getId());
 					Report runResultReport = getRunResultReport(reportRunner.getResults().get(storageId).correlationId);
+					runResultReport.setName(report.getName());
 					runResultReport.setDescription(report.getDescription());
 					runResultReport.setPath(report.getPath());
 					errorMessage = Echo2Application.store(runStorage, runResultReport);
