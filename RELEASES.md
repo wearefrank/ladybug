@@ -6,6 +6,7 @@ Ladybug Test Tool release notes
 Upcoming
 --------
 
+- Refresh after upload
 - Limit the use of special chars in normalized path
 - Normalize path on save in report component
 - Don't show null in path label

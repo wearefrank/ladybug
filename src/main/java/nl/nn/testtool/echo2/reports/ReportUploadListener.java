@@ -111,6 +111,7 @@ public class ReportUploadListener implements UploadListener {
 		}
 		if (runComponent != null) {
 			runComponent.getUploadOptionsWindow().setVisible(false);
+			runComponent.refresh();
 		}
 	}
 

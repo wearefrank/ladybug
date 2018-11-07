@@ -598,7 +598,7 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 		progressBar.setToolTipText(reportRunner.getProgressValue() + " / " + reportRunner.getMaximum());
 	}
 
-	private void refresh() {
+	public void refresh() {
 		treePane.redisplayReports(lastDisplayedPath, getSelectedStorageIds());
 	}
 
