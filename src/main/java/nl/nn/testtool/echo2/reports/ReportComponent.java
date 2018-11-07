@@ -140,6 +140,7 @@ public class ReportComponent extends MessageComponent {
 		add(okayLabel);
 
 		add(messageColumn);
+		add(messageTextArea);
 
 		buttonRow = Echo2Application.getNewRow();
 		add(buttonRow);
@@ -281,6 +282,7 @@ public class ReportComponent extends MessageComponent {
 				displayAndLogError(Download.download(report, false, true));
 			}
 		} else if (e.getActionCommand().equals("ToggleEdit") || e.getActionCommand().equals("ToggleEditOk")) {
+			
 			updateNameLabelAndNameTextField();
 			updateDescriptionLabelAndDescriptionColumnAndTextArea();
 			updatePathLabelAndPathTextField();
@@ -322,6 +324,24 @@ public class ReportComponent extends MessageComponent {
 		}
 	}
 
+	protected void toggleShowLineNumbers() {
+		super.toggleShowLineNumbers();
+		if (!infoPane.edit()) {
+			if (infoPane.showLineNumbers()) {
+				addLineNumbers(descriptionColumn);
+			} else {
+				removeLineNumbers(descriptionColumn);
+			}
+		}
+	}
+
+	protected void toggleEdit() {
+		super.toggleEdit();
+		// Report xml should not be editable
+		messageColumn.setVisible(true);
+		messageTextArea.setVisible(false);
+	}
+
 	private void updateNameLabelAndNameTextField() {
 		if (infoPane.edit()) {
 			nameLabel.setText("Name: ");
@@ -342,6 +362,9 @@ public class ReportComponent extends MessageComponent {
 			descriptionTextArea.setVisible(false);
 		}
 		updateMessageColumn(report.getDescription(), descriptionColumn);
+		if (infoPane.showLineNumbers()) {
+			addLineNumbers(descriptionColumn);
+		}
 		descriptionTextArea.setText(report.getDescription());
 	}
 
@@ -362,16 +385,13 @@ public class ReportComponent extends MessageComponent {
 			return true;
 		}
 		if (infoPane.edit()) {
-			if ((report.getName() != null && !report.getName().equals(nameTextField.getText()))
-					|| (report.getName() == null && nameTextField.getText() != null)) {
+			if (hasChanges(report.getName(), nameTextField.getText())) {
 				return true;
 			}
-			if ((report.getDescription() != null && !report.getDescription().equals(descriptionTextArea.getText()))
-					|| (report.getDescription() == null && descriptionTextArea.getText() != null)) {
+			if (hasChanges(report.getDescription(), descriptionTextArea.getText())) {
 				return true;
 			}
-			if ((report.getPath() != null && !report.getPath().equals(pathTextField.getText()))
-					|| (report.getPath() == null && pathTextField.getText() != null)) {
+			if (hasChanges(report.getPath(), pathTextField.getText())) {
 				return true;
 			}
 		}

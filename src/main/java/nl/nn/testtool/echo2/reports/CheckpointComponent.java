@@ -123,6 +123,7 @@ public class CheckpointComponent extends MessageComponent {
 		add(messageHasBeenStubbedLabel);
 
 		add(messageColumn);
+		add(messageTextArea);
 
 		nameLabel = Echo2Application.createInfoLabelWithColumnLayoutData();
 		add(nameLabel);

@@ -21,6 +21,8 @@ import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.util.StringUtils;
+
 import echopointng.tree.DefaultMutableTreeNode;
 import nextapp.echo2.app.Alignment;
 import nextapp.echo2.app.Button;
@@ -57,18 +59,18 @@ public class MessageComponent extends BaseComponent implements ActionListener {
 	protected Echo2Application echo2Application;
 	protected TreePane treePane;
 	protected DefaultMutableTreeNode node;
+	protected InfoPane infoPane;
+	protected Report report;
+	protected Row buttonRow;
+	protected Button editButton;
+	protected Button saveButton;
+	protected SelectField downloadSelectField;
 	private String message;
 	private String messageCompare;
 	private boolean compare;
 	protected Column messageColumn;
 	protected Button lineNumbersButton;
-	protected Button editButton;
-	protected Button saveButton;
-	protected InfoPane infoPane;
-	private TextArea editTextArea;
-	protected Report report;
-	protected SelectField downloadSelectField;
-	protected Row buttonRow;
+	protected TextArea messageTextArea;
 
 	public void setTestTool(TestTool testTool) {
 		this.testTool = testTool;
@@ -112,9 +114,10 @@ public class MessageComponent extends BaseComponent implements ActionListener {
 
 		messageColumn = new Column();
 		messageColumn.setInsets(new Insets(0, 5, 0, 0));
-		editTextArea = new TextArea();
-		editTextArea.setWidth(new Extent(100, Extent.PERCENT));
-		editTextArea.setHeight(new Extent(300));
+		messageTextArea = new TextArea();
+		messageTextArea.setWidth(new Extent(100, Extent.PERCENT));
+		messageTextArea.setHeight(new Extent(300));
+		messageTextArea.setVisible(false);
 	}
 
 	/**
@@ -164,10 +167,10 @@ public class MessageComponent extends BaseComponent implements ActionListener {
 		if (!infoPane.edit()) {
 			if (infoPane.showLineNumbers()) {
 				infoPane.showLineNumbers(false);
-				removeLineNumbers();
+				removeLineNumbers(messageColumn);
 			} else {
 				infoPane.showLineNumbers(true);
-				addLineNumbers();
+				addLineNumbers(messageColumn);
 			}
 			updateLineNumbersButton();
 		}
@@ -183,7 +186,7 @@ public class MessageComponent extends BaseComponent implements ActionListener {
 	}
 	
 	protected String save() {
-		message = editTextArea.getText();
+		message = messageTextArea.getText();
 		return message;
 	}
 	
@@ -191,16 +194,18 @@ public class MessageComponent extends BaseComponent implements ActionListener {
 		updateLineNumbersButton();
 		updateEditButton();
 		updateSaveButton();
-		messageColumn.removeAll();
 		if (infoPane.edit()) {
-			editTextArea.setText(replaceNonValidXmlCharacters(message, null, false));
-			messageColumn.add(editTextArea);
+			messageColumn.setVisible(false);
+			messageTextArea.setVisible(true);
 		} else {
-			updateMessageColumn(message, messageColumn, compare, messageCompare);
-			if (infoPane.showLineNumbers()) {
-				addLineNumbers();
-			}
+			messageColumn.setVisible(true);
+			messageTextArea.setVisible(false);
 		}
+		updateMessageColumn(message, messageColumn, compare, messageCompare);
+		if (infoPane.showLineNumbers()) {
+			addLineNumbers(messageColumn);
+		}
+		messageTextArea.setText(replaceNonValidXmlCharacters(message, null, false));
 	}
 
 	public static void updateMessageColumn(String message, Column messageColumn) {
@@ -332,7 +337,7 @@ public class MessageComponent extends BaseComponent implements ActionListener {
 		}
 	}
 	
-	private void addLineNumbers() {
+	public static void addLineNumbers(Column messageColumn) {
 		int maxNumberLength = ("" + messageColumn.getComponentCount()).length();
 		for (int i = 0; i < messageColumn.getComponentCount(); i++) {
 			Row row = (Row)messageColumn.getComponent(i);
@@ -344,7 +349,7 @@ public class MessageComponent extends BaseComponent implements ActionListener {
 		}
 	}
 
-	private void removeLineNumbers() {
+	public static void removeLineNumbers(Column messageColumn) {
 		for (int i = 0; i < messageColumn.getComponentCount(); i++) {
 			Row row = (Row)messageColumn.getComponent(i);
 			row.remove(0);
@@ -457,12 +462,25 @@ public class MessageComponent extends BaseComponent implements ActionListener {
 
 	protected boolean hasChanges() {
 		if (infoPane.edit()) {
-			if ((message != null && !message.equals(editTextArea.getText()))
-					|| (message == null && editTextArea.getText() != null)) {
+			if (hasChanges(message, messageTextArea.getText())) {
 				return true;
 			}
 		}
 		return false;
+	}
+
+	protected boolean hasChanges(String string1, String string2) {
+		if (StringUtils.isEmpty(string1) && !StringUtils.isEmpty(string2)) {
+			return true;
+		}
+		if (!StringUtils.isEmpty(string1) && StringUtils.isEmpty(string2)) {
+			return true;
+		}
+		if (StringUtils.isEmpty(string1) && StringUtils.isEmpty(string2)) {
+			return false;
+		} else {
+			return !string1.equals(string2);
+		}
 	}
 
 }

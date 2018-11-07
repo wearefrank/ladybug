@@ -6,6 +6,8 @@ Ladybug Test Tool release notes
 Upcoming
 --------
 
+- Make report xml read-only in Edit mode
+- Show line numbers on report description too
 - Don't use TextArea for description in Read-only mode
 - Don't log all error messages to log file
 - Fix ClassCastException in Test tab for reports with description
