@@ -6,6 +6,7 @@ Ladybug Test Tool release notes
 Upcoming
 --------
 
+- Don't show null in path label
 - Make report xml read-only in Edit mode
 - Show line numbers on report description too
 - Don't use TextArea for description in Read-only mode

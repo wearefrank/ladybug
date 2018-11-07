@@ -374,7 +374,11 @@ public class ReportComponent extends MessageComponent {
 			pathTextField.setText(report.getPath());
 			pathTextField.setVisible(true);
 		} else {
-			pathLabel.setText("Path: " + report.getPath());
+			String text = "Path: ";
+			if (report.getPath() != null) {
+				text = text + report.getPath();
+			}
+			pathLabel.setText(text);
 			pathTextField.setVisible(false);
 		}
 	}
