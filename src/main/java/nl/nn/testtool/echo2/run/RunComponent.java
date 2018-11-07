@@ -655,7 +655,7 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 		return report;
 	}
 
-	private String normalizePath(String path) {
+	public static String normalizePath(String path) {
 		if (!path.startsWith("/")) {
 			path = "/" + path;
 		}

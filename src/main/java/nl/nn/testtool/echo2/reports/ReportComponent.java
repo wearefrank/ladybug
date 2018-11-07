@@ -15,6 +15,8 @@
 */
 package nl.nn.testtool.echo2.reports;
 
+import org.springframework.util.StringUtils;
+
 import echopointng.tree.DefaultMutableTreeNode;
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Column;
@@ -32,6 +34,7 @@ import nl.nn.testtool.Report;
 import nl.nn.testtool.TestTool;
 import nl.nn.testtool.echo2.BeanParent;
 import nl.nn.testtool.echo2.Echo2Application;
+import nl.nn.testtool.echo2.run.RunComponent;
 import nl.nn.testtool.echo2.util.Download;
 import nl.nn.testtool.storage.CrudStorage;
 
@@ -290,7 +293,12 @@ public class ReportComponent extends MessageComponent {
 			save();
 			report.setName(nameTextField.getText());
 			report.setDescription(descriptionTextArea.getText());
-			report.setPath(pathTextField.getText());
+			String path = pathTextField.getText();
+			if (!StringUtils.isEmpty(path)) {
+				path = RunComponent.normalizePath(path);
+				pathTextField.setText(path);
+			}
+			report.setPath(path);
 			if (report.getStorage() instanceof CrudStorage) {
 				Echo2Application.update((CrudStorage)report.getStorage(), report);
 			}
