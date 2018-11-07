@@ -194,14 +194,14 @@ public class CheckpointComponent extends MessageComponent {
 			checkpoint.setStub(Checkpoint.STUB_YES);
 		} else if (e.getActionCommand().equals("Download")) {
 			if ("Both".equals(downloadSelectField.getSelectedItem())) {
-				displayError(Download.download(report, checkpoint));
+				displayAndLogError(Download.download(report, checkpoint));
 			} else if ("Message".equals(downloadSelectField.getSelectedItem())) {
-				displayError(Download.download(checkpoint));
+				displayAndLogError(Download.download(checkpoint));
 			}
 		} else if (e.getActionCommand().equals("Save")) {
 			checkpoint.setMessage(save());
 			if (report.getStorage() instanceof CrudStorage) {
-				displayError(Echo2Application.update((CrudStorage)report.getStorage(), report));
+				displayAndLogError(Echo2Application.update((CrudStorage)report.getStorage(), report));
 			}
 		}
 	}

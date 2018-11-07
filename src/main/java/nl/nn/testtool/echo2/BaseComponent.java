@@ -62,23 +62,31 @@ public class BaseComponent extends Column {
 
 	public void displayError(String message) {
 		if (message != null) {
-			displayError(message, message, null);
+			handleError(message, false, null, null);
 		}
 	}
 
-	public void displayError(Throwable t) {
-		displayError(null, t.getClass().getName() + ": " + t.getMessage(), t);
+	public void displayAndLogError(String message) {
+		if (message != null) {
+			handleError(message, true, message, null);
+		}
 	}
 
-	private void displayError(String logMessage, String displayMessage, Throwable t) {
-		if (t == null) {
-			log.error(logMessage);
-		} else {
-			if (logMessage == null) {
-				// don't use log.error(t) as it will print the name of the Throwable but no stack trace
-				logMessage = t.getMessage();
+	public void displayAndLogError(Throwable t) {
+		handleError(t.getClass().getName() + ": " + t.getMessage(), true, null, t);
+	}
+
+	private void handleError(String displayMessage, boolean useLog, String logMessage, Throwable t) {
+		if (useLog) {
+			if (t == null) {
+				log.error(logMessage);
+			} else {
+				if (logMessage == null) {
+					// don't use log.error(t) as it will print the name of the Throwable but no stack trace
+					logMessage = t.getMessage();
+				}
+				log.error(logMessage, t);
 			}
-			log.error(logMessage, t);
 		}
 		displayMessage(errorLabel, displayMessage);
 	}

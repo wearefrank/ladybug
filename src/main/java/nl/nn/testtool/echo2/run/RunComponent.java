@@ -202,7 +202,7 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 		try {
 			uploadSelect.addUploadListener(reportUploadListener);
 		} catch (TooManyListenersException e) {
-			displayError(e);
+			displayAndLogError(e);
 		}
 
 		Row pathRow = Echo2Application.getNewRow();
@@ -267,7 +267,7 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 		try {
 			metadata = runStorage.getMetadata(-1, metadataNames, searchValues, MetadataExtractor.VALUE_TYPE_STRING);
 		} catch (StorageException e) {
-			displayError(e);
+			displayAndLogError(e);
 		}
 		if (path.equals("/")) {
 			Iterator<Integer> iterator = treePane.getReportsWithDirtyPaths().iterator();
@@ -282,9 +282,9 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 					metadataRecord.add(report.getDescription());
 					metadata.add(metadataRecord);
 				} catch (NumberFormatException e) {
-					displayError(e);
+					displayAndLogError(e);
 				} catch (StorageException e) {
-					displayError(e);
+					displayAndLogError(e);
 				}
 			}
 		}
@@ -382,7 +382,7 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 				try {
 					report = runStorage.getReport(Integer.parseInt(storageId));
 				} catch (StorageException e) {
-					displayError(e);
+					displayAndLogError(e);
 				}
 				if (report != null) {
 					String stubInfo = "";
@@ -466,7 +466,7 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 				}
 			}
 		} else if (e.getActionCommand().equals("DownloadAll")) {
-			displayError(Download.download(runStorage));
+			displayAndLogError(Download.download(runStorage));
 		} else if (e.getActionCommand().equals("OpenUploadWindow")) {
 			uploadWindow.setVisible(true);
 		} else if (e.getActionCommand().equals("DeleteSelected")) {
@@ -495,7 +495,7 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 						if (errorMessage == null) {
 							remove(row);
 						} else {
-							displayError(errorMessage);
+							displayAndLogError(errorMessage);
 						}
 					}
 				}
@@ -586,7 +586,7 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 						remove(row);
 					}
 				}
-				displayError(errorMessage);
+				displayAndLogError(errorMessage);
 			}
 		}
 		updateProgressBar();
@@ -657,7 +657,7 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 				report = debugStorage.getReport(runResultStorageId);
 			}
 		} catch(StorageException e) {
-			displayError(e);
+			displayAndLogError(e);
 		}
 		return report;
 	}
@@ -682,7 +682,7 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 			try {
 				runStorage.update(report);
 			} catch (StorageException e) {
-				displayError(e);
+				displayAndLogError(e);
 			}
 		}
 	}
@@ -708,10 +708,10 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 				try {
 					runStorage.store(clone);
 				} catch (StorageException e) {
-					displayError(e);
+					displayAndLogError(e);
 				}
 			} catch (CloneNotSupportedException e) {
-				displayError(e);
+				displayAndLogError(e);
 			}
 		}
 	}

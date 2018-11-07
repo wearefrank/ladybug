@@ -398,7 +398,7 @@ public class MessageComponent extends BaseComponent implements ActionListener {
 			if ("Both".equals(downloadSelectField.getSelectedItem())) {
 				// Override in ReportComponent and CheckpointComponent
 			} else if ("Report".equals(downloadSelectField.getSelectedItem())) {
-				displayError(Download.download(report));
+				displayAndLogError(Download.download(report));
 			} else if ("Message".equals(downloadSelectField.getSelectedItem())) {
 				// Override in ReportComponent and CheckpointComponent
 			} else {
@@ -415,7 +415,7 @@ public class MessageComponent extends BaseComponent implements ActionListener {
 			if (errorMessage == null) {
 				displayOkay("Rerun succeeded");
 			} else {
-				displayError(errorMessage);
+				displayAndLogError(errorMessage);
 			}
 		}
 	}

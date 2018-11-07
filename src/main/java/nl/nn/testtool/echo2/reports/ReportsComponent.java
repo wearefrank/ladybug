@@ -274,7 +274,7 @@ public class ReportsComponent extends BaseComponent implements BeanParent, Actio
 		try {
 			uploadSelect.addUploadListener(reportUploadListener);
 		} catch (TooManyListenersException e) {
-			displayError(e);
+			displayAndLogError(e);
 		}
 
 		Button buttonRefresh  = new Button("Refresh");
@@ -534,7 +534,6 @@ public class ReportsComponent extends BaseComponent implements BeanParent, Actio
 			treePane.closeAllReports();
 		} else if (e.getActionCommand().equals("DownloadAll")) {
 			try {
-				String errorMessage = null;
 				Storage storage = treePane.getStorage();
 				List storageIds = storage.getStorageIds();
 				if (storageIds.size() > 0) {
@@ -543,22 +542,19 @@ public class ReportsComponent extends BaseComponent implements BeanParent, Actio
 						filename = filename  + " and " + (storageIds.size() - 1) + " more";
 					}
 					if ("Both".equals(downloadSelectField.getSelectedItem())) {
-						errorMessage = Download.download(storage, filename, true, true);
+						displayAndLogError(Download.download(storage, filename, true, true));
 					} else if ("Report".equals(downloadSelectField.getSelectedItem())) {
-						errorMessage = Download.download(storage, filename);
+						displayAndLogError(Download.download(storage, filename));
 					} else if ("Message".equals(downloadSelectField.getSelectedItem())) {
-						errorMessage = Download.download(storage, filename, false, true);
+						displayAndLogError(Download.download(storage, filename, false, true));
 					} else {
-						errorMessage = "No download type selected";
+						displayError("No download type selected");
 					}
 				} else {
-					errorMessage = "No open reports to download";
-				}
-				if (errorMessage != null) {
-					displayError(errorMessage);
+					displayError("No open reports to download");
 				}
 			} catch(StorageException storageException) {
-				displayError(storageException);
+				displayAndLogError(storageException);
 			}
 		} else if (e.getActionCommand().equals("Refresh")) {
 			displayReports(false);
@@ -624,7 +620,7 @@ public class ReportsComponent extends BaseComponent implements BeanParent, Actio
 			try {
 				storageIds = storage.getStorageIds();
 			} catch(StorageException storageException) {
-				displayError(storageException);
+				displayAndLogError(storageException);
 			}
 			if (storageIds != null) {
 				int max = integerFieldOpenLatest.getValue();
@@ -669,7 +665,7 @@ public class ReportsComponent extends BaseComponent implements BeanParent, Actio
 			try {
 				filterValues = storage.getFilterValues(metadataName);
 			} catch(StorageException storageException) {
-				displayError(storageException);
+				displayAndLogError(storageException);
 			}
 			if (filterValues != null) {
 				filterValuesLabel.setText(metadataName);
@@ -749,7 +745,7 @@ public class ReportsComponent extends BaseComponent implements BeanParent, Actio
 		try {
 			numberOfMetadataRecords.setText("/ " + storage.getSize());
 		} catch(StorageException storageException) {
-			displayError(storageException);
+			displayAndLogError(storageException);
 		}
 		// Update filter table and metadata table layout when metadata names have changed
 		List metadataNames = getSelectedView().getMetadataNames();
@@ -833,7 +829,7 @@ public class ReportsComponent extends BaseComponent implements BeanParent, Actio
 			metadata = storage.getMetadata(numberOfRecords, metadataNames,
 					searchValues, MetadataExtractor.VALUE_TYPE_GUI);
 		} catch(StorageException storageException) {
-			displayError(storageException);
+			displayAndLogError(storageException);
 		}
 		// Display new metadata
 		if (metadata != null) {

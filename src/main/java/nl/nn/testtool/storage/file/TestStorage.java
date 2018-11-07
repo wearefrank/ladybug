@@ -257,7 +257,7 @@ public class TestStorage implements nl.nn.testtool.storage.CrudStorage {
 //			metadata = storage.getMetadata(numberOfRecords, metadataNames,
 //					searchValues, MetadataExtractor.VALUE_TYPE_GUI);
 //		} catch(StorageException storageException) {
-//			displayError(storageException.getMessage());
+//			displayAndLogError(storageException);
 //		}
 
 	}

@@ -6,6 +6,7 @@ Ladybug Test Tool release notes
 Upcoming
 --------
 
+- Don't log all error messages to log file
 - Fix ClassCastException in Test tab for reports with description
 - Prevent losing typed data in edit mode on close or select node in tree
 - Copy report name from original report on Replace

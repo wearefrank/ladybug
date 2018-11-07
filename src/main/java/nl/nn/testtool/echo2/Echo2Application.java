@@ -248,10 +248,10 @@ public class Echo2Application extends ApplicationInstance implements Application
 		try {
 			report = storage.getReport(storageId);
 			if (report == null) {
-				baseComponent.displayError("Report with storage id '" + storageId + "' not found");
+				baseComponent.displayAndLogError("Report with storage id '" + storageId + "' not found");
 			}
 		} catch(StorageException storageException) {
-			baseComponent.displayError(storageException);
+			baseComponent.displayAndLogError(storageException);
 		}
 		if (report != null) {
 			report.setTestTool(testTool);

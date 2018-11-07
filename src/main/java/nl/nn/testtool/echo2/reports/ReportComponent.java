@@ -274,9 +274,9 @@ public class ReportComponent extends MessageComponent {
 			report.setStubStrategy((String)stubStrategySelectField.getSelectedItem());
 		} else if (e.getActionCommand().equals("Download")) {
 			if ("Both".equals(downloadSelectField.getSelectedItem())) {
-				displayError(Download.download(report, true, true));
+				displayAndLogError(Download.download(report, true, true));
 			} else if ("Message".equals(downloadSelectField.getSelectedItem())) {
-				displayError(Download.download(report, false, true));
+				displayAndLogError(Download.download(report, false, true));
 			}
 		} else if (e.getActionCommand().equals("ToggleEdit") || e.getActionCommand().equals("ToggleEditOk")) {
 			updateNameLabelAndNameTextField();
@@ -298,7 +298,7 @@ public class ReportComponent extends MessageComponent {
 //			report.setPath("/test/");
 //			report.setPath("/test/bla/");
 //			report.setPath("/test/bla");
-			displayError(Echo2Application.store(runStorage, report));
+			displayAndLogError(Echo2Application.store(runStorage, report));
 //		} else if (e.getActionCommand().equals("Update")) {
 //			echo2Application.update(report);
 		} else if (e.getActionCommand().equals("Delete")) {
@@ -313,7 +313,7 @@ public class ReportComponent extends MessageComponent {
 		} else if (e.getActionCommand().equals("DeleteYes")
 				|| e.getActionCommand().equals("DeleteNo")) {
 			if (e.getActionCommand().equals("DeleteYes")) {
-				displayError(Echo2Application.delete((CrudStorage)report.getStorage(), report));
+				displayAndLogError(Echo2Application.delete((CrudStorage)report.getStorage(), report));
 			}
 			deleteWarningWindow.setVisible(false);
 			deleteIdLabel.setText("?");

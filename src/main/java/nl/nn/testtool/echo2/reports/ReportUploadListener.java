@@ -99,10 +99,10 @@ public class ReportUploadListener implements UploadListener {
 		if (errorMessage != null) {
 			// TODO generieker maken zodat het ook voor RunComponent werkt
 			if (reportsComponent != null) {
-				reportsComponent.displayError(errorMessage);
+				reportsComponent.displayAndLogError(errorMessage);
 			}
 			if (runComponent != null) {
-				runComponent.displayError(errorMessage);
+				runComponent.displayAndLogError(errorMessage);
 			}
 		}
 		// TODO generieker maken zodat het ook voor RunComponent werkt
