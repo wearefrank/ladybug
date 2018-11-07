@@ -274,6 +274,13 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 			while (iterator.hasNext()) {
 				Integer storageId = (Integer)iterator.next();
 				try {
+					for (int i = 0; i < metadata.size(); i++) {
+						List<Object> metadataRecord = metadata.get(i);
+						if (metadataRecord.get(0).equals(storageId.toString())) {
+							metadata.remove(i);
+							i--;
+						}
+					}
 					List<Object> metadataRecord = new ArrayList<Object>();
 					metadataRecord.add(storageId.toString());
 					metadataRecord.add("/");
@@ -656,6 +663,17 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 	}
 
 	public static String normalizePath(String path) {
+		for (int i = 0; i < path.length(); i++) {
+			// Be on the safe side for now
+			if (!Character.isLetterOrDigit(path.charAt(i)) && "/ -_.()".indexOf(path.charAt(i)) == -1) {
+				if (path.length() > i + 1) {
+					path = path.substring(0, i) + path.substring(i + 1);
+					i--;
+				} else {
+					path = path.substring(0, i);
+				}
+			}
+		}
 		if (!path.startsWith("/")) {
 			path = "/" + path;
 		}

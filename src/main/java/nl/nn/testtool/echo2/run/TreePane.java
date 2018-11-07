@@ -127,7 +127,7 @@ public class TreePane extends nl.nn.testtool.echo2.reports.TreePane implements B
 			List<Object> metadataRecord = metadataIterator.next();
 			Integer storageId = (Integer)metadataRecord.get(0);
 			String path = (String)metadataRecord.get(1);
-			if (path == null || !path.startsWith("/") || !path.endsWith("/") || path.indexOf("//") != -1) {
+			if (path == null || !path.equals(RunComponent.normalizePath(path))) {
 				reportsWithDirtyPaths.add(storageId);
 			} else if (path.length() > 1) {
 				pathsToAdd.add(path);

@@ -303,16 +303,7 @@ public class ReportComponent extends MessageComponent {
 				Echo2Application.update((CrudStorage)report.getStorage(), report);
 			}
 		} else if (e.getActionCommand().equals("Copy")) {
-			//TODO voorkomen dat * en evt. andere chars er niet in komen?
-			//misschien ook dwingen dat het met een / moet beginnen?
-			//als je via reports tab ook deze repository kunt bekijken, kun je
-			//altijd nog een reparatie uitvoeren
-//			report.setPath("/test/");
-//			report.setPath("/test/bla/");
-//			report.setPath("/test/bla");
 			displayAndLogError(Echo2Application.store(runStorage, report));
-//		} else if (e.getActionCommand().equals("Update")) {
-//			echo2Application.update(report);
 		} else if (e.getActionCommand().equals("Delete")) {
 			if (report.getStorage() instanceof CrudStorage) {
 				deleteIdLabel.setText(
