@@ -264,7 +264,9 @@ public class TestStorage implements nl.nn.testtool.storage.CrudStorage {
 
 	public Report getReport(Integer storageId) throws StorageException {
 		Report report = reader[active].getReport(storageId);
-		report.setStorage(this);
+		if (report != null) {
+			report.setStorage(this);
+		}
 		return report;
 	}
 

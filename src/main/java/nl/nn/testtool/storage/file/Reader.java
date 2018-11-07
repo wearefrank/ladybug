@@ -223,7 +223,7 @@ public class Reader {
 		}
 		return report;
 	}
-//TODO deze gaan gebruiken in TestStorage voor beter performance? na opsplitsen van methode kwam ik erachter dat performance geen issue was bij testers
+
 	protected byte[] getReportBytes(Integer storageId) throws StorageException {
 		byte[] reportBytes = null;
 		ReportLocation reportLocation = null;
@@ -243,23 +243,25 @@ public class Reader {
 				}
 			}
 		}
-		FileInputStream fileInputStream = null;
-		try {
-			File file;
-			if (foundInIndex == 0) {
-				file = reportsFile;
-			} else {
-				file = new File(reportsFilename + "." + foundInIndex);
-			}
-			fileInputStream = new FileInputStream(file);
-			fileInputStream.skip(reportLocation.offset);
-			reportBytes = new byte[reportLocation.size.intValue()];
-			fileInputStream.read(reportBytes, 0, reportBytes.length);
-		} catch(IOException e) {
-			Storage.logAndThrow(log, e, "IOException reading report from file");
-		} finally {
-			if (fileInputStream != null) {
-				Storage.closeInputStream(fileInputStream, "closing file input stream after reading report from file", log);
+		if (foundInIndex != -1 ) {
+			FileInputStream fileInputStream = null;
+			try {
+				File file;
+				if (foundInIndex == 0) {
+					file = reportsFile;
+				} else {
+					file = new File(reportsFilename + "." + foundInIndex);
+				}
+				fileInputStream = new FileInputStream(file);
+				fileInputStream.skip(reportLocation.offset);
+				reportBytes = new byte[reportLocation.size.intValue()];
+				fileInputStream.read(reportBytes, 0, reportBytes.length);
+			} catch(IOException e) {
+				Storage.logAndThrow(log, e, "IOException reading report from file");
+			} finally {
+				if (fileInputStream != null) {
+					Storage.closeInputStream(fileInputStream, "closing file input stream after reading report from file", log);
+				}
 			}
 		}
 		return reportBytes;	
@@ -268,29 +270,31 @@ public class Reader {
 	protected Report getReport(Integer storageId) throws StorageException {
 		Report report = null;
 		byte[] reportBytes = getReportBytes(storageId);
-		ByteArrayInputStream byteArrayInputStream = null;
-		GZIPInputStream gzipInputStream = null;
-		ObjectInputStream objectInputStream = null;
-		try {
-			byteArrayInputStream = new ByteArrayInputStream(reportBytes);
-			gzipInputStream = new GZIPInputStream(byteArrayInputStream);
-			objectInputStream = new ObjectInputStream(gzipInputStream);
-			report = (Report)objectInputStream.readObject();
-			report.setStorageId(storageId);
-			report.setStorageSize(new Long(reportBytes.length));
-		} catch(IOException e) {
-			Storage.logAndThrow(log, e, "IOException reading report from bytes");
-		} catch(ClassNotFoundException e) {
-			Storage.logAndThrow(log, e, "ClassNotFoundException reading report from file");
-		} finally {
-			if (objectInputStream != null) {
-				Storage.closeInputStream(objectInputStream, "closing object input stream after reading report from file", log);
-			}
-			if (gzipInputStream != null) {
-				Storage.closeInputStream(gzipInputStream, "closing gzip input stream after reading report from file", log);
-			}
-			if (byteArrayInputStream != null) {
-				Storage.closeInputStream(byteArrayInputStream, "closing byte array input stream after reading report from file", log);
+		if (reportBytes != null) {
+			ByteArrayInputStream byteArrayInputStream = null;
+			GZIPInputStream gzipInputStream = null;
+			ObjectInputStream objectInputStream = null;
+			try {
+				byteArrayInputStream = new ByteArrayInputStream(reportBytes);
+				gzipInputStream = new GZIPInputStream(byteArrayInputStream);
+				objectInputStream = new ObjectInputStream(gzipInputStream);
+				report = (Report)objectInputStream.readObject();
+				report.setStorageId(storageId);
+				report.setStorageSize(new Long(reportBytes.length));
+			} catch(IOException e) {
+				Storage.logAndThrow(log, e, "IOException reading report from bytes");
+			} catch(ClassNotFoundException e) {
+				Storage.logAndThrow(log, e, "ClassNotFoundException reading report from file");
+			} finally {
+				if (objectInputStream != null) {
+					Storage.closeInputStream(objectInputStream, "closing object input stream after reading report from file", log);
+				}
+				if (gzipInputStream != null) {
+					Storage.closeInputStream(gzipInputStream, "closing gzip input stream after reading report from file", log);
+				}
+				if (byteArrayInputStream != null) {
+					Storage.closeInputStream(byteArrayInputStream, "closing byte array input stream after reading report from file", log);
+				}
 			}
 		}
 		return report;	

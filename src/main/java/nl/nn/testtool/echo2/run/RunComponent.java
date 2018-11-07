@@ -337,13 +337,13 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 
 	private void displayReport(List<Object> metadataRecord, boolean selected) {
 		String storageId = (String)metadataRecord.get(0);
-		String path2 = (String)metadataRecord.get(1);
+		String path = (String)metadataRecord.get(1);
 		String name = (String)metadataRecord.get(2);
-		String description= (String)metadataRecord.get(3);
-		displayReport(storageId, path2 + name, description, selected);
+		String description = (String)metadataRecord.get(3);
+		displayReport(storageId, path, name, description, selected);
 	}
 
-	private void displayReport(String storageId, String name, String description, boolean selected) {
+	private void displayReport(String storageId, String path, String name, String description, boolean selected) {
 		Row row = Echo2Application.getNewRow();
 		row.setId(storageId);
 		row.setInsets(new Insets(0, 5, 0, 0));
@@ -377,7 +377,7 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 		Echo2Application.decorateButton(button);
 		row.add(button);
 
-		Label label = new Label(name);
+		Label label = new Label(path + name);
 		RunResult runResult = reportRunner.getResults().get(Integer.parseInt(storageId));
 		if (runResult != null) {
 			Report runResultReport = getRunResultReport(runResult.correlationId);
@@ -396,7 +396,7 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 					if (!"Never".equals(report.getStubStrategy())) {
 						stubInfo = " (" + report.getStubStrategy() + ")";
 					}
-					label.setText(name + " (" + (report.getEndTime() - report.getStartTime()) + " >> "
+					label.setText(path + name + " (" + (report.getEndTime() - report.getStartTime()) + " >> "
 							+ (runResultReport.getEndTime() - runResultReport.getStartTime()) + " ms)" + stubInfo);
 					report.setReportXmlTransformer(reportXmlTransformer);
 					runResultReport.setReportXmlTransformer(reportXmlTransformer);
@@ -494,6 +494,7 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 						String errorMessage = Echo2Application.delete(runStorage, report);
 						if (errorMessage == null) {
 							remove(row);
+							treePane.getReportsWithDirtyPaths().remove(report.getStorageId());
 						} else {
 							displayAndLogError(errorMessage);
 						}
@@ -566,9 +567,10 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
  			Report report = getReport(row);
 			if (report != null) {
 				String errorMessage = null;
+				Report runResultReport = null;
 				if (e.getActionCommand().startsWith("Replace")) {
 					Integer storageId = new Integer(row.getId());
-					Report runResultReport = getRunResultReport(reportRunner.getResults().get(storageId).correlationId);
+					runResultReport = getRunResultReport(reportRunner.getResults().get(storageId).correlationId);
 					runResultReport.setName(report.getName());
 					runResultReport.setDescription(report.getDescription());
 					runResultReport.setPath(report.getPath());
@@ -577,13 +579,23 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 					row.setId(runResultReport.getStorageId().toString());
 					row.getComponent(4).setVisible(false);
 					row.remove(5);
-					row.add(new Label(runResultReport.getName()));
+					String path = runResultReport.getPath();
+					String name = runResultReport.getName();
+					if (path == null || !path.equals(normalizePath(path))) {
+						path = "/";
+					}
+					row.add(new Label(path + name));
 				}
 				if (errorMessage == null) {
 					errorMessage = Echo2Application.delete(runStorage, report);
-					if (errorMessage == null
-							&& e.getActionCommand().startsWith("Delete")) {
-						remove(row);
+					if (errorMessage == null) {
+						if (treePane.getReportsWithDirtyPaths().remove(report.getStorageId())
+								&& e.getActionCommand().startsWith("Replace")) {
+							treePane.getReportsWithDirtyPaths().add(runResultReport.getStorageId());
+						}
+						if (e.getActionCommand().equals("Delete")) {
+							remove(row);
+						}
 					}
 				}
 				displayAndLogError(errorMessage);
