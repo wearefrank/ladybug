@@ -434,9 +434,7 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 			displayError(reportRunner.reset());
 			refresh();
 		} else if (e.getActionCommand().equals("SelectAll") || e.getActionCommand().equals("DeselectAll")) {
-			for (int i = numberOfComponentsToSkipForRowManipulation; i < getComponentCount(); i++) {
-				Component component = getComponent(i);
-				Row row = (Row)component;
+			for (Row row : getReportRows()) {
 				CheckBox checkbox = (CheckBox)row.getComponent(0);
 				if (e.getActionCommand().equals("SelectAll")) {
 					checkbox.setSelected(true);
@@ -447,9 +445,7 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 		} else if (e.getActionCommand().equals("RunSelected")) {
 			if (minimalOneSelected()) {
 				List<Row> rows = new ArrayList<Row>();
-				for (int i = numberOfComponentsToSkipForRowManipulation; i < getComponentCount(); i++) {
-					Component component = getComponent(i);
-					Row row = (Row)component;
+				for (Row row : getReportRows()) {
 					CheckBox checkbox = (CheckBox)row.getComponent(0);
 					if (checkbox.isSelected()) {
 						rows.add(row);
@@ -490,9 +486,7 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 				echo2Application.getContentPane().add(popupWindow);
 			}
 		} else if (e.getActionCommand().equals("DeleteOk")) {
-			for (int i = numberOfComponentsToSkipForRowManipulation; i < getComponentCount(); i++) {
-				Component component = getComponent(i);
-				Row row = (Row)component;
+			for (Row row : getReportRows()) {
 				CheckBox checkbox = (CheckBox)row.getComponent(0);
 				if (checkbox.isSelected()) {
 					Report report = getReport(row);
@@ -500,7 +494,6 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 						String errorMessage = Echo2Application.delete(runStorage, report);
 						if (errorMessage == null) {
 							remove(row);
-							i--;
 						} else {
 							displayError(errorMessage);
 						}
@@ -510,9 +503,7 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 		} else if (e.getActionCommand().equals("MoveSelected")) {
 			if (minimalOneSelected()) {
 				String newPath = normalizePath(pathTextField.getText());
-				for (int i = numberOfComponentsToSkipForRowManipulation; i < getComponentCount(); i++) {
-					Component component = getComponent(i);
-					Row row = (Row)component;
+				for (Row row : getReportRows()) {
 					CheckBox checkbox = (CheckBox)row.getComponent(0);
 					if (checkbox.isSelected()) {
 						movePath(row, newPath);
@@ -611,11 +602,21 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 		treePane.redisplayReports(lastDisplayedPath, getSelectedStorageIds());
 	}
 
-	private Set<String> getSelectedStorageIds() {
-		Set<String> selectedStorageIds = new HashSet<String>();
+	private List<Row> getReportRows() {
+		List<Row> result = new ArrayList<Row>();
 		for (int i = numberOfComponentsToSkipForRowManipulation; i < getComponentCount(); i++) {
 			Component component = getComponent(i);
-			Row row = (Row)component;
+			// Ignore TextArea's for Reports with a description
+			if (component instanceof Row) {
+				result.add((Row)component);
+			}
+		}
+		return result;
+	}
+
+	private Set<String> getSelectedStorageIds() {
+		Set<String> selectedStorageIds = new HashSet<String>();
+		for (Row row : getReportRows()) {
 			CheckBox checkbox = (CheckBox)row.getComponent(0);
 			if (checkbox.isSelected()) {
 				selectedStorageIds.add(row.getId());
@@ -687,9 +688,7 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 	}
 
 	private void copyPath(String newPath) {
-		for (int i = numberOfComponentsToSkipForRowManipulation; i < getComponentCount(); i++) {
-			Component component = getComponent(i);
-			Row row = (Row)component;
+		for (Row row : getReportRows()) {
 			CheckBox checkbox = (CheckBox)row.getComponent(0);
 			if (checkbox.isSelected()) {
 				copyPath(row, newPath);
