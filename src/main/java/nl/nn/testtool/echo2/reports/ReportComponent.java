@@ -15,6 +15,7 @@
 */
 package nl.nn.testtool.echo2.reports;
 
+import echopointng.tree.DefaultMutableTreeNode;
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Extent;
@@ -27,15 +28,12 @@ import nextapp.echo2.app.TextArea;
 import nextapp.echo2.app.TextField;
 import nextapp.echo2.app.WindowPane;
 import nextapp.echo2.app.event.ActionEvent;
-import nextapp.echo2.app.event.ActionListener;
 import nl.nn.testtool.Report;
 import nl.nn.testtool.TestTool;
 import nl.nn.testtool.echo2.BeanParent;
 import nl.nn.testtool.echo2.Echo2Application;
-import nl.nn.testtool.echo2.ReportPane;
 import nl.nn.testtool.echo2.util.Download;
 import nl.nn.testtool.storage.CrudStorage;
-import echopointng.tree.DefaultMutableTreeNode;
 
 /**
  * @author m00f069
@@ -43,13 +41,9 @@ import echopointng.tree.DefaultMutableTreeNode;
  * To change the template for this generated type comment go to
  * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
  */
-public class ReportComponent extends MessageComponent implements ActionListener {
+public class ReportComponent extends MessageComponent {
 	private static final long serialVersionUID = 1L;
-	private TestTool testTool;
 	private CrudStorage runStorage;
-	private TreePane treePane;
-	private DefaultMutableTreeNode node;
-	private Report report;
 	private Label nameLabel;
 	private Label descriptionLabel;
 	private Label pathLabel;
@@ -57,13 +51,10 @@ public class ReportComponent extends MessageComponent implements ActionListener 
 	private Label storageLabel;
 	private SelectField stubStrategySelectField;
 	private SelectField copyToSelectField;
-	private SelectField downloadSelectField;
 	private Label estimatedMemoryUsageLabel;
 	private TextField nameTextField;
 	private TextArea descriptionTextArea;
 	private TextField pathTextField;
-	private BeanParent beanParent;
-	private Echo2Application echo2Application;
 	private WindowPane deleteWarningWindow;
 	private Label deleteIdLabel;
 
@@ -88,33 +79,6 @@ public class ReportComponent extends MessageComponent implements ActionListener 
 	 */
 	public void initBean() {
 		super.initBeanPre();
-
-		Row buttonRow = Echo2Application.getNewRow();
-		add(buttonRow);
-
-		Button rerunButton = new Button("Rerun");
-		rerunButton.setActionCommand("Rerun");
-		rerunButton.addActionListener(this);
-		Echo2Application.decorateButton(rerunButton);
-		buttonRow.add(rerunButton);
-
-		editButton = new Button();
-		editButton.setActionCommand("Edit");
-		editButton.addActionListener(this);
-		Echo2Application.decorateButton(editButton);
-		buttonRow.add(editButton);
-
-		lineNumbersButton = new Button();
-		lineNumbersButton.setActionCommand("LineNumbers");
-		lineNumbersButton.addActionListener(this);
-		Echo2Application.decorateButton(lineNumbersButton);
-		buttonRow.add(lineNumbersButton);
-
-		saveButton = new Button("Save");
-		saveButton.setActionCommand("Save");
-		saveButton.addActionListener(this);
-		Echo2Application.decorateButton(saveButton);
-		buttonRow.add(saveButton);
 
 		Button copyButton = new Button("Copy");
 		copyButton.setActionCommand("Copy");
@@ -167,8 +131,6 @@ public class ReportComponent extends MessageComponent implements ActionListener 
 		optionsRow.add(new Label("Copy to:"));
 		optionsRow.add(copyToSelectField);
 
-		downloadSelectField = new SelectField(new String[]{"Both", "Report", "Message"});
-		downloadSelectField.setSelectedIndex(0);
 		optionsRow.add(new Label("Download:"));
 		optionsRow.add(downloadSelectField);
 
@@ -273,14 +235,10 @@ public class ReportComponent extends MessageComponent implements ActionListener 
 	/**
 	 * @see nl.nn.testtool.echo2.Echo2Application#initBean()
 	 */
+	@Override
 	public void initBean(BeanParent beanParent) {
-		this.beanParent = beanParent;
-		this.echo2Application = Echo2Application.getEcho2Application(beanParent, this);
+		super.initBean(beanParent);
 		echo2Application.getContentPane().add(deleteWarningWindow);
-	}
-
-	public BeanParent getBeanParent() {
-		return beanParent;
 	}
 
 	public void displayReport(DefaultMutableTreeNode node, String path, Report report, Report reportCompare, boolean compare) {
@@ -303,42 +261,24 @@ public class ReportComponent extends MessageComponent implements ActionListener 
 		storageIdLabel.setText("StorageId: " + report.getStorageId());
 		storageLabel.setText("Storage: " + report.getStorage().getName());
 		estimatedMemoryUsageLabel.setText("EstimatedMemoryUsage: " + report.getEstimatedMemoryUsage() + " bytes");
-		errorLabel.setVisible(false);
-		okayLabel.setVisible(false);
+		hideMessages();
 	}
 
 	/**
 	 * @see nextapp.echo2.app.event.ActionListener#actionPerformed(nextapp.echo2.app.event.ActionEvent)
 	 */
+	@Override
 	public void actionPerformed(ActionEvent e) {
-		String errorMessage = null;
-		String okayMessage = null;
+		super.actionPerformed(e);
 		if (stubStrategySelectField == e.getSource()) {
 			report.setStubStrategy((String)stubStrategySelectField.getSelectedItem());
-		} else if (e.getActionCommand().equals("ExpandAll")) {
-			treePane.expandAll(node);
-		} else if (e.getActionCommand().equals("CollapseAll")) {
-			treePane.collapseAll(node);
-		} else if (e.getActionCommand().equals("Close")) {
-			if (getParent().getParent().getParent() instanceof ReportPane) {
-				((Echo2Application)getApplicationInstance()).closeReport();
-			} else {
-				treePane.closeReport(report);
-			}
 		} else if (e.getActionCommand().equals("Download")) {
 			if ("Both".equals(downloadSelectField.getSelectedItem())) {
-				errorMessage = Download.download(report, true, true);
-			} else if ("Report".equals(downloadSelectField.getSelectedItem())) {
-				errorMessage = Download.download(report);
+				displayError(Download.download(report, true, true));
 			} else if ("Message".equals(downloadSelectField.getSelectedItem())) {
-				errorMessage = Download.download(report, false, true);
-			} else {
-				errorMessage = "No download type selected";
+				displayError(Download.download(report, false, true));
 			}
-		} else if (e.getActionCommand().equals("LineNumbers")) {
-			toggleShowLineNumbers();
-		} else if (e.getActionCommand().equals("Edit")) {
-			toggleEdit();
+		} else if (e.getActionCommand().equals("ToggleEdit") || e.getActionCommand().equals("ToggleEditOk")) {
 			updateNameLabelAndNameTextField();
 			updateDescriptionLabelAndDescriptionTextArea();
 			updatePathLabelAndPathTextField();
@@ -350,11 +290,6 @@ public class ReportComponent extends MessageComponent implements ActionListener 
 			if (report.getStorage() instanceof CrudStorage) {
 				Echo2Application.update((CrudStorage)report.getStorage(), report);
 			}
-		} else if (e.getActionCommand().equals("Rerun")) {
-			errorMessage = testTool.rerun(report, echo2Application);
-			if (errorMessage == null) {
-				okayMessage = "Rerun succeeded";
-			}
 		} else if (e.getActionCommand().equals("Copy")) {
 			//TODO voorkomen dat * en evt. andere chars er niet in komen?
 			//misschien ook dwingen dat het met een / moet beginnen?
@@ -363,7 +298,7 @@ public class ReportComponent extends MessageComponent implements ActionListener 
 //			report.setPath("/test/");
 //			report.setPath("/test/bla/");
 //			report.setPath("/test/bla");
-			errorMessage = Echo2Application.store(runStorage, report);
+			displayError(Echo2Application.store(runStorage, report));
 //		} else if (e.getActionCommand().equals("Update")) {
 //			echo2Application.update(report);
 		} else if (e.getActionCommand().equals("Delete")) {
@@ -373,24 +308,15 @@ public class ReportComponent extends MessageComponent implements ActionListener 
 						+ report.getStorageId() + "?");
 				deleteWarningWindow.setVisible(true);
 			} else {
-				errorMessage = "Storage doesn't support delete method";
+				displayError("Storage doesn't support delete method");
 			}
 		} else if (e.getActionCommand().equals("DeleteYes")
 				|| e.getActionCommand().equals("DeleteNo")) {
 			if (e.getActionCommand().equals("DeleteYes")) {
-				errorMessage = Echo2Application.delete((CrudStorage)report.getStorage(), report);
+				displayError(Echo2Application.delete((CrudStorage)report.getStorage(), report));
 			}
 			deleteWarningWindow.setVisible(false);
 			deleteIdLabel.setText("?");
-		}
-		if (errorMessage != null) {
-			errorLabel.setText(errorMessage);
-			errorLabel.setVisible(true);
-		} else {
-			if (okayMessage != null) {
-				okayLabel.setText(okayMessage);
-				okayLabel.setVisible(true);
-			}
 		}
 	}
 
@@ -428,6 +354,28 @@ public class ReportComponent extends MessageComponent implements ActionListener 
 			pathLabel.setText("Path: " + report.getPath());
 			pathTextField.setVisible(false);
 		}
+	}
+
+	@Override
+	protected boolean hasChanges() {
+		if (super.hasChanges()) {
+			return true;
+		}
+		if (infoPane.edit()) {
+			if ((report.getName() != null && !report.getName().equals(nameTextField.getText()))
+					|| (report.getName() == null && nameTextField.getText() != null)) {
+				return true;
+			}
+			if ((report.getDescription() != null && !report.getDescription().equals(descriptionTextArea.getText()))
+					|| (report.getDescription() == null && descriptionTextArea.getText() != null)) {
+				return true;
+			}
+			if ((report.getPath() != null && !report.getPath().equals(pathTextField.getText()))
+					|| (report.getPath() == null && pathTextField.getText() != null)) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 }

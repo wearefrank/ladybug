@@ -18,17 +18,6 @@ package nl.nn.testtool.echo2.reports;
 import java.util.Enumeration;
 import java.util.Iterator;
 
-import nextapp.echo2.app.Column;
-import nextapp.echo2.app.ContentPane;
-import nl.nn.testtool.Checkpoint;
-import nl.nn.testtool.Report;
-import nl.nn.testtool.TestTool;
-import nl.nn.testtool.filter.View;
-import nl.nn.testtool.storage.CrudStorage;
-import nl.nn.testtool.storage.Storage;
-import nl.nn.testtool.storage.StorageException;
-import nl.nn.testtool.util.LogUtil;
-
 import org.apache.log4j.Logger;
 
 import echopointng.Tree;
@@ -39,6 +28,15 @@ import echopointng.tree.TreePath;
 import echopointng.tree.TreeSelectionEvent;
 import echopointng.tree.TreeSelectionListener;
 import echopointng.tree.TreeSelectionModel;
+import nextapp.echo2.app.Column;
+import nextapp.echo2.app.ContentPane;
+import nl.nn.testtool.Checkpoint;
+import nl.nn.testtool.Report;
+import nl.nn.testtool.filter.View;
+import nl.nn.testtool.storage.CrudStorage;
+import nl.nn.testtool.storage.Storage;
+import nl.nn.testtool.storage.StorageException;
+import nl.nn.testtool.util.LogUtil;
 
 /**
  * @author m00f069
@@ -47,6 +45,7 @@ import echopointng.tree.TreeSelectionModel;
  * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
  */
 public class TreePane extends ContentPane implements TreeSelectionListener {
+	private static final long serialVersionUID = 1L;
 	protected Logger log = LogUtil.getLogger(this);
 	protected InfoPane infoPane;
 	private TreePane treePaneCounterpart;
@@ -330,9 +329,14 @@ public class TreePane extends ContentPane implements TreeSelectionListener {
 
 	public void valueChanged(TreeSelectionEvent e) {
 		if (e.getNewLeadSelectionPath() != null) {
-			TreePath treePath = e.getNewLeadSelectionPath();
-			DefaultMutableTreeNode node = (DefaultMutableTreeNode)treePath.getLastPathComponent();
-			selectNode(node);
+			if (infoPane != null && infoPane.hasChanges()) {
+				infoPane.displayError("First Save or change to Read-only");
+				unselect();
+			} else {
+				TreePath treePath = e.getNewLeadSelectionPath();
+				DefaultMutableTreeNode node = (DefaultMutableTreeNode)treePath.getLastPathComponent();
+				selectNode(node);
+			}
 		}
 	}
 

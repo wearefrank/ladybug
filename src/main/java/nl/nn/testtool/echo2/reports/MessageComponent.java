@@ -18,7 +18,10 @@ package nl.nn.testtool.echo2.reports;
 import java.io.IOException;
 import java.io.LineNumberReader;
 import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.List;
 
+import echopointng.tree.DefaultMutableTreeNode;
 import nextapp.echo2.app.Alignment;
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Column;
@@ -26,10 +29,19 @@ import nextapp.echo2.app.Extent;
 import nextapp.echo2.app.Insets;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.Row;
+import nextapp.echo2.app.SelectField;
 import nextapp.echo2.app.TextArea;
+import nextapp.echo2.app.event.ActionEvent;
+import nextapp.echo2.app.event.ActionListener;
 import nextapp.echo2.app.layout.RowLayoutData;
+import nl.nn.testtool.Report;
+import nl.nn.testtool.TestTool;
 import nl.nn.testtool.echo2.BaseComponent;
+import nl.nn.testtool.echo2.BeanParent;
 import nl.nn.testtool.echo2.Echo2Application;
+import nl.nn.testtool.echo2.ReportPane;
+import nl.nn.testtool.echo2.util.Download;
+import nl.nn.testtool.echo2.util.PopupWindow;
 
 /**
  * @author m00f069
@@ -37,9 +49,14 @@ import nl.nn.testtool.echo2.Echo2Application;
  * To change the template for this generated type comment go to
  * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
  */
-public class MessageComponent extends BaseComponent {
+public class MessageComponent extends BaseComponent implements ActionListener {
 	private static final long serialVersionUID = 1L;
 	private static final char REPLACE_NON_XML_CHAR = 0x00BF; // Inverted question mark.
+	protected TestTool testTool;
+	private BeanParent beanParent;
+	protected Echo2Application echo2Application;
+	protected TreePane treePane;
+	protected DefaultMutableTreeNode node;
 	private String message;
 	private String messageCompare;
 	private boolean compare;
@@ -49,12 +66,50 @@ public class MessageComponent extends BaseComponent {
 	protected Button saveButton;
 	protected InfoPane infoPane;
 	private TextArea editTextArea;
-	
+	protected Report report;
+	protected SelectField downloadSelectField;
+	protected Row buttonRow;
+
+	public void setTestTool(TestTool testTool) {
+		this.testTool = testTool;
+	}
+
 	/**
 	 * @see nl.nn.testtool.echo2.Echo2Application#initBean()
 	 */
 	protected void initBeanPre() {
 		super.initBean();
+
+		buttonRow = Echo2Application.getNewRow();
+		add(buttonRow);
+
+		Button rerunButton = new Button("Rerun");
+		rerunButton.setActionCommand("Rerun");
+		rerunButton.addActionListener(this);
+		Echo2Application.decorateButton(rerunButton);
+		buttonRow.add(rerunButton);
+
+		editButton = new Button();
+		editButton.setActionCommand("ToggleEdit");
+		editButton.addActionListener(this);
+		Echo2Application.decorateButton(editButton);
+		buttonRow.add(editButton);
+
+		lineNumbersButton = new Button();
+		lineNumbersButton.setActionCommand("ToggleShowLineNumbers");
+		lineNumbersButton.addActionListener(this);
+		Echo2Application.decorateButton(lineNumbersButton);
+		buttonRow.add(lineNumbersButton);
+
+		saveButton = new Button("Save");
+		saveButton.setActionCommand("Save");
+		saveButton.addActionListener(this);
+		Echo2Application.decorateButton(saveButton);
+		buttonRow.add(saveButton);
+
+		downloadSelectField = new SelectField(new String[]{"Both", "Report", "Message"});
+		downloadSelectField.setSelectedIndex(0);
+
 		messageColumn = new Column();
 		messageColumn.setInsets(new Insets(0, 5, 0, 0));
 		editTextArea = new TextArea();
@@ -69,6 +124,18 @@ public class MessageComponent extends BaseComponent {
 		updateLineNumbersButton();
 		updateEditButton();
 		updateSaveButton();
+	}
+
+	/**
+	 * @see nl.nn.testtool.echo2.Echo2Application#initBean()
+	 */
+	public void initBean(BeanParent beanParent) {
+		this.beanParent = beanParent;
+		this.echo2Application = Echo2Application.getEcho2Application(beanParent, this);
+	}
+
+	public BeanParent getBeanParent() {
+		return beanParent;
 	}
 
 	public void setInfoPane(InfoPane infoPane) {
@@ -307,6 +374,83 @@ public class MessageComponent extends BaseComponent {
 			|| (c >= 0xE000 && c <= 0xFFFD)
 			/* Prevent application crash 
 			|| (c >= 0x0010000 && c <= 0x0010FFFF)*/;
+	}
+
+	/**
+	 * @see nextapp.echo2.app.event.ActionListener#actionPerformed(nextapp.echo2.app.event.ActionEvent)
+	 */
+	@Override
+	public void actionPerformed(ActionEvent e) {
+		super.actionPerformed(e);
+		if (e.getActionCommand().equals("ExpandAll")) {
+			treePane.expandAll(node);
+		} else if (e.getActionCommand().equals("CollapseAll")) {
+			treePane.collapseAll(node);
+		} else if (e.getActionCommand().equals("Close") || e.getActionCommand().equals("CloseOk")) {
+			if (overwriteChanges(e.getActionCommand(), "CloseOk", "CloseCancel")) {
+				if (getParent().getParent().getParent() instanceof ReportPane) {
+					((Echo2Application)getApplicationInstance()).closeReport();
+				} else {
+					treePane.closeReport(report);
+				}
+			}
+		} else if (e.getActionCommand().equals("Download")) {
+			if ("Both".equals(downloadSelectField.getSelectedItem())) {
+				// Override in ReportComponent and CheckpointComponent
+			} else if ("Report".equals(downloadSelectField.getSelectedItem())) {
+				displayError(Download.download(report));
+			} else if ("Message".equals(downloadSelectField.getSelectedItem())) {
+				// Override in ReportComponent and CheckpointComponent
+			} else {
+				displayError("No download type selected");
+			}
+		} else if (e.getActionCommand().equals("ToggleShowLineNumbers")) {
+			toggleShowLineNumbers();
+		} else if (e.getActionCommand().equals("ToggleEdit") || e.getActionCommand().equals("ToggleEditOk")) {
+			if (overwriteChanges(e.getActionCommand(), "ToggleEditOk", "ToggleEditCancel")) {
+				toggleEdit();
+			}
+		} else if (e.getActionCommand().equals("Rerun")) {
+			String errorMessage = testTool.rerun(report, echo2Application);
+			if (errorMessage == null) {
+				displayOkay("Rerun succeeded");
+			} else {
+				displayError(errorMessage);
+			}
+		}
+	}
+
+	protected boolean overwriteChanges(String currentActionCommand, String actionCommandOk, String actionCommandCancel) {
+		if (currentActionCommand.equals(actionCommandOk)) {
+			return true;
+		} else if (hasChanges()) {
+			List<String> actionLabels = new ArrayList<String>();
+			List<String> actionCommands = new ArrayList<String>();
+			List<ActionListener> actionListeners = new ArrayList<ActionListener>();
+			actionLabels.add("Yes, discard changes");
+			actionCommands.add(actionCommandOk);
+			actionListeners.add(this);
+			actionLabels.add("No, cancel this action");
+			actionCommands.add(actionCommandCancel);
+			actionListeners.add(this);
+			PopupWindow popupWindow = new PopupWindow("",
+					"Are you sure you want to continue and discard your changes?", 450, 100,
+					actionLabels, actionCommands, actionListeners);
+			echo2Application.getContentPane().add(popupWindow);
+			return false;
+		} else {
+			return true;
+		}
+	}
+
+	protected boolean hasChanges() {
+		if (infoPane.edit()) {
+			if ((message != null && !message.equals(editTextArea.getText()))
+					|| (message == null && editTextArea.getText() != null)) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 }

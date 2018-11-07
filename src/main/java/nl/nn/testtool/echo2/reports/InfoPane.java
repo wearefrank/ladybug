@@ -15,13 +15,15 @@
 */
 package nl.nn.testtool.echo2.reports;
 
-import nextapp.echo2.app.ContentPane;
-import nl.nn.testtool.Checkpoint;
-import nl.nn.testtool.Report;
-import nl.nn.testtool.echo2.BeanParent;
 import echopointng.Tree;
 import echopointng.tree.DefaultMutableTreeNode;
 import echopointng.tree.TreePath;
+import nextapp.echo2.app.Component;
+import nextapp.echo2.app.ContentPane;
+import nl.nn.testtool.Checkpoint;
+import nl.nn.testtool.Report;
+import nl.nn.testtool.echo2.BaseComponent;
+import nl.nn.testtool.echo2.BeanParent;
 
 /**
  * @author m00f069
@@ -136,4 +138,22 @@ public class InfoPane extends ContentPane implements BeanParent {
 		}
 		return path;
 	}
+
+	public boolean hasChanges() {
+		if (getComponentCount() > 0) {
+			Component component = getComponent(0);
+			if (component instanceof MessageComponent) {
+				return ((MessageComponent)component).hasChanges();
+			}
+		}
+		return false;
+	}
+
+	public void displayError(String message) {
+		if (getComponentCount() > 0) {
+			Component component = getComponent(0);
+			((BaseComponent)component).displayError(message);
+		}
+	}
+
 }

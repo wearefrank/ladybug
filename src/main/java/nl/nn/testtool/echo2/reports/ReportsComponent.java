@@ -525,7 +525,7 @@ public class ReportsComponent extends BaseComponent implements BeanParent, Actio
 	 * @see nextapp.echo2.app.event.ActionListener#actionPerformed(nextapp.echo2.app.event.ActionEvent)
 	 */
 	public void actionPerformed(ActionEvent e) {
-		hideErrorMessage();
+		hideMessages();
 		if (e.getActionCommand().equals("ExpandAll")) {
 			treePane.expandAll();
 		} else if (e.getActionCommand().equals("CollapseAll")) {

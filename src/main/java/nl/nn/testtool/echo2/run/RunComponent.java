@@ -428,11 +428,10 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 	 */
 	public void actionPerformed(ActionEvent e) {
 		hideMessages();
-		String errorMessage = null;
 		if (e.getActionCommand().equals("Refresh")) {
 			refresh();
 		} else if (e.getActionCommand().equals("Reset")) {
-			errorMessage = reportRunner.reset();
+			displayError(reportRunner.reset());
 			refresh();
 		} else if (e.getActionCommand().equals("SelectAll") || e.getActionCommand().equals("DeselectAll")) {
 			for (int i = numberOfComponentsToSkipForRowManipulation; i < getComponentCount(); i++) {
@@ -463,11 +462,15 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 						reports.add(report);
 					}
 				}
-				errorMessage = reportRunner.run(reports, true, false);
-				displayOkay("Report runner started, use Refresh to see results");
+				String errorMessage = reportRunner.run(reports, true, false);
+				if (errorMessage == null) {
+					displayOkay("Report runner started, use Refresh to see results");
+				} else {
+					displayError(errorMessage);
+				}
 			}
 		} else if (e.getActionCommand().equals("DownloadAll")) {
-			errorMessage = Download.download(runStorage);
+			displayError(Download.download(runStorage));
 		} else if (e.getActionCommand().equals("OpenUploadWindow")) {
 			uploadWindow.setVisible(true);
 		} else if (e.getActionCommand().equals("DeleteSelected")) {
@@ -494,10 +497,12 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 				if (checkbox.isSelected()) {
 					Report report = getReport(row);
 					if (report != null) {
-						errorMessage = Echo2Application.delete(runStorage, report);
+						String errorMessage = Echo2Application.delete(runStorage, report);
 						if (errorMessage == null) {
 							remove(row);
 							i--;
+						} else {
+							displayError(errorMessage);
 						}
 					}
 				}
@@ -544,7 +549,7 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 			if (report != null) {
 				List<Report> reports = new ArrayList<Report>();
 				reports.add(report);
-				errorMessage = reportRunner.run(reports, false, true);
+				displayError(reportRunner.run(reports, false, true));
 				refresh();
 			}
 		} else if (e.getActionCommand().equals("Open")) {
@@ -569,6 +574,7 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 			Row row = (Row)button.getParent();
  			Report report = getReport(row);
 			if (report != null) {
+				String errorMessage = null;
 				if (e.getActionCommand().startsWith("Replace")) {
 					Integer storageId = new Integer(row.getId());
 					Report runResultReport = getRunResultReport(reportRunner.getResults().get(storageId).correlationId);
@@ -589,12 +595,10 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 						remove(row);
 					}
 				}
+				displayError(errorMessage);
 			}
 		}
 		updateProgressBar();
-		if (errorMessage != null) {
-			displayError(errorMessage);
-		}
 	}
 
 	private void updateProgressBar() {

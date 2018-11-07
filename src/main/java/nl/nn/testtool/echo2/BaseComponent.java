@@ -20,6 +20,7 @@ import org.apache.log4j.Logger;
 import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Insets;
 import nextapp.echo2.app.Label;
+import nextapp.echo2.app.event.ActionEvent;
 import nl.nn.testtool.util.LogUtil;
 
 /**
@@ -46,12 +47,27 @@ public class BaseComponent extends Column {
 		okayLabel.setVisible(false);
 	}
 
-	public void displayError(Throwable t) {
-		displayError(null, t.getClass().getName() + ": " + t.getMessage(), t);
+	/**
+	 * @see nextapp.echo2.app.event.ActionListener#actionPerformed(nextapp.echo2.app.event.ActionEvent)
+	 */
+	public void actionPerformed(ActionEvent e) {
+		hideMessages();
+	}
+
+	public void displayOkay(String message) {
+		if (message != null) {
+			displayMessage(okayLabel, message);
+		}
 	}
 
 	public void displayError(String message) {
-		displayError(message, message, null);
+		if (message != null) {
+			displayError(message, message, null);
+		}
+	}
+
+	public void displayError(Throwable t) {
+		displayError(null, t.getClass().getName() + ": " + t.getMessage(), t);
 	}
 
 	private void displayError(String logMessage, String displayMessage, Throwable t) {
@@ -64,26 +80,21 @@ public class BaseComponent extends Column {
 			}
 			log.error(logMessage, t);
 		}
-		if (errorLabel.isVisible()) {
-			errorLabel.setText(errorLabel.getText() + " [" + displayMessage + "]");
-		} else {
-			errorLabel.setText("[" + displayMessage + "]");
-			errorLabel.setVisible(true);
-		}
+		displayMessage(errorLabel, displayMessage);
 	}
 
-	protected void displayOkay(String message) {
-		okayLabel.setText(message);
-		okayLabel.setVisible(true);
+	private void displayMessage(Label label, String message) {
+		if (label.isVisible()) {
+			label.setText(label.getText() + " [" + message + "]");
+		} else {
+			label.setText("[" + message + "]");
+			label.setVisible(true);
+		}
 	}
 
 	protected void hideMessages() {
 		errorLabel.setVisible(false);
 		okayLabel.setVisible(false);
-	}
-
-	protected void hideErrorMessage() {
-		errorLabel.setVisible(false);
 	}
 
 }
