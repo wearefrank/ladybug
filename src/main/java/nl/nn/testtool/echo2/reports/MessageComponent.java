@@ -196,25 +196,37 @@ public class MessageComponent extends BaseComponent implements ActionListener {
 			editTextArea.setText(replaceNonValidXmlCharacters(message, null, false));
 			messageColumn.add(editTextArea);
 		} else {
-			if (message != null) {
-				LineNumberReader lineNumberReader = new LineNumberReader(new StringReader(message));
-				String line = readLineIgnoringExceptions(lineNumberReader);
-				LineNumberReader lineNumberReaderCompare = null;
-				String lineCompare = null;
-				if (messageCompare != null) {
-					lineNumberReaderCompare = new LineNumberReader(new StringReader(messageCompare));
-					lineCompare = readLineIgnoringExceptions(lineNumberReaderCompare);
-				}
-				while (line != null) {
-					addLine(line, lineCompare, compare);
-					line = readLineIgnoringExceptions(lineNumberReader);
-					if (messageCompare != null) {
-						lineCompare = readLineIgnoringExceptions(lineNumberReaderCompare);
-					}
-				}
-			}
+			updateMessageColumn(message, messageColumn, compare, messageCompare);
 			if (infoPane.showLineNumbers()) {
 				addLineNumbers();
+			}
+		}
+	}
+
+	public static void updateMessageColumn(String message, Column messageColumn) {
+		updateMessageColumn(message, messageColumn, false, null);
+	}
+
+	public static void updateMessageColumn(String message, Column messageColumn, boolean compare,
+			String messageCompare) {
+		messageColumn.removeAll();
+		if (message == null) {
+			messageColumn.setVisible(false);
+		} else {
+			LineNumberReader lineNumberReader = new LineNumberReader(new StringReader(message));
+			String line = readLineIgnoringExceptions(lineNumberReader);
+			LineNumberReader lineNumberReaderCompare = null;
+			String lineCompare = null;
+			if (messageCompare != null) {
+				lineNumberReaderCompare = new LineNumberReader(new StringReader(messageCompare));
+				lineCompare = readLineIgnoringExceptions(lineNumberReaderCompare);
+			}
+			while (line != null) {
+				addLine(line, messageColumn, compare, lineCompare);
+				line = readLineIgnoringExceptions(lineNumberReader);
+				if (messageCompare != null) {
+					lineCompare = readLineIgnoringExceptions(lineNumberReaderCompare);
+				}
 			}
 		}
 	}
@@ -228,7 +240,7 @@ public class MessageComponent extends BaseComponent implements ActionListener {
 		return line;
 	}
 
-	private void addLine(String line, String lineCompare, boolean compare) {
+	private static void addLine(String line, Column messageColumn, boolean compare, String lineCompare) {
 		Row row = new Row();
 		messageColumn.add(row);
 		boolean differenceFound = compare && !line.equals(lineCompare);
@@ -451,22 +463,6 @@ public class MessageComponent extends BaseComponent implements ActionListener {
 			}
 		}
 		return false;
-	}
-
-	public static void updateMessageColumn(String message, Column messageColumn) {
-		messageColumn.removeAll();
-		if (message == null) {
-			messageColumn.setVisible(false);
-		} else {
-			LineNumberReader lineNumberReader = new LineNumberReader(new StringReader(message));
-			String line = readLineIgnoringExceptions(lineNumberReader);
-			while (line != null) {
-				Row lineRow = new Row();
-				messageColumn.add(lineRow);
-				replaceNonValidXmlCharacters(line, lineRow, false);
-				line =  readLineIgnoringExceptions(lineNumberReader);
-			}
-		}
 	}
 
 }
