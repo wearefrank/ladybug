@@ -235,7 +235,7 @@ public class MessageComponent extends BaseComponent implements ActionListener {
 		replaceNonValidXmlCharacters(line, row, differenceFound);
 	}
 
-	private Label createLabel(String text, boolean applyIndent, boolean differenceFound) {
+	private static Label createLabel(String text, boolean applyIndent, boolean differenceFound) {
 		RowLayoutData rowLayouData = new RowLayoutData();
 		rowLayouData.setAlignment(Alignment.ALIGN_TOP);
 		Label label = new Label();
@@ -252,7 +252,7 @@ public class MessageComponent extends BaseComponent implements ActionListener {
 		return label;
 	}
 
-	private void setIndentAndText(Label label, String line) {
+	private static void setIndentAndText(Label label, String line) {
 		int preSpace = 0;
 		int preIndex = 0;
 		while (line.length() > preIndex && (line.charAt(preIndex) == ' ' || line.charAt(preIndex) == '\t')) {
@@ -280,7 +280,7 @@ public class MessageComponent extends BaseComponent implements ActionListener {
 		label.setText(line.substring(preIndex));
 	}
 
-	private void setIndent(Label label, int preNumberOfChars, int postNumberOfChars, boolean whiteSpaceOnly) {
+	private static void setIndent(Label label, int preNumberOfChars, int postNumberOfChars, boolean whiteSpaceOnly) {
 		RowLayoutData rowLayoutData = (RowLayoutData)label.getLayoutData();
 		int topPx = 0;
 		if (whiteSpaceOnly) {
@@ -339,7 +339,7 @@ public class MessageComponent extends BaseComponent implements ActionListener {
 		}
 	}
 
-	private String replaceNonValidXmlCharacters(String string, Row row, boolean differenceFound) {
+	private static String replaceNonValidXmlCharacters(String string, Row row, boolean differenceFound) {
 		StringBuffer buffer = new StringBuffer();
 		int c;
 		for (int i = 0; i < string.length(); i += Character.charCount(c)) {
@@ -451,6 +451,22 @@ public class MessageComponent extends BaseComponent implements ActionListener {
 			}
 		}
 		return false;
+	}
+
+	public static void updateMessageColumn(String message, Column messageColumn) {
+		messageColumn.removeAll();
+		if (message == null) {
+			messageColumn.setVisible(false);
+		} else {
+			LineNumberReader lineNumberReader = new LineNumberReader(new StringReader(message));
+			String line = readLineIgnoringExceptions(lineNumberReader);
+			while (line != null) {
+				Row lineRow = new Row();
+				messageColumn.add(lineRow);
+				replaceNonValidXmlCharacters(line, lineRow, false);
+				line =  readLineIgnoringExceptions(lineNumberReader);
+			}
+		}
 	}
 
 }

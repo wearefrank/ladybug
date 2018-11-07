@@ -36,7 +36,6 @@ import nextapp.echo2.app.FillImageBorder;
 import nextapp.echo2.app.Insets;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.Row;
-import nextapp.echo2.app.TextArea;
 import nextapp.echo2.app.TextField;
 import nextapp.echo2.app.WindowPane;
 import nextapp.echo2.app.event.ActionEvent;
@@ -49,6 +48,7 @@ import nl.nn.testtool.echo2.BaseComponent;
 import nl.nn.testtool.echo2.BeanParent;
 import nl.nn.testtool.echo2.Echo2Application;
 import nl.nn.testtool.echo2.RunPane;
+import nl.nn.testtool.echo2.reports.MessageComponent;
 import nl.nn.testtool.echo2.reports.ReportUploadListener;
 import nl.nn.testtool.echo2.util.Download;
 import nl.nn.testtool.echo2.util.PopupWindow;
@@ -409,17 +409,10 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 
 		// TODO runStorage.getMetadata geeft blijkbaar "null" terug, fixen
 		if (description != null && !"".equals(description) && !"null".equals(description)) {
-//			row = Echo2Application.getNewRow();
-//			row.setInsets(new Insets(1));
-//			row.add(new Label(description));
-			TextArea textArea = new TextArea();
-			textArea.setWidth(new Extent(100, Extent.PERCENT));
-			textArea.setHeight(new Extent(100));
-			textArea.setEnabled(false);
-			textArea.setText(description);
-//			row.add(textArea);
-//			add(row);
-			add(textArea);
+			Column descriptionColumn = new Column();
+			descriptionColumn.setInsets(new Insets(0, 5, 0, 0));
+			MessageComponent.updateMessageColumn(description, descriptionColumn);
+			add(descriptionColumn);
 		}
 	}
 

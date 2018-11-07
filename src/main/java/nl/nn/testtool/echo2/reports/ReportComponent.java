@@ -53,6 +53,7 @@ public class ReportComponent extends MessageComponent {
 	private SelectField copyToSelectField;
 	private Label estimatedMemoryUsageLabel;
 	private TextField nameTextField;
+	protected Column descriptionColumn;
 	private TextArea descriptionTextArea;
 	private TextField pathTextField;
 	private WindowPane deleteWarningWindow;
@@ -73,7 +74,7 @@ public class ReportComponent extends MessageComponent {
 	public void setTreePane(TreePane treePane) {
 		this.treePane = treePane;
 	}
-	
+
 	/**
 	 * @see nl.nn.testtool.echo2.Echo2Application#initBean()
 	 */
@@ -154,20 +155,21 @@ public class ReportComponent extends MessageComponent {
 		nameTextField.setVisible(false);
 		nameRow.add(nameTextField);
 
-//		Row descriptionRow = Echo2Application.getNewRow();
-//		descriptionRow.setInsets(new Insets(0, 5, 0, 0));
-//		add(descriptionRow);
+		Row descriptionRow = Echo2Application.getNewRow();
+		descriptionRow.setInsets(new Insets(0, 5, 0, 0));
+		add(descriptionRow);
 
 		descriptionLabel = Echo2Application.createInfoLabel();
-//		descriptionRow.add(descriptionLabel);
-		add(descriptionLabel);
+		descriptionLabel.setText("Description:");
+		descriptionRow.add(descriptionLabel);
 
+		descriptionColumn = new Column();
+		descriptionColumn.setInsets(new Insets(0, 5, 0, 0));
+		add(descriptionColumn);
 		descriptionTextArea = new TextArea();
-//		descriptionTextArea.setVisible(false);
 		descriptionTextArea.setWidth(new Extent(100, Extent.PERCENT));
 		descriptionTextArea.setHeight(new Extent(100));
-		descriptionTextArea.setEnabled(false);
-//		descriptionRow.add(descriptionTextArea);
+		descriptionTextArea.setVisible(false);
 		add(descriptionTextArea);
 
 		Row pathRow = Echo2Application.getNewRow();
@@ -256,7 +258,7 @@ public class ReportComponent extends MessageComponent {
 			setMessage(reportXml);
 		}
 		updateNameLabelAndNameTextField();
-		updateDescriptionLabelAndDescriptionTextArea();
+		updateDescriptionLabelAndDescriptionColumnAndTextArea();
 		updatePathLabelAndPathTextField();
 		storageIdLabel.setText("StorageId: " + report.getStorageId());
 		storageLabel.setText("Storage: " + report.getStorage().getName());
@@ -280,7 +282,7 @@ public class ReportComponent extends MessageComponent {
 			}
 		} else if (e.getActionCommand().equals("ToggleEdit") || e.getActionCommand().equals("ToggleEditOk")) {
 			updateNameLabelAndNameTextField();
-			updateDescriptionLabelAndDescriptionTextArea();
+			updateDescriptionLabelAndDescriptionColumnAndTextArea();
 			updatePathLabelAndPathTextField();
 		} else if (e.getActionCommand().equals("Save")) {
 			save();
@@ -331,17 +333,15 @@ public class ReportComponent extends MessageComponent {
 		}
 	}
 
-	private void updateDescriptionLabelAndDescriptionTextArea() {
+	private void updateDescriptionLabelAndDescriptionColumnAndTextArea() {
 		if (infoPane.edit()) {
-//			descriptionLabel.setText("Description: ");
-//			descriptionTextArea.setText(report.getDescription());
-			descriptionTextArea.setEnabled(true);
+			descriptionColumn.setVisible(false);
+			descriptionTextArea.setVisible(true);
 		} else {
-//			descriptionLabel.setText("Description: " + report.getDescription());
-			descriptionTextArea.setEnabled(false);
+			descriptionColumn.setVisible(true);
+			descriptionTextArea.setVisible(false);
 		}
-		// TODO gewoon alleen eenmalig bij initBean o.i.d. doen?
-		descriptionLabel.setText("Description:");
+		updateMessageColumn(report.getDescription(), descriptionColumn);
 		descriptionTextArea.setText(report.getDescription());
 	}
 

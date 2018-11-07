@@ -6,6 +6,7 @@ Ladybug Test Tool release notes
 Upcoming
 --------
 
+- Don't use TextArea for description in Read-only mode
 - Don't log all error messages to log file
 - Fix ClassCastException in Test tab for reports with description
 - Prevent losing typed data in edit mode on close or select node in tree
