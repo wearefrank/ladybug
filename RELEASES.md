@@ -6,6 +6,11 @@ Ladybug Test Tool release notes
 Upcoming
 --------
 
+
+
+2.0.6
+---
+
 - Prevent error on reselect node after Delete and Replace
 - Refresh after upload
 - Limit the use of special chars in normalized path
