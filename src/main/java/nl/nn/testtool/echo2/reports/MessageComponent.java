@@ -399,7 +399,9 @@ public class MessageComponent extends BaseComponent implements ActionListener {
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		super.actionPerformed(e);
-		if (e.getActionCommand().equals("ExpandAll")) {
+		if (e.getActionCommand() == null) {
+			// Prevent NPE when super handles an event based on e.getSource()
+		} else if (e.getActionCommand().equals("ExpandAll")) {
 			treePane.expandAll(node);
 		} else if (e.getActionCommand().equals("CollapseAll")) {
 			treePane.collapseAll(node);

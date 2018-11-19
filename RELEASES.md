@@ -6,6 +6,8 @@ Ladybug Test Tool release notes
 Upcoming
 --------
 
+- Fix error on selecting different stub strategy
+
 
 
 2.0.6
