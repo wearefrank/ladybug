@@ -6,6 +6,7 @@ Ladybug Test Tool release notes
 Upcoming
 --------
 
+- Fix error on selecting checkpoint with null message
 - Fix error on selecting different stub strategy
 
 

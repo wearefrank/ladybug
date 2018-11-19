@@ -205,7 +205,11 @@ public class MessageComponent extends BaseComponent implements ActionListener {
 		if (infoPane.showLineNumbers()) {
 			addLineNumbers(messageColumn);
 		}
-		messageTextArea.setText(replaceNonValidXmlCharacters(message, null, false));
+		if (message == null) {
+			messageTextArea.setText(message);
+		} else {
+			messageTextArea.setText(replaceNonValidXmlCharacters(message, null, false));
+		}
 	}
 
 	public static void updateMessageColumn(String message, Column messageColumn) {
