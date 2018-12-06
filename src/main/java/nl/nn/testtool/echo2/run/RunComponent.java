@@ -380,33 +380,38 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 		Label label = new Label(path + name);
 		RunResult runResult = reportRunner.getResults().get(Integer.parseInt(storageId));
 		if (runResult != null) {
-			Report runResultReport = getRunResultReport(runResult.correlationId);
-			if (runResultReport == null) {
-				label.setText("Result report not found. Report generator not enabled?");
-				label.setForeground(Echo2Application.getDifferenceFoundTextColor());
+			if (runResult.errorMessage != null) {
+				label = Echo2Application.createErrorLabel();
+				label.setText(runResult.errorMessage);
 			} else {
-				Report report = null;
-				try {
-					report = runStorage.getReport(Integer.parseInt(storageId));
-				} catch (StorageException e) {
-					displayAndLogError(e);
-				}
-				if (report != null) {
-					String stubInfo = "";
-					if (!"Never".equals(report.getStubStrategy())) {
-						stubInfo = " (" + report.getStubStrategy() + ")";
+				Report runResultReport = getRunResultReport(runResult.correlationId);
+				if (runResultReport == null) {
+					label = Echo2Application.createErrorLabel();
+					label.setText("Result report not found. Report generator not enabled?");
+				} else {
+					Report report = null;
+					try {
+						report = runStorage.getReport(Integer.parseInt(storageId));
+					} catch (StorageException e) {
+						displayAndLogError(e);
 					}
-					label.setText(path + name + " (" + (report.getEndTime() - report.getStartTime()) + " >> "
-							+ (runResultReport.getEndTime() - runResultReport.getStartTime()) + " ms)" + stubInfo);
-					report.setReportXmlTransformer(reportXmlTransformer);
-					runResultReport.setReportXmlTransformer(reportXmlTransformer);
-					if (report.toXml().equals(runResultReport.toXml())) {
-						label.setForeground(Echo2Application.getNoDifferenceFoundTextColor());
-					} else {
-						label.setForeground(Echo2Application.getDifferenceFoundTextColor());
+					if (report != null) {
+						String stubInfo = "";
+						if (!"Never".equals(report.getStubStrategy())) {
+							stubInfo = " (" + report.getStubStrategy() + ")";
+						}
+						label.setText(path + name + " (" + (report.getEndTime() - report.getStartTime()) + " >> "
+								+ (runResultReport.getEndTime() - runResultReport.getStartTime()) + " ms)" + stubInfo);
+						report.setReportXmlTransformer(reportXmlTransformer);
+						runResultReport.setReportXmlTransformer(reportXmlTransformer);
+						if (report.toXml().equals(runResultReport.toXml())) {
+							label.setForeground(Echo2Application.getNoDifferenceFoundTextColor());
+						} else {
+							label.setForeground(Echo2Application.getDifferenceFoundTextColor());
+						}
+						Button replaceButton = (Button)row.getComponent(4);
+						replaceButton.setVisible(true);
 					}
-					Button replaceButton = (Button)row.getComponent(4);
-					replaceButton.setVisible(true);
 				}
 			}
 		}
@@ -812,7 +817,7 @@ class ReportRunner implements Runnable {
 	private void run(Report report) {
 		RunResult runResult = new RunResult();
 		runResult.correlationId = TestTool.getCorrelationId();
-		runResult.errorMessage = testTool.rerun(runResult.correlationId, report, echo2Application);
+ 		runResult.errorMessage = testTool.rerun(runResult.correlationId, report, echo2Application);
 		results.put(report.getStorageId(), runResult);
 	}
 

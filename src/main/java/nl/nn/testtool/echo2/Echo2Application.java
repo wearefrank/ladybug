@@ -545,6 +545,14 @@ public class Echo2Application extends ApplicationInstance implements Application
 		return createInfoLabel(null);
 	}
 
+	public static Label createErrorLabel() {
+		return createErrorLabel(null);
+	}
+
+	public static Label createOkayLabel() {
+		return createOkayLabel(null);
+	}
+
 	public static Label createInfoLabelWithColumnLayoutData() {
 		return createInfoLabel(columnLayoutDataForLabel);
 	}
