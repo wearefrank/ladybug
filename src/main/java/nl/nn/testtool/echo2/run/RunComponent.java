@@ -370,6 +370,13 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 		Echo2Application.decorateButton(button);
 		row.add(button);
 
+		button = new Button("Compare");
+		button.setActionCommand("Compare");
+		button.addActionListener(this);
+		button.setVisible(false);
+		Echo2Application.decorateButton(button);
+		row.add(button);
+
 		button = new Button("Replace");
 		button.setActionCommand("Replace");
 		button.addActionListener(this);
@@ -409,7 +416,9 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 						} else {
 							label.setForeground(Echo2Application.getDifferenceFoundTextColor());
 						}
-						Button replaceButton = (Button)row.getComponent(4);
+						Button compareButton = (Button)row.getComponent(4);
+						compareButton.setVisible(true);
+						Button replaceButton = (Button)row.getComponent(5);
 						replaceButton.setVisible(true);
 					}
 				}
@@ -549,14 +558,15 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 				displayError(reportRunner.run(reports, false, true));
 				refresh();
 			}
-		} else if (e.getActionCommand().equals("Open")) {
+		} else if (e.getActionCommand().equals("Open")
+				|| e.getActionCommand().equals("Compare")) {
 			Button button = (Button)e.getSource();
 			Row row = (Row)button.getParent();
 			Report report = getReport(row);
 			report.setReportXmlTransformer(reportXmlTransformer);
 			Integer storageId = new Integer(row.getId());
 			RunResult runResult = reportRunner.getResults().get(storageId);
-			if (runResult == null) {
+			if (e.getActionCommand().equals("Open")) {
 				echo2Application.openReport(report);
 			} else {
 				Report runResultReport = getRunResultReport(runResult.correlationId);
@@ -573,7 +583,7 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 			if (report != null) {
 				String errorMessage = null;
 				Report runResultReport = null;
-				if (e.getActionCommand().startsWith("Replace")) {
+				if (e.getActionCommand().equals("Replace")) {
 					Integer storageId = new Integer(row.getId());
 					runResultReport = getRunResultReport(reportRunner.getResults().get(storageId).correlationId);
 					runResultReport.setName(report.getName());
@@ -583,7 +593,8 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 					reportRunner.getResults().remove(storageId);
 					row.setId(runResultReport.getStorageId().toString());
 					row.getComponent(4).setVisible(false);
-					row.remove(5);
+					row.getComponent(5).setVisible(false);
+					row.remove(6);
 					String path = runResultReport.getPath();
 					String name = runResultReport.getName();
 					if (path == null || !path.equals(normalizePath(path))) {
@@ -595,7 +606,7 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 					errorMessage = Echo2Application.delete(runStorage, report);
 					if (errorMessage == null) {
 						if (treePane.getReportsWithDirtyPaths().remove(report.getStorageId())
-								&& e.getActionCommand().startsWith("Replace")) {
+								&& e.getActionCommand().equals("Replace")) {
 							treePane.getReportsWithDirtyPaths().add(runResultReport.getStorageId());
 						}
 						if (e.getActionCommand().equals("Delete")) {
