@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden
+   Copyright 2018, 2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 package nl.nn.testtool.echo2;
 
 import java.security.Principal;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -97,11 +98,12 @@ public class Echo2Application extends ApplicationInstance implements Application
 	private ApplicationContext applicationContext;
 	private ContentPane contentPane;
 	private TabPane tabPane;
+	private Tabs tabs;
+	private List<Integer> activeTabIndexHistory = new ArrayList<Integer>();
 	private TransformationWindow transformationWindow;
 	private TestTool testTool;
 	private ReportXmlTransformer reportXmlTransformer;
 	private ReportsTreeCellRenderer reportsTreeCellRenderer;
-	private Tabs tabs;
 	private CrudStorage runStorage;
 
 	public void setApplicationContext(ApplicationContext applicationContext)
@@ -186,6 +188,7 @@ public class Echo2Application extends ApplicationInstance implements Application
 		tabPane.setTabActiveBackground(buttonBackgroundColor);
 		tabPane.setTabActiveForeground(buttonForegroundColor);
 		tabPane.setTabInactiveBackground(paneBackgroundColor);
+		tabPane.addPropertyChangeListener(new TabPaneListener(this));
 
 		// Wire
 
@@ -351,14 +354,29 @@ public class Echo2Application extends ApplicationInstance implements Application
 		}
 	}
 
-	public void closeReport()  {
-		if (tabPane.getActiveTabIndex() > tabPane.getComponentCount() - 1) {
-			// Workaround (when closing the two latest reports after each other
-			// the getActiveTabIndex() is one too large on the second close)
-			tabPane.remove(tabPane.getComponentCount() - 1);
-		} else {
-			tabPane.remove(tabPane.getActiveTabIndex());
+	public void addToActiveTabIndexHistory(Integer index) {
+		for (int i = 0; i < activeTabIndexHistory.size(); i++) {
+			if (activeTabIndexHistory.get(i).equals(index)) {
+				activeTabIndexHistory.remove(i);
+				i--;
+			}
 		}
+		activeTabIndexHistory.add(index);
+	}
+
+	public void closeReport() {
+		int tabToRemove = tabPane.getActiveTabIndex();
+		tabPane.remove(tabToRemove);
+		for (int i = 0; i < activeTabIndexHistory.size(); i++) {
+			if (activeTabIndexHistory.get(i) == tabToRemove) {
+				activeTabIndexHistory.remove(i);
+				i--;
+			} else if (activeTabIndexHistory.get(i) > tabToRemove) {
+				activeTabIndexHistory.add(i, activeTabIndexHistory.get(i) - 1);
+				activeTabIndexHistory.remove(i + 1);
+			}
+		}
+		tabPane.setActiveTabIndex(activeTabIndexHistory.get(activeTabIndexHistory.size() - 1));
 	}
 
 	public void openReportCompare(Report report1, Report report2) {
