@@ -152,16 +152,12 @@ public class TreePane extends nl.nn.testtool.echo2.reports.TreePane implements B
 			String firstElement = path.substring(1, path.indexOf('/', 1));
 			DefaultMutableTreeNode subNode = new DefaultMutableTreeNode(firstElement);
 			rootNode.add(subNode);
-			String subPathOfNodeToReturn = null;
 			if (pathOfNodeToReturn != null) {
 				if (pathOfNodeToReturn.equals("/")) {
 					returnNode = rootNode;
 				} else {
 					if (path.startsWith(pathOfNodeToReturn)) {
 						returnNode = subNode;
-					}
-					if (pathOfNodeToReturn.startsWith(path)) {
-						subPathOfNodeToReturn = pathOfNodeToReturn.substring(firstElement.length() + 1);
 					}
 				}
 			}
@@ -182,9 +178,15 @@ public class TreePane extends nl.nn.testtool.echo2.reports.TreePane implements B
 					i++;
 				}
 			}
-			DefaultMutableTreeNode returnedNode = addPaths(subPaths, subNode, subPathOfNodeToReturn);
-			if (returnedNode != null) {
-				returnNode = returnedNode;
+			if (subPaths.size() > 0) {
+				String subPathOfNodeToReturn = null;
+				if (pathOfNodeToReturn != null && pathOfNodeToReturn.startsWith("/" + firstElement + "/")) {
+					subPathOfNodeToReturn = pathOfNodeToReturn.substring(firstElement.length() + 1);
+				}
+				DefaultMutableTreeNode returnedNode = addPaths(subPaths, subNode, subPathOfNodeToReturn);
+				if (returnedNode != null) {
+					returnNode = returnedNode;
+				}
 			}
 		}
 		return returnNode;
