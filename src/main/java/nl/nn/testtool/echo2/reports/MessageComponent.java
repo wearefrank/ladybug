@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden
+   Copyright 2018-2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -184,13 +184,12 @@ public class MessageComponent extends BaseComponent implements ActionListener {
 		}
 		updateMessageComponents();
 	}
-	
-	protected String save() {
+
+	protected void save() {
 		message = messageTextArea.getText();
-		return message;
 	}
-	
-	private void updateMessageComponents() {
+
+	protected void updateMessageComponents() {
 		updateLineNumbersButton();
 		updateEditButton();
 		updateSaveButton();
@@ -417,6 +416,8 @@ public class MessageComponent extends BaseComponent implements ActionListener {
 					treePane.closeReport(report);
 				}
 			}
+		} else if (e.getActionCommand().equals("Save")) {
+			save();
 		} else if (e.getActionCommand().equals("Download")) {
 			if ("Both".equals(downloadSelectField.getSelectedItem())) {
 				// Override in ReportComponent and CheckpointComponent

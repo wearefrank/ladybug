@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden
+   Copyright 2018-2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -409,8 +409,10 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 						}
 						label.setText(path + name + " (" + (report.getEndTime() - report.getStartTime()) + " >> "
 								+ (runResultReport.getEndTime() - runResultReport.getStartTime()) + " ms)" + stubInfo);
-						report.setReportXmlTransformer(reportXmlTransformer);
-						runResultReport.setReportXmlTransformer(reportXmlTransformer);
+						report.setGlobalReportXmlTransformer(reportXmlTransformer);
+						runResultReport.setGlobalReportXmlTransformer(reportXmlTransformer);
+						runResultReport.setTransformation(report.getTransformation());
+						runResultReport.setReportXmlTransformer(report.getReportXmlTransformer());
 						if (report.toXml().equals(runResultReport.toXml())) {
 							label.setForeground(Echo2Application.getNoDifferenceFoundTextColor());
 						} else {
@@ -563,7 +565,7 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 			Button button = (Button)e.getSource();
 			Row row = (Row)button.getParent();
 			Report report = getReport(row);
-			report.setReportXmlTransformer(reportXmlTransformer);
+			report.setGlobalReportXmlTransformer(reportXmlTransformer);
 			Integer storageId = new Integer(row.getId());
 			RunResult runResult = reportRunner.getResults().get(storageId);
 			if (e.getActionCommand().equals("Open")) {
@@ -571,7 +573,9 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 			} else {
 				Report runResultReport = getRunResultReport(runResult.correlationId);
 				if (runResultReport != null) {
-					runResultReport.setReportXmlTransformer(reportXmlTransformer);
+					runResultReport.setGlobalReportXmlTransformer(reportXmlTransformer);
+					runResultReport.setTransformation(report.getTransformation());
+					runResultReport.setReportXmlTransformer(report.getReportXmlTransformer());
 					echo2Application.openReportCompare(report, runResultReport);
 				}
 			}
@@ -589,6 +593,8 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 					runResultReport.setName(report.getName());
 					runResultReport.setDescription(report.getDescription());
 					runResultReport.setPath(report.getPath());
+					runResultReport.setTransformation(report.getTransformation());
+					runResultReport.setReportXmlTransformer(report.getReportXmlTransformer());
 					errorMessage = Echo2Application.store(runStorage, runResultReport);
 					reportRunner.getResults().remove(storageId);
 					row.setId(runResultReport.getStorageId().toString());

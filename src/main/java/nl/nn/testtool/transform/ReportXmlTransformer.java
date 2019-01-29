@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden
+   Copyright 2018-2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package nl.nn.testtool.transform;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.PrintWriter;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
@@ -29,90 +30,139 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
-import nl.nn.testtool.util.LogUtil;
-
 import org.apache.log4j.Logger;
+
+import nl.nn.testtool.util.LogUtil;
 
 public class ReportXmlTransformer {
 	private Logger log = LogUtil.getLogger(this);
 	private String xslt;
-	private Transformer transformer = null;
-	
+	private Transformer transformer;
+	private String createTransformerError;
+	private Exception createTransformerException;
+
 	public void setXsltResource(String xsltResource) {
 		StringBuffer result = new StringBuffer();
 		InputStream stream = getClass().getClassLoader().getResourceAsStream(xsltResource);
-		byte[] bytes = new byte[1024];
-		int i;
-		try {
-			i = stream.read(bytes);
-			while (i != -1) {
-				result.append(new String(bytes, 0, i, "UTF-8"));
+		if (stream == null) {
+			createTransformerError = "Could not find xslt resource: " + xsltResource;
+		} else {
+			byte[] bytes = new byte[1024];
+			int i;
+			try {
 				i = stream.read(bytes);
+				while (i != -1) {
+					result.append(new String(bytes, 0, i, "UTF-8"));
+					i = stream.read(bytes);
+				}
+			} catch (UnsupportedEncodingException unsupportedEncodingException) {
+				createTransformerError = "UnsupportedEncodingException reading xslt";
+				createTransformerException = unsupportedEncodingException;
+				log.debug(createTransformerError, createTransformerException);
+			} catch (IOException ioException) {
+				createTransformerError = "IOException reading xslt";
+				createTransformerException = ioException;
+				log.debug(createTransformerError, createTransformerException);
 			}
-		} catch (UnsupportedEncodingException unsupportedEncodingException) {
-			log.error("UnsupportedEncodingException reading xslt", unsupportedEncodingException);
-		} catch (IOException ioException) {
-			log.error("IOException reading xslt", ioException);
 		}
-		setXslt(result.toString());
+		if (createTransformerError == null) {
+			setXslt(result.toString());
+		}
 	}
 
-	public String setXslt(String xslt) {
+	public void setXslt(String xslt) {
 		this.xslt = xslt;
-		String error = null;
 		TransformerFactory transformerFactory = new net.sf.saxon.TransformerFactoryImpl();
 		TransformerFactoryErrorListener transformerFactoryErrorListener = new TransformerFactoryErrorListener();
 		transformerFactory.setErrorListener(transformerFactoryErrorListener);
 		try {
 			transformer = transformerFactory.newTransformer(new StreamSource(new StringReader(xslt)));
 		} catch (TransformerConfigurationException e) {
-			String message = "Could not create transformer: " + e.getMessageAndLocation() + " " + transformerFactoryErrorListener.getErrorMessages();
-			log.error(message);
-			error = message;
+			createTransformerError = "Could not create transformer: " + e.getMessageAndLocation() + " " + transformerFactoryErrorListener.getErrorMessages();
+			createTransformerException = e;
+			log.debug(createTransformerError, createTransformerException);
 		}
-		return error;
 	}
-	
+
+	public String updateXslt(String xslt) {
+		createTransformerError = null;
+		createTransformerException = null;
+		setXslt(xslt);
+		if (createTransformerError == null) {
+			return null;
+		} else {
+			return createTransformerError;
+		}
+	}
+
 	public String getXslt() {
 		return xslt;
 	}
-	
+
 	public String transform(String xml) {
-		StreamSource streamSource = new StreamSource(new StringReader(xml));
 		StringWriter stringWriter = new StringWriter();
-		StreamResult streamResult = new StreamResult(stringWriter);
-		try {
-			transformer.transform(streamSource, streamResult);
-		} catch (TransformerException e) {
-			// TODO Foutmelding aan gebruiker geven en dan loggen op debug i.p.v. error
-			log.error("Could not transform xml", e);
+		if (createTransformerError != null) {
+			printException(createTransformerError, createTransformerException, stringWriter);
+			stringWriter.write("\n");
+			printFirstXmlCharacters(xml, stringWriter);
+		} else {
+			StreamSource streamSource = new StreamSource(new StringReader(xml));
+			StreamResult streamResult = new StreamResult(stringWriter);
+			try {
+				transformer.transform(streamSource, streamResult);
+			} catch (TransformerException e) {
+				String message = "Could not transform report xml";
+				log.debug(message, e);
+				printException(message, e, stringWriter);
+				stringWriter.write("\n");
+				printFirstXmlCharacters(xml, stringWriter);
+			}
 		}
-		xml = stringWriter.toString();
-		return xml;
+		return stringWriter.toString();
 	}
-	
+
+	private void printException(String message, Exception e, StringWriter stringWriter) {
+		stringWriter.write(message);
+		if (e != null) {
+			stringWriter.write(": " + e.getMessage());
+			stringWriter.write("\n\n");
+			stringWriter.write("Stacktrace:\n");
+			PrintWriter printWriter = new PrintWriter(stringWriter);
+			e.printStackTrace(printWriter);
+			printWriter.close();
+		}
+	}
+
+	private void printFirstXmlCharacters(String xml, StringWriter stringWriter) {
+		int i = 10000;
+		if (xml.length() < i) {
+			i = xml.length();
+		}
+		stringWriter.write("First " + i + " characters of xml to transform:\n" + xml.substring(0, i));
+	}
+
 }
 
 class TransformerFactoryErrorListener implements ErrorListener {
 	private Logger log = LogUtil.getLogger(this);
 	String errorMessages;
-		
+
 	public void error(TransformerException exception) {
 		logAndStoreErrorMessage("TransformerFactoryErrorListener error: " + exception.getMessage());
 	}
-		
+
 	public void fatalError(TransformerException exception) {
 		logAndStoreErrorMessage("TransformerFactoryErrorListener error: " + exception.getMessage());
 	}
-		
+
 	public void warning(TransformerException exception) {
 		logAndStoreErrorMessage("TransformerFactoryErrorListener error: " + exception.getMessage());
 	}
-		
+
 	public String getErrorMessages() {
 		return errorMessages;
 	}
-		
+
 	private void logAndStoreErrorMessage(String errorMessage) {
 		log.error(errorMessage);
 		if (errorMessages == null) {

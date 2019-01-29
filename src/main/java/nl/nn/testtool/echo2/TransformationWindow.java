@@ -36,6 +36,7 @@ import echopointng.tree.DefaultTreeCellRenderer;
  */
 public class TransformationWindow extends WindowPane implements ActionListener {
 	private static final long serialVersionUID = 1L;
+	public static final int TEXT_AREA_HEIGHT = 515;
 	private TextArea textArea;
 	private Label errorLabel;
 	private ReportXmlTransformer reportXmlTransformer = null;
@@ -60,7 +61,7 @@ public class TransformationWindow extends WindowPane implements ActionListener {
 		// TODO weer courier maken?
 		textArea.setFont(DefaultTreeCellRenderer.DEFAULT_FONT);
 		textArea.setWidth(new Extent(100, Extent.PERCENT));
-		textArea.setHeight(new Extent(515));
+		textArea.setHeight(new Extent(TEXT_AREA_HEIGHT)); 
 
 		Button buttonSaveTranformation  = new Button("Save transformation");
 		buttonSaveTranformation.setActionCommand("SaveTransformation");
@@ -118,7 +119,7 @@ public class TransformationWindow extends WindowPane implements ActionListener {
 	 */
 	public void actionPerformed(ActionEvent e) {
 		if (e.getActionCommand().equals("SaveTransformation")) {
-			String errorMessage = reportXmlTransformer.setXslt(textArea.getText());
+			String errorMessage = reportXmlTransformer.updateXslt(textArea.getText());
 			if (errorMessage == null) {
 				errorLabel.setVisible(false);
 			} else {

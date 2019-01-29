@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden
+   Copyright 2018-2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -199,11 +199,16 @@ public class CheckpointComponent extends MessageComponent {
 			} else if ("Message".equals(downloadSelectField.getSelectedItem())) {
 				displayAndLogError(Download.download(checkpoint));
 			}
-		} else if (e.getActionCommand().equals("Save")) {
-			checkpoint.setMessage(save());
-			if (report.getStorage() instanceof CrudStorage) {
-				displayAndLogError(Echo2Application.update((CrudStorage)report.getStorage(), report));
-			}
 		}
 	}
+
+	@Override
+	protected void save() {
+		super.save();
+		checkpoint.setMessage(messageTextArea.getText());
+		if (report.getStorage() instanceof CrudStorage) {
+			displayAndLogError(Echo2Application.update((CrudStorage)report.getStorage(), report));
+		}
+	}
+
 }

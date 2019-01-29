@@ -6,6 +6,7 @@ Ladybug Test Tool release notes
 Upcoming
 --------
 
+- Make it possible to specify a transformation per report
 - Fix selecting root node on refresh at some parts of tree of Test tab
 - Return to previous active tab after closing tab
 - Show Compare button after run in Test tab

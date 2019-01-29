@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden
+   Copyright 2018-2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -34,6 +34,7 @@ import nl.nn.testtool.Report;
 import nl.nn.testtool.TestTool;
 import nl.nn.testtool.echo2.BeanParent;
 import nl.nn.testtool.echo2.Echo2Application;
+import nl.nn.testtool.echo2.TransformationWindow;
 import nl.nn.testtool.echo2.run.RunComponent;
 import nl.nn.testtool.echo2.util.Download;
 import nl.nn.testtool.storage.CrudStorage;
@@ -50,6 +51,7 @@ public class ReportComponent extends MessageComponent {
 	private Label nameLabel;
 	private Label descriptionLabel;
 	private Label pathLabel;
+	private Label transformationLabel;
 	private Label storageIdLabel;
 	private Label storageLabel;
 	private SelectField stubStrategySelectField;
@@ -59,6 +61,8 @@ public class ReportComponent extends MessageComponent {
 	protected Column descriptionColumn;
 	private TextArea descriptionTextArea;
 	private TextField pathTextField;
+	protected Column transformationColumn;
+	private TextArea transformationTextArea;
 	private WindowPane deleteWarningWindow;
 	private Label deleteIdLabel;
 
@@ -187,6 +191,22 @@ public class ReportComponent extends MessageComponent {
 		pathTextField.setVisible(false);
 		pathRow.add(pathTextField);
 
+		Row transformationRow = Echo2Application.getNewRow();
+		transformationRow.setInsets(new Insets(0, 5, 0, 0));
+		add(transformationRow);
+
+		transformationLabel = Echo2Application.createInfoLabel();
+		transformationLabel.setText("Transformation:");
+		transformationRow.add(transformationLabel);
+
+		transformationColumn = new Column();
+		transformationColumn.setInsets(new Insets(0, 5, 0, 0));
+		transformationTextArea = new TextArea();
+		transformationTextArea.setWidth(new Extent(100, Extent.PERCENT));
+		transformationTextArea.setHeight(new Extent(TransformationWindow.TEXT_AREA_HEIGHT));
+		transformationTextArea.setVisible(false);
+		add(transformationTextArea);
+
 		storageIdLabel = Echo2Application.createInfoLabelWithColumnLayoutData();
 		add(storageIdLabel);
 
@@ -261,9 +281,6 @@ public class ReportComponent extends MessageComponent {
 		} else {
 			setMessage(reportXml);
 		}
-		updateNameLabelAndNameTextField();
-		updateDescriptionLabelAndDescriptionColumnAndTextArea();
-		updatePathLabelAndPathTextField();
 		storageIdLabel.setText("StorageId: " + report.getStorageId());
 		storageLabel.setText("Storage: " + report.getStorage().getName());
 		estimatedMemoryUsageLabel.setText("EstimatedMemoryUsage: " + report.getEstimatedMemoryUsage() + " bytes");
@@ -283,24 +300,6 @@ public class ReportComponent extends MessageComponent {
 				displayAndLogError(Download.download(report, true, true));
 			} else if ("Message".equals(downloadSelectField.getSelectedItem())) {
 				displayAndLogError(Download.download(report, false, true));
-			}
-		} else if (e.getActionCommand().equals("ToggleEdit") || e.getActionCommand().equals("ToggleEditOk")) {
-			
-			updateNameLabelAndNameTextField();
-			updateDescriptionLabelAndDescriptionColumnAndTextArea();
-			updatePathLabelAndPathTextField();
-		} else if (e.getActionCommand().equals("Save")) {
-			save();
-			report.setName(nameTextField.getText());
-			report.setDescription(descriptionTextArea.getText());
-			String path = pathTextField.getText();
-			if (!StringUtils.isEmpty(path)) {
-				path = RunComponent.normalizePath(path);
-				pathTextField.setText(path);
-			}
-			report.setPath(path);
-			if (report.getStorage() instanceof CrudStorage) {
-				Echo2Application.update((CrudStorage)report.getStorage(), report);
 			}
 		} else if (e.getActionCommand().equals("Copy")) {
 			displayAndLogError(Echo2Application.store(runStorage, report));
@@ -334,11 +333,41 @@ public class ReportComponent extends MessageComponent {
 		}
 	}
 
+	@Override
 	protected void toggleEdit() {
 		super.toggleEdit();
-		// Report xml should not be editable
-		messageColumn.setVisible(true);
-		messageTextArea.setVisible(false);
+		if (infoPane.edit()) {
+			// Report xml should not be editable
+			messageTextArea.setVisible(false);
+		}
+	}
+
+	@Override
+	protected void save() {
+		report.setName(nameTextField.getText());
+		report.setDescription(descriptionTextArea.getText());
+		String path = pathTextField.getText();
+		if (!StringUtils.isEmpty(path)) {
+			path = RunComponent.normalizePath(path);
+			pathTextField.setText(path);
+		}
+		report.setPath(path);
+		report.setTransformation(transformationTextArea.getText());
+		report.flushCachedXml();
+		if (report.getStorage() instanceof CrudStorage) {
+			Echo2Application.update((CrudStorage)report.getStorage(), report);
+		}
+		messageTextArea.setText(report.toXml());
+		super.save();
+	}
+
+	@Override
+	protected void updateMessageComponents() {
+		super.updateMessageComponents();
+		updateNameLabelAndNameTextField();
+		updateDescriptionLabelAndDescriptionColumnAndTextArea();
+		updatePathLabelAndPathTextField();
+		updateTransformationLabelAndTransformationColumnAndTextArea();
 	}
 
 	private void updateNameLabelAndNameTextField() {
@@ -382,6 +411,21 @@ public class ReportComponent extends MessageComponent {
 		}
 	}
 
+	private void updateTransformationLabelAndTransformationColumnAndTextArea() {
+		if (infoPane.edit()) {
+			transformationColumn.setVisible(false);
+			transformationTextArea.setVisible(true);
+		} else {
+			transformationColumn.setVisible(true);
+			transformationTextArea.setVisible(false);
+		}
+		updateMessageColumn(report.getTransformation(), transformationColumn);
+		if (infoPane.showLineNumbers()) {
+			addLineNumbers(transformationColumn);
+		}
+		transformationTextArea.setText(report.getTransformation());
+	}
+
 	@Override
 	protected boolean hasChanges() {
 		if (super.hasChanges()) {
@@ -395,6 +439,9 @@ public class ReportComponent extends MessageComponent {
 				return true;
 			}
 			if (hasChanges(report.getPath(), pathTextField.getText())) {
+				return true;
+			}
+			if (hasChanges(report.getTransformation(), transformationTextArea.getText())) {
 				return true;
 			}
 		}

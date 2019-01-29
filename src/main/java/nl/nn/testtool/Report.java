@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden
+   Copyright 2018-2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -55,6 +55,7 @@ public class Report implements Serializable {
 	private String path;
 	private String stubStrategy;
 	private List checkpoints = new ArrayList();
+	private String transformation;
 	private transient Report originalReport;
 	private transient List threads = new ArrayList();
 	private transient Map threadIndex = new HashMap();
@@ -67,11 +68,12 @@ public class Report implements Serializable {
 	private transient Integer storageId;
 	private transient Long storageSize;
 	private transient Report counterpart;
-	private transient String xml;
 	private transient ReportXmlTransformer reportXmlTransformer;
+	private transient ReportXmlTransformer globalReportXmlTransformer;
+	private transient String xml;
 	private transient boolean differenceChecked = false;
 	private transient boolean differenceFound = false;
-	
+
 	public Report() {
 		String threadName = Thread.currentThread().getName();
 		threads.add(threadName);
@@ -79,7 +81,7 @@ public class Report implements Serializable {
 		threadFirstLevel.put(threadName, new Integer(0));
 		threadLevel.put(threadName, new Integer(0));
 	}
-	
+
 	public void setTestTool(TestTool testTool) {
 		this.testTool = testTool;
 	}
@@ -159,11 +161,35 @@ public class Report implements Serializable {
 	public void setStubStrategy(String stubStrategy) {
 		this.stubStrategy = stubStrategy;
 	}
-	
+
 	public String getStubStrategy() {
 		return stubStrategy;
 	}
-	
+
+	public void setTransformation(String transformation) {
+		this.transformation = transformation;
+	}
+
+	public String getTransformation() {
+		return transformation;
+	}
+
+	public void setReportXmlTransformer(ReportXmlTransformer reportXmlTransformer) {
+		this.reportXmlTransformer = reportXmlTransformer;
+	}
+
+	public ReportXmlTransformer getReportXmlTransformer() {
+		return reportXmlTransformer;
+	}
+
+	public void setGlobalReportXmlTransformer(ReportXmlTransformer globalReportXmlTransformer) {
+		this.globalReportXmlTransformer = globalReportXmlTransformer;
+	}
+
+	public ReportXmlTransformer getGlobalReportXmlTransformer() {
+		return globalReportXmlTransformer;
+	}
+
 	public void setOriginalReport(Report originalReport) {
 		this.originalReport = originalReport;
 	}
@@ -358,19 +384,19 @@ public class Report implements Serializable {
 	public long getEstimatedMemoryUsage() {
 		return estimatedMemoryUsage;
 	}
-	
+
 	public void setCounterpart(Report report) {
 		counterpart = report;
 	}
-	
+
 	public Report getCounterpart() {
 		return counterpart;
 	}
-	
+
 	public void setDifferenceChecked(boolean differenceChecked) {
 		this.differenceChecked = differenceChecked;
 	}
-	
+
 	public boolean getDifferenceChecked() {
 		return differenceChecked;
 	}
@@ -378,7 +404,7 @@ public class Report implements Serializable {
 	public void setDifferenceFound(boolean differenceFound) {
 		this.differenceFound = differenceFound;
 	}
-	
+
 	public boolean getDifferenceFound() {
 		return differenceFound;
 	}
@@ -408,51 +434,11 @@ public class Report implements Serializable {
 		report.setCheckpoints(checkpoints);
 		return report;
 	}
-	 
+
 	public String toString() {
 		return name;
-//		String result = null;
-//		if (reportXmlTransformer == null) {
-//			result = name;
-//		} else {
-//			ReportNameHandler reportNameHandler = new ReportNameHandler();
-//			try {
-//				XMLReader parser = XMLReaderFactory.createXMLReader();
-//				parser.setContentHandler(reportNameHandler);
-//				parser.parse(new InputSource(new StringReader(toXml())));
-//			} catch (SAXException e) {
-//				log.debug("SAXException reading report name: " + e.getMessage());
-//				result = reportNameHandler.getReportName();
-//			} catch (IOException e) {
-//				log.error("IOException reading report name: " + e.getMessage());
-//			}
-//			if (result == null) {
-//				result = name;
-//			}
-//		}
-//		return result;
 	}
 
-//	private class ReportNameHandler extends DefaultHandler {
-//		String reportName;
-//
-//		public void startElement(String namespaceURI, String localName, String qName, Attributes attributes) throws SAXException {
-//			if ("Report".equals(localName)) {
-//				reportName = attributes.getValue("Name");
-//			}
-//			throw new SAXException("No further reading needed");
-//		}
-//		
-//		public String getReportName() {
-//			return reportName;
-//		}
-//
-//	}
-	
-	public void setReportXmlTransformer(ReportXmlTransformer reportXmlTransformer) {
-		this.reportXmlTransformer = reportXmlTransformer;
-	}
-	
 	public String toXml() {
 		if (xml == null) {
 			StringBuffer stringBuffer = new StringBuffer();
@@ -469,7 +455,6 @@ public class Report implements Serializable {
 			Iterator iterator = checkpoints.iterator();
 			while (iterator.hasNext()) {
 				Checkpoint checkpoint = (Checkpoint)iterator.next();
-	
 				Object object = checkpoint.getMessage();
 				if (object != null) {
 					stringBuffer.append("<Checkpoint");
@@ -506,13 +491,24 @@ public class Report implements Serializable {
 			}
 			stringBuffer.append("</Report>");
 			xml = stringBuffer.toString();
-			if (reportXmlTransformer != null) {
+			if (transformation != null && transformation.trim().length() > 0) {
+				if (reportXmlTransformer == null) {
+					reportXmlTransformer = new ReportXmlTransformer();
+					reportXmlTransformer.setXslt(transformation);
+				}
 				xml = reportXmlTransformer.transform(xml);
+			} else if (globalReportXmlTransformer != null) {
+				xml = globalReportXmlTransformer.transform(xml);
 			}
 		}
 		return xml;
 	}
-	
+
+	public void flushCachedXml() {
+		reportXmlTransformer = null;
+		xml = null;
+	}
+
 	private String getCheckpointLogDescription(String name, int type, Integer level) {
 		return "(name: " + name + ", type: " + Checkpoint.getTypeAsString(type) + ", level: " + level + ", correlationId: " + correlationId + ")";
 	}
