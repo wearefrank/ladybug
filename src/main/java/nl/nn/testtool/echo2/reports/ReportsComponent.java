@@ -75,6 +75,7 @@ import nl.nn.testtool.util.LogUtil;
  */
 public class ReportsComponent extends BaseComponent implements BeanParent, ActionListener {
 	private static final long serialVersionUID = 1L;
+	public static final String OPEN_REPORT_ALLOWED = "Allowed";
 	protected Logger secLog = LogUtil.getLogger("security");
 	private List<String> changeReportGeneratorEnabledRoles;
 	// TODO testTool overbodig maken nu we storage van view halen?
@@ -237,10 +238,20 @@ public class ReportsComponent extends BaseComponent implements BeanParent, Actio
 		Echo2Application.decorateButton(closeAllButton);
 		closeAllButton.addActionListener(this);
 
-		Button downloadAllButton = new Button("Download all");
-		downloadAllButton.setActionCommand("DownloadAll");
-		downloadAllButton.addActionListener(this);
-		Echo2Application.decorateButton(downloadAllButton);
+		Button openAllButton = new Button("Open all");
+		openAllButton.setActionCommand("OpenAll");
+		openAllButton.addActionListener(this);
+		Echo2Application.decorateButton(openAllButton);
+
+		Button downloadTableButton = new Button("Download table");
+		downloadTableButton.setActionCommand("DownloadTable");
+		downloadTableButton.addActionListener(this);
+		Echo2Application.decorateButton(downloadTableButton);
+
+		Button downloadTreeButton = new Button("Download tree");
+		downloadTreeButton.setActionCommand("DownloadTree");
+		downloadTreeButton.addActionListener(this);
+		Echo2Application.decorateButton(downloadTreeButton);
 
 		Button compareButton = new Button("Compare all");
 		compareButton.setActionCommand("CompareAll");
@@ -336,7 +347,7 @@ public class ReportsComponent extends BaseComponent implements BeanParent, Actio
 		filterValuesLabel = Echo2Application.createInfoLabelWithRowLayoutData();
 
 		filterValuesListBox = new ListBox();
-        filterValuesListBox.setSelectionMode(ListSelectionModel.MULTIPLE_SELECTION);
+		filterValuesListBox.setSelectionMode(ListSelectionModel.MULTIPLE_SELECTION);
 		filterValuesListBox.setActionCommand("UpdateFilterValues");
 		filterValuesListBox.addActionListener(this);
 		filterValuesListBox.setHeight(new Extent(300));
@@ -419,15 +430,15 @@ public class ReportsComponent extends BaseComponent implements BeanParent, Actio
 
 		// Wire
 
-		add(errorLabel);
-
 		buttonRow.add(buttonRefresh);
 		buttonRow.add(optionsButtonWindow);
 		if (addCompareButton) {
 			buttonRow.add(compareButton);
 		}
 		buttonRow.add(prepareUploadButton);
-		buttonRow.add(downloadAllButton);		
+		buttonRow.add(downloadTableButton);
+		buttonRow.add(downloadTreeButton);
+		buttonRow.add(openAllButton);
 		buttonRow.add(expandAllButton);
 		buttonRow.add(collapseAllButton);
 		buttonRow.add(closeAllButton);
@@ -467,6 +478,7 @@ public class ReportsComponent extends BaseComponent implements BeanParent, Actio
 		if (addSeparateOptionsRow) {
 			add(optionsRow);
 		}
+		add(errorLabel);
 		add(filterRow);
 		add(metadataTable);
 		add(nameLabel);
@@ -532,27 +544,31 @@ public class ReportsComponent extends BaseComponent implements BeanParent, Actio
 			treePane.collapseAll();
 		} else if (e.getActionCommand().equals("CloseAll")) {
 			treePane.closeAllReports();
-		} else if (e.getActionCommand().equals("DownloadAll")) {
+		} else if (e.getActionCommand().equals("DownloadTree")) {
 			try {
 				Storage storage = treePane.getStorage();
 				List storageIds = storage.getStorageIds();
-				if (storageIds.size() > 0) {
-					String filename = storage.getReport((Integer)storageIds.get(0)).getName();
-					if (storageIds.size() > 1) {
-						filename = filename  + " and " + (storageIds.size() - 1) + " more";
-					}
-					if ("Both".equals(downloadSelectField.getSelectedItem())) {
-						displayAndLogError(Download.download(storage, filename, true, true));
-					} else if ("Report".equals(downloadSelectField.getSelectedItem())) {
-						displayAndLogError(Download.download(storage, filename));
-					} else if ("Message".equals(downloadSelectField.getSelectedItem())) {
-						displayAndLogError(Download.download(storage, filename, false, true));
+				download(storage, storageIds);
+			} catch(StorageException storageException) {
+				displayAndLogError(storageException);
+			}
+		} else if (e.getActionCommand().equals("DownloadTable")) {
+			try {
+				View view = getSelectedView();
+				Storage storage = view.getStorage();
+				nl.nn.testtool.storage.memory.Storage memStorage = new nl.nn.testtool.storage.memory.Storage();
+				for (int i = 0; i < metadataTableModel.getRowCount(); i++) {
+					Integer storageId = (Integer)metadataTableModel.getValueAt(0, i);
+					String isOpenReportAllowed = view.isOpenReportAllowed(storageId);
+					if (OPEN_REPORT_ALLOWED.equals(isOpenReportAllowed)) {
+						Report report = storage.getReport(storageId);
+						memStorage.store(report);
 					} else {
-						displayError("No download type selected");
+						displayError(isOpenReportAllowed);
 					}
-				} else {
-					displayError("No open reports to download");
 				}
+				List storageIds = memStorage.getStorageIds();
+				download(memStorage, storageIds);
 			} catch(StorageException storageException) {
 				displayAndLogError(storageException);
 			}
@@ -563,12 +579,12 @@ public class ReportsComponent extends BaseComponent implements BeanParent, Actio
 			Table table = (Table)e.getSource();
 			int selectedIndex = table.getSelectionModel().getMinSelectedIndex();
 			firstValueOfLastSelectedRow = metadataTableModel.getValueAt(0, selectedIndex);
-			String isOpenReportAllowed = view.isOpenReportAllowed(firstValueOfLastSelectedRow);
-			if ("Allowed".equals(isOpenReportAllowed)) {
-				Storage storage = view.getStorage();
-				openReport(storage, (Integer)firstValueOfLastSelectedRow);
-			} else {
-				displayError(isOpenReportAllowed);
+			openReport(view, (Integer)firstValueOfLastSelectedRow);
+		} else if (e.getActionCommand().equals("OpenAll")) {
+			View view = getSelectedView();
+			for (int i = 0; i < metadataTableModel.getRowCount(); i++) {
+				Integer storageId = (Integer)metadataTableModel.getValueAt(0, i);
+				openReport(view, storageId);
 			}
 		} else if (e.getActionCommand().equals("ViewSelect")) {
 			treePane.redisplayReports(getSelectedView());
@@ -615,7 +631,8 @@ public class ReportsComponent extends BaseComponent implements BeanParent, Actio
 		} else if (e.getActionCommand().equals("OpenTransformationWindow")) {
 			transformationWindow.setVisible(true);
 		} else if (e.getActionCommand().equals("OpenLatestReports")) {
-			Storage storage = getSelectedView().getStorage();
+			View view = getSelectedView();
+			Storage storage = view.getStorage();
 			List storageIds = null;
 			try {
 				storageIds = storage.getStorageIds();
@@ -629,13 +646,15 @@ public class ReportsComponent extends BaseComponent implements BeanParent, Actio
 					max = size;
 				}
 				for (int i = max - 1; i > -1; i--) {
-					openReport(storage, (Integer)storageIds.get(i));
+					openReport(view, (Integer)storageIds.get(i));
 				}
 			}
 		} else if (e.getActionCommand().equals("OpenReportInProgress")) {
 			Report report = (Report)testTool.getReportInProgress(integerFieldOpenReportInProgress.getValue() - 1);
 			if (report != null) {
-				openReport(report, checkBoxExcludeReportsWithEmptyReportXml.isSelected(), false);
+				View view = getSelectedView();
+				String isOpenReportAllowed = view.isOpenReportAllowed(null);
+				openReport(report, isOpenReportAllowed, checkBoxExcludeReportsWithEmptyReportXml.isSelected(), false);
 			}
 		} else if (e.getActionCommand().equals("OpenUploadWindow")) {
 			uploadWindow.setVisible(true);
@@ -660,7 +679,7 @@ public class ReportsComponent extends BaseComponent implements BeanParent, Actio
 			displayReports(false);
 		} else if (e.getActionCommand().startsWith("Select filter ")) {
 			String metadataName = e.getActionCommand().substring(14);
-            Storage storage = getSelectedView().getStorage();
+			Storage storage = getSelectedView().getStorage();
 			List filterValues = null;
 			try {
 				filterValues = storage.getFilterValues(metadataName);
@@ -670,8 +689,8 @@ public class ReportsComponent extends BaseComponent implements BeanParent, Actio
 			if (filterValues != null) {
 				filterValuesLabel.setText(metadataName);
 				DefaultListModel filterListModel = (DefaultListModel) filterValuesListBox.getModel();
-	            filterListModel.removeAll();
-	            for (int i = 0; i < filterValues.size(); i++) {
+				filterListModel.removeAll();
+				for (int i = 0; i < filterValues.size(); i++) {
 					Object o = filterValues.get(i);
 					if (o != null) {
 						String fv = (String) o;
@@ -700,8 +719,8 @@ public class ReportsComponent extends BaseComponent implements BeanParent, Actio
 						indices[i] = selectedIndex;
 					}
 				}
-	            filterValuesListBox.setSelectedIndices(indices);
-	            filterWindow.setVisible(true);
+				filterValuesListBox.setSelectedIndices(indices);
+				filterWindow.setVisible(true);
 			}
 		} else if (e.getActionCommand().equals("UpdateFilterValues")) {
 			String columnId = (String) filterValuesLabel.getText();
@@ -720,23 +739,56 @@ public class ReportsComponent extends BaseComponent implements BeanParent, Actio
 		}
 	}
 
-	private void openReport(Storage storage, Integer storageId) {
-		Report report = echo2Application.getReport(storage, storageId, this);
-		if (report != null) {
-			openReport(report);
+	public void download(Storage storage, List storageIds) throws StorageException {
+		if (storageIds.size() > 0) {
+			String filename = storage.getReport((Integer)storageIds.get(0)).getName();
+			if (storageIds.size() > 1) {
+				filename = filename  + " and " + (storageIds.size() - 1) + " more";
+			}
+			if ("Both".equals(downloadSelectField.getSelectedItem())) {
+				displayAndLogError(Download.download(storage, filename, true, true));
+			} else if ("Report".equals(downloadSelectField.getSelectedItem())) {
+				displayAndLogError(Download.download(storage, filename));
+			} else if ("Message".equals(downloadSelectField.getSelectedItem())) {
+				displayAndLogError(Download.download(storage, filename, false, true));
+			} else {
+				displayError("No download type selected");
+			}
+		} else {
+			displayError("No reports to download");
 		}
 	}
 
-	public void openReport(Report report) {
-		openReport(report, false, false);
+	private void openReport(View view, Integer storageId) {
+		String isOpenReportAllowed = view.isOpenReportAllowed(storageId);
+		if (OPEN_REPORT_ALLOWED.equals(isOpenReportAllowed)) {
+			Storage storage = view.getStorage();
+			Report report = echo2Application.getReport(storage, storageId, this);
+			if (report != null) {
+				openReport(report, isOpenReportAllowed);
+			} else {
+				displayError("Could not find report with storate id '" + storageId + "'");
+			}
+		} else {
+			displayError(isOpenReportAllowed);
+		}
 	}
 
-	public void openReport(Report report, boolean excludeReportsWithEmptyReportXml, boolean sortReports) {
-		if (checkBoxTransformReportXml.isSelected()) {
-			report.setGlobalReportXmlTransformer(reportXmlTransformer);
-		}
-		if (!(excludeReportsWithEmptyReportXml && report.toXml().length() < 1)) {
-			treePane.addReport(report, getSelectedView(), sortReports);
+	public void openReport(Report report, String isOpenReportAllowed) {
+		openReport(report, isOpenReportAllowed, false, false);
+	}
+
+	public void openReport(Report report, String isOpenReportAllowed, boolean excludeReportsWithEmptyReportXml,
+			boolean sortReports) {
+		if (OPEN_REPORT_ALLOWED.equals(isOpenReportAllowed)) {
+			if (checkBoxTransformReportXml.isSelected()) {
+				report.setGlobalReportXmlTransformer(reportXmlTransformer);
+			}
+			if (!(excludeReportsWithEmptyReportXml && report.toXml().length() < 1)) {
+				treePane.addReport(report, getSelectedView(), sortReports);
+			}
+		} else {
+			displayError(isOpenReportAllowed);
 		}
 	}
 

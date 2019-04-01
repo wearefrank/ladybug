@@ -50,6 +50,7 @@ import nl.nn.testtool.echo2.Echo2Application;
 import nl.nn.testtool.echo2.RunPane;
 import nl.nn.testtool.echo2.reports.MessageComponent;
 import nl.nn.testtool.echo2.reports.ReportUploadListener;
+import nl.nn.testtool.echo2.reports.ReportsComponent;
 import nl.nn.testtool.echo2.util.Download;
 import nl.nn.testtool.echo2.util.PopupWindow;
 import nl.nn.testtool.storage.CrudStorage;
@@ -569,7 +570,7 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 			Integer storageId = new Integer(row.getId());
 			RunResult runResult = reportRunner.getResults().get(storageId);
 			if (e.getActionCommand().equals("Open")) {
-				echo2Application.openReport(report);
+				echo2Application.openReport(report, ReportsComponent.OPEN_REPORT_ALLOWED);
 			} else {
 				Report runResultReport = getRunResultReport(runResult.correlationId);
 				if (runResultReport != null) {

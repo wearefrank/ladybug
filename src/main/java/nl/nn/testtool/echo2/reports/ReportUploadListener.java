@@ -18,16 +18,15 @@ package nl.nn.testtool.echo2.reports;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.log4j.Logger;
+
 import nextapp.echo2.app.filetransfer.UploadEvent;
 import nextapp.echo2.app.filetransfer.UploadListener;
 import nl.nn.testtool.echo2.run.RunComponent;
 import nl.nn.testtool.echo2.util.Upload;
 import nl.nn.testtool.storage.CrudStorage;
-import nl.nn.testtool.storage.Storage;
 import nl.nn.testtool.storage.StorageException;
 import nl.nn.testtool.util.LogUtil;
-
-import org.apache.log4j.Logger;
 
 /**
  * @author m00f069
@@ -88,7 +87,8 @@ public class ReportUploadListener implements UploadListener {
 			try {
 				List storageIds = storage.getStorageIds();
 				for (int i = storageIds.size() - 1; i > -1; i--) {
-					reportsComponent.openReport(storage.getReport((Integer)storageIds.get(i)), false, true);
+					reportsComponent.openReport(storage.getReport((Integer)storageIds.get(i)),
+							ReportsComponent.OPEN_REPORT_ALLOWED, false, true);
 				}
 			} catch (StorageException e) {
 				// TODO iets doen, errorMessage vullen?

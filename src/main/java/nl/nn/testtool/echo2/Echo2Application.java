@@ -262,7 +262,7 @@ public class Echo2Application extends ApplicationInstance implements Application
 		return report;
 	}
 
-	public void openReport(Report report) {
+	public void openReport(Report report, String isOpenReportAllowed) {
 //		tabPane.setActiveTabIndex(0);
 //		reportsComponent.openReport(report, false);
 
@@ -350,7 +350,7 @@ public class Echo2Application extends ApplicationInstance implements Application
 			reportsComponent.initBean(this);
 			
 			// TODO reportsComponent.openReport in reportPane (initBean) doen?
-			reportsComponent.openReport(report);
+			reportsComponent.openReport(report, isOpenReportAllowed);
 		}
 	}
 

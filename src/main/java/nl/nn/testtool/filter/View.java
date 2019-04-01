@@ -22,6 +22,7 @@ import nl.nn.testtool.Checkpoint;
 import nl.nn.testtool.Report;
 import nl.nn.testtool.echo2.BeanParent;
 import nl.nn.testtool.echo2.Echo2Application;
+import nl.nn.testtool.echo2.reports.ReportsComponent;
 import nl.nn.testtool.storage.Storage;
 
 /**
@@ -89,7 +90,7 @@ public class View implements BeanParent {
 	}
 
 	public String isOpenReportAllowed(Object StorageId) {
-		return "Allowed";
+		return ReportsComponent.OPEN_REPORT_ALLOWED;
 	}
 
 	public boolean showCheckpoint(Report report, Checkpoint checkpoint) {
