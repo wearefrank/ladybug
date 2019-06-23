@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden
+   Copyright 2018-2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -140,7 +140,7 @@ public class MetadataExtractor {
 	}
 
 	public Object getMetadata(Report report, String metadataName, int metadataValueType) {
-		return fromObjectTo(metadataName, getMetadataAsObject(report, metadataName), metadataValueType);
+		return fromObjectToMetadataValueType(metadataName, getMetadataAsObject(report, metadataName), metadataValueType);
 	}
 
 	private Object getMetadataAsObject(Report report, String metadataName) {
@@ -191,7 +191,7 @@ public class MetadataExtractor {
 		return metadata;
 	}
 
-	public Object fromObjectTo(String metadataName, Object metadataValue, int metadataValueType) {
+	public Object fromObjectToMetadataValueType(String metadataName, Object metadataValue, int metadataValueType) {
 		if (metadataValueType == VALUE_TYPE_STRING) {
 			metadataValue = fromObjectToString(metadataName, metadataValue);
 		} else if (metadataValueType == VALUE_TYPE_GUI) {
@@ -200,8 +200,8 @@ public class MetadataExtractor {
 		return metadataValue;
 	}
 
-	public Object fromObjectToString(String metadataName, Object metadataValue) {
-		return "" + metadataValue;		
+	public String fromObjectToString(String metadataName, Object metadataValue) {
+		return "" + metadataValue;
 	}
 
 	public Object fromObjectToGUI(String metadataName, Object metadataValue) {
@@ -211,10 +211,10 @@ public class MetadataExtractor {
 		if (metadataName.equals("endTime")) {
 			return FORMAT_DATE_TIME.format(metadataValue);
 		}
-		return metadataValue;		
+		return metadataValue;
 	}
 
-	public Object fromStringTo(String metadataName, String metadataValue, int metadataValueType) {
+	public Object fromStringToMetadataValueType(String metadataName, String metadataValue, int metadataValueType) {
 		Object value = metadataValue;
 		if (metadataValueType == VALUE_TYPE_OBJECT) {
 			value = fromStringtoObject(metadataName, metadataValue);

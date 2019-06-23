@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden
+   Copyright 2018-2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -151,7 +151,10 @@ public class Reader {
 						String metadataName = (String)metadataNames.get(j);
 						synchronized (metadataRecord) {
 							if (metadataRecord.keySet().contains(metadataName)) {
-								partialValues.add(metadataRecord.get(metadataName));
+								partialValues.add(
+										metadataExtractor.fromObjectToMetadataValueType(metadataName,
+												metadataRecord.get(metadataName), metadataValueType)
+										);
 								partialSearchValues.add(searchValue);
 							}
 						}
@@ -202,7 +205,7 @@ public class Reader {
 							metadataValue = metadataRecord.get(metadataName);
 						}
 					}
-					resultRecord.add(metadataExtractor.fromObjectTo(metadataName, metadataValue, metadataValueType));
+					resultRecord.add(metadataExtractor.fromObjectToMetadataValueType(metadataName, metadataValue, metadataValueType));
 				}
 				if (resultRecord != null && SearchUtil.matches(resultRecord, searchValues)) {
 					result.add(resultRecord);
@@ -378,7 +381,7 @@ public class Reader {
 									for (int i = 0; i < metadataHeaderParsed.size(); i++) {
 										String metadataName = (String)metadataHeaderParsed.get(i);
 										Object metadataValue = list.get(i);
-										metadataValue = metadataExtractor.fromStringTo(
+										metadataValue = metadataExtractor.fromStringToMetadataValueType(
 												metadataName,
 												(String)metadataValue,
 												MetadataExtractor.VALUE_TYPE_OBJECT);

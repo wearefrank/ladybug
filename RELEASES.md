@@ -6,6 +6,7 @@ Ladybug Test Tool release notes
 Upcoming
 --------
 
+- Bugfix broken searching/filtering on EndTime
 - Replace Download all with Download table and Download tree
 - Add Open all
 - Move error label from above to below buttons in debug tab
