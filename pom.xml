@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>org.ibissource</groupId>
@@ -169,10 +170,8 @@ Implement a rerun method to be able to rerun reports and optionally stub certain
         <artifactId>maven-project-info-reports-plugin</artifactId>
         <version>2.8.1</version>
       </plugin>
-      <!--
-      http://maven.apache.org/plugins/maven-javadoc-plugin/usage.html
-        Generate Javadocs As Part Of Project Reports
-      -->
+      <!-- http://maven.apache.org/plugins/maven-javadoc-plugin/usage.html 
+        Generate Javadocs As Part Of Project Reports -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-javadoc-plugin</artifactId>
@@ -187,21 +186,6 @@ Implement a rerun method to be able to rerun reports and optionally stub certain
     <developerConnection>scm:git:https://github.com/ibissource/ibis-ladybug.git</developerConnection>
     <tag>HEAD</tag>
   </scm>
-
-  <distributionManagement>
-    <repository>
-      <id>ossrh</id>
-      <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-    </repository>
-    <snapshotRepository>
-      <id>ossrh</id>
-      <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-    </snapshotRepository>
-    <site>
-      <id>www.ibissource.org</id>
-      <url>file:target/site-deploy</url>
-    </site>
-  </distributionManagement>
 
   <profiles>
     <profile>
@@ -247,6 +231,37 @@ Implement a rerun method to be able to rerun reports and optionally stub certain
           </plugin>
         </plugins>
       </build>
+      <distributionManagement>
+        <repository>
+          <id>ossrh</id>
+          <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+        </repository>
+        <snapshotRepository>
+          <id>ossrh</id>
+          <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+        </snapshotRepository>
+        <site>
+          <id>www.ibissource.org</id>
+          <url>file:target/site-deploy</url>
+        </site>
+      </distributionManagement>
+    </profile>
+    <profile>
+      <id>ibissource</id>
+      <distributionManagement>
+        <repository>
+          <id>ibissource</id>
+          <url>https://nexus.ibissource.org/content/repositories/releases</url>
+        </repository>
+        <snapshotRepository>
+          <id>ibissource</id>
+          <url>https://nexus.ibissource.org/content/repositories/snapshots</url>
+        </snapshotRepository>
+        <site>
+          <id>www.ibissource.org</id>
+          <url>file:target/site-deploy</url>
+        </site>
+      </distributionManagement>
     </profile>
   </profiles>
 </project>
