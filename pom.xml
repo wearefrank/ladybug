@@ -160,6 +160,20 @@ Implement a rerun method to be able to rerun reports and optionally stub certain
           <redirectTestOutputToFile>true</redirectTestOutputToFile>
         </configuration>
       </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-deploy-plugin</artifactId>
+        <version>2.7</version>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-release-plugin</artifactId>
+        <version>2.5.3</version>
+        <configuration>
+          <tagNameFormat>v@{project.version}</tagNameFormat>
+          <autoVersionSubmodules>true</autoVersionSubmodules>
+        </configuration>
+      </plugin>
     </plugins>
   </build>
 
@@ -248,18 +262,6 @@ Implement a rerun method to be able to rerun reports and optionally stub certain
     </profile>
     <profile>
       <id>ibissource</id>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-release-plugin</artifactId>
-            <version>2.5.3</version>
-            <configuration>
-              <pushChanges>false</pushChanges>
-            </configuration>
-          </plugin>
-        </plugins>
-      </build>
       <distributionManagement>
         <repository>
           <id>ibissource</id>
