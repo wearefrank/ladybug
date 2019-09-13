@@ -97,6 +97,12 @@ Implement a rerun method to be able to rerun reports and optionally stub certain
       <artifactId>wss4j</artifactId>
       <version>1.5.11</version>
     </dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.12</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <build>
