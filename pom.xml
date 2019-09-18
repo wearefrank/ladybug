@@ -201,9 +201,9 @@ Implement a rerun method to be able to rerun reports and optionally stub certain
   </reporting>
 
   <scm>
-    <url>https://github.com/mhdirkse/ibis-ladybug</url>
-    <connection>scm:git:https://github.com/mhdirkse/ibis-ladybug.git</connection>
-    <developerConnection>scm:git:https://github.com/mhdirkse/ibis-ladybug.git</developerConnection>
+    <url>https://github.com/ibissource/ibis-ladybug</url>
+    <connection>scm:git:https://github.com/ibissource/ibis-ladybug.git</connection>
+    <developerConnection>scm:git:https://github.com/ibissource/ibis-ladybug.git</developerConnection>
     <tag>HEAD</tag>
   </scm>
 
