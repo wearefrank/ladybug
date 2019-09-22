@@ -18,11 +18,9 @@ package nl.nn.testtool.echo2.run;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.TooManyListenersException;
 
@@ -53,6 +51,8 @@ import nl.nn.testtool.echo2.reports.ReportUploadListener;
 import nl.nn.testtool.echo2.reports.ReportsComponent;
 import nl.nn.testtool.echo2.util.Download;
 import nl.nn.testtool.echo2.util.PopupWindow;
+import nl.nn.testtool.run.ReportRunner;
+import nl.nn.testtool.run.RunResult;
 import nl.nn.testtool.storage.CrudStorage;
 import nl.nn.testtool.storage.Storage;
 import nl.nn.testtool.storage.StorageException;
@@ -243,7 +243,7 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 		echo2Application.getContentPane().add(uploadWindow);
 		RunPane runPane = (RunPane)beanParent.getBeanParent();
 		treePane = runPane.getTreePane();
-		reportRunner.setEcho2Application(echo2Application);
+		reportRunner.setSecurityContext(echo2Application);
 	}
 
 	public BeanParent getBeanParent() {
@@ -676,23 +676,10 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 
 	private Report getRunResultReport(String runResultCorrelationId) {
 		Report report = null;
-		List<String> metadataNames = new ArrayList<String>();
-		metadataNames.add("storageId");
-		metadataNames.add("correlationId");
-		List<String> searchValues = new ArrayList<String>();
-		searchValues.add(null);
-		searchValues.add(runResultCorrelationId);
-		List<List<Object>> metadata = null;
 		try {
-			// TODO in Reader.getMetadata kun je ook i < numberOfRecords veranderen in result.size() < numberOfRecords zodat je hier 1 i.p.v. -1 mee kunt geven maar als je dan zoekt op iets dat niet te vinden is gaat hij alle records door. misschien debugStorage.getMetadata een extra paremter geven, numberOfRecordsToConsider en numberOfRecordsToReturn i.p.v. numberOfRecords? (let op: logica ook in mem storage aanpassen)
-			metadata = debugStorage.getMetadata(-1, metadataNames, searchValues,
-					MetadataExtractor.VALUE_TYPE_OBJECT);
-			if (metadata != null && metadata.size() > 0) {
-				Integer runResultStorageId = (Integer)((List<Object>)metadata.get(0)).get(0);
-				report = debugStorage.getReport(runResultStorageId);
-			}
-		} catch(StorageException e) {
-			displayAndLogError(e);
+			report = ReportRunner.getRunResultReport(debugStorage, runResultCorrelationId);
+		} catch(StorageException storageException) {
+			displayAndLogError(storageException);
 		}
 		return report;
 	}
@@ -776,83 +763,4 @@ class MetadataComparator implements Comparator<List<Object>> {
 		return string0.compareTo(string1);
 	}
 	
-}
-
-class ReportRunner implements Runnable {
-	private TestTool testTool;
-	private Echo2Application echo2Application;
-	private List<Report> reportsTodo = new ArrayList<Report>();
-	private int maximum = 1;
-	private Map<Integer, RunResult> results = Collections.synchronizedMap(new HashMap<Integer, RunResult>());
-	private boolean running = false;
-
-	public void setTestTool(TestTool testTool) {
-		this.testTool = testTool;
-	}
-
-	public void setEcho2Application(Echo2Application echo2Application) {
-		this.echo2Application = echo2Application;
-	}
-
-	public synchronized String run(List<Report> reports, boolean reset, boolean wait) {
-		if (running) {
-			return "Already running!";
-		} else {
-			if (reset) {
-				reset();
-			}
-			running = true;
-			reportsTodo.addAll(reports);
-			maximum = reportsTodo.size();
-			if (wait) {
-				run();
-			} else {
-				Thread thread = new Thread(this);
-				thread.start();
-			}
-			return null;
-		}
-	}
-
-	public synchronized String reset() {
-		if (running) {
-			return "Still running!";
-		} else {
-			results.clear();
-			return null;
-		}
-	}
-
-	@Override
-	public void run() {
-		for (Report report : reportsTodo) {
-			run(report);
-		}
-		reportsTodo.clear();
-		running = false;
-	}
-
-	private void run(Report report) {
-		RunResult runResult = new RunResult();
-		runResult.correlationId = TestTool.getCorrelationId();
- 		runResult.errorMessage = testTool.rerun(runResult.correlationId, report, echo2Application);
-		results.put(report.getStorageId(), runResult);
-	}
-
-	public int getMaximum() {
-		return maximum;
-	}
-
-	public int getProgressValue() {
-		return results.size();
-	}
-
-	public Map<Integer, RunResult> getResults() {
-		return results;
-	}
-}
-
-class RunResult {
-	String errorMessage;
-	String correlationId;
 }
