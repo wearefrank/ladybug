@@ -103,9 +103,29 @@ public class Checkpoint implements Serializable, Cloneable {
 
 	public void setMessage(String message) {
 		// report is null when called by XMLDecoder
-		if (report != null && report.getMessageTransformer() != null) {
-			message = report.getMessageTransformer().transform(message);
+		if (report != null) {
+			int maxMsgLength = report.getTestTool().getMaxMessageLength();
+			if(message.length() > maxMsgLength) {
+				String cappedMsg = null;
+				
+				for(Checkpoint checkpoint : report.getCheckpoints()) {
+					String olderMsg = checkpoint.getMessage();
+					
+					if(olderMsg != null && message.startsWith(olderMsg)) {
+						cappedMsg = olderMsg;
+					}
+				}
+				if(cappedMsg == null) {
+					cappedMsg = message.substring(0, maxMsgLength);
+				}
+				
+				message = cappedMsg + "... (" + (message.length()-maxMsgLength) + " more characters)";
+			}
+			if(report.getMessageTransformer() != null) {
+				message = report.getMessageTransformer().transform(message);
+			}
 		}
+		
 		this.message = message;
 	}
 

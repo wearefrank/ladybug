@@ -40,6 +40,7 @@ public class TestTool {
 	private String configName;
 	private String configVersion;
 	private int maxCheckpoints = 2500;
+	private int maxMessageLength = 100000;
 	private Debugger debugger;
 	private boolean reportGeneratorEnabled = true;
 	private List reportsInProgress = new ArrayList();
@@ -76,6 +77,14 @@ public class TestTool {
 
 	public int getMaxCheckpoints() {
 		return maxCheckpoints;
+	}
+
+	public void setMaxMessageLength(int maxMessageLength) {
+		this.maxMessageLength = maxMessageLength;
+	}
+
+	public int getMaxMessageLength() {
+		return maxMessageLength;
 	}
 
 	public void setDebugger(Debugger debugger) {
