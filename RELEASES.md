@@ -6,6 +6,11 @@ Ladybug Test Tool release notes
 Upcoming
 --------
 
+
+
+2.0.8
+---
+
 - Make ReportRunner public (make it callable for LadybugPipe)
 - Bugfix broken searching/filtering on EndTime
 - Replace Download all with Download table and Download tree
