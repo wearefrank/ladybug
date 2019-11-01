@@ -54,7 +54,7 @@ public class Report implements Serializable {
 	private String description;
 	private String path;
 	private String stubStrategy;
-	private List checkpoints = new ArrayList();
+	private List<Checkpoint> checkpoints = new ArrayList<Checkpoint>();
 	private String transformation;
 	private transient Report originalReport;
 	private transient List threads = new ArrayList();
@@ -373,7 +373,7 @@ public class Report implements Serializable {
 		this.checkpoints = checkpoints;
 	}
 
-	public List getCheckpoints() {
+	public List<Checkpoint> getCheckpoints() {
 		return checkpoints;
 	}
 
