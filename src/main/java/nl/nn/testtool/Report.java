@@ -86,10 +86,6 @@ public class Report implements Serializable {
 		this.testTool = testTool;
 	}
 
-	public TestTool getTestTool() {
-		return testTool;
-	}
-
 	public void setStorage(Storage storage) {
 		this.storage = storage;
 	}
