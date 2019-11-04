@@ -102,10 +102,10 @@ public class Checkpoint implements Serializable, Cloneable {
 	}
 
 	public void setMessage(String message) {
-		// report is null when called by XMLDecoder		
+		// report is null when called by XMLDecoder
 		if (report != null && report.getMessageTransformer() != null) {
 			message = report.getMessageTransformer().transform(message);
-		}		
+		}
 		this.message = message;
 	}
 
