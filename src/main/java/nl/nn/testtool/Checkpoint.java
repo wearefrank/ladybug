@@ -104,22 +104,24 @@ public class Checkpoint implements Serializable, Cloneable {
 	public void setMessage(String message) {
 		// report is null when called by XMLDecoder		
 		if (report != null) {
-			int maxMsgLength = report.getTestTool().getMaxMessageLength();
-			if(maxMsgLength >= 0 && message.length() > maxMsgLength) {
-				String cappedMsg = null;
-				
-				for(Checkpoint checkpoint : report.getCheckpoints()) {					
-					if(checkpoint.getMessage() != null && message.startsWith(checkpoint.getMessage())) {
-						cappedMsg = checkpoint.getMessage();
-						break;
-					}
-				}
-				if(cappedMsg == null) {
-					cappedMsg = message.substring(0, maxMsgLength);
-				}
-				
-				message = cappedMsg;
-			}
+//			long startTime = System.nanoTime();
+//			int maxMsgLength = report.getTestTool().getMaxMessageLength();
+//			if(maxMsgLength >= 0 && message.length() > maxMsgLength) {
+//				String cappedMsg = null;
+//				
+//				for(Checkpoint checkpoint : report.getCheckpoints()) {					
+//					if(checkpoint.getMessage() != null && message.startsWith(checkpoint.getMessage())) {
+//						cappedMsg = checkpoint.getMessage();
+//						break;
+//					}
+//				}
+//				if(cappedMsg == null) {
+//					cappedMsg = message.substring(0, maxMsgLength);
+//				}
+//				
+//				message = cappedMsg;
+//			}
+//			System.out.println("Capping a message took "+(System.nanoTime() - startTime));
 			if(report.getMessageTransformer() != null) {
 				message = report.getMessageTransformer().transform(message);
 			}

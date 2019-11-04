@@ -167,6 +167,8 @@ public class TestTool {
 					reportsInProgressEstimatedMemoryUsage = reportsInProgressEstimatedMemoryUsage + report.getEstimatedMemoryUsage();
 					if (report.finished()) {
 						report.setEndTime(System.currentTimeMillis());
+						capCheckpointMessages(report);
+						
 						log.debug("Report is finished for '" + correlationId + "'");
 						reportsInProgress.remove(report);
 						reportsInProgressByCorrelationId.remove(correlationId);
@@ -183,6 +185,25 @@ public class TestTool {
 			}
 		}
 		return message;
+	}
+
+    private void capCheckpointMessages(Report report) {
+    	List<Checkpoint> checkpointsToSkip = new ArrayList<Checkpoint>();
+    	
+		for(Checkpoint checkpoint : report.getCheckpoints()) {
+			if(!checkpointsToSkip.contains(checkpoint) && checkpoint.getMessage() != null && checkpoint.getMessage().length() > maxMessageLength) {
+				String cappedMessage = checkpoint.getMessage().substring(0, maxMessageLength)
+						+ "... ("+(checkpoint.getMessage().length() - maxMessageLength)+" more characters)";
+				
+				for(Checkpoint other : report.getCheckpoints()) {
+					if(other != checkpoint && other.getMessage() == checkpoint.getMessage()) {
+						other.setMessage(cappedMessage);
+						checkpointsToSkip.add(other);
+					}
+				}
+				checkpoint.setMessage(cappedMessage);
+			}
+		}
 	}
 	
 	public Object startpoint(String correlationId, String sourceClassName, String name, Object message) {
