@@ -163,7 +163,9 @@ public class TestTool {
 					reportsInProgressEstimatedMemoryUsage = reportsInProgressEstimatedMemoryUsage + report.getEstimatedMemoryUsage();
 					if (report.finished()) {
 						report.setEndTime(System.currentTimeMillis());
-						capCheckpointMessages(report);
+						if(maxMessageLength > 0) {
+							capCheckpointMessages(report);
+						}
 						
 						log.debug("Report is finished for '" + correlationId + "'");
 						reportsInProgress.remove(report);
@@ -184,23 +186,33 @@ public class TestTool {
 	}
 
     private void capCheckpointMessages(Report report) {
-    	List<Checkpoint> checkpointsToSkip = new ArrayList<Checkpoint>();
+    	List<Checkpoint> checkpointsToBeCapped = new ArrayList<Checkpoint>();
+    	for(Checkpoint cp : report.getCheckpoints()) {
+    		if(cp.getMessage() != null && cp.getMessage().length() > maxMessageLength) {
+    			checkpointsToBeCapped.add(cp);
+    		}
+    	}
     	
-		for(Checkpoint checkpoint : report.getCheckpoints()) {
-			if(!checkpointsToSkip.contains(checkpoint) && checkpoint.getMessage() != null && checkpoint.getMessage().length() > maxMessageLength) {
+    	List<Checkpoint> checkpointsToSkip = new ArrayList<Checkpoint>();
+		for(Checkpoint checkpoint : checkpointsToBeCapped) {
+			if(!checkpointsToSkip.contains(checkpoint)) {
+				// For a message that is referenced by multiple checkpoints, have one capped message that is
+				// referenced by those checkpoints. This will prevent multiple string objects representing the
+				// same string from being created and occupying unnecessary memory.
 				String cappedMessage = checkpoint.getMessage().substring(0, maxMessageLength)
 						+ "... ("+(checkpoint.getMessage().length() - maxMessageLength)+" more characters)";
 				
-				for(Checkpoint other : report.getCheckpoints()) {
-					if(other != checkpoint && other.getMessage() == checkpoint.getMessage()) {
+				for(Checkpoint other : checkpointsToBeCapped) {
+					if(other != checkpoint && !checkpointsToSkip.contains(other) && other.getMessage() == checkpoint.getMessage()) {
 						other.setMessage(cappedMessage);
 						checkpointsToSkip.add(other);
 					}
 				}
 				checkpoint.setMessage(cappedMessage);
+				checkpointsToSkip.add(checkpoint);
 			}
 		}
-	}
+    }
 	
 	public Object startpoint(String correlationId, String sourceClassName, String name, Object message) {
 		return checkpoint(correlationId, null, sourceClassName, name, message, Checkpoint.TYPE_STARTPOINT, 1);
