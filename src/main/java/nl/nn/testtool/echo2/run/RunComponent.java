@@ -518,6 +518,7 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 					}
 				}
 			}
+			refresh();
 		} else if (e.getActionCommand().equals("MoveSelected")) {
 			if (minimalOneSelected()) {
 				String newPath = normalizePath(pathTextField.getText());
