@@ -193,6 +193,9 @@ public class TestTool {
 	}
 
 	private void truncateCheckpointMessages(Report report) {
+		// For a message that is referenced by multiple checkpoints, have one truncated message that is
+		// referenced by those checkpoints, to prevent creating multiple String objects representing the
+		// same string and occupying unnecessary memory.
 		Map<String, String> truncatedMessages = new RefCompareMap<String, String>();
 		
 		for(Checkpoint cp : report.getCheckpoints()) {
