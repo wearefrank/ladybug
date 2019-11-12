@@ -86,6 +86,10 @@ public class TestTool {
 		this.maxMessageLength = maxMessageLength;
 	}
 
+	public int getMaxMessageLength() {
+		return maxMessageLength;
+	}
+
 	public void setDebugger(Debugger debugger) {
 		this.debugger = debugger;
 	}

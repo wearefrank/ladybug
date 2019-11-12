@@ -46,6 +46,7 @@ public class CheckpointComponent extends MessageComponent {
 	private RadioButton radioButtonStubOptionYes;
 	private RadioButton radioButtonStubOptionNo;
 	private Label messageHasBeenStubbedLabel;
+	private Label messageWasTruncatedLabel;
 	private Label estimatedMemoryUsageLabel;
 
 	public CheckpointComponent() {
@@ -122,6 +123,10 @@ public class CheckpointComponent extends MessageComponent {
 		messageHasBeenStubbedLabel.setText("Message has been stubbed (copied from original report)");
 		add(messageHasBeenStubbedLabel);
 
+		messageWasTruncatedLabel = Echo2Application.createInfoLabelWithColumnLayoutData();
+		messageWasTruncatedLabel.setVisible(false);
+		add(messageWasTruncatedLabel);
+
 		add(messageColumn);
 		add(messageTextArea);
 
@@ -163,6 +168,13 @@ public class CheckpointComponent extends MessageComponent {
 		String message = null;
 		if (checkpoint.getMessage() != null) {
 			message = checkpoint.getMessage();
+			
+			int originalMessageLength = checkpoint.getPreTruncatedMessageLength();
+			int maxMessageLength = testTool.getMaxMessageLength();
+			if(maxMessageLength > 0 && originalMessageLength > maxMessageLength) {
+				messageWasTruncatedLabel.setText("Message was truncated (" + (originalMessageLength - maxMessageLength) + " characters remaining)");
+				messageWasTruncatedLabel.setVisible(true);
+			}
 		}
 		if (compare) {
 			String messageCompare = null;
