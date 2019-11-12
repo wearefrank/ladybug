@@ -6,6 +6,8 @@ Ladybug Test Tool release notes
 Upcoming
 --------
 
+- Implement configurable checkpoint message truncating
+
 
 
 2.0.8

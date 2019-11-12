@@ -17,10 +17,13 @@ package nl.nn.testtool;
 
 import java.rmi.server.UID;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
+import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
@@ -40,6 +43,7 @@ public class TestTool {
 	private String configName;
 	private String configVersion;
 	private int maxCheckpoints = 2500;
+	private int maxMessageLength = -1;
 	private Debugger debugger;
 	private boolean reportGeneratorEnabled = true;
 	private List reportsInProgress = new ArrayList();
@@ -76,6 +80,14 @@ public class TestTool {
 
 	public int getMaxCheckpoints() {
 		return maxCheckpoints;
+	}
+
+	public void setMaxMessageLength(int maxMessageLength) {
+		this.maxMessageLength = maxMessageLength;
+	}
+
+	public int getMaxMessageLength() {
+		return maxMessageLength;
 	}
 
 	public void setDebugger(Debugger debugger) {
@@ -158,6 +170,10 @@ public class TestTool {
 					reportsInProgressEstimatedMemoryUsage = reportsInProgressEstimatedMemoryUsage + report.getEstimatedMemoryUsage();
 					if (report.finished()) {
 						report.setEndTime(System.currentTimeMillis());
+						if(maxMessageLength > 0) {
+							truncateCheckpointMessages(report);
+						}
+						
 						log.debug("Report is finished for '" + correlationId + "'");
 						reportsInProgress.remove(report);
 						reportsInProgressByCorrelationId.remove(correlationId);
@@ -174,6 +190,28 @@ public class TestTool {
 			}
 		}
 		return message;
+	}
+
+	private void truncateCheckpointMessages(Report report) {
+		// For a message that is referenced by multiple checkpoints, have one truncated message that is
+		// referenced by those checkpoints, to prevent creating multiple String objects representing the
+		// same string and occupying unnecessary memory.
+		Map<String, String> truncatedMessages = new RefCompareMap<String, String>();
+		
+		for(Checkpoint cp : report.getCheckpoints()) {
+			if(cp.getMessage() != null) {				
+				if(truncatedMessages.containsKey(cp.getMessage())) {
+					cp.setMessage(truncatedMessages.get(cp.getMessage()));
+				} else if(cp.getMessage().length() > maxMessageLength) {
+					String truncatedMessage = cp.getMessage().substring(0, maxMessageLength)
+						+ "... ("+(cp.getMessage().length() - maxMessageLength)+" more characters)";
+					
+					truncatedMessages.put(cp.getMessage(), truncatedMessage);
+					cp.setPreTruncatedMessageLength(cp.getMessage().length());
+					cp.setMessage(truncatedMessage);
+				}
+			}
+		}
 	}
 	
 	public Object startpoint(String correlationId, String sourceClassName, String name, Object message) {
@@ -381,5 +419,91 @@ public class TestTool {
 	public static String getImplementationVersion() {
 		return Package.getPackage("nl.nn.testtool").getImplementationVersion();
 	}
+}
 
+/**
+ * A custom implementation of the map interface that compares keys based on their object reference, i.e. comparing with 'o1 == o2' rather than 'o1.equals(o2)'.
+ * This greatly enhances the performance of maps with large objects as keys.
+ * <p>
+ * Note: Since this implementation was written with a specific use case in mind, most methods are not implemented and will throw an exception when called. 
+ */
+class RefCompareMap<K, V> implements Map<K, V> {
+	
+	private List<K> keys = new ArrayList<K>();
+	private List<V> values = new ArrayList<V>();
+	
+	@Override
+	public V get(Object key) {
+		int i = 0;
+		for(Object o : keys) {
+			if(o == key) {
+				return values.get(i);
+			}
+			i++;
+		}
+		return null;
+	}
+	
+	@Override
+	public V put(K key, V value) {
+		keys.add(key);
+		values.add(value);
+		
+		return value;
+	}
+	
+	@Override
+	public boolean containsKey(Object key) {
+		for(Object o : keys) {
+			if(o == key) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	@Override
+	public void clear() {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public boolean containsValue(Object value) {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public Set entrySet() {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public boolean isEmpty() {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public Set keySet() {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public void putAll(Map m) {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public V remove(Object key) {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public int size() {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public Collection values() {
+		throw new NotImplementedException();
+	}
 }
