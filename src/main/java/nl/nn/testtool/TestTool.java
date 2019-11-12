@@ -17,10 +17,13 @@ package nl.nn.testtool;
 
 import java.rmi.server.UID;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
+import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
@@ -164,7 +167,7 @@ public class TestTool {
 					if (report.finished()) {
 						report.setEndTime(System.currentTimeMillis());
 						if(maxMessageLength > 0) {
-							capCheckpointMessages(report);
+							truncateCheckpointMessages(report);
 						}
 						
 						log.debug("Report is finished for '" + correlationId + "'");
@@ -185,34 +188,24 @@ public class TestTool {
 		return message;
 	}
 
-    private void capCheckpointMessages(Report report) {
-    	List<Checkpoint> checkpointsToBeCapped = new ArrayList<Checkpoint>();
-    	for(Checkpoint cp : report.getCheckpoints()) {
-    		if(cp.getMessage() != null && cp.getMessage().length() > maxMessageLength) {
-    			checkpointsToBeCapped.add(cp);
-    		}
-    	}
-    	
-    	List<Checkpoint> checkpointsToSkip = new ArrayList<Checkpoint>();
-		for(Checkpoint checkpoint : checkpointsToBeCapped) {
-			if(!checkpointsToSkip.contains(checkpoint)) {
-				// For a message that is referenced by multiple checkpoints, have one capped message that is
-				// referenced by those checkpoints. This will prevent multiple string objects representing the
-				// same string from being created and occupying unnecessary memory.
-				String cappedMessage = checkpoint.getMessage().substring(0, maxMessageLength)
-						+ "... ("+(checkpoint.getMessage().length() - maxMessageLength)+" more characters)";
-				
-				for(Checkpoint other : checkpointsToBeCapped) {
-					if(other != checkpoint && !checkpointsToSkip.contains(other) && other.getMessage() == checkpoint.getMessage()) {
-						other.setMessage(cappedMessage);
-						checkpointsToSkip.add(other);
-					}
+	private void truncateCheckpointMessages(Report report) {
+		Map<String, String> truncatedMessages = new RefCompareMap<String, String>();
+		
+		for(Checkpoint cp : report.getCheckpoints()) {
+			if(cp.getMessage() != null) {				
+				if(truncatedMessages.containsKey(cp.getMessage())) {
+					cp.setMessage(truncatedMessages.get(cp.getMessage()));
+				} else if(cp.getMessage().length() > maxMessageLength) {
+					String truncatedMessage = cp.getMessage().substring(0, maxMessageLength)
+						+ "... ("+(cp.getMessage().length() - maxMessageLength)+" more characters)";
+					
+					truncatedMessages.put(cp.getMessage(), truncatedMessage);
+					cp.setPreTruncatedMessageLength(cp.getMessage().length());
+					cp.setMessage(truncatedMessage);
 				}
-				checkpoint.setMessage(cappedMessage);
-				checkpointsToSkip.add(checkpoint);
 			}
 		}
-    }
+	}
 	
 	public Object startpoint(String correlationId, String sourceClassName, String name, Object message) {
 		return checkpoint(correlationId, null, sourceClassName, name, message, Checkpoint.TYPE_STARTPOINT, 1);
@@ -419,5 +412,91 @@ public class TestTool {
 	public static String getImplementationVersion() {
 		return Package.getPackage("nl.nn.testtool").getImplementationVersion();
 	}
+}
 
+/**
+ * A custom implementation of the map interface that compares keys based on their object reference, i.e. comparing with 'o1 == o2' rather than 'o1.equals(o2)'.
+ * This greatly enhances the performance of maps with large objects as keys.
+ * <p>
+ * Note: Since this implementation was written with a specific use case in mind, most methods are not implemented and will throw an exception when called. 
+ */
+class RefCompareMap<K, V> implements Map<K, V> {
+	
+	private List<K> keys = new ArrayList<K>();
+	private List<V> values = new ArrayList<V>();
+	
+	@Override
+	public V get(Object key) {
+		int i = 0;
+		for(Object o : keys) {
+			if(o == key) {
+				return values.get(i);
+			}
+			i++;
+		}
+		return null;
+	}
+	
+	@Override
+	public V put(K key, V value) {
+		keys.add(key);
+		values.add(value);
+		
+		return value;
+	}
+	
+	@Override
+	public boolean containsKey(Object key) {
+		for(Object o : keys) {
+			if(o == key) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	@Override
+	public void clear() {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public boolean containsValue(Object value) {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public Set entrySet() {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public boolean isEmpty() {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public Set keySet() {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public void putAll(Map m) {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public V remove(Object key) {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public int size() {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public Collection values() {
+		throw new NotImplementedException();
+	}
 }
