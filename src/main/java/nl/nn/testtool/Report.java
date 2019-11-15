@@ -194,15 +194,19 @@ public class Report implements Serializable {
 		this.originalReport = originalReport;
 	}
 
-	protected Object checkpoint(String threadId, String sourceClassName, String name, Object message,
-			int checkpointType, int levelChangeNextCheckpoint) {
+	protected Object checkpoint(String threadId, String sourceClassName, String name, Object message, int checkpointType, int levelChangeNextCheckpoint) {
 		if (checkpointType == Checkpoint.TYPE_THREADCREATEPOINT) {
 			String threadName = Thread.currentThread().getName();
-			threads.add(threads.indexOf(threadName), threadId);
-			threadIndex.put(threadId, threadIndex.get(threadName));
-			threadFirstLevel.put(threadId, (Integer)threadLevel.get(threadName));
-			threadLevel.put(threadId, (Integer)threadLevel.get(threadName));
-			threadParent.put(threadId, threadName);
+			int index=threads.indexOf(threadName);
+			if (index<1) {
+				log.warn("Cannot create thread threadId ["+threadId+"], threadName ["+threadName+"] not found");
+			} else {
+				threads.add(threads.indexOf(threadName), threadId);
+				threadIndex.put(threadId, threadIndex.get(threadName));
+				threadFirstLevel.put(threadId, (Integer)threadLevel.get(threadName));
+				threadLevel.put(threadId, (Integer)threadLevel.get(threadName));
+				threadParent.put(threadId, threadName);
+			}
 		} else {
 			message = addCheckpoint(threadId, sourceClassName, name, message, checkpointType, levelChangeNextCheckpoint);
 		}
