@@ -317,9 +317,7 @@ public class Report implements Serializable {
 			Checkpoint checkpoint = originalReport.getCheckpoint(lastCheckpoint.getPath());
 			if (checkpoint != null) {
 				int i = originalReport.checkpoints.indexOf(checkpoint) + 1;
-				while (checkpoint.getType() != Checkpoint.TYPE_ENDPOINT
-						&& checkpoint.getType() != Checkpoint.TYPE_ABORTPOINT
-						&& i < originalReport.checkpoints.size()) {
+				while (checkpoint.getType() != Checkpoint.TYPE_ENDPOINT && checkpoint.getType() != Checkpoint.TYPE_ABORTPOINT && i < originalReport.checkpoints.size()) {
 					checkpoint = (Checkpoint)originalReport.checkpoints.get(i);
 					i++;
 				}

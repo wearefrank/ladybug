@@ -111,7 +111,8 @@ public class ParameterizedTypeImpl implements ParameterizedType {
      *     be instantiated for any reason
      * @since 1.5
      */
-    public Type[] getActualTypeArguments() {
+    @Override
+	public Type[] getActualTypeArguments() {
         return actualTypeArguments.clone();
     }
 
@@ -122,7 +123,8 @@ public class ParameterizedTypeImpl implements ParameterizedType {
      * @return the <tt>Type</tt> object representing the class or interface
      *     that declared this type
      */
-    public Class<?> getRawType() {
+    @Override
+	public Class<?> getRawType() {
         return rawType;
     }
 
@@ -144,7 +146,8 @@ public class ParameterizedTypeImpl implements ParameterizedType {
      *     for any reason
      *
      */
-    public Type getOwnerType() {
+    @Override
+	public Type getOwnerType() {
         return ownerType;
     }
 
@@ -208,7 +211,8 @@ public class ParameterizedTypeImpl implements ParameterizedType {
             (rawType == null   ? 0 : rawType.hashCode() );
     }
 
-    public String toString() {
+    @Override
+	public String toString() {
         StringBuilder sb = new StringBuilder();
 
         if (ownerType != null) {
