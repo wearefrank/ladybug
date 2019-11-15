@@ -57,11 +57,11 @@ public class Report implements Serializable {
 	private List<Checkpoint> checkpoints = new ArrayList<Checkpoint>();
 	private String transformation;
 	private transient Report originalReport;
-	private transient List threads = new ArrayList();
-	private transient Map threadIndex = new HashMap();
-	private transient Map threadFirstLevel = new HashMap();
-	private transient Map threadLevel = new HashMap();
-	private transient Map threadParent = new HashMap();
+	private transient List<String> threads = new ArrayList<String>();
+	private transient Map<String,Integer> threadIndex = new HashMap<String,Integer>();
+	private transient Map<String,Integer> threadFirstLevel = new HashMap<String,Integer>();
+	private transient Map<String,Integer> threadLevel = new HashMap<String,Integer>();
+	private transient Map<String,String> threadParent = new HashMap<String,String>();
 	private long estimatedMemoryUsage = 0;
 	// TODO bij storage interface documenteren dat storage setStorage aan moet roepen?
 	private transient Storage storage;
@@ -194,15 +194,19 @@ public class Report implements Serializable {
 		this.originalReport = originalReport;
 	}
 
-	protected Object checkpoint(String threadId, String sourceClassName, String name, Object message,
-			int checkpointType, int levelChangeNextCheckpoint) {
+	protected Object checkpoint(String threadId, String sourceClassName, String name, Object message, int checkpointType, int levelChangeNextCheckpoint) {
 		if (checkpointType == Checkpoint.TYPE_THREADCREATEPOINT) {
 			String threadName = Thread.currentThread().getName();
-			threads.add(threads.indexOf(threadName), threadId);
-			threadIndex.put(threadId, threadIndex.get(threadName));
-			threadFirstLevel.put(threadId, (Integer)threadLevel.get(threadName));
-			threadLevel.put(threadId, (Integer)threadLevel.get(threadName));
-			threadParent.put(threadId, threadName);
+			int index=threads.indexOf(threadName);
+			if (index<1) {
+				log.warn("Cannot create thread threadId ["+threadId+"], threadName ["+threadName+"] not found");
+			} else {
+				threads.add(threads.indexOf(threadName), threadId);
+				threadIndex.put(threadId, threadIndex.get(threadName));
+				threadFirstLevel.put(threadId, (Integer)threadLevel.get(threadName));
+				threadLevel.put(threadId, (Integer)threadLevel.get(threadName));
+				threadParent.put(threadId, threadName);
+			}
 		} else {
 			message = addCheckpoint(threadId, sourceClassName, name, message, checkpointType, levelChangeNextCheckpoint);
 		}
@@ -235,9 +239,9 @@ public class Report implements Serializable {
 				message = addCheckpoint(threadName, sourceClassName, name, message, checkpointType, index, level, levelChangeNextCheckpoint);
 				if (checkpointType == Checkpoint.TYPE_ABORTPOINT && checkpoints.size() < testTool.getMaxCheckpoints()) {
 					int firstLevel = ((Integer)threadFirstLevel.get(threadName)).intValue();
-					List checkpoints = getCheckpoints();
+					List<Checkpoint> checkpoints = getCheckpoints();
 					for (int i = index.intValue() - 1; i > -1; i--) {
-						Checkpoint checkpoint = (Checkpoint)checkpoints.get(i);
+						Checkpoint checkpoint = checkpoints.get(i);
 						if (level.intValue() <= firstLevel + 1) {
 							i = -1;
 						} else {
@@ -297,7 +301,7 @@ public class Report implements Serializable {
 			log.warn("Maximum number of checkpoints exceeded, ignored checkpoint " + getCheckpointLogDescription(name, checkpointType, level));
 		}
 		for (int i = threads.indexOf(threadName); i < threads.size(); i++) {
-			Object key = threads.get(i);
+			String key = threads.get(i);
 			Integer value = (Integer)threadIndex.get(key);
 			threadIndex.put(key, new Integer(value.intValue() + 1));
 		}
@@ -355,9 +359,9 @@ public class Report implements Serializable {
 
 	public Checkpoint getCheckpoint(Path path) {
 		Checkpoint result = null;
-		Iterator iterator = checkpoints.iterator();
+		Iterator<Checkpoint> iterator = checkpoints.iterator();
 		while (result == null && iterator.hasNext()) {
-			Checkpoint checkpoint = (Checkpoint)iterator.next();
+			Checkpoint checkpoint = iterator.next();
 			if (path.equals(checkpoint.getPath())) {
 				result = checkpoint;
 			}
@@ -365,7 +369,7 @@ public class Report implements Serializable {
 		return result;
 	}
 
-	public void setCheckpoints(List checkpoints) {
+	public void setCheckpoints(List<Checkpoint> checkpoints) {
 		this.checkpoints = checkpoints;
 	}
 
@@ -413,6 +417,7 @@ public class Report implements Serializable {
 		return testTool.getMessageTransformer();
 	}
 
+	@Override
 	public Object clone() throws CloneNotSupportedException {
 		Report report = new Report();
 		report.setTestTool(testTool);
@@ -424,9 +429,9 @@ public class Report implements Serializable {
 		report.setPath(path);
 		report.setStubStrategy(stubStrategy);
 		report.setEstimatedMemoryUsage(estimatedMemoryUsage);
-		List checkpoints = new ArrayList();
+		List<Checkpoint> checkpoints = new ArrayList<Checkpoint>();
 		for (int i = 0; i < this.checkpoints.size(); i++) {
-			Checkpoint checkpoint = (Checkpoint)this.checkpoints.get(i);
+			Checkpoint checkpoint = this.checkpoints.get(i);
 			checkpoint = (Checkpoint)checkpoint.clone();
 			checkpoint.setReport(report);
 			checkpoints.add(checkpoint);
@@ -435,6 +440,7 @@ public class Report implements Serializable {
 		return report;
 	}
 
+	@Override
 	public String toString() {
 		return name;
 	}
@@ -452,9 +458,9 @@ public class Report implements Serializable {
 			stringBuffer.append(" NumberOfCheckpoints=\"" + getNumberOfCheckpoints() + "\"");
 			stringBuffer.append(" EstimatedMemoryUsage=\"" + estimatedMemoryUsage + "\"");
 			stringBuffer.append(">");
-			Iterator iterator = checkpoints.iterator();
+			Iterator<Checkpoint> iterator = checkpoints.iterator();
 			while (iterator.hasNext()) {
-				Checkpoint checkpoint = (Checkpoint)iterator.next();
+				Checkpoint checkpoint = iterator.next();
 				Object object = checkpoint.getMessage();
 				if (object != null) {
 					stringBuffer.append("<Checkpoint");
