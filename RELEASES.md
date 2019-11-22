@@ -6,7 +6,14 @@ Ladybug Test Tool release notes
 Upcoming
 --------
 
-- Implement configurable checkpoint message truncating
+
+
+2.0.9
+---
+
+- Add refresh after test tab delete action (#2)
+- Add configurable checkpoint message truncating
+- Avoid IndexOutOfBoundException when starting an unknown thread (#5)
 
 
 
