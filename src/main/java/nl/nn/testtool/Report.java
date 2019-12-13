@@ -73,6 +73,7 @@ public class Report implements Serializable {
 	private transient String xml;
 	private transient boolean differenceChecked = false;
 	private transient boolean differenceFound = false;
+	private String tag;
 
 	public Report() {
 		String threadName = Thread.currentThread().getName();
@@ -517,4 +518,11 @@ public class Report implements Serializable {
 		return "(name: " + name + ", type: " + Checkpoint.getTypeAsString(type) + ", level: " + level + ", correlationId: " + correlationId + ")";
 	}
 
+	public String getTag() {
+		return tag;
+	}
+	
+	public void setTag(String tag) {
+		this.tag = tag;
+	}
 }

@@ -24,6 +24,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.TooManyListenersException;
 
+import org.apache.commons.lang.StringUtils;
+
 import echopointng.ProgressBar;
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.CheckBox;
@@ -385,6 +387,13 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 		Echo2Application.decorateButton(button);
 		row.add(button);
 
+		Report report = null;
+		try {
+			report = runStorage.getReport(Integer.parseInt(storageId));
+		} catch (StorageException e) {
+			displayAndLogError(e);
+		}
+
 		Label label = new Label(path + name);
 		RunResult runResult = reportRunner.getResults().get(Integer.parseInt(storageId));
 		if (runResult != null) {
@@ -397,12 +406,6 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 					label = Echo2Application.createErrorLabel();
 					label.setText("Result report not found. Report generator not enabled?");
 				} else {
-					Report report = null;
-					try {
-						report = runStorage.getReport(Integer.parseInt(storageId));
-					} catch (StorageException e) {
-						displayAndLogError(e);
-					}
 					if (report != null) {
 						String stubInfo = "";
 						if (!"Never".equals(report.getStubStrategy())) {
@@ -429,6 +432,13 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 		}
 
 		row.add(label);
+		
+		label = new Label("["+report.getTag()+"]");
+		label.setForeground(Echo2Application.getButtonBackgroundColor());
+		label.setFont(Echo2Application.getMessageFont());
+		label.setVisible(StringUtils.isNotEmpty(report.getTag()));
+		row.add(label);
+		
 		add(row);
 
 		// TODO runStorage.getMetadata geeft blijkbaar "null" terug, fixen

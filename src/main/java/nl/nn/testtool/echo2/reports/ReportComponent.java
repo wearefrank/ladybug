@@ -15,6 +15,8 @@
 */
 package nl.nn.testtool.echo2.reports;
 
+import java.util.HashSet;
+
 import org.springframework.util.StringUtils;
 
 import echopointng.tree.DefaultMutableTreeNode;
@@ -65,6 +67,9 @@ public class ReportComponent extends MessageComponent {
 	private TextArea transformationTextArea;
 	private WindowPane deleteWarningWindow;
 	private Label deleteIdLabel;
+	private Label tagNotificationLabel;
+	private TextField newTagTextArea;
+	private Label tagLabel;
 
 	public ReportComponent() {
 		super();
@@ -190,6 +195,24 @@ public class ReportComponent extends MessageComponent {
 		pathTextField = new TextField();
 		pathTextField.setVisible(false);
 		pathRow.add(pathTextField);
+		
+		Row tagRow = Echo2Application.getNewRow();
+		tagRow.setInsets(new Insets(0, 5, 0, 0));
+		add(tagRow);
+		
+		tagLabel = Echo2Application.createInfoLabel();
+		tagLabel.setText("Tag: ");
+		tagRow.add(tagLabel);
+		
+		newTagTextArea = new TextField();
+		newTagTextArea.setWidth(new Extent(120));
+		newTagTextArea.setMaximumLength(15);
+		newTagTextArea.setVisible(false);
+		tagRow.add(newTagTextArea);
+
+		tagNotificationLabel = new Label("");
+		tagNotificationLabel.setVisible(false);
+		tagRow.add(tagNotificationLabel);
 
 		Row transformationRow = Echo2Application.getNewRow();
 		transformationRow.setInsets(new Insets(0, 5, 0, 0));
@@ -352,6 +375,7 @@ public class ReportComponent extends MessageComponent {
 			pathTextField.setText(path);
 		}
 		report.setPath(path);
+		updateReportTag(newTagTextArea.getText());
 		report.setTransformation(transformationTextArea.getText());
 		report.flushCachedXml();
 		if (report.getStorage() instanceof CrudStorage) {
@@ -361,11 +385,35 @@ public class ReportComponent extends MessageComponent {
 		super.save();
 	}
 
+	private void updateReportTag(String tag) {
+		boolean tagChanged = !tag.equals(report.getTag());
+		
+		tagNotificationLabel.setVisible(tagChanged);
+		if(tagChanged) {
+			if(StringUtils.isEmpty(tag)) {
+				report.setTag(null);
+				tagNotificationLabel.setText("Report tag cleared");
+				tagNotificationLabel.setForeground(Echo2Application.getTagOkayMessageTextColor());
+				tagNotificationLabel.setBackground(Echo2Application.getOkayBackgroundColor());
+			} else if(tag.matches("[a-zA-Z0-9 ]+")) {
+				report.setTag(tag);
+				tagNotificationLabel.setText("Report tag set to '"+tag+"'");
+				tagNotificationLabel.setForeground(Echo2Application.getTagOkayMessageTextColor());
+				tagNotificationLabel.setBackground(Echo2Application.getOkayBackgroundColor());
+			} else {
+				tagNotificationLabel.setText("Tag may only contain alphanumeric characters");
+				tagNotificationLabel.setForeground(Echo2Application.getButtonForegroundColor());
+				tagNotificationLabel.setBackground(Echo2Application.getErrorBackgroundColor());
+			}
+		}
+	}
+
 	@Override
 	protected void updateMessageComponents() {
 		super.updateMessageComponents();
 		updateNameLabelAndNameTextField();
 		updateDescriptionLabelAndDescriptionColumnAndTextArea();
+		updateTagLabelAndTextFieldAndButtons();
 		updatePathLabelAndPathTextField();
 		updateTransformationLabelAndTransformationColumnAndTextArea();
 	}
@@ -424,6 +472,20 @@ public class ReportComponent extends MessageComponent {
 			addLineNumbers(transformationColumn);
 		}
 		transformationTextArea.setText(report.getTransformation());
+	}
+
+	private void updateTagLabelAndTextFieldAndButtons() {
+		String reportTag = report.getTag() != null ? report.getTag() : "";
+		if(infoPane.edit()) {
+			tagLabel.setText("Tag: ");
+			tagNotificationLabel.setVisible(true);
+			newTagTextArea.setText(reportTag);
+			newTagTextArea.setVisible(true);
+		} else {
+			tagLabel.setText("Tag: " + reportTag);
+			tagNotificationLabel.setVisible(false);
+			newTagTextArea.setVisible(false);
+		}
 	}
 
 	@Override

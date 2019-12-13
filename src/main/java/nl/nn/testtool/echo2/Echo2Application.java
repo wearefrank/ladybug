@@ -87,6 +87,7 @@ public class Echo2Application extends ApplicationInstance implements Application
 	private static Color differenceFoundTextColor = Color.RED;
 	private static Color noDifferenceFoundTextColor = noDifferenceFoundLabelColor;
 	private static Color lineNumberTextColor = Color.WHITE;
+	private static Color tagOkayMessageTextColor = Color.BLACK;
 	private static Font messageFont = new Font(Font.MONOSPACE, Font.PLAIN, new Extent(12));
 	private static ColumnLayoutData columnLayoutDataForLabel;
 	static {
@@ -635,5 +636,9 @@ public class Echo2Application extends ApplicationInstance implements Application
 			return commandIssuedBy;
 		}
 		return null;
+	}
+
+	public static Color getTagOkayMessageTextColor() {
+		return tagOkayMessageTextColor;
 	}
 }
