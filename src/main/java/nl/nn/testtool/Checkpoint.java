@@ -39,7 +39,7 @@ public class Checkpoint implements Serializable, Cloneable {
 	private int level = 0;
 	private boolean messageHasBeenStubbed = false;
 	private int stub = STUB_FOLLOW_REPORT_STRATEGY;
-	private int preTruncatedMessageLength;
+	private int preTruncatedMessageLength = -1;
 
 	public transient static final int TYPE_NONE = 0;
 	public transient static final int TYPE_STARTPOINT = 1;
