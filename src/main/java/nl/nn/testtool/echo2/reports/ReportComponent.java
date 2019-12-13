@@ -15,8 +15,6 @@
 */
 package nl.nn.testtool.echo2.reports;
 
-import java.util.HashSet;
-
 import org.springframework.util.StringUtils;
 
 import echopointng.tree.DefaultMutableTreeNode;
@@ -165,6 +163,7 @@ public class ReportComponent extends MessageComponent {
 		nameRow.add(nameLabel);
 
 		nameTextField = new TextField();
+		nameTextField.setWidth(new Extent(320));
 		nameTextField.setVisible(false);
 		nameRow.add(nameTextField);
 
@@ -193,6 +192,7 @@ public class ReportComponent extends MessageComponent {
 		pathRow.add(pathLabel);
 
 		pathTextField = new TextField();
+		pathTextField.setWidth(new Extent(320));
 		pathTextField.setVisible(false);
 		pathRow.add(pathTextField);
 		
