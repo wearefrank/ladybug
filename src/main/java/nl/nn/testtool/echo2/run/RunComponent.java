@@ -365,12 +365,6 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 		Echo2Application.decorateButton(button);
 		row.add(button);
 
-		button = new Button("Delete");
-		button.setActionCommand("Delete");
-		button.addActionListener(this);
-		Echo2Application.decorateButton(button);
-		row.add(button);
-
 		button = new Button("Compare");
 		button.setActionCommand("Compare");
 		button.addActionListener(this);
@@ -419,15 +413,14 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 						} else {
 							label.setForeground(Echo2Application.getDifferenceFoundTextColor());
 						}
-						Button compareButton = (Button)row.getComponent(4);
+						Button compareButton = (Button)row.getComponent(3);
 						compareButton.setVisible(true);
-						Button replaceButton = (Button)row.getComponent(5);
+						Button replaceButton = (Button)row.getComponent(4);
 						replaceButton.setVisible(true);
 					}
 				}
 			}
 		}
-
 		row.add(label);
 		add(row);
 
