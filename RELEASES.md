@@ -6,6 +6,15 @@ Ladybug Test Tool release notes
 Upcoming
 --------
 
+- Improve accuracy of memory usage estimation for reports and checkpoints
+
+
+
+2.0.10
+---
+
+- Remove single-report delete button (button to delete selected reports remains)
+
 
 
 2.0.9
