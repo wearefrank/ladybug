@@ -6,6 +6,15 @@ Ladybug Test Tool release notes
 Upcoming
 --------
 
+- Increase width of name/path textfields when editing a report
+
+
+
+2.0.10
+---
+
+- Remove single-report delete button (button to delete selected reports remains)
+
 
 
 2.0.9
