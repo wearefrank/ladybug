@@ -313,6 +313,13 @@ public class Report implements Serializable {
 		threadLevel.put(threadName, level);
 		return message;
 	}
+	
+	public void recalculateEstMemUsage() {
+		estimatedMemoryUsage = 0;
+		for(Checkpoint cp : checkpoints) {
+			estimatedMemoryUsage += cp.getEstimatedMemoryUsage();
+		}
+	}
 
 	public Checkpoint getOriginalEndpointOrAbortpointForCurrentLevel() {
 		Checkpoint result = null;

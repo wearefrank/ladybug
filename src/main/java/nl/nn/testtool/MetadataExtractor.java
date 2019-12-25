@@ -65,7 +65,7 @@ public class MetadataExtractor {
 			return "End time";
 		}
 		if (metadataName.equals("estimatedMemoryUsage")) {
-			return "Estimated memory usage";
+			return "Estimated memory usage in bytes";
 		}
 		if (metadataName.equals("numberOfCheckpoints")) {
 			return "Number of checkpoints";

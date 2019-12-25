@@ -196,22 +196,25 @@ public class TestTool {
 		// For a message that is referenced by multiple checkpoints, have one truncated message that is
 		// referenced by those checkpoints, to prevent creating multiple String objects representing the
 		// same string and occupying unnecessary memory.
-		Map<String, String> truncatedMessages = new RefCompareMap<String, String>();
+		Map<String, String> truncatedMessageMap = new RefCompareMap<String, String>();
 		
 		for(Checkpoint cp : report.getCheckpoints()) {
 			if(cp.getMessage() != null) {				
-				if(truncatedMessages.containsKey(cp.getMessage())) {
-					cp.setMessage(truncatedMessages.get(cp.getMessage()));
+				if(truncatedMessageMap.containsKey(cp.getMessage())) {
+					cp.setMessage(truncatedMessageMap.get(cp.getMessage()));
+					cp.setEstimatedMemoryUsage(0L);
 				} else if(cp.getMessage().length() > maxMessageLength) {
 					String truncatedMessage = cp.getMessage().substring(0, maxMessageLength)
 						+ "... ("+(cp.getMessage().length() - maxMessageLength)+" more characters)";
 					
-					truncatedMessages.put(cp.getMessage(), truncatedMessage);
+					truncatedMessageMap.put(cp.getMessage(), truncatedMessage);
 					cp.setPreTruncatedMessageLength(cp.getMessage().length());
 					cp.setMessage(truncatedMessage);
+					cp.setEstimatedMemoryUsage(2 * truncatedMessage.length());
 				}
 			}
 		}
+		report.recalculateEstMemUsage();
 	}
 	
 	public Object startpoint(String correlationId, String sourceClassName, String name, Object message) {
