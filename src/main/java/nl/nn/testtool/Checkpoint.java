@@ -202,7 +202,14 @@ public class Checkpoint implements Serializable, Cloneable {
 		if (message == null) {
 			return 0L;
 		} else {
-			return message.length() * 2;
+			int maxMessageLength = report.getTestTool().getMaxMessageLength();
+			if(maxMessageLength > 0 && message.length() > maxMessageLength) {
+				// +29 to take a "... (1000000 more characters)" suffix into account; might be
+				// off by up to 12 bytes, based on how many characters were actually truncated.
+				return (maxMessageLength + 29) * 2;
+			} else {
+				return message.length() * 2;
+			}
 		}
 	}
 
