@@ -219,6 +219,12 @@ public class Checkpoint implements Serializable, Cloneable {
 		return name;
 	}
 
+	/**
+	 * Sets the length of the message before it was truncated, so that the Ladybug's UI
+	 * can display the amount of characters that were removed from the original message.
+	 * 
+	 * @param length The length of the message before it was truncated.
+	 */
 	public void setPreTruncatedMessageLength(int length) {
 		preTruncatedMessageLength = length;
 	}
