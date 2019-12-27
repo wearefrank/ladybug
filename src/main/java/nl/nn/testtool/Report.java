@@ -17,10 +17,12 @@ package nl.nn.testtool;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import nl.nn.testtool.storage.Storage;
 import nl.nn.testtool.transform.MessageTransformer;
@@ -28,6 +30,7 @@ import nl.nn.testtool.transform.ReportXmlTransformer;
 import nl.nn.testtool.util.EscapeUtil;
 import nl.nn.testtool.util.LogUtil;
 
+import org.apache.commons.lang.NotImplementedException;
 import org.apache.log4j.Logger;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
@@ -73,7 +76,8 @@ public class Report implements Serializable {
 	private transient String xml;
 	private transient boolean differenceChecked = false;
 	private transient boolean differenceFound = false;
-
+	private transient Map<String, String> truncatedMessageMap = new RefCompareMap<String, String>();
+	
 	public Report() {
 		String threadName = Thread.currentThread().getName();
 		threads.add(threadName);
@@ -264,7 +268,7 @@ public class Report implements Serializable {
 	}
 
 	private Object addCheckpoint(String threadName, String sourceClassName, String name, Object message, int checkpointType, Integer index, Integer level, int levelChangeNextCheckpoint) {
-		if (checkpoints.size() < testTool.getMaxCheckpoints()) {
+		if (checkpoints.size() < testTool.getMaxCheckpoints() || getEstimatedMemoryUsage() < 100000000L) {
 			Checkpoint checkpoint = new Checkpoint(this, threadName, sourceClassName, name, message, checkpointType, level.intValue());
 			checkpoints.add(index.intValue(), checkpoint);
 			if (originalReport != null) {
@@ -293,7 +297,10 @@ public class Report implements Serializable {
 					checkpoint.setMessageHasBeenStubbed(true);
 				}
 			}
-			estimatedMemoryUsage = estimatedMemoryUsage + checkpoint.getEstimatedMemoryUsage();
+			if(testTool.getMaxMessageLength() > 0 && message != null && message.toString().length() > testTool.getMaxMessageLength()) {
+				checkpoint.setMessage(truncateMessage(checkpoint, message.toString()));
+			}
+			estimatedMemoryUsage += checkpoint.getEstimatedMemoryUsage();
 			if (log.isDebugEnabled()) {
 				log.debug("Added checkpoint " + getCheckpointLogDescription(name, checkpointType, level));
 			}
@@ -308,6 +315,24 @@ public class Report implements Serializable {
 		level = new Integer(level.intValue() + levelChangeNextCheckpoint);
 		threadLevel.put(threadName, level);
 		return message;
+	}
+	
+	private String truncateMessage(Checkpoint checkpoint, String message) {
+		// For a message that is referenced by multiple checkpoints, have one truncated message that is
+		// referenced by those checkpoints, to prevent creating multiple String objects representing the
+		// same string and occupying unnecessary memory.
+		if(truncatedMessageMap.containsKey(message)) {
+			checkpoint.setEstimatedMemoryUsage(0L);
+			return truncatedMessageMap.get(message);
+		} else {
+			String truncatedMessage = message.substring(0, testTool.getMaxMessageLength())
+				+ "... ("+(message.length() - testTool.getMaxMessageLength())+" more characters)";
+			
+			truncatedMessageMap.put(message, truncatedMessage);
+			checkpoint.setEstimatedMemoryUsage(2 * truncatedMessage.length());
+			checkpoint.setPreTruncatedMessageLength(message.length());
+			return truncatedMessage;
+		}
 	}
 
 	public Checkpoint getOriginalEndpointOrAbortpointForCurrentLevel() {
@@ -517,4 +542,91 @@ public class Report implements Serializable {
 		return "(name: " + name + ", type: " + Checkpoint.getTypeAsString(type) + ", level: " + level + ", correlationId: " + correlationId + ")";
 	}
 
+}
+
+/**
+ * A custom implementation of the map interface that compares keys based on their object reference, i.e. comparing with 'o1 == o2' rather than 'o1.equals(o2)'.
+ * This greatly enhances the performance of maps with large objects as keys.
+ * <p>
+ * Note: Since this implementation was written with a specific use case in mind, most methods are not implemented and will throw an exception when called. 
+ */
+class RefCompareMap<K, V> implements Map<K, V> {
+	
+	private List<K> keys = new ArrayList<K>();
+	private List<V> values = new ArrayList<V>();
+	
+	@Override
+	public V get(Object key) {
+		int i = 0;
+		for(Object o : keys) {
+			if(o == key) {
+				return values.get(i);
+			}
+			i++;
+		}
+		return null;
+	}
+	
+	@Override
+	public V put(K key, V value) {
+		keys.add(key);
+		values.add(value);
+		
+		return value;
+	}
+	
+	@Override
+	public boolean containsKey(Object key) {
+		for(Object o : keys) {
+			if(o == key) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	@Override
+	public void clear() {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public boolean containsValue(Object value) {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public Set entrySet() {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public boolean isEmpty() {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public Set keySet() {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public void putAll(Map m) {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public V remove(Object key) {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public int size() {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public Collection values() {
+		throw new NotImplementedException();
+	}
 }
