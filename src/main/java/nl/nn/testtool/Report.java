@@ -321,6 +321,7 @@ public class Report implements Serializable {
 		// For a message that is referenced by multiple checkpoints, have one truncated message that is
 		// referenced by those checkpoints, to prevent creating multiple String objects representing the
 		// same string and occupying unnecessary memory.
+		checkpoint.setPreTruncatedMessageLength(message.length());
 		if(truncatedMessageMap.containsKey(message)) {
 			checkpoint.setEstimatedMemoryUsage(0L);
 			return truncatedMessageMap.get(message);
@@ -330,7 +331,6 @@ public class Report implements Serializable {
 			
 			truncatedMessageMap.put(message, truncatedMessage);
 			checkpoint.setEstimatedMemoryUsage(2 * truncatedMessage.length());
-			checkpoint.setPreTruncatedMessageLength(message.length());
 			return truncatedMessage;
 		}
 	}
