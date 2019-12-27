@@ -160,6 +160,7 @@ public class ReportComponent extends MessageComponent {
 		nameRow.add(nameLabel);
 
 		nameTextField = new TextField();
+		nameTextField.setWidth(new Extent(360));
 		nameTextField.setVisible(false);
 		nameRow.add(nameTextField);
 
@@ -188,6 +189,7 @@ public class ReportComponent extends MessageComponent {
 		pathRow.add(pathLabel);
 
 		pathTextField = new TextField();
+		pathTextField.setWidth(new Extent(360));
 		pathTextField.setVisible(false);
 		pathRow.add(pathTextField);
 

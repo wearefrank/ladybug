@@ -6,14 +6,8 @@ Ladybug Test Tool release notes
 Upcoming
 --------
 
+- Increase width of name/path textfields when editing a report
 - Fix checkpoint showing wrong truncate message
-
-
-
-2.0.10
----
-
-- Remove single-report delete button (button to delete selected reports remains)
 
 
 
