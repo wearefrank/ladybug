@@ -7,6 +7,7 @@ Upcoming
 --------
 
 - Increase width of name/path textfields when editing a report
+- Fix checkpoint showing wrong truncate message
 
 
 
