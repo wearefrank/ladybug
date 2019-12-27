@@ -201,6 +201,7 @@ public class TestTool {
 		for(Checkpoint cp : report.getCheckpoints()) {
 			if(cp.getMessage() != null) {				
 				if(truncatedMessages.containsKey(cp.getMessage())) {
+					cp.setPreTruncatedMessageLength(cp.getMessage().length());
 					cp.setMessage(truncatedMessages.get(cp.getMessage()));
 				} else if(cp.getMessage().length() > maxMessageLength) {
 					String truncatedMessage = cp.getMessage().substring(0, maxMessageLength)

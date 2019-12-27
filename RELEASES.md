@@ -6,6 +6,15 @@ Ladybug Test Tool release notes
 Upcoming
 --------
 
+- Fix checkpoint showing wrong truncate message
+
+
+
+2.0.10
+---
+
+- Remove single-report delete button (button to delete selected reports remains)
+
 
 
 2.0.10
