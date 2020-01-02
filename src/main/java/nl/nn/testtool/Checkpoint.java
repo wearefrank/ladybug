@@ -40,6 +40,7 @@ public class Checkpoint implements Serializable, Cloneable {
 	private boolean messageHasBeenStubbed = false;
 	private int stub = STUB_FOLLOW_REPORT_STRATEGY;
 	private int preTruncatedMessageLength = -1;
+	private long estimatedMemoryUsage = -1;
 
 	public transient static final int TYPE_NONE = 0;
 	public transient static final int TYPE_STARTPOINT = 1;
@@ -199,7 +200,9 @@ public class Checkpoint implements Serializable, Cloneable {
 	 * @return estimated memory usage in bytes
 	 */
 	public long getEstimatedMemoryUsage() {
-		if (message == null) {
+		if (estimatedMemoryUsage > -1) {
+			return estimatedMemoryUsage;
+		} else if (message == null) {
 			return 0L;
 		} else {
 			return message.length() * 2;
@@ -216,11 +219,21 @@ public class Checkpoint implements Serializable, Cloneable {
 		return name;
 	}
 
+	/**
+	 * Sets the length of the message before it was truncated, so that the Ladybug's UI
+	 * can display the amount of characters that were removed from the original message.
+	 * 
+	 * @param length The length of the message before it was truncated.
+	 */
 	public void setPreTruncatedMessageLength(int length) {
 		preTruncatedMessageLength = length;
 	}
 
 	public int getPreTruncatedMessageLength() {
 		return preTruncatedMessageLength;
+	}
+	
+	public void setEstimatedMemoryUsage(long estimatedMemoryUsage) {
+		this.estimatedMemoryUsage = estimatedMemoryUsage;
 	}
 }
