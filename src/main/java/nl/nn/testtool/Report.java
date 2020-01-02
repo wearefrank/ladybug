@@ -19,6 +19,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -305,7 +306,11 @@ public class Report implements Serializable {
 				log.debug("Added checkpoint " + getCheckpointLogDescription(name, checkpointType, level));
 			}
 		} else {
-			log.warn("Maximum number of checkpoints exceeded, ignored checkpoint " + getCheckpointLogDescription(name, checkpointType, level));
+			if(checkpoints.size() == testTool.getMaxCheckpoints()){
+				log.warn("Maximum number of checkpoints exceeded, ignored checkpoint " + getCheckpointLogDescription(name, checkpointType, level));
+			} else {
+				log.warn("Maximum memory usage reached for this report, ignored checkpoint " + getCheckpointLogDescription(name, checkpointType, level));
+			}
 		}
 		for (int i = threads.indexOf(threadName); i < threads.size(); i++) {
 			Object key = threads.get(i);
