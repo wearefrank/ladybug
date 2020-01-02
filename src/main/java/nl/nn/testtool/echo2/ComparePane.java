@@ -148,7 +148,8 @@ public class ComparePane extends Tab implements BeanParent {
 		splitPane1.setResizable(true);
 		// TODO: Change separator position to 50% of browser's screen width for compatibility
 		// with values other than the most common full-sized browser window width of 1920px;
-		// using "new Extent(50, Extent.PERCENT)" is 'unsupported for this context'.
+		// using "new Extent(50, Extent.PERCENT)" returns an exception saying the
+		// 'Extent.PERCENT' unit is 'unsupported for this context'.
 		splitPane1.setSeparatorPosition(new Extent(960, Extent.PX));
 
 		SplitPane splitPane2 = new SplitPane(SplitPane.ORIENTATION_VERTICAL);
