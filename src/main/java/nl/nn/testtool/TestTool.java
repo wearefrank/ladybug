@@ -44,6 +44,7 @@ public class TestTool {
 	private String configVersion;
 	private int maxCheckpoints = 2500;
 	private int maxMessageLength = -1;
+	private long maxMemoryUsage = 100000000L;
 	private Debugger debugger;
 	private boolean reportGeneratorEnabled = true;
 	private List reportsInProgress = new ArrayList();
@@ -88,6 +89,19 @@ public class TestTool {
 
 	public int getMaxMessageLength() {
 		return maxMessageLength;
+	}
+	
+	public void setMaxMemoryUsage(long maxMemoryUsage) {
+		this.maxMemoryUsage = maxMemoryUsage;
+	}
+	
+	/**
+	 * 
+	 * @return The value of <code>ibistesttool.maxMemoryUsage</code> as (optionally) specified in a property file.
+	 * If no such property is found, a default value is used.
+	 */
+	public long getMaxMemoryUsage() {
+		return maxMemoryUsage;
 	}
 
 	public void setDebugger(Debugger debugger) {

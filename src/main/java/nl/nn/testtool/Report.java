@@ -264,7 +264,7 @@ public class Report implements Serializable {
 	}
 
 	private Object addCheckpoint(String threadName, String sourceClassName, String name, Object message, int checkpointType, Integer index, Integer level, int levelChangeNextCheckpoint) {
-		if (checkpoints.size() < testTool.getMaxCheckpoints()) {
+		if (checkpoints.size() < testTool.getMaxCheckpoints() && getEstimatedMemoryUsage() < testTool.getMaxMemoryUsage()) {
 			Checkpoint checkpoint = new Checkpoint(this, threadName, sourceClassName, name, message, checkpointType, level.intValue());
 			checkpoints.add(index.intValue(), checkpoint);
 			if (originalReport != null) {
