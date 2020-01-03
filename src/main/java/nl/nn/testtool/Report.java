@@ -268,7 +268,7 @@ public class Report implements Serializable {
 	}
 
 	private Object addCheckpoint(String threadName, String sourceClassName, String name, Object message, int checkpointType, Integer index, Integer level, int levelChangeNextCheckpoint) {
-		if (checkpoints.size() < testTool.getMaxCheckpoints()) {
+		if (checkpoints.size() < testTool.getMaxCheckpoints() && getEstimatedMemoryUsage() < testTool.getMaxMemoryUsage()) {
 			Checkpoint checkpoint = new Checkpoint(this, threadName, sourceClassName, name, message, checkpointType, level.intValue());
 			checkpoints.add(index.intValue(), checkpoint);
 			if (originalReport != null) {
@@ -305,7 +305,11 @@ public class Report implements Serializable {
 				log.debug("Added checkpoint " + getCheckpointLogDescription(name, checkpointType, level));
 			}
 		} else {
-			log.warn("Maximum number of checkpoints exceeded, ignored checkpoint " + getCheckpointLogDescription(name, checkpointType, level));
+			if(checkpoints.size() == testTool.getMaxCheckpoints()){
+				log.warn("Maximum number of checkpoints exceeded, ignored checkpoint " + getCheckpointLogDescription(name, checkpointType, level));
+			} else {
+				log.warn("Maximum memory usage reached for this report, ignored checkpoint " + getCheckpointLogDescription(name, checkpointType, level));
+			}
 		}
 		for (int i = threads.indexOf(threadName); i < threads.size(); i++) {
 			Object key = threads.get(i);
