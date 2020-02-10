@@ -36,6 +36,7 @@ import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.DocumentHelper;
 
+import net.sf.saxon.trans.XPathException;
 /**
  * @author Jaco de Groot
  */
@@ -162,6 +163,10 @@ public class Report implements Serializable {
 		return path;
 	}
 
+	public String getFullPath() {
+		return (StringUtils.isNotEmpty(getPath()) ? getPath() : "/") + getName();
+	}
+	
 	public void setStubStrategy(String stubStrategy) {
 		this.stubStrategy = stubStrategy;
 	}
@@ -473,6 +478,10 @@ public class Report implements Serializable {
 	}
 
 	public String toXml() {
+		return toXml(false);
+	}
+	
+	public String toXml(boolean ignoreInput) {
 		if (xml == null) {
 			StringBuffer stringBuffer = new StringBuffer();
 			stringBuffer.append("<Report");
@@ -501,23 +510,36 @@ public class Report implements Serializable {
 					} catch (DocumentException e) {
 						document = null;
 					}
+					String checkpointMessage = null;
+					if(ignoreInput) {
+						checkpointMessage = "INPUT IGNORED";
+						ignoreInput = false;
+					}
 					if (document == null) {
+						if(checkpointMessage == null) {
+							checkpointMessage = EscapeUtil.escapeXml(message);
+						}
 						stringBuffer.append(">");
-						stringBuffer.append(EscapeUtil.escapeXml(message));
+						stringBuffer.append(checkpointMessage);
 						stringBuffer.append("</Checkpoint>");
 					} else {
 						String textDecl = null;
-						if (message.startsWith("<?")) {
-							int i = message.indexOf("?>") + 2;
-							textDecl = message.substring(0, i);
-							stringBuffer.append(" TextDecl=\"");
-							stringBuffer.append(EscapeUtil.escapeXml(textDecl));
-							stringBuffer.append("\">");
-							message = message.substring(i);
+						if(checkpointMessage == null) {
+							if (message.startsWith("<?")) {
+								int i = message.indexOf("?>") + 2;
+								textDecl = message.substring(0, i);
+								stringBuffer.append(" TextDecl=\"");
+								stringBuffer.append(EscapeUtil.escapeXml(textDecl));
+								stringBuffer.append("\">");
+								message = message.substring(i);
+							} else {
+								stringBuffer.append(">");
+							}
+							checkpointMessage = message;
 						} else {
-							stringBuffer.append(">");
+							checkpointMessage = ">"+checkpointMessage;
 						}
-						stringBuffer.append(message);
+						stringBuffer.append(checkpointMessage);
 						stringBuffer.append("</Checkpoint>");
 					}
 				}
@@ -545,7 +567,105 @@ public class Report implements Serializable {
 	private String getCheckpointLogDescription(String name, int type, Integer level) {
 		return "(name: " + name + ", type: " + Checkpoint.getTypeAsString(type) + ", level: " + level + ", correlationId: " + correlationId + ")";
 	}
+	
+	public boolean hasInputVariables() {
+		return Pattern.compile("\\$\\{.*?\\}").matcher(checkpoints.get(0).getMessage()).find();
+	}
+	
+	public void parseInputVariables(ReportRunner reportRunner) {
+		Checkpoint cp = checkpoints.get(0);
+		if(cp.getMessage() != null) {
+			// 1. Parse interactive report parameters
+			List<MatchResult> matchResults = new ArrayList<MatchResult>();
+			Pattern pattern = Pattern.compile("\\$\\{report\\((.*?)\\)\\/checkpoint\\(([0-9]+)\\)\\/xpath\\((.*?)\\)\\}");
+			Matcher m = pattern.matcher(cp.getMessage());
+			while(m.find()) {
+				matchResults.add(m.toMatchResult());
+			}
+			for(MatchResult matchResult : matchResults) {
+				String relativeReportPath = matchResult.group(1);
+				int checkpointIndex = Integer.parseInt(matchResult.group(2));
+				String xpathExpression = matchResult.group(3);
+				
+				// Determine the specified parent report
+				String[] relativeReportPathSteps = relativeReportPath.split("/");
+				int[] operations = new int[relativeReportPathSteps.length];
+				for(int i = 0; i < relativeReportPathSteps.length; i++) {
+					String step = relativeReportPathSteps[i];
+					if(step.equals("..")) operations[i] = -1;
+					else if(step.equals(".")) operations[i] = 0;
+					else operations[i] = 1;
+				}
+				String determinedPath = getPath();
+				if(determinedPath == null) determinedPath = "/";
+				String[] splitDeterminedPath = determinedPath.split("/");
+				for(int i = 0; i < operations.length; i++) {
+					switch(operations[i]) {
+						case -1:
+							determinedPath = determinedPath.substring(0, determinedPath.length() - splitDeterminedPath[splitDeterminedPath.length-1].length()-1);
+							break;
+						case 1:
+							determinedPath += relativeReportPathSteps[i] + (i < operations.length-1? "/" : "");
+							break;
+					}
+				}
+				Report targetReport = null;
+				try {
+					for(Entry<Integer, RunResult> entry : reportRunner.getResults().entrySet()) {
+						if(determinedPath.equals(entry.getValue().fullPath)) {
+							targetReport = reportRunner.getRunResultReport(entry.getValue().correlationId);
+							break;
+						}
+					}
+				} catch (StorageException e) {
+					log.error(e);
+				}
+				if(targetReport != null) {
+					try {
+						String targetXml = targetReport.getCheckpoints().get(checkpointIndex).getMessage();
+						if(StringUtils.isNotEmpty(targetXml)) {
+							try {
+								String xpathResult = XmlUtil.createXPathEvaluator(xpathExpression).evaluate(targetXml);
+								if(xpathResult != null) {
+									try {
+										cp.setMessage(cp.getMessage().replaceAll(Pattern.quote(matchResult.group()), xpathResult));
+									} catch (IllegalArgumentException e) {
+										if(xpathResult.matches("\\$\\{.*?\\}")) {
+											log.warn(warningMessageHeader(matchResult.group())
+													+"Specified xpath expression points to incorrectly parsed parameter "+xpathResult+"; "
+													+ "see other recent log warnings for a possible cause");
+										}
+									}
+								}
+							} catch (XPathException e) {
+								log.warn(warningMessageHeader(matchResult.group())+"Invalid xpath expression or XML message in target checkpoint");
+							}
+						} else {
+							log.warn(warningMessageHeader(matchResult.group())+"Target checkpoint ["+targetReport.getCheckpoints().get(checkpointIndex)+"] contains no message");
+						}
+					} catch (IndexOutOfBoundsException e) {
+						log.warn(warningMessageHeader(matchResult.group())+"Index out of bounds: checkpoint with index ["+checkpointIndex+"] does not exist in report ["+determinedPath+"]");
+					}
+				} else {
+					log.warn(warningMessageHeader(matchResult.group())+"Run result not found for report ["+determinedPath+"] - please make sure it runs before this report");
+				}
+				m = pattern.matcher(cp.getMessage());
+			}
+		}
+	}
 
+	private String warningMessageHeader(String parameter) {
+		return "Could not parse parameter "+parameter+" found in the input of report ["+getFullPath()+"] with storageId ["+getStorageId()+"]\n"; 
+	}
+
+
+	public boolean equalsOther(Report report) {
+		if(hasInputVariables() || report.hasInputVariables()) {
+			return toXml(true).equals(report.toXml(true));
+		} else {
+			return toXml().equals(report.toXml());
+		}
+	}
 }
 
 /**
