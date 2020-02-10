@@ -190,6 +190,7 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 		buttonRow.add(progressBar);
 		reportRunner = new ReportRunner();
 		reportRunner.setTestTool(testTool);
+		reportRunner.setDebugStorage(debugStorage);
 
 		Row uploadSelectRow = new Row();
 
