@@ -671,7 +671,7 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 	private Report getRunResultReport(String runResultCorrelationId) {
 		Report report = null;
 		try {
-			report = ReportRunner.getRunResultReport(debugStorage, runResultCorrelationId);
+			report = reportRunner.getRunResultReport(runResultCorrelationId);
 		} catch(StorageException storageException) {
 			displayAndLogError(storageException);
 		}

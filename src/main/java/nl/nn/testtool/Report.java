@@ -22,15 +22,24 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
+import java.util.regex.MatchResult;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
+import nl.nn.testtool.run.ReportRunner;
+import nl.nn.testtool.run.RunResult;
 import nl.nn.testtool.storage.Storage;
+import nl.nn.testtool.storage.StorageException;
 import nl.nn.testtool.transform.MessageTransformer;
 import nl.nn.testtool.transform.ReportXmlTransformer;
 import nl.nn.testtool.util.EscapeUtil;
 import nl.nn.testtool.util.LogUtil;
+import nl.nn.testtool.util.XmlUtil;
 
 import org.apache.commons.lang.NotImplementedException;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
