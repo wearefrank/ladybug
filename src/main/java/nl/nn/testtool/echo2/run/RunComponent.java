@@ -409,7 +409,7 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 						runResultReport.setGlobalReportXmlTransformer(reportXmlTransformer);
 						runResultReport.setTransformation(report.getTransformation());
 						runResultReport.setReportXmlTransformer(report.getReportXmlTransformer());
-						if (report.toXml().equals(runResultReport.toXml())) {
+						if (report.equalsOther(runResultReport)) {
 							label.setForeground(Echo2Application.getNoDifferenceFoundTextColor());
 						} else {
 							label.setForeground(Echo2Application.getDifferenceFoundTextColor());
