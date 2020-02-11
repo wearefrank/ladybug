@@ -105,9 +105,9 @@ public class ParameterizedTypeImpl implements ParameterizedType {
      *
      * @return an array of <tt>Type</tt> objects representing the actual type
      *     arguments to this type
-     * @throws <tt>TypeNotPresentException</tt> if any of the
+     * @throws TypeNotPresentException if any of the
      *     actual type arguments refers to a non-existent type declaration
-     * @throws <tt>MalformedParameterizedTypeException</tt> if any of the
+     * @throws MalformedParameterizedTypeException if any of the
      *     actual type parameters refer to a parameterized type that cannot
      *     be instantiated for any reason
      * @since 1.5
@@ -138,9 +138,9 @@ public class ParameterizedTypeImpl implements ParameterizedType {
      * @return a <tt>Type</tt> object representing the type that
      *     this type is a member of. If this type is a top-level type,
      *     <tt>null</tt> is returned
-     * @throws <tt>TypeNotPresentException</tt> if the owner type
+     * @throws TypeNotPresentException if the owner type
      *     refers to a non-existent type declaration
-     * @throws <tt>MalformedParameterizedTypeException</tt> if the owner type
+     * @throws MalformedParameterizedTypeException if the owner type
      *     refers to a parameterized type that cannot be instantiated
      *     for any reason
      *
