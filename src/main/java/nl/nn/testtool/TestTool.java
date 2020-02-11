@@ -273,7 +273,11 @@ public class TestTool {
 			correlationId = getCorrelationId();
 		}
 		if(report.hasInputVariables()) {
-			report.parseInputVariables(reportRunner);
+			if(reportRunner != null) {
+				report.parseInputVariables(reportRunner);
+			} else {
+				log.warn("Input variable parsing does not (currently) work outside of the Test tab's rerun functionality");
+			}
 		}
 		boolean reportGeneratorEnabled = getReportGeneratorEnabled();
 		if (reportGeneratorEnabled) {
