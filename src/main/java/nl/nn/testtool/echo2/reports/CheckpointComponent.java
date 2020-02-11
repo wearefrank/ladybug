@@ -189,7 +189,7 @@ public class CheckpointComponent extends MessageComponent {
 		nameLabel.setText("Name: " + checkpoint.getName());
 		threadNameLabel.setText("Thread name: " + checkpoint.getThreadName());
 		sourceClassNameLabel.setText("Source class name: " + checkpoint.getSourceClassName());
-		pathLabel.setText("Path: " + path);
+		pathLabel.setText("Path: " + path + " (index: "+report.getCheckpoints().indexOf(checkpoint)+")");
 		estimatedMemoryUsageLabel.setText("EstimatedMemoryUsage: " + checkpoint.getEstimatedMemoryUsage() + " bytes");
 		hideMessages();
 	}

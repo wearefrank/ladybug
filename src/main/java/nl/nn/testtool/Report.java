@@ -17,12 +17,15 @@ package nl.nn.testtool;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Scanner;
 import java.util.Set;
 import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
@@ -34,6 +37,7 @@ import nl.nn.testtool.storage.Storage;
 import nl.nn.testtool.storage.StorageException;
 import nl.nn.testtool.transform.MessageTransformer;
 import nl.nn.testtool.transform.ReportXmlTransformer;
+import nl.nn.testtool.util.CsvUtil;
 import nl.nn.testtool.util.EscapeUtil;
 import nl.nn.testtool.util.LogUtil;
 import nl.nn.testtool.util.XmlUtil;
@@ -46,6 +50,7 @@ import org.dom4j.DocumentException;
 import org.dom4j.DocumentHelper;
 
 import net.sf.saxon.trans.XPathException;
+
 /**
  * @author Jaco de Groot
  */
@@ -87,6 +92,9 @@ public class Report implements Serializable {
 	private transient boolean differenceChecked = false;
 	private transient boolean differenceFound = false;
 	private transient Map<String, String> truncatedMessageMap = new RefCompareMap<String, String>();
+	
+	private String dynamicVariableCsv;
+	private Map<String, String> dynamicVariableMap;
 	
 	public Report() {
 		String threadName = Thread.currentThread().getName();
@@ -457,7 +465,11 @@ public class Report implements Serializable {
 	}
 
 	public MessageTransformer getMessageTransformer() {
-		return testTool.getMessageTransformer();
+		if(testTool != null) {
+			return testTool.getMessageTransformer();
+		} else {
+			return null;
+		}
 	}
 
 	public Object clone() throws CloneNotSupportedException {
@@ -660,6 +672,17 @@ public class Report implements Serializable {
 				}
 				m = pattern.matcher(cp.getMessage());
 			}
+			
+			// 2. Parse dynamic variables
+			if(dynamicVariableMap != null) {
+				for(Entry<String, String> entry : dynamicVariableMap.entrySet()) {
+					pattern = Pattern.compile("\\$\\{"+entry.getKey()+"\\}");
+					m = pattern.matcher(cp.getMessage());
+					while(m.find()) {
+						cp.setMessage(cp.getMessage().replaceAll(Pattern.quote(m.group()), entry.getValue()));
+					}
+				}
+			}
 		}
 	}
 
@@ -667,6 +690,54 @@ public class Report implements Serializable {
 		return "Could not parse parameter "+parameter+" found in the input of report ["+getFullPath()+"] with storageId ["+getStorageId()+"]\n"; 
 	}
 
+	public String getDynamicVariableCsv() {
+		return dynamicVariableCsv;
+	}
+
+	public String setDynamicVariables(String text) {
+		String errorMessage = "";
+		String delimiter = ";";
+		
+		if(StringUtils.isNotEmpty(text)) {
+			errorMessage = CsvUtil.validateCsv(text, delimiter, 2);
+		} else {
+			dynamicVariableMap = null;
+			dynamicVariableCsv = null;
+			return null;
+		}
+		if(errorMessage == null) {
+			dynamicVariableMap = new LinkedHashMap<String, String>();
+			
+			Scanner scanner = new Scanner(text);
+			List<String> lines = new ArrayList<String>();
+			while(scanner.hasNextLine()) {
+				String nextLine = scanner.nextLine();
+				if(StringUtils.isNotEmpty(nextLine) && !nextLine.startsWith("#")) {
+					lines.add(nextLine);
+				}
+			}
+			scanner.close();
+			
+			List<String> params = Arrays.asList(lines.get(0).split(delimiter));
+			for(String key : params) {
+				String value = lines.get(1).split(delimiter)[params.indexOf(key)];
+				dynamicVariableMap.put(key, value);
+			}
+			dynamicVariableCsv = text;
+		}
+		if(errorMessage != null) {
+			log.error(errorMessage);
+		}
+		return errorMessage;
+	}
+
+	public Map<String, String> getDynamicVariableMap() {
+		return dynamicVariableMap;
+	}
+
+	public void setDynamicVariableMap(Map<String, String> dynamicVariableMap) {
+		this.dynamicVariableMap = dynamicVariableMap;
+	}
 
 	public boolean equalsOther(Report report) {
 		if(hasInputVariables() || report.hasInputVariables()) {

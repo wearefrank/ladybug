@@ -65,6 +65,10 @@ public class ReportComponent extends MessageComponent {
 	private TextArea transformationTextArea;
 	private WindowPane deleteWarningWindow;
 	private Label deleteIdLabel;
+	private Label dynamicVariableLabel;
+	private Column dynamicVariableColumn;
+	private TextArea dynamicVariableTextArea;
+	private Label dynamicVariableErrorMessageLabel;
 
 	public ReportComponent() {
 		super();
@@ -148,7 +152,11 @@ public class ReportComponent extends MessageComponent {
 
 		add(messageColumn);
 		add(messageTextArea);
-
+		
+		dynamicVariableErrorMessageLabel = Echo2Application.createErrorLabel();
+		dynamicVariableErrorMessageLabel.setVisible(false);
+		add(dynamicVariableErrorMessageLabel);
+		
 		buttonRow = Echo2Application.getNewRow();
 		add(buttonRow);
 
@@ -176,7 +184,7 @@ public class ReportComponent extends MessageComponent {
 		descriptionColumn.setInsets(new Insets(0, 5, 0, 0));
 		add(descriptionColumn);
 		descriptionTextArea = new TextArea();
-		descriptionTextArea.setWidth(new Extent(100, Extent.PERCENT));
+		descriptionTextArea.setWidth(new Extent(50, Extent.PERCENT));
 		descriptionTextArea.setHeight(new Extent(100));
 		descriptionTextArea.setVisible(false);
 		add(descriptionTextArea);
@@ -204,10 +212,35 @@ public class ReportComponent extends MessageComponent {
 		transformationColumn = new Column();
 		transformationColumn.setInsets(new Insets(0, 5, 0, 0));
 		transformationTextArea = new TextArea();
-		transformationTextArea.setWidth(new Extent(100, Extent.PERCENT));
+		transformationTextArea.setWidth(new Extent(50, Extent.PERCENT));
 		transformationTextArea.setHeight(new Extent(TransformationWindow.TEXT_AREA_HEIGHT));
 		transformationTextArea.setVisible(false);
 		add(transformationTextArea);
+		
+		Row dynamicVariableRow = Echo2Application.getNewRow();
+		dynamicVariableRow.setInsets(new Insets(0, 5, 0 ,0));
+		add(dynamicVariableRow);
+		
+		dynamicVariableLabel = Echo2Application.createInfoLabel();
+		dynamicVariableLabel.setText("Dynamic variables:");
+		dynamicVariableLabel.setVisible(false);
+		dynamicVariableLabel.setToolTipText("A map of variables to be written in CSV-format with delimiter ';'. "
+				+ "These variables can be referred to in this report's input message by referring to their ${key}. "
+				+ "Example:\n\n"
+				+ "id;firstname;location\n"
+				+ "0;waldo;null\n\n"
+				+ "In this case, any occurences of ${firstname} in the report's input message "
+				+ "will be replaced with \"waldo\" at runtime.");
+		dynamicVariableRow.add(dynamicVariableLabel);
+		
+		dynamicVariableColumn = new Column();
+		dynamicVariableColumn.setInsets(new Insets(0, 5, 0 ,0));
+//		addLineNumbers(dynamicParamColumn);
+		dynamicVariableTextArea = new TextArea();
+		dynamicVariableTextArea.setWidth(new Extent(50, Extent.PERCENT));
+		dynamicVariableTextArea.setHeight(new Extent(32));
+		dynamicVariableTextArea.setVisible(false);
+		add(dynamicVariableTextArea);
 
 		storageIdLabel = Echo2Application.createInfoLabelWithColumnLayoutData();
 		add(storageIdLabel);
@@ -348,19 +381,39 @@ public class ReportComponent extends MessageComponent {
 	protected void save() {
 		report.setName(nameTextField.getText());
 		report.setDescription(descriptionTextArea.getText());
-		String path = pathTextField.getText();
-		if (!StringUtils.isEmpty(path)) {
-			path = RunComponent.normalizePath(path);
-			pathTextField.setText(path);
-		}
-		report.setPath(path);
+		saveReportPathChanges();
+		saveReportDynamicVariableChanges();
 		report.setTransformation(transformationTextArea.getText());
+		report.setDynamicVariables(dynamicVariableTextArea.getText());
 		report.flushCachedXml();
 		if (report.getStorage() instanceof CrudStorage) {
-			Echo2Application.update((CrudStorage)report.getStorage(), report);
+			displayAndLogError(Echo2Application.update((CrudStorage)report.getStorage(), report));
 		}
 		messageTextArea.setText(report.toXml());
 		super.save();
+	}
+
+	private void saveReportPathChanges() {
+		String input = pathTextField.getText();
+		if(!StringUtils.isEmpty(input)) {
+			input = RunComponent.normalizePath(input);
+			pathTextField.setText(input);
+		}
+		report.setPath(input);
+	}
+
+	private void saveReportDynamicVariableChanges() {
+		if(!dynamicVariableTextArea.getText().equals(report.getDynamicVariableCsv())) {
+			String errorMessage = report.setDynamicVariables(dynamicVariableTextArea.getText());
+			if(errorMessage == null) {
+				dynamicVariableErrorMessageLabel.setVisible(false);
+			} else {
+				dynamicVariableErrorMessageLabel.setText("[Dynamic variables] "+errorMessage);
+				dynamicVariableErrorMessageLabel.setVisible(true);
+			}
+		} else {
+			dynamicVariableErrorMessageLabel.setVisible(false);
+		}
 	}
 
 	@Override
@@ -370,6 +423,10 @@ public class ReportComponent extends MessageComponent {
 		updateDescriptionLabelAndDescriptionColumnAndTextArea();
 		updatePathLabelAndPathTextField();
 		updateTransformationLabelAndTransformationColumnAndTextArea();
+		updateDynamicVariableLabelAndTextArea();
+		if(!infoPane.edit()) {
+			dynamicVariableErrorMessageLabel.setVisible(false);
+		}
 	}
 
 	private void updateNameLabelAndNameTextField() {
@@ -426,6 +483,23 @@ public class ReportComponent extends MessageComponent {
 			addLineNumbers(transformationColumn);
 		}
 		transformationTextArea.setText(report.getTransformation());
+	}
+
+	private void updateDynamicVariableLabelAndTextArea() {
+		if (infoPane.edit()) {
+			dynamicVariableColumn.setVisible(false);
+			dynamicVariableLabel.setVisible(true);
+			dynamicVariableTextArea.setVisible(true);
+		} else {
+			dynamicVariableColumn.setVisible(true);
+			dynamicVariableLabel.setVisible(false);
+			dynamicVariableTextArea.setVisible(false);
+		}
+		updateMessageColumn(report.getDynamicVariableCsv(), dynamicVariableColumn);
+		if (infoPane.showLineNumbers()) {
+			addLineNumbers(dynamicVariableColumn);
+		}
+		dynamicVariableTextArea.setText(report.getDynamicVariableCsv());
 	}
 
 	@Override
