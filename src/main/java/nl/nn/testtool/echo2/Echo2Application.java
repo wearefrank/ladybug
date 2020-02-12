@@ -54,6 +54,7 @@ import nl.nn.testtool.echo2.reports.ReportComponent;
 import nl.nn.testtool.echo2.reports.ReportsComponent;
 import nl.nn.testtool.echo2.reports.ReportsTreeCellRenderer;
 import nl.nn.testtool.echo2.reports.TreePane;
+import nl.nn.testtool.run.ReportRunner;
 import nl.nn.testtool.storage.CrudStorage;
 import nl.nn.testtool.storage.Storage;
 import nl.nn.testtool.storage.StorageException;
@@ -379,7 +380,7 @@ public class Echo2Application extends ApplicationInstance implements Application
 		tabPane.setActiveTabIndex(activeTabIndexHistory.get(activeTabIndexHistory.size() - 1));
 	}
 
-	public void openReportCompare(Report report1, Report report2) {
+	public void openReportCompare(Report report1, Report report2, ReportRunner reportRunner) {
 		tabPane.setActiveTabIndex(2);
 		ComparePane comparePane = null;
 		for (Tab tab : tabs) {
@@ -391,7 +392,7 @@ public class Echo2Application extends ApplicationInstance implements Application
 		DefaultMutableTreeNode reportNode2;
 		reportNode1 = comparePane.getTreePane1().addReport(report1, comparePane.getReportsComponent1().getViews().getDefaultView(), false);
 		reportNode2 = comparePane.getTreePane2().addReport(report2, comparePane.getReportsComponent2().getViews().getDefaultView(), false);
-		comparePane.compare(report1, report2);
+		comparePane.compare(report1, report2, reportRunner);
 		comparePane.getTreePane1().selectNode(reportNode1);
 	}
 

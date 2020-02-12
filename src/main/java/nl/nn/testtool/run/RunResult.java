@@ -21,4 +21,5 @@ package nl.nn.testtool.run;
 public class RunResult {
 	public String errorMessage;
 	public String correlationId;
+	public String fullPath;
 }

@@ -6,6 +6,23 @@ Ladybug Test Tool release notes
 Upcoming
 --------
 
+
+
+
+2.0.12
+---
+
+- Add functionality to declare and use ${variables} for reports
+- Add functionality to generate clone reports based on a CSV-table of variables
+- Add functionality to refer to data in another report's checkpoints
+- Clarify delete message (delete selected reports? -> delete X selected reports?)
+- Clarify truncate message (X characters remaining -> X characters removed)
+
+
+
+2.0.11
+---
+
 - Increase width of name/path textfields when editing a report
 - Fix checkpoint showing wrong truncate message
 - Make checkpoint truncating happen while generating the report, instead of afterwards

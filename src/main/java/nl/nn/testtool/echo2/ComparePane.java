@@ -30,6 +30,7 @@ import nl.nn.testtool.echo2.reports.ReportComponent;
 import nl.nn.testtool.echo2.reports.ReportsComponent;
 import nl.nn.testtool.echo2.reports.ReportsTreeCellRenderer;
 import nl.nn.testtool.echo2.reports.TreePane;
+import nl.nn.testtool.run.ReportRunner;
 import nl.nn.testtool.storage.CrudStorage;
 import nl.nn.testtool.storage.Storage;
 import nl.nn.testtool.storage.StorageException;
@@ -252,8 +253,8 @@ public class ComparePane extends Tab implements BeanParent {
 		infoPane2.initBean(this);
 	}
 
-	public void compare(Report report1, Report report2) {
-		if (report1.toXml().equals(report2.toXml())) {
+	public void compare(Report report1, Report report2, ReportRunner reportRunner) {
+		if (report1.toXml(reportRunner).equals(report2.toXml(reportRunner))) {
 			report1.setDifferenceFound(false);
 			report2.setDifferenceFound(false);
 		} else {

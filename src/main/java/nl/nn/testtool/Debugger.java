@@ -17,6 +17,8 @@ package nl.nn.testtool;
 
 import java.util.List;
 
+import nl.nn.testtool.run.ReportRunner;
+
 /**
  * @author m00f069
  *
@@ -47,6 +49,6 @@ public interface Debugger {
 	 * @param originalReport  the original report that should be rerun
 	 * @return                an error message when an error occurred 
 	 */
-	public String rerun(String correlationId, Report originalReport, SecurityContext securityContext);
+	public String rerun(String correlationId, Report originalReport, SecurityContext securityContext, ReportRunner reportRunner);
 
 }

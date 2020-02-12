@@ -38,9 +38,14 @@ public class ReportRunner implements Runnable {
 	private int maximum = 1;
 	private Map<Integer, RunResult> results = Collections.synchronizedMap(new HashMap<Integer, RunResult>());
 	private boolean running = false;
+	private Storage debugStorage;
 
 	public void setTestTool(TestTool testTool) {
 		this.testTool = testTool;
+	}
+
+	public void setDebugStorage(Storage debugStorage) {
+		this.debugStorage = debugStorage;
 	}
 
 	public void setSecurityContext(SecurityContext securityContext) {
@@ -88,7 +93,8 @@ public class ReportRunner implements Runnable {
 	private void run(Report report) {
 		RunResult runResult = new RunResult();
 		runResult.correlationId = TestTool.getCorrelationId();
- 		runResult.errorMessage = testTool.rerun(runResult.correlationId, report, securityContext);
+ 		runResult.errorMessage = testTool.rerun(runResult.correlationId, report, securityContext, this);
+ 		runResult.fullPath = report.getFullPath();
 		results.put(report.getStorageId(), runResult);
 	}
 
@@ -104,7 +110,7 @@ public class ReportRunner implements Runnable {
 		return results;
 	}
 
-	public static Report getRunResultReport(Storage debugStorage, String runResultCorrelationId)
+	public Report getRunResultReport(String runResultCorrelationId)
 			throws StorageException {
 		Report report = null;
 		List<String> metadataNames = new ArrayList<String>();
@@ -122,5 +128,9 @@ public class ReportRunner implements Runnable {
 			report = debugStorage.getReport(runResultStorageId);
 		}
 		return report;
+	}
+
+	public Storage getDebugStorage() {
+		return debugStorage;
 	}
 }

@@ -16,12 +16,27 @@
 package nl.nn.testtool;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.regex.MatchResult;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
+import nl.nn.testtool.run.ReportRunner;
+import nl.nn.testtool.run.RunResult;
+import nl.nn.testtool.storage.StorageException;
 import nl.nn.testtool.util.LogUtil;
+import nl.nn.testtool.util.XmlUtil;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.apache.ws.security.util.DOM2Writer;
 import org.w3c.dom.Node;
+
+import net.sf.saxon.trans.XPathException;
 
 /**
  * @author Jaco de Groot
@@ -41,6 +56,13 @@ public class Checkpoint implements Serializable, Cloneable {
 	private int stub = STUB_FOLLOW_REPORT_STRATEGY;
 	private int preTruncatedMessageLength = -1;
 	private long estimatedMemoryUsage = -1;
+	private transient static Pattern genericVariableCheckPattern;
+	private transient static Pattern externalVariablePattern;
+	private transient Map<String, Pattern> variablePatternMap;
+	static {
+		genericVariableCheckPattern = Pattern.compile("\\$\\{.*?\\}");
+		externalVariablePattern = Pattern.compile("\\$\\{report\\((.*?)\\)\\/checkpoint\\(([0-9]+)\\)\\/xpath\\((.*?)\\)\\}");
+	}
 
 	public transient static final int TYPE_NONE = 0;
 	public transient static final int TYPE_STARTPOINT = 1;
@@ -235,5 +257,121 @@ public class Checkpoint implements Serializable, Cloneable {
 	
 	public void setEstimatedMemoryUsage(long estimatedMemoryUsage) {
 		this.estimatedMemoryUsage = estimatedMemoryUsage;
+	}
+
+	public String getMessageWithResolvedVariables(ReportRunner reportRunner) {
+		String result = getMessage();
+		if(getMessage() != null && containsVariables()) {
+			// 1. Parse external report variables
+			if(reportRunner != null) {
+				List<MatchResult> matchResults = new ArrayList<MatchResult>();
+				Matcher m = externalVariablePattern.matcher(getMessage());
+				while(m.find()) {
+					matchResults.add(m.toMatchResult());
+				}
+				for(MatchResult matchResult : matchResults) {
+					String relativeReportPath = matchResult.group(1);
+					int checkpointIndex = Integer.parseInt(matchResult.group(2));
+					String xpathExpression = matchResult.group(3);
+					
+					// Determine the target report
+					String[] relativeReportPathSteps = relativeReportPath.split("/");
+					int[] operations = new int[relativeReportPathSteps.length];
+					for(int i = 0; i < relativeReportPathSteps.length; i++) {
+						String step = relativeReportPathSteps[i];
+						if(step.equals("..")) operations[i] = -1;
+						else if(step.equals(".")) operations[i] = 0;
+						else operations[i] = 1;
+					}
+					String determinedPath = report.getPath();
+					if(StringUtils.isEmpty(determinedPath)) determinedPath = "/";
+					String[] splitDeterminedPath = determinedPath.split("/");
+					for(int i = 0; i < operations.length; i++) {
+						switch(operations[i]) {
+							case -1:
+								if(determinedPath != "/") {
+									determinedPath = determinedPath.substring(0, determinedPath.length() - splitDeterminedPath[splitDeterminedPath.length-1].length()-1);
+								}
+								break;
+							case 1:
+								determinedPath += relativeReportPathSteps[i] + (i < operations.length-1? "/" : "");
+								break;
+						}
+					}
+					Report targetReport = null;
+					try {
+						for(Entry<Integer, RunResult> entry : reportRunner.getResults().entrySet()) {
+							if(determinedPath.equals(entry.getValue().fullPath)) {
+								targetReport = reportRunner.getRunResultReport(entry.getValue().correlationId);
+								break;
+							}
+						}
+					} catch (StorageException e) {
+						log.error(e);
+					}
+					// Attempt to fetch data from xpath in target checkpoint's XML message
+					if(targetReport != null) {
+						try {
+							String targetXml = targetReport.getCheckpoints().get(checkpointIndex).getMessage();
+							if(StringUtils.isNotEmpty(targetXml)) {
+								try {
+									String xpathResult = XmlUtil.createXPathEvaluator(xpathExpression).evaluate(targetXml);
+									if(xpathResult != null) {
+										try {
+											result = result.replaceAll(Pattern.quote(matchResult.group()), xpathResult);
+										} catch (IllegalArgumentException e) {
+											if(xpathResult.matches("\\$\\{.*?\\}")) {
+												log.warn(warningMessageHeader(matchResult.group())
+														+"Specified xpath expression points to incorrectly parsed parameter "+xpathResult+"; "
+														+ "see other recent log warnings for a possible cause");
+											}
+										}
+									}
+								} catch (XPathException e) {
+									log.warn(warningMessageHeader(matchResult.group())+"Invalid xpath expression or XML message in target checkpoint");
+								}
+							} else {
+								log.warn(warningMessageHeader(matchResult.group())+"Target checkpoint ["+targetReport.getCheckpoints().get(checkpointIndex)+"] contains no message");
+							}
+						} catch (IndexOutOfBoundsException e) {
+							log.warn(warningMessageHeader(matchResult.group())+"Index out of bounds: checkpoint with index ["+checkpointIndex+"] does not exist in report ["+determinedPath+"]");
+						}
+					} else {
+						log.warn(warningMessageHeader(matchResult.group())+"Run result not found for report ["+determinedPath+"] - please make sure it runs before this report");
+					}
+				}
+			}
+			// 2. Parse local variables
+			if(StringUtils.isNotEmpty(report.getVariableCsv())) {
+				Map<String, String> variableMap = report.getVariablesAsMap();
+				Map<String, Pattern> variablePatternMap = getVariablePatternMap(variableMap);
+				for(Entry<String, String> entry : variableMap.entrySet()) {
+					Matcher m = variablePatternMap.get(entry.getKey()).matcher(getMessage());
+					while(m.find()) {
+						result = result.replaceAll(Pattern.quote(m.group()), entry.getValue());
+					}
+				}
+			}
+		}
+		return result;
+	}
+
+	private String warningMessageHeader(String parameter) {
+		return "Could not parse parameter "+parameter+" found in the input of report ["+report.getFullPath()+"] with storageId ["+report.getStorageId()+"]\n"; 
+	}
+	
+	public boolean containsVariables() {
+		if(StringUtils.isEmpty(getMessage())) return false;
+		return genericVariableCheckPattern.matcher(getMessage()).find();
+	}
+
+	protected Map<String, Pattern> getVariablePatternMap(Map<String, String> variableMap) {
+		if(variablePatternMap == null) {
+			variablePatternMap = new HashMap<String, Pattern>();
+			for(Entry<String, String> entry : variableMap.entrySet()) {
+				variablePatternMap.put(entry.getKey(), Pattern.compile("\\$\\{"+entry.getKey()+"\\}"));
+			}
+		}
+		return variablePatternMap;
 	}
 }

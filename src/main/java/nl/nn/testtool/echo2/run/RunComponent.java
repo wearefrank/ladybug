@@ -21,10 +21,15 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Scanner;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TooManyListenersException;
 
+import org.apache.commons.lang.StringUtils;
+
 import echopointng.ProgressBar;
+import echopointng.tree.DefaultTreeCellRenderer;
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.CheckBox;
 import nextapp.echo2.app.Column;
@@ -34,6 +39,7 @@ import nextapp.echo2.app.FillImageBorder;
 import nextapp.echo2.app.Insets;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.Row;
+import nextapp.echo2.app.TextArea;
 import nextapp.echo2.app.TextField;
 import nextapp.echo2.app.WindowPane;
 import nextapp.echo2.app.event.ActionEvent;
@@ -57,6 +63,7 @@ import nl.nn.testtool.storage.CrudStorage;
 import nl.nn.testtool.storage.Storage;
 import nl.nn.testtool.storage.StorageException;
 import nl.nn.testtool.transform.ReportXmlTransformer;
+import nl.nn.testtool.util.CsvUtil;
 
 /**
  * @author m00f069
@@ -76,11 +83,23 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 	private TextField pathTextField;
 	private ReportXmlTransformer reportXmlTransformer = null;
 	private WindowPane uploadWindow;
+	private WindowPane reportGenerationWindow;
 	private UploadSelect uploadSelect;
 	private int numberOfComponentsToSkipForRowManipulation = 0;
 	private String lastDisplayedPath;
 	private BeanParent beanParent;
-
+	
+	private TextArea cloneGenerationTextArea;
+	private Label reportGenerationWarningLabel;
+	
+	private int COMPONENT_CHECKBOX = 0;
+	private int COMPONENT_RUN_BUTTON = 1;
+	private int COMPONENT_OPEN_BUTTON = 2;
+	private int COMPONENT_COMPARE_BUTTON = 3;
+	private int COMPONENT_REPLACE_BUTTON = 4;
+	private int COMPONENT_RESULT_LABEL = 5;
+	private int COMPONENT_DYNAMIC_VAR_LABEL = 6;
+	
 	public RunComponent() {
 		super();
 	}
@@ -111,18 +130,31 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 
 		// TODO code voor aanmaken upload window en ander zaken gaan delen met ReportsComponent
 		Column uploadColumn = new Column();
+		Column cloneGenerationColumn = new Column();
 
 		uploadWindow = new WindowPane();
 		uploadWindow.setVisible(false);
 		uploadWindow.setTitle("Upload");
 		uploadWindow.setTitleBackground(Echo2Application.getButtonBackgroundColor());
 		uploadWindow.setBorder(new FillImageBorder(Echo2Application.getButtonBackgroundColor(), new Insets(0, 0, 0, 0), new Insets(0, 0, 0, 0)));
-		uploadWindow.setWidth(new Extent(350));
-		uploadWindow.setHeight(new Extent(110));
+		uploadWindow.setWidth(new Extent(480));
+		uploadWindow.setHeight(new Extent(360));
 		uploadWindow.setInsets(new Insets(10, 0, 10, 0));
 		uploadWindow.add(uploadColumn);
 		uploadWindow.setDefaultCloseOperation(WindowPane.HIDE_ON_CLOSE);
 		uploadWindow.init();
+		
+		reportGenerationWindow = new WindowPane();
+		reportGenerationWindow.setTitle("Generate dynamic report clones from CSV");
+//		reportGenerationWindow.setTitleBackground(Echo2Application.getButtonBackgroundColor());
+//		reportGenerationWindow.setBorder(new FillImageBorder(Echo2Application.getButtonBackgroundColor(), new Insets(0, 0, 0, 0), new Insets(0, 0, 0, 0)));
+		reportGenerationWindow.setVisible(false);
+		reportGenerationWindow.setWidth(new Extent(464));
+		reportGenerationWindow.setHeight(new Extent(348));
+		reportGenerationWindow.setInsets(new Insets(5, 5, 5, 5));
+		reportGenerationWindow.add(cloneGenerationColumn);
+		reportGenerationWindow.setDefaultCloseOperation(WindowPane.HIDE_ON_CLOSE);
+		reportGenerationWindow.init();
 
 		Row buttonRow = Echo2Application.getNewRow();
 
@@ -168,6 +200,18 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 		Echo2Application.decorateButton(copySelectedButton);
 		buttonRow.add(copySelectedButton);
 
+		Button cloneSelectedButton = new Button("Clone");
+		cloneSelectedButton.setToolTipText(
+				"Generates clone reports based on a custom CSV-formatted table of parameters and their values. "
+				+ "Example:\n\nid;firstname;lastname\n0;jaco;de groot\n1;daniel;meyer\n\nOne clone report is made "
+				+ "for every row of values - two in this case. The parameters can be referred to in each report's "
+				+ "input message by writing, for example, ${firstname}, which would be parsed to the corresponding "
+				+ "value for that parameter at runtime.");
+		cloneSelectedButton.setActionCommand("CloneSelected");
+		cloneSelectedButton.addActionListener(this);
+		Echo2Application.decorateButton(cloneSelectedButton);
+		buttonRow.add(cloneSelectedButton);
+
 		Button deleteSelectedButton = new Button("Delete");
 		deleteSelectedButton.setActionCommand("DeleteSelected");
 		deleteSelectedButton.addActionListener(this);
@@ -190,6 +234,7 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 		buttonRow.add(progressBar);
 		reportRunner = new ReportRunner();
 		reportRunner.setTestTool(testTool);
+		reportRunner.setDebugStorage(debugStorage);
 
 		Row uploadSelectRow = new Row();
 
@@ -221,6 +266,31 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 		uploadSelectRow.add(uploadSelect);
 		uploadColumn.add(uploadSelectRow);
 
+		// Report generation window
+		Row cloneGenerationWarningLabelRow = Echo2Application.getNewRow();
+		Row cloneGenerationTextFieldRow = Echo2Application.getNewRow();
+		Row cloneGenerationButtonRow = Echo2Application.getNewRow();
+		
+		reportGenerationWarningLabel = Echo2Application.createErrorLabel();
+		reportGenerationWarningLabel.setVisible(false);
+		
+		cloneGenerationTextArea = new TextArea();
+		cloneGenerationTextArea.setWidth(new Extent(440));
+		cloneGenerationTextArea.setHeight(new Extent(240));
+		
+		Button generateClonesButton = new Button("Generate");
+		generateClonesButton.setActionCommand("GenerateClonesFromCsv");
+		generateClonesButton.addActionListener(this);
+		Echo2Application.decorateButton(generateClonesButton);
+
+		cloneGenerationWarningLabelRow.add(reportGenerationWarningLabel);
+		cloneGenerationTextFieldRow.add(cloneGenerationTextArea);
+		cloneGenerationButtonRow.add(generateClonesButton);
+		cloneGenerationColumn.add(cloneGenerationWarningLabelRow);
+		cloneGenerationColumn.add(cloneGenerationTextFieldRow);
+		cloneGenerationColumn.add(cloneGenerationButtonRow);
+		//
+
 		add(buttonRow);
 		numberOfComponentsToSkipForRowManipulation++;
 
@@ -241,6 +311,7 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 		this.beanParent = beanParent;
 		this.echo2Application = Echo2Application.getEcho2Application(beanParent, this);
 		echo2Application.getContentPane().add(uploadWindow);
+		echo2Application.getContentPane().add(reportGenerationWindow);
 		RunPane runPane = (RunPane)beanParent.getBeanParent();
 		treePane = runPane.getTreePane();
 		reportRunner.setSecurityContext(echo2Application);
@@ -345,27 +416,36 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 	}
 
 	private void displayReport(String storageId, String path, String name, String description, boolean selected) {
+		Report report = null;
+		try {
+			report = runStorage.getReport(Integer.parseInt(storageId));
+		} catch (StorageException e) {
+			displayAndLogError(e);
+		}
+		
 		Row row = Echo2Application.getNewRow();
 		row.setId(storageId);
 		row.setInsets(new Insets(0, 5, 0, 0));
-
+		
 		CheckBox checkBox = new CheckBox("");
 		checkBox.setSelected(selected);
 		row.add(checkBox);
+		// When adding a new element to the row, raise the indices of all components
+		// by adjusting the "COMPONENT_*" final variables of this class
 
-		Button button = new Button("Run");
-		button.setActionCommand("Run");
-		button.addActionListener(this);
-		Echo2Application.decorateButton(button);
-		row.add(button);
+		Button runButton = new Button("Run");
+		runButton.setActionCommand("Run");
+		runButton.addActionListener(this);
+		Echo2Application.decorateButton(runButton);
+		row.add(runButton);
 
-		button = new Button("Open");
-		button.setActionCommand("Open");
-		button.addActionListener(this);
-		Echo2Application.decorateButton(button);
-		row.add(button);
+		Button openButton = new Button("Open");
+		openButton.setActionCommand("Open");
+		openButton.addActionListener(this);
+		Echo2Application.decorateButton(openButton);
+		row.add(openButton);
 
-		button = new Button("Compare");
+		Button button = new Button("Compare");
 		button.setActionCommand("Compare");
 		button.addActionListener(this);
 		button.setVisible(false);
@@ -380,6 +460,7 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 		row.add(button);
 
 		Label label = new Label(path + name);
+		row.add(label);
 		RunResult runResult = reportRunner.getResults().get(Integer.parseInt(storageId));
 		if (runResult != null) {
 			if (runResult.errorMessage != null) {
@@ -391,39 +472,15 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 					label = Echo2Application.createErrorLabel();
 					label.setText("Result report not found. Report generator not enabled?");
 				} else {
-					Report report = null;
-					try {
-						report = runStorage.getReport(Integer.parseInt(storageId));
-					} catch (StorageException e) {
-						displayAndLogError(e);
-					}
-					if (report != null) {
-						String stubInfo = "";
-						if (!"Never".equals(report.getStubStrategy())) {
-							stubInfo = " (" + report.getStubStrategy() + ")";
-						}
-						label.setText(path + name + " (" + (report.getEndTime() - report.getStartTime()) + " >> "
-								+ (runResultReport.getEndTime() - runResultReport.getStartTime()) + " ms)" + stubInfo);
-						report.setGlobalReportXmlTransformer(reportXmlTransformer);
-						runResultReport.setGlobalReportXmlTransformer(reportXmlTransformer);
-						runResultReport.setTransformation(report.getTransformation());
-						runResultReport.setReportXmlTransformer(report.getReportXmlTransformer());
-						if (report.toXml().equals(runResultReport.toXml())) {
-							label.setForeground(Echo2Application.getNoDifferenceFoundTextColor());
-						} else {
-							label.setForeground(Echo2Application.getDifferenceFoundTextColor());
-						}
-						Button compareButton = (Button)row.getComponent(3);
-						compareButton.setVisible(true);
-						Button replaceButton = (Button)row.getComponent(4);
-						replaceButton.setVisible(true);
+					if(report != null) {
+						updateRow(row);
 					}
 				}
 			}
 		}
-		row.add(label);
+		row.add(newDynamicVariableLabel(report));
+		
 		add(row);
-
 		// TODO runStorage.getMetadata geeft blijkbaar "null" terug, fixen
 		if (description != null && !"".equals(description) && !"null".equals(description)) {
 			Column descriptionColumn = new Column();
@@ -433,6 +490,52 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 		}
 	}
 
+	private Label newDynamicVariableLabel(Report report) {
+		Label label = new Label();
+		label.setForeground(Echo2Application.getButtonRolloverBackgroundColor());
+		if(report.getVariableCsv() != null) {
+			String labelText = "[";
+			boolean tooManyChars = false;
+			for(Entry<String, String> entry : report.getVariablesAsMap().entrySet()) {
+				if(labelText.length() + entry.getValue().length() < 50) {
+					labelText += entry.getKey()+"="+entry.getValue()+", ";
+				} else {
+					tooManyChars = true;
+					break;
+				}
+			}
+			labelText = labelText.substring(0, labelText.length()-2) + (tooManyChars? "...]" : "]");
+			label.setText(labelText);
+		} else {
+			label.setVisible(false);
+		}
+		return label;
+	}
+
+	private void updateRow(Row row) {
+		Report report = getReport(row);
+		RunResult runResult = reportRunner.getResults().get((Integer)report.getStorageId());
+		Report runResultReport = getRunResultReport(runResult.correlationId);
+		Label label = (Label)row.getComponent(COMPONENT_RESULT_LABEL);
+		String stubInfo = "";
+		if (!"Never".equals(report.getStubStrategy())) {
+			stubInfo = " (" + report.getStubStrategy() + ")";
+		}
+		label.setText(report.getFullPath() + " (" + (report.getEndTime() - report.getStartTime()) + " >> "
+				+ (runResultReport.getEndTime() - runResultReport.getStartTime()) + " ms)" + stubInfo);
+		report.setGlobalReportXmlTransformer(reportXmlTransformer);
+		runResultReport.setGlobalReportXmlTransformer(reportXmlTransformer);
+		runResultReport.setTransformation(report.getTransformation());
+		runResultReport.setReportXmlTransformer(report.getReportXmlTransformer());
+		if (report.toXml(reportRunner).equals(runResultReport.toXml(reportRunner))) {
+			label.setForeground(Echo2Application.getNoDifferenceFoundTextColor());
+		} else {
+			label.setForeground(Echo2Application.getDifferenceFoundTextColor());
+		}
+		((Button)row.getComponent(COMPONENT_COMPARE_BUTTON)).setVisible(true);
+		((Button)row.getComponent(COMPONENT_REPLACE_BUTTON)).setVisible(true);
+	}
+	
 	/**
 	 * @see nextapp.echo2.app.event.ActionListener#actionPerformed(nextapp.echo2.app.event.ActionEvent)
 	 */
@@ -445,7 +548,7 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 			refresh();
 		} else if (e.getActionCommand().equals("SelectAll") || e.getActionCommand().equals("DeselectAll")) {
 			for (Row row : getReportRows()) {
-				CheckBox checkbox = (CheckBox)row.getComponent(0);
+				CheckBox checkbox = (CheckBox)row.getComponent(COMPONENT_CHECKBOX);
 				if (e.getActionCommand().equals("SelectAll")) {
 					checkbox.setSelected(true);
 				} else {
@@ -456,7 +559,7 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 			if (minimalOneSelected()) {
 				List<Row> rows = new ArrayList<Row>();
 				for (Row row : getReportRows()) {
-					CheckBox checkbox = (CheckBox)row.getComponent(0);
+					CheckBox checkbox = (CheckBox)row.getComponent(COMPONENT_CHECKBOX);
 					if (checkbox.isSelected()) {
 						rows.add(row);
 					}
@@ -490,14 +593,16 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 				actionLabels.add("No, cancel this action");
 				actionCommands.add("DeleteCancel");
 				actionListeners.add(this);
-				PopupWindow popupWindow = new PopupWindow("",
-						"Are you sure you want to delete all selected reports?", 450, 100,
+				int reportsSelected = getSelectedReportCount();
+				String popupMessage = reportsSelected > 1 ? "Are you sure you want to delete the "+reportsSelected+" selected reports?"
+						: "Are you sure you want to delete the selected report?";
+				PopupWindow popupWindow = new PopupWindow("", popupMessage, 450, 100,
 						actionLabels, actionCommands, actionListeners);
 				echo2Application.getContentPane().add(popupWindow);
 			}
 		} else if (e.getActionCommand().equals("DeleteOk")) {
 			for (Row row : getReportRows()) {
-				CheckBox checkbox = (CheckBox)row.getComponent(0);
+				CheckBox checkbox = (CheckBox)row.getComponent(COMPONENT_CHECKBOX);
 				if (checkbox.isSelected()) {
 					Report report = getReport(row);
 					if (report != null) {
@@ -516,7 +621,7 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 			if (minimalOneSelected()) {
 				String newPath = normalizePath(pathTextField.getText());
 				for (Row row : getReportRows()) {
-					CheckBox checkbox = (CheckBox)row.getComponent(0);
+					CheckBox checkbox = (CheckBox)row.getComponent(COMPONENT_CHECKBOX);
 					if (checkbox.isSelected()) {
 						movePath(row, newPath);
 					}
@@ -545,6 +650,34 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 					treePane.redisplayReports(newPath, null);
 				}
 			}
+		} else if (e.getActionCommand().equals("CloneSelected")) {
+			reportGenerationWindow.setVisible(true);
+		} else if (e.getActionCommand().equals("GenerateClonesFromCsv")) {
+			if (minimalOneSelected()) {
+				String errorMessage = CsvUtil.validateCsv(cloneGenerationTextArea.getText(), ";");
+				if(errorMessage == null) {
+					if(getSelectedReportCount() > 1
+							&& (reportGenerationWarningLabel.getText() == null
+							|| !reportGenerationWarningLabel.getText().endsWith("press again to confirm"))) {
+						reportGenerationWarningLabel.setText("More than one report selected to clone; press again to confirm");
+						reportGenerationWarningLabel.setVisible(true);
+					} else {
+						for (Row row : getReportRows()) {
+							CheckBox checkbox = (CheckBox)row.getComponent(COMPONENT_CHECKBOX);
+							if (checkbox.isSelected()) {
+								generateReportClonesFromCsv(getReport(row));
+							}
+						}
+						reportGenerationWindow.setVisible(false);
+						reportGenerationWarningLabel.setText(null);
+						reportGenerationWarningLabel.setVisible(false);
+						refresh();
+					}
+				} else {
+					reportGenerationWarningLabel.setText(errorMessage);
+					reportGenerationWarningLabel.setVisible(true);
+				}
+			}
 		} else if (e.getActionCommand().equals("Run")) {
 			Button button = (Button)e.getSource();
 			Row row = (Row)button.getParent();
@@ -571,7 +704,7 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 					runResultReport.setGlobalReportXmlTransformer(reportXmlTransformer);
 					runResultReport.setTransformation(report.getTransformation());
 					runResultReport.setReportXmlTransformer(report.getReportXmlTransformer());
-					echo2Application.openReportCompare(report, runResultReport);
+					echo2Application.openReportCompare(report, runResultReport, reportRunner);
 				}
 			}
 		} else if (e.getActionCommand().equals("Delete")
@@ -587,21 +720,27 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 					runResultReport = getRunResultReport(reportRunner.getResults().get(storageId).correlationId);
 					runResultReport.setName(report.getName());
 					runResultReport.setDescription(report.getDescription());
+					if(report.getCheckpoints().get(0).containsVariables()) {
+						runResultReport.getCheckpoints().get(0).setMessage(report.getCheckpoints().get(0).getMessage());
+					}
 					runResultReport.setPath(report.getPath());
 					runResultReport.setTransformation(report.getTransformation());
 					runResultReport.setReportXmlTransformer(report.getReportXmlTransformer());
+					runResultReport.setVariableCsv(report.getVariableCsv());
 					errorMessage = Echo2Application.store(runStorage, runResultReport);
 					reportRunner.getResults().remove(storageId);
 					row.setId(runResultReport.getStorageId().toString());
-					row.getComponent(4).setVisible(false);
-					row.getComponent(5).setVisible(false);
-					row.remove(6);
+					row.getComponent(COMPONENT_COMPARE_BUTTON).setVisible(false);
+					row.getComponent(COMPONENT_REPLACE_BUTTON).setVisible(false);
+					row.remove(COMPONENT_DYNAMIC_VAR_LABEL);
+					row.remove(COMPONENT_RESULT_LABEL);
 					String path = runResultReport.getPath();
 					String name = runResultReport.getName();
 					if (path == null || !path.equals(normalizePath(path))) {
 						path = "/";
 					}
 					row.add(new Label(path + name));
+					row.add(newDynamicVariableLabel(report));
 				}
 				if (errorMessage == null) {
 					errorMessage = Echo2Application.delete(runStorage, report);
@@ -615,10 +754,48 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 						}
 					}
 				}
-				displayAndLogError(errorMessage);
+				if(errorMessage != null) {
+					displayAndLogError(errorMessage);
+				}
 			}
 		}
 		updateProgressBar();
+	}
+
+	private void generateReportClonesFromCsv(Report report) {
+		Scanner scanner = new Scanner(cloneGenerationTextArea.getText());
+		List<String> lines = new ArrayList<String>();
+		while(scanner.hasNextLine()) {
+			String nextLine = scanner.nextLine();
+			if(StringUtils.isNotEmpty(nextLine) && !nextLine.startsWith("#")) {
+				lines.add(nextLine);
+			}
+		}
+		scanner.close();
+		
+		try {
+			report.setVariableCsv(lines.get(0)+"\n"+lines.get(1));
+			displayAndLogError(Echo2Application.update(runStorage, report));
+			if(lines.size() > 2) {
+				for(int i = 2; i < lines.size(); i++) {
+					Report cloneReport = (Report)report.clone();
+					cloneReport.setVariableCsv(lines.get(0)+"\n"+lines.get(i));
+					displayAndLogError(Echo2Application.store(runStorage, cloneReport));
+				}
+			}
+		} catch (CloneNotSupportedException e) {
+			e.printStackTrace();
+		}
+	}
+
+	private int getSelectedReportCount() {
+		int count = 0;
+		for(Row row : getReportRows()) {
+			if(((CheckBox)row.getComponent(COMPONENT_CHECKBOX)).isSelected()) {
+				count++;
+			}
+		}
+		return count;
 	}
 
 	private void updateProgressBar() {
@@ -646,7 +823,7 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 	private Set<String> getSelectedStorageIds() {
 		Set<String> selectedStorageIds = new HashSet<String>();
 		for (Row row : getReportRows()) {
-			CheckBox checkbox = (CheckBox)row.getComponent(0);
+			CheckBox checkbox = (CheckBox)row.getComponent(COMPONENT_CHECKBOX);
 			if (checkbox.isSelected()) {
 				selectedStorageIds.add(row.getId());
 			}
@@ -671,7 +848,7 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 	private Report getRunResultReport(String runResultCorrelationId) {
 		Report report = null;
 		try {
-			report = ReportRunner.getRunResultReport(debugStorage, runResultCorrelationId);
+			report = reportRunner.getRunResultReport(runResultCorrelationId);
 		} catch(StorageException storageException) {
 			displayAndLogError(storageException);
 		}
@@ -716,7 +893,7 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 
 	private void copyPath(String newPath) {
 		for (Row row : getReportRows()) {
-			CheckBox checkbox = (CheckBox)row.getComponent(0);
+			CheckBox checkbox = (CheckBox)row.getComponent(COMPONENT_CHECKBOX);
 			if (checkbox.isSelected()) {
 				copyPath(row, newPath);
 			}

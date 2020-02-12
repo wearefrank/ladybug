@@ -17,20 +17,26 @@ package nl.nn.testtool;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Scanner;
 import java.util.Set;
 
+import nl.nn.testtool.run.ReportRunner;
 import nl.nn.testtool.storage.Storage;
 import nl.nn.testtool.transform.MessageTransformer;
 import nl.nn.testtool.transform.ReportXmlTransformer;
+import nl.nn.testtool.util.CsvUtil;
 import nl.nn.testtool.util.EscapeUtil;
 import nl.nn.testtool.util.LogUtil;
 
 import org.apache.commons.lang.NotImplementedException;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
@@ -77,6 +83,7 @@ public class Report implements Serializable {
 	private transient boolean differenceChecked = false;
 	private transient boolean differenceFound = false;
 	private transient Map<String, String> truncatedMessageMap = new RefCompareMap<String, String>();
+	private String variableCsv;
 	
 	public Report() {
 		String threadName = Thread.currentThread().getName();
@@ -162,6 +169,10 @@ public class Report implements Serializable {
 		return path;
 	}
 
+	public String getFullPath() {
+		return (StringUtils.isNotEmpty(getPath()) ? getPath() : "/") + getName();
+	}
+	
 	public void setStubStrategy(String stubStrategy) {
 		this.stubStrategy = stubStrategy;
 	}
@@ -473,6 +484,10 @@ public class Report implements Serializable {
 	}
 
 	public String toXml() {
+		return toXml(null);
+	}
+	
+	public String toXml(ReportRunner reportRunner) {
 		if (xml == null) {
 			StringBuffer stringBuffer = new StringBuffer();
 			stringBuffer.append("<Report");
@@ -488,7 +503,12 @@ public class Report implements Serializable {
 			Iterator iterator = checkpoints.iterator();
 			while (iterator.hasNext()) {
 				Checkpoint checkpoint = (Checkpoint)iterator.next();
-				Object object = checkpoint.getMessage();
+				Object object;
+				if(reportRunner != null && checkpoint.containsVariables()) {
+					object = checkpoint.getMessageWithResolvedVariables(reportRunner);
+				} else {
+					object = checkpoint.getMessage();
+				}
 				if (object != null) {
 					stringBuffer.append("<Checkpoint");
 					stringBuffer.append(" Name=\"" + EscapeUtil.escapeXml(checkpoint.getName()) + "\"");
@@ -545,7 +565,43 @@ public class Report implements Serializable {
 	private String getCheckpointLogDescription(String name, int type, Integer level) {
 		return "(name: " + name + ", type: " + Checkpoint.getTypeAsString(type) + ", level: " + level + ", correlationId: " + correlationId + ")";
 	}
+	
+	public String getVariableCsv() {
+		return variableCsv;
+	}
+	
+	public String setVariableCsv(String variableCsv) {
+		if(StringUtils.isEmpty(variableCsv)) {
+			this.variableCsv = null;
+			return null;
+		}
+		String errorMessage = CsvUtil.validateCsv(variableCsv, ";", 2);
+		if(errorMessage == null) this.variableCsv = variableCsv;
+		return errorMessage;
+	}
 
+	public Map<String, String> getVariablesAsMap() {
+		if(StringUtils.isEmpty(variableCsv)) {
+			return null;
+		}
+		Map<String, String> variableMap = new LinkedHashMap<String, String>();
+		Scanner scanner = new Scanner(variableCsv);
+		List<String> lines = new ArrayList<String>();
+		while(scanner.hasNextLine()) {
+			String nextLine = scanner.nextLine();
+			if(StringUtils.isNotEmpty(nextLine) && !nextLine.startsWith("#")) {
+				lines.add(nextLine);
+			}
+		}
+		scanner.close();
+		
+		List<String> params = Arrays.asList(lines.get(0).split(";"));
+		for(String key : params) {
+			String value = lines.get(1).split(";")[params.indexOf(key)];
+			variableMap.put(key, value);
+		}
+		return variableMap;
+	}
 }
 
 /**

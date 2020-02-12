@@ -24,6 +24,7 @@ import java.util.Map;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
+import nl.nn.testtool.run.ReportRunner;
 import nl.nn.testtool.storage.LogStorage;
 import nl.nn.testtool.transform.MessageTransformer;
 import nl.nn.testtool.util.LogUtil;
@@ -263,10 +264,10 @@ public class TestTool {
 	}
 
 	public String rerun(Report report, SecurityContext securityContext) {
-		return rerun(null, report, securityContext);
+		return rerun(null, report, securityContext, null);
 	}
 
-	public String rerun(String correlationId, Report report, SecurityContext securityContext) {
+	public String rerun(String correlationId, Report report, SecurityContext securityContext, ReportRunner reportRunner) {
 		String errorMessage = null;
 		if (correlationId == null) {
 			correlationId = getCorrelationId();
@@ -278,7 +279,7 @@ public class TestTool {
 			}
 		}
 		try {
-			errorMessage = debugger.rerun(correlationId, report, securityContext);
+			errorMessage = debugger.rerun(correlationId, report, securityContext, reportRunner);
 		} finally {
 			if (reportGeneratorEnabled) {
 				Report originalReport;

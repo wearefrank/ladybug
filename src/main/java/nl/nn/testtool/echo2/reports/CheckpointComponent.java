@@ -47,6 +47,8 @@ public class CheckpointComponent extends MessageComponent {
 	private RadioButton radioButtonStubOptionNo;
 	private Label messageHasBeenStubbedLabel;
 	private Label messageWasTruncatedLabel;
+	private Label checkpointIndexLabel;
+	private Label numberOfCharactersLabel;
 	private Label estimatedMemoryUsageLabel;
 
 	public CheckpointComponent() {
@@ -141,7 +143,13 @@ public class CheckpointComponent extends MessageComponent {
 		
 		pathLabel = Echo2Application.createInfoLabelWithColumnLayoutData();
 		add(pathLabel);
+		
+		checkpointIndexLabel = Echo2Application.createInfoLabelWithColumnLayoutData();
+		add(checkpointIndexLabel);
 
+		numberOfCharactersLabel = Echo2Application.createInfoLabelWithColumnLayoutData();
+		add(numberOfCharactersLabel);
+		
 		estimatedMemoryUsageLabel = Echo2Application.createInfoLabelWithColumnLayoutData();
 		add(estimatedMemoryUsageLabel);
 
@@ -171,7 +179,7 @@ public class CheckpointComponent extends MessageComponent {
 			
 			if(checkpoint.getPreTruncatedMessageLength() > 0) {
 				messageWasTruncatedLabel.setText("Message was truncated ("
-						+ (checkpoint.getPreTruncatedMessageLength() - testTool.getMaxMessageLength()) + " characters remaining)");
+						+ (checkpoint.getPreTruncatedMessageLength() - testTool.getMaxMessageLength()) + " characters removed)");
 				messageWasTruncatedLabel.setVisible(true);
 			} else {
 				messageWasTruncatedLabel.setVisible(false);
@@ -190,6 +198,8 @@ public class CheckpointComponent extends MessageComponent {
 		threadNameLabel.setText("Thread name: " + checkpoint.getThreadName());
 		sourceClassNameLabel.setText("Source class name: " + checkpoint.getSourceClassName());
 		pathLabel.setText("Path: " + path);
+		checkpointIndexLabel.setText("Checkpoint index: "+report.getCheckpoints().indexOf(checkpoint));
+		numberOfCharactersLabel.setText("Number of characters: "+(checkpoint.getMessage() != null ? checkpoint.getMessage().length() : "0"));
 		estimatedMemoryUsageLabel.setText("EstimatedMemoryUsage: " + checkpoint.getEstimatedMemoryUsage() + " bytes");
 		hideMessages();
 	}
