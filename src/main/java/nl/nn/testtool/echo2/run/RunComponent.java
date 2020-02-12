@@ -493,10 +493,10 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 	private Label newDynamicVariableLabel(Report report) {
 		Label label = new Label();
 		label.setForeground(Echo2Application.getButtonRolloverBackgroundColor());
-		if(report.getDynamicVariableCsv() != null) {
+		if(report.getVariableCsv() != null) {
 			String labelText = "[";
 			boolean tooManyChars = false;
-			for(Entry<String, String> entry : report.getDynamicVariableMap().entrySet()) {
+			for(Entry<String, String> entry : report.getVariablesAsMap().entrySet()) {
 				if(labelText.length() + entry.getValue().length() < 50) {
 					labelText += entry.getKey()+"="+entry.getValue()+", ";
 				} else {
@@ -527,7 +527,7 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 		runResultReport.setGlobalReportXmlTransformer(reportXmlTransformer);
 		runResultReport.setTransformation(report.getTransformation());
 		runResultReport.setReportXmlTransformer(report.getReportXmlTransformer());
-		if (report.equalsOther(runResultReport)) {
+		if (report.equalsOther(runResultReport, reportRunner)) {
 			label.setForeground(Echo2Application.getNoDifferenceFoundTextColor());
 		} else {
 			label.setForeground(Echo2Application.getDifferenceFoundTextColor());
@@ -720,13 +720,13 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 					runResultReport = getRunResultReport(reportRunner.getResults().get(storageId).correlationId);
 					runResultReport.setName(report.getName());
 					runResultReport.setDescription(report.getDescription());
-					if(report.hasInputVariables()) {
+					if(report.getCheckpoints().get(0).containsVariables()) {
 						runResultReport.getCheckpoints().get(0).setMessage(report.getCheckpoints().get(0).getMessage());
 					}
 					runResultReport.setPath(report.getPath());
 					runResultReport.setTransformation(report.getTransformation());
 					runResultReport.setReportXmlTransformer(report.getReportXmlTransformer());
-					runResultReport.setDynamicVariables(report.getDynamicVariableCsv());
+					runResultReport.setVariableCsv(report.getVariableCsv());
 					errorMessage = Echo2Application.store(runStorage, runResultReport);
 					reportRunner.getResults().remove(storageId);
 					row.setId(runResultReport.getStorageId().toString());
@@ -774,12 +774,12 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 		scanner.close();
 		
 		try {
-			report.setDynamicVariables(lines.get(0)+"\n"+lines.get(1));
+			report.setVariableCsv(lines.get(0)+"\n"+lines.get(1));
 			displayAndLogError(Echo2Application.update(runStorage, report));
 			if(lines.size() > 2) {
 				for(int i = 2; i < lines.size(); i++) {
 					Report cloneReport = (Report)report.clone();
-					cloneReport.setDynamicVariables(lines.get(0)+"\n"+lines.get(i));
+					cloneReport.setVariableCsv(lines.get(0)+"\n"+lines.get(i));
 					displayAndLogError(Echo2Application.store(runStorage, cloneReport));
 				}
 			}

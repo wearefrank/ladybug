@@ -171,7 +171,7 @@ public class CheckpointComponent extends MessageComponent {
 			
 			if(checkpoint.getPreTruncatedMessageLength() > 0) {
 				messageWasTruncatedLabel.setText("Message was truncated ("
-						+ (checkpoint.getPreTruncatedMessageLength() - testTool.getMaxMessageLength()) + " characters remaining)");
+						+ (checkpoint.getPreTruncatedMessageLength() - testTool.getMaxMessageLength()) + " characters removed)");
 				messageWasTruncatedLabel.setVisible(true);
 			} else {
 				messageWasTruncatedLabel.setVisible(false);

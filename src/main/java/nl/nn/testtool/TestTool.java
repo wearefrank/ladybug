@@ -272,13 +272,6 @@ public class TestTool {
 		if (correlationId == null) {
 			correlationId = getCorrelationId();
 		}
-		if(report.hasInputVariables()) {
-			if(reportRunner != null) {
-				report.parseInputVariables(reportRunner);
-			} else {
-				log.warn("Input variable parsing does not (currently) work outside of the Test tab's rerun functionality");
-			}
-		}
 		boolean reportGeneratorEnabled = getReportGeneratorEnabled();
 		if (reportGeneratorEnabled) {
 			synchronized(originalReports) {
@@ -286,7 +279,7 @@ public class TestTool {
 			}
 		}
 		try {
-			errorMessage = debugger.rerun(correlationId, report, securityContext);
+			errorMessage = debugger.rerun(correlationId, report, securityContext, reportRunner);
 		} finally {
 			if (reportGeneratorEnabled) {
 				Report originalReport;

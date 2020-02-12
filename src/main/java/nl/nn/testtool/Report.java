@@ -24,23 +24,16 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Scanner;
 import java.util.Set;
-import java.util.regex.MatchResult;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import nl.nn.testtool.run.ReportRunner;
-import nl.nn.testtool.run.RunResult;
 import nl.nn.testtool.storage.Storage;
-import nl.nn.testtool.storage.StorageException;
 import nl.nn.testtool.transform.MessageTransformer;
 import nl.nn.testtool.transform.ReportXmlTransformer;
 import nl.nn.testtool.util.CsvUtil;
 import nl.nn.testtool.util.EscapeUtil;
 import nl.nn.testtool.util.LogUtil;
-import nl.nn.testtool.util.XmlUtil;
 
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang.StringUtils;
@@ -48,8 +41,6 @@ import org.apache.log4j.Logger;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.DocumentHelper;
-
-import net.sf.saxon.trans.XPathException;
 
 /**
  * @author Jaco de Groot
@@ -92,9 +83,7 @@ public class Report implements Serializable {
 	private transient boolean differenceChecked = false;
 	private transient boolean differenceFound = false;
 	private transient Map<String, String> truncatedMessageMap = new RefCompareMap<String, String>();
-	
-	private String dynamicVariableCsv;
-	private Map<String, String> dynamicVariableMap;
+	private String variableCsv;
 	
 	public Report() {
 		String threadName = Thread.currentThread().getName();
@@ -499,10 +488,10 @@ public class Report implements Serializable {
 	}
 
 	public String toXml() {
-		return toXml(false);
+		return toXml(null);
 	}
 	
-	public String toXml(boolean ignoreInput) {
+	public String toXml(ReportRunner reportRunner) {
 		if (xml == null) {
 			StringBuffer stringBuffer = new StringBuffer();
 			stringBuffer.append("<Report");
@@ -518,7 +507,12 @@ public class Report implements Serializable {
 			Iterator iterator = checkpoints.iterator();
 			while (iterator.hasNext()) {
 				Checkpoint checkpoint = (Checkpoint)iterator.next();
-				Object object = checkpoint.getMessage();
+				Object object;
+				if(reportRunner != null && checkpoint.containsVariables()) {
+					object = checkpoint.getMessageWithResolvedVariables(reportRunner);
+				} else {
+					object = checkpoint.getMessage();
+				}
 				if (object != null) {
 					stringBuffer.append("<Checkpoint");
 					stringBuffer.append(" Name=\"" + EscapeUtil.escapeXml(checkpoint.getName()) + "\"");
@@ -531,36 +525,23 @@ public class Report implements Serializable {
 					} catch (DocumentException e) {
 						document = null;
 					}
-					String checkpointMessage = null;
-					if(ignoreInput) {
-						checkpointMessage = "INPUT IGNORED";
-						ignoreInput = false;
-					}
 					if (document == null) {
-						if(checkpointMessage == null) {
-							checkpointMessage = EscapeUtil.escapeXml(message);
-						}
 						stringBuffer.append(">");
-						stringBuffer.append(checkpointMessage);
+						stringBuffer.append(EscapeUtil.escapeXml(message));
 						stringBuffer.append("</Checkpoint>");
 					} else {
 						String textDecl = null;
-						if(checkpointMessage == null) {
-							if (message.startsWith("<?")) {
-								int i = message.indexOf("?>") + 2;
-								textDecl = message.substring(0, i);
-								stringBuffer.append(" TextDecl=\"");
-								stringBuffer.append(EscapeUtil.escapeXml(textDecl));
-								stringBuffer.append("\">");
-								message = message.substring(i);
-							} else {
-								stringBuffer.append(">");
-							}
-							checkpointMessage = message;
+						if (message.startsWith("<?")) {
+							int i = message.indexOf("?>") + 2;
+							textDecl = message.substring(0, i);
+							stringBuffer.append(" TextDecl=\"");
+							stringBuffer.append(EscapeUtil.escapeXml(textDecl));
+							stringBuffer.append("\">");
+							message = message.substring(i);
 						} else {
-							checkpointMessage = ">"+checkpointMessage;
+							stringBuffer.append(">");
 						}
-						stringBuffer.append(checkpointMessage);
+						stringBuffer.append(message);
 						stringBuffer.append("</Checkpoint>");
 					}
 				}
@@ -589,162 +570,54 @@ public class Report implements Serializable {
 		return "(name: " + name + ", type: " + Checkpoint.getTypeAsString(type) + ", level: " + level + ", correlationId: " + correlationId + ")";
 	}
 	
-	public boolean hasInputVariables() {
-		return Pattern.compile("\\$\\{.*?\\}").matcher(checkpoints.get(0).getMessage()).find();
+	public boolean equalsOther(Report otherReport) {
+		return equalsOther(otherReport, null);
+	}
+
+	public boolean equalsOther(Report otherReport, ReportRunner reportRunner) {
+//		if(checkpoints.get(0).hasInputVariables()
+//		|| report.getCheckpoints().get(0).hasInputVariables()) {
+//			return toXml(true).equals(report.toXml(true));
+//		} else {
+			return toXml(reportRunner).equals(otherReport.toXml(reportRunner));
+//		}
 	}
 	
-	public void parseInputVariables(ReportRunner reportRunner) {
-		Checkpoint cp = checkpoints.get(0);
-		if(cp.getMessage() != null) {
-			// 1. Parse interactive report parameters
-			List<MatchResult> matchResults = new ArrayList<MatchResult>();
-			Pattern pattern = Pattern.compile("\\$\\{report\\((.*?)\\)\\/checkpoint\\(([0-9]+)\\)\\/xpath\\((.*?)\\)\\}");
-			Matcher m = pattern.matcher(cp.getMessage());
-			while(m.find()) {
-				matchResults.add(m.toMatchResult());
-			}
-			for(MatchResult matchResult : matchResults) {
-				String relativeReportPath = matchResult.group(1);
-				int checkpointIndex = Integer.parseInt(matchResult.group(2));
-				String xpathExpression = matchResult.group(3);
-				
-				// Determine the specified parent report
-				String[] relativeReportPathSteps = relativeReportPath.split("/");
-				int[] operations = new int[relativeReportPathSteps.length];
-				for(int i = 0; i < relativeReportPathSteps.length; i++) {
-					String step = relativeReportPathSteps[i];
-					if(step.equals("..")) operations[i] = -1;
-					else if(step.equals(".")) operations[i] = 0;
-					else operations[i] = 1;
-				}
-				String determinedPath = getPath();
-				if(determinedPath == null) determinedPath = "/";
-				String[] splitDeterminedPath = determinedPath.split("/");
-				for(int i = 0; i < operations.length; i++) {
-					switch(operations[i]) {
-						case -1:
-							determinedPath = determinedPath.substring(0, determinedPath.length() - splitDeterminedPath[splitDeterminedPath.length-1].length()-1);
-							break;
-						case 1:
-							determinedPath += relativeReportPathSteps[i] + (i < operations.length-1? "/" : "");
-							break;
-					}
-				}
-				Report targetReport = null;
-				try {
-					for(Entry<Integer, RunResult> entry : reportRunner.getResults().entrySet()) {
-						if(determinedPath.equals(entry.getValue().fullPath)) {
-							targetReport = reportRunner.getRunResultReport(entry.getValue().correlationId);
-							break;
-						}
-					}
-				} catch (StorageException e) {
-					log.error(e);
-				}
-				if(targetReport != null) {
-					try {
-						String targetXml = targetReport.getCheckpoints().get(checkpointIndex).getMessage();
-						if(StringUtils.isNotEmpty(targetXml)) {
-							try {
-								String xpathResult = XmlUtil.createXPathEvaluator(xpathExpression).evaluate(targetXml);
-								if(xpathResult != null) {
-									try {
-										cp.setMessage(cp.getMessage().replaceAll(Pattern.quote(matchResult.group()), xpathResult));
-									} catch (IllegalArgumentException e) {
-										if(xpathResult.matches("\\$\\{.*?\\}")) {
-											log.warn(warningMessageHeader(matchResult.group())
-													+"Specified xpath expression points to incorrectly parsed parameter "+xpathResult+"; "
-													+ "see other recent log warnings for a possible cause");
-										}
-									}
-								}
-							} catch (XPathException e) {
-								log.warn(warningMessageHeader(matchResult.group())+"Invalid xpath expression or XML message in target checkpoint");
-							}
-						} else {
-							log.warn(warningMessageHeader(matchResult.group())+"Target checkpoint ["+targetReport.getCheckpoints().get(checkpointIndex)+"] contains no message");
-						}
-					} catch (IndexOutOfBoundsException e) {
-						log.warn(warningMessageHeader(matchResult.group())+"Index out of bounds: checkpoint with index ["+checkpointIndex+"] does not exist in report ["+determinedPath+"]");
-					}
-				} else {
-					log.warn(warningMessageHeader(matchResult.group())+"Run result not found for report ["+determinedPath+"] - please make sure it runs before this report");
-				}
-				m = pattern.matcher(cp.getMessage());
-			}
-			
-			// 2. Parse dynamic variables
-			if(dynamicVariableMap != null) {
-				for(Entry<String, String> entry : dynamicVariableMap.entrySet()) {
-					pattern = Pattern.compile("\\$\\{"+entry.getKey()+"\\}");
-					m = pattern.matcher(cp.getMessage());
-					while(m.find()) {
-						cp.setMessage(cp.getMessage().replaceAll(Pattern.quote(m.group()), entry.getValue()));
-					}
-				}
-			}
-		}
+	public String getVariableCsv() {
+		return variableCsv;
 	}
-
-	private String warningMessageHeader(String parameter) {
-		return "Could not parse parameter "+parameter+" found in the input of report ["+getFullPath()+"] with storageId ["+getStorageId()+"]\n"; 
-	}
-
-	public String getDynamicVariableCsv() {
-		return dynamicVariableCsv;
-	}
-
-	public String setDynamicVariables(String text) {
-		String errorMessage = "";
-		String delimiter = ";";
-		
-		if(StringUtils.isNotEmpty(text)) {
-			errorMessage = CsvUtil.validateCsv(text, delimiter, 2);
-		} else {
-			dynamicVariableMap = null;
-			dynamicVariableCsv = null;
+	
+	public String setVariableCsv(String dynamicVariableCsv) {
+		if(StringUtils.isEmpty(dynamicVariableCsv)) {
+			this.variableCsv = null;
 			return null;
 		}
-		if(errorMessage == null) {
-			dynamicVariableMap = new LinkedHashMap<String, String>();
-			
-			Scanner scanner = new Scanner(text);
-			List<String> lines = new ArrayList<String>();
-			while(scanner.hasNextLine()) {
-				String nextLine = scanner.nextLine();
-				if(StringUtils.isNotEmpty(nextLine) && !nextLine.startsWith("#")) {
-					lines.add(nextLine);
-				}
-			}
-			scanner.close();
-			
-			List<String> params = Arrays.asList(lines.get(0).split(delimiter));
-			for(String key : params) {
-				String value = lines.get(1).split(delimiter)[params.indexOf(key)];
-				dynamicVariableMap.put(key, value);
-			}
-			dynamicVariableCsv = text;
-		}
-		if(errorMessage != null) {
-			log.error(errorMessage);
-		}
+		String errorMessage = CsvUtil.validateCsv(dynamicVariableCsv, ";", 2);
+		if(errorMessage == null) this.variableCsv = dynamicVariableCsv;
 		return errorMessage;
 	}
 
-	public Map<String, String> getDynamicVariableMap() {
-		return dynamicVariableMap;
-	}
-
-	public void setDynamicVariableMap(Map<String, String> dynamicVariableMap) {
-		this.dynamicVariableMap = dynamicVariableMap;
-	}
-
-	public boolean equalsOther(Report report) {
-		if(hasInputVariables() || report.hasInputVariables()) {
-			return toXml(true).equals(report.toXml(true));
-		} else {
-			return toXml().equals(report.toXml());
+	public Map<String, String> getVariablesAsMap() {
+		if(StringUtils.isEmpty(variableCsv)) {
+			return null;
 		}
+		Map<String, String> dynamicVariableMap = new LinkedHashMap<String, String>();
+		Scanner scanner = new Scanner(variableCsv);
+		List<String> lines = new ArrayList<String>();
+		while(scanner.hasNextLine()) {
+			String nextLine = scanner.nextLine();
+			if(StringUtils.isNotEmpty(nextLine) && !nextLine.startsWith("#")) {
+				lines.add(nextLine);
+			}
+		}
+		scanner.close();
+		
+		List<String> params = Arrays.asList(lines.get(0).split(";"));
+		for(String key : params) {
+			String value = lines.get(1).split(";")[params.indexOf(key)];
+			dynamicVariableMap.put(key, value);
+		}
+		return dynamicVariableMap;
 	}
 }
 

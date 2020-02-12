@@ -228,9 +228,9 @@ public class ReportComponent extends MessageComponent {
 				+ "These variables can be referred to in this report's input message by referring to their ${key}. "
 				+ "Example:\n\n"
 				+ "id;firstname;location\n"
-				+ "0;waldo;null\n\n"
+				+ "3;jaco;de groot\n\n"
 				+ "In this case, any occurences of ${firstname} in the report's input message "
-				+ "will be replaced with \"waldo\" at runtime.");
+				+ "will be replaced with \"jaco\" at runtime.");
 		dynamicVariableRow.add(dynamicVariableLabel);
 		
 		dynamicVariableColumn = new Column();
@@ -384,7 +384,6 @@ public class ReportComponent extends MessageComponent {
 		saveReportPathChanges();
 		saveReportDynamicVariableChanges();
 		report.setTransformation(transformationTextArea.getText());
-		report.setDynamicVariables(dynamicVariableTextArea.getText());
 		report.flushCachedXml();
 		if (report.getStorage() instanceof CrudStorage) {
 			displayAndLogError(Echo2Application.update((CrudStorage)report.getStorage(), report));
@@ -403,8 +402,8 @@ public class ReportComponent extends MessageComponent {
 	}
 
 	private void saveReportDynamicVariableChanges() {
-		if(!dynamicVariableTextArea.getText().equals(report.getDynamicVariableCsv())) {
-			String errorMessage = report.setDynamicVariables(dynamicVariableTextArea.getText());
+		if(!dynamicVariableTextArea.getText().equals(report.getVariableCsv())) {
+			String errorMessage = report.setVariableCsv(dynamicVariableTextArea.getText());
 			if(errorMessage == null) {
 				dynamicVariableErrorMessageLabel.setVisible(false);
 			} else {
@@ -495,11 +494,11 @@ public class ReportComponent extends MessageComponent {
 			dynamicVariableLabel.setVisible(false);
 			dynamicVariableTextArea.setVisible(false);
 		}
-		updateMessageColumn(report.getDynamicVariableCsv(), dynamicVariableColumn);
+		updateMessageColumn(report.getVariableCsv(), dynamicVariableColumn);
 		if (infoPane.showLineNumbers()) {
 			addLineNumbers(dynamicVariableColumn);
 		}
-		dynamicVariableTextArea.setText(report.getDynamicVariableCsv());
+		dynamicVariableTextArea.setText(report.getVariableCsv());
 	}
 
 	@Override
