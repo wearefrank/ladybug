@@ -454,11 +454,7 @@ public class Report implements Serializable {
 	}
 
 	public MessageTransformer getMessageTransformer() {
-		if(testTool != null) {
-			return testTool.getMessageTransformer();
-		} else {
-			return null;
-		}
+		return testTool.getMessageTransformer();
 	}
 
 	public Object clone() throws CloneNotSupportedException {

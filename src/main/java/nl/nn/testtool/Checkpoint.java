@@ -56,11 +56,11 @@ public class Checkpoint implements Serializable, Cloneable {
 	private int stub = STUB_FOLLOW_REPORT_STRATEGY;
 	private int preTruncatedMessageLength = -1;
 	private long estimatedMemoryUsage = -1;
-	private transient static Pattern simpleVariableCheckPattern;
+	private transient static Pattern genericVariableCheckPattern;
 	private transient static Pattern externalVariablePattern;
 	private transient Map<String, Pattern> variablePatternMap;
 	static {
-		simpleVariableCheckPattern = Pattern.compile("\\$\\{.*?\\}");
+		genericVariableCheckPattern = Pattern.compile("\\$\\{.*?\\}");
 		externalVariablePattern = Pattern.compile("\\$\\{report\\((.*?)\\)\\/checkpoint\\(([0-9]+)\\)\\/xpath\\((.*?)\\)\\}");
 	}
 
@@ -262,7 +262,7 @@ public class Checkpoint implements Serializable, Cloneable {
 	public String getMessageWithResolvedVariables(ReportRunner reportRunner) {
 		String result = getMessage();
 		if(getMessage() != null && containsVariables()) {
-			// 1. Parse interactive report variables
+			// 1. Parse external report variables
 			if(reportRunner != null) {
 				List<MatchResult> matchResults = new ArrayList<MatchResult>();
 				Matcher m = externalVariablePattern.matcher(getMessage());
@@ -290,7 +290,7 @@ public class Checkpoint implements Serializable, Cloneable {
 						switch(operations[i]) {
 							case -1:
 								if(determinedPath != "/") {
-									determinedPath = determinedPath.substring(0, determinedPath.length()- splitDeterminedPath[splitDeterminedPath.length-1].length()-1);
+									determinedPath = determinedPath.substring(0, determinedPath.length() - splitDeterminedPath[splitDeterminedPath.length-1].length()-1);
 								}
 								break;
 							case 1:
@@ -341,7 +341,7 @@ public class Checkpoint implements Serializable, Cloneable {
 					}
 				}
 			}
-			// 2. Parse dynamic variables
+			// 2. Parse local variables
 			if(StringUtils.isNotEmpty(report.getVariableCsv())) {
 				Map<String, String> variableMap = report.getVariablesAsMap();
 				Map<String, Pattern> variablePatternMap = getVariablePatternMap(variableMap);
@@ -362,7 +362,7 @@ public class Checkpoint implements Serializable, Cloneable {
 	
 	public boolean containsVariables() {
 		if(StringUtils.isEmpty(getMessage())) return false;
-		return simpleVariableCheckPattern.matcher(getMessage()).find();
+		return genericVariableCheckPattern.matcher(getMessage()).find();
 	}
 
 	protected Map<String, Pattern> getVariablePatternMap(Map<String, String> variableMap) {
