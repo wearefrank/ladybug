@@ -570,30 +570,17 @@ public class Report implements Serializable {
 		return "(name: " + name + ", type: " + Checkpoint.getTypeAsString(type) + ", level: " + level + ", correlationId: " + correlationId + ")";
 	}
 	
-	public boolean equalsOther(Report otherReport) {
-		return equalsOther(otherReport, null);
-	}
-
-	public boolean equalsOther(Report otherReport, ReportRunner reportRunner) {
-//		if(checkpoints.get(0).hasInputVariables()
-//		|| report.getCheckpoints().get(0).hasInputVariables()) {
-//			return toXml(true).equals(report.toXml(true));
-//		} else {
-			return toXml(reportRunner).equals(otherReport.toXml(reportRunner));
-//		}
-	}
-	
 	public String getVariableCsv() {
 		return variableCsv;
 	}
 	
-	public String setVariableCsv(String dynamicVariableCsv) {
-		if(StringUtils.isEmpty(dynamicVariableCsv)) {
+	public String setVariableCsv(String variableCsv) {
+		if(StringUtils.isEmpty(variableCsv)) {
 			this.variableCsv = null;
 			return null;
 		}
-		String errorMessage = CsvUtil.validateCsv(dynamicVariableCsv, ";", 2);
-		if(errorMessage == null) this.variableCsv = dynamicVariableCsv;
+		String errorMessage = CsvUtil.validateCsv(variableCsv, ";", 2);
+		if(errorMessage == null) this.variableCsv = variableCsv;
 		return errorMessage;
 	}
 
@@ -601,7 +588,7 @@ public class Report implements Serializable {
 		if(StringUtils.isEmpty(variableCsv)) {
 			return null;
 		}
-		Map<String, String> dynamicVariableMap = new LinkedHashMap<String, String>();
+		Map<String, String> variableMap = new LinkedHashMap<String, String>();
 		Scanner scanner = new Scanner(variableCsv);
 		List<String> lines = new ArrayList<String>();
 		while(scanner.hasNextLine()) {
@@ -615,9 +602,9 @@ public class Report implements Serializable {
 		List<String> params = Arrays.asList(lines.get(0).split(";"));
 		for(String key : params) {
 			String value = lines.get(1).split(";")[params.indexOf(key)];
-			dynamicVariableMap.put(key, value);
+			variableMap.put(key, value);
 		}
-		return dynamicVariableMap;
+		return variableMap;
 	}
 }
 

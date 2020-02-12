@@ -235,7 +235,6 @@ public class ReportComponent extends MessageComponent {
 		
 		variableColumn = new Column();
 		variableColumn.setInsets(new Insets(0, 5, 0 ,0));
-//		addLineNumbers(dynamicParamColumn);
 		variableTextArea = new TextArea();
 		variableTextArea.setWidth(new Extent(50, Extent.PERCENT));
 		variableTextArea.setHeight(new Extent(32));
@@ -382,7 +381,7 @@ public class ReportComponent extends MessageComponent {
 		report.setName(nameTextField.getText());
 		report.setDescription(descriptionTextArea.getText());
 		saveReportPathChanges();
-		saveReportDynamicVariableChanges();
+		saveReportVariableChanges();
 		report.setTransformation(transformationTextArea.getText());
 		report.flushCachedXml();
 		if (report.getStorage() instanceof CrudStorage) {
@@ -401,7 +400,7 @@ public class ReportComponent extends MessageComponent {
 		report.setPath(input);
 	}
 
-	private void saveReportDynamicVariableChanges() {
+	private void saveReportVariableChanges() {
 		if(!variableTextArea.getText().equals(report.getVariableCsv())) {
 			String errorMessage = report.setVariableCsv(variableTextArea.getText());
 			if(errorMessage == null) {
@@ -422,7 +421,7 @@ public class ReportComponent extends MessageComponent {
 		updateDescriptionLabelAndDescriptionColumnAndTextArea();
 		updatePathLabelAndPathTextField();
 		updateTransformationLabelAndTransformationColumnAndTextArea();
-		updateDynamicVariableLabelAndTextArea();
+		updateVariableLabelAndTextArea();
 		if(!infoPane.edit()) {
 			variableErrorMessageLabel.setVisible(false);
 		}
@@ -484,7 +483,7 @@ public class ReportComponent extends MessageComponent {
 		transformationTextArea.setText(report.getTransformation());
 	}
 
-	private void updateDynamicVariableLabelAndTextArea() {
+	private void updateVariableLabelAndTextArea() {
 		if (infoPane.edit()) {
 			variableColumn.setVisible(false);
 			variableLabel.setVisible(true);

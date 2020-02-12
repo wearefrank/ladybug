@@ -58,6 +58,7 @@ public class Checkpoint implements Serializable, Cloneable {
 	private long estimatedMemoryUsage = -1;
 	private transient static Pattern simpleVariableCheckPattern;
 	private transient static Pattern externalVariablePattern;
+	private transient Map<String, Pattern> variablePatternMap;
 	static {
 		simpleVariableCheckPattern = Pattern.compile("\\$\\{.*?\\}");
 		externalVariablePattern = Pattern.compile("\\$\\{report\\((.*?)\\)\\/checkpoint\\(([0-9]+)\\)\\/xpath\\((.*?)\\)\\}");
@@ -262,7 +263,6 @@ public class Checkpoint implements Serializable, Cloneable {
 		String result = getMessage();
 		if(getMessage() != null && containsVariables()) {
 			// 1. Parse interactive report variables
-			System.out.println("getMessageWithResolvedVariables() called");
 			if(reportRunner != null) {
 				List<MatchResult> matchResults = new ArrayList<MatchResult>();
 				Matcher m = externalVariablePattern.matcher(getMessage());
@@ -289,7 +289,9 @@ public class Checkpoint implements Serializable, Cloneable {
 					for(int i = 0; i < operations.length; i++) {
 						switch(operations[i]) {
 							case -1:
-								determinedPath = determinedPath.substring(0, determinedPath.length() - splitDeterminedPath[splitDeterminedPath.length-1].length()-1);
+								if(determinedPath != "/") {
+									determinedPath = determinedPath.substring(0, determinedPath.length()- splitDeterminedPath[splitDeterminedPath.length-1].length()-1);
+								}
 								break;
 							case 1:
 								determinedPath += relativeReportPathSteps[i] + (i < operations.length-1? "/" : "");
@@ -363,8 +365,7 @@ public class Checkpoint implements Serializable, Cloneable {
 		return simpleVariableCheckPattern.matcher(getMessage()).find();
 	}
 
-	private transient Map<String, Pattern> variablePatternMap;
-	Map<String, Pattern> getVariablePatternMap(Map<String, String> variableMap) {
+	protected Map<String, Pattern> getVariablePatternMap(Map<String, String> variableMap) {
 		if(variablePatternMap == null) {
 			variablePatternMap = new HashMap<String, Pattern>();
 			for(Entry<String, String> entry : variableMap.entrySet()) {

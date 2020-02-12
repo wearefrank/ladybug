@@ -527,7 +527,7 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 		runResultReport.setGlobalReportXmlTransformer(reportXmlTransformer);
 		runResultReport.setTransformation(report.getTransformation());
 		runResultReport.setReportXmlTransformer(report.getReportXmlTransformer());
-		if (report.equalsOther(runResultReport, reportRunner)) {
+		if (report.toXml(reportRunner).equals(runResultReport.toXml(reportRunner))) {
 			label.setForeground(Echo2Application.getNoDifferenceFoundTextColor());
 		} else {
 			label.setForeground(Echo2Application.getDifferenceFoundTextColor());
@@ -704,7 +704,7 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 					runResultReport.setGlobalReportXmlTransformer(reportXmlTransformer);
 					runResultReport.setTransformation(report.getTransformation());
 					runResultReport.setReportXmlTransformer(report.getReportXmlTransformer());
-					echo2Application.openReportCompare(report, runResultReport);
+					echo2Application.openReportCompare(report, runResultReport, reportRunner);
 				}
 			}
 		} else if (e.getActionCommand().equals("Delete")
