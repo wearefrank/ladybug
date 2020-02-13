@@ -51,4 +51,5 @@ public interface Debugger {
 	 */
 	public String rerun(String correlationId, Report originalReport, SecurityContext securityContext, ReportRunner reportRunner);
 
+	public void setEnabled(boolean enabled);
 }
