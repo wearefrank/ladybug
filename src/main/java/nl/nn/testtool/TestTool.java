@@ -116,9 +116,10 @@ public class TestTool {
 	public MessageTransformer getMessageTransformer() {
 		return messageTransformer;
 	}
-
+	
 	public void setReportGeneratorEnabled(boolean reportGeneratorEnabled) {
 		this.reportGeneratorEnabled = reportGeneratorEnabled;
+		debugger.setEnabled(reportGeneratorEnabled);
 	}
 
 	public boolean getReportGeneratorEnabled() {
