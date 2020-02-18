@@ -100,7 +100,28 @@ public class TestTool {
 	public void setDebugger(Debugger debugger) {
 		this.debugger = debugger;
 	}
-
+	
+	public void setReportGeneratorEnabled(boolean enabled) {
+		reportGeneratorEnabled = enabled;
+	}
+	
+	public boolean isReportGeneratorEnabled() {
+		return reportGeneratorEnabled;
+	}
+	
+	/**
+	 * Calls <code>setReportGeneratorEnabled(boolean enabled)</code> and notifies the
+	 * overlaying application's Debugger implementation of this change.
+	 * @param enabled Whether or not the Ladybug's report generator should be enabled.
+	 */
+	public void updateReportGeneratorStatus(boolean enabled) {
+		boolean statusChanged = isReportGeneratorEnabled() != enabled;
+		setReportGeneratorEnabled(enabled);
+		if(debugger != null && statusChanged) {
+			debugger.updateReportGeneratorStatus(enabled);
+		}
+	}
+	
 	public void setLogStorage(LogStorage logStorage) {
 		this.logStorage = logStorage;
 	}
@@ -115,15 +136,6 @@ public class TestTool {
 
 	public MessageTransformer getMessageTransformer() {
 		return messageTransformer;
-	}
-	
-	public void setReportGeneratorEnabled(boolean reportGeneratorEnabled) {
-		this.reportGeneratorEnabled = reportGeneratorEnabled;
-		debugger.setEnabled(reportGeneratorEnabled);
-	}
-
-	public boolean getReportGeneratorEnabled() {
-		return reportGeneratorEnabled;
 	}
 	
 	public void setRegexFilter(String regexFilter) {
@@ -273,7 +285,7 @@ public class TestTool {
 		if (correlationId == null) {
 			correlationId = getCorrelationId();
 		}
-		boolean reportGeneratorEnabled = getReportGeneratorEnabled();
+		boolean reportGeneratorEnabled = isReportGeneratorEnabled();
 		if (reportGeneratorEnabled) {
 			synchronized(originalReports) {
 				originalReports.put(correlationId, report);

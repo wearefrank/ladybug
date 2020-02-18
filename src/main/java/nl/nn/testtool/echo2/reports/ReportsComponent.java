@@ -593,7 +593,7 @@ public class ReportsComponent extends BaseComponent implements BeanParent, Actio
 			comparePane.compare();
 		} else if (e.getActionCommand().equals("OpenOptionsWindows")) {
 			reportGeneratorEnabledErrorLabel.setVisible(false);
-			if (testTool.getReportGeneratorEnabled()) {
+			if (testTool.isReportGeneratorEnabled()) {
 				reportGeneratorEnabledSelectField.setSelectedItem("Yes");
 			} else {
 				reportGeneratorEnabledSelectField.setSelectedItem("No");
@@ -604,10 +604,10 @@ public class ReportsComponent extends BaseComponent implements BeanParent, Actio
 			if (echo2Application.isUserInRoles(changeReportGeneratorEnabledRoles)) {
 				String msg = "Report generator has been ";
 				if ("Yes".equals(reportGeneratorEnabledSelectField.getSelectedItem())) {
-					testTool.setReportGeneratorEnabled(true);
+					testTool.updateReportGeneratorStatus(true);
 					msg = msg + "enabled";
 				} else if ("No".equals(reportGeneratorEnabledSelectField.getSelectedItem())) {
-					testTool.setReportGeneratorEnabled(false);
+					testTool.updateReportGeneratorStatus(false);
 					msg = msg + "disabled";
 				}
 				msg = msg + " by" + echo2Application.getCommandIssuedBy();
