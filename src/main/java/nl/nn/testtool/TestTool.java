@@ -110,8 +110,8 @@ public class TestTool {
 	}
 	
 	/**
-	 * Sends the result of <code>isReportGeneratorEnabled()</code> to the overlaying
-	 * application's Debugger implementation.
+	 * Sends the result of <code>isReportGeneratorEnabled()</code> to the Debugger
+	 * implementation of the application using the Ladybug.
 	 */
 	public void sendReportGeneratorStatusUpdate() {
 		if(debugger != null) {
