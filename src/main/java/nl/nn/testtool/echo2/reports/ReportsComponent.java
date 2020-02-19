@@ -604,10 +604,12 @@ public class ReportsComponent extends BaseComponent implements BeanParent, Actio
 			if (echo2Application.isUserInRoles(changeReportGeneratorEnabledRoles)) {
 				String msg = "Report generator has been ";
 				if ("Yes".equals(reportGeneratorEnabledSelectField.getSelectedItem())) {
-					testTool.updateReportGeneratorStatus(true);
+					testTool.setReportGeneratorEnabled(true);
+					testTool.sendReportGeneratorStatusUpdate();
 					msg = msg + "enabled";
 				} else if ("No".equals(reportGeneratorEnabledSelectField.getSelectedItem())) {
-					testTool.updateReportGeneratorStatus(false);
+					testTool.setReportGeneratorEnabled(false);
+					testTool.sendReportGeneratorStatusUpdate();
 					msg = msg + "disabled";
 				}
 				msg = msg + " by" + echo2Application.getCommandIssuedBy();

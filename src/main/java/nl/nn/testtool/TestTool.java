@@ -110,15 +110,12 @@ public class TestTool {
 	}
 	
 	/**
-	 * Calls <code>setReportGeneratorEnabled(boolean enabled)</code> and notifies the
-	 * overlaying application's Debugger implementation of this change.
-	 * @param enabled Whether or not the Ladybug's report generator should be enabled.
+	 * Sends the result of <code>isReportGeneratorEnabled()</code> to the overlaying
+	 * application's Debugger implementation.
 	 */
-	public void updateReportGeneratorStatus(boolean enabled) {
-		boolean statusChanged = isReportGeneratorEnabled() != enabled;
-		setReportGeneratorEnabled(enabled);
-		if(debugger != null && statusChanged) {
-			debugger.updateReportGeneratorStatus(enabled);
+	public void sendReportGeneratorStatusUpdate() {
+		if(debugger != null) {
+			debugger.updateReportGeneratorStatus(isReportGeneratorEnabled());
 		}
 	}
 	
