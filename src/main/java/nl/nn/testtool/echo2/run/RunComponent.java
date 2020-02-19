@@ -718,6 +718,7 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 				if (e.getActionCommand().equals("Replace")) {
 					Integer storageId = new Integer(row.getId());
 					runResultReport = getRunResultReport(reportRunner.getResults().get(storageId).correlationId);
+					runResultReport.setTestTool(report.getTestTool());
 					runResultReport.setName(report.getName());
 					runResultReport.setDescription(report.getDescription());
 					if(report.getCheckpoints().get(0).containsVariables()) {
