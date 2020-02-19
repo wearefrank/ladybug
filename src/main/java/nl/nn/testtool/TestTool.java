@@ -101,8 +101,8 @@ public class TestTool {
 		this.debugger = debugger;
 	}
 	
-	public void setReportGeneratorEnabled(boolean enabled) {
-		reportGeneratorEnabled = enabled;
+	public void setReportGeneratorEnabled(boolean reportGeneratorEnabled) {
+		this.reportGeneratorEnabled = reportGeneratorEnabled;
 	}
 	
 	public boolean isReportGeneratorEnabled() {
