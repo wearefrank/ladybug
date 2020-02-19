@@ -48,5 +48,11 @@ public interface Debugger {
 	 * @return                an error message when an error occurred 
 	 */
 	public String rerun(String correlationId, Report originalReport, SecurityContext securityContext);
-
+	
+	/**
+	 * Method to be called from the Ladybug to notify the application using
+	 * the Ladybug of a change in the report generator's status.
+	 * @param enabled Whether the Ladybug's report generator should be enabled.
+	 */
+	public void updateReportGeneratorStatus(boolean enabled);
 }
