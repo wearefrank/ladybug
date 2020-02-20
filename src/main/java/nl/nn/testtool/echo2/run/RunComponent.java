@@ -653,7 +653,7 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 		} else if (e.getActionCommand().equals("CloneSelected")) {
 			reportGenerationWindow.setVisible(true);
 		} else if (e.getActionCommand().equals("GenerateClonesFromCsv")) {
-			if (minimalOneSelected()) {
+			if (getSelectedReportCount() == 1) {
 				String errorMessage = CsvUtil.validateCsv(cloneGenerationTextArea.getText(), ";");
 				if(errorMessage == null) {
 					if(getSelectedReportCount() > 1
@@ -677,6 +677,10 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 					reportGenerationWarningLabel.setText(errorMessage);
 					reportGenerationWarningLabel.setVisible(true);
 				}
+			} else if(getSelectedReportCount() > 1) {
+				displayError("Please clone reports one at a time");
+			} else {
+				displayError("No report selected");
 			}
 		} else if (e.getActionCommand().equals("Run")) {
 			Button button = (Button)e.getSource();
