@@ -36,7 +36,7 @@ import echopointng.tree.DefaultTreeCellRenderer;
  */
 public class TransformationWindow extends WindowPane implements ActionListener {
 	private static final long serialVersionUID = 1L;
-	public static final int TEXT_AREA_HEIGHT = 515;
+	public static final int TEXT_AREA_HEIGHT = 400;
 	private TextArea textArea;
 	private Label errorLabel;
 	private ReportXmlTransformer reportXmlTransformer = null;
