@@ -99,6 +99,8 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 	private int COMPONENT_REPLACE_BUTTON = 4;
 	private int COMPONENT_RESULT_LABEL = 5;
 	private int COMPONENT_DYNAMIC_VAR_LABEL = 6;
+	private TextArea cloneGenerationReportInputTextArea;
+	private Label cloneGenerationReportInputLabel;
 	
 	public RunComponent() {
 		super();
@@ -145,12 +147,12 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 		uploadWindow.init();
 		
 		reportGenerationWindow = new WindowPane();
-		reportGenerationWindow.setTitle("Generate dynamic report clones from CSV");
+		reportGenerationWindow.setTitle("Generate report clones");
 //		reportGenerationWindow.setTitleBackground(Echo2Application.getButtonBackgroundColor());
 //		reportGenerationWindow.setBorder(new FillImageBorder(Echo2Application.getButtonBackgroundColor(), new Insets(0, 0, 0, 0), new Insets(0, 0, 0, 0)));
 		reportGenerationWindow.setVisible(false);
 		reportGenerationWindow.setWidth(new Extent(464));
-		reportGenerationWindow.setHeight(new Extent(348));
+		reportGenerationWindow.setHeight(new Extent(610));
 		reportGenerationWindow.setInsets(new Insets(5, 5, 5, 5));
 		reportGenerationWindow.add(cloneGenerationColumn);
 		reportGenerationWindow.setDefaultCloseOperation(WindowPane.HIDE_ON_CLOSE);
@@ -266,29 +268,46 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 		uploadSelectRow.add(uploadSelect);
 		uploadColumn.add(uploadSelectRow);
 
-		// Report generation window
-		Row cloneGenerationWarningLabelRow = Echo2Application.getNewRow();
-		Row cloneGenerationTextFieldRow = Echo2Application.getNewRow();
-		Row cloneGenerationButtonRow = Echo2Application.getNewRow();
-		
+		// Report generation window		
 		reportGenerationWarningLabel = Echo2Application.createErrorLabel();
 		reportGenerationWarningLabel.setVisible(false);
+		Row row = Echo2Application.getNewRow();
+		row.add(reportGenerationWarningLabel);
+		cloneGenerationColumn.add(row);
+
+		Label cloneGenerationCsvLabel = Echo2Application.createInfoLabel();
+		cloneGenerationCsvLabel.setText("Variable CSV:");
+		row = Echo2Application.getNewRow();
+		row.add(cloneGenerationCsvLabel);
+		cloneGenerationColumn.add(row);
 		
 		cloneGenerationTextArea = new TextArea();
 		cloneGenerationTextArea.setWidth(new Extent(440));
 		cloneGenerationTextArea.setHeight(new Extent(240));
+		row = Echo2Application.getNewRow();
+		row.add(cloneGenerationTextArea);
+		cloneGenerationColumn.add(row);
+		
+		cloneGenerationReportInputLabel = Echo2Application.createInfoLabel();
+		cloneGenerationReportInputLabel.setText("Report input message to clone:");
+		row = Echo2Application.getNewRow();
+		row.add(cloneGenerationReportInputLabel);
+		cloneGenerationColumn.add(row);
+		
+		cloneGenerationReportInputTextArea = new TextArea();
+		cloneGenerationReportInputTextArea.setWidth(new Extent(440));
+		cloneGenerationReportInputTextArea.setHeight(new Extent(240));
+		row = Echo2Application.getNewRow();
+		row.add(cloneGenerationReportInputTextArea);
+		cloneGenerationColumn.add(row);
 		
 		Button generateClonesButton = new Button("Generate");
 		generateClonesButton.setActionCommand("GenerateClonesFromCsv");
 		generateClonesButton.addActionListener(this);
 		Echo2Application.decorateButton(generateClonesButton);
-
-		cloneGenerationWarningLabelRow.add(reportGenerationWarningLabel);
-		cloneGenerationTextFieldRow.add(cloneGenerationTextArea);
-		cloneGenerationButtonRow.add(generateClonesButton);
-		cloneGenerationColumn.add(cloneGenerationWarningLabelRow);
-		cloneGenerationColumn.add(cloneGenerationTextFieldRow);
-		cloneGenerationColumn.add(cloneGenerationButtonRow);
+		row = Echo2Application.getNewRow();
+		row.add(generateClonesButton);
+		cloneGenerationColumn.add(row);
 		//
 
 		add(buttonRow);
@@ -651,23 +670,38 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 				}
 			}
 		} else if (e.getActionCommand().equals("CloneSelected")) {
-			reportGenerationWindow.setVisible(true);
+			if(getSelectedReportCount() == 1) {
+				reportGenerationWindow.setVisible(true);
+				for(Row r : getReportRows()) {
+					if(((CheckBox)r.getComponent(COMPONENT_CHECKBOX)).isSelected()) {
+						cloneGenerationReportInputTextArea.setText(getReport(r).getCheckpoints().get(0).getMessage());
+					}
+				}
+			} else if(getSelectedReportCount() > 1) {
+				displayError("Please clone reports one at a time");
+			} else {
+				displayError("No report selected");
+			}
 		} else if (e.getActionCommand().equals("GenerateClonesFromCsv")) {
-			if (minimalOneSelected()) {
+			if (getSelectedReportCount() == 1) {
 				String errorMessage = CsvUtil.validateCsv(cloneGenerationTextArea.getText(), ";");
 				if(errorMessage == null) {
-					if(getSelectedReportCount() > 1
+					Report reportToClone = null;
+					for (Row r : getReportRows()) {
+						if (((CheckBox)r.getComponent(COMPONENT_CHECKBOX)).isSelected()) {
+							reportToClone = getReport(r);
+						}
+					}
+					if(StringUtils.isNotEmpty(cloneGenerationReportInputTextArea.getText())) {
+						reportToClone.getInputCheckpoint().setMessage(cloneGenerationReportInputTextArea.getText());
+					}
+					if(!reportToClone.getInputCheckpoint().containsVariables()
 							&& (reportGenerationWarningLabel.getText() == null
 							|| !reportGenerationWarningLabel.getText().endsWith("press again to confirm"))) {
-						reportGenerationWarningLabel.setText("More than one report selected to clone; press again to confirm");
+						reportGenerationWarningLabel.setText("No variables found in input message; press again to confirm");
 						reportGenerationWarningLabel.setVisible(true);
 					} else {
-						for (Row row : getReportRows()) {
-							CheckBox checkbox = (CheckBox)row.getComponent(COMPONENT_CHECKBOX);
-							if (checkbox.isSelected()) {
-								generateReportClonesFromCsv(getReport(row));
-							}
-						}
+						generateReportClonesFromCsv(reportToClone);
 						reportGenerationWindow.setVisible(false);
 						reportGenerationWarningLabel.setText(null);
 						reportGenerationWarningLabel.setVisible(false);
@@ -677,6 +711,10 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 					reportGenerationWarningLabel.setText(errorMessage);
 					reportGenerationWarningLabel.setVisible(true);
 				}
+			} else if(getSelectedReportCount() > 1) {
+				displayError("Please clone reports one at a time");
+			} else {
+				displayError("No report selected");
 			}
 		} else if (e.getActionCommand().equals("Run")) {
 			Button button = (Button)e.getSource();
@@ -763,7 +801,7 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 		updateProgressBar();
 	}
 
-	private void generateReportClonesFromCsv(Report report) {
+	private void generateReportClonesFromCsv(Report reportToClone) {
 		Scanner scanner = new Scanner(cloneGenerationTextArea.getText());
 		List<String> lines = new ArrayList<String>();
 		while(scanner.hasNextLine()) {
@@ -775,11 +813,11 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 		scanner.close();
 		
 		try {
-			report.setVariableCsv(lines.get(0)+"\n"+lines.get(1));
-			displayAndLogError(Echo2Application.update(runStorage, report));
+			reportToClone.setVariableCsv(lines.get(0)+"\n"+lines.get(1));
+			displayAndLogError(Echo2Application.update(runStorage, reportToClone));
 			if(lines.size() > 2) {
 				for(int i = 2; i < lines.size(); i++) {
-					Report cloneReport = (Report)report.clone();
+					Report cloneReport = (Report)reportToClone.clone();
 					cloneReport.setVariableCsv(lines.get(0)+"\n"+lines.get(i));
 					displayAndLogError(Echo2Application.store(runStorage, cloneReport));
 				}
