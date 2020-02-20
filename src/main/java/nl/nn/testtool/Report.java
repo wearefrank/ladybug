@@ -420,6 +420,10 @@ public class Report implements Serializable {
 	public List<Checkpoint> getCheckpoints() {
 		return checkpoints;
 	}
+	
+	public Checkpoint getInputCheckpoint() {
+		return checkpoints.get(0);
+	}
 
 	public int getNumberOfCheckpoints() {
 		return checkpoints.size();
