@@ -9,15 +9,7 @@ Upcoming
 
 
 
-2.0.14
----
-
-- Fix bug where pressing Replace on a report would cause an application error
-- Add a text field to the Clone window for editing the input message to clone
-- Make all of the Edit window's UI elements fit in one screen
-
-
-2.0.13
+2.0.12
 ---
 
 - Add functionality to declare and use ${variables} for reports
