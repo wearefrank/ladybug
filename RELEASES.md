@@ -6,6 +6,7 @@ Ladybug Test Tool release notes
 Upcoming
 --------
 
+- Add timestamp to filename when downloading zipped reports
 
 
 
@@ -15,6 +16,7 @@ Upcoming
 - Fix bug where pressing Replace on a report would cause an application error
 - Add a text field to the Clone window for editing the input message to clone
 - Make all of the Edit window's UI elements fit in one screen
+
 
 
 2.0.13
