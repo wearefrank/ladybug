@@ -22,6 +22,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -85,6 +87,7 @@ public class Export {
 				List storageIds = storage.getStorageIds();
 				if (suggestedFilenameWithoutExtension == null) {
 					suggestedFilenameWithoutExtension = storage.getName();
+					suggestedFilenameWithoutExtension += "-"+new SimpleDateFormat("yyyyMMdd.HHmmss").format(new Date());
 					int size = storageIds.size();
 					suggestedFilenameWithoutExtension += " (" + size;
 					if (size == 1) {
