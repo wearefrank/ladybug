@@ -25,7 +25,7 @@ import java.util.zip.GZIPOutputStream;
 import nextapp.echo2.app.filetransfer.DownloadProvider;
 import nl.nn.testtool.util.LogUtil;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 
 /**
  * @author m00f069

@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TooManyListenersException;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 
 import echopointng.SelectFieldEx;
 import echopointng.table.DefaultSortableTableModel;

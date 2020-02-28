@@ -35,7 +35,7 @@ import nl.nn.testtool.Report;
 import nl.nn.testtool.TestTool;
 import nl.nn.testtool.storage.Storage;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 
 public class Export {
 	private static Logger log = LogUtil.getLogger(Export.class);

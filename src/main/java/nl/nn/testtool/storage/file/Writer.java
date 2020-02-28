@@ -35,7 +35,7 @@ import nl.nn.testtool.storage.StorageException;
 import nl.nn.testtool.util.EscapeUtil;
 import nl.nn.testtool.util.LogUtil;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 
 /**
  * @author m00f069

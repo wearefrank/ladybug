@@ -36,7 +36,7 @@ import nl.nn.testtool.util.CSVReader;
 import nl.nn.testtool.util.LogUtil;
 import nl.nn.testtool.util.SearchUtil;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 
 /**
  * @author m00f069

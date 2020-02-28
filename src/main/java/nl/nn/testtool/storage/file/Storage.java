@@ -25,7 +25,7 @@ import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 
 import nl.nn.testtool.MetadataExtractor;
 import nl.nn.testtool.Report;

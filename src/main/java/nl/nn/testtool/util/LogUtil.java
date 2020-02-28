@@ -15,11 +15,13 @@
 */
 package nl.nn.testtool.util;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.io.IOException;
 import java.net.URL;
 import java.util.Properties;
 
-import org.apache.log4j.Logger;
 
 /**
  * @author Jaco de Groot
@@ -58,7 +60,7 @@ public class LogUtil {
 	public static Logger getLogger(String name) { 
 		Logger logger = null;
 		if (loggerProvider == null) {
-			logger = Logger.getLogger(name);
+			logger = LogManager.getLogger(name);
 		} else {
 			logger = loggerProvider.getLogger(name);
 		}

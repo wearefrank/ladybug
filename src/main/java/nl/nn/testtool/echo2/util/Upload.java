@@ -20,7 +20,7 @@ import java.io.InputStream;
 import nl.nn.testtool.storage.CrudStorage;
 import nl.nn.testtool.util.Import;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 
 public class Upload {
 

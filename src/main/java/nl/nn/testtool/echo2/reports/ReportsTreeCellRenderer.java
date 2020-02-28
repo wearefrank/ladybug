@@ -15,7 +15,7 @@
 */
 package nl.nn.testtool.echo2.reports;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 
 import echopointng.Tree;
 import echopointng.tree.DefaultMutableTreeNode;

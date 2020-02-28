@@ -32,7 +32,7 @@ import nl.nn.testtool.util.LogUtil;
 import nl.nn.testtool.util.XmlUtil;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 import org.apache.ws.security.util.DOM2Writer;
 import org.w3c.dom.Node;
 

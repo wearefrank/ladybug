@@ -18,7 +18,7 @@ package nl.nn.testtool.echo2.reports;
 import nextapp.echo2.app.ContentPane;
 import nl.nn.testtool.util.LogUtil;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 
 /**
  * @author m00035f

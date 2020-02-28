@@ -35,7 +35,7 @@ import nl.nn.testtool.storage.StorageException;
 import nl.nn.testtool.util.LogUtil;
 import nl.nn.testtool.util.SearchUtil;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 
 public class Storage implements nl.nn.testtool.storage.Storage {
 	private static Logger log = LogUtil.getLogger(Storage.class);

@@ -15,7 +15,7 @@
 */
 package nl.nn.testtool.echo2;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 
 import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Insets;

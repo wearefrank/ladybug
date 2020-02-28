@@ -15,7 +15,7 @@
 */
 package nl.nn.testtool.util;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 
 /**
  * @author Jaco de Groot
