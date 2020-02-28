@@ -8,6 +8,7 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <spring.version>3.2.16.RELEASE</spring.version>
+    <log4j.version>2.13.0</log4j.version>
   </properties>
 
   <name>Ladybug Test Tool</name>
@@ -50,10 +51,16 @@ Implement a rerun method to be able to rerun reports and optionally stub certain
       <artifactId>ibis-echo2</artifactId>
       <version>2.0.2</version>
     </dependency>
+    <!-- LOG4J Api -->
     <dependency>
-      <groupId>log4j</groupId>
-      <artifactId>log4j</artifactId>
-      <version>1.2.16</version>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-api</artifactId>
+      <version>${log4j.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-core</artifactId>
+      <version>${log4j.version}</version>
     </dependency>
     <dependency>
       <groupId>commons-lang</groupId>
@@ -111,8 +118,8 @@ Implement a rerun method to be able to rerun reports and optionally stub certain
         <artifactId>maven-compiler-plugin</artifactId>
         <version>3.1</version>
         <configuration>
-          <source>1.6</source>
-          <target>1.6</target>
+          <source>1.8</source>
+          <target>1.8</target>
         </configuration>
       </plugin>
       <plugin>
