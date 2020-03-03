@@ -18,6 +18,8 @@ package nl.nn.testtool.util;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -26,6 +28,7 @@ import org.apache.log4j.Logger;
 
 import nl.nn.testtool.Report;
 import nl.nn.testtool.storage.CrudStorage;
+import nl.nn.testtool.storage.StorageException;
 import nl.nn.xmldecoder.XMLDecoder;
 
 public class Import {
@@ -34,6 +37,7 @@ public class Import {
 		String errorMessage = null;
 		ZipInputStream zipInputStream = new ZipInputStream(inputStream);
 		ZipEntry zipEntry = null;
+		List<ImportResult> importResults = new ArrayList<ImportResult>();
 		try {
 			zipEntry = zipInputStream.getNextEntry();
 			while (zipEntry != null && errorMessage == null) {
@@ -55,12 +59,30 @@ public class Import {
 						length = zipInputStream.read(buffer);
 					}
 					ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(reportBytes);
-					errorMessage = importTtr(byteArrayInputStream, storage, log);
+					
+					ImportResult importResult = importTtr(byteArrayInputStream, storage, log);
+					importResults.add(importResult);
+					errorMessage = importResult.errorMessage;
 				}
 				zipInputStream.closeEntry();
 				zipEntry = zipInputStream.getNextEntry();
 			}
+			
+			for(ImportResult importResult : importResults) {
+				Report report = storage.getReport(importResult.newStorageId);
+				if(report.getInputCheckpoint().containsVariables()) {
+					if(report.getInputCheckpoint().updateVariables(importResults)) {
+						storage.update(report);
+						log.debug("Updated report ["+report.getFullPath()+"]'s input variable(s) with target report's updated storageId(s)");
+					} else {
+						log.warn("Could not update report ["+report.getFullPath()+"]'s input variables on uploading - please review manually");
+					}
+				}
+			}
 		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (StorageException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -68,18 +90,20 @@ public class Import {
 	}
 
 	// TODO closeXMLEncoder methode (en anderen?) gebruiken?
-	public static String importTtr(InputStream inputStream, CrudStorage storage, Logger log) {
+	public static ImportResult importTtr(InputStream inputStream, CrudStorage storage, Logger log) {
 		String errorMessage = null;
 		GZIPInputStream gzipInputStream = null;
 		XMLDecoder xmlDecoder = null;
 		String version = null;
 		Report report = null;
+		ImportResult importResult = new ImportResult();
 		try {
 			gzipInputStream = new GZIPInputStream(inputStream);
 			xmlDecoder = new XMLDecoder(gzipInputStream);
 			version = (String)xmlDecoder.readObject();
 			log.debug("Decoded version: " + version);
 			report = (Report)xmlDecoder.readObject();
+			importResult.oldStorageId = report.getStorageId();
 			// Check for more than one report in the stream to be backwards
 			// compatible with older Test Tool versions that wrote more than one
 			// report to a ttr. See comment at the code using the XMLEncoder.
@@ -93,9 +117,10 @@ public class Import {
 			// XML Object Decoder
 			log.debug("Last report in file read");
 		} catch (Throwable t) {
-			errorMessage = "Caught unexpected throwable during import: " + t.getMessage();
+			importResult.errorMessage = "Caught unexpected throwable during import: " + t.getMessage();
 			log.error(errorMessage, t);
 		} finally {
+			importResult.newStorageId = report.getStorageId();
 			if (xmlDecoder != null) {
 				xmlDecoder.close();
 			}
@@ -114,7 +139,6 @@ public class Import {
 				}
 			}
 		}
-		return errorMessage;
+		return importResult;
 	}
-
 }
