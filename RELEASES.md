@@ -6,10 +6,11 @@ Ladybug Test Tool release notes
 Upcoming
 --------
 
+- Simplify syntax of cross-report variables
 
 
 
-2.0.12
+2.0.13
 ---
 
 - Add functionality to declare and use ${variables} for reports
