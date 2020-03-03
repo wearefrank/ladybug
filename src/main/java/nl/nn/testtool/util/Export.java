@@ -86,8 +86,8 @@ public class Export {
 			if (storage != null) {
 				List storageIds = storage.getStorageIds();
 				if (suggestedFilenameWithoutExtension == null) {
-					suggestedFilenameWithoutExtension = storage.getName();
-					suggestedFilenameWithoutExtension += "-"+new SimpleDateFormat("yyyyMMdd.HHmmss").format(new Date());
+					suggestedFilenameWithoutExtension = "Ladybug "+storage.getName();
+					suggestedFilenameWithoutExtension += " "+new SimpleDateFormat("yyyyMMdd-HHmm").format(new Date());
 					int size = storageIds.size();
 					suggestedFilenameWithoutExtension += " (" + size;
 					if (size == 1) {
