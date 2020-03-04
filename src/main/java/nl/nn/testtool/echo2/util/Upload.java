@@ -29,7 +29,7 @@ public class Upload {
 		if (filename.endsWith(".zip")) {
 			return Import.importZip(inputStream, storage, log);
 		} else if (filename.endsWith(".ttr")) {
-			return Import.importTtr(inputStream, storage, log);
+			return Import.importTtr(inputStream, storage, log).getErrorMessage();
 		} else {
 			return "File doesn't have a known file extension: " + filename;
 		}

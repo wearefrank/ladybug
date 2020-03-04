@@ -6,6 +6,7 @@ Ladybug Test Tool release notes
 Upcoming
 --------
 
+- Simplify syntax of cross-report variables
 - Add timestamp to filename when downloading zipped reports
 
 

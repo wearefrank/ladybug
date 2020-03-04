@@ -47,7 +47,9 @@ public class CheckpointComponent extends MessageComponent {
 	private RadioButton radioButtonStubOptionNo;
 	private Label messageHasBeenStubbedLabel;
 	private Label messageWasTruncatedLabel;
+	private Label reportStorageIdLabel;
 	private Label checkpointIndexLabel;
+	private Label checkpointUIDLabel;
 	private Label numberOfCharactersLabel;
 	private Label estimatedMemoryUsageLabel;
 
@@ -144,8 +146,19 @@ public class CheckpointComponent extends MessageComponent {
 		pathLabel = Echo2Application.createInfoLabelWithColumnLayoutData();
 		add(pathLabel);
 		
+		reportStorageIdLabel = Echo2Application.createInfoLabelWithColumnLayoutData();
+		add(reportStorageIdLabel);
+		
 		checkpointIndexLabel = Echo2Application.createInfoLabelWithColumnLayoutData();
 		add(checkpointIndexLabel);
+		
+		checkpointUIDLabel = Echo2Application.createInfoLabelWithColumnLayoutData();
+		checkpointUIDLabel.setToolTipText("A unique identifier consisting of the report's storageId "
+				+ "and this checkpoint's index. Use this value as part of a variable in another report's "
+				+ "input message to use this checkpoint's message as input. Example: ${checkpoint(287#13)}.\n\n"
+				+ "If this message is a valid XML message and you'd like to use a specific part of its data "
+				+ "instead, extend your variable to, for example, {checkpoint(287#13).xpath(results/result[1])}.");
+		add(checkpointUIDLabel);
 
 		numberOfCharactersLabel = Echo2Application.createInfoLabelWithColumnLayoutData();
 		add(numberOfCharactersLabel);
@@ -198,7 +211,9 @@ public class CheckpointComponent extends MessageComponent {
 		threadNameLabel.setText("Thread name: " + checkpoint.getThreadName());
 		sourceClassNameLabel.setText("Source class name: " + checkpoint.getSourceClassName());
 		pathLabel.setText("Path: " + path);
+		reportStorageIdLabel.setText("Report storageId: "+report.getStorageId());
 		checkpointIndexLabel.setText("Checkpoint index: "+report.getCheckpoints().indexOf(checkpoint));
+		checkpointUIDLabel.setText("Checkpoint UID: "+checkpoint.getIdentifier());
 		numberOfCharactersLabel.setText("Number of characters: "+(checkpoint.getMessage() != null ? checkpoint.getMessage().length() : "0"));
 		estimatedMemoryUsageLabel.setText("EstimatedMemoryUsage: " + checkpoint.getEstimatedMemoryUsage() + " bytes");
 		hideMessages();
