@@ -315,6 +315,8 @@ public class ReportComponent extends MessageComponent {
 		} else {
 			setMessage(reportXml);
 		}
+		messageTextArea.setVisible(false);
+		
 		storageIdLabel.setText("StorageId: " + report.getStorageId());
 		storageLabel.setText("Storage: " + report.getStorage().getName());
 		estimatedMemoryUsageLabel.setText("EstimatedMemoryUsage: " + report.getEstimatedMemoryUsage() + " bytes");

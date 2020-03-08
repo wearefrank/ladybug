@@ -94,7 +94,6 @@ public class ReportRunner implements Runnable {
 		RunResult runResult = new RunResult();
 		runResult.correlationId = TestTool.getCorrelationId();
  		runResult.errorMessage = testTool.rerun(runResult.correlationId, report, securityContext, this);
- 		runResult.fullPath = report.getFullPath();
 		results.put(report.getStorageId(), runResult);
 	}
 
