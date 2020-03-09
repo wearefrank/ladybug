@@ -59,10 +59,12 @@ public class Checkpoint implements Serializable, Cloneable {
 	private long estimatedMemoryUsage = -1;
 	private transient static Pattern genericVariablePattern;
 	private transient static Pattern externalVariablePattern;
+	private transient static Pattern xmlHeaderPattern;
 	private transient Map<String, Pattern> variablePatternMap;
 	static {
 		genericVariablePattern = Pattern.compile("\\$\\{.*?\\}");
 		externalVariablePattern = Pattern.compile("\\$\\{checkpoint\\(([0-9]+#[0-9]+)\\)(\\.xpath\\((.*?)\\)|)\\}");
+		xmlHeaderPattern = Pattern.compile("<\\?xml.*?>");
 	}
 
 	public transient static final int TYPE_NONE = 0;
@@ -293,6 +295,9 @@ public class Checkpoint implements Serializable, Cloneable {
 					if(targetReport != null) {
 						try {
 							String targetCheckpointMessage = targetReport.getCheckpoints().get(checkpointIndex).getMessage();
+							if(targetCheckpointMessage.startsWith("<?xml")) {
+								targetCheckpointMessage = xmlHeaderPattern.matcher(targetCheckpointMessage).replaceAll("").trim();
+							}
 							if(StringUtils.isNotEmpty(targetCheckpointMessage)) {
 								if(StringUtils.isNotEmpty(xpathExpression)) {
 									try {
