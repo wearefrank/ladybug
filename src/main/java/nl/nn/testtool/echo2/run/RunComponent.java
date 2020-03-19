@@ -84,6 +84,7 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 	private ReportXmlTransformer reportXmlTransformer = null;
 	private WindowPane uploadWindow;
 	private WindowPane reportGenerationWindow;
+	private WindowPane optionsWindow;
 	private UploadSelect uploadSelect;
 	private int numberOfComponentsToSkipForRowManipulation = 0;
 	private String lastDisplayedPath;
@@ -102,6 +103,8 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 	private TextArea cloneGenerationReportInputTextArea;
 	private Label cloneGenerationReportInputLabel;
 	
+	// options
+	private boolean showReportStorageIds;
 	public RunComponent() {
 		super();
 	}
@@ -133,6 +136,7 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 		// TODO code voor aanmaken upload window en ander zaken gaan delen met ReportsComponent
 		Column uploadColumn = new Column();
 		Column cloneGenerationColumn = new Column();
+		Column optionsColumn = new Column();
 
 		uploadWindow = new WindowPane();
 		uploadWindow.setVisible(false);
@@ -148,8 +152,6 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 		
 		reportGenerationWindow = new WindowPane();
 		reportGenerationWindow.setTitle("Generate report clones");
-//		reportGenerationWindow.setTitleBackground(Echo2Application.getButtonBackgroundColor());
-//		reportGenerationWindow.setBorder(new FillImageBorder(Echo2Application.getButtonBackgroundColor(), new Insets(0, 0, 0, 0), new Insets(0, 0, 0, 0)));
 		reportGenerationWindow.setVisible(false);
 		reportGenerationWindow.setWidth(new Extent(464));
 		reportGenerationWindow.setHeight(new Extent(610));
@@ -157,6 +159,16 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 		reportGenerationWindow.add(cloneGenerationColumn);
 		reportGenerationWindow.setDefaultCloseOperation(WindowPane.HIDE_ON_CLOSE);
 		reportGenerationWindow.init();
+		
+		optionsWindow = new WindowPane();
+		optionsWindow.setTitle("Options");
+		optionsWindow.setVisible(false);
+		optionsWindow.setWidth(new Extent(480));
+		optionsWindow.setHeight(new Extent(120));
+		optionsWindow.setInsets(new Insets(5, 5, 5, 5));
+		optionsWindow.add(optionsColumn);
+		optionsWindow.setDefaultCloseOperation(WindowPane.HIDE_ON_CLOSE);
+		optionsWindow.init();
 
 		Row buttonRow = Echo2Application.getNewRow();
 
@@ -232,6 +244,12 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 		prepareUploadButton.addActionListener(this);
 		buttonRow.add(prepareUploadButton);
 
+		Button prepareOptionsButton = new Button("Options...");
+		prepareOptionsButton.setActionCommand("OpenOptionsWindow");
+		Echo2Application.decorateButton(prepareOptionsButton);
+		prepareOptionsButton.addActionListener(this);
+		buttonRow.add(prepareOptionsButton);
+
 		progressBar = new ProgressBar();
 		buttonRow.add(progressBar);
 		reportRunner = new ReportRunner();
@@ -268,7 +286,7 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 		uploadSelectRow.add(uploadSelect);
 		uploadColumn.add(uploadSelectRow);
 
-		// Report generation window		
+		// Report generation window
 		reportGenerationWarningLabel = Echo2Application.createErrorLabel();
 		reportGenerationWarningLabel.setVisible(false);
 		Row row = Echo2Application.getNewRow();
@@ -309,6 +327,16 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 		row.add(generateClonesButton);
 		cloneGenerationColumn.add(row);
 		//
+		
+		// Options window
+		CheckBox showReportStorageIdsCheckbox = new CheckBox("Show report storage IDs");
+		showReportStorageIdsCheckbox.setActionCommand("ToggleReportStorageIds");
+		showReportStorageIdsCheckbox.addActionListener(this);
+		showReportStorageIdsCheckbox.setSelected(showReportStorageIds);
+		row = Echo2Application.getNewRow();
+		row.add(showReportStorageIdsCheckbox);
+		optionsColumn.add(row);
+		//
 
 		add(buttonRow);
 		numberOfComponentsToSkipForRowManipulation++;
@@ -331,6 +359,7 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 		this.echo2Application = Echo2Application.getEcho2Application(beanParent, this);
 		echo2Application.getContentPane().add(uploadWindow);
 		echo2Application.getContentPane().add(reportGenerationWindow);
+		echo2Application.getContentPane().add(optionsWindow);
 		RunPane runPane = (RunPane)beanParent.getBeanParent();
 		treePane = runPane.getTreePane();
 		reportRunner.setSecurityContext(echo2Application);
@@ -477,8 +506,13 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 		button.setVisible(false);
 		Echo2Application.decorateButton(button);
 		row.add(button);
+		
+		Label label = new Label("["+String.valueOf(report.getStorageId())+"]");
+		label.setForeground(Echo2Application.getButtonRolloverBackgroundColor());
+		label.setVisible(showReportStorageIds);
+		row.add(label);
 
-		Label label = new Label(path + name);
+		label = new Label(path + name);
 		row.add(label);
 		RunResult runResult = reportRunner.getResults().get(Integer.parseInt(storageId));
 		if (runResult != null) {
@@ -601,6 +635,12 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 			displayAndLogError(Download.download(runStorage));
 		} else if (e.getActionCommand().equals("OpenUploadWindow")) {
 			uploadWindow.setVisible(true);
+		} else if (e.getActionCommand().equals("OpenOptionsWindow")) {
+			System.out.println("Window should be visible now");
+			optionsWindow.setVisible(true);
+		} else if (e.getActionCommand().equals("ToggleReportStorageIds")) {
+			showReportStorageIds = !showReportStorageIds;
+			refresh();
 		} else if (e.getActionCommand().equals("DeleteSelected")) {
 			if (minimalOneSelected()) {
 				List<String> actionLabels = new ArrayList<String>();

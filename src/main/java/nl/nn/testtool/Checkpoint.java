@@ -359,6 +359,10 @@ public class Checkpoint implements Serializable, Cloneable {
 		return variablePatternMap;
 	}
 
+	public int getIndex() {
+		return report.getCheckpoints().indexOf(this);
+	}
+
 	public String getIdentifier() {
 		return report.getStorageId()+"#"+report.getCheckpoints().indexOf(this);
 	}
