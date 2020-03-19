@@ -606,15 +606,24 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 				List<String> actionLabels = new ArrayList<String>();
 				List<String> actionCommands = new ArrayList<String>();
 				List<ActionListener> actionListeners = new ArrayList<ActionListener>();
-				actionLabels.add("Yes, delete all selected reports");
+				
+				int reportsSelected = getSelectedReportCount();
+				String popupMessage;
+				String confirmActionLabelText;
+				if(reportsSelected > 1) {
+					popupMessage = "Are you sure you want to delete the "+reportsSelected+" selected reports?";
+					confirmActionLabelText = "Yes, delete "+reportsSelected+" selected reports";
+				} else {
+					popupMessage = "Are you sure you want to delete the selected report?";
+					confirmActionLabelText = "Yes, delete 1 selected report";
+				}
+				
+				actionLabels.add(confirmActionLabelText);
 				actionCommands.add("DeleteOk");
 				actionListeners.add(this);
 				actionLabels.add("No, cancel this action");
 				actionCommands.add("DeleteCancel");
 				actionListeners.add(this);
-				int reportsSelected = getSelectedReportCount();
-				String popupMessage = reportsSelected > 1 ? "Are you sure you want to delete the "+reportsSelected+" selected reports?"
-						: "Are you sure you want to delete the selected report?";
 				PopupWindow popupWindow = new PopupWindow("", popupMessage, 450, 100,
 						actionLabels, actionCommands, actionListeners);
 				echo2Application.getContentPane().add(popupWindow);
