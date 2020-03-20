@@ -232,7 +232,7 @@ public class CheckpointComponent extends MessageComponent {
 		} else if (radioButtonStubOptionYes == e.getSource()) {
 			checkpoint.setStub(Checkpoint.STUB_YES);
 		} else if (e.getActionCommand().equals("Download")) {
-			if ("Report + Message".equals(downloadSelectField.getSelectedItem())) {
+			if ("Both".equals(downloadSelectField.getSelectedItem())) {
 				displayAndLogError(Download.download(report, checkpoint));
 			} else if ("Message".equals(downloadSelectField.getSelectedItem())) {
 				displayAndLogError(Download.download(checkpoint));
