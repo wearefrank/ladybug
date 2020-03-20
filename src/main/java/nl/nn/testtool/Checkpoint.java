@@ -387,4 +387,21 @@ public class Checkpoint implements Serializable, Cloneable {
 		}
 		return isVariablesUpdated;
 	}
+
+	public static Checkpoint fromXml(String xml, Report report) throws Exception {
+		Pattern pattern = Pattern.compile("<Checkpoint Name=\"(.*)\" Type=\"(.*)\" Level=\"(.*)\"( TextDecl=\"(.*)\")?>(.*)</Checkpoint>");
+		Matcher matcher = pattern.matcher(xml);
+
+		if (!matcher.matches())
+			throw new Exception("Checkpoint could not be parsed from the given string.");
+
+		Checkpoint checkpoint = new Checkpoint();
+		checkpoint.setReport(report);
+
+		checkpoint.setName(matcher.group(1));
+		checkpoint.setType(Integer.parseInt(matcher.group(2)));
+		checkpoint.setLevel(Integer.parseInt(matcher.group(3)));
+		checkpoint.setMessage(matcher.group(5) + matcher.group(6));
+		return checkpoint;
+	}
 }

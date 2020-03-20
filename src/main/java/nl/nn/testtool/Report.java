@@ -26,6 +26,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import nl.nn.testtool.run.ReportRunner;
 import nl.nn.testtool.storage.Storage;
@@ -36,6 +38,7 @@ import nl.nn.testtool.util.EscapeUtil;
 import nl.nn.testtool.util.LogUtil;
 
 import org.apache.commons.lang.NotImplementedException;
+import org.apache.commons.lang.SerializationException;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.dom4j.Document;
@@ -494,7 +497,7 @@ public class Report implements Serializable {
 	public String toXml() {
 		return toXml(null);
 	}
-	
+
 	public String toXml(ReportRunner reportRunner) {
 		if (xml == null) {
 			StringBuffer stringBuffer = new StringBuffer();
@@ -563,6 +566,37 @@ public class Report implements Serializable {
 			}
 		}
 		return xml;
+	}
+
+	public static Report fromXml(String xml) throws Exception {
+		Pattern reportPattern = Pattern.compile("<Report Name=\"(.*)\" Description=\"(.*)\" Path=\"(.*)\" CorrelationId=\"(.*)\" StartTime=\"(.*)\" EndTime=\"(.*)\" NumberOfCheckpoints=\"(.*)\" EstimatedMemoryUsage=\"(.*)\">");
+		Matcher matcher = reportPattern.matcher(xml);
+		if (!matcher.matches())
+			throw new Exception("Can not parse the given xml as a report.");
+		Report report = new Report();
+		report.setName(matcher.group(1));
+		report.setDescription(matcher.group(2));
+		report.setPath(matcher.group(3));
+		report.setCorrelationId(matcher.group(4));
+		report.setStartTime(Long.parseLong(matcher.group(5)));
+		report.setEndTime(Long.parseLong(matcher.group(6)));
+		report.setEstimatedMemoryUsage(Long.parseLong(matcher.group(8)));
+		List<Checkpoint> checkpoints = new ArrayList<>(Integer.parseInt(matcher.group(7)));
+		String startTag = "<Checkpoint";
+		String endTag = "</Checkpoint>";
+		int start = xml.indexOf(startTag);
+		int end = xml.indexOf(endTag, start + startTag.length());
+		while (start < 0 || end < 0) {
+			try {
+				checkpoints.add(Checkpoint.fromXml(xml.substring(start, end), report));
+			} catch (Exception e) {
+				log.error("Checkpoint could not be parsed.", e);
+			}
+			start = xml.indexOf(startTag);
+			end = xml.indexOf(endTag, start + startTag.length());
+		}
+		report.setCheckpoints(checkpoints);
+		return report;
 	}
 
 	public void flushCachedXml() {
