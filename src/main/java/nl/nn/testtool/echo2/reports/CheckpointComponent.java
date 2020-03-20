@@ -213,7 +213,7 @@ public class CheckpointComponent extends MessageComponent {
 		pathLabel.setText("Path: " + path);
 		reportStorageIdLabel.setText("Report storageId: "+report.getStorageId());
 		checkpointIndexLabel.setText("Checkpoint index: "+checkpoint.getIndex());
-		checkpointUIDLabel.setText("Checkpoint UID: "+checkpoint.getIdentifier());
+		checkpointUIDLabel.setText("Checkpoint UID: "+checkpoint.getUID());
 		numberOfCharactersLabel.setText("Number of characters: "+(checkpoint.getMessage() != null ? checkpoint.getMessage().length() : "0"));
 		estimatedMemoryUsageLabel.setText("EstimatedMemoryUsage: " + checkpoint.getEstimatedMemoryUsage() + " bytes");
 		hideMessages();
@@ -232,7 +232,7 @@ public class CheckpointComponent extends MessageComponent {
 		} else if (radioButtonStubOptionYes == e.getSource()) {
 			checkpoint.setStub(Checkpoint.STUB_YES);
 		} else if (e.getActionCommand().equals("Download")) {
-			if ("Both".equals(downloadSelectField.getSelectedItem())) {
+			if ("Report + Message".equals(downloadSelectField.getSelectedItem())) {
 				displayAndLogError(Download.download(report, checkpoint));
 			} else if ("Message".equals(downloadSelectField.getSelectedItem())) {
 				displayAndLogError(Download.download(checkpoint));

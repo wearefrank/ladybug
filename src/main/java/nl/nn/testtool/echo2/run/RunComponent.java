@@ -104,7 +104,11 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 	private Label cloneGenerationReportInputLabel;
 	
 	// options
+	private CheckBox showReportStorageIdsCheckbox;
+	private CheckBox showCheckpointIdsCheckbox;
 	private boolean showReportStorageIds;
+	private boolean showCheckpointIds;
+	
 	public RunComponent() {
 		super();
 	}
@@ -163,7 +167,7 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 		optionsWindow = new WindowPane();
 		optionsWindow.setTitle("Options");
 		optionsWindow.setVisible(false);
-		optionsWindow.setWidth(new Extent(480));
+		optionsWindow.setWidth(new Extent(280));
 		optionsWindow.setHeight(new Extent(120));
 		optionsWindow.setInsets(new Insets(5, 5, 5, 5));
 		optionsWindow.add(optionsColumn);
@@ -329,12 +333,29 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 		//
 		
 		// Options window
-		CheckBox showReportStorageIdsCheckbox = new CheckBox("Show report storage IDs");
+		showReportStorageIdsCheckbox = new CheckBox("Show report storage IDs");
 		showReportStorageIdsCheckbox.setActionCommand("ToggleReportStorageIds");
 		showReportStorageIdsCheckbox.addActionListener(this);
 		showReportStorageIdsCheckbox.setSelected(showReportStorageIds);
+
+		showCheckpointIdsCheckbox = new CheckBox("Show checkpoint IDs");
+		showCheckpointIdsCheckbox.setActionCommand("ToggleCheckpointIds");
+		showCheckpointIdsCheckbox.addActionListener(this);
+		showCheckpointIdsCheckbox.setSelected(showCheckpointIds);
+		
+		Button restoreDefaultsButton = new Button("Restore defaults");
+		restoreDefaultsButton.setActionCommand("RestoreDefaults");
+		restoreDefaultsButton.addActionListener(this);
+		Echo2Application.decorateButton(restoreDefaultsButton);
+
 		row = Echo2Application.getNewRow();
 		row.add(showReportStorageIdsCheckbox);
+		optionsColumn.add(row);
+		row = Echo2Application.getNewRow();
+		row.add(showCheckpointIdsCheckbox);
+		optionsColumn.add(row);
+		row = Echo2Application.getNewRow();
+		row.add(restoreDefaultsButton);
 		optionsColumn.add(row);
 		//
 
@@ -507,8 +528,8 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 		Echo2Application.decorateButton(button);
 		row.add(button);
 		
-		Label label = new Label("["+String.valueOf(report.getStorageId())+"]");
-		label.setForeground(Echo2Application.getButtonRolloverBackgroundColor());
+		Label label = new Label(String.valueOf(report.getStorageId())+".");
+		label.setForeground(Echo2Application.getButtonBackgroundColor());
 		label.setVisible(showReportStorageIds);
 		row.add(label);
 
@@ -636,10 +657,19 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 		} else if (e.getActionCommand().equals("OpenUploadWindow")) {
 			uploadWindow.setVisible(true);
 		} else if (e.getActionCommand().equals("OpenOptionsWindow")) {
-			System.out.println("Window should be visible now");
 			optionsWindow.setVisible(true);
 		} else if (e.getActionCommand().equals("ToggleReportStorageIds")) {
-			showReportStorageIds = !showReportStorageIds;
+			showReportStorageIds = showReportStorageIdsCheckbox.isSelected();
+			refresh();
+		} else if (e.getActionCommand().equals("ToggleCheckpointIds")) {
+			showCheckpointIds = showCheckpointIdsCheckbox.isSelected();
+			echo2Application.getReportsTreeCellRenderer().setShowReportAndCheckpointIds(showCheckpointIds);
+		} else if (e.getActionCommand().equals("RestoreDefaults")) {
+			showReportStorageIds = false;
+			showReportStorageIdsCheckbox.setSelected(false);
+			showCheckpointIds = false;
+			showCheckpointIdsCheckbox.setSelected(false);
+			echo2Application.getReportsTreeCellRenderer().setShowReportAndCheckpointIds(showCheckpointIds);
 			refresh();
 		} else if (e.getActionCommand().equals("DeleteSelected")) {
 			if (minimalOneSelected()) {

@@ -56,6 +56,7 @@ public class TestTool {
 	private MessageTransformer messageTransformer;
 	private List reportsToSkip = new ArrayList();
 	private String regexFilter;
+	private boolean showDetailedCheckpointMetadata = true;
 
 	public void setConfigName(String configName) {
 		this.configName = configName;
@@ -409,5 +410,17 @@ public class TestTool {
 
 	public static String getImplementationVersion() {
 		return Package.getPackage("nl.nn.testtool").getImplementationVersion();
+	}
+
+	public boolean isShowDetailedCheckpointMetadata() {
+		return showDetailedCheckpointMetadata;
+	}
+
+	public void setShowDetailedCheckpointMetadata(boolean showDetailedCheckpointMetadata) {
+		this.showDetailedCheckpointMetadata = showDetailedCheckpointMetadata;
+	}
+
+	public void toggleShowDetailedCheckpointMetadata() {
+		this.showDetailedCheckpointMetadata = !showDetailedCheckpointMetadata;
 	}
 }
