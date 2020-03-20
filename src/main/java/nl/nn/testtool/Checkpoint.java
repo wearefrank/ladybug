@@ -389,7 +389,7 @@ public class Checkpoint implements Serializable, Cloneable {
 	}
 
 	public static Checkpoint fromXml(String xml, Report report) throws Exception {
-		Pattern pattern = Pattern.compile("<Checkpoint Name=\"(.*)\" Type=\"(.*)\" Level=\"(.*)\"( TextDecl=\"(.*)\")?>(.*)</Checkpoint>");
+		Pattern pattern = Pattern.compile("<Checkpoint Name=\"(.*)\" Type=\"(.*)\" Level=\"(.*?)\"( TextDecl=\"(.*)\")?>(.*)</Checkpoint>");
 		Matcher matcher = pattern.matcher(xml);
 
 		if (!matcher.matches())
