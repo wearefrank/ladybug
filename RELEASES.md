@@ -7,6 +7,7 @@ Upcoming
 --------
 
 - Simplify syntax of cross-report variables
+- Add toggle options for showing storage and checkpoint IDs in the UI
 - Add timestamp to filename when downloading zipped reports
 
 
