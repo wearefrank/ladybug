@@ -637,4 +637,8 @@ public class Echo2Application extends ApplicationInstance implements Application
 		}
 		return null;
 	}
+
+	public ReportsTreeCellRenderer getReportsTreeCellRenderer() {
+		return reportsTreeCellRenderer;
+	}
 }

@@ -84,6 +84,7 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 	private ReportXmlTransformer reportXmlTransformer = null;
 	private WindowPane uploadWindow;
 	private WindowPane reportGenerationWindow;
+	private WindowPane optionsWindow;
 	private UploadSelect uploadSelect;
 	private int numberOfComponentsToSkipForRowManipulation = 0;
 	private String lastDisplayedPath;
@@ -101,6 +102,12 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 	private int COMPONENT_DYNAMIC_VAR_LABEL = 6;
 	private TextArea cloneGenerationReportInputTextArea;
 	private Label cloneGenerationReportInputLabel;
+	
+	// options
+	private CheckBox showReportStorageIdsCheckbox;
+	private CheckBox showCheckpointIdsCheckbox;
+	private boolean showReportStorageIds;
+	private boolean showCheckpointIds;
 	
 	public RunComponent() {
 		super();
@@ -133,6 +140,7 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 		// TODO code voor aanmaken upload window en ander zaken gaan delen met ReportsComponent
 		Column uploadColumn = new Column();
 		Column cloneGenerationColumn = new Column();
+		Column optionsColumn = new Column();
 
 		uploadWindow = new WindowPane();
 		uploadWindow.setVisible(false);
@@ -148,8 +156,6 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 		
 		reportGenerationWindow = new WindowPane();
 		reportGenerationWindow.setTitle("Generate report clones");
-//		reportGenerationWindow.setTitleBackground(Echo2Application.getButtonBackgroundColor());
-//		reportGenerationWindow.setBorder(new FillImageBorder(Echo2Application.getButtonBackgroundColor(), new Insets(0, 0, 0, 0), new Insets(0, 0, 0, 0)));
 		reportGenerationWindow.setVisible(false);
 		reportGenerationWindow.setWidth(new Extent(464));
 		reportGenerationWindow.setHeight(new Extent(610));
@@ -157,6 +163,16 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 		reportGenerationWindow.add(cloneGenerationColumn);
 		reportGenerationWindow.setDefaultCloseOperation(WindowPane.HIDE_ON_CLOSE);
 		reportGenerationWindow.init();
+		
+		optionsWindow = new WindowPane();
+		optionsWindow.setTitle("Options");
+		optionsWindow.setVisible(false);
+		optionsWindow.setWidth(new Extent(280));
+		optionsWindow.setHeight(new Extent(120));
+		optionsWindow.setInsets(new Insets(5, 5, 5, 5));
+		optionsWindow.add(optionsColumn);
+		optionsWindow.setDefaultCloseOperation(WindowPane.HIDE_ON_CLOSE);
+		optionsWindow.init();
 
 		Row buttonRow = Echo2Application.getNewRow();
 
@@ -177,6 +193,12 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 		resetSelectedButton.addActionListener(this);
 		Echo2Application.decorateButton(resetSelectedButton);
 		buttonRow.add(resetSelectedButton);
+
+		Button prepareOptionsButton = new Button("Options...");
+		prepareOptionsButton.setActionCommand("OpenOptionsWindow");
+		Echo2Application.decorateButton(prepareOptionsButton);
+		prepareOptionsButton.addActionListener(this);
+		buttonRow.add(prepareOptionsButton);
 
 		Button selectAllButton = new Button("Select all");
 		selectAllButton.setActionCommand("SelectAll");
@@ -268,7 +290,7 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 		uploadSelectRow.add(uploadSelect);
 		uploadColumn.add(uploadSelectRow);
 
-		// Report generation window		
+		// Report generation window
 		reportGenerationWarningLabel = Echo2Application.createErrorLabel();
 		reportGenerationWarningLabel.setVisible(false);
 		Row row = Echo2Application.getNewRow();
@@ -309,6 +331,33 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 		row.add(generateClonesButton);
 		cloneGenerationColumn.add(row);
 		//
+		
+		// Options window
+		showReportStorageIdsCheckbox = new CheckBox("Show report storage IDs");
+		showReportStorageIdsCheckbox.setActionCommand("ToggleReportStorageIds");
+		showReportStorageIdsCheckbox.addActionListener(this);
+		showReportStorageIdsCheckbox.setSelected(showReportStorageIds);
+
+		showCheckpointIdsCheckbox = new CheckBox("Show checkpoint IDs");
+		showCheckpointIdsCheckbox.setActionCommand("ToggleCheckpointIds");
+		showCheckpointIdsCheckbox.addActionListener(this);
+		showCheckpointIdsCheckbox.setSelected(showCheckpointIds);
+		
+		Button restoreDefaultsButton = new Button("Restore defaults");
+		restoreDefaultsButton.setActionCommand("RestoreDefaults");
+		restoreDefaultsButton.addActionListener(this);
+		Echo2Application.decorateButton(restoreDefaultsButton);
+
+		row = Echo2Application.getNewRow();
+		row.add(showReportStorageIdsCheckbox);
+		optionsColumn.add(row);
+		row = Echo2Application.getNewRow();
+		row.add(showCheckpointIdsCheckbox);
+		optionsColumn.add(row);
+		row = Echo2Application.getNewRow();
+		row.add(restoreDefaultsButton);
+		optionsColumn.add(row);
+		//
 
 		add(buttonRow);
 		numberOfComponentsToSkipForRowManipulation++;
@@ -331,6 +380,7 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 		this.echo2Application = Echo2Application.getEcho2Application(beanParent, this);
 		echo2Application.getContentPane().add(uploadWindow);
 		echo2Application.getContentPane().add(reportGenerationWindow);
+		echo2Application.getContentPane().add(optionsWindow);
 		RunPane runPane = (RunPane)beanParent.getBeanParent();
 		treePane = runPane.getTreePane();
 		reportRunner.setSecurityContext(echo2Application);
@@ -477,8 +527,13 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 		button.setVisible(false);
 		Echo2Application.decorateButton(button);
 		row.add(button);
+		
+		Label label = new Label(String.valueOf(report.getStorageId()));
+		label.setForeground(Echo2Application.getButtonBackgroundColor());
+		label.setVisible(showReportStorageIds);
+		row.add(label);
 
-		Label label = new Label(path + name);
+		label = new Label(path + name);
 		row.add(label);
 		RunResult runResult = reportRunner.getResults().get(Integer.parseInt(storageId));
 		if (runResult != null) {
@@ -601,20 +656,44 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 			displayAndLogError(Download.download(runStorage));
 		} else if (e.getActionCommand().equals("OpenUploadWindow")) {
 			uploadWindow.setVisible(true);
+		} else if (e.getActionCommand().equals("OpenOptionsWindow")) {
+			optionsWindow.setVisible(true);
+		} else if (e.getActionCommand().equals("ToggleReportStorageIds")) {
+			showReportStorageIds = showReportStorageIdsCheckbox.isSelected();
+			refresh();
+		} else if (e.getActionCommand().equals("ToggleCheckpointIds")) {
+			showCheckpointIds = showCheckpointIdsCheckbox.isSelected();
+			echo2Application.getReportsTreeCellRenderer().setShowReportAndCheckpointIds(showCheckpointIds);
+		} else if (e.getActionCommand().equals("RestoreDefaults")) {
+			showReportStorageIds = false;
+			showReportStorageIdsCheckbox.setSelected(false);
+			showCheckpointIds = false;
+			showCheckpointIdsCheckbox.setSelected(false);
+			echo2Application.getReportsTreeCellRenderer().setShowReportAndCheckpointIds(showCheckpointIds);
+			refresh();
 		} else if (e.getActionCommand().equals("DeleteSelected")) {
 			if (minimalOneSelected()) {
 				List<String> actionLabels = new ArrayList<String>();
 				List<String> actionCommands = new ArrayList<String>();
 				List<ActionListener> actionListeners = new ArrayList<ActionListener>();
-				actionLabels.add("Yes, delete all selected reports");
+				
+				int reportsSelected = getSelectedReportCount();
+				String popupMessage;
+				String confirmActionLabelText;
+				if(reportsSelected > 1) {
+					popupMessage = "Are you sure you want to delete the "+reportsSelected+" selected reports?";
+					confirmActionLabelText = "Yes, delete "+reportsSelected+" selected reports";
+				} else {
+					popupMessage = "Are you sure you want to delete the selected report?";
+					confirmActionLabelText = "Yes, delete 1 selected report";
+				}
+				
+				actionLabels.add(confirmActionLabelText);
 				actionCommands.add("DeleteOk");
 				actionListeners.add(this);
 				actionLabels.add("No, cancel this action");
 				actionCommands.add("DeleteCancel");
 				actionListeners.add(this);
-				int reportsSelected = getSelectedReportCount();
-				String popupMessage = reportsSelected > 1 ? "Are you sure you want to delete the "+reportsSelected+" selected reports?"
-						: "Are you sure you want to delete the selected report?";
 				PopupWindow popupWindow = new PopupWindow("", popupMessage, 450, 100,
 						actionLabels, actionCommands, actionListeners);
 				echo2Application.getContentPane().add(popupWindow);
