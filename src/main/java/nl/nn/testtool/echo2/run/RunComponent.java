@@ -194,6 +194,12 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 		Echo2Application.decorateButton(resetSelectedButton);
 		buttonRow.add(resetSelectedButton);
 
+		Button prepareOptionsButton = new Button("Options...");
+		prepareOptionsButton.setActionCommand("OpenOptionsWindow");
+		Echo2Application.decorateButton(prepareOptionsButton);
+		prepareOptionsButton.addActionListener(this);
+		buttonRow.add(prepareOptionsButton);
+
 		Button selectAllButton = new Button("Select all");
 		selectAllButton.setActionCommand("SelectAll");
 		selectAllButton.addActionListener(this);
@@ -247,12 +253,6 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 		Echo2Application.decorateButton(prepareUploadButton);
 		prepareUploadButton.addActionListener(this);
 		buttonRow.add(prepareUploadButton);
-
-		Button prepareOptionsButton = new Button("Options...");
-		prepareOptionsButton.setActionCommand("OpenOptionsWindow");
-		Echo2Application.decorateButton(prepareOptionsButton);
-		prepareOptionsButton.addActionListener(this);
-		buttonRow.add(prepareOptionsButton);
 
 		progressBar = new ProgressBar();
 		buttonRow.add(progressBar);
@@ -528,7 +528,7 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 		Echo2Application.decorateButton(button);
 		row.add(button);
 		
-		Label label = new Label(String.valueOf(report.getStorageId())+".");
+		Label label = new Label(String.valueOf(report.getStorageId()));
 		label.setForeground(Echo2Application.getButtonBackgroundColor());
 		label.setVisible(showReportStorageIds);
 		row.add(label);
