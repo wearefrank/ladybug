@@ -60,7 +60,7 @@ public class RunPane extends Tab implements BeanParent {
 
 		SplitPane splitPane1 = new SplitPane(SplitPane.ORIENTATION_HORIZONTAL);
 		splitPane1.setResizable(true);
-		splitPane1.setSeparatorPosition(new Extent(400, Extent.PX));
+		splitPane1.setSeparatorPosition(new Extent(280, Extent.PX));
 
 		// Wire
 

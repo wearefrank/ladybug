@@ -37,6 +37,7 @@ import nl.nn.testtool.util.LogUtil;
  */
 public class ReportsTreeCellRenderer extends DefaultTreeCellRenderer {
 	private Logger log = LogUtil.getLogger(this);
+	private boolean showReportAndCheckpointIds;
 
 	/**
 	 * http://echopoint.sourceforge.net/LinkedArticles/UsingtheTreeComponent.html Advanced Tree Rendering
@@ -51,6 +52,9 @@ public class ReportsTreeCellRenderer extends DefaultTreeCellRenderer {
 			if (userObject instanceof Report) {
 				label = super.getTreeCellRendererText(tree, node, selected, expanded, leaf);
 				Report report = (Report)userObject;
+				if(showReportAndCheckpointIds) {
+					label.setText("["+report.getStorageId()+"] "+report.getName());
+				}
 				if (report.getDifferenceChecked()) {
 					if (report.getDifferenceFound()) {
 						label.setForeground(Echo2Application.getDifferenceFoundLabelColor());
@@ -65,7 +69,11 @@ public class ReportsTreeCellRenderer extends DefaultTreeCellRenderer {
 				label = new Label();
 				label.setIconTextMargin(new Extent(0));
 				label.setFont(DefaultTreeCellRenderer.DEFAULT_FONT);
-				label.setText(checkpoint.getName());
+				if(showReportAndCheckpointIds) {
+					label.setText(checkpoint.getIndex()+". "+checkpoint.getName());
+				} else {
+					label.setText(checkpoint.getName());
+				}
 				if (checkpoint.getType() == Checkpoint.TYPE_STARTPOINT) {
 					if (defaultMutableTreeNode.getLevel() % 2 == 0) {
 						label.setIcon(new ResourceImageReference("/nl/nn/testtool/echo2/reports/startpoint-even.gif"));
@@ -137,5 +145,9 @@ public class ReportsTreeCellRenderer extends DefaultTreeCellRenderer {
 			}
 		}
 		return label;
+	}
+	
+	public void setShowReportAndCheckpointIds(boolean showReportAndCheckpointIds) {
+		this.showReportAndCheckpointIds = showReportAndCheckpointIds;
 	}
 }
