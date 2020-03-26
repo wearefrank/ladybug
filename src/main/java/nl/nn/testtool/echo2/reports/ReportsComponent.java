@@ -579,7 +579,7 @@ public class ReportsComponent extends BaseComponent implements BeanParent, Actio
 			Table table = (Table)e.getSource();
 			int selectedIndex = table.getSelectionModel().getMinSelectedIndex();
 			firstValueOfLastSelectedRow = metadataTableModel.getValueAt(0, selectedIndex);
-			openReport(view, (Integer)firstValueOfLastSelectedRow);
+			openReport(view, ((Number)firstValueOfLastSelectedRow).intValue());
 		} else if (e.getActionCommand().equals("OpenAll")) {
 			View view = getSelectedView();
 			for (int i = 0; i < metadataTableModel.getRowCount(); i++) {

@@ -525,6 +525,8 @@ public class Report implements Serializable {
 					stringBuffer.append(" Name=\"" + EscapeUtil.escapeXml(checkpoint.getName()) + "\"");
 					stringBuffer.append(" Type=\"" + EscapeUtil.escapeXml(checkpoint.getTypeAsString()) + "\"");
 					stringBuffer.append(" Level=\"" + checkpoint.getLevel() + "\"");
+					stringBuffer.append(" ThreadName=\"" + EscapeUtil.escapeXml(checkpoint.getThreadName()) + "\"");
+					stringBuffer.append(" SourceClass=\"" + EscapeUtil.escapeXml(checkpoint.getSourceClassName()) + "\"");
 					String message = object.toString();
 					Document document;
 					try {
@@ -569,9 +571,9 @@ public class Report implements Serializable {
 	}
 
 	public static Report fromXml(String xml) throws Exception {
-		Pattern reportPattern = Pattern.compile("<Report Name=\"(.*)\" Description=\"(.*)\" Path=\"(.*)\" CorrelationId=\"(.*)\" StartTime=\"(.*)\" EndTime=\"(.*)\" NumberOfCheckpoints=\"(.*)\" EstimatedMemoryUsage=\"(.*)\">");
+		Pattern reportPattern = Pattern.compile("<Report Name=\"(.*)\" Description=\"(.*)\" Path=\"(.*)\" CorrelationId=\"(.*)\" StartTime=\"([0-9]*)\" EndTime=\"([0-9]*)\" NumberOfCheckpoints=\"([0-9]*)\" EstimatedMemoryUsage=\"([0-9]*)\">");
 		Matcher matcher = reportPattern.matcher(xml);
-		if (!matcher.matches())
+		if (!matcher.find())
 			throw new Exception("Can not parse the given xml as a report.");
 		Report report = new Report();
 		report.setName(matcher.group(1));
@@ -584,15 +586,16 @@ public class Report implements Serializable {
 		List<Checkpoint> checkpoints = new ArrayList<>(Integer.parseInt(matcher.group(7)));
 		String startTag = "<Checkpoint";
 		String endTag = "</Checkpoint>";
+
 		int start = xml.indexOf(startTag);
 		int end = xml.indexOf(endTag, start + startTag.length());
-		while (start < 0 || end < 0) {
+		while (start > 0 && end > 0) {
 			try {
-				checkpoints.add(Checkpoint.fromXml(xml.substring(start, end), report));
+				checkpoints.add(Checkpoint.fromXml(xml.substring(start, end + endTag.length()), report));
 			} catch (Exception e) {
 				log.error("Checkpoint could not be parsed.", e);
 			}
-			start = xml.indexOf(startTag);
+			start = xml.indexOf(startTag, end + endTag.length());
 			end = xml.indexOf(endTag, start + startTag.length());
 		}
 		report.setCheckpoints(checkpoints);

@@ -15,18 +15,46 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
 
+/**
+ * Handles report storage for ladybug.
+ * Stores reports in xml format.
+ */
 public class XmlStorage implements LogStorage {
 	private String name;
+	String metadataFile;
 	private MetadataHandler metadataHandler;
 	private File reportsFolder;
 	Logger logger = LogUtil.getLogger(XmlStorage.class);
 
+	/**
+	 * Initializes the storage. Creating necessary folders and metadata file.
+	 * @throws Exception Security exception that might be thrown by JVM.
+	 */
+	public void init() throws Exception {
+		if (!reportsFolder.exists() && !reportsFolder.mkdirs()) {
+			throw new Exception("Could not create reports folder!");
+		}
+
+		if (StringUtils.isEmpty(metadataFile)) {
+			metadataFile = new File(reportsFolder, "metadata.xml").getAbsolutePath();
+			logger.warn("Metadatafile was not set. Using " + metadataFile);
+		}
+		metadataHandler = new MetadataHandler(metadataFile);
+	}
+
 	@Override
 	public void storeWithoutException(Report report) {
 		try {
-			long storageid = metadataHandler.getNextStorageId();
+			// Make sure we are not overriding any previous report
+			// that might have been handled by another metadatahandler file.
+			long storageid;
+			File reportFile;
+			do {
+				storageid = metadataHandler.getNextStorageId();
+				reportFile = new File(reportsFolder, storageid + ".xml");
+			} while (reportFile.isFile());
+
 			Metadata metadata = Metadata.fromReport(report, storageid);
-			File reportFile = new File(reportsFolder, storageid + ".xml");
 			reportFile.createNewFile();
 
 			FileWriter writer = new FileWriter(reportFile, false);
@@ -114,5 +142,13 @@ public class XmlStorage implements LogStorage {
 	@Override
 	public String getUserHelp(String column) {
 		return SearchUtil.getUserHelp();
+	}
+
+	public void setReportsFolder(String reportsFolder) {
+		this.reportsFolder = new File(reportsFolder);
+	}
+
+	public void setMetadataFile(String metadataFile) {
+		this.metadataFile = metadataFile;
 	}
 }

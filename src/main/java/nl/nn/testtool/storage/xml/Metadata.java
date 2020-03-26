@@ -26,7 +26,7 @@ public class Metadata {
 	public List<Object> toObjectList() {
 		return Arrays.asList(new Object[] {
 				storageId,
-				endTime,
+				new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(endTime),
 				duration,
 				name,
 				correlationId,
@@ -58,7 +58,7 @@ public class Metadata {
 				report.getEndTime() - report.getStartTime(),
 				report.getNumberOfCheckpoints(),
 				report.getEstimatedMemoryUsage(),
-				report.getStorageSize(),
+				0L,
 				report.getEndTime(),
 				report.getName(),
 				report.getCorrelationId(),

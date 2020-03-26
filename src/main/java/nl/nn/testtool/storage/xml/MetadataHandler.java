@@ -14,6 +14,9 @@ import java.util.List;
 import java.util.Scanner;
 import java.util.Set;
 
+/**
+ * Handles metadata for {@link XmlStorage}.
+ */
 public class MetadataHandler {
 	private final String defaultFilePath = "metadata.xml";
 	Set<Metadata> metadataSet;
@@ -21,6 +24,12 @@ public class MetadataHandler {
 	long lastStorageId;
 	Logger logger = LogUtil.getLogger(this.getClass());
 
+	/**
+	 * Creates a new file with the given path.
+	 * If file exists, then reads the metadata from the given file.
+	 * @param filePath Path of the metadata file to be created/read.
+	 * @throws IOException
+	 */
 	public MetadataHandler(String filePath) throws IOException {
 		if (StringUtils.isEmpty(filePath)) {
 			logger.warn("No filepath was given for Ladybug MetadataHandler. Continuing with default [" + defaultFilePath + "]");
@@ -34,6 +43,10 @@ public class MetadataHandler {
 		}
 	}
 
+	/**
+	 * Reads metadata from metadataFile.
+	 * @throws FileNotFoundException
+	 */
 	private void readFromFile() throws FileNotFoundException {
 		Scanner scanner = new Scanner(metadataFile);
 		StringBuilder stringBuilder = new StringBuilder();
@@ -46,6 +59,7 @@ public class MetadataHandler {
 			}
 			while (stringBuilder.length() > 0 && scanner.hasNextLine()) {
 				line = scanner.nextLine();
+				stringBuilder.append(line);
 				if (line.contains("</Metadata>")) {
 					Metadata m = Metadata.fromXml(stringBuilder.toString());
 					metadataSet.add(m);
@@ -62,9 +76,15 @@ public class MetadataHandler {
 		return ++lastStorageId;
 	}
 
+	/**
+	 * Adds the given metadata. And saves it to storage right away.
+	 * @param m metadata to be added.
+	 * @throws IOException
+	 */
 	public void add(Metadata m) throws IOException {
 		metadataSet.add(m);
 		// TODO: Find a more optimal way!
+		// The problem is xml is not suitable for big data, so can't append directly.
 		save();
 	}
 
@@ -88,6 +108,10 @@ public class MetadataHandler {
 		return metadataSet.size();
 	}
 
+	/**
+	 * Saves the metadata list in memory to metadatafile.
+	 * @throws IOException
+	 */
 	public void save() throws IOException {
 		logger.info("Saving the metadata to file [" + metadataFile.getName() + "]...");
 		FileWriter writer = new FileWriter(metadataFile, false);
