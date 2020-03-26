@@ -8,8 +8,10 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Scanner;
 import java.util.Set;
@@ -88,10 +90,17 @@ public class MetadataHandler {
 		save();
 	}
 
-	public List<List<Object>> getAsListofObjects() {
+	public List<List<Object>> getAsListofObjects(int maxNumberOfRecords, List<String> metadataNames, List<String> searchValues, int metadataValueType) {
 		List<List<Object>> result = new ArrayList<List<Object>>(metadataSet.size());
-		for (Metadata m : metadataSet) {
-			result.add(m.toObjectList());
+		Iterator<Metadata> iterator = metadataSet.iterator();
+		while (iterator.hasNext() && result.size() < maxNumberOfRecords){
+			Metadata m = iterator.next();
+			boolean filterPassed = true;
+			for(int i = 0; i < metadataNames.size() && filterPassed; i ++) {
+				filterPassed = m.fieldEquals(metadataNames.get(i), searchValues.get(i));
+			}
+			if (filterPassed)
+				result.add(m.toObjectList());
 		}
 		return result;
 	}

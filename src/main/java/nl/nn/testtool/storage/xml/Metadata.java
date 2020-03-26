@@ -2,14 +2,15 @@ package nl.nn.testtool.storage.xml;
 
 import nl.nn.testtool.Report;
 import nl.nn.testtool.util.EscapeUtil;
+import org.apache.commons.lang.StringUtils;
 
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.List;
 
 public class Metadata {
-	private long storageId, nrChpts, memoryUsage, storageSize, duration, endTime;
-	private String name, correlationId, status;
+	protected long storageId, nrChpts, memoryUsage, storageSize, duration, endTime;
+	protected String name, correlationId, status;
 
 	public Metadata(long storageId, long duration, long nrChpts, long memoryUsage, long storageSize, long endTime, String name, String correlationId, String status) {
 		this.storageId = storageId;
@@ -26,7 +27,7 @@ public class Metadata {
 	public List<Object> toObjectList() {
 		return Arrays.asList(new Object[] {
 				storageId,
-				new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(endTime),
+				formatTime(endTime),
 				duration,
 				name,
 				correlationId,
@@ -58,12 +59,11 @@ public class Metadata {
 				report.getEndTime() - report.getStartTime(),
 				report.getNumberOfCheckpoints(),
 				report.getEstimatedMemoryUsage(),
-				0L,
+				report.getStorageSize() != null ? report.getStorageSize() : 0L,
 				report.getEndTime(),
 				report.getName(),
 				report.getCorrelationId(),
-				"SUCCESS");
-		// TODO: Remove success and find out where status comes from!!
+				"Success");
 	}
 
 	public static Metadata fromXml(String xml) {
@@ -103,6 +103,10 @@ public class Metadata {
 		}
 	}
 
+	private static String formatTime(long time) {
+		return new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(time);
+	}
+
 	public long getStorageId() {
 		return storageId;
 	}
@@ -112,6 +116,33 @@ public class Metadata {
 			Metadata m = (Metadata) other;
 			return m.storageId == this.storageId;
 		}
+		return false;
+	}
+
+	public boolean fieldEquals(String field, String value) {
+		if (StringUtils.isEmpty(value) || StringUtils.isEmpty(field))
+			return true;
+
+		if (field.equalsIgnoreCase("storageId")) {
+			return String.valueOf(storageId).contains(value);
+		}else if (field.equalsIgnoreCase("endtime")) {
+			return formatTime(endTime).contains(value);
+		}else if (field.equalsIgnoreCase("duration")) {
+			return String.valueOf(duration).contains(value);
+		}else if (field.equalsIgnoreCase("name")) {
+			return name.contains(value);
+		}else if (field.equalsIgnoreCase("correlationId")) {
+			return correlationId.contains(value);
+		}else if (field.equalsIgnoreCase("status")) {
+			return status.contains(value);
+		}else if (field.equalsIgnoreCase("numberOfCheckpoints")) {
+			return String.valueOf(nrChpts).contains(value);
+		}else if (field.equalsIgnoreCase("estimatedMemoryUsage")) {
+			return String.valueOf(memoryUsage).contains(value);
+		}else if (field.equalsIgnoreCase("storageSize")) {
+			return String.valueOf(storageSize).contains(value);
+		}
+
 		return false;
 	}
 }

@@ -88,7 +88,7 @@ public class XmlStorage implements LogStorage {
 
 	@Override
 	public List<List<Object>> getMetadata(int maxNumberOfRecords, List<String> metadataNames, List<String> searchValues, int metadataValueType) throws StorageException {
-		return metadataHandler.getAsListofObjects();
+		return metadataHandler.getAsListofObjects(maxNumberOfRecords, metadataNames, searchValues, metadataValueType);
 	}
 
 	@Override
