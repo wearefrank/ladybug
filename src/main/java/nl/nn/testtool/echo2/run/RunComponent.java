@@ -98,8 +98,9 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 	private int COMPONENT_OPEN_BUTTON = 2;
 	private int COMPONENT_COMPARE_BUTTON = 3;
 	private int COMPONENT_REPLACE_BUTTON = 4;
-	private int COMPONENT_RESULT_LABEL = 5;
-	private int COMPONENT_DYNAMIC_VAR_LABEL = 6;
+	private int COMPONENT_STORAGEID_LABEL = 5;
+	private int COMPONENT_RESULT_LABEL = 6;
+	private int COMPONENT_DYNAMIC_VAR_LABEL = 7;
 	private TextArea cloneGenerationReportInputTextArea;
 	private Label cloneGenerationReportInputLabel;
 	
