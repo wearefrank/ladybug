@@ -267,6 +267,10 @@ public class XmlStorage implements LogStorage, CrudStorage {
 		this.metadataFile = metadataFile;
 	}
 
+	public void setStage(String stage) {
+		this.stage = stage;
+	}
+
 	/**
 	 * Resets the metadata handler by forcing it to build file from searching through directory.
 	 */
