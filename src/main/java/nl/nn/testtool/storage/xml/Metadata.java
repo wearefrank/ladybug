@@ -1,18 +1,21 @@
 package nl.nn.testtool.storage.xml;
 
+import nl.nn.testtool.MetadataExtractor;
 import nl.nn.testtool.Report;
 import nl.nn.testtool.util.EscapeUtil;
 import org.apache.commons.lang.StringUtils;
 
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 
 public class Metadata {
-	protected long storageId, nrChpts, memoryUsage, storageSize, duration, endTime;
-	protected String name, correlationId, status;
+	protected int storageId, nrChpts;
+	protected long memoryUsage, storageSize, duration, endTime;
+	protected String name, correlationId, status, path, description;
 
-	public Metadata(long storageId, long duration, long nrChpts, long memoryUsage, long storageSize, long endTime, String name, String correlationId, String status) {
+	public Metadata(int storageId, long duration, int nrChpts, long memoryUsage, long storageSize, long endTime, String name, String correlationId, String status, String path, String description) {
 		this.storageId = storageId;
 		this.duration = duration;
 		this.nrChpts = nrChpts;
@@ -22,22 +25,33 @@ public class Metadata {
 		this.name = name;
 		this.correlationId = correlationId;
 		this.status = status;
+		this.path = path;
+		this.description = description;
 	}
 
-	public List<Object> toObjectList() {
-		return Arrays.asList(new Object[] {
-				storageId,
-				formatTime(endTime),
-				duration,
-				name,
-				correlationId,
-				status,
-				nrChpts,
-				memoryUsage,
-				storageSize
-		});
+	/**
+	 * Returns a list of field values, with the given order.
+	 * @param names Order of fields to be returned.
+	 * @param type Type of objects to be returned.
+	 * @return A list of values.
+	 */
+	public List<Object> toObjectList(List<String> names, int type) {
+		List<Object> list = new ArrayList<>(names.size());
+		for (String n : names) {
+			if (type == MetadataExtractor.VALUE_TYPE_STRING) {
+				list.add(String.valueOf(getFieldValue(n)));
+			} else {
+				list.add(getFieldValue(n));
+			}
+		}
+
+		return list;
 	}
 
+	/**
+	 * Translates the metadata to xml format.
+	 * @return XML string.
+	 */
 	public String toXml() {
 		String template = "<Metadata>\n" +
 				"    <StorageId>%d</StorageId>\n" +
@@ -49,11 +63,19 @@ public class Metadata {
 				"    <NrChpts>%d</NrChpts>\n" +
 				"    <EstMemUsage>%d</EstMemUsage>\n" +
 				"    <StroageSize>%d</StroageSize>\n" +
+				"    <Path>%s</Path>\n" +
+				"    <Description>%s</Description>\n" +
 				"</Metadata>\n";
-		return String.format(template, storageId, endTime, duration, EscapeUtil.escapeXml(name), EscapeUtil.escapeXml(correlationId), EscapeUtil.escapeXml(status), nrChpts, memoryUsage, storageSize);
+		return String.format(template, storageId, endTime, duration, EscapeUtil.escapeXml(name), EscapeUtil.escapeXml(correlationId), EscapeUtil.escapeXml(status), nrChpts, memoryUsage, storageSize, path, description);
 	}
 
-	public static Metadata fromReport(Report report, long storageId) {
+	/**
+	 * Creates a metadata object from the given report and storage id.
+	 * @param report Report to be used for creating a metadata.
+	 * @param storageId Storage id for metadata.
+	 * @return Metadata object that is created from the given report.
+	 */
+	public static Metadata fromReport(Report report, int storageId) {
 		return new Metadata(
 				storageId,
 				report.getEndTime() - report.getStartTime(),
@@ -63,7 +85,9 @@ public class Metadata {
 				report.getEndTime(),
 				report.getName(),
 				report.getCorrelationId(),
-				"Success");
+				"Success",
+				report.getPath(),
+				report.getDescription());
 	}
 
 	public static Metadata fromXml(String xml) {
@@ -77,10 +101,18 @@ public class Metadata {
 		String name = extractTagValue(xml, "Name");
 		String correlationId = extractTagValue(xml, "CorrelationId");
 		String status = extractTagValue(xml, "Status");
+		String path = extractTagValue(xml, "Path");
+		String description = extractTagValue(xml, "Description");
 
-		return new Metadata(storageId, duration, nrChpts, estMemUsage, stroageSize, endTime, name, correlationId, status);
+		return new Metadata(((Long) storageId).intValue(), duration, ((Long) nrChpts).intValue(), estMemUsage, stroageSize, endTime, name, correlationId, status, path, description);
 	}
 
+	/**
+	 * Finds the tags in a given string and returns the string in-between.
+	 * @param xml Xml string to be serached.
+	 * @param tag Tag to be found.
+	 * @return String that is contained in between tags. Null, if not found.
+	 */
 	private static String extractTagValue(String xml, String tag) {
 		String startTag = "<" + tag + ">";
 		int start = xml.indexOf(startTag);
@@ -107,7 +139,7 @@ public class Metadata {
 		return new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(time);
 	}
 
-	public long getStorageId() {
+	public int getStorageId() {
 		return storageId;
 	}
 
@@ -119,30 +151,54 @@ public class Metadata {
 		return false;
 	}
 
-	public boolean fieldEquals(String field, String value) {
-		if (StringUtils.isEmpty(value) || StringUtils.isEmpty(field))
+	/**
+	 * Checks if the given pattern can be found in the given field value.
+	 * @param field Field to be used for value.
+	 * @param pattern Pattern to be matched.
+	 * @return True if the given pattern can be found in the value corresponding to the given field.
+	 */
+	public boolean fieldEquals(String field, Pattern pattern) {
+		if (StringUtils.isEmpty(field) || pattern == null)
 			return true;
 
+		Object fieldval = getFieldValue(field);
+		return fieldval != null && pattern.matcher(String.valueOf(fieldval)).find();
+	}
+
+	/**
+	 * Returns the value of the given field.
+	 * @param field Field to be used.
+	 * @return Value of the field. Null, if field can not be found.
+	 */
+	private Object getFieldValue(String field) {
+		// Todo: Maybe use reflect? Performance problems though
+		if (StringUtils.isEmpty(name))
+			return null;
+
 		if (field.equalsIgnoreCase("storageId")) {
-			return String.valueOf(storageId).contains(value);
-		}else if (field.equalsIgnoreCase("endtime")) {
-			return formatTime(endTime).contains(value);
-		}else if (field.equalsIgnoreCase("duration")) {
-			return String.valueOf(duration).contains(value);
-		}else if (field.equalsIgnoreCase("name")) {
-			return name.contains(value);
-		}else if (field.equalsIgnoreCase("correlationId")) {
-			return correlationId.contains(value);
-		}else if (field.equalsIgnoreCase("status")) {
-			return status.contains(value);
-		}else if (field.equalsIgnoreCase("numberOfCheckpoints")) {
-			return String.valueOf(nrChpts).contains(value);
-		}else if (field.equalsIgnoreCase("estimatedMemoryUsage")) {
-			return String.valueOf(memoryUsage).contains(value);
-		}else if (field.equalsIgnoreCase("storageSize")) {
-			return String.valueOf(storageSize).contains(value);
+			return storageId;
+		} else if (field.equalsIgnoreCase("endtime")) {
+			return formatTime(endTime);
+		} else if (field.equalsIgnoreCase("duration")) {
+			return duration;
+		} else if (field.equalsIgnoreCase("name")) {
+			return name;
+		} else if (field.equalsIgnoreCase("correlationId")) {
+			return correlationId;
+		} else if (field.equalsIgnoreCase("status")) {
+			return status;
+		} else if (field.equalsIgnoreCase("numberOfCheckpoints")) {
+			return nrChpts;
+		} else if (field.equalsIgnoreCase("estimatedMemoryUsage")) {
+			return memoryUsage;
+		} else if (field.equalsIgnoreCase("storageSize")) {
+			return storageSize;
+		} else if (field.equalsIgnoreCase("path")) {
+			return path;
+		} else if (field.equalsIgnoreCase("description")) {
+			return description;
 		}
 
-		return false;
+		return null;
 	}
 }
