@@ -62,7 +62,7 @@ public class MetadataHandler {
 	private void buildFromDirectory(File dir, boolean searchSubDirs) throws IOException {
 		if (dir == null || !dir.isDirectory())
 			return;
-		System.err.println("Building from directory " + dir.getPath());
+		logger.info("Building from directory " + dir.getPath());
 		for (File file : dir.listFiles()) {
 			if (searchSubDirs && file.isDirectory())
 				buildFromDirectory(file, searchSubDirs);
@@ -73,7 +73,14 @@ public class MetadataHandler {
 					String xml = new String(Files.readAllBytes(Paths.get(file.getAbsolutePath())));
 					Report report = Report.fromXml(xml);
 					report.setStorage(this.storage);
-					Metadata metadata = Metadata.fromReport(report, getNextStorageId());
+					File newFile;
+					int storageId;
+					do {
+						storageId = getNextStorageId();
+						newFile = new File(file.getParent(), storageId + ".xml");
+					} while (newFile.exists());
+					Metadata metadata = Metadata.fromReport(report, storageId);
+					file.renameTo(newFile);
 					add(metadata, false);
 				} catch (Exception e) {
 				}
@@ -89,7 +96,7 @@ public class MetadataHandler {
 	 * @throws FileNotFoundException
 	 */
 	private void readFromFile() throws IOException {
-		System.err.println("Reading from file... ");
+		logger.info("Reading from file " + metadataFile.getPath());
 		Scanner scanner = new Scanner(metadataFile);
 		StringBuilder stringBuilder = new StringBuilder();
 		String line;
@@ -205,7 +212,6 @@ public class MetadataHandler {
 	 * @throws IOException
 	 */
 	public void save() throws IOException {
-		System.err.println("Saving....");
 		logger.info("Saving the metadata to file [" + metadataFile.getName() + "]...");
 		FileWriter writer = new FileWriter(metadataFile, false);
 		writer.append("<MetadataList>\n");
