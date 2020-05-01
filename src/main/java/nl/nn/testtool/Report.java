@@ -495,11 +495,15 @@ public class Report implements Serializable {
 	}
 
 	public String toXml() {
-		return toXml(null);
+		return toXml(null, true, false);
 	}
 
 	public String toXml(ReportRunner reportRunner) {
-		if (xml == null) {
+		return toXml(reportRunner, true, false);
+	}
+
+	public String toXml(ReportRunner reportRunner, boolean allowTransformation, boolean force) {
+		if (xml == null || force) {
 			StringBuffer stringBuffer = new StringBuffer();
 			stringBuffer.append("<Report");
 			stringBuffer.append(" Name=\"" + EscapeUtil.escapeXml(name) + "\"");
@@ -557,13 +561,13 @@ public class Report implements Serializable {
 			}
 			stringBuffer.append("</Report>");
 			xml = stringBuffer.toString();
-			if (transformation != null && transformation.trim().length() > 0) {
+			if (allowTransformation && transformation != null && transformation.trim().length() > 0) {
 				if (reportXmlTransformer == null) {
 					reportXmlTransformer = new ReportXmlTransformer();
 					reportXmlTransformer.setXslt(transformation);
 				}
 				xml = reportXmlTransformer.transform(xml);
-			} else if (globalReportXmlTransformer != null) {
+			} else if (allowTransformation && globalReportXmlTransformer != null) {
 				xml = globalReportXmlTransformer.transform(xml);
 			}
 		}
