@@ -234,16 +234,6 @@ public class XmlStorage implements LogStorage, CrudStorage {
 	}
 
 	/**
-	 * Resolves and returns reports folder based on reportsFolderPath, and dtap.stage
-	 *
-	 * @return reports folder
-	 * @throws StorageException If folder does not exist and we can not create.
-	 */
-	private File getReportsFolder() throws StorageException {
-		return reportsFolder;
-	}
-
-	/**
 	 * Resolves the path of the report with given correlation Id
 	 *
 	 * @param correlationId Correlation Id of the report to be resolved.

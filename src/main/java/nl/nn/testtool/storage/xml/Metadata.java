@@ -32,8 +32,9 @@ public class Metadata {
 
 	/**
 	 * Returns a list of field values, with the given order.
+	 *
 	 * @param names Order of fields to be returned.
-	 * @param type Type of objects to be returned.
+	 * @param type  Type of objects to be returned.
 	 * @return A list of values.
 	 */
 	public List<Object> toObjectList(List<String> names, int type) {
@@ -51,6 +52,7 @@ public class Metadata {
 
 	/**
 	 * Translates the metadata to xml format.
+	 *
 	 * @return XML string.
 	 */
 	public String toXml() {
@@ -73,7 +75,8 @@ public class Metadata {
 
 	/**
 	 * Creates a metadata object from the given report and storage id.
-	 * @param report Report to be used for creating a metadata.
+	 *
+	 * @param report    Report to be used for creating a metadata.
 	 * @param storageId Storage id for metadata.
 	 * @return Metadata object that is created from the given report.
 	 */
@@ -113,6 +116,7 @@ public class Metadata {
 
 	/**
 	 * Finds the tags in a given string and returns the string in-between.
+	 *
 	 * @param xml Xml string to be serached.
 	 * @param tag Tag to be found.
 	 * @return String that is contained in between tags. Null, if not found.
@@ -147,17 +151,10 @@ public class Metadata {
 		return storageId;
 	}
 
-	public boolean equals(Object other) {
-		if (other instanceof Metadata) {
-			Metadata m = (Metadata) other;
-			return m.storageId == this.storageId;
-		}
-		return false;
-	}
-
 	/**
 	 * Checks if the given pattern can be found in the given field value.
-	 * @param field Field to be used for value.
+	 *
+	 * @param field   Field to be used for value.
 	 * @param pattern Pattern to be matched.
 	 * @return True if the given pattern can be found in the value corresponding to the given field.
 	 */
@@ -171,6 +168,7 @@ public class Metadata {
 
 	/**
 	 * Returns the value of the given field.
+	 *
 	 * @param field Field to be used.
 	 * @return Value of the field. Null, if field can not be found.
 	 */
