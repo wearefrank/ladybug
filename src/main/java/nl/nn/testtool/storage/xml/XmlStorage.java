@@ -9,7 +9,6 @@ import nl.nn.testtool.util.SearchUtil;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
-import java.beans.ExceptionListener;
 import java.beans.XMLDecoder;
 import java.beans.XMLEncoder;
 import java.io.BufferedInputStream;
@@ -98,7 +97,7 @@ public class XmlStorage implements LogStorage, CrudStorage {
 				File parentFolder = (report.getPath() != null) ? new File(reportsFolder, report.getPath()) : reportsFolder;
 				do {
 					storageid = metadataHandler.getNextStorageId();
-					reportFile = new File(parentFolder, storageid + ".xml");
+					reportFile = new File(parentFolder, report.getName() + " (" + storageid + ").xml");
 				} while (reportFile.isFile());
 
 				metadata = Metadata.fromReport(report, storageid);
@@ -271,7 +270,7 @@ public class XmlStorage implements LogStorage, CrudStorage {
 		if (StringUtils.isNotEmpty(metadata.path) && !metadata.path.equalsIgnoreCase("null"))
 			parentFolder = new File(reportsFolder, metadata.path);
 
-		return new File(parentFolder, metadata.storageId + ".xml").getPath();
+		return new File(parentFolder, metadata.name + " (" + metadata.storageId + ").xml").getPath();
 	}
 
 	public void setReportsFolder(String reportsFolder) {

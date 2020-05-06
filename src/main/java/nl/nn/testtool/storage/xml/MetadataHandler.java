@@ -13,8 +13,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -84,7 +82,7 @@ public class MetadataHandler {
 					int storageId;
 					do {
 						storageId = getNextStorageId();
-						newFile = new File(file.getParent(), storageId + ".xml");
+						newFile = new File(file.getParent(), report.getName() + " (" + storageId + ").xml");
 					} while (newFile.exists());
 					Metadata metadata = Metadata.fromReport(report, storageId);
 					file.renameTo(newFile);
