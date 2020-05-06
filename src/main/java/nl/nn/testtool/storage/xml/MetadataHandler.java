@@ -45,17 +45,18 @@ public class MetadataHandler {
 		}
 		metadataMap = new HashMap<>();
 		metadataFile = new File(filePath);
-		if (metadataFile.createNewFile() || forceDiscover) {
-			buildFromDirectory(metadataFile.getParentFile(), true);
-		} else {
+		if (metadataFile.exists() && !forceDiscover) {
 			logger.info("Metadata for ladybug already exists. Reading from file [" + metadataFile.getName() + "] ...");
 			readFromFile();
+		} else {
+			buildFromDirectory(metadataFile.getParentFile(), true);
 		}
 	}
 
 	/**
 	 * Builds the metadata by searching through folders in the given directly.
-	 * @param dir Directory to be searched.
+	 *
+	 * @param dir           Directory to be searched.
 	 * @param searchSubDirs True, if subdirectories should also be searched. False, otherwise.
 	 * @throws IOException
 	 */
@@ -140,16 +141,18 @@ public class MetadataHandler {
 
 	/**
 	 * Adds the given metadata. And then stores it right away.
+	 *
 	 * @param m metadata to be added.
 	 * @throws IOException
 	 */
 	public void add(Metadata m) throws IOException {
 		add(m, true);
 	}
+
 	/**
 	 * Adds the given metadata. And saves it, depending on saveNow parameter.
 	 *
-	 * @param m metadata to be added.
+	 * @param m       metadata to be added.
 	 * @param saveNow True if metadata file should be written right away.
 	 * @throws IOException
 	 */
@@ -212,7 +215,13 @@ public class MetadataHandler {
 	 * @throws IOException
 	 */
 	public void save() throws IOException {
-		logger.info("Saving the metadata to file [" + metadataFile.getName() + "]...");
+		if (!metadataFile.exists()) {
+			logger.info("Creating metadata file at location [" + metadataFile.getPath() + "]");
+			metadataFile.getParentFile().mkdirs();
+			metadataFile.createNewFile();
+		}
+
+		logger.debug("Saving the metadata to file [" + metadataFile.getName() + "]...");
 		FileWriter writer = new FileWriter(metadataFile, false);
 		writer.append("<MetadataList>\n");
 		for (String correlationId : metadataMap.keySet()) {
@@ -224,6 +233,7 @@ public class MetadataHandler {
 
 	/**
 	 * Removes the metadata for the given report.
+	 *
 	 * @param report Report to be removed.
 	 * @throws IOException
 	 */
@@ -234,6 +244,7 @@ public class MetadataHandler {
 
 	/**
 	 * Updates the metadata of a report.
+	 *
 	 * @param report Report that corresponds to the metadata to be updated.
 	 * @throws IOException
 	 */

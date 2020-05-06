@@ -32,7 +32,11 @@ public class XmlStorage implements LogStorage, CrudStorage {
 	 * @throws Exception Security exception that might be thrown by JVM.
 	 */
 	public void init() throws Exception {
-		getReportsFolder();
+		if (StringUtils.isEmpty(reportsFolderPath))
+			throw new StorageException("Report folder path is empty. Please provide a path.");
+
+		reportsFolder = new File(reportsFolderPath);
+
 		if (StringUtils.isEmpty(metadataFile)) {
 			metadataFile = new File(reportsFolder, "metadata.xml").getAbsolutePath();
 			logger.warn("Metadatafile was not set. Using " + metadataFile);
@@ -46,12 +50,11 @@ public class XmlStorage implements LogStorage, CrudStorage {
 	 * Otherwise, it overwrites the contents of the file.
 	 *
 	 * @param report Report to be written.
-	 * @param path   File to be written.
+	 * @param file   File to be written.
 	 * @throws StorageException
 	 */
-	private void store(Report report, String path) throws StorageException {
+	private void store(Report report, File file) throws StorageException {
 		try {
-			File file = new File(path);
 			if (!file.exists()) {
 				file.getParentFile().mkdirs();
 				file.createNewFile();
@@ -62,7 +65,7 @@ public class XmlStorage implements LogStorage, CrudStorage {
 			writer.write(xml);
 			writer.close();
 		} catch (Exception e) {
-			throw new StorageException("Could not write report [" + report.getCorrelationId() + "] to [" + path + "].", e);
+			throw new StorageException("Could not write report [" + report.getCorrelationId() + "] to [" + file.getPath() + "].", e);
 		}
 	}
 
@@ -94,7 +97,7 @@ public class XmlStorage implements LogStorage, CrudStorage {
 			} else {
 				reportFile = new File(resolvePath(report.getCorrelationId()));
 			}
-			store(report, reportFile.getPath());
+			store(report, reportFile);
 			metadataHandler.add(metadata);
 
 		} catch (IOException e) {
@@ -131,7 +134,11 @@ public class XmlStorage implements LogStorage, CrudStorage {
 			String oldpath = resolvePath(report.getCorrelationId());
 			metadataHandler.update(report);
 
-			store(report, resolvePath(report.getCorrelationId()));
+			String path = resolvePath(report.getCorrelationId());
+			if (StringUtils.isEmpty(path))
+				throw new StorageException("Could not resolved path for report with correlation id [" + report.getCorrelationId() + "]");
+
+			store(report, new File(path));
 			if (StringUtils.isNotEmpty(oldpath))
 				new File(oldpath).delete();
 		} catch (IOException e) {
@@ -224,13 +231,6 @@ public class XmlStorage implements LogStorage, CrudStorage {
 	 * @throws StorageException If folder does not exist and we can not create.
 	 */
 	private File getReportsFolder() throws StorageException {
-		if (reportsFolder != null)
-			return reportsFolder;
-
-		reportsFolder = new File(reportsFolderPath);
-		if (!reportsFolder.exists() && !reportsFolder.mkdirs())
-			throw new StorageException("Could not create reports folder!");
-
 		return reportsFolder;
 	}
 
