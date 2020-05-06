@@ -21,7 +21,7 @@ import java.util.List;
  * Stores reports in xml format.
  */
 public class XmlStorage implements LogStorage, CrudStorage {
-	private String name, metadataFile, reportsFolderPath, stage;
+	private String name, metadataFile, reportsFolderPath;
 	private MetadataHandler metadataHandler;
 	private File reportsFolder;
 	Logger logger = LogUtil.getLogger(XmlStorage.class);
@@ -219,21 +219,13 @@ public class XmlStorage implements LogStorage, CrudStorage {
 
 	/**
 	 * Resolves and returns reports folder based on reportsFolderPath, and dtap.stage
+	 *
 	 * @return reports folder
 	 * @throws StorageException If folder does not exist and we can not create.
 	 */
 	private File getReportsFolder() throws StorageException {
 		if (reportsFolder != null)
 			return reportsFolder;
-
-		if (StringUtils.isEmpty(reportsFolderPath)) {
-			// TODO: (For Jaco) which paths would you like to use as default?
-			if (stage != null && stage.equalsIgnoreCase("LOC")) {
-				reportsFolderPath = "ladybug-storage";
-			} else {
-				reportsFolderPath = "ladybug-storage";
-			}
-		}
 
 		reportsFolder = new File(reportsFolderPath);
 		if (!reportsFolder.exists() && !reportsFolder.mkdirs())
@@ -244,6 +236,7 @@ public class XmlStorage implements LogStorage, CrudStorage {
 
 	/**
 	 * Resolves the path of the report with given correlation Id
+	 *
 	 * @param correlationId Correlation Id of the report to be resolved.
 	 * @return Path of the report. If report is not in metadata, null.
 	 */
@@ -265,10 +258,6 @@ public class XmlStorage implements LogStorage, CrudStorage {
 
 	public void setMetadataFile(String metadataFile) {
 		this.metadataFile = metadataFile;
-	}
-
-	public void setStage(String stage) {
-		this.stage = stage;
 	}
 
 	/**
