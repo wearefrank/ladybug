@@ -93,14 +93,14 @@ public class XmlStorage implements LogStorage, CrudStorage {
 			Metadata metadata = metadataHandler.getMetadata(report.getCorrelationId());
 			File reportFile;
 			if (metadata == null) {
-				int storageid;
 				File parentFolder = (report.getPath() != null) ? new File(reportsFolder, report.getPath()) : reportsFolder;
-				do {
-					storageid = metadataHandler.getNextStorageId();
-					reportFile = new File(parentFolder, report.getName() + " (" + storageid + ").xml");
-				} while (reportFile.isFile());
-
-				metadata = Metadata.fromReport(report, storageid);
+				reportFile = new File(parentFolder, report.getName() + ".xml");
+				int i = 2;
+				while (reportFile.isFile()) {
+					reportFile = new File(parentFolder, report.getName() + " (" + i + ").xml");
+					i++;
+				}
+				metadata = Metadata.fromReport(report, metadataHandler.getNextStorageId(), reportFile.getName());
 			} else {
 				reportFile = new File(resolvePath(report.getCorrelationId()));
 			}
@@ -151,27 +151,13 @@ public class XmlStorage implements LogStorage, CrudStorage {
 
 	@Override
 	public void update(Report report) throws StorageException {
-		try {
-			String oldpath = resolvePath(report.getCorrelationId());
-			metadataHandler.update(report);
-
-			String path = resolvePath(report.getCorrelationId());
-			if (StringUtils.isEmpty(path))
-				throw new StorageException("Could not resolved path for report with correlation id [" + report.getCorrelationId() + "]");
-
-			store(report, new File(path));
-			if (StringUtils.isNotEmpty(oldpath))
-				new File(oldpath).delete();
-		} catch (IOException e) {
-			throw new StorageException("Error during updating report.", e);
-		}
+		delete(report);
+		store(report);
 	}
 
 	@Override
 	public void delete(Report report) throws StorageException {
 		try {
-			metadataHandler.delete(report);
-
 			String path = resolvePath(report.getCorrelationId());
 			if (path == null) {
 				logger.warn("Could not find report file for report [" + report.getCorrelationId() + "]");
@@ -180,6 +166,8 @@ public class XmlStorage implements LogStorage, CrudStorage {
 
 			if (!new File(path).delete())
 				throw new StorageException("Could not delete repot [" + report.getCorrelationId() + "] at [" + path + "]");
+
+			metadataHandler.delete(report);
 		} catch (IOException e) {
 			throw new StorageException("Error while deleting the report [" + report.getCorrelationId() + "]", e);
 		}
@@ -270,7 +258,7 @@ public class XmlStorage implements LogStorage, CrudStorage {
 		if (StringUtils.isNotEmpty(metadata.path) && !metadata.path.equalsIgnoreCase("null"))
 			parentFolder = new File(reportsFolder, metadata.path);
 
-		return new File(parentFolder, metadata.name + " (" + metadata.storageId + ").xml").getPath();
+		return new File(parentFolder, metadata.filename).getPath();
 	}
 
 	public void setReportsFolder(String reportsFolder) {

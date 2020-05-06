@@ -15,9 +15,11 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Scanner;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 /**
@@ -64,6 +66,7 @@ public class MetadataHandler {
 	private void buildFromDirectory(File dir, boolean searchSubDirs) throws IOException {
 		if (dir == null || !dir.isDirectory())
 			return;
+
 		logger.info("Building from directory " + dir.getPath());
 		for (File file : dir.listFiles()) {
 			if (searchSubDirs && file.isDirectory())
@@ -78,14 +81,8 @@ public class MetadataHandler {
 					decoder = new XMLDecoder(new BufferedInputStream(inputStream));
 					Report report = (Report) decoder.readObject();
 					report.setStorage(this.storage);
-					File newFile;
-					int storageId;
-					do {
-						storageId = getNextStorageId();
-						newFile = new File(file.getParent(), report.getName() + " (" + storageId + ").xml");
-					} while (newFile.exists());
-					Metadata metadata = Metadata.fromReport(report, storageId);
-					file.renameTo(newFile);
+
+					Metadata metadata = Metadata.fromReport(report, getNextStorageId(), file.getName());
 					add(metadata, false);
 				} catch (Exception e) {
 					if (decoder != null)
@@ -190,7 +187,7 @@ public class MetadataHandler {
 			if (searchValues != null && StringUtils.isNotEmpty(searchValues.get(i))) {
 				patterns.add(Pattern.compile(searchValues.get(i), Pattern.CASE_INSENSITIVE));
 			} else {
-				patterns.add(Pattern.compile(".*"));
+				patterns.add(null);
 			}
 		}
 		List<List<Object>> result = new ArrayList<List<Object>>(metadataMap.size());
@@ -259,9 +256,9 @@ public class MetadataHandler {
 	 * @param report Report that corresponds to the metadata to be updated.
 	 * @throws IOException
 	 */
-	public void update(Report report) throws IOException {
+	public void update(Report report, String filename) throws IOException {
 		Metadata old = metadataMap.get(report.getCorrelationId());
-		Metadata metadata = Metadata.fromReport(report, old.storageId);
+		Metadata metadata = Metadata.fromReport(report, old.storageId, filename);
 		add(metadata);
 	}
 }
