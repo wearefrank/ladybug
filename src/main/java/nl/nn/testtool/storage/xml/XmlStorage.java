@@ -9,11 +9,15 @@ import nl.nn.testtool.util.SearchUtil;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
+import java.beans.ExceptionListener;
+import java.beans.XMLDecoder;
+import java.beans.XMLEncoder;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileWriter;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.List;
 
 /**
@@ -60,10 +64,14 @@ public class XmlStorage implements LogStorage, CrudStorage {
 				file.createNewFile();
 			}
 
-			FileWriter writer = new FileWriter(file, false);
-			String xml = report.toXml(null, false, true);
-			writer.write(xml);
-			writer.close();
+			FileOutputStream outputStream = new FileOutputStream(file);
+			XMLEncoder encoder = new XMLEncoder(new BufferedOutputStream(outputStream));
+			try {
+				encoder.writeObject(report);
+			} finally {
+				encoder.close();
+				outputStream.close();
+			}
 		} catch (Exception e) {
 			throw new StorageException("Could not write report [" + report.getCorrelationId() + "] to [" + file.getPath() + "].", e);
 		}
@@ -117,14 +125,28 @@ public class XmlStorage implements LogStorage, CrudStorage {
 			logger.error("Report with given storage id does not exits!");
 			throw new StorageException("Report with given storage id does not exits!");
 		}
+		FileInputStream inputStream = null;
+		XMLDecoder decoder = null;
 		try {
-			Report report = Report.fromXml(new String(Files.readAllBytes(Paths.get(reportFile.getAbsolutePath()))));
+			inputStream = new FileInputStream(reportFile);
+			decoder = new XMLDecoder(new BufferedInputStream(inputStream));
+			Report report = (Report) decoder.readObject();
 			report.setStorage(this);
+			inputStream.close();
+			decoder.close();
 			return report;
 		} catch (Exception e) {
-			String err = "Could not read the report file [" + reportFile.getPath() + "]";
-			logger.error(err, e);
-			throw new StorageException(err, e);
+			if (decoder != null)
+				decoder.close();
+
+			if (inputStream != null) {
+				try {
+					inputStream.close();
+				} catch (IOException ioException) {
+					throw new StorageException("Could not close the file input stream.", ioException);
+				}
+			}
+			throw new StorageException("Could not read the report file [" + reportFile.getPath() + "]", e);
 		}
 	}
 

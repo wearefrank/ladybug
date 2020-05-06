@@ -3,10 +3,13 @@ package nl.nn.testtool.storage.xml;
 import nl.nn.testtool.Report;
 import nl.nn.testtool.storage.Storage;
 import nl.nn.testtool.util.LogUtil;
+import nl.nn.xmldecoder.XMLDecoder;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
+import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -69,10 +72,13 @@ public class MetadataHandler {
 				buildFromDirectory(file, searchSubDirs);
 
 			if (file.isFile() && file.getName().endsWith(".xml")) {
+				FileInputStream inputStream = null;
+				XMLDecoder decoder = null;
 				try {
 					// Todo: Use input streams for memory.
-					String xml = new String(Files.readAllBytes(Paths.get(file.getAbsolutePath())));
-					Report report = Report.fromXml(xml);
+					inputStream = new FileInputStream(file);
+					decoder = new XMLDecoder(new BufferedInputStream(inputStream));
+					Report report = (Report) decoder.readObject();
 					report.setStorage(this.storage);
 					File newFile;
 					int storageId;
@@ -84,6 +90,14 @@ public class MetadataHandler {
 					file.renameTo(newFile);
 					add(metadata, false);
 				} catch (Exception e) {
+					if (decoder != null)
+						decoder.close();
+					if (inputStream != null) {
+						try {
+							inputStream.close();
+						} catch (Exception ignored) {
+						}
+					}
 				}
 			}
 		}
@@ -220,7 +234,6 @@ public class MetadataHandler {
 			metadataFile.getParentFile().mkdirs();
 			metadataFile.createNewFile();
 		}
-
 		logger.debug("Saving the metadata to file [" + metadataFile.getName() + "]...");
 		FileWriter writer = new FileWriter(metadataFile, false);
 		writer.append("<MetadataList>\n");
