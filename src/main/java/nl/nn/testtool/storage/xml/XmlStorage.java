@@ -265,13 +265,9 @@ public class XmlStorage implements LogStorage, CrudStorage {
 	/**
 	 * Resets the metadata handler by forcing it to build file from searching through directory.
 	 */
-	public void resetMetadataFile() {
-		MetadataHandler old = metadataHandler;
+	public void updateMetadata() {
 		try {
-			metadataHandler = new MetadataHandler(metadataFile, this, true);
-		} catch (IOException e) {
-			logger.error("Error during metadata rebuilding. Reverting to the old version.", e);
-			metadataHandler = old;
-		}
+			metadataHandler.updateMetadata();
+		} catch (IOException ignored) {}
 	}
 }

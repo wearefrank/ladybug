@@ -71,28 +71,7 @@ public class MetadataHandler {
 				buildFromDirectory(file, searchSubDirs);
 
 			if (file.isFile() && file.getName().endsWith(XmlStorage.FILE_EXTENSION)) {
-				FileInputStream inputStream = null;
-				XMLDecoder decoder = null;
-				try {
-					// Todo: Use input streams for memory.
-					inputStream = new FileInputStream(file);
-					decoder = new XMLDecoder(new BufferedInputStream(inputStream));
-					Report report = (Report) decoder.readObject();
-					report.setStorage(this.storage);
-					String filename = file.getName();
-					report.setName(filename.substring(0, filename.length() - XmlStorage.FILE_EXTENSION.length()));
-					Metadata metadata = Metadata.fromReport(report, getNextStorageId(), file.lastModified());
-					add(metadata, false);
-				} catch (Exception e) {
-					if (decoder != null)
-						decoder.close();
-					if (inputStream != null) {
-						try {
-							inputStream.close();
-						} catch (Exception ignored) {
-						}
-					}
-				}
+				addFromFile(file);
 			}
 		}
 
@@ -171,8 +150,8 @@ public class MetadataHandler {
 	 * @throws IOException
 	 */
 	private void add(Metadata m, boolean saveNow) throws IOException {
-		if (m.path == null)
-			m.path = "";
+		if (StringUtils.isEmpty(m.path))
+			m.path = "/";
 		metadataMap.put(m.correlationId, m);
 
 		// TODO: Find a more optimal way!
@@ -275,6 +254,94 @@ public class MetadataHandler {
 		} catch (IOException e) {
 			logger.error("Exception during discovery of reports. Rolling back to old metadata.", e);
 			metadataMap = old;
+		}
+	}
+
+	/**
+	 * Updates the metadata from the directory containing the metadata file.
+	 * @throws IOException
+	 */
+	public void updateMetadata() throws IOException {
+		HashMap<String, Metadata> pathMap = new HashMap<>(metadataMap.size());
+		for (String c : metadataMap.keySet()) {
+			Metadata m = metadataMap.get(c);
+			String path = m.path + m.name + XmlStorage.FILE_EXTENSION;
+			pathMap.put(path, m);
+		}
+		updateMetadata(metadataFile.getParentFile(), pathMap);
+		// Delete the remaining metadata.
+		for (String p : pathMap.keySet()) {
+			Metadata m = pathMap.get(p);
+			logger.info("Deleting metadata with correlation id [" + m.correlationId + "] and path [" + m.path + m.name + "]");
+			metadataMap.remove(m.correlationId);
+		}
+		save();
+	}
+
+	/**
+	 * Updates the metadata from the given directory.
+	 * @param dir Directory to be searched.
+	 * @param map Map of old metadata with keys as paths.
+	 */
+	private void updateMetadata(File dir, HashMap<String, Metadata> map) {
+		if (dir == null || !dir.isDirectory())
+			return;
+
+		for(File file : dir.listFiles()) {
+			if (file.isDirectory()) {
+				updateMetadata(file, map);
+				continue;
+			} else if (!file.getName().endsWith(XmlStorage.FILE_EXTENSION)) {
+				continue;
+			}
+			String path = "/" + metadataFile.getParentFile().toPath().relativize(file.toPath()).toString().replaceAll("\\\\", "/"); // Relativize
+			Metadata m = map.remove(path);
+
+			if (m == null || m.lastModified < file.lastModified()) {
+				addFromFile(file);
+			}
+		}
+	}
+
+	/**
+	 * Reads the report from the given file. Generates metadata and saves it.
+	 * @param file File to be read from.
+	 */
+	private void addFromFile(File file) {
+		if (file == null || !file.isFile() || !file.getName().endsWith(XmlStorage.FILE_EXTENSION))
+			return;
+		logger.debug("Adding from a new file: " + file.getPath());
+		FileInputStream inputStream = null;
+		XMLDecoder decoder = null;
+		try {
+			inputStream = new FileInputStream(file);
+			decoder = new XMLDecoder(new BufferedInputStream(inputStream));
+
+			Report report = (Report) decoder.readObject();
+			report.setStorage(this.storage);
+			String path = metadataFile.getParentFile().toPath().relativize(file.getParentFile().toPath()).toString() + "/";
+			if (StringUtils.isNotEmpty(path)) {
+				path = path.replaceAll("\\\\", "/");
+				if (!path.endsWith("/"))
+					path += "/";
+			}
+			if (!path.startsWith("/"))
+				path = "/" + path;
+			report.setPath(path);
+			String filename = file.getName();
+			report.setName(filename.substring(0, filename.length() - XmlStorage.FILE_EXTENSION.length()));
+
+			Metadata metadata = Metadata.fromReport(report, getNextStorageId(), file.lastModified());
+			add(metadata, false);
+		} catch (Exception e) {
+			if (decoder != null)
+				decoder.close();
+			if (inputStream != null) {
+				try {
+					inputStream.close();
+				} catch (Exception ignored) {
+				}
+			}
 		}
 	}
 }
