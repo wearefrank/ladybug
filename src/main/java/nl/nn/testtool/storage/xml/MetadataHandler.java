@@ -104,6 +104,9 @@ public class MetadataHandler {
 	 * @throws FileNotFoundException
 	 */
 	private void readFromFile() throws IOException {
+		if (!metadataFile.exists())
+			return;
+
 		logger.info("Reading from file " + metadataFile.getPath());
 		Scanner scanner = new Scanner(metadataFile);
 		StringBuilder stringBuilder = new StringBuilder();
@@ -134,10 +137,12 @@ public class MetadataHandler {
 	}
 
 	public Metadata getMetadata(String correlationId) {
+		recreateMetadata();
 		return metadataMap.get(correlationId);
 	}
 
 	public Metadata getMetadata(long storageId) {
+		recreateMetadata();
 		for (String s : metadataMap.keySet()) {
 			Metadata m = metadataMap.get(s);
 			if (m.storageId == storageId)
@@ -153,6 +158,7 @@ public class MetadataHandler {
 	 * @throws IOException
 	 */
 	public void add(Metadata m) throws IOException {
+		recreateMetadata();
 		add(m, true);
 	}
 
@@ -163,7 +169,7 @@ public class MetadataHandler {
 	 * @param saveNow True if metadata file should be written right away.
 	 * @throws IOException
 	 */
-	public void add(Metadata m, boolean saveNow) throws IOException {
+	private void add(Metadata m, boolean saveNow) throws IOException {
 		if (m.path == null)
 			m.path = "";
 		metadataMap.put(m.correlationId, m);
@@ -175,6 +181,7 @@ public class MetadataHandler {
 	}
 
 	public List<List<Object>> getAsListofObjects(int maxNumberOfRecords, List<String> metadataNames, List<String> searchValues, int metadataValueType) {
+		recreateMetadata();
 		if (metadataNames == null || metadataNames.size() == 0)
 			return new ArrayList<>();
 
@@ -205,6 +212,7 @@ public class MetadataHandler {
 	}
 
 	public List<Integer> getStorageIds() {
+		recreateMetadata();
 		List<Integer> ids = new ArrayList<Integer>(metadataMap.size());
 		for (String correlationId : metadataMap.keySet()) {
 			ids.add(metadataMap.get(correlationId).getStorageId());
@@ -213,6 +221,7 @@ public class MetadataHandler {
 	}
 
 	public int getSize() {
+		recreateMetadata();
 		return metadataMap.size();
 	}
 
@@ -221,7 +230,7 @@ public class MetadataHandler {
 	 *
 	 * @throws IOException
 	 */
-	public void save() throws IOException {
+	private void save() throws IOException {
 		if (!metadataFile.exists()) {
 			logger.info("Creating metadata file at location [" + metadataFile.getPath() + "]");
 			metadataFile.getParentFile().mkdirs();
@@ -244,6 +253,7 @@ public class MetadataHandler {
 	 * @throws IOException
 	 */
 	public void delete(Report report) throws IOException {
+		recreateMetadata();
 		metadataMap.remove(report.getCorrelationId());
 		save();
 	}
@@ -255,8 +265,28 @@ public class MetadataHandler {
 	 * @throws IOException
 	 */
 	public void update(Report report, String filename) throws IOException {
+		recreateMetadata();
 		Metadata old = metadataMap.get(report.getCorrelationId());
 		Metadata metadata = Metadata.fromReport(report, old.storageId, filename);
-		add(metadata);
+		add(metadata, true);
+	}
+
+	/**
+	 * Recreates the metadata file (calls buildFromDirectory()),
+	 * if it is deleted; if not, returns without taking any action.
+	 * This function allows users to force reindex by deleting metadata file.
+	 */
+	private void recreateMetadata() {
+		if (metadataFile.exists())
+			return;
+		logger.info("Metadata file does not exist. Trying to recreate by building from directory.");
+		HashMap<String, Metadata> old = metadataMap;
+		try {
+			metadataMap = new HashMap<>();
+			buildFromDirectory(metadataFile.getParentFile(), true);
+		} catch (IOException e) {
+			logger.error("Exception during discovery of reports. Rolling back to old metadata.", e);
+			metadataMap = old;
+		}
 	}
 }
