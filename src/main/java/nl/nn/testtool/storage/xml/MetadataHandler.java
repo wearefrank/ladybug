@@ -81,7 +81,7 @@ public class MetadataHandler {
 					report.setStorage(this.storage);
 					String filename = file.getName();
 					report.setName(filename.substring(0, filename.length() - XmlStorage.FILE_EXTENSION.length()));
-					Metadata metadata = Metadata.fromReport(report, getNextStorageId());
+					Metadata metadata = Metadata.fromReport(report, getNextStorageId(), file.lastModified());
 					add(metadata, false);
 				} catch (Exception e) {
 					if (decoder != null)

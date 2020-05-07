@@ -12,10 +12,10 @@ import java.util.regex.Pattern;
 
 public class Metadata {
 	protected int storageId, nrChpts;
-	protected long memoryUsage, storageSize, duration, endTime;
+	protected long memoryUsage, storageSize, duration, endTime, lastModified;
 	protected String name, correlationId, status, path, description;
 
-	public Metadata(int storageId, long duration, int nrChpts, long memoryUsage, long storageSize, long endTime, String name, String correlationId, String status, String path, String description) {
+	public Metadata(int storageId, long duration, int nrChpts, long memoryUsage, long storageSize, long endTime, String name, String correlationId, String status, String path, String description, long lastModified) {
 		this.storageId = storageId;
 		this.duration = duration;
 		this.nrChpts = nrChpts;
@@ -27,6 +27,7 @@ public class Metadata {
 		this.status = status;
 		this.path = path;
 		this.description = description;
+		this.lastModified = lastModified;
 	}
 
 	/**
@@ -66,9 +67,10 @@ public class Metadata {
 				"    <EstMemUsage>%d</EstMemUsage>\n" +
 				"    <StroageSize>%d</StroageSize>\n" +
 				"    <Path>%s</Path>\n" +
+				"    <LastModified>%d</LastModified>\n" +
 				"    <Description>%s</Description>\n" +
 				"</Metadata>\n";
-		return String.format(template, storageId, endTime, duration, StringEscapeUtils.escapeXml(name), StringEscapeUtils.escapeXml(correlationId), StringEscapeUtils.escapeXml(status), nrChpts, memoryUsage, storageSize, StringEscapeUtils.escapeXml(path), StringEscapeUtils.escapeXml(description));
+		return String.format(template, storageId, endTime, duration, StringEscapeUtils.escapeXml(name), StringEscapeUtils.escapeXml(correlationId), StringEscapeUtils.escapeXml(status), nrChpts, memoryUsage, storageSize, StringEscapeUtils.escapeXml(path), lastModified, StringEscapeUtils.escapeXml(description));
 	}
 
 	/**
@@ -78,7 +80,7 @@ public class Metadata {
 	 * @param storageId Storage id for metadata.
 	 * @return Metadata object that is created from the given report.
 	 */
-	public static Metadata fromReport(Report report, int storageId) {
+	public static Metadata fromReport(Report report, int storageId, long lastModified) {
 		return new Metadata(
 				storageId,
 				report.getEndTime() - report.getStartTime(),
@@ -90,7 +92,8 @@ public class Metadata {
 				report.getCorrelationId(),
 				"Success",
 				report.getPath(),
-				report.getDescription());
+				report.getDescription(),
+				lastModified);
 	}
 
 	public static Metadata fromXml(String xml) {
@@ -101,13 +104,14 @@ public class Metadata {
 		long estMemUsage = safeParse(extractTagValue(xml, "EstMemUsage"), -1);
 		long stroageSize = safeParse(extractTagValue(xml, "StroageSize"), -1);
 		long endTime = safeParse(extractTagValue(xml, "EndTime"), -1);
+		long lastModified = safeParse(extractTagValue(xml, "LastModified"), -1);
 		String name = extractTagValue(xml, "Name");
 		String correlationId = extractTagValue(xml, "CorrelationId");
 		String status = extractTagValue(xml, "Status");
 		String path = extractTagValue(xml, "Path");
 		String description = extractTagValue(xml, "Description");
 
-		return new Metadata(((Long) storageId).intValue(), duration, ((Long) nrChpts).intValue(), estMemUsage, stroageSize, endTime, name, correlationId, status, path, description);
+		return new Metadata(((Long) storageId).intValue(), duration, ((Long) nrChpts).intValue(), estMemUsage, stroageSize, endTime, name, correlationId, status, path, description, lastModified);
 	}
 
 	/**
@@ -195,6 +199,8 @@ public class Metadata {
 			return path;
 		} else if (field.equalsIgnoreCase("description")) {
 			return description;
+		} else if (field.equalsIgnoreCase("lastmodified")) {
+			return lastModified;
 		}
 
 		return null;
