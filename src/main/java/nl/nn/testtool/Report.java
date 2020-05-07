@@ -15,6 +15,7 @@
 */
 package nl.nn.testtool;
 
+import java.beans.Transient;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -96,10 +97,12 @@ public class Report implements Serializable {
 		threadLevel.put(threadName, new Integer(0));
 	}
 
+	@Transient
 	public void setTestTool(TestTool testTool) {
 		this.testTool = testTool;
 	}
 
+	@Transient
 	public TestTool getTestTool() {
 		return testTool;
 	}
