@@ -15,9 +15,11 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Scanner;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 /**
@@ -117,12 +119,10 @@ public class MetadataHandler {
 	}
 
 	public Metadata getMetadata(String correlationId) {
-		recreateMetadata();
 		return metadataMap.get(correlationId);
 	}
 
 	public Metadata getMetadata(long storageId) {
-		recreateMetadata();
 		for (String s : metadataMap.keySet()) {
 			Metadata m = metadataMap.get(s);
 			if (m.storageId == storageId)
@@ -138,7 +138,6 @@ public class MetadataHandler {
 	 * @throws IOException
 	 */
 	public void add(Metadata m) throws IOException {
-		recreateMetadata();
 		add(m, true);
 	}
 
@@ -153,7 +152,6 @@ public class MetadataHandler {
 		if (StringUtils.isEmpty(m.path))
 			m.path = "/";
 		metadataMap.put(m.correlationId, m);
-
 		// TODO: Find a more optimal way!
 		// The problem is xml is not suitable for big data, so can't append directly.
 		if (saveNow)
@@ -161,7 +159,6 @@ public class MetadataHandler {
 	}
 
 	public List<List<Object>> getAsListofObjects(int maxNumberOfRecords, List<String> metadataNames, List<String> searchValues, int metadataValueType) {
-		recreateMetadata();
 		if (metadataNames == null || metadataNames.size() == 0)
 			return new ArrayList<>();
 
@@ -192,7 +189,6 @@ public class MetadataHandler {
 	}
 
 	public List<Integer> getStorageIds() {
-		recreateMetadata();
 		List<Integer> ids = new ArrayList<Integer>(metadataMap.size());
 		for (String correlationId : metadataMap.keySet()) {
 			ids.add(metadataMap.get(correlationId).getStorageId());
@@ -201,7 +197,6 @@ public class MetadataHandler {
 	}
 
 	public int getSize() {
-		recreateMetadata();
 		return metadataMap.size();
 	}
 
@@ -233,32 +228,13 @@ public class MetadataHandler {
 	 * @throws IOException
 	 */
 	public void delete(Report report) throws IOException {
-		recreateMetadata();
 		metadataMap.remove(report.getCorrelationId());
 		save();
 	}
 
 	/**
-	 * Recreates the metadata file (calls buildFromDirectory()),
-	 * if it is deleted; if not, returns without taking any action.
-	 * This function allows users to force reindex by deleting metadata file.
-	 */
-	private void recreateMetadata() {
-		if (metadataFile.exists())
-			return;
-		logger.info("Metadata file does not exist. Trying to recreate by building from directory.");
-		HashMap<String, Metadata> old = metadataMap;
-		try {
-			metadataMap = new HashMap<>();
-			buildFromDirectory(metadataFile.getParentFile(), true);
-		} catch (IOException e) {
-			logger.error("Exception during discovery of reports. Rolling back to old metadata.", e);
-			metadataMap = old;
-		}
-	}
-
-	/**
 	 * Updates the metadata from the directory containing the metadata file.
+	 *
 	 * @throws IOException
 	 */
 	public void updateMetadata() throws IOException {
@@ -268,48 +244,53 @@ public class MetadataHandler {
 			String path = m.path + m.name + XmlStorage.FILE_EXTENSION;
 			pathMap.put(path, m);
 		}
-		updateMetadata(metadataFile.getParentFile(), pathMap);
+		Set<String> updatedIds = updateMetadata(metadataFile.getParentFile(), pathMap);
 		// Delete the remaining metadata.
 		for (String p : pathMap.keySet()) {
 			Metadata m = pathMap.get(p);
-			logger.info("Deleting metadata with correlation id [" + m.correlationId + "] and path [" + m.path + m.name + "]");
-			metadataMap.remove(m.correlationId);
+			if (!updatedIds.contains(m.correlationId)) {
+				logger.info("Deleting metadata with correlation id [" + m.correlationId + "] and path [" + m.path + m.name + "]");
+				metadataMap.remove(m.correlationId);
+			}
 		}
 		save();
 	}
 
 	/**
 	 * Updates the metadata from the given directory.
+	 *
 	 * @param dir Directory to be searched.
 	 * @param map Map of old metadata with keys as paths.
 	 */
-	private void updateMetadata(File dir, HashMap<String, Metadata> map) {
+	private Set<String> updateMetadata(File dir, HashMap<String, Metadata> map) {
 		if (dir == null || !dir.isDirectory())
-			return;
-
-		for(File file : dir.listFiles()) {
+			return new HashSet<>();
+		Set<String> ids = new HashSet<>();
+		for (File file : dir.listFiles()) {
 			if (file.isDirectory()) {
-				updateMetadata(file, map);
+				ids.addAll(updateMetadata(file, map));
 				continue;
 			} else if (!file.getName().endsWith(XmlStorage.FILE_EXTENSION)) {
 				continue;
 			}
 			String path = "/" + metadataFile.getParentFile().toPath().relativize(file.toPath()).toString().replaceAll("\\\\", "/"); // Relativize
 			Metadata m = map.remove(path);
-
 			if (m == null || m.lastModified < file.lastModified()) {
-				addFromFile(file);
+				ids.add(addFromFile(file));
 			}
 		}
+		return ids;
 	}
 
 	/**
 	 * Reads the report from the given file. Generates metadata and saves it.
+	 *
 	 * @param file File to be read from.
 	 */
-	private void addFromFile(File file) {
+	private String addFromFile(File file) {
 		if (file == null || !file.isFile() || !file.getName().endsWith(XmlStorage.FILE_EXTENSION))
-			return;
+			return null;
+
 		logger.debug("Adding from a new file: " + file.getPath());
 		FileInputStream inputStream = null;
 		XMLDecoder decoder = null;
@@ -333,6 +314,7 @@ public class MetadataHandler {
 
 			Metadata metadata = Metadata.fromReport(report, getNextStorageId(), file.lastModified());
 			add(metadata, false);
+			return metadata.correlationId;
 		} catch (Exception e) {
 			if (decoder != null)
 				decoder.close();
@@ -343,5 +325,7 @@ public class MetadataHandler {
 				}
 			}
 		}
+		return null;
+
 	}
 }
