@@ -24,6 +24,7 @@ import java.util.List;
  * Stores reports in xml format.
  */
 public class XmlStorage implements LogStorage, CrudStorage {
+	public static final String FILE_EXTENSION = ".report.xml";
 	private String name, metadataFile, reportsFolderPath;
 	private MetadataHandler metadataHandler;
 	private File reportsFolder;
@@ -94,13 +95,15 @@ public class XmlStorage implements LogStorage, CrudStorage {
 			File reportFile;
 			if (metadata == null) {
 				File parentFolder = (report.getPath() != null) ? new File(reportsFolder, report.getPath()) : reportsFolder;
-				reportFile = new File(parentFolder, report.getName() + ".xml");
+				String filename = report.getName();
+				reportFile = new File(parentFolder, filename + FILE_EXTENSION);
 				int i = 2;
 				while (reportFile.isFile()) {
-					reportFile = new File(parentFolder, report.getName() + " (" + i + ").xml");
-					i++;
+					filename = report.getName() + " (" + (i++) + ")";
+					reportFile = new File(parentFolder, filename + FILE_EXTENSION);
 				}
-				metadata = Metadata.fromReport(report, metadataHandler.getNextStorageId(), reportFile.getName());
+				report.setName(filename);
+				metadata = Metadata.fromReport(report, metadataHandler.getNextStorageId());
 			} else {
 				reportFile = new File(resolvePath(report.getCorrelationId()));
 			}
@@ -248,7 +251,7 @@ public class XmlStorage implements LogStorage, CrudStorage {
 		if (StringUtils.isNotEmpty(metadata.path) && !metadata.path.equalsIgnoreCase("null"))
 			parentFolder = new File(reportsFolder, metadata.path);
 
-		return new File(parentFolder, metadata.filename).getPath();
+		return new File(parentFolder, metadata.name + FILE_EXTENSION).getPath();
 	}
 
 	public void setReportsFolder(String reportsFolder) {

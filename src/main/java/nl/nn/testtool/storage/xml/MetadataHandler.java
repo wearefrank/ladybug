@@ -70,7 +70,7 @@ public class MetadataHandler {
 			if (searchSubDirs && file.isDirectory())
 				buildFromDirectory(file, searchSubDirs);
 
-			if (file.isFile() && file.getName().endsWith(".xml")) {
+			if (file.isFile() && file.getName().endsWith(XmlStorage.FILE_EXTENSION)) {
 				FileInputStream inputStream = null;
 				XMLDecoder decoder = null;
 				try {
@@ -79,8 +79,9 @@ public class MetadataHandler {
 					decoder = new XMLDecoder(new BufferedInputStream(inputStream));
 					Report report = (Report) decoder.readObject();
 					report.setStorage(this.storage);
-
-					Metadata metadata = Metadata.fromReport(report, getNextStorageId(), file.getName());
+					String filename = file.getName();
+					report.setName(filename.substring(0, filename.length() - XmlStorage.FILE_EXTENSION.length()));
+					Metadata metadata = Metadata.fromReport(report, getNextStorageId());
 					add(metadata, false);
 				} catch (Exception e) {
 					if (decoder != null)
@@ -256,19 +257,6 @@ public class MetadataHandler {
 		recreateMetadata();
 		metadataMap.remove(report.getCorrelationId());
 		save();
-	}
-
-	/**
-	 * Updates the metadata of a report.
-	 *
-	 * @param report Report that corresponds to the metadata to be updated.
-	 * @throws IOException
-	 */
-	public void update(Report report, String filename) throws IOException {
-		recreateMetadata();
-		Metadata old = metadataMap.get(report.getCorrelationId());
-		Metadata metadata = Metadata.fromReport(report, old.storageId, filename);
-		add(metadata, true);
 	}
 
 	/**
