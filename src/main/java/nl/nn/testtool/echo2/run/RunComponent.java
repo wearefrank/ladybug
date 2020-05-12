@@ -44,6 +44,7 @@ import nextapp.echo2.app.WindowPane;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import nextapp.echo2.app.filetransfer.UploadSelect;
+import nl.nn.testtool.Checkpoint;
 import nl.nn.testtool.MetadataExtractor;
 import nl.nn.testtool.Report;
 import nl.nn.testtool.TestTool;
@@ -552,10 +553,19 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 					errorLabel.setVisible(true);
 				} else {
 					if(report != null) {
-						String stubInfo = "";
-						if (!"Never".equals(report.getStubStrategy())) {
-							stubInfo = " (" + report.getStubStrategy() + ")";
+						int stubbed = 0;
+						// Don't count first checkpoint which is always used as input (stub property on this checkpoint
+						// doesn't influence behavior).
+						boolean first = true;
+						for (Checkpoint checkpoint : runResultReport.getCheckpoints()) {
+							if (first) {
+								first = false;
+							} else if (checkpoint.getMessageHasBeenStubbed()) {
+								stubbed++;
+							}
 						}
+						int total = runResultReport.getCheckpoints().size() - 1;
+						String stubInfo = " (" + stubbed + "/" + total + " stubbed)";
 						resultLabel.setText("(" + (report.getEndTime() - report.getStartTime()) + " >> "
 								+ (runResultReport.getEndTime() - runResultReport.getStartTime()) + " ms)" + stubInfo);
 						report.setGlobalReportXmlTransformer(reportXmlTransformer);
