@@ -223,7 +223,7 @@ public class Report implements Serializable {
 		if (checkpointType == Checkpoint.TYPE_THREADCREATEPOINT) {
 			String threadName = Thread.currentThread().getName();
 			int index=threads.indexOf(threadName);
-			if (index<1) {
+			if (index<0) {
 				log.warn("Cannot create thread threadId ["+threadId+"], threadName ["+threadName+"] not found");
 			} else {
 				threads.add(threads.indexOf(threadName), threadId);

@@ -21,8 +21,8 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Scanner;
 import java.util.Map.Entry;
+import java.util.Scanner;
 import java.util.Set;
 import java.util.TooManyListenersException;
 
@@ -30,7 +30,6 @@ import nl.nn.testtool.storage.xml.XmlStorage;
 import org.apache.commons.lang.StringUtils;
 
 import echopointng.ProgressBar;
-import echopointng.tree.DefaultTreeCellRenderer;
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.CheckBox;
 import nextapp.echo2.app.Column;
@@ -46,6 +45,7 @@ import nextapp.echo2.app.WindowPane;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import nextapp.echo2.app.filetransfer.UploadSelect;
+import nl.nn.testtool.Checkpoint;
 import nl.nn.testtool.MetadataExtractor;
 import nl.nn.testtool.Report;
 import nl.nn.testtool.TestTool;
@@ -85,23 +85,32 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 	private ReportXmlTransformer reportXmlTransformer = null;
 	private WindowPane uploadWindow;
 	private WindowPane reportGenerationWindow;
+	private WindowPane optionsWindow;
 	private UploadSelect uploadSelect;
 	private int numberOfComponentsToSkipForRowManipulation = 0;
 	private String lastDisplayedPath;
 	private BeanParent beanParent;
-	
+
 	private TextArea cloneGenerationTextArea;
 	private Label reportGenerationWarningLabel;
-	
-	private int COMPONENT_CHECKBOX = 0;
-	private int COMPONENT_RUN_BUTTON = 1;
-	private int COMPONENT_OPEN_BUTTON = 2;
-	private int COMPONENT_COMPARE_BUTTON = 3;
-	private int COMPONENT_REPLACE_BUTTON = 4;
-	private int COMPONENT_RESULT_LABEL = 5;
-	private int COMPONENT_DYNAMIC_VAR_LABEL = 6;
+
+	private final int INDEX_CHECKBOX = 0;
+	private final int INDEX_RUN_BUTTON = 1;
+	private final int INDEX_OPEN_BUTTON = 2;
+	private final int INDEX_COMPARE_BUTTON = 3;
+	private final int INDEX_REPLACE_BUTTON = 4;
+	private final int INDEX_STORAGEID_LABEL = 5;
+	private final int INDEX_ERROR_LABEL = 6;
+	private final int INDEX_RESULT_LABEL = 7;
+	private final int INDEX_DYNAMIC_VAR_LABEL = 8;
 	private TextArea cloneGenerationReportInputTextArea;
 	private Label cloneGenerationReportInputLabel;
+
+	// options
+	private CheckBox showReportStorageIdsCheckbox;
+	private CheckBox showCheckpointIdsCheckbox;
+	private boolean showReportStorageIds;
+	private boolean showCheckpointIds;
 	
 	public RunComponent() {
 		super();
@@ -134,6 +143,7 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 		// TODO code voor aanmaken upload window en ander zaken gaan delen met ReportsComponent
 		Column uploadColumn = new Column();
 		Column cloneGenerationColumn = new Column();
+		Column optionsColumn = new Column();
 
 		uploadWindow = new WindowPane();
 		uploadWindow.setVisible(false);
@@ -149,8 +159,6 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 		
 		reportGenerationWindow = new WindowPane();
 		reportGenerationWindow.setTitle("Generate report clones");
-//		reportGenerationWindow.setTitleBackground(Echo2Application.getButtonBackgroundColor());
-//		reportGenerationWindow.setBorder(new FillImageBorder(Echo2Application.getButtonBackgroundColor(), new Insets(0, 0, 0, 0), new Insets(0, 0, 0, 0)));
 		reportGenerationWindow.setVisible(false);
 		reportGenerationWindow.setWidth(new Extent(464));
 		reportGenerationWindow.setHeight(new Extent(610));
@@ -158,6 +166,16 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 		reportGenerationWindow.add(cloneGenerationColumn);
 		reportGenerationWindow.setDefaultCloseOperation(WindowPane.HIDE_ON_CLOSE);
 		reportGenerationWindow.init();
+		
+		optionsWindow = new WindowPane();
+		optionsWindow.setTitle("Options");
+		optionsWindow.setVisible(false);
+		optionsWindow.setWidth(new Extent(280));
+		optionsWindow.setHeight(new Extent(120));
+		optionsWindow.setInsets(new Insets(5, 5, 5, 5));
+		optionsWindow.add(optionsColumn);
+		optionsWindow.setDefaultCloseOperation(WindowPane.HIDE_ON_CLOSE);
+		optionsWindow.init();
 
 		Row buttonRow = Echo2Application.getNewRow();
 
@@ -178,6 +196,12 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 		resetSelectedButton.addActionListener(this);
 		Echo2Application.decorateButton(resetSelectedButton);
 		buttonRow.add(resetSelectedButton);
+
+		Button prepareOptionsButton = new Button("Options...");
+		prepareOptionsButton.setActionCommand("OpenOptionsWindow");
+		Echo2Application.decorateButton(prepareOptionsButton);
+		prepareOptionsButton.addActionListener(this);
+		buttonRow.add(prepareOptionsButton);
 
 		Button selectAllButton = new Button("Select all");
 		selectAllButton.setActionCommand("SelectAll");
@@ -269,7 +293,7 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 		uploadSelectRow.add(uploadSelect);
 		uploadColumn.add(uploadSelectRow);
 
-		// Report generation window		
+		// Report generation window
 		reportGenerationWarningLabel = Echo2Application.createErrorLabel();
 		reportGenerationWarningLabel.setVisible(false);
 		Row row = Echo2Application.getNewRow();
@@ -310,6 +334,33 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 		row.add(generateClonesButton);
 		cloneGenerationColumn.add(row);
 		//
+		
+		// Options window
+		showReportStorageIdsCheckbox = new CheckBox("Show report storage IDs");
+		showReportStorageIdsCheckbox.setActionCommand("ToggleReportStorageIds");
+		showReportStorageIdsCheckbox.addActionListener(this);
+		showReportStorageIdsCheckbox.setSelected(showReportStorageIds);
+
+		showCheckpointIdsCheckbox = new CheckBox("Show checkpoint IDs");
+		showCheckpointIdsCheckbox.setActionCommand("ToggleCheckpointIds");
+		showCheckpointIdsCheckbox.addActionListener(this);
+		showCheckpointIdsCheckbox.setSelected(showCheckpointIds);
+		
+		Button restoreDefaultsButton = new Button("Restore defaults");
+		restoreDefaultsButton.setActionCommand("RestoreDefaults");
+		restoreDefaultsButton.addActionListener(this);
+		Echo2Application.decorateButton(restoreDefaultsButton);
+
+		row = Echo2Application.getNewRow();
+		row.add(showReportStorageIdsCheckbox);
+		optionsColumn.add(row);
+		row = Echo2Application.getNewRow();
+		row.add(showCheckpointIdsCheckbox);
+		optionsColumn.add(row);
+		row = Echo2Application.getNewRow();
+		row.add(restoreDefaultsButton);
+		optionsColumn.add(row);
+		//
 
 		add(buttonRow);
 		numberOfComponentsToSkipForRowManipulation++;
@@ -332,6 +383,7 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 		this.echo2Application = Echo2Application.getEcho2Application(beanParent, this);
 		echo2Application.getContentPane().add(uploadWindow);
 		echo2Application.getContentPane().add(reportGenerationWindow);
+		echo2Application.getContentPane().add(optionsWindow);
 		RunPane runPane = (RunPane)beanParent.getBeanParent();
 		treePane = runPane.getTreePane();
 		reportRunner.setSecurityContext(echo2Application);
@@ -436,71 +488,109 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 	}
 
 	private void displayReport(String storageId, String path, String name, String description, boolean selected) {
-		Report report = null;
-		try {
-			report = runStorage.getReport(Integer.parseInt(storageId));
-		} catch (StorageException e) {
-			displayAndLogError(e);
-		}
-		
 		Row row = Echo2Application.getNewRow();
 		row.setId(storageId);
 		row.setInsets(new Insets(0, 5, 0, 0));
-		
+
 		CheckBox checkBox = new CheckBox("");
 		checkBox.setSelected(selected);
-		row.add(checkBox);
-		// When adding a new element to the row, raise the indices of all components
-		// by adjusting the "COMPONENT_*" final variables of this class
+		row.add(checkBox, INDEX_CHECKBOX);
 
 		Button runButton = new Button("Run");
 		runButton.setActionCommand("Run");
 		runButton.addActionListener(this);
 		Echo2Application.decorateButton(runButton);
-		row.add(runButton);
+		row.add(runButton, INDEX_RUN_BUTTON);
 
 		Button openButton = new Button("Open");
 		openButton.setActionCommand("Open");
 		openButton.addActionListener(this);
 		Echo2Application.decorateButton(openButton);
-		row.add(openButton);
+		row.add(openButton, INDEX_OPEN_BUTTON);
 
 		Button button = new Button("Compare");
 		button.setActionCommand("Compare");
 		button.addActionListener(this);
 		button.setVisible(false);
 		Echo2Application.decorateButton(button);
-		row.add(button);
+		row.add(button, INDEX_COMPARE_BUTTON);
 
 		button = new Button("Replace");
 		button.setActionCommand("Replace");
 		button.addActionListener(this);
 		button.setVisible(false);
 		Echo2Application.decorateButton(button);
-		row.add(button);
+		row.add(button, INDEX_REPLACE_BUTTON);
 
-		Label label = new Label(path + name);
-		row.add(label);
+		Report report = null;
+		try {
+			report = runStorage.getReport(Integer.parseInt(storageId));
+		} catch (StorageException e) {
+			displayAndLogError(e);
+		}
+
+		Label storageIdLabel = new Label(String.valueOf(report.getStorageId()));
+		storageIdLabel.setForeground(Echo2Application.getButtonBackgroundColor());
+		storageIdLabel.setVisible(showReportStorageIds);
+		row.add(storageIdLabel, INDEX_STORAGEID_LABEL);
+
+		Label fullPathLabel = new Label(report.getFullPath());
+		row.add(fullPathLabel, INDEX_STORAGEID_LABEL);
+
+		Label errorLabel = Echo2Application.createErrorLabel();
+		errorLabel.setVisible(false);
+		row.add(errorLabel, INDEX_ERROR_LABEL);
+
+		Label resultLabel = new Label();
 		RunResult runResult = reportRunner.getResults().get(Integer.parseInt(storageId));
 		if (runResult != null) {
 			if (runResult.errorMessage != null) {
-				label = Echo2Application.createErrorLabel();
-				label.setText(runResult.errorMessage);
+				errorLabel.setText(runResult.errorMessage);
+				errorLabel.setVisible(true);
 			} else {
 				Report runResultReport = getRunResultReport(runResult.correlationId);
 				if (runResultReport == null) {
-					label = Echo2Application.createErrorLabel();
-					label.setText("Result report not found. Report generator not enabled?");
+					errorLabel.setText("Result report not found. Report generator not enabled?");
+					errorLabel.setVisible(true);
 				} else {
 					if(report != null) {
-						updateRow(row);
+						int stubbed = 0;
+						// Don't count first checkpoint which is always used as input (stub property on this checkpoint
+						// doesn't influence behavior).
+						boolean first = true;
+						for (Checkpoint checkpoint : runResultReport.getCheckpoints()) {
+							if (first) {
+								first = false;
+							} else if (checkpoint.getMessageHasBeenStubbed()) {
+								stubbed++;
+							}
+						}
+						int total = runResultReport.getCheckpoints().size() - 1;
+						String stubInfo = " (" + stubbed + "/" + total + " stubbed)";
+						resultLabel.setText("(" + (report.getEndTime() - report.getStartTime()) + " >> "
+								+ (runResultReport.getEndTime() - runResultReport.getStartTime()) + " ms)" + stubInfo);
+						report.setGlobalReportXmlTransformer(reportXmlTransformer);
+						runResultReport.setGlobalReportXmlTransformer(reportXmlTransformer);
+						runResultReport.setTransformation(report.getTransformation());
+						runResultReport.setReportXmlTransformer(report.getReportXmlTransformer());
+						if (report.toXml(reportRunner).equals(runResultReport.toXml(reportRunner))) {
+							resultLabel.setForeground(Echo2Application.getNoDifferenceFoundTextColor());
+						} else {
+							resultLabel.setForeground(Echo2Application.getDifferenceFoundTextColor());
+						}
+						((Button)row.getComponent(INDEX_COMPARE_BUTTON)).setVisible(true);
+						((Button)row.getComponent(INDEX_REPLACE_BUTTON)).setVisible(true);
 					}
 				}
 			}
 		}
-		row.add(newDynamicVariableLabel(report));
-		
+		row.add(resultLabel, INDEX_RESULT_LABEL);
+
+		Label dynamicVarLabel = newDynamicVariableLabel(report);
+		row.add(dynamicVarLabel, INDEX_DYNAMIC_VAR_LABEL);
+
 		add(row);
+
 		// TODO runStorage.getMetadata geeft blijkbaar "null" terug, fixen
 		if (description != null && !"".equals(description) && !"null".equals(description)) {
 			Column descriptionColumn = new Column();
@@ -531,30 +621,6 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 		}
 		return label;
 	}
-
-	private void updateRow(Row row) {
-		Report report = getReport(row);
-		RunResult runResult = reportRunner.getResults().get((Integer)report.getStorageId());
-		Report runResultReport = getRunResultReport(runResult.correlationId);
-		Label label = (Label)row.getComponent(COMPONENT_RESULT_LABEL);
-		String stubInfo = "";
-		if (!"Never".equals(report.getStubStrategy())) {
-			stubInfo = " (" + report.getStubStrategy() + ")";
-		}
-		label.setText(report.getFullPath() + " (" + (report.getEndTime() - report.getStartTime()) + " >> "
-				+ (runResultReport.getEndTime() - runResultReport.getStartTime()) + " ms)" + stubInfo);
-		report.setGlobalReportXmlTransformer(reportXmlTransformer);
-		runResultReport.setGlobalReportXmlTransformer(reportXmlTransformer);
-		runResultReport.setTransformation(report.getTransformation());
-		runResultReport.setReportXmlTransformer(report.getReportXmlTransformer());
-		if (report.toXml(reportRunner).equals(runResultReport.toXml(reportRunner))) {
-			label.setForeground(Echo2Application.getNoDifferenceFoundTextColor());
-		} else {
-			label.setForeground(Echo2Application.getDifferenceFoundTextColor());
-		}
-		((Button)row.getComponent(COMPONENT_COMPARE_BUTTON)).setVisible(true);
-		((Button)row.getComponent(COMPONENT_REPLACE_BUTTON)).setVisible(true);
-	}
 	
 	/**
 	 * @see nextapp.echo2.app.event.ActionListener#actionPerformed(nextapp.echo2.app.event.ActionEvent)
@@ -571,7 +637,7 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 			refresh();
 		} else if (e.getActionCommand().equals("SelectAll") || e.getActionCommand().equals("DeselectAll")) {
 			for (Row row : getReportRows()) {
-				CheckBox checkbox = (CheckBox)row.getComponent(COMPONENT_CHECKBOX);
+				CheckBox checkbox = (CheckBox)row.getComponent(INDEX_CHECKBOX);
 				if (e.getActionCommand().equals("SelectAll")) {
 					checkbox.setSelected(true);
 				} else {
@@ -582,7 +648,7 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 			if (minimalOneSelected()) {
 				List<Row> rows = new ArrayList<Row>();
 				for (Row row : getReportRows()) {
-					CheckBox checkbox = (CheckBox)row.getComponent(COMPONENT_CHECKBOX);
+					CheckBox checkbox = (CheckBox)row.getComponent(INDEX_CHECKBOX);
 					if (checkbox.isSelected()) {
 						rows.add(row);
 					}
@@ -605,27 +671,51 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 			displayAndLogError(Download.download(runStorage));
 		} else if (e.getActionCommand().equals("OpenUploadWindow")) {
 			uploadWindow.setVisible(true);
+		} else if (e.getActionCommand().equals("OpenOptionsWindow")) {
+			optionsWindow.setVisible(true);
+		} else if (e.getActionCommand().equals("ToggleReportStorageIds")) {
+			showReportStorageIds = showReportStorageIdsCheckbox.isSelected();
+			refresh();
+		} else if (e.getActionCommand().equals("ToggleCheckpointIds")) {
+			showCheckpointIds = showCheckpointIdsCheckbox.isSelected();
+			echo2Application.getReportsTreeCellRenderer().setShowReportAndCheckpointIds(showCheckpointIds);
+		} else if (e.getActionCommand().equals("RestoreDefaults")) {
+			showReportStorageIds = false;
+			showReportStorageIdsCheckbox.setSelected(false);
+			showCheckpointIds = false;
+			showCheckpointIdsCheckbox.setSelected(false);
+			echo2Application.getReportsTreeCellRenderer().setShowReportAndCheckpointIds(showCheckpointIds);
+			refresh();
 		} else if (e.getActionCommand().equals("DeleteSelected")) {
 			if (minimalOneSelected()) {
 				List<String> actionLabels = new ArrayList<String>();
 				List<String> actionCommands = new ArrayList<String>();
 				List<ActionListener> actionListeners = new ArrayList<ActionListener>();
-				actionLabels.add("Yes, delete all selected reports");
+				
+				int reportsSelected = getSelectedReportCount();
+				String popupMessage;
+				String confirmActionLabelText;
+				if(reportsSelected > 1) {
+					popupMessage = "Are you sure you want to delete the "+reportsSelected+" selected reports?";
+					confirmActionLabelText = "Yes, delete "+reportsSelected+" selected reports";
+				} else {
+					popupMessage = "Are you sure you want to delete the selected report?";
+					confirmActionLabelText = "Yes, delete 1 selected report";
+				}
+				
+				actionLabels.add(confirmActionLabelText);
 				actionCommands.add("DeleteOk");
 				actionListeners.add(this);
 				actionLabels.add("No, cancel this action");
 				actionCommands.add("DeleteCancel");
 				actionListeners.add(this);
-				int reportsSelected = getSelectedReportCount();
-				String popupMessage = reportsSelected > 1 ? "Are you sure you want to delete the "+reportsSelected+" selected reports?"
-						: "Are you sure you want to delete the selected report?";
 				PopupWindow popupWindow = new PopupWindow("", popupMessage, 450, 100,
 						actionLabels, actionCommands, actionListeners);
 				echo2Application.getContentPane().add(popupWindow);
 			}
 		} else if (e.getActionCommand().equals("DeleteOk")) {
 			for (Row row : getReportRows()) {
-				CheckBox checkbox = (CheckBox)row.getComponent(COMPONENT_CHECKBOX);
+				CheckBox checkbox = (CheckBox)row.getComponent(INDEX_CHECKBOX);
 				if (checkbox.isSelected()) {
 					Report report = getReport(row);
 					if (report != null) {
@@ -644,7 +734,7 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 			if (minimalOneSelected()) {
 				String newPath = normalizePath(pathTextField.getText());
 				for (Row row : getReportRows()) {
-					CheckBox checkbox = (CheckBox)row.getComponent(COMPONENT_CHECKBOX);
+					CheckBox checkbox = (CheckBox)row.getComponent(INDEX_CHECKBOX);
 					if (checkbox.isSelected()) {
 						movePath(row, newPath);
 					}
@@ -677,7 +767,7 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 			if(getSelectedReportCount() == 1) {
 				reportGenerationWindow.setVisible(true);
 				for(Row r : getReportRows()) {
-					if(((CheckBox)r.getComponent(COMPONENT_CHECKBOX)).isSelected()) {
+					if(((CheckBox)r.getComponent(INDEX_CHECKBOX)).isSelected()) {
 						cloneGenerationReportInputTextArea.setText(getReport(r).getCheckpoints().get(0).getMessage());
 					}
 				}
@@ -692,7 +782,7 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 				if(errorMessage == null) {
 					Report reportToClone = null;
 					for (Row r : getReportRows()) {
-						if (((CheckBox)r.getComponent(COMPONENT_CHECKBOX)).isSelected()) {
+						if (((CheckBox)r.getComponent(INDEX_CHECKBOX)).isSelected()) {
 							reportToClone = getReport(r);
 						}
 					}
@@ -756,9 +846,12 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
  			Report report = getReport(row);
 			if (report != null) {
 				String errorMessage = null;
+				Integer storageId = null;
+				Boolean isSelected = null;
 				Report runResultReport = null;
 				if (e.getActionCommand().equals("Replace")) {
-					Integer storageId = new Integer(row.getId());
+					storageId = new Integer(row.getId());
+					isSelected = ((CheckBox)row.getComponent(INDEX_CHECKBOX)).isSelected();
 					runResultReport = getRunResultReport(reportRunner.getResults().get(storageId).correlationId);
 					runResultReport.setTestTool(report.getTestTool());
 					runResultReport.setName(report.getName());
@@ -771,21 +864,11 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 					runResultReport.setReportXmlTransformer(report.getReportXmlTransformer());
 					runResultReport.setVariableCsv(report.getVariableCsv());
 					errorMessage = Echo2Application.store(runStorage, runResultReport);
-					reportRunner.getResults().remove(storageId);
-					row.setId(runResultReport.getStorageId().toString());
-					row.getComponent(COMPONENT_COMPARE_BUTTON).setVisible(false);
-					row.getComponent(COMPONENT_REPLACE_BUTTON).setVisible(false);
-					row.remove(COMPONENT_DYNAMIC_VAR_LABEL);
-					row.remove(COMPONENT_RESULT_LABEL);
-					String path = runResultReport.getPath();
-					String name = runResultReport.getName();
-					if (path == null || !path.equals(normalizePath(path))) {
-						path = "/";
-					}
-					row.add(new Label(path + name));
-					row.add(newDynamicVariableLabel(report));
 				}
 				if (errorMessage == null) {
+					if (e.getActionCommand().equals("Replace")) {
+						reportRunner.getResults().remove(storageId);
+					}
 					errorMessage = Echo2Application.delete(runStorage, report);
 					if (errorMessage == null) {
 						if (treePane.getReportsWithDirtyPaths().remove(report.getStorageId())
@@ -794,6 +877,15 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 						}
 						if (e.getActionCommand().equals("Delete")) {
 							remove(row);
+						}
+						if (e.getActionCommand().equals("Replace")) {
+							refresh();
+							for (Row reportRow : getReportRows()) {
+								CheckBox checkbox = (CheckBox)reportRow.getComponent(INDEX_CHECKBOX);
+								if (new Integer(reportRow.getId()).equals(runResultReport.getStorageId())) {
+									checkbox.setSelected(isSelected);
+								}
+							}
 						}
 					}
 				}
@@ -834,7 +926,7 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 	private int getSelectedReportCount() {
 		int count = 0;
 		for(Row row : getReportRows()) {
-			if(((CheckBox)row.getComponent(COMPONENT_CHECKBOX)).isSelected()) {
+			if(((CheckBox)row.getComponent(INDEX_CHECKBOX)).isSelected()) {
 				count++;
 			}
 		}
@@ -866,7 +958,7 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 	private Set<String> getSelectedStorageIds() {
 		Set<String> selectedStorageIds = new HashSet<String>();
 		for (Row row : getReportRows()) {
-			CheckBox checkbox = (CheckBox)row.getComponent(COMPONENT_CHECKBOX);
+			CheckBox checkbox = (CheckBox)row.getComponent(INDEX_CHECKBOX);
 			if (checkbox.isSelected()) {
 				selectedStorageIds.add(row.getId());
 			}
@@ -936,7 +1028,7 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 
 	private void copyPath(String newPath) {
 		for (Row row : getReportRows()) {
-			CheckBox checkbox = (CheckBox)row.getComponent(COMPONENT_CHECKBOX);
+			CheckBox checkbox = (CheckBox)row.getComponent(INDEX_CHECKBOX);
 			if (checkbox.isSelected()) {
 				copyPath(row, newPath);
 			}

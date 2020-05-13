@@ -6,7 +6,10 @@ Ladybug Test Tool release notes
 Upcoming
 --------
 
+- Display number of stubbed checkpoints in Test tab
+- Fix error on run in Test tab not being displayed
 - Simplify syntax of cross-report variables
+- Add toggle options for showing storage and checkpoint IDs in the UI
 - Add timestamp to filename when downloading zipped reports
 
 
