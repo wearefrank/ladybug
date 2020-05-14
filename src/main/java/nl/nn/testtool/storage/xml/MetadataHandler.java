@@ -30,7 +30,7 @@ public class MetadataHandler {
 	private Storage storage;
 	private HashMap<String, Metadata> metadataMap;
 	protected File metadataFile;
-	private int lastStorageId;
+	private int lastStorageId = 1;
 	private final Logger logger = LogUtil.getLogger(this.getClass());
 
 	/**
@@ -313,8 +313,8 @@ public class MetadataHandler {
 			report.setPath(path);
 			String filename = file.getName();
 			report.setName(filename.substring(0, filename.length() - XmlStorage.FILE_EXTENSION.length()));
-
-			Metadata metadata = Metadata.fromReport(report, getNextStorageId(), file.lastModified());
+			report.setStorageId(getNextStorageId());
+			Metadata metadata = Metadata.fromReport(report, file.lastModified());
 			add(metadata, false);
 			return metadata.correlationId;
 		} catch (Exception e) {

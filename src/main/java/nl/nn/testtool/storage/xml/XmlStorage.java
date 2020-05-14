@@ -106,8 +106,9 @@ public class XmlStorage implements LogStorage, CrudStorage {
 			} else {
 				reportFile = new File(resolvePath(report.getCorrelationId()));
 			}
+			report.setStorageId(metadataHandler.getNextStorageId());
 			store(report, reportFile);
-			metadata = Metadata.fromReport(report, metadataHandler.getNextStorageId(), reportFile.lastModified());
+			metadata = Metadata.fromReport(report, reportFile.lastModified());
 			metadataHandler.add(metadata);
 
 		} catch (IOException e) {
@@ -136,6 +137,10 @@ public class XmlStorage implements LogStorage, CrudStorage {
 			report.setStorage(this);
 			inputStream.close();
 			decoder.close();
+
+			if (report.getStorageId() == 0)
+				report.setStorageId(storageId);
+
 			return report;
 		} catch (Exception e) {
 			if (decoder != null)

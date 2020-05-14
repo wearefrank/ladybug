@@ -80,9 +80,9 @@ public class Metadata {
 	 * @param storageId Storage id for metadata.
 	 * @return Metadata object that is created from the given report.
 	 */
-	public static Metadata fromReport(Report report, int storageId, long lastModified) {
+	public static Metadata fromReport(Report report, long lastModified) {
 		return new Metadata(
-				storageId,
+				report.getStorageId(),
 				report.getEndTime() - report.getStartTime(),
 				report.getNumberOfCheckpoints(),
 				report.getEstimatedMemoryUsage(),
