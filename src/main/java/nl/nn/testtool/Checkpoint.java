@@ -177,31 +177,6 @@ public class Checkpoint implements Serializable, Cloneable {
 		return typeAsString;
 	}
 
-	public void setTypeAsString(String type) {
-		if (type == null)
-			return;
-
-		if (type.equalsIgnoreCase("None")) {
-			this.type = TYPE_NONE;
-		}else if (type.equalsIgnoreCase("Startpoint")) {
-			this.type = TYPE_STARTPOINT;
-		}else if (type.equalsIgnoreCase("Endpoint")) {
-			this.type = TYPE_ENDPOINT;
-		}else if (type.equalsIgnoreCase("Abortpoint")) {
-			this.type = TYPE_ABORTPOINT;
-		}else if (type.equalsIgnoreCase("Inputpoint")) {
-			this.type = TYPE_INPUTPOINT;
-		}else if (type.equalsIgnoreCase("Outputpoint")) {
-			this.type = TYPE_OUTPUTPOINT;
-		}else if (type.equalsIgnoreCase("Infopoint")) {
-			this.type = TYPE_INFOPOINT;
-		}else if (type.equalsIgnoreCase("ThreadStartpoint")) {
-			this.type = TYPE_THREADSTARTPOINT;
-		}else if (type.equalsIgnoreCase("ThreadEndpoint")) {
-			this.type = TYPE_THREADENDPOINT;
-		}
-	}
-
 	public void setLevel(int level) {
 		this.level = level;
 	}
@@ -415,27 +390,5 @@ public class Checkpoint implements Serializable, Cloneable {
 			}
 		}
 		return isVariablesUpdated;
-	}
-
-	public static Checkpoint fromXml(String xml, Report report) throws Exception {
-		Pattern pattern = Pattern.compile("<Checkpoint Name=\"(.*)\" Type=\"(.*)\" Level=\"(.*?)\" ThreadName=\"(.*?)\" SourceClass=\"(.*?)\"( TextDecl=\"(.*)\")?>(.*)</Checkpoint>", Pattern.DOTALL);
-		Matcher matcher = pattern.matcher(xml);
-
-		if (!matcher.find())
-			throw new Exception("Checkpoint could not be parsed from the given string.");
-
-		Checkpoint checkpoint = new Checkpoint();
-		checkpoint.setReport(report);
-
-		checkpoint.setName(matcher.group(1));
-		checkpoint.setTypeAsString(matcher.group(2));
-		checkpoint.setLevel(Integer.parseInt(matcher.group(3)));
-		checkpoint.setThreadName(matcher.group(4));
-		checkpoint.setSourceClassName(matcher.group(5));
-		checkpoint.setMessage(
-				(StringUtils.isNotEmpty(matcher.group(7)) ? matcher.group(7) : "")
-						+ matcher.group(8));
-
-		return checkpoint;
 	}
 }

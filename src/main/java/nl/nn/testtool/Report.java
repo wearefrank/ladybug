@@ -27,8 +27,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import nl.nn.testtool.run.ReportRunner;
 import nl.nn.testtool.storage.Storage;
@@ -39,7 +37,6 @@ import nl.nn.testtool.util.EscapeUtil;
 import nl.nn.testtool.util.LogUtil;
 
 import org.apache.commons.lang.NotImplementedException;
-import org.apache.commons.lang.SerializationException;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.dom4j.Document;
@@ -510,15 +507,11 @@ public class Report implements Serializable {
 	}
 
 	public String toXml() {
-		return toXml(null, true, false);
+		return toXml(null);
 	}
-
+	
 	public String toXml(ReportRunner reportRunner) {
-		return toXml(reportRunner, true, false);
-	}
-
-	public String toXml(ReportRunner reportRunner, boolean allowTransformation, boolean force) {
-		if (xml == null || force) {
+		if (xml == null) {
 			StringBuffer stringBuffer = new StringBuffer();
 			stringBuffer.append("<Report");
 			stringBuffer.append(" Name=\"" + EscapeUtil.escapeXml(name) + "\"");
@@ -544,8 +537,6 @@ public class Report implements Serializable {
 					stringBuffer.append(" Name=\"" + EscapeUtil.escapeXml(checkpoint.getName()) + "\"");
 					stringBuffer.append(" Type=\"" + EscapeUtil.escapeXml(checkpoint.getTypeAsString()) + "\"");
 					stringBuffer.append(" Level=\"" + checkpoint.getLevel() + "\"");
-					stringBuffer.append(" ThreadName=\"" + EscapeUtil.escapeXml(checkpoint.getThreadName()) + "\"");
-					stringBuffer.append(" SourceClass=\"" + EscapeUtil.escapeXml(checkpoint.getSourceClassName()) + "\"");
 					String message = object.toString();
 					Document document;
 					try {
@@ -576,49 +567,17 @@ public class Report implements Serializable {
 			}
 			stringBuffer.append("</Report>");
 			xml = stringBuffer.toString();
-			if (allowTransformation && transformation != null && transformation.trim().length() > 0) {
+			if (transformation != null && transformation.trim().length() > 0) {
 				if (reportXmlTransformer == null) {
 					reportXmlTransformer = new ReportXmlTransformer();
 					reportXmlTransformer.setXslt(transformation);
 				}
 				xml = reportXmlTransformer.transform(xml);
-			} else if (allowTransformation && globalReportXmlTransformer != null) {
+			} else if (globalReportXmlTransformer != null) {
 				xml = globalReportXmlTransformer.transform(xml);
 			}
 		}
 		return xml;
-	}
-
-	public static Report fromXml(String xml) throws Exception {
-		Pattern reportPattern = Pattern.compile("<Report Name=\"(.*)\" Description=\"(.*)\" Path=\"(.*)\" CorrelationId=\"(.*)\" StartTime=\"([0-9]*)\" EndTime=\"([0-9]*)\" NumberOfCheckpoints=\"([0-9]*)\" EstimatedMemoryUsage=\"([0-9]*)\">");
-		Matcher matcher = reportPattern.matcher(xml);
-		if (!matcher.find())
-			throw new Exception("Can not parse the given xml as a report.");
-		Report report = new Report();
-		report.setName(matcher.group(1));
-		report.setDescription(matcher.group(2));
-		report.setPath(matcher.group(3));
-		report.setCorrelationId(matcher.group(4));
-		report.setStartTime(Long.parseLong(matcher.group(5)));
-		report.setEndTime(Long.parseLong(matcher.group(6)));
-		report.setEstimatedMemoryUsage(Long.parseLong(matcher.group(8)));
-		List<Checkpoint> checkpoints = new ArrayList<>(Integer.parseInt(matcher.group(7)));
-		String startTag = "<Checkpoint";
-		String endTag = "</Checkpoint>";
-
-		int start = xml.indexOf(startTag);
-		int end = xml.indexOf(endTag, start + startTag.length());
-		while (start > 0 && end > 0) {
-			try {
-				checkpoints.add(Checkpoint.fromXml(xml.substring(start, end + endTag.length()), report));
-			} catch (Exception e) {
-				log.error("Checkpoint could not be parsed.", e);
-			}
-			start = xml.indexOf(startTag, end + endTag.length());
-			end = xml.indexOf(endTag, start + startTag.length());
-		}
-		report.setCheckpoints(checkpoints);
-		return report;
 	}
 
 	public void flushCachedXml() {
@@ -644,7 +603,6 @@ public class Report implements Serializable {
 		return errorMessage;
 	}
 
-	@Transient
 	public Map<String, String> getVariablesAsMap() {
 		if(StringUtils.isEmpty(variableCsv)) {
 			return null;
