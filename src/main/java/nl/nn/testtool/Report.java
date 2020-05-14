@@ -107,10 +107,12 @@ public class Report implements Serializable {
 		return testTool;
 	}
 
+	@Transient
 	public void setStorage(Storage storage) {
 		this.storage = storage;
 	}
 
+	@Transient
 	public Storage getStorage() {
 		return storage;
 	}
@@ -191,30 +193,37 @@ public class Report implements Serializable {
 		return stubStrategy;
 	}
 
+	@Transient
 	public void setTransformation(String transformation) {
 		this.transformation = transformation;
 	}
 
+	@Transient
 	public String getTransformation() {
 		return transformation;
 	}
 
+	@Transient
 	public void setReportXmlTransformer(ReportXmlTransformer reportXmlTransformer) {
 		this.reportXmlTransformer = reportXmlTransformer;
 	}
 
+	@Transient
 	public ReportXmlTransformer getReportXmlTransformer() {
 		return reportXmlTransformer;
 	}
 
+	@Transient
 	public void setGlobalReportXmlTransformer(ReportXmlTransformer globalReportXmlTransformer) {
 		this.globalReportXmlTransformer = globalReportXmlTransformer;
 	}
 
+	@Transient
 	public ReportXmlTransformer getGlobalReportXmlTransformer() {
 		return globalReportXmlTransformer;
 	}
 
+	@Transient
 	public void setOriginalReport(Report originalReport) {
 		this.originalReport = originalReport;
 	}
@@ -443,10 +452,12 @@ public class Report implements Serializable {
 		return estimatedMemoryUsage;
 	}
 
+	@Transient
 	public void setCounterpart(Report report) {
 		counterpart = report;
 	}
 
+	@Transient
 	public Report getCounterpart() {
 		return counterpart;
 	}
@@ -467,6 +478,7 @@ public class Report implements Serializable {
 		return differenceFound;
 	}
 
+	@Transient
 	public MessageTransformer getMessageTransformer() {
 		return testTool.getMessageTransformer();
 	}
@@ -632,6 +644,7 @@ public class Report implements Serializable {
 		return errorMessage;
 	}
 
+	@Transient
 	public Map<String, String> getVariablesAsMap() {
 		if(StringUtils.isEmpty(variableCsv)) {
 			return null;
