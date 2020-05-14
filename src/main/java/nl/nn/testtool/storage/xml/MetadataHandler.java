@@ -52,7 +52,7 @@ public class MetadataHandler {
 			logger.info("Metadata for ladybug already exists. Reading from file [" + metadataFile.getName() + "] ...");
 			readFromFile();
 		} else {
-			buildFromDirectory(metadataFile.getParentFile(), true);
+			buildFromDirectory(metadataFile.getParentFile(), true, null);
 		}
 	}
 
@@ -61,19 +61,22 @@ public class MetadataHandler {
 	 *
 	 * @param dir           Directory to be searched.
 	 * @param searchSubDirs True, if subdirectories should also be searched. False, otherwise.
+	 * @param registeredIds Set of registered storage Ids to avoid collision.
 	 * @throws IOException
 	 */
-	private void buildFromDirectory(File dir, boolean searchSubDirs) throws IOException {
+	private void buildFromDirectory(File dir, boolean searchSubDirs, Set<Integer> registeredIds) throws IOException {
 		if (dir == null || !dir.isDirectory())
 			return;
+		if (registeredIds == null)
+			registeredIds = new HashSet<>();
 
 		logger.info("Building from directory " + dir.getPath());
 		for (File file : dir.listFiles()) {
 			if (searchSubDirs && file.isDirectory())
-				buildFromDirectory(file, searchSubDirs);
+				buildFromDirectory(file, searchSubDirs, registeredIds);
 
 			if (file.isFile() && file.getName().endsWith(XmlStorage.FILE_EXTENSION)) {
-				addFromFile(file);
+				addFromFile(file, registeredIds);
 			}
 		}
 
@@ -241,12 +244,14 @@ public class MetadataHandler {
 	 */
 	public void updateMetadata() throws IOException {
 		HashMap<String, Metadata> pathMap = new HashMap<>(metadataMap.size());
+		Set<Integer> registeredIds = new HashSet<>(metadataMap.size());
 		for (String c : metadataMap.keySet()) {
 			Metadata m = metadataMap.get(c);
 			String path = m.path + m.name + XmlStorage.FILE_EXTENSION;
 			pathMap.put(path, m);
+			registeredIds.add(m.storageId);
 		}
-		Set<String> updatedIds = updateMetadata(metadataFile.getParentFile(), pathMap);
+		Set<String> updatedIds = updateMetadata(metadataFile.getParentFile(), pathMap, registeredIds);
 		// Delete the remaining metadata.
 		for (String p : pathMap.keySet()) {
 			Metadata m = pathMap.get(p);
@@ -261,16 +266,17 @@ public class MetadataHandler {
 	/**
 	 * Updates the metadata from the given directory.
 	 *
-	 * @param dir Directory to be searched.
-	 * @param map Map of old metadata with keys as paths.
+	 * @param dir           Directory to be searched.
+	 * @param map           Map of old metadata with keys as paths.
+	 * @param registeredIds Set of registered storage ids to avoid collision.
 	 */
-	private Set<String> updateMetadata(File dir, HashMap<String, Metadata> map) {
+	private Set<String> updateMetadata(File dir, HashMap<String, Metadata> map, Set<Integer> registeredIds) {
 		if (dir == null || !dir.isDirectory())
 			return new HashSet<>();
 		Set<String> ids = new HashSet<>();
 		for (File file : dir.listFiles()) {
 			if (file.isDirectory()) {
-				ids.addAll(updateMetadata(file, map));
+				ids.addAll(updateMetadata(file, map, registeredIds));
 				continue;
 			} else if (!file.getName().endsWith(XmlStorage.FILE_EXTENSION)) {
 				continue;
@@ -278,7 +284,7 @@ public class MetadataHandler {
 			String path = "/" + metadataFile.getParentFile().toPath().relativize(file.toPath()).toString().replaceAll("\\\\", "/"); // Relativize
 			Metadata m = map.remove(path);
 			if (m == null || m.lastModified < file.lastModified()) {
-				ids.add(addFromFile(file));
+				ids.add(addFromFile(file, registeredIds).getCorrelationId());
 			}
 		}
 		return ids;
@@ -287,9 +293,10 @@ public class MetadataHandler {
 	/**
 	 * Reads the report from the given file. Generates metadata and saves it.
 	 *
-	 * @param file File to be read from.
+	 * @param file         File to be read from.
+	 * @param forbiddenIds Set of storage ids that should not be set for this report. Set to null for allowing all values.
 	 */
-	private String addFromFile(File file) {
+	private Report addFromFile(File file, Set<Integer> forbiddenIds) {
 		if (file == null || !file.isFile() || !file.getName().endsWith(XmlStorage.FILE_EXTENSION))
 			return null;
 
@@ -302,6 +309,7 @@ public class MetadataHandler {
 
 			Report report = (Report) decoder.readObject();
 			report.setStorage(this.storage);
+
 			String path = metadataFile.getParentFile().toPath().relativize(file.getParentFile().toPath()).toString() + "/";
 			if (StringUtils.isNotEmpty(path)) {
 				path = path.replaceAll("\\\\", "/");
@@ -311,12 +319,25 @@ public class MetadataHandler {
 			if (!path.startsWith("/"))
 				path = "/" + path;
 			report.setPath(path);
+
 			String filename = file.getName();
 			report.setName(filename.substring(0, filename.length() - XmlStorage.FILE_EXTENSION.length()));
-			report.setStorageId(getNextStorageId());
+
+			int storageId = report.getStorageId() == 0 ? getNextStorageId() : report.getStorageId();
+			if (forbiddenIds != null) {
+				while (forbiddenIds.contains(storageId))
+					storageId = getNextStorageId();
+
+				forbiddenIds.add(storageId);
+			}
+			if (storageId >= lastStorageId)
+				lastStorageId = storageId + 1;
+
+			report.setStorageId(storageId);
+
 			Metadata metadata = Metadata.fromReport(report, file.lastModified());
 			add(metadata, false);
-			return metadata.correlationId;
+			return report;
 		} catch (Exception e) {
 			if (decoder != null)
 				decoder.close();

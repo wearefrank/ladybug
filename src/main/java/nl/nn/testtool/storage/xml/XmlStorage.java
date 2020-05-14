@@ -95,7 +95,7 @@ public class XmlStorage implements LogStorage, CrudStorage {
 			File reportFile;
 			if (metadata == null) {
 				File parentFolder = (report.getPath() != null) ? new File(reportsFolder, report.getPath()) : reportsFolder;
-				String filename = report.getName();
+				String filename = report.getName().replaceAll("[^a-zA-Z0-9-_\\.\\s+\\(\\)]", "_");
 				reportFile = new File(parentFolder, filename + FILE_EXTENSION);
 				int i = 2;
 				while (reportFile.isFile()) {
@@ -138,7 +138,7 @@ public class XmlStorage implements LogStorage, CrudStorage {
 			inputStream.close();
 			decoder.close();
 
-			if (report.getStorageId() == 0)
+			if (report.getStorageId() != m.storageId)
 				report.setStorageId(storageId);
 
 			return report;
@@ -273,6 +273,7 @@ public class XmlStorage implements LogStorage, CrudStorage {
 	public void updateMetadata() {
 		try {
 			metadataHandler.updateMetadata();
-		} catch (IOException ignored) {}
+		} catch (IOException ignored) {
+		}
 	}
 }
