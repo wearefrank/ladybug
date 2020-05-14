@@ -112,6 +112,8 @@ public class MetadataHandler {
 			}
 		}
 		scanner.close();
+
+		updateMetadata();
 	}
 
 	public int getNextStorageId() {
