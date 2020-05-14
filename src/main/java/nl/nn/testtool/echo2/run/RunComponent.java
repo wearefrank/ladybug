@@ -631,6 +631,7 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 			if (runStorage instanceof XmlStorage) {
 				((XmlStorage) runStorage).updateMetadata();
 			}
+			display(pathTextField.getText(), getSelectedStorageIds());
 			refresh();
 		} else if (e.getActionCommand().equals("Reset")) {
 			displayError(reportRunner.reset());
