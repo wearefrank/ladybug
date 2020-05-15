@@ -6,6 +6,21 @@ Ladybug Test Tool release notes
 Upcoming
 --------
 
+
+
+
+
+2.0.11.1
+--------
+
+- Allow report generator's status to be shared with the application using the Ladybug
+- Fix comparison when searching parent thread
+
+
+
+2.0.11
+---
+
 - Increase width of name/path textfields when editing a report
 - Fix checkpoint showing wrong truncate message
 - Make checkpoint truncating happen while generating the report, instead of afterwards

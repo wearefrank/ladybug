@@ -99,7 +99,25 @@ public class TestTool {
 	public void setDebugger(Debugger debugger) {
 		this.debugger = debugger;
 	}
-
+	
+	public void setReportGeneratorEnabled(boolean reportGeneratorEnabled) {
+		this.reportGeneratorEnabled = reportGeneratorEnabled;
+	}
+	
+	public boolean isReportGeneratorEnabled() {
+		return reportGeneratorEnabled;
+	}
+	
+	/**
+	 * Sends the result of <code>isReportGeneratorEnabled()</code> to the Debugger
+	 * implementation of the application using the Ladybug.
+	 */
+	public void sendReportGeneratorStatusUpdate() {
+		if(debugger != null) {
+			debugger.updateReportGeneratorStatus(isReportGeneratorEnabled());
+		}
+	}
+	
 	public void setLogStorage(LogStorage logStorage) {
 		this.logStorage = logStorage;
 	}
@@ -114,14 +132,6 @@ public class TestTool {
 
 	public MessageTransformer getMessageTransformer() {
 		return messageTransformer;
-	}
-
-	public void setReportGeneratorEnabled(boolean reportGeneratorEnabled) {
-		this.reportGeneratorEnabled = reportGeneratorEnabled;
-	}
-
-	public boolean getReportGeneratorEnabled() {
-		return reportGeneratorEnabled;
 	}
 	
 	public void setRegexFilter(String regexFilter) {
@@ -271,7 +281,7 @@ public class TestTool {
 		if (correlationId == null) {
 			correlationId = getCorrelationId();
 		}
-		boolean reportGeneratorEnabled = getReportGeneratorEnabled();
+		boolean reportGeneratorEnabled = isReportGeneratorEnabled();
 		if (reportGeneratorEnabled) {
 			synchronized(originalReports) {
 				originalReports.put(correlationId, report);
