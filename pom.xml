@@ -203,7 +203,7 @@ Implement a rerun method to be able to rerun reports and optionally stub certain
     <url>https://github.com/ibissource/ibis-ladybug</url>
     <connection>scm:git:https://github.com/ibissource/ibis-ladybug.git</connection>
     <developerConnection>scm:git:https://github.com/ibissource/ibis-ladybug.git</developerConnection>
-    <tag>v2.0.11</tag>
+    <tag>HEAD</tag>
   </scm>
 
   <profiles>
