@@ -390,6 +390,7 @@ public class ReportComponent extends MessageComponent {
 			displayAndLogError(Echo2Application.update((CrudStorage)report.getStorage(), report));
 		}
 		messageTextArea.setText(report.toXml());
+		nameTextField.setText(report.getName());
 		super.save();
 	}
 
