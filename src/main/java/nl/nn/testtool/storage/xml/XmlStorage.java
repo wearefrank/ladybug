@@ -57,7 +57,7 @@ public class XmlStorage implements LogStorage, CrudStorage {
 	 * @param file   File to be written.
 	 * @throws StorageException
 	 */
-	private void store(Report report, File file) throws StorageException {
+	protected void store(Report report, File file) throws StorageException {
 		try {
 			if (!file.exists()) {
 				file.getParentFile().mkdirs();
@@ -171,10 +171,15 @@ public class XmlStorage implements LogStorage, CrudStorage {
 				logger.warn("Could not find report file for report [" + report.getCorrelationId() + "]");
 				return;
 			}
-
-			if (!new File(path).delete())
+			// Delete file
+			File file = new File(path);
+			if (!file.delete())
 				throw new StorageException("Could not delete repot [" + report.getCorrelationId() + "] at [" + path + "]");
 
+			// Delete all parent folders which are empty.
+			file = file.getParentFile();
+			while (file.delete())
+				file = file.getParentFile();
 			metadataHandler.delete(report);
 		} catch (IOException e) {
 			throw new StorageException("Error while deleting the report [" + report.getCorrelationId() + "]", e);

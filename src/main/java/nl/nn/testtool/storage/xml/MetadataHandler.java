@@ -27,7 +27,7 @@ import java.util.regex.Pattern;
  */
 public class MetadataHandler {
 	private final String DEFAULT_PATH = "metadata.xml";
-	private Storage storage;
+	private XmlStorage storage;
 	private HashMap<String, Metadata> metadataMap;
 	protected File metadataFile;
 	private int lastStorageId = 1;
@@ -40,7 +40,7 @@ public class MetadataHandler {
 	 * @param filePath Path of the metadata file to be created/read.
 	 * @throws IOException
 	 */
-	public MetadataHandler(String filePath, Storage storage, boolean forceDiscover) throws IOException {
+	public MetadataHandler(String filePath, XmlStorage storage, boolean forceDiscover) throws IOException {
 		this.storage = storage;
 		if (StringUtils.isEmpty(filePath)) {
 			logger.warn("No filepath was given for Ladybug MetadataHandler. Continuing with default [" + DEFAULT_PATH + "]");
@@ -334,6 +334,8 @@ public class MetadataHandler {
 				lastStorageId = storageId + 1;
 
 			report.setStorageId(storageId);
+
+			storage.store(report, file);
 
 			Metadata metadata = Metadata.fromReport(report, file.lastModified());
 			add(metadata, false);
