@@ -66,6 +66,7 @@ public class Report implements Serializable {
 	private String stubStrategy;
 	private List<Checkpoint> checkpoints = new ArrayList<Checkpoint>();
 	private String transformation;
+	// Please note that the get and set methods need @Transient annotation for XmlEncoder to not store the property
 	private transient Report originalReport;
 	private transient List threads = new ArrayList();
 	private transient Map threadIndex = new HashMap();
@@ -121,11 +122,13 @@ public class Report implements Serializable {
 	public Integer getStorageId() {
 		return storageId;
 	}
-	
+
+	@Transient
 	public void setStorageSize(Long storageSize) {
 		this.storageSize = storageSize;
 	}
-	
+
+	@Transient
 	public Long getStorageSize() {
 		return storageSize;
 	}
@@ -459,18 +462,22 @@ public class Report implements Serializable {
 		return counterpart;
 	}
 
+	@Transient
 	public void setDifferenceChecked(boolean differenceChecked) {
 		this.differenceChecked = differenceChecked;
 	}
 
+	@Transient
 	public boolean getDifferenceChecked() {
 		return differenceChecked;
 	}
 
+	@Transient
 	public void setDifferenceFound(boolean differenceFound) {
 		this.differenceFound = differenceFound;
 	}
 
+	@Transient
 	public boolean getDifferenceFound() {
 		return differenceFound;
 	}
