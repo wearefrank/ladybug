@@ -1,5 +1,6 @@
 package nl.nn.testtool.storage.xml;
 
+import nl.nn.testtool.Checkpoint;
 import nl.nn.testtool.MetadataExtractor;
 import nl.nn.testtool.Report;
 import org.apache.commons.lang.StringEscapeUtils;
@@ -77,10 +78,15 @@ public class Metadata {
 	 * Creates a metadata object from the given report and storage id.
 	 *
 	 * @param report    Report to be used for creating a metadata.
-	 * @param storageId Storage id for metadata.
+	 * @param lastModified Last modified time for the report file.
 	 * @return Metadata object that is created from the given report.
 	 */
 	public static Metadata fromReport(Report report, long lastModified) {
+		String status = "Success";
+		if (report.getCheckpoints() != null && report.getCheckpoints().size() > 0) {
+			if (report.getCheckpoints().get(report.getCheckpoints().size() - 1).getType() == Checkpoint.TYPE_ABORTPOINT)
+				status = "Error";
+		}
 		return new Metadata(
 				report.getStorageId(),
 				report.getEndTime() - report.getStartTime(),
@@ -90,7 +96,7 @@ public class Metadata {
 				report.getEndTime(),
 				report.getName(),
 				report.getCorrelationId(),
-				"Success",
+				status,
 				report.getPath(),
 				report.getDescription(),
 				lastModified);

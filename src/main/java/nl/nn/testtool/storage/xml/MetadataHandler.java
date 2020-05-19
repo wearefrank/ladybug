@@ -1,7 +1,6 @@
 package nl.nn.testtool.storage.xml;
 
 import nl.nn.testtool.Report;
-import nl.nn.testtool.storage.Storage;
 import nl.nn.testtool.util.LogUtil;
 import nl.nn.xmldecoder.XMLDecoder;
 import org.apache.commons.lang.StringUtils;
