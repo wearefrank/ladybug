@@ -91,11 +91,11 @@ public class XmlStorage implements LogStorage, CrudStorage {
 		try {
 			// Make sure we are not overriding any previous report
 			// that might have been handled by another metadatahandler file.
-			Metadata metadata = metadataHandler.getMetadata(report.getCorrelationId());
+			Metadata metadata = metadataHandler.getMetadata(report.getStorageId());
 			File reportFile;
 			if (metadata == null) {
 				File parentFolder = (report.getPath() != null) ? new File(reportsFolder, report.getPath()) : reportsFolder;
-				String filename = report.getName().replaceAll("[^a-zA-Z0-9-_\\.\\s+\\(\\)]", "_");
+				String filename = report.getName().replaceAll("[<>:\"\\/\\\\\\|\\?\\*]", "_");
 				reportFile = new File(parentFolder, filename + FILE_EXTENSION);
 				int i = 2;
 				while (reportFile.isFile()) {
@@ -104,11 +104,16 @@ public class XmlStorage implements LogStorage, CrudStorage {
 				}
 				report.setName(filename);
 			} else {
-				reportFile = new File(resolvePath(report.getCorrelationId()));
+				reportFile = new File(resolvePath(report.getStorageId()));
+			}
+
+			if (report.getStorageId() == null || metadataHandler.contains(report.getStorageId())) {
+				int storageId = metadataHandler.getNextStorageId();
+				while (metadataHandler.contains(storageId))
+					storageId = metadataHandler.getNextStorageId();
+				report.setStorageId(storageId);
 			}
 			
-			if (report.getStorageId() == null)
-				report.setStorageId(metadataHandler.getNextStorageId());
 			store(report, reportFile);
 			metadata = Metadata.fromReport(report, reportFile.lastModified());
 			metadataHandler.add(metadata);
@@ -121,7 +126,7 @@ public class XmlStorage implements LogStorage, CrudStorage {
 	@Override
 	public Report getReport(Integer storageId) throws StorageException {
 		Metadata m = metadataHandler.getMetadata(storageId);
-		String path = resolvePath(m.correlationId);
+		String path = resolvePath(m.storageId);
 		if (StringUtils.isEmpty(path))
 			throw new StorageException("Could not resolve path of report.");
 
@@ -168,15 +173,15 @@ public class XmlStorage implements LogStorage, CrudStorage {
 	@Override
 	public void delete(Report report) throws StorageException {
 		try {
-			String path = resolvePath(report.getCorrelationId());
+			String path = resolvePath(report.getStorageId());
 			if (path == null) {
-				logger.warn("Could not find report file for report [" + report.getCorrelationId() + "]");
+				logger.warn("Could not find report file for report with storage id [" + report.getStorageId() + "] correlation id [" + report.getCorrelationId() + "]");
 				return;
 			}
 			// Delete file
 			File file = new File(path);
 			if (!file.delete())
-				throw new StorageException("Could not delete repot [" + report.getCorrelationId() + "] at [" + path + "]");
+				throw new StorageException("Could not delete report with storage id [" + report.getStorageId() + "] correlation id [" + report.getCorrelationId() + "] at [" + path + "]");
 
 			// Delete all parent folders which are empty.
 			file = file.getParentFile();
@@ -184,7 +189,7 @@ public class XmlStorage implements LogStorage, CrudStorage {
 				file = file.getParentFile();
 			metadataHandler.delete(report);
 		} catch (IOException e) {
-			throw new StorageException("Error while deleting the report [" + report.getCorrelationId() + "]", e);
+			throw new StorageException("Error while deleting the report with storage id [" + report.getStorageId() + "] correlation id [" + report.getCorrelationId() + "]", e);
 		}
 	}
 
@@ -249,13 +254,13 @@ public class XmlStorage implements LogStorage, CrudStorage {
 	}
 
 	/**
-	 * Resolves the path of the report with given correlation Id
+	 * Resolves the path of the report with given storage Id
 	 *
-	 * @param correlationId Correlation Id of the report to be resolved.
+	 * @param storageId Storage Id of the report to be resolved.
 	 * @return Path of the report. If report is not in metadata, null.
 	 */
-	private String resolvePath(String correlationId) {
-		Metadata metadata = metadataHandler.getMetadata(correlationId);
+	private String resolvePath(Integer storageId) {
+		Metadata metadata = metadataHandler.getMetadata(storageId);
 		if (metadata == null)
 			return null;
 

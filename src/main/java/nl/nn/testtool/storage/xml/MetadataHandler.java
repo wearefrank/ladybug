@@ -27,7 +27,7 @@ import java.util.regex.Pattern;
 public class MetadataHandler {
 	private final String DEFAULT_PATH = "metadata.xml";
 	private XmlStorage storage;
-	private HashMap<String, Metadata> metadataMap;
+	private HashMap<Integer, Metadata> metadataMap;
 	protected File metadataFile;
 	private int lastStorageId = 1;
 	private final Logger logger = LogUtil.getLogger(this.getClass());
@@ -51,7 +51,7 @@ public class MetadataHandler {
 			logger.info("Metadata for ladybug already exists. Reading from file [" + metadataFile.getName() + "] ...");
 			readFromFile();
 		} else {
-			buildFromDirectory(metadataFile.getParentFile(), true, null);
+			buildFromDirectory(metadataFile.getParentFile(), true);
 		}
 	}
 
@@ -60,22 +60,19 @@ public class MetadataHandler {
 	 *
 	 * @param dir           Directory to be searched.
 	 * @param searchSubDirs True, if subdirectories should also be searched. False, otherwise.
-	 * @param registeredIds Set of registered storage Ids to avoid collision.
 	 * @throws IOException
 	 */
-	private void buildFromDirectory(File dir, boolean searchSubDirs, Set<Integer> registeredIds) throws IOException {
+	private void buildFromDirectory(File dir, boolean searchSubDirs) throws IOException {
 		if (dir == null || !dir.isDirectory())
 			return;
-		if (registeredIds == null)
-			registeredIds = new HashSet<>();
 
 		logger.info("Building from directory " + dir.getPath());
 		for (File file : dir.listFiles()) {
 			if (searchSubDirs && file.isDirectory())
-				buildFromDirectory(file, searchSubDirs, registeredIds);
+				buildFromDirectory(file, searchSubDirs);
 
 			if (file.isFile() && file.getName().endsWith(XmlStorage.FILE_EXTENSION)) {
-				addFromFile(file, registeredIds);
+				addFromFile(file);
 			}
 		}
 
@@ -123,16 +120,26 @@ public class MetadataHandler {
 	}
 
 	public Metadata getMetadata(String correlationId) {
-		return metadataMap.get(correlationId);
-	}
-
-	public Metadata getMetadata(long storageId) {
-		for (String s : metadataMap.keySet()) {
-			Metadata m = metadataMap.get(s);
-			if (m.storageId == storageId)
+		if (StringUtils.isEmpty(correlationId))
+			return null;
+		for (Integer i : metadataMap.keySet()) {
+			Metadata m = metadataMap.get(i);
+			if (m != null && m.correlationId.equals(correlationId))
 				return m;
 		}
 		return null;
+	}
+
+	public Metadata getMetadata(Integer storageId) {
+		if (storageId == null)
+			return null;
+		return metadataMap.get(storageId);
+	}
+
+	public boolean contains(Integer storageId) {
+		if (storageId == null)
+			return false;
+		return metadataMap.containsKey(storageId);
 	}
 
 	/**
@@ -155,7 +162,7 @@ public class MetadataHandler {
 	private void add(Metadata m, boolean saveNow) throws IOException {
 		if (StringUtils.isEmpty(m.path))
 			m.path = "/";
-		metadataMap.put(m.correlationId, m);
+		metadataMap.put(m.storageId, m);
 		// TODO: Find a more optimal way!
 		// The problem is xml is not suitable for big data, so can't append directly.
 		if (saveNow)
@@ -177,10 +184,10 @@ public class MetadataHandler {
 			}
 		}
 		List<List<Object>> result = new ArrayList<List<Object>>(metadataMap.size());
-		Iterator<String> iterator = metadataMap.keySet().iterator();
+		Iterator<Integer> iterator = metadataMap.keySet().iterator();
 		while (iterator.hasNext() && result.size() < maxNumberOfRecords) {
-			String correlationId = iterator.next();
-			Metadata m = metadataMap.get(correlationId);
+			Integer storageId = iterator.next();
+			Metadata m = metadataMap.get(storageId);
 
 			boolean filterPassed = true;
 			for (int i = 0; i < metadataNames.size() && filterPassed; i++) {
@@ -193,11 +200,7 @@ public class MetadataHandler {
 	}
 
 	public List<Integer> getStorageIds() {
-		List<Integer> ids = new ArrayList<Integer>(metadataMap.size());
-		for (String correlationId : metadataMap.keySet()) {
-			ids.add(metadataMap.get(correlationId).getStorageId());
-		}
-		return ids;
+		return new ArrayList<>(metadataMap.keySet());
 	}
 
 	public int getSize() {
@@ -218,8 +221,8 @@ public class MetadataHandler {
 		logger.debug("Saving the metadata to file [" + metadataFile.getName() + "]...");
 		FileWriter writer = new FileWriter(metadataFile, false);
 		writer.append("<MetadataList>\n");
-		for (String correlationId : metadataMap.keySet()) {
-			writer.append(metadataMap.get(correlationId).toXml());
+		for (Integer storageId : metadataMap.keySet()) {
+			writer.append(metadataMap.get(storageId).toXml());
 		}
 		writer.append("<MetadataList>\n");
 		writer.close();
@@ -232,7 +235,7 @@ public class MetadataHandler {
 	 * @throws IOException
 	 */
 	public void delete(Report report) throws IOException {
-		metadataMap.remove(report.getCorrelationId());
+		metadataMap.remove(report.getStorageId());
 		save();
 	}
 
@@ -243,20 +246,19 @@ public class MetadataHandler {
 	 */
 	public void updateMetadata() throws IOException {
 		HashMap<String, Metadata> pathMap = new HashMap<>(metadataMap.size());
-		Set<Integer> registeredIds = new HashSet<>(metadataMap.size());
-		for (String c : metadataMap.keySet()) {
+		for (Integer c : metadataMap.keySet()) {
 			Metadata m = metadataMap.get(c);
 			String path = m.path + m.name + XmlStorage.FILE_EXTENSION;
 			pathMap.put(path, m);
-			registeredIds.add(m.storageId);
 		}
-		Set<String> updatedIds = updateMetadata(metadataFile.getParentFile(), pathMap, registeredIds);
+
+		Set<Integer> updatedIds = updateMetadata(metadataFile.getParentFile(), pathMap, null);
 		// Delete the remaining metadata.
 		for (String p : pathMap.keySet()) {
 			Metadata m = pathMap.get(p);
-			if (!updatedIds.contains(m.correlationId)) {
-				logger.info("Deleting metadata with correlation id [" + m.correlationId + "] and path [" + m.path + m.name + "]");
-				metadataMap.remove(m.correlationId);
+			if (!updatedIds.contains(m.storageId)) {
+				logger.info("Deleting metadata with storage id [" + m.storageId + "] correlation id [" + m.correlationId + "] and path [" + m.path + m.name + "]");
+				metadataMap.remove(m.storageId);
 			}
 		}
 		save();
@@ -265,17 +267,19 @@ public class MetadataHandler {
 	/**
 	 * Updates the metadata from the given directory.
 	 *
-	 * @param dir           Directory to be searched.
-	 * @param map           Map of old metadata with keys as paths.
-	 * @param registeredIds Set of registered storage ids to avoid collision.
+	 * @param dir Directory to be searched.
+	 * @param map Map of old metadata with keys as paths.
 	 */
-	private Set<String> updateMetadata(File dir, HashMap<String, Metadata> map, Set<Integer> registeredIds) {
+	private Set<Integer> updateMetadata(File dir, HashMap<String, Metadata> map, Set<Integer> updatedIds) {
+		if (updatedIds == null)
+			updatedIds = new HashSet<>();
+
 		if (dir == null || !dir.isDirectory())
-			return new HashSet<>();
-		Set<String> ids = new HashSet<>();
+			return updatedIds;
+
 		for (File file : dir.listFiles()) {
 			if (file.isDirectory()) {
-				ids.addAll(updateMetadata(file, map, registeredIds));
+				updateMetadata(file, map, updatedIds);
 				continue;
 			} else if (!file.getName().endsWith(XmlStorage.FILE_EXTENSION)) {
 				continue;
@@ -283,19 +287,18 @@ public class MetadataHandler {
 			String path = "/" + metadataFile.getParentFile().toPath().relativize(file.toPath()).toString().replaceAll("\\\\", "/"); // Relativize
 			Metadata m = map.remove(path);
 			if (m == null || m.lastModified < file.lastModified()) {
-				ids.add(addFromFile(file, registeredIds).getCorrelationId());
+				updatedIds.add(addFromFile(file).getStorageId());
 			}
 		}
-		return ids;
+		return updatedIds;
 	}
 
 	/**
 	 * Reads the report from the given file. Generates metadata and saves it.
 	 *
-	 * @param file         File to be read from.
-	 * @param forbiddenIds Set of storage ids that should not be set for this report. Set to null for allowing all values.
+	 * @param file File to be read from.
 	 */
-	private Report addFromFile(File file, Set<Integer> forbiddenIds) {
+	private Report addFromFile(File file) {
 		if (file == null || !file.isFile() || !file.getName().endsWith(XmlStorage.FILE_EXTENSION))
 			return null;
 
@@ -323,11 +326,9 @@ public class MetadataHandler {
 			report.setName(filename.substring(0, filename.length() - XmlStorage.FILE_EXTENSION.length()));
 
 			int storageId = report.getStorageId() == 0 ? getNextStorageId() : report.getStorageId();
-			if (forbiddenIds != null && metadataMap.containsKey(report.getCorrelationId()) && metadataMap.get(report.getCorrelationId()).storageId != report.getStorageId()) {
-				while (forbiddenIds.contains(storageId))
+			if (metadataMap.containsKey(storageId) && !metadataMap.get(storageId).correlationId.equals(report.getCorrelationId())) {
+				while (metadataMap.containsKey(storageId))
 					storageId = getNextStorageId();
-
-				forbiddenIds.add(storageId);
 			}
 			if (storageId >= lastStorageId)
 				lastStorageId = storageId + 1;
