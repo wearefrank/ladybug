@@ -323,7 +323,7 @@ public class MetadataHandler {
 			report.setName(filename.substring(0, filename.length() - XmlStorage.FILE_EXTENSION.length()));
 
 			int storageId = report.getStorageId() == 0 ? getNextStorageId() : report.getStorageId();
-			if (forbiddenIds != null && metadataMap.get(report.getCorrelationId()).storageId != report.getStorageId()) {
+			if (forbiddenIds != null && metadataMap.containsKey(report.getCorrelationId()) && metadataMap.get(report.getCorrelationId()).storageId != report.getStorageId()) {
 				while (forbiddenIds.contains(storageId))
 					storageId = getNextStorageId();
 
