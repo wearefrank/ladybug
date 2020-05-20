@@ -279,6 +279,7 @@ public class XmlStorage implements LogStorage, CrudStorage {
 		try {
 			metadataHandler.updateMetadata();
 		} catch (IOException ignored) {
+			logger.error("Exception while updating the metadata from filesystem.", ignored);
 		}
 	}
 }

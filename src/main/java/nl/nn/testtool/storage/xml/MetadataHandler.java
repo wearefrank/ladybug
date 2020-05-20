@@ -340,12 +340,14 @@ public class MetadataHandler {
 			add(metadata, false);
 			return report;
 		} catch (Exception e) {
+			logger.error("Exception during report deserialization.", e);
 			if (decoder != null)
 				decoder.close();
 			if (inputStream != null) {
 				try {
 					inputStream.close();
 				} catch (Exception ignored) {
+					logger.error("Could not close the xml file.", ignored);
 				}
 			}
 		}
