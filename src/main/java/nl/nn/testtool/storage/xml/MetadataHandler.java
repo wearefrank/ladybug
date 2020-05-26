@@ -12,6 +12,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.sql.Struct;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -246,10 +247,21 @@ public class MetadataHandler {
 	 */
 	public void updateMetadata() throws IOException {
 		HashMap<String, Metadata> pathMap = new HashMap<>(metadataMap.size());
+		Set<Integer> duplicates = new HashSet<>();
 		for (Integer c : metadataMap.keySet()) {
 			Metadata m = metadataMap.get(c);
 			String path = m.path + m.name + XmlStorage.FILE_EXTENSION;
+			if (pathMap.containsKey(path)) {
+				duplicates.add(m.storageId);
+				duplicates.add(pathMap.get(path).storageId);
+			}
 			pathMap.put(path, m);
+		}
+
+		// Delete duplicates to make sure they are re-discovered.
+		for (int storageId : duplicates) {
+			Metadata m = metadataMap.remove(storageId);
+			pathMap.remove(m.path + m.name + XmlStorage.FILE_EXTENSION);
 		}
 
 		Set<Integer> updatedIds = updateMetadata(metadataFile.getParentFile(), pathMap, null);
