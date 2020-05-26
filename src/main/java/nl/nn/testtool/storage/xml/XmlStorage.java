@@ -88,6 +88,17 @@ public class XmlStorage implements LogStorage, CrudStorage {
 
 	@Override
 	public void store(Report report) throws StorageException {
+		store(report, true);
+	}
+
+	/**
+	 * Stores the given report in the filesystem as an XML file.
+	 *
+	 * @param report          Report to be saved.
+	 * @param changeStorageId False for storage id to stay same. True to reassign storage id.
+	 * @throws StorageException
+	 */
+	private void store(Report report, boolean changeStorageId) throws StorageException {
 		try {
 			// Make sure we are not overriding any previous report
 			// that might have been handled by another metadatahandler file.
@@ -107,13 +118,13 @@ public class XmlStorage implements LogStorage, CrudStorage {
 				reportFile = new File(resolvePath(report.getStorageId()));
 			}
 
-			if (report.getStorageId() == null || metadataHandler.contains(report.getStorageId())) {
+			if (changeStorageId || report.getStorageId() == null || metadataHandler.contains(report.getStorageId())) {
 				int storageId = metadataHandler.getNextStorageId();
 				while (metadataHandler.contains(storageId))
 					storageId = metadataHandler.getNextStorageId();
 				report.setStorageId(storageId);
 			}
-			
+
 			store(report, reportFile);
 			metadata = Metadata.fromReport(report, reportFile.lastModified());
 			metadataHandler.add(metadata);
@@ -167,7 +178,7 @@ public class XmlStorage implements LogStorage, CrudStorage {
 	@Override
 	public void update(Report report) throws StorageException {
 		delete(report);
-		store(report);
+		store(report, false);
 	}
 
 	@Override
