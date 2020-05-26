@@ -1,6 +1,7 @@
 package nl.nn.testtool.storage.xml;
 
 import nl.nn.testtool.Report;
+import nl.nn.testtool.storage.StorageException;
 import nl.nn.testtool.util.LogUtil;
 import nl.nn.xmldecoder.XMLDecoder;
 import org.apache.commons.lang.StringUtils;
@@ -12,7 +13,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.sql.Struct;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -112,8 +112,6 @@ public class MetadataHandler {
 			}
 		}
 		scanner.close();
-
-		updateMetadata();
 	}
 
 	public int getNextStorageId() {
@@ -299,7 +297,9 @@ public class MetadataHandler {
 			String path = "/" + metadataFile.getParentFile().toPath().relativize(file.toPath()).toString().replaceAll("\\\\", "/"); // Relativize
 			Metadata m = map.remove(path);
 			if (m == null || m.lastModified < file.lastModified()) {
-				updatedIds.add(addFromFile(file).getStorageId());
+				Report report = addFromFile(file);
+				if (report != null)
+					updatedIds.add(report.getStorageId());
 			}
 		}
 		return updatedIds;
@@ -338,9 +338,29 @@ public class MetadataHandler {
 			report.setName(filename.substring(0, filename.length() - XmlStorage.FILE_EXTENSION.length()));
 
 			int storageId = report.getStorageId() == 0 ? getNextStorageId() : report.getStorageId();
-			if (metadataMap.containsKey(storageId) && !metadataMap.get(storageId).correlationId.equals(report.getCorrelationId())) {
-				while (metadataMap.containsKey(storageId))
-					storageId = getNextStorageId();
+			if (metadataMap.containsKey(storageId)) {
+				Report report1 = null;
+				boolean nullPointerThrown = false;
+				try {
+					// Check if there's still a report in old storage id.
+					report1 = storage.getReport(storageId);
+				} catch (NullPointerException e) {
+					// This happens during init() when building from directory.
+					// In this case it's safer to assign a new storage id.
+					nullPointerThrown = true;
+				} catch (StorageException e) {
+					logger.error("File could not be opened with storage id [" + storageId + "].", e);
+				}
+
+				if (nullPointerThrown || report1 != null) {
+					if (report1.getStorageId() == storageId) {
+						while (metadataMap.containsKey(storageId))
+							storageId = getNextStorageId();
+					} else {
+						// The metadata for this file is not up to date.
+						addFromFile(new File(storage.resolvePath(storageId)));
+					}
+				}
 			}
 			if (storageId >= lastStorageId)
 				lastStorageId = storageId + 1;

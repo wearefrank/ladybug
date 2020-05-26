@@ -46,6 +46,7 @@ public class XmlStorage implements LogStorage, CrudStorage {
 			logger.warn("Metadatafile was not set. Using " + metadataFile);
 		}
 		metadataHandler = new MetadataHandler(metadataFile, this, false);
+		updateMetadata();
 	}
 
 	/**
@@ -138,13 +139,15 @@ public class XmlStorage implements LogStorage, CrudStorage {
 	public Report getReport(Integer storageId) throws StorageException {
 		Metadata m = metadataHandler.getMetadata(storageId);
 		String path = resolvePath(m.storageId);
-		if (StringUtils.isEmpty(path))
-			throw new StorageException("Could not resolve path of report.");
+		if (StringUtils.isEmpty(path)) {
+			logger.warn("Given report path is empty.");
+			return null;
+		}
 
 		File reportFile = new File(path);
 		if (!reportFile.isFile()) {
-			logger.error("Report with given storage id does not exits!");
-			throw new StorageException("Report with given storage id does not exits!");
+			logger.warn("Given report path does not resolve to a file.");
+			return null;
 		}
 		FileInputStream inputStream = null;
 		XMLDecoder decoder = null;
@@ -271,7 +274,7 @@ public class XmlStorage implements LogStorage, CrudStorage {
 	 * @param storageId Storage Id of the report to be resolved.
 	 * @return Path of the report. If report is not in metadata, null.
 	 */
-	private String resolvePath(Integer storageId) {
+	protected String resolvePath(Integer storageId) {
 		Metadata metadata = metadataHandler.getMetadata(storageId);
 		if (metadata == null)
 			return null;
