@@ -215,6 +215,7 @@ public class XmlStorage implements LogStorage, CrudStorage {
 
 	@Override
 	public List<List<Object>> getMetadata(int maxNumberOfRecords, List<String> metadataNames, List<String> searchValues, int metadataValueType) throws StorageException {
+		updateMetadata();
 		return metadataHandler.getAsListofObjects(maxNumberOfRecords, metadataNames, searchValues, metadataValueType);
 	}
 

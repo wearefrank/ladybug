@@ -26,7 +26,6 @@ import java.util.Scanner;
 import java.util.Set;
 import java.util.TooManyListenersException;
 
-import nl.nn.testtool.storage.xml.XmlStorage;
 import org.apache.commons.lang.StringUtils;
 
 import echopointng.ProgressBar;
@@ -628,9 +627,6 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 	public void actionPerformed(ActionEvent e) {
 		hideMessages();
 		if (e.getActionCommand().equals("Refresh")) {
-			if (runStorage instanceof XmlStorage) {
-				((XmlStorage) runStorage).updateMetadata();
-			}
 			display(pathTextField.getText(), getSelectedStorageIds());
 			refresh();
 		} else if (e.getActionCommand().equals("Reset")) {
