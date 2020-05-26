@@ -627,7 +627,6 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 	public void actionPerformed(ActionEvent e) {
 		hideMessages();
 		if (e.getActionCommand().equals("Refresh")) {
-			display(pathTextField.getText(), getSelectedStorageIds());
 			refresh();
 		} else if (e.getActionCommand().equals("Reset")) {
 			displayError(reportRunner.reset());
