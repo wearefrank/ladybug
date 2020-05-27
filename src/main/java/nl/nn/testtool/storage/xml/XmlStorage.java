@@ -89,23 +89,28 @@ public class XmlStorage implements LogStorage, CrudStorage {
 
 	@Override
 	public void store(Report report) throws StorageException {
-		store(report, true);
+		try {
+			Report copy = (Report) report.clone();
+			store(copy, true);
+		} catch (ClassCastException | CloneNotSupportedException e) {
+			throw new StorageException("Could not clone the report for new storage.", e);
+		}
 	}
 
 	/**
 	 * Stores the given report in the filesystem as an XML file.
 	 *
-	 * @param report          Report to be saved.
-	 * @param changeStorageId False for storage id to stay same. True to reassign storage id.
+	 * @param report Report to be saved.
+	 * @param addNew False for storage id to stay same. True to reassign storage id, and force new file creation.
 	 * @throws StorageException
 	 */
-	private void store(Report report, boolean changeStorageId) throws StorageException {
+	private void store(Report report, boolean addNew) throws StorageException {
 		try {
 			// Make sure we are not overriding any previous report
 			// that might have been handled by another metadatahandler file.
 			Metadata metadata = metadataHandler.getMetadata(report.getStorageId());
 			File reportFile;
-			if (metadata == null) {
+			if (metadata == null || addNew) {
 				File parentFolder = (report.getPath() != null) ? new File(reportsFolder, report.getPath()) : reportsFolder;
 				String filename = report.getName().replaceAll("[<>:\"\\/\\\\\\|\\?\\*]", "_");
 				reportFile = new File(parentFolder, filename + FILE_EXTENSION);
@@ -119,7 +124,7 @@ public class XmlStorage implements LogStorage, CrudStorage {
 				reportFile = new File(resolvePath(report.getStorageId()));
 			}
 
-			if (changeStorageId || report.getStorageId() == null || metadataHandler.contains(report.getStorageId())) {
+			if (addNew || report.getStorageId() == null || metadataHandler.contains(report.getStorageId())) {
 				int storageId = metadataHandler.getNextStorageId();
 				while (metadataHandler.contains(storageId))
 					storageId = metadataHandler.getNextStorageId();
