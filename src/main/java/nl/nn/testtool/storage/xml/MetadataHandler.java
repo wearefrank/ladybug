@@ -207,11 +207,16 @@ public class MetadataHandler {
 	}
 
 	/**
-	 * Saves the metadata list in memory to metadatafile.
+	 * Saves the metadata list in memory to metadatafile, if there is metadata to save.
 	 *
 	 * @throws IOException
 	 */
 	private void save() throws IOException {
+		if (metadataMap == null || metadataMap.size() == 0) {
+			if (metadataFile.exists())
+				metadataFile.delete();
+			return;
+		}
 		if (!metadataFile.exists()) {
 			logger.info("Creating metadata file at location [" + metadataFile.getPath() + "]");
 			metadataFile.getParentFile().mkdirs();
