@@ -177,7 +177,11 @@ public class MetadataHandler {
 		List<Pattern> patterns = new ArrayList<>(metadataNames.size());
 		for (int i = 0; i < metadataNames.size(); i++) {
 			if (searchValues != null && StringUtils.isNotEmpty(searchValues.get(i))) {
-				patterns.add(Pattern.compile(searchValues.get(i), Pattern.CASE_INSENSITIVE));
+				String searchValue = searchValues.get(i);
+				if ("path".equalsIgnoreCase(metadataNames.get(i)))
+					searchValue = searchValue.substring(1, searchValue.length() - 1);
+
+				patterns.add(Pattern.compile(searchValue, Pattern.CASE_INSENSITIVE));
 			} else {
 				patterns.add(null);
 			}
