@@ -90,6 +90,8 @@ public class XmlStorage implements LogStorage, CrudStorage {
 	@Override
 	public void store(Report report) throws StorageException {
 		try {
+			// Storage uses the clone to save, because it changes reports name,
+			// and it can cause unwanted side-effects on report names.
 			Report copy = (Report) report.clone();
 			store(copy, true);
 		} catch (ClassCastException | CloneNotSupportedException e) {
