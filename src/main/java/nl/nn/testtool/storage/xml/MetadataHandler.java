@@ -178,9 +178,11 @@ public class MetadataHandler {
 		for (int i = 0; i < metadataNames.size(); i++) {
 			if (searchValues != null && StringUtils.isNotEmpty(searchValues.get(i))) {
 				String searchValue = searchValues.get(i);
-				if ("path".equalsIgnoreCase(metadataNames.get(i)))
-					searchValue = searchValue.substring(1, searchValue.length() - 1);
-
+				if ("path".equalsIgnoreCase(metadataNames.get(i))) {
+					searchValue = "^" + searchValue.substring(1, searchValue.length() - 1)
+							.replaceAll("/", "\\/")
+							.replaceAll("\\*", ".*");
+				}
 				patterns.add(Pattern.compile(searchValue, Pattern.CASE_INSENSITIVE));
 			} else {
 				patterns.add(null);
