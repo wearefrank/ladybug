@@ -15,19 +15,6 @@
 */
 package nl.nn.testtool;
 
-import java.beans.Transient;
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Scanner;
-import java.util.Set;
-
 import nl.nn.testtool.run.ReportRunner;
 import nl.nn.testtool.storage.Storage;
 import nl.nn.testtool.transform.MessageTransformer;
@@ -35,13 +22,16 @@ import nl.nn.testtool.transform.ReportXmlTransformer;
 import nl.nn.testtool.util.CsvUtil;
 import nl.nn.testtool.util.EscapeUtil;
 import nl.nn.testtool.util.LogUtil;
-
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.DocumentHelper;
+
+import java.beans.Transient;
+import java.io.Serializable;
+import java.util.*;
 
 /**
  * @author Jaco de Groot
@@ -599,15 +589,26 @@ public class Report implements Serializable {
 	public String getVariableCsv() {
 		return variableCsv;
 	}
-	
-	public String setVariableCsv(String variableCsv) {
-		if(StringUtils.isEmpty(variableCsv)) {
+
+	public void setVariableCsv(String variableCsv) {
+		if (StringUtils.isEmpty(variableCsv)) {
 			this.variableCsv = null;
-			return null;
+			return;
 		}
 		String errorMessage = CsvUtil.validateCsv(variableCsv, ";", 2);
-		if(errorMessage == null) this.variableCsv = variableCsv;
-		return errorMessage;
+		if (errorMessage != null)
+			throw new IllegalArgumentException(errorMessage);
+
+		this.variableCsv = variableCsv;
+	}
+
+	public String setVariableCsvWithoutException(String variableCsv) {
+		try {
+			setVariableCsv(variableCsv);
+			return null;
+		} catch (IllegalArgumentException e) {
+			return e.getMessage();
+		}
 	}
 
 	public Map<String, String> getVariablesAsMap() {

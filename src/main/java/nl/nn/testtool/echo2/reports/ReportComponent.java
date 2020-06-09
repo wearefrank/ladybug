@@ -405,7 +405,7 @@ public class ReportComponent extends MessageComponent {
 
 	private void saveReportVariableChanges() {
 		if(!variableTextArea.getText().equals(report.getVariableCsv())) {
-			String errorMessage = report.setVariableCsv(variableTextArea.getText());
+			String errorMessage = report.setVariableCsvWithoutException(variableTextArea.getText());
 			if(errorMessage == null) {
 				variableErrorMessageLabel.setVisible(false);
 			} else {
