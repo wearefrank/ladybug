@@ -183,12 +183,10 @@ public class Report implements Serializable {
 		return stubStrategy;
 	}
 
-	@Transient
 	public void setTransformation(String transformation) {
 		this.transformation = transformation;
 	}
 
-	@Transient
 	public String getTransformation() {
 		return transformation;
 	}
