@@ -6,6 +6,7 @@ Ladybug Test Tool release notes
 Upcoming
 --------
 
+- Add XmlStorage implementation
 - Display number of stubbed checkpoints in Test tab
 - Fix error on run in Test tab not being displayed
 - Simplify syntax of cross-report variables
