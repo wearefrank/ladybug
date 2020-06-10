@@ -858,7 +858,7 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 					runResultReport.setPath(report.getPath());
 					runResultReport.setTransformation(report.getTransformation());
 					runResultReport.setReportXmlTransformer(report.getReportXmlTransformer());
-					runResultReport.setVariableCsv(report.getVariableCsv());
+					runResultReport.setVariableCsvWithoutException(report.getVariableCsv());
 					errorMessage = Echo2Application.store(runStorage, runResultReport);
 				}
 				if (errorMessage == null) {
@@ -905,12 +905,12 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 		scanner.close();
 		
 		try {
-			reportToClone.setVariableCsv(lines.get(0)+"\n"+lines.get(1));
+			reportToClone.setVariableCsvWithoutException(lines.get(0)+"\n"+lines.get(1));
 			displayAndLogError(Echo2Application.update(runStorage, reportToClone));
 			if(lines.size() > 2) {
 				for(int i = 2; i < lines.size(); i++) {
 					Report cloneReport = (Report)reportToClone.clone();
-					cloneReport.setVariableCsv(lines.get(0)+"\n"+lines.get(i));
+					cloneReport.setVariableCsvWithoutException(lines.get(0)+"\n"+lines.get(i));
 					displayAndLogError(Echo2Application.store(runStorage, cloneReport));
 				}
 			}
