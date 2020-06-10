@@ -47,6 +47,8 @@ public class Report implements Serializable {
 	private transient static final long serialVersionUID = 5;
 	private transient static Logger log = LogUtil.getLogger(Report.class);
 	private transient TestTool testTool;
+	// Please note that the set method should return void for XmlEncoder to
+	// store the property (hence the setVariableCsvWithoutException method)
 	private long startTime;
 	private long endTime;
 	private String correlationId;
@@ -55,16 +57,17 @@ public class Report implements Serializable {
 	private String path;
 	private String stubStrategy;
 	private List<Checkpoint> checkpoints = new ArrayList<Checkpoint>();
+	private long estimatedMemoryUsage = 0;
 	private String transformation;
-	// Please note that the get and set methods need @Transient annotation for XmlEncoder to not store the property
+	private String variableCsv;
+	// Please note that the get and set methods need @Transient annotation for
+	// XmlEncoder to not store the property.
 	private transient Report originalReport;
 	private transient List threads = new ArrayList();
 	private transient Map threadIndex = new HashMap();
 	private transient Map threadFirstLevel = new HashMap();
 	private transient Map threadLevel = new HashMap();
 	private transient Map threadParent = new HashMap();
-	private long estimatedMemoryUsage = 0;
-	// TODO bij storage interface documenteren dat storage setStorage aan moet roepen?
 	private transient Storage storage;
 	private transient Integer storageId;
 	private transient Long storageSize;
@@ -75,7 +78,6 @@ public class Report implements Serializable {
 	private transient boolean differenceChecked = false;
 	private transient boolean differenceFound = false;
 	private transient Map<String, String> truncatedMessageMap = new RefCompareMap<String, String>();
-	private String variableCsv;
 	
 	public Report() {
 		String threadName = Thread.currentThread().getName();
@@ -486,6 +488,8 @@ public class Report implements Serializable {
 		report.setPath(path);
 		report.setStubStrategy(stubStrategy);
 		report.setEstimatedMemoryUsage(estimatedMemoryUsage);
+		report.setTransformation(transformation);
+		report.setVariableCsv(variableCsv);
 		List checkpoints = new ArrayList();
 		for (int i = 0; i < this.checkpoints.size(); i++) {
 			Checkpoint checkpoint = (Checkpoint)this.checkpoints.get(i);
