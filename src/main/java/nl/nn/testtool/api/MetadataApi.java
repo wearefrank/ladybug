@@ -20,17 +20,18 @@ import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@Path("/metadata")
+@Path("/")
 public class MetadataApi {
 	private static final Logger logger = LogUtil.getLogger(MetadataApi.class);
 	private static Map<String, Storage> storages;
 	public static Map<String, String> metadataFields;
 
 	@GET
-	@Path("/{storage}/")
+	@Path("/metadata/{storage}/")
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getMetadataList(@PathParam("storage") String storageParam, @DefaultValue("-1") @QueryParam("max") int max, @Context UriInfo uriInfo) throws ApiException {
@@ -39,7 +40,7 @@ public class MetadataApi {
 		List<String> searchValues = new ArrayList<>();
 		List<String> metadataNames = new ArrayList<>();
 		for (String param : params.keySet()) {
-			if (!metadataFields.containsKey(param.toLowerCase()))
+			if (!metadataFields.containsKey(param))
 				continue;
 
 			List<String> values = params.get(param);
@@ -52,7 +53,10 @@ public class MetadataApi {
 
 		}
 		try {
-			List<List<Object>> out = getStorage(storageParam).getMetadata(max, metadataNames, searchValues, MetadataExtractor.VALUE_TYPE_STRING);
+			List<List<Object>> list = getStorage(storageParam).getMetadata(max, metadataNames, searchValues, MetadataExtractor.VALUE_TYPE_STRING);
+			Map<String, Object> out = new HashMap<>(2);
+			out.put("fields", metadataNames);
+			out.put("values", list);
 			return Response.ok().entity(out).build();
 		} catch (StorageException e) {
 			throw new ApiException("Exception during filtering metadata.", e);
@@ -60,7 +64,7 @@ public class MetadataApi {
 	}
 
 	@GET
-	@Path("/")
+	@Path("/metadata")
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getMetadataInformation() {
@@ -68,7 +72,7 @@ public class MetadataApi {
 	}
 
 	@GET
-	@Path("/{storage}/{lastmodified}")
+	@Path("/metadata/{storage}/{lastmodified}")
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getLatestMetadata(@PathParam("storage") String storageParam, @PathParam("lastmodified") long lastModified) {

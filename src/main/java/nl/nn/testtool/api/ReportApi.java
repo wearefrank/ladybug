@@ -13,12 +13,14 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /*
@@ -27,7 +29,7 @@ import java.util.Map;
  */
 
 
-@Path("/ladybug")
+@Path("/")
 public class ReportApi {
 	private static Logger logger = LogUtil.getLogger(ReportApi.class);
 	private static Map<String, Storage> storages;
@@ -70,7 +72,7 @@ public class ReportApi {
 	}
 
 	@POST
-	@Path("/transformation/{storage}/{storageId}")
+	@Path("/report/transformation/{storage}/{storageId}")
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Consumes(MediaType.APPLICATION_JSON)
 	public Response updateReportTransformation(@PathParam("storage") String storageParam, @PathParam("storageId") int storageId, Map<String, String> map) {
@@ -88,22 +90,54 @@ public class ReportApi {
 	}
 
 	@GET
-	@Path("/transformation/{storage}/{storageId}")
+	@Path("/report/transformation/{storage}/{storageId}")
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response updateReportTransformation(@PathParam("storage") String storageParam, @PathParam("storageId") int storageId) {
-		Storage storage = getStorage(storageParam);
+	public Response getReportTransformation(@PathParam("storage") String storageParam, @PathParam("storageId") int storageId) {
 		try {
+			Storage storage = getStorage(storageParam);
 			String transformation = storage.getReport(storageId).getTransformation();
-			if (StringUtils.isEmpty(transformation))
-				return Response.noContent().build();
-
 			Map<String, String> map = new HashMap<>(1);
 			map.put("transformation", transformation);
 			return Response.ok(map).build();
 		} catch (StorageException e) {
 			throw new ApiException("Exception while setting transformation for a report.", e);
 		}
+	}
+
+	@PUT
+	@Path("/report/store/{storage}")
+	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response copyReport(@PathParam("storage") String storageParam, Map<String, List<Integer>> sources) {
+		Storage target = getStorage(storageParam);
+		Map<String, String> exceptions = new HashMap<>();
+		for (String src : sources.keySet()) {
+			try {
+				Storage srcStorage = getStorage(src);
+				if (!(srcStorage instanceof CrudStorage)) {
+					exceptions.put(src, "Given storage is not a CrudStorage, therefore does not implement store method.");
+					continue;
+				}
+
+				for (int storageId : sources.get(src)) {
+					try {
+						((CrudStorage) target).store(srcStorage.getReport(storageId));
+					} catch (StorageException storageException) {
+						exceptions.put(src + "_" + storageId, storageException.getMessage());
+						logger.error("Could not copy the report. #Exceptions for request: " + exceptions, storageException);
+					}
+				}
+			} catch (ApiException e) {
+				exceptions.put(src, e.getMessage());
+				throw new ApiException("Exception while setting transformation for a report.", e);
+			}
+		}
+		// TODO: Find a better error response code.
+		if (exceptions.size() > 0)
+			return Response.status(Response.Status.BAD_REQUEST).entity(exceptions).build();
+		return Response.ok().build();
 	}
 
 	public void setStorages(Map<String, Storage> map) {

@@ -15,6 +15,20 @@
 */
 package nl.nn.testtool;
 
+import lombok.SneakyThrows;
+import net.sf.saxon.trans.XPathException;
+import nl.nn.testtool.run.ReportRunner;
+import nl.nn.testtool.run.RunResult;
+import nl.nn.testtool.storage.StorageException;
+import nl.nn.testtool.util.ImportResult;
+import nl.nn.testtool.util.XmlUtil;
+import nl.nn.xmldecoder.XMLDecoder;
+import org.apache.commons.lang.StringUtils;
+import org.codehaus.jackson.annotate.JsonIgnore;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.w3c.dom.Node;
+
 import java.beans.ExceptionListener;
 import java.beans.XMLEncoder;
 import java.io.ByteArrayInputStream;
@@ -32,20 +46,6 @@ import java.util.Map.Entry;
 import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.w3c.dom.Node;
-
-import lombok.SneakyThrows;
-import net.sf.saxon.trans.XPathException;
-import nl.nn.testtool.run.ReportRunner;
-import nl.nn.testtool.run.RunResult;
-import nl.nn.testtool.storage.StorageException;
-import nl.nn.testtool.util.ImportResult;
-import nl.nn.testtool.util.XmlUtil;
-import nl.nn.xmldecoder.XMLDecoder;
 
 /**
  * @author Jaco de Groot
@@ -103,10 +103,14 @@ public class Checkpoint implements Serializable, Cloneable {
 		this.level = level;
 	}
 
+	// JsonIgnore is used so that Jackson will not get into an infinite loop trying to reference report,
+	// which already contains checkpoint.
+	@JsonIgnore
 	public void setReport(Report report) {
 		this.report = report;
 	}
 	
+	@JsonIgnore
 	public Report getReport() {
 		return report;
 	}
@@ -273,6 +277,7 @@ public class Checkpoint implements Serializable, Cloneable {
 		return stub;
 	}
 
+	@JsonIgnore
 	public Path getPath() {
 		Path path = new Path(level + 1);
 		path.setName(level, name);
