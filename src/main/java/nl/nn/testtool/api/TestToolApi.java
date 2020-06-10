@@ -18,13 +18,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-@Path("/testtool")
+@Path("/")
 public class TestToolApi {
 	private static TestTool testTool;
 	private static ReportXmlTransformer reportXmlTransformer;
 
 	@GET
-	@Path("/")
+	@Path("/testtool")
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getInfo() {
@@ -37,7 +37,7 @@ public class TestToolApi {
 	}
 
 	@POST
-	@Path("/")
+	@Path("/testtool")
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Consumes(MediaType.APPLICATION_JSON)
 	public Response setInfo(Map<String, String> map) {
@@ -58,7 +58,7 @@ public class TestToolApi {
 	}
 
 	@GET
-	@Path("/in-progress/{count}")
+	@Path("/testtool/in-progress/{count}")
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getReportsInProgress(@PathParam("count") long count) {
@@ -74,7 +74,7 @@ public class TestToolApi {
 	}
 
 	@POST
-	@Path("/transformation/")
+	@Path("/testtool/transformation/")
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Consumes(MediaType.APPLICATION_JSON)
 	public Response updateReportTransformation(Map<String, String> map) {
@@ -87,7 +87,7 @@ public class TestToolApi {
 	}
 
 	@GET
-	@Path("/transformation/{storage}/{storageId}")
+	@Path("/testtool/transformation")
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response updateReportTransformation() {
