@@ -590,6 +590,7 @@ public class Report implements Serializable {
 		return variableCsv;
 	}
 
+	// XMLEncoder requires a void setter function.
 	public void setVariableCsv(String variableCsv) {
 		if (StringUtils.isEmpty(variableCsv)) {
 			this.variableCsv = null;
