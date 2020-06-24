@@ -17,7 +17,6 @@ package nl.nn.testtool.storage.xml;
 
 import nl.nn.testtool.Report;
 import nl.nn.testtool.storage.CrudStorage;
-import nl.nn.testtool.storage.LogStorage;
 import nl.nn.testtool.storage.StorageException;
 import nl.nn.testtool.util.LogUtil;
 import nl.nn.testtool.util.SearchUtil;
@@ -38,7 +37,7 @@ import java.util.List;
  * Handles report storage for ladybug.
  * Stores reports in xml format.
  */
-public class XmlStorage implements LogStorage, CrudStorage {
+public class XmlStorage implements CrudStorage {
 	public static final String FILE_EXTENSION = ".report.xml";
 	private String name, metadataFile, reportsFolderPath;
 	private MetadataHandler metadataHandler;
@@ -90,15 +89,6 @@ public class XmlStorage implements LogStorage, CrudStorage {
 			}
 		} catch (Exception e) {
 			throw new StorageException("Could not write report [" + report.getCorrelationId() + "] to [" + file.getPath() + "].", e);
-		}
-	}
-
-	@Override
-	public void storeWithoutException(Report report) {
-		try {
-			store(report);
-		} catch (StorageException e) {
-			logger.error("Error while writing the report!", e);
 		}
 	}
 

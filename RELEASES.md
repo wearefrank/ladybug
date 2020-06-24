@@ -6,6 +6,7 @@ Ladybug Test Tool release notes
 Upcoming
 --------
 
+- Check file system free space (show warning and don't store report to prevent corrupt storage files)
 - Clone transformation and variableCsv too
 - Add XmlStorage implementation
 - Display number of stubbed checkpoints in Test tab

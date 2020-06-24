@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden
+   Copyright 2018 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -25,7 +25,9 @@ import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.zip.GZIPOutputStream;
 
@@ -62,8 +64,9 @@ public class Writer {
 	protected int latestStorageId = 1;
 	private long reportsFileLength;
 	private long metadataFileLastModified;
+	private SimpleDateFormat freeSpaceDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+	private String lastExceptionMessage;
 
-	
 	protected void setReportsFilename(String reportsFilename) {
 		this.reportsFilename = reportsFilename;
 	}
@@ -117,21 +120,23 @@ public class Writer {
 			metadataValues.add(metadataExtractor.getMetadata(report,
 					metadataName, MetadataExtractor.VALUE_TYPE_STRING));
 		}
-		store(reportBytes, metadataValues);
+		store(report.getName(), reportBytes, metadataValues);
 	}
 
-	protected void store(byte[] reportBytes, List metadataValues) throws StorageException {
+	protected void store(String reportName, byte[] reportBytes, List metadataValues) throws StorageException {
 		synchronized(synchronizeStore) {
 			try {
 				if (reportsFileOutputStream == null) {
 					if (!metadataFile.exists()) {
 						openFiles(false);
+						checkFreeSpace(reportName, reportBytes.length);
 						writeMetadataHeader();
 					} else if (validHeader()) {
 						openFiles(true);
 					} else {
 						rotateFiles();
 						openFiles(false);
+						checkFreeSpace(reportName, reportBytes.length);
 						writeMetadataHeader();
 					}
 				}
@@ -144,6 +149,7 @@ public class Writer {
 					closeFiles();
 					rotateFiles();
 					openFiles(false);
+					checkFreeSpace(reportName, reportBytes.length);
 					writeMetadataHeader();
 					reportsFileLength = 0;
 				}
@@ -163,13 +169,16 @@ public class Writer {
 //					metadataValues.add(metadataExtractor.getMetadata(report,
 //							metadataName, MetadataExtractor.VALUE_TYPE_STRING));
 //				}
+				checkFreeSpace(reportName, reportBytes.length);
 				writeReportAndMetadata(reportBytes, EscapeUtil.escapeCsv(metadataValues));
 			} catch(Throwable throwable) {
 				StorageException storageException;
 				if (throwable instanceof StorageException) {
+					lastExceptionMessage = throwable.getMessage();
 					storageException = (StorageException)throwable;
 				} else {
 					String message = "Caught unexpected throwable storing report";
+					lastExceptionMessage = message + ": " + throwable.getMessage();
 					log.error(message, throwable);
 					storageException = new StorageException(message, throwable);
 				}
@@ -184,6 +193,7 @@ public class Writer {
 			store(report, preserveStorageId);
 		} catch(Throwable throwable) {
 			if (!(throwable instanceof StorageException)) {
+				lastExceptionMessage = throwable.getMessage();
 				log.error("Caught unexpected throwable storing report", throwable);
 			}
 		}
@@ -354,6 +364,53 @@ public class Writer {
 	protected void finalize() throws Throwable {
 		closeFiles();
 		super.finalize();
+	}
+
+	public String getWarningsAndErrors() {
+		String message = getFreeSpaceWarning();
+		if (lastExceptionMessage != null) {
+			if (message == null) {
+				message = lastExceptionMessage;
+			} else {
+				message = message + ". " + lastExceptionMessage;
+			}
+		}
+		return message;
+	}
+
+	private String getFreeSpaceWarning() {
+		// If file doesn't exist getFreeSpace() will return 0. Hence, check whether file exists as getFreeSpaceWarning()
+		// can be called before any reports have been stored (this check isn't needed in checkFreeSpace() as it is
+		// called after openFiles() has been called).
+		if (reportsFile.exists()) {
+			long freeSpace = reportsFile.getFreeSpace();
+			long minimum = maximumFileSize * (maximumBackupIndex + 1) * 10;
+			if (maximumFileSize != -1 && freeSpace < minimum) {
+				return "Running out of disk space (" + freeSpace
+						+ " bytes left) (reports are not stored while free space is below " + minimum
+						+ " bytes to prevent corrupt storage files)";
+			}
+		}
+		return null;
+	}
+
+	private String checkFreeSpace(String reportName, int reportSize) throws StorageException {
+		String freeSpaceError = null;
+		long freeSpace = reportsFile.getFreeSpace();
+		long minimum = maximumFileSize * (maximumBackupIndex + 1);
+		if (maximumFileSize != -1 && freeSpace < minimum) {
+			freeSpaceError = "Report '" + reportName + "' discarded because disk space too low (" + freeSpace
+					+ " bytes left) (" + freeSpaceDateFormat.format(new Date()) + ")";
+		} else if (freeSpace < reportSize) {
+			freeSpaceError = "Report '" + reportName + "' discarded because disk space too low (" + freeSpace
+					+ " bytes left while report is " + reportSize + " bytes) ("
+					+ freeSpaceDateFormat.format(new Date()) + ")";
+		}
+		if (freeSpaceError != null) {
+			lastExceptionMessage = freeSpaceError;
+			throw new StorageException(freeSpaceError);
+		}
+		return null;
 	}
 
 }

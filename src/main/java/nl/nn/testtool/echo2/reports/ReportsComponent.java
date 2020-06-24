@@ -1,5 +1,5 @@
 /*
-   Copyright 2018-2019 Nationale-Nederlanden
+   Copyright 2018-2019 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -62,6 +62,7 @@ import nl.nn.testtool.echo2.TransformationWindow;
 import nl.nn.testtool.echo2.util.Download;
 import nl.nn.testtool.filter.View;
 import nl.nn.testtool.filter.Views;
+import nl.nn.testtool.storage.LogStorage;
 import nl.nn.testtool.storage.Storage;
 import nl.nn.testtool.storage.StorageException;
 import nl.nn.testtool.transform.ReportXmlTransformer;
@@ -796,6 +797,9 @@ public class ReportsComponent extends BaseComponent implements BeanParent, Actio
 
 	public void displayReports(boolean metadataNamesChanged) {
 		Storage storage = getSelectedView().getStorage();
+		if (storage instanceof LogStorage) {
+			displayError(((LogStorage)storage).getWarningsAndErrors());
+		}
 		try {
 			numberOfMetadataRecords.setText("/ " + storage.getSize());
 		} catch(StorageException storageException) {
