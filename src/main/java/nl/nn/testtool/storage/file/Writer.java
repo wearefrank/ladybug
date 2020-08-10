@@ -383,8 +383,8 @@ public class Writer {
 		// can be called before any reports have been stored (this check isn't needed in checkFreeSpace() as it is
 		// called after openFiles() has been called).
 		if (reportsFile.exists()) {
-			long freeSpace = reportsFile.getFreeSpace();
-			long minimum = maximumFileSize * (maximumBackupIndex + 1) * 10;
+			long freeSpace = getFreeSpace();
+			long minimum = getFreeSpaceMinimum();
 			if (maximumFileSize != -1 && freeSpace < minimum) {
 				return "Running out of disk space (" + freeSpace
 						+ " bytes left) (reports are not stored while free space is below " + minimum
@@ -396,8 +396,8 @@ public class Writer {
 
 	private String checkFreeSpace(String reportName, int reportSize) throws StorageException {
 		String freeSpaceError = null;
-		long freeSpace = reportsFile.getFreeSpace();
-		long minimum = maximumFileSize * (maximumBackupIndex + 1);
+		long freeSpace = getFreeSpace();
+		long minimum = getFreeSpaceMinimum();
 		if (maximumFileSize != -1 && freeSpace < minimum) {
 			freeSpaceError = "Report '" + reportName + "' discarded because disk space too low (" + freeSpace
 					+ " bytes left) (" + freeSpaceDateFormat.format(new Date()) + ")";
@@ -411,6 +411,14 @@ public class Writer {
 			throw new StorageException(freeSpaceError);
 		}
 		return null;
+	}
+
+	private long getFreeSpace() {
+		return reportsFile.getFreeSpace();
+	}
+
+	private long getFreeSpaceMinimum() {
+		return maximumFileSize * (maximumBackupIndex + 1) * 10;
 	}
 
 }

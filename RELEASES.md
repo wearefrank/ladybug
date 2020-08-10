@@ -6,6 +6,7 @@ Ladybug Test Tool release notes
 Upcoming
 --------
 
+- Fix file system free space check using different limit then warning
 - Check file system free space (show warning and don't store report to prevent corrupt storage files)
 - Clone transformation and variableCsv too
 - Add XmlStorage implementation
