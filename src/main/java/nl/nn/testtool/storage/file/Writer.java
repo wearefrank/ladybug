@@ -54,6 +54,7 @@ public class Writer {
 	private File metadataFile;
 	private long maximumFileSize = -1;
 	private int maximumBackupIndex;
+	private long freeSpaceMinimum = -1;
 	private FileOutputStream reportsFileOutputStream;
 	private FileOutputStream metadataFileOutputStream;
 	private OutputStreamWriter metadataOutputStreamWriter;
@@ -83,6 +84,14 @@ public class Writer {
 		this.maximumBackupIndex = maximumBackupIndex;
 	}
 
+	protected void setFreeSpaceMinimum(long freeSpaceMinimum) {
+		this.freeSpaceMinimum = freeSpaceMinimum;
+	}
+
+	private long getFreeSpaceMinimum() {
+		return freeSpaceMinimum;
+	}
+
 	protected void setPersistentMetadata(List metadataNames) {
 		persistentMetadata = metadataNames;
 		metadataHeader = EscapeUtil.escapeCsv(persistentMetadata);
@@ -105,6 +114,9 @@ public class Writer {
 			latestStorageId++;
 		}
 		metadataFileLastModified = System.currentTimeMillis();
+		if (freeSpaceMinimum == -1) {
+			freeSpaceMinimum = maximumFileSize * (maximumBackupIndex + 1) * 10;
+		}
 	}
 
 	protected void store(Report report, boolean preserveStorageId) throws StorageException {
@@ -415,10 +427,6 @@ public class Writer {
 
 	private long getFreeSpace() {
 		return reportsFile.getFreeSpace();
-	}
-
-	private long getFreeSpaceMinimum() {
-		return maximumFileSize * (maximumBackupIndex + 1) * 10;
 	}
 
 }
