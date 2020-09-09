@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden
+   Copyright 2018 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -43,17 +43,10 @@ import org.apache.log4j.Logger;
  */
 public class TestStorage implements nl.nn.testtool.storage.CrudStorage {
 //TODO TestStorage -> CrudStorage?
-//	public static final long DEFAULT_MAXIMUM_FILE_SIZE = 1024 * 1024;
-//	public static final int DEFAULT_MAXIMUM_BACKUP_INDEX = 9;
-	private static final int STORE_ACTION_CREATE = 1;
-	private static final int STORE_ACTION_UPDATE = 2;
-	private static final int STORE_ACTION_DELETE = 3;
 	private String name;
 	private Reader reader[] = new Reader[2];
 	private Writer writer[] = new Writer[2];
 	private short active;
-	private String reportsFilename;
-	private String metadataFilename;
 
 // TODO als je public weg laat, krijg je deze bij Download all in run pane en volgens mail van Peter bij openen van een rapport (zie ook constructor Storage):
 //	java.lang.IllegalAccessException: Class sun.reflect.misc.Trampoline can not access a member of class nl.nn.testtool.storage.file.TestStorage with modifiers ""
@@ -61,9 +54,6 @@ public class TestStorage implements nl.nn.testtool.storage.CrudStorage {
 //	java.lang.RuntimeException: failed to evaluate: <unbound>=Class.new();
 //	Continuing ...
 	public TestStorage() {
-//		reader.setMaximumBackupIndex(DEFAULT_MAXIMUM_BACKUP_INDEX);
-//		writer.setMaximumFileSize(DEFAULT_MAXIMUM_FILE_SIZE);
-//		writer.setMaximumBackupIndex(DEFAULT_MAXIMUM_BACKUP_INDEX);
 		reader[0] = new Reader();
 		reader[1] = new Reader();
 		writer[0] = new Writer();
@@ -79,7 +69,6 @@ public class TestStorage implements nl.nn.testtool.storage.CrudStorage {
 	}
 		
 	public void setReportsFilename(String reportsFilename) {
-//		this.reportsFilename = reportsFilename;
 		reader[0].setReportsFilename(reportsFilename + ".a");
 		reader[1].setReportsFilename(reportsFilename + ".b");
 		writer[0].setReportsFilename(reportsFilename + ".a");
@@ -87,7 +76,6 @@ public class TestStorage implements nl.nn.testtool.storage.CrudStorage {
 	}
 
 	public void setMetadataFilename(String metadataFilename) {
-//		this.metadataFilename = metadataFilename;
 		reader[0].setMetadataFilename(metadataFilename + ".a");
 		reader[1].setMetadataFilename(metadataFilename + ".b");
 		writer[0].setMetadataFilename(metadataFilename + ".a");
@@ -199,7 +187,7 @@ public class TestStorage implements nl.nn.testtool.storage.CrudStorage {
 						persistentMetadata, searchValues ,
 						MetadataExtractor.VALUE_TYPE_STRING,
 						writer[source].getMetadataFileLastModified());
-				writer[destination].store(reportBytes, (List)metadata.get(0));
+				writer[destination].store(report.getName(), reportBytes, (List)metadata.get(0));
 			}
 		}
 		writer[destination].latestStorageId = writer[source].latestStorageId;

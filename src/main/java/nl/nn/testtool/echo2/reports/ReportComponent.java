@@ -1,5 +1,5 @@
 /*
-   Copyright 2018-2019 Nationale-Nederlanden
+   Copyright 2018-2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -390,6 +390,7 @@ public class ReportComponent extends MessageComponent {
 			displayAndLogError(Echo2Application.update((CrudStorage)report.getStorage(), report));
 		}
 		messageTextArea.setText(report.toXml());
+		nameTextField.setText(report.getName());
 		super.save();
 	}
 
@@ -404,7 +405,7 @@ public class ReportComponent extends MessageComponent {
 
 	private void saveReportVariableChanges() {
 		if(!variableTextArea.getText().equals(report.getVariableCsv())) {
-			String errorMessage = report.setVariableCsv(variableTextArea.getText());
+			String errorMessage = report.setVariableCsvWithoutException(variableTextArea.getText());
 			if(errorMessage == null) {
 				variableErrorMessageLabel.setVisible(false);
 			} else {

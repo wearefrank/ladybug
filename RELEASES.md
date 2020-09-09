@@ -6,6 +6,11 @@ Ladybug Test Tool release notes
 Upcoming
 --------
 
+- Make free space minimum configurable
+- Fix file system free space check using different limit then warning
+- Check file system free space (show warning and don't store report to prevent corrupt storage files)
+- Clone transformation and variableCsv too
+- Add XmlStorage implementation
 - Display number of stubbed checkpoints in Test tab
 - Fix error on run in Test tab not being displayed
 - Simplify syntax of cross-report variables

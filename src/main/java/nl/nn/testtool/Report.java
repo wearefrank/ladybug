@@ -1,5 +1,5 @@
 /*
-   Copyright 2018-2019 Nationale-Nederlanden
+   Copyright 2018-2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,18 +15,6 @@
 */
 package nl.nn.testtool;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Scanner;
-import java.util.Set;
-
 import nl.nn.testtool.run.ReportRunner;
 import nl.nn.testtool.storage.Storage;
 import nl.nn.testtool.transform.MessageTransformer;
@@ -34,13 +22,16 @@ import nl.nn.testtool.transform.ReportXmlTransformer;
 import nl.nn.testtool.util.CsvUtil;
 import nl.nn.testtool.util.EscapeUtil;
 import nl.nn.testtool.util.LogUtil;
-
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.DocumentHelper;
+
+import java.beans.Transient;
+import java.io.Serializable;
+import java.util.*;
 
 /**
  * @author Jaco de Groot
@@ -56,6 +47,8 @@ public class Report implements Serializable {
 	private transient static final long serialVersionUID = 5;
 	private transient static Logger log = LogUtil.getLogger(Report.class);
 	private transient TestTool testTool;
+	// Please note that the set method should return void for XmlEncoder to
+	// store the property (hence the setVariableCsvWithoutException method)
 	private long startTime;
 	private long endTime;
 	private String correlationId;
@@ -64,15 +57,17 @@ public class Report implements Serializable {
 	private String path;
 	private String stubStrategy;
 	private List<Checkpoint> checkpoints = new ArrayList<Checkpoint>();
+	private long estimatedMemoryUsage = 0;
 	private String transformation;
+	private String variableCsv;
+	// Please note that the get and set methods need @Transient annotation for
+	// XmlEncoder to not store the property.
 	private transient Report originalReport;
 	private transient List threads = new ArrayList();
 	private transient Map threadIndex = new HashMap();
 	private transient Map threadFirstLevel = new HashMap();
 	private transient Map threadLevel = new HashMap();
 	private transient Map threadParent = new HashMap();
-	private long estimatedMemoryUsage = 0;
-	// TODO bij storage interface documenteren dat storage setStorage aan moet roepen?
 	private transient Storage storage;
 	private transient Integer storageId;
 	private transient Long storageSize;
@@ -83,7 +78,6 @@ public class Report implements Serializable {
 	private transient boolean differenceChecked = false;
 	private transient boolean differenceFound = false;
 	private transient Map<String, String> truncatedMessageMap = new RefCompareMap<String, String>();
-	private String variableCsv;
 	
 	public Report() {
 		String threadName = Thread.currentThread().getName();
@@ -93,18 +87,22 @@ public class Report implements Serializable {
 		threadLevel.put(threadName, new Integer(0));
 	}
 
+	@Transient
 	public void setTestTool(TestTool testTool) {
 		this.testTool = testTool;
 	}
 
+	@Transient
 	public TestTool getTestTool() {
 		return testTool;
 	}
 
+	@Transient
 	public void setStorage(Storage storage) {
 		this.storage = storage;
 	}
 
+	@Transient
 	public Storage getStorage() {
 		return storage;
 	}
@@ -116,11 +114,13 @@ public class Report implements Serializable {
 	public Integer getStorageId() {
 		return storageId;
 	}
-	
+
+	@Transient
 	public void setStorageSize(Long storageSize) {
 		this.storageSize = storageSize;
 	}
-	
+
+	@Transient
 	public Long getStorageSize() {
 		return storageSize;
 	}
@@ -193,22 +193,27 @@ public class Report implements Serializable {
 		return transformation;
 	}
 
+	@Transient
 	public void setReportXmlTransformer(ReportXmlTransformer reportXmlTransformer) {
 		this.reportXmlTransformer = reportXmlTransformer;
 	}
 
+	@Transient
 	public ReportXmlTransformer getReportXmlTransformer() {
 		return reportXmlTransformer;
 	}
 
+	@Transient
 	public void setGlobalReportXmlTransformer(ReportXmlTransformer globalReportXmlTransformer) {
 		this.globalReportXmlTransformer = globalReportXmlTransformer;
 	}
 
+	@Transient
 	public ReportXmlTransformer getGlobalReportXmlTransformer() {
 		return globalReportXmlTransformer;
 	}
 
+	@Transient
 	public void setOriginalReport(Report originalReport) {
 		this.originalReport = originalReport;
 	}
@@ -437,30 +442,37 @@ public class Report implements Serializable {
 		return estimatedMemoryUsage;
 	}
 
+	@Transient
 	public void setCounterpart(Report report) {
 		counterpart = report;
 	}
 
+	@Transient
 	public Report getCounterpart() {
 		return counterpart;
 	}
 
+	@Transient
 	public void setDifferenceChecked(boolean differenceChecked) {
 		this.differenceChecked = differenceChecked;
 	}
 
+	@Transient
 	public boolean getDifferenceChecked() {
 		return differenceChecked;
 	}
 
+	@Transient
 	public void setDifferenceFound(boolean differenceFound) {
 		this.differenceFound = differenceFound;
 	}
 
+	@Transient
 	public boolean getDifferenceFound() {
 		return differenceFound;
 	}
 
+	@Transient
 	public MessageTransformer getMessageTransformer() {
 		return testTool.getMessageTransformer();
 	}
@@ -476,6 +488,8 @@ public class Report implements Serializable {
 		report.setPath(path);
 		report.setStubStrategy(stubStrategy);
 		report.setEstimatedMemoryUsage(estimatedMemoryUsage);
+		report.setTransformation(transformation);
+		report.setVariableCsv(variableCsv);
 		List checkpoints = new ArrayList();
 		for (int i = 0; i < this.checkpoints.size(); i++) {
 			Checkpoint checkpoint = (Checkpoint)this.checkpoints.get(i);
@@ -577,15 +591,27 @@ public class Report implements Serializable {
 	public String getVariableCsv() {
 		return variableCsv;
 	}
-	
-	public String setVariableCsv(String variableCsv) {
-		if(StringUtils.isEmpty(variableCsv)) {
+
+	// XMLEncoder requires a void setter function.
+	public void setVariableCsv(String variableCsv) {
+		if (StringUtils.isEmpty(variableCsv)) {
 			this.variableCsv = null;
-			return null;
+			return;
 		}
 		String errorMessage = CsvUtil.validateCsv(variableCsv, ";", 2);
-		if(errorMessage == null) this.variableCsv = variableCsv;
-		return errorMessage;
+		if (errorMessage != null)
+			throw new IllegalArgumentException(errorMessage);
+
+		this.variableCsv = variableCsv;
+	}
+
+	public String setVariableCsvWithoutException(String variableCsv) {
+		try {
+			setVariableCsv(variableCsv);
+			return null;
+		} catch (IllegalArgumentException e) {
+			return e.getMessage();
+		}
 	}
 
 	public Map<String, String> getVariablesAsMap() {

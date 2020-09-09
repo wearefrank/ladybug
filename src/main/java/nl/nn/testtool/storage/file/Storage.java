@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden
+   Copyright 2018 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -42,14 +42,9 @@ import nl.nn.testtool.util.SearchUtil;
 public class Storage implements nl.nn.testtool.storage.LogStorage {
 	public static final long DEFAULT_MAXIMUM_FILE_SIZE = 1024 * 1024;
 	public static final int DEFAULT_MAXIMUM_BACKUP_INDEX = 9;
-	private static final int STORE_ACTION_CREATE = 1;
-	private static final int STORE_ACTION_UPDATE = 2;
-	private static final int STORE_ACTION_DELETE = 3;
 	private String name;
 	private Reader reader = new Reader();
 	private Writer writer = new Writer();
-	private String reportsFilename;
-	private String metadataFilename;
 
 
 //	TODO als je public weg laat, krijg je deze bij Download all bij Reports pane (zie ook constructor bij TestStorage) (vreemd dat je deze melding zo vaak krijgt als het aantal reports dat je download):
@@ -71,13 +66,11 @@ public class Storage implements nl.nn.testtool.storage.LogStorage {
 	}
 		
 	public void setReportsFilename(String reportsFilename) {
-		this.reportsFilename = reportsFilename;
 		reader.setReportsFilename(reportsFilename);
 		writer.setReportsFilename(reportsFilename);
 	}
 
 	public void setMetadataFilename(String metadataFilename) {
-		this.metadataFilename = metadataFilename;
 		reader.setMetadataFilename(metadataFilename);
 		writer.setMetadataFilename(metadataFilename);
 	}
@@ -89,6 +82,10 @@ public class Storage implements nl.nn.testtool.storage.LogStorage {
 	public void setMaximumBackupIndex(int maximumBackupIndex) {
 		reader.setMaximumBackupIndex(maximumBackupIndex);
 		writer.setMaximumBackupIndex(maximumBackupIndex);
+	}
+
+	public void setFreeSpaceMinimum(long freeSpaceMinimum) {
+		writer.setFreeSpaceMinimum(freeSpaceMinimum);
 	}
 
 	public void setMetadataExtractor(MetadataExtractor metadataExtractor) {
@@ -126,6 +123,10 @@ public class Storage implements nl.nn.testtool.storage.LogStorage {
 
 	public void storeWithoutException(Report report) {
 		writer.storeWithoutException(report, false);
+	}
+
+	public String getWarningsAndErrors() {
+		return writer.getWarningsAndErrors();
 	}
 
 	public int getSize() throws StorageException {

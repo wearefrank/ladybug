@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden
+   Copyright 2018 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@ package nl.nn.testtool.storage;
 import nl.nn.testtool.Report;
 
 /**
- * Storage (optimised) for logging. Targeted at minimising the overhead on the
+ * Storage (optimized) for logging. Targeted at minimizing the overhead on the
  * process being logged (minimal delay and interruptions).
  * 
  * @author Jaco de Groot
@@ -27,4 +27,11 @@ public interface LogStorage extends Storage {
 
 	public void storeWithoutException(Report report);
 
+	/**
+	 * Get warnings and errors that need user attention like file system (almost) full or exceptions while storing
+	 * reports.
+	 * 
+	 * @return the message to show to the user or null when everything is fine
+	 */
+	public String getWarningsAndErrors();
 }
