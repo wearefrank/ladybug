@@ -11,12 +11,12 @@ public class ApiException extends WebApplicationException implements Serializabl
 	private static Logger logger = LogUtil.getLogger(ApiException.class);
 
 	public ApiException(String msg, Throwable t) {
-		super(msg, t, 500);
+		super(t, 500);
 		logger.error(msg, t);
 	}
 
 	public ApiException(String msg) {
-		super(msg, 500);
+		super(500);
 		logger.error(msg);
 	}
 }
