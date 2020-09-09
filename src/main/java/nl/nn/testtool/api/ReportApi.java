@@ -1,11 +1,16 @@
 package nl.nn.testtool.api;
 
 import nl.nn.testtool.Report;
+import nl.nn.testtool.echo2.util.Upload;
 import nl.nn.testtool.storage.CrudStorage;
 import nl.nn.testtool.storage.Storage;
 import nl.nn.testtool.storage.StorageException;
+import nl.nn.testtool.util.Export;
+import nl.nn.testtool.util.ExportResult;
 import nl.nn.testtool.util.LogUtil;
 import org.apache.commons.lang.StringUtils;
+import org.apache.cxf.jaxrs.ext.multipart.Attachment;
+import org.apache.cxf.jaxrs.ext.multipart.Multipart;
 import org.apache.log4j.Logger;
 
 import javax.annotation.security.RolesAllowed;
@@ -19,20 +24,14 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/*
-	TODO: PUT Upload a
-	TODO: GET Download a report
- */
-
-
 @Path("/")
-public class ReportApi {
-	private static Logger logger = LogUtil.getLogger(ReportApi.class);
-	private static Map<String, Storage> storages;
+public class ReportApi extends ApiBase {
+	private static final Logger logger = LogUtil.getLogger(ReportApi.class);
 
 	@GET
 	@Path("/report/{storage}/{storageId}")
@@ -140,14 +139,40 @@ public class ReportApi {
 		return Response.ok().build();
 	}
 
-	public void setStorages(Map<String, Storage> map) {
-		storages = map;
+	@POST
+	@Path("/report/upload/{storage}")
+	@Produces(MediaType.TEXT_HTML)
+	@Consumes(MediaType.MULTIPART_FORM_DATA)
+	public Response uploadFile(@PathParam("storage") String storageParam, @Multipart("file") Attachment attachment) {
+		Storage storage = getStorage(storageParam);
+		if (!(storage instanceof CrudStorage)) {
+			throw new ApiException("Given storage is not a Crud Storage. Therefore no reports can be added externally.");
+		}
+		CrudStorage crudStorage = (CrudStorage) storage;
+
+		String filename = attachment.getContentDisposition().getParameter("filename");
+		InputStream in = attachment.getObject(InputStream.class);
+		String errorMessage = Upload.upload(filename, in, crudStorage, logger);
+		if (StringUtils.isEmpty(errorMessage)) {
+			return Response.ok().build();
+		}
+		return Response.status(Response.Status.BAD_REQUEST).entity(errorMessage).build();
 	}
 
+	@GET
+	@Path("/report/download/{storage}/{storageId}")
+	@Produces("application/octet-stream")
+	public Response downloadFile(@PathParam("storage") String storageParam, @PathParam("storageId") int storageId) {
+		Storage storage = getStorage(storageParam);
+		try {
+			Report report = storage.getReport(storageId);
+			ExportResult export = Export.export(report);
 
-	private static Storage getStorage(String storage) throws ApiException {
-		if (!storages.containsKey(storage))
-			throw new ApiException("Given storage [" + storage + "] was not found.");
-		return storages.get(storage);
+			Response.ResponseBuilder response = Response.ok(export.getTempFile(), MediaType.APPLICATION_OCTET_STREAM);
+			response.header("Content-Disposition", "attachment; filename=" + export.getSuggestedFilename());
+			return response.build();
+		} catch (StorageException e) {
+			throw new ApiException("Exception while requesting report from the storage.", e);
+		}
 	}
 }
