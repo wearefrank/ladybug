@@ -2,7 +2,6 @@ package nl.nn.testtool.api;
 
 
 import nl.nn.testtool.MetadataExtractor;
-import nl.nn.testtool.storage.Storage;
 import nl.nn.testtool.storage.StorageException;
 import nl.nn.testtool.util.LogUtil;
 import org.apache.log4j.Logger;
@@ -25,10 +24,17 @@ import java.util.List;
 import java.util.Map;
 
 @Path("/")
-public class MetadataApi {
+public class MetadataApi extends ApiBase {
 	private static final Logger logger = LogUtil.getLogger(MetadataApi.class);
-	private static Map<String, Storage> storages;
 	public static Map<String, String> metadataFields;
+
+	@GET
+	@Path("/test")
+	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response testFunc() {
+		return Response.ok("TEST SUCCESSFUL").build();
+	}
 
 	@GET
 	@Path("/metadata/{storage}/")
@@ -80,17 +86,7 @@ public class MetadataApi {
 		return Response.status(Response.Status.NOT_IMPLEMENTED).build();
 	}
 
-	public void setStorages(Map<String, Storage> map) {
-		storages = map;
-	}
-
 	public void setMetadataFields(Map<String, String> map) {
 		metadataFields = map;
-	}
-
-	private static Storage getStorage(String storage) throws ApiException {
-		if (!storages.containsKey(storage))
-			throw new ApiException("Given storage [" + storage + "] was not found.");
-		return storages.get(storage);
 	}
 }

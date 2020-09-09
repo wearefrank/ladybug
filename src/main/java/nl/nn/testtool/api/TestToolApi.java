@@ -1,7 +1,6 @@
 package nl.nn.testtool.api;
 
 import nl.nn.testtool.Report;
-import nl.nn.testtool.TestTool;
 import nl.nn.testtool.transform.ReportXmlTransformer;
 import org.apache.commons.lang.StringUtils;
 
@@ -19,8 +18,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Path("/")
-public class TestToolApi {
-	private static TestTool testTool;
+public class TestToolApi extends ApiBase {
 	private static ReportXmlTransformer reportXmlTransformer;
 
 	@GET
@@ -98,10 +96,6 @@ public class TestToolApi {
 		Map<String, String> map = new HashMap<>(1);
 		map.put("transformation", transformation);
 		return Response.ok(map).build();
-	}
-
-	public static void setTestTool(TestTool testTool) {
-		TestToolApi.testTool = testTool;
 	}
 
 	public static void setReportXmlTransformer(ReportXmlTransformer reportXmlTransformer) {
