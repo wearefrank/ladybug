@@ -1,6 +1,7 @@
-package nl.nn.testtool.api;
+package nl.nn.testtool.web.api;
 
 import nl.nn.testtool.Report;
+import nl.nn.testtool.TestTool;
 import nl.nn.testtool.transform.ReportXmlTransformer;
 import org.apache.commons.lang.StringUtils;
 
@@ -21,11 +22,20 @@ import java.util.Map;
 public class TestToolApi extends ApiBase {
 	private static ReportXmlTransformer reportXmlTransformer;
 
+	// TODO: Remove before pull request.
+	@GET
+	@Path("/test")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response testFunc() {
+		return Response.ok("TEST SUCCESSFUL").build();
+	}
+
 	@GET
 	@Path("/testtool")
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getInfo() {
+		TestTool testTool = getBean("testTool");
 		HashMap<String, Object> map = new HashMap<>(4);
 		map.put("generatorEnabled", testTool.isReportGeneratorEnabled());
 		map.put("estMemory", testTool.getReportsInProgressEstimatedMemoryUsage());
@@ -39,6 +49,7 @@ public class TestToolApi extends ApiBase {
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Consumes(MediaType.APPLICATION_JSON)
 	public Response setInfo(Map<String, String> map) {
+		TestTool testTool = getBean("testTool");
 		// TODO: Check user roles.
 		String generatorEnabled = map.remove("generatorEnabled");
 		String regexFilter = map.remove("regexFilter");
@@ -60,6 +71,7 @@ public class TestToolApi extends ApiBase {
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getReportsInProgress(@PathParam("count") long count) {
+		TestTool testTool = getBean("testTool");
 		count = Math.min(count, testTool.getNumberOfReportsInProgress());
 		if (count == 0)
 			return Response.noContent().build();
@@ -80,7 +92,7 @@ public class TestToolApi extends ApiBase {
 		if (StringUtils.isEmpty(transformation))
 			return Response.status(Response.Status.BAD_REQUEST).build();
 
-		reportXmlTransformer.setXslt(transformation);
+		getReportXmlTransformer().setXslt(transformation);
 		return Response.ok().build();
 	}
 
@@ -89,7 +101,7 @@ public class TestToolApi extends ApiBase {
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response updateReportTransformation() {
-		String transformation = reportXmlTransformer.getXslt();
+		String transformation = getReportXmlTransformer().getXslt();
 		if (StringUtils.isEmpty(transformation))
 			return Response.noContent().build();
 
@@ -98,7 +110,11 @@ public class TestToolApi extends ApiBase {
 		return Response.ok(map).build();
 	}
 
-	public static void setReportXmlTransformer(ReportXmlTransformer reportXmlTransformer) {
-		TestToolApi.reportXmlTransformer = reportXmlTransformer;
+
+	public ReportXmlTransformer getReportXmlTransformer() {
+		if (reportXmlTransformer == null)
+			reportXmlTransformer = getBean("reportXmlTransformer");
+
+		return reportXmlTransformer;
 	}
 }

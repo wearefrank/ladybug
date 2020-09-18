@@ -1,10 +1,12 @@
-package nl.nn.testtool.api;
+package nl.nn.testtool.web.api;
 
 
 import nl.nn.testtool.MetadataExtractor;
+import nl.nn.testtool.storage.Storage;
 import nl.nn.testtool.storage.StorageException;
 import nl.nn.testtool.util.LogUtil;
 import org.apache.log4j.Logger;
+import org.springframework.stereotype.Service;
 
 import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.DefaultValue;
@@ -22,19 +24,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @Path("/")
+@Service
 public class MetadataApi extends ApiBase {
 	private static final Logger logger = LogUtil.getLogger(MetadataApi.class);
-	public static Map<String, String> metadataFields;
-
-	@GET
-	@Path("/test")
-	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
-	@Produces(MediaType.APPLICATION_JSON)
-	public Response testFunc() {
-		return Response.ok("TEST SUCCESSFUL").build();
-	}
+	public static Set<String> metadataFields;
 
 	@GET
 	@Path("/metadata/{storage}/")
@@ -46,7 +42,7 @@ public class MetadataApi extends ApiBase {
 		List<String> searchValues = new ArrayList<>();
 		List<String> metadataNames = new ArrayList<>();
 		for (String param : params.keySet()) {
-			if (!metadataFields.containsKey(param))
+			if (!getMetadataFields().contains(param))
 				continue;
 
 			List<String> values = params.get(param);
@@ -59,7 +55,8 @@ public class MetadataApi extends ApiBase {
 
 		}
 		try {
-			List<List<Object>> list = getStorage(storageParam).getMetadata(max, metadataNames, searchValues, MetadataExtractor.VALUE_TYPE_STRING);
+			Storage storage = getBean(storageParam);
+			List<List<Object>> list = storage.getMetadata(max, metadataNames, searchValues, MetadataExtractor.VALUE_TYPE_STRING);
 			Map<String, Object> out = new HashMap<>(2);
 			out.put("fields", metadataNames);
 			out.put("values", list);
@@ -74,7 +71,7 @@ public class MetadataApi extends ApiBase {
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getMetadataInformation() {
-		return Response.ok().entity(metadataFields).build();
+		return Response.ok().entity(getMetadataFields()).build();
 	}
 
 	@GET
@@ -86,7 +83,9 @@ public class MetadataApi extends ApiBase {
 		return Response.status(Response.Status.NOT_IMPLEMENTED).build();
 	}
 
-	public void setMetadataFields(Map<String, String> map) {
-		metadataFields = map;
+	private Set<String> getMetadataFields() {
+		if (metadataFields == null)
+			metadataFields = getBean("metadataFields");
+		return metadataFields;
 	}
 }
