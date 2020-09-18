@@ -9,14 +9,12 @@ import nl.nn.testtool.util.LogUtil;
 import org.apache.log4j.Logger;
 
 import javax.annotation.security.RolesAllowed;
-import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.ArrayList;
@@ -26,9 +24,6 @@ import java.util.Map;
 
 public class RunApi extends ApiBase {
 	private static final Logger logger = LogUtil.getLogger(RunApi.class);
-
-	@Context
-	private HttpServletRequest httpRequest;
 
 	@POST
 	@Path("/runner/run/{debugStorage}")
@@ -80,9 +75,9 @@ public class RunApi extends ApiBase {
 	@Path("/runner/reset")
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	public Response resetAll() {
-		Object sessionAttr = httpRequest.getSession().getAttribute("reportRunner");
+		Object sessionAttr = getSessionAttr("reportRunner");
 		if (!(sessionAttr instanceof Map)) {
-			httpRequest.getSession().setAttribute("reportRunner", new HashMap<Object, Object>());
+			setSessionAttr("reportRunner", new HashMap<Object, Object>());
 			return Response.ok().build();
 		}
 
@@ -112,12 +107,12 @@ public class RunApi extends ApiBase {
 	private ReportRunner getRunner(Storage debugStorage) {
 		Map<Object, Object> runners;
 
-		Object sessionAttr = httpRequest.getSession().getAttribute("reportRunner");
+		Object sessionAttr = getSessionAttr("reportRunner");
 		if (sessionAttr instanceof Map) {
 			runners = (Map) sessionAttr;
 		} else {
 			runners = new HashMap<>();
-			httpRequest.getSession().setAttribute("reportRunner", runners);
+			setSessionAttr("reportRunner", runners);
 		}
 
 		ReportRunner runner = (ReportRunner) runners.get(debugStorage);
