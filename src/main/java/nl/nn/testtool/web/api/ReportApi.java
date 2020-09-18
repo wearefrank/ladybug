@@ -1,4 +1,4 @@
-package nl.nn.testtool.api;
+package nl.nn.testtool.web.api;
 
 import nl.nn.testtool.Report;
 import nl.nn.testtool.echo2.util.Upload;
@@ -37,15 +37,16 @@ public class ReportApi extends ApiBase {
 	@Path("/report/{storage}/{storageId}")
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response getReport(@PathParam("storage") String storage, @PathParam("storageId") int storageId) throws ApiException {
+	public Response getReport(@PathParam("storage") String storageParam, @PathParam("storageId") int storageId) throws ApiException {
 		try {
-			Report report = getStorage(storage).getReport(storageId);
+			Storage storage = getBean(storageParam);
+			Report report = storage.getReport(storageId);
 			if (report == null)
 				return Response.status(Response.Status.NOT_FOUND).build();
 
 			return Response.ok().entity(report).build();
 		} catch (StorageException e) {
-			throw new ApiException("Exception while getting report [" + storageId + "] from storage [" + storage + "]", e);
+			throw new ApiException("Exception while getting report [" + storageId + "] from storage [" + storageParam + "]", e);
 		}
 	}
 
@@ -53,7 +54,7 @@ public class ReportApi extends ApiBase {
 	@Path("/report/{storage}/{storageId}")
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	public Response deleteReport(@PathParam("storage") String storageParam, @PathParam("storageId") int storageId) {
-		Storage storage = getStorage(storageParam);
+		Storage storage = getBean(storageParam);
 		if (!(storage instanceof CrudStorage)) {
 			String msg = "Given storage [" + storageParam + "] does not implement delete function.";
 			logger.warn(msg);
@@ -80,7 +81,7 @@ public class ReportApi extends ApiBase {
 			return Response.status(Response.Status.BAD_REQUEST).build();
 
 		try {
-			Storage storage = getStorage(storageParam);
+			Storage storage = getBean(storageParam);
 			storage.getReport(storageId).setTransformation(transformation);
 			return Response.ok().build();
 		} catch (StorageException e) {
@@ -94,7 +95,7 @@ public class ReportApi extends ApiBase {
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getReportTransformation(@PathParam("storage") String storageParam, @PathParam("storageId") int storageId) {
 		try {
-			Storage storage = getStorage(storageParam);
+			Storage storage = getBean(storageParam);
 			String transformation = storage.getReport(storageId).getTransformation();
 			Map<String, String> map = new HashMap<>(1);
 			map.put("transformation", transformation);
@@ -110,15 +111,11 @@ public class ReportApi extends ApiBase {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response copyReport(@PathParam("storage") String storageParam, Map<String, List<Integer>> sources) {
-		Storage target = getStorage(storageParam);
+		Storage target = getBean(storageParam);
 		Map<String, String> exceptions = new HashMap<>();
 		for (String src : sources.keySet()) {
 			try {
-				Storage srcStorage = getStorage(src);
-				if (!(srcStorage instanceof CrudStorage)) {
-					exceptions.put(src, "Given storage is not a CrudStorage, therefore does not implement store method.");
-					continue;
-				}
+				Storage srcStorage = getBean(src);
 
 				for (int storageId : sources.get(src)) {
 					try {
@@ -144,7 +141,7 @@ public class ReportApi extends ApiBase {
 	@Produces(MediaType.TEXT_HTML)
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
 	public Response uploadFile(@PathParam("storage") String storageParam, @Multipart("file") Attachment attachment) {
-		Storage storage = getStorage(storageParam);
+		Storage storage = getBean(storageParam);
 		if (!(storage instanceof CrudStorage)) {
 			throw new ApiException("Given storage is not a Crud Storage. Therefore no reports can be added externally.");
 		}
@@ -163,7 +160,7 @@ public class ReportApi extends ApiBase {
 	@Path("/report/download/{storage}/{storageId}")
 	@Produces("application/octet-stream")
 	public Response downloadFile(@PathParam("storage") String storageParam, @PathParam("storageId") int storageId) {
-		Storage storage = getStorage(storageParam);
+		Storage storage = getBean(storageParam);
 		try {
 			Report report = storage.getReport(storageId);
 			ExportResult export = Export.export(report);

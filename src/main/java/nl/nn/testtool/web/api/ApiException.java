@@ -1,4 +1,4 @@
-package nl.nn.testtool.api;
+package nl.nn.testtool.web.api;
 
 import nl.nn.testtool.util.LogUtil;
 import org.apache.log4j.Logger;
@@ -13,10 +13,12 @@ public class ApiException extends WebApplicationException implements Serializabl
 	public ApiException(String msg, Throwable t) {
 		super(t, 500);
 		logger.error(msg, t);
+		System.err.println(msg);
 	}
 
 	public ApiException(String msg) {
 		super(500);
 		logger.error(msg);
+		System.err.println(msg);
 	}
 }

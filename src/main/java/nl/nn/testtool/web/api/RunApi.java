@@ -1,4 +1,4 @@
-package nl.nn.testtool.api;
+package nl.nn.testtool.web.api;
 
 import nl.nn.testtool.Report;
 import nl.nn.testtool.run.ReportRunner;
@@ -36,11 +36,11 @@ public class RunApi extends ApiBase {
 	@Produces(MediaType.APPLICATION_JSON)
 	@Consumes(MediaType.APPLICATION_JSON)
 	public Response runReport(@PathParam("debugStorage") String debugStorageParam, Map<String, List<Integer>> sources) {
-		Storage debugStorage = getStorage(debugStorageParam);
+		Storage debugStorage = getBean(debugStorageParam);
 		List<Report> reports = new ArrayList<>();
 		List<String> exceptions = new ArrayList<>();
 		for (String storageParam : sources.keySet()) {
-			Storage storage = getStorage(storageParam);
+			Storage storage = getBean(storageParam);
 			for (int storageId : sources.get(storageParam)) {
 				try {
 					reports.add(storage.getReport(storageId));
@@ -66,7 +66,7 @@ public class RunApi extends ApiBase {
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getResults(@PathParam("debugStorage") String debugStorageParam) {
-		Storage debugStorage = getStorage(debugStorageParam);
+		Storage debugStorage = getBean(debugStorageParam);
 		ReportRunner runner = getRunner(debugStorage);
 
 		Map<Integer, RunResult> results = runner.getResults();
@@ -103,7 +103,7 @@ public class RunApi extends ApiBase {
 	@Path("/runner/reset/{debugStorage}")
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	public Response resetRunner(@PathParam("debugStorage") String storageParam) {
-		Storage storage = getStorage(storageParam);
+		Storage storage = getBean(storageParam);
 		ReportRunner runner = getRunner(storage);
 		runner.reset();
 		return Response.ok().build();
@@ -123,7 +123,7 @@ public class RunApi extends ApiBase {
 		ReportRunner runner = (ReportRunner) runners.get(debugStorage);
 		if (runner == null) {
 			runner = new ReportRunner();
-			runner.setTestTool(testTool);
+			runner.setTestTool(getBean("testTool"));
 			runner.setDebugStorage(debugStorage);
 			runner.setSecurityContext(null); // ????
 			runners.put(debugStorage, runner);
