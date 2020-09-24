@@ -27,7 +27,7 @@ import nl.nn.testtool.run.ReportRunner;
  */
 public interface Debugger {
 
-	public List getStubStrategies();
+	public List<String> getStubStrategies();
 
 	public String getDefaultStubStrategy();
 

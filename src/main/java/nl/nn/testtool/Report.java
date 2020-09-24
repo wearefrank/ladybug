@@ -63,11 +63,11 @@ public class Report implements Serializable {
 	// Please note that the get and set methods need @Transient annotation for
 	// XmlEncoder to not store the property.
 	private transient Report originalReport;
-	private transient List threads = new ArrayList();
-	private transient Map threadIndex = new HashMap();
-	private transient Map threadFirstLevel = new HashMap();
-	private transient Map threadLevel = new HashMap();
-	private transient Map threadParent = new HashMap();
+	private transient List<String> threads = new ArrayList<String>();
+	private transient Map<String, Integer> threadIndex = new HashMap<String, Integer>();
+	private transient Map<String, Integer> threadFirstLevel = new HashMap<String, Integer>();
+	private transient Map<String, Integer> threadLevel = new HashMap<String, Integer>();
+	private transient Map<String, String> threadParent = new HashMap<String, String>();
 	private transient Storage storage;
 	private transient Integer storageId;
 	private transient Long storageSize;
@@ -78,7 +78,11 @@ public class Report implements Serializable {
 	private transient boolean differenceChecked = false;
 	private transient boolean differenceFound = false;
 	private transient Map<String, String> truncatedMessageMap = new RefCompareMap<String, String>();
-	
+	private transient boolean reportFilterMatching = true;
+	private transient boolean logReportFilterMatching = true;
+	private transient boolean logMaxCheckpoints = true;
+	private transient boolean logMaxMemoryUsage = true;
+
 	public Report() {
 		String threadName = Thread.currentThread().getName();
 		threads.add(threadName);
@@ -218,6 +222,16 @@ public class Report implements Serializable {
 		this.originalReport = originalReport;
 	}
 
+	@Transient
+	public void setReportFilterMatching(boolean reportFilterMatching) {
+		this.reportFilterMatching = reportFilterMatching;
+	}
+
+	@Transient
+	public boolean isReportFilterMatching() {
+		return reportFilterMatching;
+	}
+
 	protected Object checkpoint(String threadId, String sourceClassName, String name, Object message, int checkpointType, int levelChangeNextCheckpoint) {
 		if (checkpointType == Checkpoint.TYPE_THREADCREATEPOINT) {
 			String threadName = Thread.currentThread().getName();
@@ -263,7 +277,7 @@ public class Report implements Serializable {
 				message = addCheckpoint(threadName, sourceClassName, name, message, checkpointType, index, level, levelChangeNextCheckpoint);
 				if (checkpointType == Checkpoint.TYPE_ABORTPOINT && checkpoints.size() < testTool.getMaxCheckpoints()) {
 					int firstLevel = ((Integer)threadFirstLevel.get(threadName)).intValue();
-					List checkpoints = getCheckpoints();
+					List<Checkpoint> checkpoints = getCheckpoints();
 					for (int i = index.intValue() - 1; i > -1; i--) {
 						Checkpoint checkpoint = (Checkpoint)checkpoints.get(i);
 						if (level.intValue() <= firstLevel + 1) {
@@ -288,7 +302,28 @@ public class Report implements Serializable {
 	}
 
 	private Object addCheckpoint(String threadName, String sourceClassName, String name, Object message, int checkpointType, Integer index, Integer level, int levelChangeNextCheckpoint) {
-		if (checkpoints.size() < testTool.getMaxCheckpoints() && getEstimatedMemoryUsage() < testTool.getMaxMemoryUsage()) {
+		if (!isReportFilterMatching()) {
+			if (logReportFilterMatching) {
+				log.debug("Report name doesn't match report filter regex, ignore checkpoint "
+						+ getCheckpointLogDescription(name, checkpointType, level) + " "
+						+ getOtherCheckpointsLogDescription());
+				logReportFilterMatching = false;
+			}
+		} else if (checkpoints.size() >= testTool.getMaxCheckpoints()) {
+			if (logMaxCheckpoints) {
+				log.warn("Maximum number of checkpoints exceeded, ignore checkpoint "
+						+ getCheckpointLogDescription(name, checkpointType, level) + " "
+						+ getOtherCheckpointsLogDescription());
+				logMaxCheckpoints = false;
+			}
+		} else if (getEstimatedMemoryUsage() >= testTool.getMaxMemoryUsage()) {
+			if (logMaxMemoryUsage) {
+				log.warn("Maximum memory usage reached for this report, ignore checkpoint "
+						+ getCheckpointLogDescription(name, checkpointType, level) + " "
+						+ getOtherCheckpointsLogDescription());
+				logMaxMemoryUsage = false;
+			}
+		} else {
 			Checkpoint checkpoint = new Checkpoint(this, threadName, sourceClassName, name, message, checkpointType, level.intValue());
 			checkpoints.add(index.intValue(), checkpoint);
 			if (originalReport != null) {
@@ -324,15 +359,9 @@ public class Report implements Serializable {
 			if (log.isDebugEnabled()) {
 				log.debug("Added checkpoint " + getCheckpointLogDescription(name, checkpointType, level));
 			}
-		} else {
-			if(checkpoints.size() == testTool.getMaxCheckpoints()){
-				log.warn("Maximum number of checkpoints exceeded, ignored checkpoint " + getCheckpointLogDescription(name, checkpointType, level));
-			} else {
-				log.warn("Maximum memory usage reached for this report, ignored checkpoint " + getCheckpointLogDescription(name, checkpointType, level));
-			}
 		}
 		for (int i = threads.indexOf(threadName); i < threads.size(); i++) {
-			Object key = threads.get(i);
+			String key = threads.get(i);
 			Integer value = (Integer)threadIndex.get(key);
 			threadIndex.put(key, new Integer(value.intValue() + 1));
 		}
@@ -381,24 +410,11 @@ public class Report implements Serializable {
 		return result;
 	}
 
-	private boolean isParent(String parentThreadName, String childThreadName) {
-		String directParentThreadName = (String)threadParent.get(childThreadName);
-		if (directParentThreadName == null) {
-			return false;
-		} else {
-			return parentThreadName.equals(directParentThreadName) || isParent(parentThreadName, directParentThreadName);
-		}
-	}
-	
-	private boolean isChild(String childThreadName, String parentThreadName) {
-		return isParent(parentThreadName, childThreadName);
-	}
-
 	protected boolean finished() {
 		boolean finished = true;
-		for (int i = 0; i < threads.size(); i++) {
-			Object value = threadLevel.get(threads.get(i));
-			if (!value.equals(threadFirstLevel.get(threads.get(i)))) {
+		for (String threadName : threads) {
+			Integer level = threadLevel.get(threadName);
+			if (!level.equals(threadFirstLevel.get(threadName))) {
 				finished = false;
 				break;
 			}
@@ -408,7 +424,7 @@ public class Report implements Serializable {
 
 	public Checkpoint getCheckpoint(Path path) {
 		Checkpoint result = null;
-		Iterator iterator = checkpoints.iterator();
+		Iterator<Checkpoint> iterator = checkpoints.iterator();
 		while (result == null && iterator.hasNext()) {
 			Checkpoint checkpoint = (Checkpoint)iterator.next();
 			if (path.equals(checkpoint.getPath())) {
@@ -418,7 +434,7 @@ public class Report implements Serializable {
 		return result;
 	}
 
-	public void setCheckpoints(List checkpoints) {
+	public void setCheckpoints(List<Checkpoint> checkpoints) {
 		this.checkpoints = checkpoints;
 	}
 
@@ -490,9 +506,8 @@ public class Report implements Serializable {
 		report.setEstimatedMemoryUsage(estimatedMemoryUsage);
 		report.setTransformation(transformation);
 		report.setVariableCsv(variableCsv);
-		List checkpoints = new ArrayList();
-		for (int i = 0; i < this.checkpoints.size(); i++) {
-			Checkpoint checkpoint = (Checkpoint)this.checkpoints.get(i);
+		List<Checkpoint> checkpoints = new ArrayList<Checkpoint>();
+		for (Checkpoint checkpoint : this.checkpoints) {
 			checkpoint = (Checkpoint)checkpoint.clone();
 			checkpoint.setReport(report);
 			checkpoints.add(checkpoint);
@@ -522,9 +537,7 @@ public class Report implements Serializable {
 			stringBuffer.append(" NumberOfCheckpoints=\"" + getNumberOfCheckpoints() + "\"");
 			stringBuffer.append(" EstimatedMemoryUsage=\"" + estimatedMemoryUsage + "\"");
 			stringBuffer.append(">");
-			Iterator iterator = checkpoints.iterator();
-			while (iterator.hasNext()) {
-				Checkpoint checkpoint = (Checkpoint)iterator.next();
+			for (Checkpoint checkpoint : checkpoints) {
 				Object object;
 				if(reportRunner != null && checkpoint.containsVariables()) {
 					object = checkpoint.getMessageWithResolvedVariables(reportRunner);
@@ -566,7 +579,7 @@ public class Report implements Serializable {
 			}
 			stringBuffer.append("</Report>");
 			xml = stringBuffer.toString();
-			if (transformation != null && transformation.trim().length() > 0) {
+			if (reportXmlTransformer != null || (transformation != null && transformation.trim().length() > 0)) {
 				if (reportXmlTransformer == null) {
 					reportXmlTransformer = new ReportXmlTransformer();
 					reportXmlTransformer.setXslt(transformation);
@@ -587,7 +600,11 @@ public class Report implements Serializable {
 	private String getCheckpointLogDescription(String name, int type, Integer level) {
 		return "(name: " + name + ", type: " + Checkpoint.getTypeAsString(type) + ", level: " + level + ", correlationId: " + correlationId + ")";
 	}
-	
+
+	private String getOtherCheckpointsLogDescription() {
+		return "(next checkpoints for this report will be ignored without any logging)";
+	}
+
 	public String getVariableCsv() {
 		return variableCsv;
 	}
@@ -690,7 +707,7 @@ class RefCompareMap<K, V> implements Map<K, V> {
 	}
 
 	@Override
-	public Set entrySet() {
+	public Set<Map.Entry<K,V>> entrySet() {
 		throw new NotImplementedException();
 	}
 
@@ -700,12 +717,12 @@ class RefCompareMap<K, V> implements Map<K, V> {
 	}
 
 	@Override
-	public Set keySet() {
+	public Set<K> keySet() {
 		throw new NotImplementedException();
 	}
 
 	@Override
-	public void putAll(Map m) {
+	public void putAll(Map<? extends K,? extends V> m) {
 		throw new NotImplementedException();
 	}
 
@@ -720,7 +737,7 @@ class RefCompareMap<K, V> implements Map<K, V> {
 	}
 
 	@Override
-	public Collection values() {
+	public Collection<V> values() {
 		throw new NotImplementedException();
 	}
 }

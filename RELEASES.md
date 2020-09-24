@@ -6,6 +6,9 @@ Ladybug Test Tool release notes
 Upcoming
 --------
 
+- Fix report filter for positive matching (report almost empty)
+- Add tool tip to report filter text field
+- Only log once when max checkpoints or max memory usage is exceeded
 - Make free space minimum configurable
 - Fix file system free space check using different limit then warning
 - Check file system free space (show warning and don't store report to prevent corrupt storage files)

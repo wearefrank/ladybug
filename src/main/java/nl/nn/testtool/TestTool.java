@@ -45,16 +45,15 @@ public class TestTool {
 	private long maxMemoryUsage = 100000000L;
 	private Debugger debugger;
 	private boolean reportGeneratorEnabled = true;
-	private List reportsInProgress = new ArrayList();
-	private Map reportsInProgressByCorrelationId = new HashMap();
+	private List<Report> reportsInProgress = new ArrayList<Report>();
+	private Map<String, Report> reportsInProgressByCorrelationId = new HashMap<String, Report>();
 	private long numberOfReportsInProgress = 0;
 	private long reportsInProgressEstimatedMemoryUsage = 0;
-	private Map originalReports = new HashMap();
-	private List startpointProviders = new ArrayList();
-	private List startpointProviderNames = new ArrayList();
+	private Map<String, Report> originalReports = new HashMap<String, Report>();
+	private List<StartpointProvider> startpointProviders = new ArrayList<StartpointProvider>();
+	private List<String> startpointProviderNames = new ArrayList<String>();
 	private LogStorage logStorage;
 	private MessageTransformer messageTransformer;
-	private List reportsToSkip = new ArrayList();
 	private String regexFilter;
 
 	public void setConfigName(String configName) {
@@ -147,59 +146,50 @@ public class TestTool {
 			String sourceClassName, String name, Object message, int checkpointType,
 			int levelChangeNextCheckpoint) {
 		synchronized(reportsInProgress) {
-			if (checkpointType == Checkpoint.TYPE_STARTPOINT
-					&& StringUtils.isNotEmpty(regexFilter)
-					&& name != null && !name.matches(regexFilter)) {
-				reportsToSkip.add(correlationId);
-			}
-			if (reportsToSkip.contains(correlationId)) {
-				//skip
-			} else {
-				Report report = (Report)reportsInProgressByCorrelationId.get(correlationId);
-				if (report == null && reportGeneratorEnabled) {
-					if (checkpointType == Checkpoint.TYPE_STARTPOINT) {
-						log.debug("Create new report for '" + correlationId + "'");
-						report = new Report();
-						report.setStartTime(System.currentTimeMillis());
-						report.setTestTool(this);
-						report.setCorrelationId(correlationId);
-						report.setName(name);
-						Report originalReport;
-						synchronized(originalReports) {
-							originalReport = (Report)originalReports.remove(correlationId);
-						}
-						if (originalReport == null) {
-							report.setStubStrategy(debugger.getDefaultStubStrategy());
-						} else {
-							report.setStubStrategy(originalReport.getStubStrategy());
-							report.setOriginalReport(originalReport);
-						}
-						reportsInProgress.add(0, report);
-						reportsInProgressByCorrelationId.put(correlationId, report);
-						numberOfReportsInProgress++;
-					} else {
-						log.warn("Report for '" + correlationId + "' is null, could not add checkpoint '" + name + "'");
+			Report report = (Report)reportsInProgressByCorrelationId.get(correlationId);
+			if (report == null && reportGeneratorEnabled) {
+				if (checkpointType == Checkpoint.TYPE_STARTPOINT) {
+					log.debug("Create new report for '" + correlationId + "'");
+					report = new Report();
+					report.setStartTime(System.currentTimeMillis());
+					report.setTestTool(this);
+					report.setCorrelationId(correlationId);
+					report.setName(name);
+					if (StringUtils.isNotEmpty(regexFilter) && !name.matches(regexFilter)) {
+						report.setReportFilterMatching(false);
 					}
+					Report originalReport;
+					synchronized(originalReports) {
+						originalReport = (Report)originalReports.remove(correlationId);
+					}
+					if (originalReport == null) {
+						report.setStubStrategy(debugger.getDefaultStubStrategy());
+					} else {
+						report.setStubStrategy(originalReport.getStubStrategy());
+						report.setOriginalReport(originalReport);
+					}
+					reportsInProgress.add(0, report);
+					reportsInProgressByCorrelationId.put(correlationId, report);
+					numberOfReportsInProgress++;
+				} else {
+					log.warn("Report for '" + correlationId + "' is null, could not add checkpoint '" + name + "'");
 				}
-				if (report != null) {
+			}
+			if (report != null) {
+				reportsInProgressEstimatedMemoryUsage = reportsInProgressEstimatedMemoryUsage - report.getEstimatedMemoryUsage();
+				message = report.checkpoint(threadId, sourceClassName, name, message, checkpointType, levelChangeNextCheckpoint);
+				reportsInProgressEstimatedMemoryUsage = reportsInProgressEstimatedMemoryUsage + report.getEstimatedMemoryUsage();
+				if (report.finished()) {
+					report.setEndTime(System.currentTimeMillis());
+					log.debug("Report is finished for '" + correlationId + "'");
+					reportsInProgress.remove(report);
+					reportsInProgressByCorrelationId.remove(correlationId);
+					numberOfReportsInProgress--;
 					reportsInProgressEstimatedMemoryUsage = reportsInProgressEstimatedMemoryUsage - report.getEstimatedMemoryUsage();
-					message = report.checkpoint(threadId, sourceClassName, name, message, checkpointType, levelChangeNextCheckpoint);
-					reportsInProgressEstimatedMemoryUsage = reportsInProgressEstimatedMemoryUsage + report.getEstimatedMemoryUsage();
-					if (report.finished()) {
-						report.setEndTime(System.currentTimeMillis());						
-						log.debug("Report is finished for '" + correlationId + "'");
-						reportsInProgress.remove(report);
-						reportsInProgressByCorrelationId.remove(correlationId);
-						numberOfReportsInProgress--;
-						reportsInProgressEstimatedMemoryUsage = reportsInProgressEstimatedMemoryUsage - report.getEstimatedMemoryUsage();
+					if (report.isReportFilterMatching()) {
 						logStorage.storeWithoutException(report);
 					}
 				}
-			}
-			if (checkpointType == Checkpoint.TYPE_ENDPOINT
-					&& StringUtils.isNotEmpty(regexFilter)
-					&& name != null && !name.matches(regexFilter)) {
-				reportsToSkip.remove(correlationId);
 			}
 		}
 		return message;
@@ -328,7 +318,7 @@ public class TestTool {
 		}
 	}
 
-	public List getStubStrategies() {
+	public List<String> getStubStrategies() {
 		return debugger.getStubStrategies();
 	}
 
@@ -378,7 +368,7 @@ public class TestTool {
 		}
 	}
 	
-	public List getStartpointProviderNames() {
+	public List<String> getStartpointProviderNames() {
 		synchronized(startpointProviders) {
 			return startpointProviderNames;
 		}

@@ -362,6 +362,15 @@ public class ReportsComponent extends BaseComponent implements BeanParent, Actio
 		// Testtool - Options - RegexFilterField
 		regexFilterField = new TextField();
 		regexFilterField.setWidth(new Extent(200));
+		regexFilterField.setToolTipText(
+				"Example 1 (only store report when name is Hello World):\n" +
+				"Hello World\n" +
+				"\n" +
+				"Example 2 (only store report when name contains Hello or World):\n" +
+				".*(Hello|World).*\n" +
+				"\n" +
+				"Example 3 (only store report when name doesn't start with Hello World):\n" +
+				"^(?!Hello World).*");
 		
 		Button buttonRegexFilterField  = new Button("Apply");
 		buttonRegexFilterField.setActionCommand("UpdateRegexValues");
