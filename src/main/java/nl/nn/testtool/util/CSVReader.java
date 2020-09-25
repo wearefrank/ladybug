@@ -192,6 +192,7 @@ string verwacht je op het einde ook geen newline tenzij...
 
     /**
      * Get first line number of the last CSV record.
+     * @return ...
      */
     public int getLineNumberLast() {
         return lineNumberLast;
@@ -199,6 +200,7 @@ string verwacht je op het einde ook geen newline tenzij...
 
     /**
      * Get first line number of the next CSV record.
+     * @return ...
      */
     public int getLineNumberNext() {
         return lineNumberNext;

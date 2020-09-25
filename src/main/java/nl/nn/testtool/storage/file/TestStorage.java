@@ -110,7 +110,7 @@ public class TestStorage implements nl.nn.testtool.storage.CrudStorage {
 	 * performance to extract from the report. For better performance when the
 	 * metadata is read you could do the opposite.
 	 * 
-	 * @param metadataNames
+	 * @param metadataNames ...
 	 */
 	public void setPersistentMetadata(List metadataNames) {
 		writer[0].setPersistentMetadata(metadataNames);

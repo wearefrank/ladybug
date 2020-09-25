@@ -49,6 +49,7 @@ public class BaseComponent extends Column {
 
 	/**
 	 * @see nextapp.echo2.app.event.ActionListener#actionPerformed(nextapp.echo2.app.event.ActionEvent)
+	 * @param e ...
 	 */
 	public void actionPerformed(ActionEvent e) {
 		hideMessages();

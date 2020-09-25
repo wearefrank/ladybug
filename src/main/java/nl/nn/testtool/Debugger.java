@@ -47,6 +47,8 @@ public interface Debugger {
 	 *  
 	 * @param correlationId   the correlationId to be used
 	 * @param originalReport  the original report that should be rerun
+	 * @param securityContext ...
+	 * @param reportRunner    ...
 	 * @return                an error message when an error occurred 
 	 */
 	public String rerun(String correlationId, Report originalReport, SecurityContext securityContext, ReportRunner reportRunner);

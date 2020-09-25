@@ -131,6 +131,7 @@ public class MessageComponent extends BaseComponent implements ActionListener {
 
 	/**
 	 * @see nl.nn.testtool.echo2.Echo2Application#initBean()
+	 * @param beanParent ...
 	 */
 	public void initBean(BeanParent beanParent) {
 		this.beanParent = beanParent;

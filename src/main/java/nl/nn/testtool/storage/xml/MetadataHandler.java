@@ -53,7 +53,9 @@ public class MetadataHandler {
 	 * If file exists, then reads the metadata from the given file.
 	 *
 	 * @param filePath Path of the metadata file to be created/read.
-	 * @throws IOException
+	 * @param storage ...
+	 * @param forceDiscover ...
+	 * @throws IOException ...
 	 */
 	public MetadataHandler(String filePath, XmlStorage storage, boolean forceDiscover) throws IOException {
 		this.storage = storage;
@@ -98,7 +100,7 @@ public class MetadataHandler {
 	/**
 	 * Reads metadata from metadataFile.
 	 *
-	 * @throws FileNotFoundException
+	 * @throws FileNotFoundException ...
 	 */
 	private void readFromFile() throws IOException {
 		if (!metadataFile.exists())
@@ -160,7 +162,7 @@ public class MetadataHandler {
 	 * Adds the given metadata. And then stores it right away.
 	 *
 	 * @param m metadata to be added.
-	 * @throws IOException
+	 * @throws IOException ...
 	 */
 	public void add(Metadata m) throws IOException {
 		add(m, true);
@@ -171,7 +173,7 @@ public class MetadataHandler {
 	 *
 	 * @param m       metadata to be added.
 	 * @param saveNow True if metadata file should be written right away.
-	 * @throws IOException
+	 * @throws IOException ...
 	 */
 	private void add(Metadata m, boolean saveNow) throws IOException {
 		if (StringUtils.isEmpty(m.path))
@@ -230,7 +232,7 @@ public class MetadataHandler {
 	/**
 	 * Saves the metadata list in memory to metadatafile, if there is metadata to save.
 	 *
-	 * @throws IOException
+	 * @throws IOException ...
 	 */
 	private void save() throws IOException {
 		if (metadataMap == null || metadataMap.size() == 0) {
@@ -257,7 +259,7 @@ public class MetadataHandler {
 	 * Removes the metadata for the given report.
 	 *
 	 * @param report Report to be removed.
-	 * @throws IOException
+	 * @throws IOException ...
 	 */
 	public void delete(Report report) throws IOException {
 		metadataMap.remove(report.getStorageId());
@@ -267,7 +269,7 @@ public class MetadataHandler {
 	/**
 	 * Updates the metadata from the directory containing the metadata file.
 	 *
-	 * @throws IOException
+	 * @throws IOException ...
 	 */
 	public void updateMetadata() throws IOException {
 		HashMap<String, Metadata> pathMap = new HashMap<>(metadataMap.size());
