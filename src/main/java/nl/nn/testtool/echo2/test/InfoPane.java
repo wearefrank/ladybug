@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden
+   Copyright 2018 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.testtool.echo2.run;
+package nl.nn.testtool.echo2.test;
 
 import java.util.Set;
 
@@ -28,11 +28,11 @@ import nl.nn.testtool.echo2.BeanParent;
  */
 public class InfoPane extends ContentPane implements BeanParent {
 	private static final long serialVersionUID = 1L;
-	private RunComponent runComponent;
+	private TestComponent testComponent;
 	private BeanParent beanParent;
 
-	public void setRunComponent(RunComponent runComponent) {
-		this.runComponent = runComponent;
+	public void setTestComponent(TestComponent testComponent) {
+		this.testComponent = testComponent;
 	}
 
 	/**
@@ -46,7 +46,7 @@ public class InfoPane extends ContentPane implements BeanParent {
 	 */
 	public void initBean(BeanParent beanParent) {
 		this.beanParent = beanParent;
-		runComponent.initBean(this);
+		testComponent.initBean(this);
 	}
 
 	public BeanParent getBeanParent() {
@@ -55,11 +55,11 @@ public class InfoPane extends ContentPane implements BeanParent {
 
 
 	public void display(String path, Set<String> selectedStorageIds) {
-		// TODO direct op runComponent doen?
-		runComponent.display(path, selectedStorageIds);
+		// TODO direct op testComponent doen?
+		testComponent.display(path, selectedStorageIds);
 		// TODO toch altijd hetzelfde component dus niet telkens verwijderen en toevoegen?
 		removeAll();
-		add(runComponent, 0);
+		add(testComponent, 0);
 	}
 // TODO folder en report component samenvoegen of gemeenschappelijke basis geven zoals messageComponent dat is voor ...?
 //	public void displayReport(Tree tree, TreePath treePath, DefaultMutableTreeNode node, Report report, Report reportCompare, boolean compare) {

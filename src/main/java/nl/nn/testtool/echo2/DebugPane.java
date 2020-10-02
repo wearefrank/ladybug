@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden
+   Copyright 2018 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -45,7 +45,7 @@ public class DebugPane extends Tab implements BeanParent {
 	private ReportsTreeCellRenderer reportsTreeCellRenderer;
 	private ReportXmlTransformer reportXmlTransformer;
 	private ReportsListPane reportsListPane;
-	private CrudStorage runStorage;
+	private CrudStorage testStorage;
 
 	public DebugPane() {
 		super();
@@ -59,8 +59,8 @@ public class DebugPane extends Tab implements BeanParent {
 		this.testTool = testTool;
 	}
 
-	public void setRunStorage(CrudStorage runStorage) {
-		this.runStorage = runStorage;
+	public void setTestStorage(CrudStorage testStorage) {
+		this.testStorage = testStorage;
 	}
 
 	public void setReportsComponent(ReportsComponent reportsComponent) {
@@ -135,7 +135,7 @@ public class DebugPane extends Tab implements BeanParent {
 		reportsComponent.setTreePane(treePane);
 		reportsComponent.setReportXmlTransformer(reportXmlTransformer);
 		reportComponent.setTestTool(testTool);
-		reportComponent.setRunStorage(runStorage);
+		reportComponent.setTestStorage(testStorage);
 		reportComponent.setTreePane(treePane);
 		reportComponent.setInfoPane(infoPane);
 		pathComponent.setTreePane(treePane);

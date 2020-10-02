@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden
+   Copyright 2018 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ import org.apache.log4j.Logger;
 
 import nextapp.echo2.app.filetransfer.UploadEvent;
 import nextapp.echo2.app.filetransfer.UploadListener;
-import nl.nn.testtool.echo2.run.RunComponent;
+import nl.nn.testtool.echo2.test.TestComponent;
 import nl.nn.testtool.echo2.util.Upload;
 import nl.nn.testtool.storage.CrudStorage;
 import nl.nn.testtool.storage.StorageException;
@@ -37,7 +37,7 @@ import nl.nn.testtool.util.LogUtil;
 public class ReportUploadListener implements UploadListener {
 	Logger log = LogUtil.getLogger(this);
 	ReportsComponent reportsComponent;
-	RunComponent runComponent;
+	TestComponent testComponent;
 	CrudStorage storage;
 
 	public ReportUploadListener() {
@@ -47,8 +47,8 @@ public class ReportUploadListener implements UploadListener {
 		this.reportsComponent = reportsComponent;
 	}
 
-	public void setRunComponent(RunComponent runComponent) {
-		this.runComponent = runComponent;
+	public void setTestComponent(TestComponent testComponent) {
+		this.testComponent = testComponent;
 	}
 
 	public void setStorage(CrudStorage storage) {
@@ -79,7 +79,7 @@ public class ReportUploadListener implements UploadListener {
 			// synchroon houden met open reports)?
 			storage = new nl.nn.testtool.storage.memory.Storage();
 		}
-		if (runComponent != null) {
+		if (testComponent != null) {
 			storage = this.storage;
 		}
 		String errorMessage = Upload.upload(uploadEvent.getFileName(), uploadEvent.getInputStream(), storage, log);
@@ -97,21 +97,21 @@ public class ReportUploadListener implements UploadListener {
 		}
 
 		if (errorMessage != null) {
-			// TODO generieker maken zodat het ook voor RunComponent werkt
+			// TODO generieker maken zodat het ook voor TestComponent werkt
 			if (reportsComponent != null) {
 				reportsComponent.displayAndLogError(errorMessage);
 			}
-			if (runComponent != null) {
-				runComponent.displayAndLogError(errorMessage);
+			if (testComponent != null) {
+				testComponent.displayAndLogError(errorMessage);
 			}
 		}
-		// TODO generieker maken zodat het ook voor RunComponent werkt
+		// TODO generieker maken zodat het ook voor TestComponent werkt
 		if (reportsComponent != null) {
 			reportsComponent.getUploadOptionsWindow().setVisible(false);
 		}
-		if (runComponent != null) {
-			runComponent.getUploadOptionsWindow().setVisible(false);
-			runComponent.refresh();
+		if (testComponent != null) {
+			testComponent.getUploadOptionsWindow().setVisible(false);
+			testComponent.refresh();
 		}
 	}
 
@@ -119,7 +119,7 @@ public class ReportUploadListener implements UploadListener {
 		String message = "Invalid file upload: " + uploadEvent.getFileName()
 				+ ", " + uploadEvent.getContentType() + ", " + uploadEvent.getSize();
 		log.error(message);
-		// TODO generieker maken zodat het ook voor RunComponent werkt
+		// TODO generieker maken zodat het ook voor TestComponent werkt
 		if (reportsComponent != null) {
 			reportsComponent.displayError(message);
 			reportsComponent.getUploadOptionsWindow().setVisible(false);

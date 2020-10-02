@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden
+   Copyright 2018 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -52,7 +52,7 @@ public class TestTool {
 	private Map<String, Report> originalReports = new HashMap<String, Report>();
 	private List<StartpointProvider> startpointProviders = new ArrayList<StartpointProvider>();
 	private List<String> startpointProviderNames = new ArrayList<String>();
-	private LogStorage logStorage;
+	private LogStorage debugStorage;
 	private MessageTransformer messageTransformer;
 	private String regexFilter;
 
@@ -118,12 +118,12 @@ public class TestTool {
 		}
 	}
 	
-	public void setLogStorage(LogStorage logStorage) {
-		this.logStorage = logStorage;
+	public void setDebugStorage(LogStorage debugStorage) {
+		this.debugStorage = debugStorage;
 	}
 
-	public LogStorage getLogStorage() {
-		return logStorage;
+	public LogStorage getDebugStorage() {
+		return debugStorage;
 	}
 
 	public void setMessageTransformer(MessageTransformer messageTransformer) {
@@ -187,7 +187,7 @@ public class TestTool {
 					numberOfReportsInProgress--;
 					reportsInProgressEstimatedMemoryUsage = reportsInProgressEstimatedMemoryUsage - report.getEstimatedMemoryUsage();
 					if (report.isReportFilterMatching()) {
-						logStorage.storeWithoutException(report);
+						debugStorage.storeWithoutException(report);
 					}
 				}
 			}

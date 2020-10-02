@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden
+   Copyright 2018 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.testtool.echo2.run;
+package nl.nn.testtool.echo2.test;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -26,7 +26,7 @@ import echopointng.tree.TreePath;
 import nl.nn.testtool.MetadataExtractor;
 import nl.nn.testtool.Report;
 import nl.nn.testtool.echo2.BeanParent;
-import nl.nn.testtool.echo2.RunPane;
+import nl.nn.testtool.echo2.TestPane;
 import nl.nn.testtool.filter.View;
 import nl.nn.testtool.storage.Storage;
 import nl.nn.testtool.storage.StorageException;
@@ -52,8 +52,8 @@ public class TreePane extends nl.nn.testtool.echo2.reports.TreePane implements B
 	 */
 	public void initBean(BeanParent beanParent) {
 		this.beanParent = beanParent;
-		RunPane runPane = (RunPane)beanParent;
-		infoPane = runPane.getInfoPane();
+		TestPane testPane = (TestPane)beanParent;
+		infoPane = testPane.getInfoPane();
 	}
 
 	public BeanParent getBeanParent() {
@@ -127,7 +127,7 @@ public class TreePane extends nl.nn.testtool.echo2.reports.TreePane implements B
 			List<Object> metadataRecord = metadataIterator.next();
 			Integer storageId = (Integer)metadataRecord.get(0);
 			String path = (String)metadataRecord.get(1);
-			if (path == null || !path.equals(RunComponent.normalizePath(path))) {
+			if (path == null || !path.equals(TestComponent.normalizePath(path))) {
 				reportsWithDirtyPaths.add(storageId);
 			} else if (path.length() > 1) {
 				pathsToAdd.add(path);

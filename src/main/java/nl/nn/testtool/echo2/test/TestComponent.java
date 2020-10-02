@@ -1,5 +1,5 @@
 /*
-   Copyright 2018-2020 WeAreFrank!
+   Copyright 2018-2019 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -13,34 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.testtool.echo2.run;
-
-import echopointng.ProgressBar;
-import nextapp.echo2.app.*;
-import nextapp.echo2.app.event.ActionEvent;
-import nextapp.echo2.app.event.ActionListener;
-import nextapp.echo2.app.filetransfer.UploadSelect;
-import nl.nn.testtool.Checkpoint;
-import nl.nn.testtool.MetadataExtractor;
-import nl.nn.testtool.Report;
-import nl.nn.testtool.TestTool;
-import nl.nn.testtool.echo2.BaseComponent;
-import nl.nn.testtool.echo2.BeanParent;
-import nl.nn.testtool.echo2.Echo2Application;
-import nl.nn.testtool.echo2.RunPane;
-import nl.nn.testtool.echo2.reports.MessageComponent;
-import nl.nn.testtool.echo2.reports.ReportUploadListener;
-import nl.nn.testtool.echo2.reports.ReportsComponent;
-import nl.nn.testtool.echo2.util.Download;
-import nl.nn.testtool.echo2.util.PopupWindow;
-import nl.nn.testtool.run.ReportRunner;
-import nl.nn.testtool.run.RunResult;
-import nl.nn.testtool.storage.CrudStorage;
-import nl.nn.testtool.storage.Storage;
-import nl.nn.testtool.storage.StorageException;
-import nl.nn.testtool.transform.ReportXmlTransformer;
-import nl.nn.testtool.util.CsvUtil;
-import org.apache.commons.lang.StringUtils;
+package nl.nn.testtool.echo2.test;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -53,17 +26,56 @@ import java.util.Scanner;
 import java.util.Set;
 import java.util.TooManyListenersException;
 
+import org.apache.commons.lang.StringUtils;
+
+import echopointng.ProgressBar;
+import nextapp.echo2.app.Button;
+import nextapp.echo2.app.CheckBox;
+import nextapp.echo2.app.Column;
+import nextapp.echo2.app.Component;
+import nextapp.echo2.app.Extent;
+import nextapp.echo2.app.FillImageBorder;
+import nextapp.echo2.app.Insets;
+import nextapp.echo2.app.Label;
+import nextapp.echo2.app.Row;
+import nextapp.echo2.app.TextArea;
+import nextapp.echo2.app.TextField;
+import nextapp.echo2.app.WindowPane;
+import nextapp.echo2.app.event.ActionEvent;
+import nextapp.echo2.app.event.ActionListener;
+import nextapp.echo2.app.filetransfer.UploadSelect;
+import nl.nn.testtool.Checkpoint;
+import nl.nn.testtool.MetadataExtractor;
+import nl.nn.testtool.Report;
+import nl.nn.testtool.TestTool;
+import nl.nn.testtool.echo2.BaseComponent;
+import nl.nn.testtool.echo2.BeanParent;
+import nl.nn.testtool.echo2.Echo2Application;
+import nl.nn.testtool.echo2.TestPane;
+import nl.nn.testtool.echo2.reports.MessageComponent;
+import nl.nn.testtool.echo2.reports.ReportUploadListener;
+import nl.nn.testtool.echo2.reports.ReportsComponent;
+import nl.nn.testtool.echo2.util.Download;
+import nl.nn.testtool.echo2.util.PopupWindow;
+import nl.nn.testtool.run.ReportRunner;
+import nl.nn.testtool.run.RunResult;
+import nl.nn.testtool.storage.CrudStorage;
+import nl.nn.testtool.storage.Storage;
+import nl.nn.testtool.storage.StorageException;
+import nl.nn.testtool.transform.ReportXmlTransformer;
+import nl.nn.testtool.util.CsvUtil;
+
 /**
  * @author m00f069
  *
  * To change the template for this generated type comment go to
  * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
  */
-public class RunComponent extends BaseComponent implements BeanParent, ActionListener {
+public class TestComponent extends BaseComponent implements BeanParent, ActionListener {
 	private static final long serialVersionUID = 1L;
 	private TestTool testTool;
-	private Storage debugStorage; // TODO juiste naam? overal consequent doen?
-	private CrudStorage runStorage; // TODO juiste naam? overal consequent doen?
+	private Storage debugStorage;
+	private CrudStorage testStorage;
 	private Echo2Application echo2Application;
 	private TreePane treePane;
 	private ProgressBar progressBar;
@@ -99,7 +111,7 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 	private boolean showReportStorageIds;
 	private boolean showCheckpointIds;
 	
-	public RunComponent() {
+	public TestComponent() {
 		super();
 	}
 
@@ -111,8 +123,8 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 		this.debugStorage = debugStorage;
 	}
 
-	public void setRunStorage(CrudStorage runStorage) {
-		this.runStorage = runStorage;
+	public void setTestStorage(CrudStorage testStorage) {
+		this.testStorage = testStorage;
 	}
 
 	public void setReportXmlTransformer(ReportXmlTransformer reportXmlTransformer) {
@@ -253,8 +265,8 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 		Row uploadSelectRow = new Row();
 
 		ReportUploadListener reportUploadListener = new ReportUploadListener();
-		reportUploadListener.setRunComponent(this);
-		reportUploadListener.setStorage(runStorage);
+		reportUploadListener.setTestComponent(this);
+		reportUploadListener.setStorage(testStorage);
 
 		uploadSelect = new UploadSelect();
 		uploadSelect.setEnabledSendButtonText("Upload");
@@ -371,8 +383,8 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 		echo2Application.getContentPane().add(uploadWindow);
 		echo2Application.getContentPane().add(reportGenerationWindow);
 		echo2Application.getContentPane().add(optionsWindow);
-		RunPane runPane = (RunPane)beanParent.getBeanParent();
-		treePane = runPane.getTreePane();
+		TestPane testPane = (TestPane)beanParent.getBeanParent();
+		treePane = testPane.getTreePane();
 		reportRunner.setSecurityContext(echo2Application);
 	}
 
@@ -396,7 +408,7 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 		searchValues.add(null);
 		searchValues.add(null);
 		try {
-			metadata = runStorage.getMetadata(-1, metadataNames, searchValues, MetadataExtractor.VALUE_TYPE_STRING);
+			metadata = testStorage.getMetadata(-1, metadataNames, searchValues, MetadataExtractor.VALUE_TYPE_STRING);
 		} catch (StorageException e) {
 			displayAndLogError(e);
 		}
@@ -415,7 +427,7 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 					List<Object> metadataRecord = new ArrayList<Object>();
 					metadataRecord.add(storageId.toString());
 					metadataRecord.add("/");
-					Report report = runStorage.getReport(storageId);
+					Report report = testStorage.getReport(storageId);
 					metadataRecord.add(report.getName());
 					metadataRecord.add(report.getDescription());
 					metadata.add(metadataRecord);
@@ -511,7 +523,7 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 
 		Report report = null;
 		try {
-			report = runStorage.getReport(Integer.parseInt(storageId));
+			report = testStorage.getReport(Integer.parseInt(storageId));
 		} catch (StorageException e) {
 			displayAndLogError(e);
 		}
@@ -578,7 +590,7 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 
 		add(row);
 
-		// TODO runStorage.getMetadata geeft blijkbaar "null" terug, fixen
+		// TODO testStorage.getMetadata geeft blijkbaar "null" terug, fixen
 		if (description != null && !"".equals(description) && !"null".equals(description)) {
 			Column descriptionColumn = new Column();
 			descriptionColumn.setInsets(new Insets(0, 5, 0, 0));
@@ -652,7 +664,7 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 				}
 			}
 		} else if (e.getActionCommand().equals("DownloadAll")) {
-			displayAndLogError(Download.download(runStorage));
+			displayAndLogError(Download.download(testStorage));
 		} else if (e.getActionCommand().equals("OpenUploadWindow")) {
 			uploadWindow.setVisible(true);
 		} else if (e.getActionCommand().equals("OpenOptionsWindow")) {
@@ -703,7 +715,7 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 				if (checkbox.isSelected()) {
 					Report report = getReport(row);
 					if (report != null) {
-						String errorMessage = Echo2Application.delete(runStorage, report);
+						String errorMessage = Echo2Application.delete(testStorage, report);
 						if (errorMessage == null) {
 							remove(row);
 							treePane.getReportsWithDirtyPaths().remove(report.getStorageId());
@@ -847,13 +859,13 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 					runResultReport.setTransformation(report.getTransformation());
 					runResultReport.setReportXmlTransformer(report.getReportXmlTransformer());
 					runResultReport.setVariableCsvWithoutException(report.getVariableCsv());
-					errorMessage = Echo2Application.store(runStorage, runResultReport);
+					errorMessage = Echo2Application.store(testStorage, runResultReport);
 				}
 				if (errorMessage == null) {
 					if (e.getActionCommand().equals("Replace")) {
 						reportRunner.getResults().remove(storageId);
 					}
-					errorMessage = Echo2Application.delete(runStorage, report);
+					errorMessage = Echo2Application.delete(testStorage, report);
 					if (errorMessage == null) {
 						if (treePane.getReportsWithDirtyPaths().remove(report.getStorageId())
 								&& e.getActionCommand().equals("Replace")) {
@@ -894,12 +906,12 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 		
 		try {
 			reportToClone.setVariableCsvWithoutException(lines.get(0)+"\n"+lines.get(1));
-			displayAndLogError(Echo2Application.update(runStorage, reportToClone));
+			displayAndLogError(Echo2Application.update(testStorage, reportToClone));
 			if(lines.size() > 2) {
 				for(int i = 2; i < lines.size(); i++) {
 					Report cloneReport = (Report)reportToClone.clone();
 					cloneReport.setVariableCsvWithoutException(lines.get(0)+"\n"+lines.get(i));
-					displayAndLogError(Echo2Application.store(runStorage, cloneReport));
+					displayAndLogError(Echo2Application.store(testStorage, cloneReport));
 				}
 			}
 		} catch (CloneNotSupportedException e) {
@@ -961,7 +973,7 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 
 	private Report getReport(Row row) {
 		Integer storageId = new Integer(row.getId());
-		return echo2Application.getReport(runStorage, storageId, this);
+		return echo2Application.getReport(testStorage, storageId, this);
 	}
 
 	private Report getRunResultReport(String runResultCorrelationId) {
@@ -1003,7 +1015,7 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 		if (report != null) {
 			report.setPath(path);
 			try {
-				runStorage.update(report);
+				testStorage.update(report);
 			} catch (StorageException e) {
 				displayAndLogError(e);
 			}
@@ -1029,7 +1041,7 @@ public class RunComponent extends BaseComponent implements BeanParent, ActionLis
 				clone = (Report)report.clone();
 				clone.setPath(newPath);
 				try {
-					runStorage.store(clone);
+					testStorage.store(clone);
 				} catch (StorageException e) {
 					displayAndLogError(e);
 				}

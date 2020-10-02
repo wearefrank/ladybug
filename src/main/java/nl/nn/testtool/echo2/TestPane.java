@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden
+   Copyright 2018 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,16 +18,16 @@ package nl.nn.testtool.echo2;
 import nextapp.echo2.app.Extent;
 import nextapp.echo2.app.SplitPane;
 import nextapp.echo2.extras.app.layout.TabPaneLayoutData;
-import nl.nn.testtool.echo2.run.InfoPane;
-import nl.nn.testtool.echo2.run.TreePane;
+import nl.nn.testtool.echo2.test.InfoPane;
+import nl.nn.testtool.echo2.test.TreePane;
 
-public class RunPane extends Tab implements BeanParent {
+public class TestPane extends Tab implements BeanParent {
 	private static final long serialVersionUID = 1L;
 	private String title = "Test";
 	private TreePane treePane;
 	private InfoPane infoPane;
 
-	public RunPane() {
+	public TestPane() {
 		super();
 	}
 

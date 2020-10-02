@@ -6,6 +6,7 @@ Ladybug Test Tool release notes
 Upcoming
 --------
 
+- Rename internal objects from run to test and from log to debug
 - Fix report filter for positive matching (report almost empty)
 - Add tool tip to report filter text field
 - Only log once when max checkpoints or max memory usage is exceeded
