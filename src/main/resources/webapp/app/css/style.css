@@ -1,0 +1,20 @@
+.resizable-horizontal {
+    resize: horizontal;
+    overflow: auto;
+}
+.resizable-vertical {
+    resize: vertical;
+    overflow: auto;
+}
+
+body {
+    font-size: 0.7rem !important;
+    line-height: 1 !important;
+}
+
+table .form-control {
+    padding: 0;
+    border: 0;
+    height: auto;
+    font-size: 0.7rem;
+}

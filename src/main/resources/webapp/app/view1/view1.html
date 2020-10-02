@@ -1,0 +1,86 @@
+<!--Debug panel-->
+<div>
+    <!--    Report list panel-->
+    <div class="row resizable-vertical">
+        <div class="row">
+            <button type="button" class="btn btn-default col-md-1">Refresh</button>
+            <button type="button" class="btn btn-default col-md-1">Options</button>
+            <button type="button" class="btn btn-default col-md-1">Upload</button>
+            <div class="input-group col-md-2">
+                <div class="input-group-btn">
+                    <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown"
+                            aria-haspopup="true" aria-expanded="false">Download Table <span class="caret"></span>
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><a href="#">Reports & Messages</a></li>
+                        <li><a href="#">Reports</a></li>
+                        <li><a href="#">Messages</a></li>
+                    </ul>
+                </div>
+            </div>
+            <button type="button" class="btn btn-default col-md-1">Open All</button>
+            <div class="col-md-3">
+                <span>View:</span>
+                <div class="dropdown">
+                    <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1"
+                            data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+                        Dropdown
+                        <span class="caret"></span>
+                    </button>
+                    <ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
+                        <li><a href="#">Action</a></li>
+                        <li><a href="#">Another action</a></li>
+                        <li><a href="#">Something else here</a></li>
+                        <li role="separator" class="divider"></li>
+                        <li><a href="#">Separated link</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="input-group col-md-2">
+                <label>
+                    <input type="number" class="form-control" placeholder="0"
+                           aria-describedby="table-limit">
+                </label>
+                <span class="input-group-addon" id="table-limit">/00</span>
+            </div>
+        </div>
+        <table class="table table-hover">
+            <thead>
+            <tr>
+                <th ng-repeat="column in columns">{{column}}</th>
+            </tr>
+            <tr>
+                <th ng-repeat="column in columns">
+                    <div class="input-group">
+                        <input type="text" class="form-control" placeholder="Filter">
+                    </div>
+                </th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr ng-repeat="metadata in metadatas" ng-click="selectReport(metadata)">
+                <td ng-repeat="column in columns">{{metadata[column]}}</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="row">
+        <!--    Treeview panel-->
+        <!--        TODO: Add expand collapse download and close all buttons-->
+        <div class="col resizable-horizontal">
+            <div id="tree"></div>
+        </div>
+        <!-- Content panel-->
+        <div class="col">
+            <p>{{reportDetails.text}}</p>
+            <table>
+                <tbody>
+                <tr ng-repeat="(key, value) in reportDetails.values">
+                    <td>{{key}}</td>
+                    <td>{{value}}</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
