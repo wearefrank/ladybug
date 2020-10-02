@@ -3,12 +3,12 @@
     <!--    Report list panel-->
     <div class="row resizable-vertical">
         <div class="row">
-            <button type="button" class="btn btn-default col-md-1">Refresh</button>
-            <button type="button" class="btn btn-default col-md-1">Options</button>
-            <button type="button" class="btn btn-default col-md-1">Upload</button>
+            <button type="button" class="btn btn-outline-primary col-md-1">Refresh</button>
+            <button type="button" class="btn btn-outline-primary col-md-1">Options</button>
+            <button type="button" class="btn btn-outline-primary col-md-1">Upload</button>
             <div class="input-group col-md-2">
                 <div class="input-group-btn">
-                    <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown"
+                    <button type="button" class="btn btn-outline-primary dropdown-toggle" data-toggle="dropdown"
                             aria-haspopup="true" aria-expanded="false">Download Table <span class="caret"></span>
                     </button>
                     <ul class="dropdown-menu">
@@ -18,11 +18,11 @@
                     </ul>
                 </div>
             </div>
-            <button type="button" class="btn btn-default col-md-1">Open All</button>
+            <button type="button" class="btn btn-outline-primary col-md-1">Open All</button>
             <div class="col-md-3">
                 <span>View:</span>
                 <div class="dropdown">
-                    <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1"
+                    <button class="btn btn-outline-primary dropdown-toggle" type="button" id="dropdownMenu1"
                             data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
                         Dropdown
                         <span class="caret"></span>
@@ -68,6 +68,11 @@
         <!--    Treeview panel-->
         <!--        TODO: Add expand collapse download and close all buttons-->
         <div class="col resizable-horizontal">
+            <div class="row">
+                <button type="button" class="btn btn-outline-primary col-2" ng-click="expandAll()">Expand All</button>
+                <button type="button" class="btn btn-outline-primary col-2" ng-click="collapseAll()">Collapse All</button>
+                <button type="button" class="btn btn-outline-primary col-2" ng-click="closeAll()">Close All</button>
+            </div>
             <div id="tree"></div>
         </div>
         <!-- Content panel-->

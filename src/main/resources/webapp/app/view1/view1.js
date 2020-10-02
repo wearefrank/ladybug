@@ -81,6 +81,7 @@ angular.module('myApp.view1', ['ngRoute'])
                 }
             };
             console.log($scope.reportDetails);
+            $scope.$apply();
         };
 
         $scope.remove_circulars = function (node) {
@@ -156,11 +157,25 @@ angular.module('myApp.view1', ['ngRoute'])
                             $scope.reportDetails = {text: "", values: {}};
                         }
                     });
-                    console.log("END")
                 }, function (response) {
                     console.error(response);
                 });
 
         };
+        $scope.closeAll = function() {
+            $scope.treeData = [];
+            $('#tree').treeview({data: []});
+            $scope.$apply();
+        };
+
+        $scope.expandAll = function () {
+            $('#tree').treeview('expandAll', { levels: 99, silent: true });
+        }
+
+        $scope.collapseAll = function () {
+            $('#tree').treeview('collapseAll', { silent: true });
+        }
+
+
         $scope.refresh();
     }]);
