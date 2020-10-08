@@ -36,27 +36,37 @@ public class MetadataApi extends ApiBase {
 	@Path("/metadata/{storage}/")
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response getMetadataList(@PathParam("storage") String storageParam, @DefaultValue("-1") @QueryParam("max") int max, @Context UriInfo uriInfo) throws ApiException {
+	public Response getMetadataList(@PathParam("storage") String storageParam, @DefaultValue("-1") @QueryParam("limit") int limit, @Context UriInfo uriInfo) throws ApiException {
 		// TODO: Sorting and filtering
 		MultivaluedMap<String, String> params = uriInfo.getQueryParameters();
+		if (params != null)
+			params.remove("limit");
+
 		List<String> searchValues = new ArrayList<>();
 		List<String> metadataNames = new ArrayList<>();
-		for (String param : params.keySet()) {
-			if (!getMetadataFields().contains(param))
-				continue;
-
-			List<String> values = params.get(param);
-			metadataNames.add(param);
-
-			if (values != null && values.size() > 0)
-				searchValues.add(values.get(0));
-			else
+		if (params == null || params.size() == 0) {
+			for(String field : getMetadataFields()) {
+				metadataNames.add(field);
 				searchValues.add(null);
+			}
+		} else {
+			for (String param : params.keySet()) {
+				if (!getMetadataFields().contains(param))
+					continue;
 
+				List<String> values = params.get(param);
+				metadataNames.add(param);
+
+				if (values != null && values.size() > 0)
+					searchValues.add(values.get(0));
+				else
+					searchValues.add(null);
+
+			}
 		}
 		try {
 			Storage storage = getBean(storageParam);
-			List<List<Object>> list = storage.getMetadata(max, metadataNames, searchValues, MetadataExtractor.VALUE_TYPE_STRING);
+			List<List<Object>> list = storage.getMetadata(limit, metadataNames, searchValues, MetadataExtractor.VALUE_TYPE_STRING);
 			Map<String, Object> out = new HashMap<>(2);
 			out.put("fields", metadataNames);
 			out.put("values", list);
