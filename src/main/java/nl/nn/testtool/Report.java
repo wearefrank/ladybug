@@ -31,6 +31,7 @@ import java.util.Set;
 
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang.StringUtils;
+import org.codehaus.jackson.annotate.JsonIgnore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -101,21 +102,25 @@ public class Report implements Serializable {
 	}
 
 	@Transient
+	@JsonIgnore
 	public void setTestTool(TestTool testTool) {
 		this.testTool = testTool;
 	}
 
 	@Transient
+	@JsonIgnore
 	public TestTool getTestTool() {
 		return testTool;
 	}
 
 	@Transient
+	@JsonIgnore
 	public void setStorage(Storage storage) {
 		this.storage = storage;
 	}
 
 	@Transient
+	@JsonIgnore
 	public Storage getStorage() {
 		return storage;
 	}
@@ -129,11 +134,13 @@ public class Report implements Serializable {
 	}
 
 	@Transient
+	@JsonIgnore
 	public void setStorageSize(Long storageSize) {
 		this.storageSize = storageSize;
 	}
 
 	@Transient
+	@JsonIgnore
 	public Long getStorageSize() {
 		return storageSize;
 	}
@@ -207,26 +214,31 @@ public class Report implements Serializable {
 	}
 
 	@Transient
+	@JsonIgnore
 	public void setReportXmlTransformer(ReportXmlTransformer reportXmlTransformer) {
 		this.reportXmlTransformer = reportXmlTransformer;
 	}
 
 	@Transient
+	@JsonIgnore
 	public ReportXmlTransformer getReportXmlTransformer() {
 		return reportXmlTransformer;
 	}
 
 	@Transient
+	@JsonIgnore
 	public void setGlobalReportXmlTransformer(ReportXmlTransformer globalReportXmlTransformer) {
 		this.globalReportXmlTransformer = globalReportXmlTransformer;
 	}
 
 	@Transient
+	@JsonIgnore
 	public ReportXmlTransformer getGlobalReportXmlTransformer() {
 		return globalReportXmlTransformer;
 	}
 
 	@Transient
+	@JsonIgnore
 	public void setOriginalReport(Report originalReport) {
 		this.originalReport = originalReport;
 	}
@@ -542,26 +554,31 @@ public class Report implements Serializable {
 	}
 
 	@Transient
+	@JsonIgnore
 	public void setDifferenceChecked(boolean differenceChecked) {
 		this.differenceChecked = differenceChecked;
 	}
 
 	@Transient
+	@JsonIgnore
 	public boolean getDifferenceChecked() {
 		return differenceChecked;
 	}
 
 	@Transient
+	@JsonIgnore
 	public void setDifferenceFound(boolean differenceFound) {
 		this.differenceFound = differenceFound;
 	}
 
 	@Transient
+	@JsonIgnore
 	public boolean getDifferenceFound() {
 		return differenceFound;
 	}
 
 	@Transient
+	@JsonIgnore
 	public MessageTransformer getMessageTransformer() {
 		return testTool.getMessageTransformer();
 	}
