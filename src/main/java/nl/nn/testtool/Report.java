@@ -25,6 +25,7 @@ import nl.nn.testtool.util.LogUtil;
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.codehaus.jackson.annotate.JsonIgnore;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.DocumentHelper;
@@ -78,7 +79,7 @@ public class Report implements Serializable {
 	private transient boolean differenceChecked = false;
 	private transient boolean differenceFound = false;
 	private transient Map<String, String> truncatedMessageMap = new RefCompareMap<String, String>();
-	
+
 	public Report() {
 		String threadName = Thread.currentThread().getName();
 		threads.add(threadName);
@@ -88,21 +89,25 @@ public class Report implements Serializable {
 	}
 
 	@Transient
+	@JsonIgnore
 	public void setTestTool(TestTool testTool) {
 		this.testTool = testTool;
 	}
 
 	@Transient
+	@JsonIgnore
 	public TestTool getTestTool() {
 		return testTool;
 	}
 
 	@Transient
+	@JsonIgnore
 	public void setStorage(Storage storage) {
 		this.storage = storage;
 	}
 
 	@Transient
+	@JsonIgnore
 	public Storage getStorage() {
 		return storage;
 	}
@@ -116,15 +121,17 @@ public class Report implements Serializable {
 	}
 
 	@Transient
+	@JsonIgnore
 	public void setStorageSize(Long storageSize) {
 		this.storageSize = storageSize;
 	}
 
 	@Transient
+	@JsonIgnore
 	public Long getStorageSize() {
 		return storageSize;
 	}
-	
+
 	public void setStartTime(long startTime) {
 		this.startTime = startTime;
 	}
@@ -144,7 +151,7 @@ public class Report implements Serializable {
 	public void setCorrelationId(String correlationId) {
 		this.correlationId = correlationId;
 	}
-	
+
 	public String getCorrelationId() {
 		return correlationId;
 	}
@@ -176,7 +183,7 @@ public class Report implements Serializable {
 	public String getFullPath() {
 		return (StringUtils.isNotEmpty(getPath()) ? getPath() : "/") + getName();
 	}
-	
+
 	public void setStubStrategy(String stubStrategy) {
 		this.stubStrategy = stubStrategy;
 	}
@@ -194,26 +201,31 @@ public class Report implements Serializable {
 	}
 
 	@Transient
+	@JsonIgnore
 	public void setReportXmlTransformer(ReportXmlTransformer reportXmlTransformer) {
 		this.reportXmlTransformer = reportXmlTransformer;
 	}
 
 	@Transient
+	@JsonIgnore
 	public ReportXmlTransformer getReportXmlTransformer() {
 		return reportXmlTransformer;
 	}
 
 	@Transient
+	@JsonIgnore
 	public void setGlobalReportXmlTransformer(ReportXmlTransformer globalReportXmlTransformer) {
 		this.globalReportXmlTransformer = globalReportXmlTransformer;
 	}
 
 	@Transient
+	@JsonIgnore
 	public ReportXmlTransformer getGlobalReportXmlTransformer() {
 		return globalReportXmlTransformer;
 	}
 
 	@Transient
+	@JsonIgnore
 	public void setOriginalReport(Report originalReport) {
 		this.originalReport = originalReport;
 	}
@@ -340,7 +352,7 @@ public class Report implements Serializable {
 		threadLevel.put(threadName, level);
 		return message;
 	}
-	
+
 	private String truncateMessage(Checkpoint checkpoint, String message) {
 		// For a message that is referenced by multiple checkpoints, have one truncated message that is
 		// referenced by those checkpoints, to prevent creating multiple String objects representing the
@@ -352,7 +364,7 @@ public class Report implements Serializable {
 		} else {
 			String truncatedMessage = message.substring(0, testTool.getMaxMessageLength())
 				+ "... ("+(message.length() - testTool.getMaxMessageLength())+" more characters)";
-			
+
 			truncatedMessageMap.put(message, truncatedMessage);
 			checkpoint.setEstimatedMemoryUsage(2 * truncatedMessage.length());
 			return truncatedMessage;
@@ -389,7 +401,7 @@ public class Report implements Serializable {
 			return parentThreadName.equals(directParentThreadName) || isParent(parentThreadName, directParentThreadName);
 		}
 	}
-	
+
 	private boolean isChild(String childThreadName, String parentThreadName) {
 		return isParent(parentThreadName, childThreadName);
 	}
@@ -425,7 +437,7 @@ public class Report implements Serializable {
 	public List<Checkpoint> getCheckpoints() {
 		return checkpoints;
 	}
-	
+
 	public Checkpoint getInputCheckpoint() {
 		return checkpoints.get(0);
 	}
@@ -443,36 +455,43 @@ public class Report implements Serializable {
 	}
 
 	@Transient
+	@JsonIgnore
 	public void setCounterpart(Report report) {
 		counterpart = report;
 	}
 
 	@Transient
+	@JsonIgnore
 	public Report getCounterpart() {
 		return counterpart;
 	}
 
 	@Transient
+	@JsonIgnore
 	public void setDifferenceChecked(boolean differenceChecked) {
 		this.differenceChecked = differenceChecked;
 	}
 
 	@Transient
+	@JsonIgnore
 	public boolean getDifferenceChecked() {
 		return differenceChecked;
 	}
 
 	@Transient
+	@JsonIgnore
 	public void setDifferenceFound(boolean differenceFound) {
 		this.differenceFound = differenceFound;
 	}
 
 	@Transient
+	@JsonIgnore
 	public boolean getDifferenceFound() {
 		return differenceFound;
 	}
 
 	@Transient
+	@JsonIgnore
 	public MessageTransformer getMessageTransformer() {
 		return testTool.getMessageTransformer();
 	}
