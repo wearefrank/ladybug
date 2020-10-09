@@ -3,8 +3,8 @@
     <!--    Report list panel-->
     <div class="row resizable-vertical">
         <div class="row">
-            <button type="button" class="btn btn-outline-primary col-md-1">Refresh</button>
-            <button type="button" class="btn btn-outline-primary col-md-1">Options</button>
+            <button type="button" class="btn btn-outline-primary col-md-1" ng-click="refresh()">Refresh</button>
+            <button type="button" class="btn btn-outline-primary col-md-1" data-toggle="modal" data-target="#optionsModal">Options</button>
             <button type="button" class="btn btn-outline-primary col-md-1">Upload</button>
             <div class="input-group col-md-2">
                 <div class="input-group-btn">
@@ -18,7 +18,7 @@
                     </ul>
                 </div>
             </div>
-            <button type="button" class="btn btn-outline-primary col-md-1">Open All</button>
+            <button type="button" class="btn btn-outline-primary col-md-1" ng-click="openAll()">Open All</button>
             <div class="col-md-3">
                 <span>View:</span>
                 <div class="dropdown">
@@ -39,7 +39,7 @@
             <div class="input-group col-md-2">
                 <label>
                     <input type="number" class="form-control" placeholder="0"
-                           aria-describedby="table-limit">
+                           aria-describedby="table-limit" ng-model="limit" ng-change="updateFilter('limit', limit);">
                 </label>
                 <span class="input-group-addon" id="table-limit">/00</span>
             </div>
@@ -52,7 +52,8 @@
             <tr>
                 <th ng-repeat="column in columns">
                     <div class="input-group">
-                        <input type="text" class="form-control" placeholder="Filter">
+                        <input type="text" class="form-control" placeholder="Filter" ng-model="meta.filter"
+                               ng-change="updateFilter(column, meta.filter);">
                     </div>
                 </th>
             </tr>
@@ -70,14 +71,41 @@
         <div class="col resizable-horizontal">
             <div class="row">
                 <button type="button" class="btn btn-outline-primary col-2" ng-click="expandAll()">Expand All</button>
-                <button type="button" class="btn btn-outline-primary col-2" ng-click="collapseAll()">Collapse All</button>
+                <button type="button" class="btn btn-outline-primary col-2" ng-click="collapseAll()">Collapse All
+                </button>
                 <button type="button" class="btn btn-outline-primary col-2" ng-click="closeAll()">Close All</button>
+                <div class="input-group col-md-2">
+                    <div class="input-group-btn">
+                        <button type="button" class="btn btn-outline-primary dropdown-toggle" data-toggle="dropdown"
+                                aria-haspopup="true" aria-expanded="false">Download Tree <span class="caret"></span>
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a href="#">Reports & Messages</a></li>
+                            <li><a href="#">Reports</a></li>
+                            <li><a href="#">Messages</a></li>
+                        </ul>
+                    </div>
+                </div>
             </div>
             <div id="tree"></div>
         </div>
         <!-- Content panel-->
         <div class="col">
-            <p>{{reportDetails.text}}</p>
+            <div class="row" id="details-row">
+                <button type="button" class="btn btn-outline-primary col" ng-click="rerun()">Rerun</button>
+                <button type="button" class="btn btn-outline-primary col" ng-click="toggleEdit()" id="details-edit">Edit</button>
+                <button type="button" class="btn btn-outline-primary col" ng-click="download()">Download</button>
+                <button type="button" class="btn btn-outline-primary col" ng-click="copy('runStorage')">Copy</button>
+                <button type="button" class="btn btn-outline-primary col">Download</button>
+                <button type="button" class="btn btn-outline-primary col" ng-click="expand()">Expand</button>
+                <button type="button" class="btn btn-outline-primary col" ng-click="collapse()">Collapse</button>
+                <button type="button" class="btn btn-outline-primary col" ng-click="close()">Close</button>
+            </div>
+            <pre id="code-wrapper" class="prettify">
+                <code id="code" class="lang-xml">
+                    {{reportDetails.text}}
+                </code>
+            </pre>
             <table>
                 <tbody>
                 <tr ng-repeat="(key, value) in reportDetails.values">
@@ -86,6 +114,56 @@
                 </tr>
                 </tbody>
             </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="optionsModal" tabindex="-1" role="dialog" aria-labelledby="optionsModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="optionsModalLabel">Modal title</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <div class="form-row">
+                        <span class="col-8"> Report generator: </span>
+                        <div class="col-4 my-1">
+                            <select class="custom-select mr-sm-2" id="generatorEnabledSelect">
+                                <option value="true" selected>Enabled</option>
+                                <option value="false">Disabled</option>
+                            </select>
+                        </div>
+
+                    </div>
+                    <div class="form-row">
+                        <span class="col-6">Report filter (regex): </span>
+                        <input type="text" class="form-control col-6"/>
+                    </div>
+                    <div class="form-row">
+                        <span class="col-8">Report.xml transformations: </span>
+                        <div class="form-check col-4">
+                            <input class="form-check-input" type="checkbox" value="" id="defaultCheck1" ng-model="transformCheckboxVar">
+                            <label class="form-check-label" for="defaultCheck1">
+                                Default checkbox
+                            </label>
+                        </div>
+                    </div>
+                    <div class="form-row" ng-show="transformCheckboxVar">
+                        <textarea class="form-control"></textarea>
+                    </div>
+<!--                    TODO: Come up with a better way to organize "Open" buttons-->
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary">Reset</button>
+                <button type="button" class="btn btn-primary">Save changes</button>
+            </div>
         </div>
     </div>
 </div>

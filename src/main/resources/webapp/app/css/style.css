@@ -18,3 +18,7 @@ table .form-control {
     height: auto;
     font-size: 0.7rem;
 }
+
+.btn {
+    font-size: 0.7rem !important;
+}
