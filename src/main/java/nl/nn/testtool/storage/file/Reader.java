@@ -15,6 +15,14 @@
 */
 package nl.nn.testtool.storage.file;
 
+import nl.nn.testtool.MetadataExtractor;
+import nl.nn.testtool.Report;
+import nl.nn.testtool.storage.StorageException;
+import nl.nn.testtool.util.CSVReader;
+import nl.nn.testtool.util.SearchUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -29,15 +37,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.zip.GZIPInputStream;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import nl.nn.testtool.MetadataExtractor;
-import nl.nn.testtool.Report;
-import nl.nn.testtool.storage.StorageException;
-import nl.nn.testtool.util.CSVReader;
-import nl.nn.testtool.util.SearchUtil;
 
 /**
  * @author Jaco de Groot
@@ -133,7 +132,7 @@ public class Reader {
 			metadataReadOnly = metadataCacheReadOnly;
 		}
 		List result = new ArrayList();
-		for (int i = 0; i < metadataReadOnly.size() &&  (numberOfRecords == -1 || i < numberOfRecords); i++) {
+		for (int i = 0; i < metadataReadOnly.size() &&  (numberOfRecords == -1 || result.size() < numberOfRecords); i++) {
 			Map metadataRecord = (Map)metadataReadOnly.get(i);
 			// Check whether it's already possible to exclude this record from
 			// the result (based on the search values and the already available
