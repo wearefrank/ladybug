@@ -12,6 +12,8 @@ angular.module('myApp.view2', ['ngRoute'])
     .controller('View2Ctrl', ['$scope', '$http', function ($scope, $http) {
         $scope.apiUrl = "http://localhost:8080/ibis_adapterframework_test_war_exploded/ladybug";
         $scope.storage = 'runStorage';
+        $scope.moveTo = "/";
+        $scope.showIds = true;
         $scope.reports = [];
         $scope.treeData = [{}];
 
@@ -53,6 +55,18 @@ angular.module('myApp.view2', ['ngRoute'])
         };
 
         $scope.runReport = function (reports) {
+            let data = {};
+            data[$scope.storage] = [];
+            for (let i = 0; i < reports.length; i++) {
+                data[$scope.storage].push(reports[i]["storageId"]);
+            }
+            $http.post($scope.apiUrl + "/runner/run/logStorage", data)
+                .then(function (response) {
+                    console.log("RUN RETURN");
+                    console.log(response);
+                }, function (response) {
+                    console.error(response);
+                })
         };
 
         $scope.treeSelect = function () {
@@ -98,6 +112,12 @@ angular.module('myApp.view2', ['ngRoute'])
         };
 
         $scope.updateReports = function () {
+        };
+
+        $scope.changeSelectedAll = function (value) {
+            for (let i = 0; i < $scope.reports.length; i++) {
+                $scope.reports[i]["checked"] = value;
+            }
         };
 
         $scope.refresh = function () {
