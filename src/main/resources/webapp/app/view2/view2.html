@@ -1,5 +1,39 @@
-<p>This is the partial for view 2.</p>
-<p>
-  Showing of 'interpolate' filter:
-  {{ 'Current version is v%VERSION%.' | interpolate }}
-</p>
+<div class="row">
+  <div class="col-4">
+    <div id="tree"></div>
+  </div>
+  <div class="col-8">
+    <div class="row">
+      <button type="button" class="btn btn-outline-primary col" ng-click="refresh()">Refresh</button>
+      <button type="button" class="btn btn-outline-primary col">Run</button>
+      <button type="button" class="btn btn-outline-primary col">Reset</button>
+      <button type="button" class="btn btn-outline-primary col">Options</button>
+      <button type="button" class="btn btn-outline-primary col">Select All</button>
+      <button type="button" class="btn btn-outline-primary col">Deselect All</button>
+      <button type="button" class="btn btn-outline-primary col">Move</button>
+      <button type="button" class="btn btn-outline-primary col">Copy</button>
+      <button type="button" class="btn btn-outline-primary col">Clone</button>
+      <button type="button" class="btn btn-outline-primary col">Delete</button>
+      <button type="button" class="btn btn-outline-primary col">Download All</button>
+      <button type="button" class="btn btn-outline-primary col">Upload</button>
+    </div>
+    <div class="row">
+      <table>
+        <tbody>
+        <tr ng-repeat="report in reports">
+          <td>
+            <input class="form-check-input" type="checkbox" ng-model="report.checked">
+          </td>
+          <td>
+            <button type="button" class="btn btn-outline-primary col" ng-click="runReport([report])">Run</button>
+          </td>
+          <td>
+            <button type="button" class="btn btn-outline-primary col" ng-click="runReport([report])">Open</button>
+          </td>
+          <td>{{report["path"] + report["name"] + " - " + report["checked"] + " - " + report.checked}}</td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
