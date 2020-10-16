@@ -1,0 +1,198 @@
+<!--Debug panel-->
+<div>
+    <!--    Report list panel-->
+    <div class="row resizable-vertical">
+        <div class="row">
+            <button type="button" class="btn btn-outline-primary col-md-1" ng-click="refresh()">Refresh</button>
+            <button type="button" class="btn btn-outline-primary col-md-1" data-toggle="modal"
+                    data-target="#optionsModal">Options
+            </button>
+            <button type="button" class="btn btn-outline-primary col-md-1">Upload</button>
+            <div class="input-group col-md-2">
+                <div class="input-group-btn">
+                    <button type="button" class="btn btn-outline-primary dropdown-toggle" data-toggle="dropdown"
+                            aria-haspopup="true" aria-expanded="false">Download Table <span class="caret"></span>
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><a href="#" ng-click="downloadReports('table', true, true)">Reports & Messages</a></li>
+                        <li><a href="#" ng-click="downloadReports('table', false, true)">Reports</a></li>
+                        <li><a href="#" ng-click="downloadReports('table', true, false)">Messages</a></li>
+                    </ul>
+                </div>
+            </div>
+            <button type="button" class="btn btn-outline-primary col-md-1" ng-click="openAll()">Open All</button>
+            <div class="col-md-3">
+                <span>View:</span>
+                <div class="dropdown">
+                    <button class="btn btn-outline-primary dropdown-toggle" type="button" id="dropdownMenu1"
+                            data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+                        Dropdown
+                        <span class="caret"></span>
+                    </button>
+                    <ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
+                        <li><a href="#">Action</a></li>
+                        <li><a href="#">Another action</a></li>
+                        <li><a href="#">Something else here</a></li>
+                        <li role="separator" class="divider"></li>
+                        <li><a href="#">Separated link</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-md-2 float-md-right">
+                <div class="input-group">
+                    <label for="tableLimit" class="sr-only">Table Limit</label>
+                    <input type="number" class="form-control" placeholder="0" id="tableLimit"
+                           aria-describedby="table-limit" ng-model="limit" ng-change="updateFilter('limit', limit);">
+                    <div class="input-group-append">
+                        <div class="input-group-text">/00</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <table class="table table-hover">
+            <thead>
+            <tr>
+                <th ng-repeat="column in columns">{{column}}</th>
+            </tr>
+            <tr>
+                <th ng-repeat="column in columns">
+                    <div class="input-group">
+                        <input type="text" class="form-control" placeholder="Filter" ng-model="meta.filter"
+                               ng-change="updateFilter(column, meta.filter);">
+                    </div>
+                </th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr ng-repeat="metadata in metadatas" ng-click="selectReport(metadata)">
+                <td ng-repeat="column in columns">{{metadata[column]}}</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="row">
+        <!--    Treeview panel-->
+        <!--        TODO: Add expand collapse download and close all buttons-->
+        <div class="col resizable-horizontal">
+            <div class="row">
+                <button type="button" class="btn btn-outline-primary col-2" ng-click="expandAll()">Expand All</button>
+                <button type="button" class="btn btn-outline-primary col-2" ng-click="collapseAll()">Collapse All
+                </button>
+                <button type="button" class="btn btn-outline-primary col-2" ng-click="closeAll()">Close All</button>
+                <div class="input-group col-md-2">
+                    <div class="input-group-btn">
+                        <button type="button" class="btn btn-outline-primary dropdown-toggle" data-toggle="dropdown"
+                                aria-haspopup="true" aria-expanded="false">Download Tree <span class="caret"></span>
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a href="#" ng-click="downloadReports('tree', true, true)">Reports & Messages</a></li>
+                            <li><a href="#" ng-click="downloadReports('tree', false, true)">Reports</a></li>
+                            <li><a href="#" ng-click="downloadReports('tree', true, false)">Messages</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div id="tree"></div>
+        </div>
+        <!-- Content panel-->
+        <div class="col">
+            <div class="row" id="details-row">
+                <button type="button" class="btn btn-outline-primary col" ng-click="rerun()">Rerun</button>
+                <button type="button" class="btn btn-outline-primary col" ng-click="toggleEdit()" id="details-edit">
+                    Edit
+                </button>
+                <button type="button" class="btn btn-outline-primary col" ng-click="downloadReports(null, true, true)">Download</button>
+                <button type="button" class="btn btn-outline-primary col" ng-click="copy('runStorage')">Copy</button>
+                <button type="button" class="btn btn-outline-primary col">Download</button>
+                <button type="button" class="btn btn-outline-primary col" ng-click="expand()">Expand</button>
+                <button type="button" class="btn btn-outline-primary col" ng-click="collapse()">Collapse</button>
+                <button type="button" class="btn btn-outline-primary col" ng-click="close()">Close</button>
+            </div>
+            <pre id="code-wrapper" class="prettify">
+                <code id="code" class="lang-xml">
+                    {{reportDetails.text}}
+                </code>
+            </pre>
+            <table>
+                <tbody>
+                <tr ng-repeat="(key, value) in reportDetails.values">
+                    <td>{{key}}</td>
+                    <td>{{value}}</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="optionsModal" tabindex="-1" role="dialog" aria-labelledby="optionsModalLabel"
+     aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="optionsModalLabel">Options</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body container">
+                <form>
+                    <div class="form-group">
+                        <label for="generatorEnabledSelect">Report generator</label>
+                        <select class="form-control custom-select mr-sm-2" id="generatorEnabledSelect">
+                            <option value="true" selected>Enabled</option>
+                            <option value="false">Disabled</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="reportFilterInput">Report filter (regex)</label>
+                        <input type="text" class="form-control" id="reportFilterInput">
+                    </div>
+                    <div class="form-group">
+                        <label for="openLatestReports">Open latest reports</label>
+                        <div class="input-group">
+                            <input type="number" class="form-control" placeholder="10" ng-model="open_latest_number"
+                                   id="openLatestReports"/>
+                            <div class="input-group-append">
+                                <button class="btn btn-outline-primary" type="button">Open</button>
+                            </div>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="openReportCheckbox">
+                            <label class="form-check-label" for="openReportCheckbox">
+                                Exclude reports with empty report.xml
+                            </label>
+                        </div>
+                    </div>
+                    <div class="form-group ">
+                        <label for="openInProgressNo">Open report in progress number</label>
+                        <div class="input-group">
+                            <input type="number" class="form-control" placeholder="1" id="openInProgressNo"/>
+                            <div class="input-group-append">
+                                <button class="btn btn-outline-primary" type="button">Open</button>
+                            </div>
+                        </div>
+
+                    </div>
+                    <div class="form-group form-check">
+                        <input class="form-check-input" type="checkbox" value="" id="reportTransformationCheck"
+                               ng-model="transformCheckboxVar">
+                        <label class="form-check-label transform-label" for="reportTransformationCheck">
+                            Report.xml Transformations
+                        </label>
+                    </div>
+                    <div class="form-group" ng-show="transformCheckboxVar">
+                        <label for="transformationTextarea">Transformation</label>
+                        <textarea class="form-control" id="transformationTextarea" rows="10"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary">Reset</button>
+                <button type="button" class="btn btn-primary">Save changes</button>
+            </div>
+        </div>
+    </div>
+</div>
