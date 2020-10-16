@@ -138,7 +138,12 @@ angular.module('myApp.view1', ['ngRoute'])
                     console.log(response);
                     console.log(response.data);
                     $scope.reports[response.data["storageId"]] = response.data;
-                    let report = {text: response.data["name"], ladybug: response.data,icon: "fa fa-file-code", nodes: []};
+                    let report = {
+                        text: response.data["name"],
+                        ladybug: response.data,
+                        icon: "fa fa-file-code",
+                        nodes: []
+                    };
                     let checkpoints = response.data["checkpoints"];
                     let nodes = report.nodes;
                     let previous_node = null;
@@ -232,14 +237,14 @@ angular.module('myApp.view1', ['ngRoute'])
         }
 
         $scope.getRootNode = function () {
-                let tree = $('#tree').treeview(true);
-                if (tree.getSelected().length === 0)
-                    return;
-                let node = tree.getSelected()[0];
-                while (node.parentId !== undefined) {
-                    node = tree.getNode(node.parentId);
-                }
-                return node;
+            let tree = $('#tree').treeview(true);
+            if (tree.getSelected().length === 0)
+                return;
+            let node = tree.getSelected()[0];
+            while (node.parentId !== undefined) {
+                node = tree.getNode(node.parentId);
+            }
+            return node;
         }
         // TODO: Move
         // $scope.deleteSelected = function () {
@@ -275,12 +280,12 @@ angular.module('myApp.view1', ['ngRoute'])
             }
             console.log("Expanding");
             console.log(path);
-            for(let i = path.length-1; i >= 0; i--) {
+            for (let i = path.length - 1; i >= 0; i--) {
                 tree.expandNode(path[i]);
             }
         }
 
-        $scope.rerun = function() {
+        $scope.rerun = function () {
             let rootNode = $scope.getRootNode();
             let data = {};
             data[$scope.storage] = [rootNode["ladybug"]["storageId"]];
@@ -294,9 +299,28 @@ angular.module('myApp.view1', ['ngRoute'])
                 });
         };
 
-        $scope.download = function () {
-            let storageId = $scope.getRootNode()["ladybug"]["storageId"];
-            window.open($scope.apiUrl + "/report/download/" + $scope.storage + "/" + storageId);
+        $scope.downloadReports = function (source, exportReport, exportReportXml) {
+            let queryString = "?";
+            if (source === "table") {
+                for (let i = 0; i < $scope.metadatas.length; i++) {
+                    queryString += "id=" + $scope.metadatas[i]["storageId"] + "&";
+                }
+            } else if (source === "tree") {
+                for (let i = 0; i < $scope.treeData.length; i++) {
+                    queryString += "id=" + $scope.treeData[i]["ladybug"]["storageId"] + "&";
+                }
+            } else {
+                queryString += "id=" + $scope.getRootNode()["ladybug"]["storageId"] + "&";
+            }
+
+            window.open($scope.apiUrl + "/report/download/" + $scope.storage +
+                "/" + exportReport + "/" + exportReportXml + queryString.slice(0, -1));
+            // $http.get($scope.apiUrl + "/report/download/" + $scope.storage + "/true/true?id=" + storageId, {data: [storageId]})
+            //     .then(function (response) {
+            //         console.log(response);
+            //     }, function (response) {
+            //         console.error(response);
+            //     });
         }
 
         $scope.copy = function (to) {
@@ -307,7 +331,7 @@ angular.module('myApp.view1', ['ngRoute'])
 
         $scope.close = function () {
             let storageId = $scope.getRootNode()["ladybug"]["storageId"];
-            for (let i = 0; i < $scope.treeData.length; i ++) {
+            for (let i = 0; i < $scope.treeData.length; i++) {
                 if (storageId === $scope.treeData[i]["ladybug"]["storageId"]) {
                     $scope.treeData.splice(i, 1);
                     i--;

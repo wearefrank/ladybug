@@ -14,9 +14,9 @@
                             aria-haspopup="true" aria-expanded="false">Download Table <span class="caret"></span>
                     </button>
                     <ul class="dropdown-menu">
-                        <li><a href="#">Reports & Messages</a></li>
-                        <li><a href="#">Reports</a></li>
-                        <li><a href="#">Messages</a></li>
+                        <li><a href="#" ng-click="downloadReports('table', true, true)">Reports & Messages</a></li>
+                        <li><a href="#" ng-click="downloadReports('table', false, true)">Reports</a></li>
+                        <li><a href="#" ng-click="downloadReports('table', true, false)">Messages</a></li>
                     </ul>
                 </div>
             </div>
@@ -38,12 +38,15 @@
                     </ul>
                 </div>
             </div>
-            <div class="input-group col-md-2">
-                <label>
-                    <input type="number" class="form-control" placeholder="0"
+            <div class="col-md-2 float-md-right">
+                <div class="input-group">
+                    <label for="tableLimit" class="sr-only">Table Limit</label>
+                    <input type="number" class="form-control" placeholder="0" id="tableLimit"
                            aria-describedby="table-limit" ng-model="limit" ng-change="updateFilter('limit', limit);">
-                </label>
-                <span class="input-group-addon" id="table-limit">/00</span>
+                    <div class="input-group-append">
+                        <div class="input-group-text">/00</div>
+                    </div>
+                </div>
             </div>
         </div>
         <table class="table table-hover">
@@ -82,9 +85,9 @@
                                 aria-haspopup="true" aria-expanded="false">Download Tree <span class="caret"></span>
                         </button>
                         <ul class="dropdown-menu">
-                            <li><a href="#">Reports & Messages</a></li>
-                            <li><a href="#">Reports</a></li>
-                            <li><a href="#">Messages</a></li>
+                            <li><a href="#" ng-click="downloadReports('tree', true, true)">Reports & Messages</a></li>
+                            <li><a href="#" ng-click="downloadReports('tree', false, true)">Reports</a></li>
+                            <li><a href="#" ng-click="downloadReports('tree', true, false)">Messages</a></li>
                         </ul>
                     </div>
                 </div>
@@ -98,7 +101,7 @@
                 <button type="button" class="btn btn-outline-primary col" ng-click="toggleEdit()" id="details-edit">
                     Edit
                 </button>
-                <button type="button" class="btn btn-outline-primary col" ng-click="download()">Download</button>
+                <button type="button" class="btn btn-outline-primary col" ng-click="downloadReports(null, true, true)">Download</button>
                 <button type="button" class="btn btn-outline-primary col" ng-click="copy('runStorage')">Copy</button>
                 <button type="button" class="btn btn-outline-primary col">Download</button>
                 <button type="button" class="btn btn-outline-primary col" ng-click="expand()">Expand</button>
