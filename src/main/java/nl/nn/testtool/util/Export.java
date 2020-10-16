@@ -47,6 +47,11 @@ public class Export {
 		return export(storage, null);
 	}
 
+	public static ExportResult export(Storage storage, List storageIds, boolean exportReport,
+											boolean exportReportXml) {
+		return export(storage, storageIds, null, exportReport, exportReportXml, null, null);
+	}
+
 	public static ExportResult export(Storage storage,
 			String suggestedFilenameWithoutExtension) {
 		return export(storage, suggestedFilenameWithoutExtension, true, false);
@@ -76,6 +81,7 @@ public class Export {
 	public static ExportResult export(Checkpoint checkpoint) {
 		return export(null, null, false, false, checkpoint, null);
 	}
+
 	private static ExportResult export(Storage storage, Report report,
 			boolean exportReport, boolean exportReportXml,
 			Checkpoint checkpoint, String suggestedFilenameWithoutExtension) {
