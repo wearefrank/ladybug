@@ -22,3 +22,16 @@ table .form-control {
 .btn {
     font-size: 0.7rem !important;
 }
+
+.options-button {
+    margin-top: 1rem;
+    /*font-size: 1rem;*/
+}
+
+.form-control {
+    font-size: 0.7rem !important;
+}
+
+.transform-label {
+    font-size: 0.8rem;
+}
