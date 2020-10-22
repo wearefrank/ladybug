@@ -366,6 +366,17 @@ angular.module('myApp.view1', ['ngRoute'])
             $scope.reportDetails = {text: "", values: {}};
         }
 
+        $scope.uploadReport = function() {
+            let files = document.getElementById("upload-file").files;
+            if (files.length === 0)
+                return;
+            for (let i = 0; i < files.length; i++) {
+                let formdata = new FormData();
+                formdata.append("file", files[i]);
+                $http.post($scope.apiUrl + "/report/upload/" + $scope.storage, formdata, {headers: {"Content-Type": undefined}});
+            }
+        }
+
         $scope.updateOptions();
         $scope.refresh();
     }]);
