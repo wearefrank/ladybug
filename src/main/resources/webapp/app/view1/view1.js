@@ -15,21 +15,19 @@ angular.module('myApp.view1', ['ngRoute'])
         $scope.storage = "logStorage";
         $scope.treeData = [];
         $scope.reports = [];
-        $scope.reportDetails = {
-            text: "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-                "<email>\n" +
-                "\t<recipients>\n" +
-                "\t\t<recipient type=\"to\">No scenarios found\n" +
-                "</recipient>\n" +
-                "\t</recipients>\n" +
-                "\t<from>LAPTOP-L30O5T9</from>\n" +
-                "\t<subject>SUCCESS Larva run results on LAPTOP-L30O5T9 (No scenarios found)</subject>\n" +
-                "\t<message>No scenarios found\n" +
-                "  </message>\n" +
-                "</email>", values: {"init": "a", "b": "extra data"}
-        };
+        $scope.reportDetails = {text: "", values: {}};
         $scope.limit = 5;
         $scope.filters = {"limit": $scope.limit};
+        $scope.options = {
+            "generatorEnabled": true,
+            "regexFilter": "^(?!Pipeline WebControl).*",
+            "estMemory": 0,
+            "reportsInProgress": 0,
+            "transformation": "",
+            "transformationEnabled": false,
+            "openLatest": 10,
+            "openInProgress": 1
+        };
 
         $scope.updateFilter = function (key, value) {
             $scope.filters[key] = value;
@@ -79,6 +77,33 @@ angular.module('myApp.view1', ['ngRoute'])
                 console.error(response);
             });
         };
+
+        $scope.updateOptions = function() {
+            $http.get($scope.apiUrl + "/testtool")
+                .then(function (response) {
+                    $scope.options = Object.assign($scope.options, response.data);
+                    console.log("/testtool");
+                    console.log(response);
+                    console.log($scope.options);
+                }, function (response) {
+                    console.log("/testtool failed");
+                });
+            $http.get($scope.apiUrl + "/testtool/transformation")
+                .then(function (response) {
+                    $scope.options = Object.assign($scope.options, response.data);
+                    $scope.options['transformationEnabled'] = $scope.options['transformation'] !== "";
+                    console.log("/testtool/transformation");
+                });
+        }
+
+        $scope.saveOptions = function() {
+            console.log("Saving Options");
+            console.log($scope.options);
+            $http.post($scope.apiUrl + "/testtool", {
+                "generatorEnabled": $scope.options['generatorEnabled'],
+                "regexFilter": $scope.options["regexFilter"]});
+            $http.post($scope.apiUrl + "/testtool/transformation", {"transformation": $scope.options['transformation']});
+        }
 
         /*
          * Displays a selected reports in the content pane.
@@ -323,7 +348,7 @@ angular.module('myApp.view1', ['ngRoute'])
             //     });
         }
 
-        $scope.copy = function (to) {
+        $scope.copyReport = function (to) {
             let data = {};
             data[$scope.storage] = [$scope.getRootNode()["ladybug"]["storageId"]];
             $http.put($scope.apiUrl + "/report/store/" + to, data);
@@ -338,7 +363,9 @@ angular.module('myApp.view1', ['ngRoute'])
                 }
             }
             $scope.updateTree();
+            $scope.reportDetails = {text: "", values: {}};
         }
 
+        $scope.updateOptions();
         $scope.refresh();
     }]);

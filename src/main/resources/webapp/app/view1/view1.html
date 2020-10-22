@@ -102,8 +102,7 @@
                     Edit
                 </button>
                 <button type="button" class="btn btn-outline-primary col" ng-click="downloadReports(null, true, true)">Download</button>
-                <button type="button" class="btn btn-outline-primary col" ng-click="copy('runStorage')">Copy</button>
-                <button type="button" class="btn btn-outline-primary col">Download</button>
+                <button type="button" class="btn btn-outline-primary col" ng-click="copyReport('runStorage')">Copy</button>
                 <button type="button" class="btn btn-outline-primary col" ng-click="expand()">Expand</button>
                 <button type="button" class="btn btn-outline-primary col" ng-click="collapse()">Collapse</button>
                 <button type="button" class="btn btn-outline-primary col" ng-click="close()">Close</button>
@@ -140,19 +139,19 @@
                 <form>
                     <div class="form-group">
                         <label for="generatorEnabledSelect">Report generator</label>
-                        <select class="form-control custom-select mr-sm-2" id="generatorEnabledSelect">
-                            <option value="true" selected>Enabled</option>
-                            <option value="false">Disabled</option>
+                        <select class="form-control custom-select mr-sm-2" id="generatorEnabledSelect" ng-model="options['generatorEnabled']">
+                            <option ng-value="true">Enabled</option>
+                            <option ng-value="true">Disabled</option>
                         </select>
                     </div>
                     <div class="form-group">
                         <label for="reportFilterInput">Report filter (regex)</label>
-                        <input type="text" class="form-control" id="reportFilterInput">
+                        <input type="text" class="form-control" id="reportFilterInput" ng-model="options['regexFilter']">
                     </div>
                     <div class="form-group">
                         <label for="openLatestReports">Open latest reports</label>
                         <div class="input-group">
-                            <input type="number" class="form-control" placeholder="10" ng-model="open_latest_number"
+                            <input type="number" class="form-control" placeholder="10" ng-model="options['openLatest']"
                                    id="openLatestReports"/>
                             <div class="input-group-append">
                                 <button class="btn btn-outline-primary" type="button">Open</button>
@@ -168,7 +167,7 @@
                     <div class="form-group ">
                         <label for="openInProgressNo">Open report in progress number</label>
                         <div class="input-group">
-                            <input type="number" class="form-control" placeholder="1" id="openInProgressNo"/>
+                            <input type="number" class="form-control" placeholder="1" id="openInProgressNo" ng-model="options['openInProgress']"/>
                             <div class="input-group-append">
                                 <button class="btn btn-outline-primary" type="button">Open</button>
                             </div>
@@ -177,21 +176,21 @@
                     </div>
                     <div class="form-group form-check">
                         <input class="form-check-input" type="checkbox" value="" id="reportTransformationCheck"
-                               ng-model="transformCheckboxVar">
+                               ng-model="options['transformationEnabled']">
                         <label class="form-check-label transform-label" for="reportTransformationCheck">
                             Report.xml Transformations
                         </label>
                     </div>
-                    <div class="form-group" ng-show="transformCheckboxVar">
+                    <div class="form-group" ng-show="options['transformationEnabled']">
                         <label for="transformationTextarea">Transformation</label>
-                        <textarea class="form-control" id="transformationTextarea" rows="10"></textarea>
+                        <textarea class="form-control" id="transformationTextarea" rows="10">{{options['transformation']}}</textarea>
                     </div>
                 </form>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary">Reset</button>
-                <button type="button" class="btn btn-primary">Save changes</button>
+                <button type="button" class="btn btn-primary" ng-click="updateOptions()">Reset</button>
+                <button type="button" class="btn btn-primary" ng-click="saveOptions()">Save changes</button>
             </div>
         </div>
     </div>
