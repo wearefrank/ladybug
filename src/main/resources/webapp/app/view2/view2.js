@@ -13,7 +13,7 @@ angular.module('myApp.view2', ['ngRoute'])
         $scope.apiUrl = "http://localhost:8080/ibis_adapterframework_test_war_exploded/ladybug";
         $scope.storage = 'runStorage';
         $scope.moveTo = "/";
-        $scope.showIds = true;
+        $scope.showOptions = {ids: false, checkpoints: false};
         $scope.reports = [];
         $scope.treeData = [{}];
 
@@ -51,10 +51,20 @@ angular.module('myApp.view2', ['ngRoute'])
             }
         };
 
+        $scope.getSelectedReports = function () {
+            let reports = [];
+            for (let i = 0; i < $scope.reports.length; i++) {
+                if ($scope.reports[i]["checked"] === true)
+                    reports.push($scope.reports[i]);
+            }
+            return reports;
+        }
+
         $scope.openReport = function (reports) {
         };
 
-        $scope.runReport = function (reports) {
+        $scope.runReport = function () {
+            let reports = $scope.getSelectedReports();
             let data = {};
             data[$scope.storage] = [];
             for (let i = 0; i < reports.length; i++) {
@@ -113,6 +123,28 @@ angular.module('myApp.view2', ['ngRoute'])
 
         $scope.updateReports = function () {
         };
+
+        $scope.uploadReport = function() {
+            let files = document.getElementById("upload-file").files;
+            if (files.length === 0)
+                return;
+            for (let i = 0; i < files.length; i++) {
+                let formdata = new FormData();
+                formdata.append("file", files[i]);
+                $http.post($scope.apiUrl + "/report/upload/" + $scope.storage, formdata, {headers: {"Content-Type": undefined}});
+            }
+        }
+
+        $scope.deleteReports = function () {
+            let reports = $scope.getSelectedReports();
+            for (let i = 0; i < reports.length; i++) {
+                $http.delete($scope.apiUrl + "/report/" + $scope.storage + "/" + reports["storageId"]);
+            }
+        }
+
+        $scope.resetRunner = function () {
+            $http.post($scope.apiUrl + "/runner/reset");
+        }
 
         $scope.changeSelectedAll = function (value) {
             for (let i = 0; i < $scope.reports.length; i++) {

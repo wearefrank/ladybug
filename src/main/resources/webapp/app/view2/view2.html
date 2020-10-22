@@ -6,8 +6,10 @@
         <div class="row">
             <button type="button" class="btn btn-outline-primary col" ng-click="refresh()">Refresh</button>
             <button type="button" class="btn btn-outline-primary col" ng-click="runReport(reports)">Run</button>
-            <button type="button" class="btn btn-outline-primary col">Reset</button>
-            <button type="button" class="btn btn-outline-primary col">Options</button>
+            <button type="button" class="btn btn-outline-primary col" ng-click="resetRunner()">Reset</button>
+            <button type="button" class="btn btn-outline-primary col" data-toggle="modal" data-target="#optionsModal">
+                Options
+            </button>
             <button type="button" class="btn btn-outline-primary col" ng-click="changeSelectedAll(true)">Select All
             </button>
             <button type="button" class="btn btn-outline-primary col" ng-click="changeSelectedAll(false)">Deselect All
@@ -15,9 +17,12 @@
             <button type="button" class="btn btn-outline-primary col">Move</button>
             <button type="button" class="btn btn-outline-primary col">Copy</button>
             <button type="button" class="btn btn-outline-primary col">Clone</button>
-            <button type="button" class="btn btn-outline-primary col">Delete</button>
+            <button type="button" class="btn btn-outline-primary col" ng-click="deleteReports()">Delete</button>
             <button type="button" class="btn btn-outline-primary col">Download All</button>
-            <button type="button" class="btn btn-outline-primary col">Upload</button>
+            <div class="col">
+                <input type="file" id="upload-file" style="display: none" ng-click="uploadReport()">
+                <button type="button" class="btn btn-outline-primary" onclick="$('#upload-file').click()">Upload</button>
+            </div>
         </div>
         <div class="row">
             <div class="col-2">
@@ -42,7 +47,7 @@
                         <button type="button" class="btn btn-outline-primary col" ng-click="openReport([report])">Open
                         </button>
                     </td>
-                    <td ng-show="showIds">
+                    <td ng-show="showOptions.ids">
                         {{report["storageId"]}}
                     </td>
                     <td>
@@ -51,6 +56,43 @@
                 </tr>
                 </tbody>
             </table>
+        </div>
+    </div>
+</div>
+
+
+<!-- Modal -->
+<div class="modal fade" id="optionsModal" tabindex="-1" role="dialog" aria-labelledby="optionsModalLabel"
+     aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="optionsModalLabel">Options</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body container">
+                <form>
+                    <div class="form-group form-check">
+                        <input class="form-check-input" type="checkbox" value="" id="reportTransformationCheck"
+                               ng-model="showOptions.ids">
+                        <label class="form-check-label transform-label" for="reportTransformationCheck">
+                            Show report storage IDs
+                        </label>
+                    </div>
+                    <div class="form-group form-check">
+                        <input class="form-check-input" type="checkbox" value="" id="showCheckpointIds"
+                               ng-model="showOptions.checkpoints">
+                        <label class="form-check-label transform-label" for="showCheckpointIds">
+                            Show checkpoint IDs
+                        </label>
+                    </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" ng-click="showOptions = {ids: false, checkpoints: false}">Restore to defaults</button>
+            </div>
         </div>
     </div>
 </div>
