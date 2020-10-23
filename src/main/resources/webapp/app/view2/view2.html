@@ -18,7 +18,18 @@
             <button type="button" class="btn btn-outline-primary col" ng-click="deleteReports(getSelectedReports())">
                 Delete
             </button>
-            <button type="button" class="btn btn-outline-primary col">Download All</button>
+            <div class="input-group col-md-2">
+                <div class="input-group-btn">
+                    <button type="button" class="btn btn-outline-primary dropdown-toggle" data-toggle="dropdown"
+                            aria-haspopup="true" aria-expanded="false">Download Selected <span class="caret"></span>
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><a href="#" ng-click="downloadReports(getSelectedReports(), true, true)">Reports & Messages</a></li>
+                        <li><a href="#" ng-click="downloadReports(getSelectedReports(), false, true)">Reports</a></li>
+                        <li><a href="#" ng-click="downloadReports(getSelectedReports(), true, false)">Messages</a></li>
+                    </ul>
+                </div>
+            </div>
             <div class="col">
                 <input type="file" id="upload-file" style="display: none" ng-click="uploadReport()">
                 <button type="button" class="btn btn-outline-primary" onclick="$('#upload-file').click()">Upload

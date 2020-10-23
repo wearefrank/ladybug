@@ -152,6 +152,16 @@ angular.module('myApp.view2', ['ngRoute'])
             }
         }
 
+        $scope.downloadReports = function (reports, exportReport, exportReportXml) {
+            let queryString = "?";
+            for (let i = 0; i < reports.length; i++) {
+                queryString += "id=" + reports[i]["storageId"] + "&";
+            }
+
+            window.open($scope.apiUrl + "/report/download/" + $scope.storage +
+                "/" + exportReport + "/" + exportReportXml + queryString.slice(0, -1));
+        }
+
         $scope.moveReports = function (reports, action) {
             let path = $('#moveToInput').val();
             console.log(action + " to " + path);
