@@ -16,6 +16,7 @@ angular.module('myApp.view2', ['ngRoute'])
         $scope.showOptions = {ids: false, checkpoints: false};
         $scope.reports = [];
         $scope.treeData = [{}];
+        $scope.cloneInputs = {csv: "", message: "", storageId: "", force: false};
 
         $scope.addNode = function (rootNode, path, data) {
             console.log("INSIDE ADDNODE");
@@ -161,6 +162,37 @@ angular.module('myApp.view2', ['ngRoute'])
             }
         };
 
+        $scope.openCloneModal = function (reports) {
+            let storageId = reports[0]["storageId"]
+            $http.get($scope.apiUrl + "/report/" + $scope.storage + "/" + storageId)
+                .then(function (response) {
+                    $scope.cloneInputs.message = response.data["inputCheckpoint"]["message"];
+                    $scope.cloneInputs.storageId = storageId;
+                    $('#cloneModal').modal('show');
+                }, function (response) {
+                    alert("couldnt get report!");
+                    console.log(response);
+                })
+        }
+
+        $scope.closeCloneModal = function () {
+            $scope.cloneInputs = {csv: "", message: "", storageId: "", force: false};
+            $scope.refresh();
+        }
+
+        $scope.cloneReport = function () {
+            $http.post($scope.apiUrl + "/report/clone/" + $scope.storage + "/" + $scope.cloneInputs.storageId,
+                {
+                    csv: $scope.cloneInputs.csv,
+                    message: $scope.cloneInputs.message,
+                    force: $scope.cloneInputs.force
+                }).then($scope.closeCloneModal, function (response) {
+                $scope.cloneInputs.force = true;
+                alert("couldnt clone it");
+                console.log(response);
+            })
+        }
+
         $scope.resetRunner = function () {
             $http.post($scope.apiUrl + "/runner/reset");
         }
@@ -176,5 +208,6 @@ angular.module('myApp.view2', ['ngRoute'])
             $scope.updateReports();
         }
 
+        $('#cloneModal').on('hidden.bs.modal', $scope.closeCloneModal)
         $scope.refresh();
     }]);
