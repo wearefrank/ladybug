@@ -19,6 +19,7 @@
         <jaxrs:server id="Ladybug-Api" bus="ladybug-api-bus" address="/" basePackages="nl.nn.testtool.web.api">
         <jaxrs:providers>
             <bean id="jsonProvider" class="org.codehaus.jackson.jaxrs.JacksonJsonProvider"/>
+            <bean id="corsFilter" class="nl.nn.testtool.web.api.CorsFilter"/>
         </jaxrs:providers>
         <jaxrs:features>
             <cxf:logging/>
