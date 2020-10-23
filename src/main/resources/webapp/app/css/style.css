@@ -2,6 +2,7 @@
     resize: horizontal;
     overflow: auto;
 }
+
 .resizable-vertical {
     resize: vertical;
     overflow: auto;
@@ -32,6 +33,15 @@ table .form-control {
     font-size: 0.7rem !important;
 }
 
+.input-group-text {
+    font-size: 0.7rem !important;
+}
+
 .transform-label {
     font-size: 0.8rem;
+}
+
+.report-path {
+    font-size: 1rem;
+    margin: 0.5em;
 }
