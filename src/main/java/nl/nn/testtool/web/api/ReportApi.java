@@ -14,21 +14,15 @@ import org.apache.cxf.jaxrs.ext.multipart.Multipart;
 import org.apache.log4j.Logger;
 
 import javax.annotation.security.RolesAllowed;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Scanner;
 
 @Path("/")
 public class ReportApi extends ApiBase {
@@ -43,21 +37,9 @@ public class ReportApi extends ApiBase {
 			Storage storage = getBean(storageParam);
 			Report report = storage.getReport(storageId);
 			if (report == null)
-				return Response.status(Response.Status.NOT_FOUND)
-						.header("Access-Control-Allow-Origin", "*")
-						.header("Access-Control-Allow-Credentials", "true")
-						.header("Access-Control-Allow-Headers",
-								"origin, content-type, accept, authorization")
-						.header("Access-Control-Allow-Methods",
-								"GET, POST, PUT, DELETE, OPTIONS, HEAD").build();
+				return Response.status(Response.Status.NOT_FOUND).build();
 
-			return Response.ok().entity(report)
-					.header("Access-Control-Allow-Origin", "*")
-					.header("Access-Control-Allow-Credentials", "true")
-					.header("Access-Control-Allow-Headers",
-							"origin, content-type, accept, authorization")
-					.header("Access-Control-Allow-Methods",
-							"GET, POST, PUT, DELETE, OPTIONS, HEAD").build();
+			return Response.ok().entity(report).build();
 		} catch (StorageException e) {
 			throw new ApiException("Exception while getting report [" + storageId + "] from storage [" + storageParam + "]", e);
 		}
@@ -71,35 +53,17 @@ public class ReportApi extends ApiBase {
 		if (!(storage instanceof CrudStorage)) {
 			String msg = "Given storage [" + storageParam + "] does not implement delete function.";
 			logger.warn(msg);
-			return Response.status(Response.Status.NOT_IMPLEMENTED).entity(msg)
-					.header("Access-Control-Allow-Origin", "*")
-					.header("Access-Control-Allow-Credentials", "true")
-					.header("Access-Control-Allow-Headers",
-							"origin, content-type, accept, authorization")
-					.header("Access-Control-Allow-Methods",
-							"GET, POST, PUT, DELETE, OPTIONS, HEAD").build();
+			return Response.status(Response.Status.NOT_IMPLEMENTED).entity(msg).build();
 		}
 		try {
 			Report report = storage.getReport(storageId);
 			if (report == null)
-				return Response.status(Response.Status.NOT_FOUND)
-						.header("Access-Control-Allow-Origin", "*")
-						.header("Access-Control-Allow-Credentials", "true")
-						.header("Access-Control-Allow-Headers",
-								"origin, content-type, accept, authorization")
-						.header("Access-Control-Allow-Methods",
-								"GET, POST, PUT, DELETE, OPTIONS, HEAD").build();
+				return Response.status(Response.Status.NOT_FOUND).build();
 			((CrudStorage) storage).delete(report);
 		} catch (StorageException e) {
 			throw new ApiException("Exception while deleting a report.", e);
 		}
-		return Response.ok()
-				.header("Access-Control-Allow-Origin", "*")
-				.header("Access-Control-Allow-Credentials", "true")
-				.header("Access-Control-Allow-Headers",
-						"origin, content-type, accept, authorization")
-				.header("Access-Control-Allow-Methods",
-						"GET, POST, PUT, DELETE, OPTIONS, HEAD").build();
+		return Response.ok().build();
 	}
 
 	@POST
@@ -109,24 +73,12 @@ public class ReportApi extends ApiBase {
 	public Response updateReportTransformation(@PathParam("storage") String storageParam, @PathParam("storageId") int storageId, Map<String, String> map) {
 		String transformation = map.get("transformation");
 		if (StringUtils.isEmpty(transformation))
-			return Response.status(Response.Status.BAD_REQUEST)
-					.header("Access-Control-Allow-Origin", "*")
-					.header("Access-Control-Allow-Credentials", "true")
-					.header("Access-Control-Allow-Headers",
-							"origin, content-type, accept, authorization")
-					.header("Access-Control-Allow-Methods",
-							"GET, POST, PUT, DELETE, OPTIONS, HEAD").build();
+			return Response.status(Response.Status.BAD_REQUEST).build();
 
 		try {
 			Storage storage = getBean(storageParam);
 			storage.getReport(storageId).setTransformation(transformation);
-			return Response.ok()
-					.header("Access-Control-Allow-Origin", "*")
-					.header("Access-Control-Allow-Credentials", "true")
-					.header("Access-Control-Allow-Headers",
-							"origin, content-type, accept, authorization")
-					.header("Access-Control-Allow-Methods",
-							"GET, POST, PUT, DELETE, OPTIONS, HEAD").build();
+			return Response.ok().build();
 		} catch (StorageException e) {
 			throw new ApiException("Exception while setting transformation for a report.", e);
 		}
@@ -142,13 +94,7 @@ public class ReportApi extends ApiBase {
 			String transformation = storage.getReport(storageId).getTransformation();
 			Map<String, String> map = new HashMap<>(1);
 			map.put("transformation", transformation);
-			return Response.ok(map)
-					.header("Access-Control-Allow-Origin", "*")
-					.header("Access-Control-Allow-Credentials", "true")
-					.header("Access-Control-Allow-Headers",
-							"origin, content-type, accept, authorization")
-					.header("Access-Control-Allow-Methods",
-							"GET, POST, PUT, DELETE, OPTIONS, HEAD").build();
+			return Response.ok(map).build();
 		} catch (StorageException e) {
 			throw new ApiException("Exception while setting transformation for a report.", e);
 		}
@@ -159,7 +105,7 @@ public class ReportApi extends ApiBase {
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response copyReport(@PathParam("storage") String storageParam, Map<String, List<Integer>> sources) {
+	public Response copyReport(@PathParam("storage") String storageParam, Map<String, List<Integer>> sources, @HeaderParam("Access-Control-Allow-Headers") String requestHeader) {
 		Storage target = getBean(storageParam);
 		Map<String, String> exceptions = new HashMap<>();
 		for (String src : sources.keySet()) {
@@ -176,25 +122,14 @@ public class ReportApi extends ApiBase {
 				}
 			} catch (ApiException e) {
 				exceptions.put(src, e.getMessage());
-				throw new ApiException("Exception while setting transformation for a report.", e);
+//				throw new ApiException("Exception while setting transformation for a report.", e);
+				return Response.serverError().build();
 			}
 		}
 		// TODO: Find a better error response code.
 		if (exceptions.size() > 0)
-			return Response.status(Response.Status.BAD_REQUEST).entity(exceptions)
-					.header("Access-Control-Allow-Origin", "*")
-					.header("Access-Control-Allow-Credentials", "true")
-					.header("Access-Control-Allow-Headers",
-							"origin, content-type, accept, authorization")
-					.header("Access-Control-Allow-Methods",
-							"GET, POST, PUT, DELETE, OPTIONS, HEAD").build();
-		return Response.ok()
-				.header("Access-Control-Allow-Origin", "*")
-				.header("Access-Control-Allow-Credentials", "true")
-				.header("Access-Control-Allow-Headers",
-						"origin, content-type, accept, authorization")
-				.header("Access-Control-Allow-Methods",
-						"GET, POST, PUT, DELETE, OPTIONS, HEAD").build();
+			return Response.status(Response.Status.BAD_REQUEST).entity(exceptions).build();
+		return Response.ok().build();
 	}
 
 	@POST
@@ -212,21 +147,9 @@ public class ReportApi extends ApiBase {
 		InputStream in = attachment.getObject(InputStream.class);
 		String errorMessage = Upload.upload(filename, in, crudStorage, logger);
 		if (StringUtils.isEmpty(errorMessage)) {
-			return Response.ok()
-					.header("Access-Control-Allow-Origin", "*")
-					.header("Access-Control-Allow-Credentials", "true")
-					.header("Access-Control-Allow-Headers",
-							"origin, content-type, accept, authorization")
-					.header("Access-Control-Allow-Methods",
-							"GET, POST, PUT, DELETE, OPTIONS, HEAD").build();
+			return Response.ok().build();
 		}
-		return Response.status(Response.Status.BAD_REQUEST).entity(errorMessage)
-				.header("Access-Control-Allow-Origin", "*")
-				.header("Access-Control-Allow-Credentials", "true")
-				.header("Access-Control-Allow-Headers",
-						"origin, content-type, accept, authorization")
-				.header("Access-Control-Allow-Methods",
-						"GET, POST, PUT, DELETE, OPTIONS, HEAD").build();
+		return Response.status(Response.Status.BAD_REQUEST).entity(errorMessage).build();
 	}
 
 	@GET
@@ -250,15 +173,93 @@ public class ReportApi extends ApiBase {
 			}
 			Response.ResponseBuilder response = Response.ok(export.getTempFile(), MediaType.APPLICATION_OCTET_STREAM);
 			response.header("Content-Disposition", "attachment; filename=" + export.getSuggestedFilename());
-			return response
-					.header("Access-Control-Allow-Origin", "*")
-					.header("Access-Control-Allow-Credentials", "true")
-					.header("Access-Control-Allow-Headers",
-							"origin, content-type, accept, authorization")
-					.header("Access-Control-Allow-Methods",
-							"GET, POST, PUT, DELETE, OPTIONS, HEAD").build();
+			return response.build();
 		} catch (StorageException e) {
 			throw new ApiException("Exception while requesting report from the storage.", e);
 		}
+	}
+
+	@PUT
+	@Path("/report/move/{storage}/{storageId}")
+	@Consumes(MediaType.APPLICATION_JSON)
+	public Response updatePath(@PathParam("storage") String storageParam, @PathParam("storageId") int storageId, Map<String, String> map) {
+		CrudStorage storage = getBean(storageParam);
+		String path = map.get("path");
+		String action = map.get("action");
+		if (StringUtils.isEmpty(action) || StringUtils.isEmpty(path))
+			return Response.status(Response.Status.BAD_REQUEST).entity("[action] and [path] is required as request body.").build();
+
+		try {
+			Report original = storage.getReport(storageId);
+			if ("copy".equalsIgnoreCase(action)) {
+				Report clone = (Report) original.clone();
+				clone.setPath(path);
+				storage.store(clone);
+			} else if ("move".equalsIgnoreCase(action)) {
+				original.setPath(path);
+				storage.update(original);
+			} else {
+				return Response.status(Response.Status.BAD_REQUEST)
+						.entity("Action parameter can only be either [copy] or [move]").build();
+			}
+
+			return Response.ok().build();
+		} catch (StorageException e) {
+			throw new ApiException("Storage exception with storage id [" + storageId + "] in storage [" + storageParam + "]", e);
+		} catch (CloneNotSupportedException e) {
+			throw new ApiException("Cloning exception for report with storage id [" + storageId + "] in storage [" + storageParam + "]", e);
+		}
+	}
+
+	@POST
+	@Path("/report/move/{storage}/{storageId}")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response cloneReport(@QueryParam("storage") String storageParam, @QueryParam("storageId") int storageId, Map<String, String> map) {
+		CrudStorage storage = getBean(storageParam);
+		Report original = null;
+		try {
+			original = storage.getReport(storageId);
+			String previousMessage = original.getInputCheckpoint().getMessage();
+			boolean force = "true".equalsIgnoreCase(map.getOrDefault("force", "false"))
+					|| "1".equalsIgnoreCase(map.getOrDefault("force", "false"));
+			original.getInputCheckpoint().setMessage(map.get("message"));
+			if (!original.getInputCheckpoint().containsVariables() && !force) {
+				original.getInputCheckpoint().setMessage(previousMessage);
+				return Response.status(Response.Status.BAD_REQUEST).entity("No variables found in input message; press again to confirm").build();
+			}
+		} catch (StorageException e) {
+			e.printStackTrace();
+			return Response.status(Response.Status.BAD_REQUEST).entity("Report could not be found.").build();
+		}
+
+		Scanner scanner = new Scanner(map.get("csv"));
+		String firstLine = null;
+		boolean originalSet = false;
+		ArrayList<String> exceptions = new ArrayList<>();
+		while (scanner.hasNextLine()) {
+			String nextLine = scanner.nextLine();
+			if (StringUtils.isNotEmpty(nextLine) && !nextLine.startsWith("#"))
+				continue;
+			if (firstLine == null) {
+				firstLine = nextLine;
+			} else {
+				try {
+					if (originalSet) {
+						Report clone = (Report) original.clone();
+						clone.setVariableCsvWithoutException(firstLine + "\n" + nextLine);
+						storage.store(clone);
+					} else {
+						originalSet = true;
+						original.setVariableCsvWithoutException(firstLine + "\n" + nextLine);
+						storage.update(original);
+					}
+				} catch (CloneNotSupportedException | StorageException e) {
+					exceptions.add(e.getMessage() + " Caused by: " + e.getCause() + " For line: [" + nextLine + "]");
+				}
+			}
+		}
+		scanner.close();
+		return Response.ok().entity(exceptions).build();
 	}
 }
