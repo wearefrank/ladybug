@@ -65,7 +65,8 @@
                         {{report["storageId"]}}
                     </td>
                     <td>
-                        {{report["path"] + report["name"]}}
+                        <div class="report-path">{{report["path"] + report["name"]}}</div>
+                        <div class="mb-3 ml-2" ng-show="showOptions.checkpoints && report['csvText'] !== ''">{{report["csvText"]}}</div>
                     </td>
                 </tr>
                 </tbody>

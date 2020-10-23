@@ -44,6 +44,7 @@ angular.module('myApp.view2', ['ngRoute'])
             let reports = node["ladybug"];
             for (let i = 0; i < reports.length; i++) {
                 reports[i]["checked"] = checked;
+                reports[i]["csvText"] = $scope.csv2text(reports[i]["variableCsv"]);
                 $scope.reports.push(reports[i]);
             }
             let nodes = node["nodes"];
@@ -191,6 +192,25 @@ angular.module('myApp.view2', ['ngRoute'])
                 alert("couldnt clone it");
                 console.log(response);
             })
+        }
+
+        $scope.csv2text = function (csv) {
+            if (csv === undefined || csv === "")
+                return "";
+
+            let lines = csv.split("\n");
+            if (lines.length !== 2)
+                return "";
+
+            let keys = lines[0].split(";");
+            let values = lines[1].split(";");
+            if (keys.length !== values.length)
+                return "";
+            let str = "";
+            for (let i = 0; i < keys.length; i++) {
+                str += ", " + keys[i].trim() + " = " + values[i].trim();
+            }
+            return str.slice(2);
         }
 
         $scope.resetRunner = function () {
