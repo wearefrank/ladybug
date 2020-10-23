@@ -5,7 +5,8 @@
     <div class="col-8">
         <div class="row">
             <button type="button" class="btn btn-outline-primary col" ng-click="refresh()">Refresh</button>
-            <button type="button" class="btn btn-outline-primary col" ng-click="runReport(reports)">Run</button>
+            <button type="button" class="btn btn-outline-primary col" ng-click="runReport(getSelectedReports())">Run
+            </button>
             <button type="button" class="btn btn-outline-primary col" ng-click="resetRunner()">Reset</button>
             <button type="button" class="btn btn-outline-primary col" data-toggle="modal" data-target="#optionsModal">
                 Options
@@ -14,22 +15,32 @@
             </button>
             <button type="button" class="btn btn-outline-primary col" ng-click="changeSelectedAll(false)">Deselect All
             </button>
-            <button type="button" class="btn btn-outline-primary col">Move</button>
-            <button type="button" class="btn btn-outline-primary col">Copy</button>
             <button type="button" class="btn btn-outline-primary col">Clone</button>
-            <button type="button" class="btn btn-outline-primary col" ng-click="deleteReports()">Delete</button>
+            <button type="button" class="btn btn-outline-primary col" ng-click="deleteReports(getSelectedReports())">
+                Delete
+            </button>
             <button type="button" class="btn btn-outline-primary col">Download All</button>
             <div class="col">
                 <input type="file" id="upload-file" style="display: none" ng-click="uploadReport()">
-                <button type="button" class="btn btn-outline-primary" onclick="$('#upload-file').click()">Upload</button>
+                <button type="button" class="btn btn-outline-primary" onclick="$('#upload-file').click()">Upload
+                </button>
             </div>
         </div>
-        <div class="row">
-            <div class="col-2">
-                <span>Move/Copy To:</span>
-            </div>
-            <div class="col-10">
-                <input type="text" class="form-check-input" ng-model="moveTo">
+
+        <div class="form-group mt-2">
+            <label for="moveToInput">Move/Copy to:</label>
+            <div class="input-group">
+                <input type="text" class="form-control" placeholder="1" id="moveToInput"/>
+                <div class="input-group-append">
+                    <button class="btn btn-outline-primary" type="button"
+                            ng-click="moveReports(getSelectedReports(), 'copy')">Copy
+                    </button>
+                </div>
+                <div class="input-group-append">
+                    <button class="btn btn-outline-primary" type="button"
+                            ng-click="moveReports(getSelectedReports(), 'move')">Move
+                    </button>
+                </div>
             </div>
         </div>
         <div class="row">
@@ -45,6 +56,10 @@
                     </td>
                     <td>
                         <button type="button" class="btn btn-outline-primary col" ng-click="openReport([report])">Open
+                        </button>
+                    </td>
+                    <td>
+                        <button type="button" class="btn btn-outline-primary col" ng-click="cloneReport([report])">Clone
                         </button>
                     </td>
                     <td ng-show="showOptions.ids">
@@ -91,7 +106,9 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary" ng-click="showOptions = {ids: false, checkpoints: false}">Restore to defaults</button>
+                <button type="button" class="btn btn-primary" ng-click="showOptions = {ids: false, checkpoints: false}">
+                    Restore to defaults
+                </button>
             </div>
         </div>
     </div>

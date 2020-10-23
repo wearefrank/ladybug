@@ -26,7 +26,7 @@ angular.module('myApp.view2', ['ngRoute'])
             }
 
             let nodes = rootNode["nodes"];
-            for(let i = 0; i < nodes.length; i++) {
+            for (let i = 0; i < nodes.length; i++) {
                 if (nodes[i]["path"] === path[0]) {
                     $scope.addNode(nodes[i], path.slice(1), data);
                     return;
@@ -82,7 +82,7 @@ angular.module('myApp.view2', ['ngRoute'])
         $scope.treeSelect = function () {
             let nodes = $('#tree').treeview('getSelected');
             $scope.reports = [];
-            for (let i = 0; i < nodes.length; i ++) {
+            for (let i = 0; i < nodes.length; i++) {
                 $scope.openNode(nodes[i], true);
             }
             $scope.$apply();
@@ -94,7 +94,14 @@ angular.module('myApp.view2', ['ngRoute'])
                     let fields = response.data["fields"];
                     let values = response.data["values"];
                     console.log(response.data);
-                    let rootNode = {path: "/", text: "Reports", icon: "fa fa-file-code", ladybug: [], nodes: []};
+                    let rootNode = {
+                        path: "/",
+                        text: "Reports",
+                        icon: "fa fa-file-code",
+                        ladybug: [],
+                        nodes: [],
+                        state: {selected: true}
+                    };
                     for (let i = 0; i < values.length; i++) {
                         let data = {};
                         for (let v = 0; v < fields.length; v++) {
@@ -116,6 +123,7 @@ angular.module('myApp.view2', ['ngRoute'])
                         data: $scope.treeData,
                         onNodeSelected: $scope.treeSelect
                     });
+                    $scope.treeSelect();
                 }, function (response) {
                     console.error(response);
                 });
@@ -124,7 +132,7 @@ angular.module('myApp.view2', ['ngRoute'])
         $scope.updateReports = function () {
         };
 
-        $scope.uploadReport = function() {
+        $scope.uploadReport = function () {
             let files = document.getElementById("upload-file").files;
             if (files.length === 0)
                 return;
@@ -141,6 +149,17 @@ angular.module('myApp.view2', ['ngRoute'])
                 $http.delete($scope.apiUrl + "/report/" + $scope.storage + "/" + reports["storageId"]);
             }
         }
+
+        $scope.moveReports = function (reports, action) {
+            let path = $('#moveToInput').val();
+            console.log(action + " to " + path);
+            for (let i = 0; i < reports.length; i++) {
+                $http.put($scope.apiUrl + "/report/move/" + $scope.storage + "/" + reports[i]["storageId"],
+                    {path: path, action: action}).then(function (response) {
+                    $scope.refresh();
+                });
+            }
+        };
 
         $scope.resetRunner = function () {
             $http.post($scope.apiUrl + "/runner/reset");
