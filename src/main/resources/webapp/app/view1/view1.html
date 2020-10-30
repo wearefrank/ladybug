@@ -9,7 +9,8 @@
             </button>
             <div class="col-md-1">
                 <input type="file" id="upload-file" style="display: none" ng-click="uploadReport()">
-                <button type="button" class="btn btn-outline-primary" onclick="$('#upload-file').click()">Upload</button>
+                <button type="button" class="btn btn-outline-primary" onclick="$('#upload-file').click()">Upload
+                </button>
             </div>
             <div class="input-group col-md-2">
                 <div class="input-group-btn">
@@ -104,11 +105,45 @@
                 <button type="button" class="btn btn-outline-primary col" ng-click="toggleEdit()" id="details-edit">
                     Edit
                 </button>
-                <button type="button" class="btn btn-outline-primary col" ng-click="downloadReports(null, true, true)">Download</button>
-                <button type="button" class="btn btn-outline-primary col" ng-click="copyReport('runStorage')">Copy</button>
+
+                <div class="input-group col">
+                    <div class="input-group-btn">
+                        <button type="button" class="btn btn-outline-primary dropdown-toggle" data-toggle="dropdown"
+                                aria-haspopup="true" aria-expanded="false">Download <span class="caret"></span>
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a href="#" ng-click="downloadReports(null, true, true)">Report & Message</a></li>
+                            <li><a href="#" ng-click="downloadReports(null, false, true)">Report</a></li>
+                            <li><a href="#" ng-click="downloadReports(null, true, false)">Message</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="input-group col">
+                    <div class="input-group-btn">
+                        <button type="button" class="btn btn-outline-primary dropdown-toggle" data-toggle="dropdown"
+                                aria-haspopup="true" aria-expanded="false">Copy <span class="caret"></span>
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li ng-repeat="(key, value) in availableStorages">
+                                <a href="#" ng-click="copyReport(key)">
+                                    {{value}}
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
                 <button type="button" class="btn btn-outline-primary col" ng-click="expand()">Expand</button>
                 <button type="button" class="btn btn-outline-primary col" ng-click="collapse()">Collapse</button>
                 <button type="button" class="btn btn-outline-primary col" ng-click="close()">Close</button>
+            </div>
+            <div class="form-row">
+                <span class="col-md-2">
+                    Stub Strategy:
+                </span>
+                <div class="form-group col-md-4">
+                    <select class="form-control" ng-options="strategy for strategy in stubStrategies" ng-model="stubStrategySelect">
+                    </select>
+                </div>
             </div>
             <pre id="code-wrapper" class="prettify">
                 <code id="code" class="lang-xml">
@@ -142,14 +177,16 @@
                 <form>
                     <div class="form-group">
                         <label for="generatorEnabledSelect">Report generator</label>
-                        <select class="form-control custom-select mr-sm-2" id="generatorEnabledSelect" ng-model="options['generatorEnabled']">
+                        <select class="form-control custom-select mr-sm-2" id="generatorEnabledSelect"
+                                ng-model="options['generatorEnabled']">
                             <option ng-value="true">Enabled</option>
                             <option ng-value="true">Disabled</option>
                         </select>
                     </div>
                     <div class="form-group">
                         <label for="reportFilterInput">Report filter (regex)</label>
-                        <input type="text" class="form-control" id="reportFilterInput" ng-model="options['regexFilter']">
+                        <input type="text" class="form-control" id="reportFilterInput"
+                               ng-model="options['regexFilter']">
                     </div>
                     <div class="form-group">
                         <label for="openLatestReports">Open latest reports</label>
@@ -170,12 +207,12 @@
                     <div class="form-group ">
                         <label for="openInProgressNo">Open report in progress number</label>
                         <div class="input-group">
-                            <input type="number" class="form-control" placeholder="1" id="openInProgressNo" ng-model="options['openInProgress']"/>
+                            <input type="number" class="form-control" placeholder="1" id="openInProgressNo"
+                                   ng-model="options['openInProgress']"/>
                             <div class="input-group-append">
                                 <button class="btn btn-outline-primary" type="button">Open</button>
                             </div>
                         </div>
-
                     </div>
                     <div class="form-group form-check">
                         <input class="form-check-input" type="checkbox" value="" id="reportTransformationCheck"
@@ -186,7 +223,8 @@
                     </div>
                     <div class="form-group" ng-show="options['transformationEnabled']">
                         <label for="transformationTextarea">Transformation</label>
-                        <textarea class="form-control" id="transformationTextarea" rows="10">{{options['transformation']}}</textarea>
+                        <textarea class="form-control" id="transformationTextarea"
+                                  rows="10">{{options['transformation']}}</textarea>
                     </div>
                 </form>
             </div>

@@ -28,6 +28,8 @@ angular.module('myApp.view1', ['ngRoute'])
             "openLatest": 10,
             "openInProgress": 1
         };
+        $scope.availableStorages = {'runStorage': 'Test'};
+        $scope.stubStrategySelect = "";
 
         $scope.updateFilter = function (key, value) {
             $scope.filters[key] = value;
@@ -82,6 +84,8 @@ angular.module('myApp.view1', ['ngRoute'])
             $http.get($scope.apiUrl + "/testtool")
                 .then(function (response) {
                     $scope.options = Object.assign($scope.options, response.data);
+                    $scope.testtoolStubStrategies = response.data["stubStrategies"];
+                    $scope.stubStrategies = $scope.testtoolStubStrategies;
                     console.log("/testtool");
                     console.log(response);
                     console.log($scope.options);
@@ -113,8 +117,10 @@ angular.module('myApp.view1', ['ngRoute'])
             $('#code-wrapper').remove();
             $('#details-row').after('<pre id="code-wrapper" class="prettify"><code id="code" class="lang-xml"></code></pre>');
             $('#code').text(ladybugData["message"]);
+            console.log("ladybugData");
             console.log(ladybugData["message"]);
             $scope.reportDetails = {
+                data: ladybugData,
                 text: ladybugData["message"],
                 values: {
                     "Name:": ladybugData["name"],
@@ -127,6 +133,17 @@ angular.module('myApp.view1', ['ngRoute'])
                 },
                 nodeId: node.nodeId
             };
+            let stubStrategySelect = ladybugData["stubStrategy"];
+            if (stubStrategySelect === undefined) {
+                // If node is checkpoint
+                stubStrategySelect = ladybugData["stub"];
+                $scope.stubStrategies = ["Follow report strategy", "No", "Yes"];
+                $scope.stubStrategySelect = $scope.stubStrategies[stubStrategySelect + 1];
+            } else {
+                // If node is report
+                $scope.stubStrategies = $scope.testtoolStubStrategies;
+                $scope.stubStrategySelect = stubStrategySelect;
+            }
             $scope.$apply();
             PR.prettyPrint()
         };
@@ -216,7 +233,6 @@ angular.module('myApp.view1', ['ngRoute'])
                 }, function (response) {
                     console.error(response);
                 });
-
         };
 
         $scope.openAll = function () {
