@@ -16,7 +16,9 @@
 package nl.nn.testtool;
 
 import java.io.Serializable;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -139,6 +141,8 @@ public class Checkpoint implements Serializable, Cloneable {
 			if (message instanceof Node) {
 				Node node = (Node)message;
 				setMessage(DOM2Writer.nodeToString(node));
+			} else if(message instanceof Date) {
+				setMessage(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format((Date)message));
 			} else {
 				setMessage(message.toString());
 			}
