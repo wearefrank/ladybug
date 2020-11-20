@@ -4,7 +4,7 @@ angular.module('myApp.view1', ['ngRoute'])
 
     .config(['$routeProvider', function ($routeProvider) {
         $routeProvider.when('/view1', {
-            templateUrl: 'views/view1/view1.html',
+            templateUrl: 'views/debug/view1.html',
             controller: 'View1Ctrl'
         });
     }])
@@ -30,55 +30,6 @@ angular.module('myApp.view1', ['ngRoute'])
         };
         $scope.availableStorages = {'runStorage': 'Test'};
         $scope.stubStrategySelect = "";
-
-        $scope.updateFilter = function (key, value) {
-            $scope.filters[key] = value;
-            $scope.updateTable();
-        }
-
-        /*
-        * Sends a GET request to the server and updates the tables ($scope.metadatas)
-        */
-        $scope.updateTable = function () {
-            console.log($scope.filters);
-            $http.get($scope.apiUrl + "/metadata/" + $scope.storage, {params: $scope.filters}).then(function (response) {
-                let fields = response.data["fields"];
-                let values = response.data["values"];
-                $scope.metadatas = [];
-                values.forEach(function (element) {
-                    if (fields.length !== element.length) {
-                        return;
-                    }
-                    let row = {};
-                    for (let i = 0; i < fields.length; i++) {
-                        row[fields[i]] = element[i];
-                    }
-                    console.log(row);
-                    $scope.metadatas.push(row);
-                });
-                console.log(response);
-            }, function (response) {
-                console.error(response);
-            });
-        };
-
-        /*
-         * Refreshes the content of the table, including getting new columns
-         */
-        $scope.refresh = function () {
-            $http.get($scope.apiUrl + '/metadata').then(function (response) {
-                $scope.columns = response.data;
-                $scope.columns.forEach(function (element) {
-                    if ($scope.filters[element] === undefined) {
-                        $scope.filters[element] = "";
-                    }
-                });
-                console.log(response);
-                $scope.updateTable();
-            }, function (response) {
-                console.error(response);
-            });
-        };
 
         $scope.updateOptions = function() {
             $http.get($scope.apiUrl + "/testtool")
@@ -340,29 +291,6 @@ angular.module('myApp.view1', ['ngRoute'])
                 });
         };
 
-        $scope.downloadReports = function (source, exportReport, exportReportXml) {
-            let queryString = "?";
-            if (source === "table") {
-                for (let i = 0; i < $scope.metadatas.length; i++) {
-                    queryString += "id=" + $scope.metadatas[i]["storageId"] + "&";
-                }
-            } else if (source === "tree") {
-                for (let i = 0; i < $scope.treeData.length; i++) {
-                    queryString += "id=" + $scope.treeData[i]["ladybug"]["storageId"] + "&";
-                }
-            } else {
-                queryString += "id=" + $scope.getRootNode()["ladybug"]["storageId"] + "&";
-            }
-
-            window.open($scope.apiUrl + "/report/download/" + $scope.storage +
-                "/" + exportReport + "/" + exportReportXml + queryString.slice(0, -1));
-            // $http.get($scope.apiUrl + "/report/download/" + $scope.storage + "/true/true?id=" + storageId, {data: [storageId]})
-            //     .then(function (response) {
-            //         console.log(response);
-            //     }, function (response) {
-            //         console.error(response);
-            //     });
-        }
 
         $scope.copyReport = function (to) {
             let data = {};
@@ -382,17 +310,5 @@ angular.module('myApp.view1', ['ngRoute'])
             $scope.reportDetails = {text: "", values: {}};
         }
 
-        $scope.uploadReport = function() {
-            let files = document.getElementById("upload-file").files;
-            if (files.length === 0)
-                return;
-            for (let i = 0; i < files.length; i++) {
-                let formdata = new FormData();
-                formdata.append("file", files[i]);
-                $http.post($scope.apiUrl + "/report/upload/" + $scope.storage, formdata, {headers: {"Content-Type": undefined}});
-            }
-        }
-
         $scope.updateOptions();
-        $scope.refresh();
     }]);
