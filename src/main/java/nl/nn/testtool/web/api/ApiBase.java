@@ -1,24 +1,26 @@
 package nl.nn.testtool.web.api;
 
 import nl.nn.testtool.storage.Storage;
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 
-import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.core.Context;
 import java.util.Map;
 
-public abstract class ApiBase {
-	@Context
-	ServletContext context;
-
+public abstract class ApiBase implements ApplicationContextAware {
 	@Context
 	private HttpServletRequest httpRequest;
 
-
+	ApplicationContext appContext;
 	protected static Map<String, Storage> storages;
 
 	protected Object getBeanObject(String beanName) {
-		Object bean = context.getAttribute(beanName);
+		if (appContext == null)
+			throw new ApiException("APPLICATION CONTEXT IS NULL!!!!");
+
+		Object bean = appContext.getBean(beanName);
 		if (bean == null)
 			throw new ApiException("Could not retrieve the requested bean [" + beanName + "]");
 		return bean;
@@ -45,5 +47,11 @@ public abstract class ApiBase {
 		if (object == null && throwException)
 			throw new ApiException("No session attribute with name [" + key + "] found.");
 		return object;
+	}
+
+	@Override
+	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+		System.err.println("SETTING THE APPLICATION CONTEXT!!!");
+		appContext = applicationContext;
 	}
 }
