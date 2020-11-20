@@ -1,0 +1,75 @@
+<!--    Report list panel-->
+<div class="row resizable-vertical">
+    <div class="row">
+        <button type="button" class="btn btn-outline-primary col-md-1" ng-click="$ctrl.refresh()">Refresh</button>
+<!--        TODO: Have another tab for options. or move to settings?-->
+        <button type="button" class="btn btn-outline-primary col-md-1" data-toggle="modal"
+                data-target="#optionsModal">Options
+        </button>
+        <div class="col-md-1">
+            <input type="file" id="upload-file" style="display: none" ng-click="$ctrl.uploadReport()">
+            <button type="button" class="btn btn-outline-primary" onclick="$('#upload-file').click()">Upload
+            </button>
+        </div>
+        <div class="input-group col-md-2">
+            <div class="input-group-btn">
+                <button type="button" class="btn btn-outline-primary dropdown-toggle" data-toggle="dropdown"
+                        aria-haspopup="true" aria-expanded="false">Download Table <span class="caret"></span>
+                </button>
+                <ul class="dropdown-menu">
+                    <li><a href="#" ng-click="$ctrl.downloadReports('table', true, true)">Reports & Messages</a></li>
+                    <li><a href="#" ng-click="$ctrl.downloadReports('table', false, true)">Reports</a></li>
+                    <li><a href="#" ng-click="$ctrl.downloadReports('table', true, false)">Messages</a></li>
+                </ul>
+            </div>
+        </div>
+        <button type="button" class="btn btn-outline-primary col-md-1" ng-click="$ctrl.openAll()">Open All</button>
+        <div class="col-md-3">
+            <span>View:</span>
+            <div class="dropdown">
+                <button class="btn btn-outline-primary dropdown-toggle" type="button" id="dropdownMenu1"
+                        data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+                    Dropdown
+                    <span class="caret"></span>
+                </button>
+                <ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
+                    <li><a href="#">Action</a></li>
+                    <li><a href="#">Another action</a></li>
+                    <li><a href="#">Something else here</a></li>
+                    <li role="separator" class="divider"></li>
+                    <li><a href="#">Separated link</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="col-md-2 float-md-right">
+            <div class="input-group">
+                <label for="tableLimit" class="sr-only">Table Limit</label>
+                <input type="number" class="form-control" placeholder="0" id="tableLimit"
+                       aria-describedby="table-limit" ng-model="$ctrl.limit" ng-change="$ctrl.updateFilter('limit', $ctrl.limit);">
+                <div class="input-group-append">
+                    <div class="input-group-text">/00</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <table class="table table-hover">
+        <thead>
+        <tr>
+            <th ng-repeat="column in $ctrl.columns">{{column}}</th>
+        </tr>
+        <tr>
+            <th ng-repeat="column in $ctrl.columns">
+                <div class="input-group">
+                    <input type="text" class="form-control" placeholder="Filter" ng-model="meta.filter"
+                           ng-change="$ctrl.updateFilter(column, meta.filter);">
+                </div>
+            </th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr ng-repeat="metadata in $ctrl.metadatas" ng-click="$ctrl.selectReport(metadata)">
+            <td ng-repeat="column in $ctrl.columns">{{metadata[column]}}</td>
+        </tr>
+        </tbody>
+    </table>
+</div>
