@@ -18,20 +18,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-@Path("/")
+@Path("/testtool")
 public class TestToolApi extends ApiBase {
 	private static ReportXmlTransformer reportXmlTransformer;
 
-	// TODO: Remove before pull request.
 	@GET
-	@Path("/test")
-	@Produces(MediaType.APPLICATION_JSON)
-	public Response testFunc() {
-		return Response.ok("TEST SUCCESSFUL").build();
-	}
-
-	@GET
-	@Path("/testtool")
+	@Path("/")
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getInfo() {
@@ -41,11 +33,12 @@ public class TestToolApi extends ApiBase {
 		map.put("estMemory", testTool.getReportsInProgressEstimatedMemoryUsage());
 		map.put("regexFilter", testTool.getRegexFilter());
 		map.put("reportsInProgress", testTool.getNumberOfReportsInProgress());
+		map.put("stubStrategies", testTool.getStubStrategies());
 		return Response.ok(map).build();
 	}
 
 	@POST
-	@Path("/testtool")
+	@Path("/")
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Consumes(MediaType.APPLICATION_JSON)
 	public Response setInfo(Map<String, String> map) {
@@ -67,7 +60,7 @@ public class TestToolApi extends ApiBase {
 	}
 
 	@GET
-	@Path("/testtool/in-progress/{count}")
+	@Path("/in-progress/{count}")
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getReportsInProgress(@PathParam("count") long count) {
@@ -84,7 +77,7 @@ public class TestToolApi extends ApiBase {
 	}
 
 	@POST
-	@Path("/testtool/transformation/")
+	@Path("/transformation/")
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Consumes(MediaType.APPLICATION_JSON)
 	public Response updateReportTransformation(Map<String, String> map) {
@@ -97,7 +90,7 @@ public class TestToolApi extends ApiBase {
 	}
 
 	@GET
-	@Path("/testtool/transformation")
+	@Path("/transformation")
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response updateReportTransformation() {
@@ -109,7 +102,6 @@ public class TestToolApi extends ApiBase {
 		map.put("transformation", transformation);
 		return Response.ok(map).build();
 	}
-
 
 	public ReportXmlTransformer getReportXmlTransformer() {
 		if (reportXmlTransformer == null)
