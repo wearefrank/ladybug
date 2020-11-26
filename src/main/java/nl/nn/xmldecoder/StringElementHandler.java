@@ -35,7 +35,7 @@ package nl.nn.xmldecoder;
  * before adding to the string using {@link String#valueOf(Object)}.
  * Note that all characters are used including whitespaces (' ', '\t', '\n', '\r').
  * So the value of the element<pre>
- * &lt;string&gt&lt;true&gt&lt;/string&gt;</pre>
+ * &lt;string&gt;&lt;true&gt;&lt;/string&gt;</pre>
  * is not equal to the value of the element<pre>
  * &lt;string&gt;
  *     &lt;true&gt;

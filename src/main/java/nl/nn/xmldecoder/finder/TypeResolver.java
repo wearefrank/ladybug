@@ -51,7 +51,7 @@ public final class TypeResolver {
      * For example, if you declare an interface like this...</p>
      *
      * <pre>
-     * public interface StringToIntMap extends Map&lt;String,Integer> {}
+     * public interface StringToIntMap extends Map&lt;String,Integer&gt; {}
      * </pre>
      *
      * <p>...then StringToIntMap.class.getMethods() will show that it has methods
@@ -95,19 +95,19 @@ public final class TypeResolver {
      * with the types they stand for in the given {@code actual} type.
      *
      * <p>A ParameterizedType is a class with type parameters, and the values
-     * of those parameters.  For example, Map&lt;K,V> is a generic class, and
+     * of those parameters.  For example, Map&lt;K,V&gt; is a generic class, and
      * a corresponding ParameterizedType might look like
-     * Map&lt;K=String,V=Integer>.  Given such a ParameterizedType, this method
-     * will replace K with String, or List&lt;K> with List&ltString;, or
-     * List&lt;? super K> with List&lt;? super String>.</p>
+     * Map&lt;K=String,V=Integer&gt;.  Given such a ParameterizedType, this method
+     * will replace K with String, or List&lt;K&gt; with List&lt;String;, or
+     * List&lt;? super K&gt; with List&lt;? super String&gt;.</p>
      *
      * <p>The {@code actual} argument to this method can also be a Class.
      * In this case, either it is equivalent to a ParameterizedType with
      * no parameters (for example, Integer.class), or it is equivalent to
      * a "raw" ParameterizedType (for example, Map.class).  In the latter
      * case, every type parameter declared or inherited by the class is replaced
-     * by its "erasure".  For a type parameter declared as &lt;T>, the erasure
-     * is Object.  For a type parameter declared as &lt;T extends Number>,
+     * by its "erasure".  For a type parameter declared as &lt;T&gt;, the erasure
+     * is Object.  For a type parameter declared as &lt;T extends Number&gt;,
      * the erasure is Number.</p>
      *
      * <p>Although type parameters are not inherited by subclasses in the Java
@@ -115,7 +115,7 @@ public final class TypeResolver {
      * For example, if you declare an interface like this...</p>
      *
      * <pre>
-     * public interface StringToIntMap extends Map&lt;String,Integer> {}
+     * public interface StringToIntMap extends Map&lt;String,Integer&gt; {}
      * </pre>
      *
      * <p>...then StringToIntMap.class.getMethods() will show that it has methods
@@ -135,11 +135,11 @@ public final class TypeResolver {
      * in a case like this...
      *
      * <pre>
-     * public interface StringToIntListMap extends Map&lt;String,List&lt;Integer>> {}
+     * public interface StringToIntListMap extends Map&lt;String,List&lt;Integer&gt;&gt; {}
      * public interface RawStringToIntListMap extends StringToIntListMap {}
      * </pre>
      *
-     * <p>...the V inherited from Map will show up as List&lt;Integer> in
+     * <p>...the V inherited from Map will show up as List&lt;Integer&gt; in
      * StringToIntListMap, but as plain List in RawStringToIntListMap.</p>
      *
      * @param actual  the type that supplies bindings for type variables

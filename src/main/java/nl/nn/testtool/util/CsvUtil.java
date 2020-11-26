@@ -9,18 +9,19 @@ import org.apache.commons.lang.StringUtils;
 public class CsvUtil {
 
 	/**
-     * 
-     * @return An error message as a result of unsuccessful validation;
-     * null if validation was successful.
+     * @param text ...
+     * @param delimiter ...
+     * @return An error message as a result of unsuccessful validation; null if validation was successful.
      */
 	public static String validateCsv(String text, String delimiter) {
 		return validateCsv(text, delimiter, -1);
 	}
 
 	/**
-     * 
-     * @return An error message as a result of unsuccessful validation;
-     * null if validation was successful.
+     * @param text ...
+     * @param delimiter ...
+     * @param maxAmtOfRows ...
+     * @return An error message as a result of unsuccessful validation; null if validation was successful.
      */
 	public static String validateCsv(String text, String delimiter, int maxAmtOfRows) {
 		Scanner scanner = new Scanner(text);

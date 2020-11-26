@@ -1,5 +1,5 @@
 /*
-   Copyright 2018, 2019 Nationale-Nederlanden
+   Copyright 2018, 2019 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -105,7 +105,7 @@ public class Echo2Application extends ApplicationInstance implements Application
 	private TestTool testTool;
 	private ReportXmlTransformer reportXmlTransformer;
 	private ReportsTreeCellRenderer reportsTreeCellRenderer;
-	private CrudStorage runStorage;
+	private CrudStorage testStorage;
 
 	public void setApplicationContext(ApplicationContext applicationContext)
 			throws BeansException {
@@ -140,8 +140,8 @@ public class Echo2Application extends ApplicationInstance implements Application
 		return tabs;
 	}
 
-	public void setRunStorage(CrudStorage runStorage) {
-		this.runStorage = runStorage;
+	public void setTestStorage(CrudStorage testStorage) {
+		this.testStorage = testStorage;
 	}
 
 	public TransformationWindow getTransformationWindow() {
@@ -314,7 +314,7 @@ public class Echo2Application extends ApplicationInstance implements Application
 			// TODO van pathComponent, checkpointComponent (nu gedaan) en errorMessageComponent moeten ook nieuwe instanties worden aangemaakt (bij switchen tussen tabs die allebei op zelfde component staan wordt er eentje leeg)
 			ReportComponent reportComponent = new ReportComponent();
 			reportComponent.setTestTool(testTool);
-			reportComponent.setRunStorage(runStorage);
+			reportComponent.setTestStorage(testStorage);
 			reportComponent.setTreePane(treePane);
 			reportComponent.setInfoPane(infoPane);
 			reportComponent.initBean();

@@ -374,6 +374,8 @@ public class Checkpoint implements Serializable, Cloneable {
 	/**
 	 * To be called when reports are uploaded to the Ladybug. Updates variables referring to 
 	 * a report that had its storageId changed.
+	 * @param importResults ...
+	 * @return ...
 	 */
 	public boolean updateVariables(List<ImportResult> importResults) {
 		boolean isVariablesUpdated = false;

@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden
+   Copyright 2018 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,30 +15,20 @@
 */
 package nl.nn.testtool.echo2;
 
-import nextapp.echo2.app.ContentPane;
 import nextapp.echo2.app.Extent;
 import nextapp.echo2.app.SplitPane;
-import nl.nn.testtool.Report;
-import nl.nn.testtool.echo2.reports.InfoPane;
-import nl.nn.testtool.echo2.reports.TreePane;
+import nextapp.echo2.extras.app.layout.TabPaneLayoutData;
+import nl.nn.testtool.echo2.test.InfoPane;
+import nl.nn.testtool.echo2.test.TreePane;
 
-public class ReportPane extends ContentPane {
-//	private Logger log = LogUtil.getLogger(this);
-	private Report report;
+public class TestPane extends Tab implements BeanParent {
+	private static final long serialVersionUID = 1L;
+	private String title = "Test";
 	private TreePane treePane;
 	private InfoPane infoPane;
-//	private ReportsListPane reportsListPane;
 
-	public ReportPane() {
+	public TestPane() {
 		super();
-	}
-
-	public void setReport(Report report) {
-		this.report = report;
-	}
-
-	public Report getReport() {
-		return report;
 	}
 
 	public void setTreePane(TreePane treePane) {
@@ -49,14 +39,10 @@ public class ReportPane extends ContentPane {
 		this.infoPane = infoPane;
 	}
 
-//	public void setReportsListPane(ReportsListPane reportsListPane) {
-//		this.reportsListPane = reportsListPane;
-//	}
-
 	public TreePane getTreePane() {
 		return treePane;
 	}
-	
+
 	public InfoPane getInfoPane() {
 		return infoPane;
 	}
@@ -65,12 +51,32 @@ public class ReportPane extends ContentPane {
 	 * @see nl.nn.testtool.echo2.Echo2Application#initBean()
 	 */
 	public void initBean() {
-		SplitPane splitPane = new SplitPane(SplitPane.ORIENTATION_HORIZONTAL);
-		splitPane.setResizable(true);
-		splitPane.setSeparatorPosition(new Extent(400, Extent.PX));
-		splitPane.add(treePane);
-		splitPane.add(infoPane);
-		add(splitPane);
+
+		// Construct
+
+		TabPaneLayoutData tabPaneLayoutTestPane = new TabPaneLayoutData();
+		tabPaneLayoutTestPane.setTitle(title);
+		setLayoutData(tabPaneLayoutTestPane);
+
+		SplitPane splitPane1 = new SplitPane(SplitPane.ORIENTATION_HORIZONTAL);
+		splitPane1.setResizable(true);
+		splitPane1.setSeparatorPosition(new Extent(280, Extent.PX));
+
+		// Wire
+
+		splitPane1.add(treePane);
+		splitPane1.add(infoPane);
+		add(splitPane1);
+
+	}
+
+	/**
+	 * @see nl.nn.testtool.echo2.Echo2Application#initBean()
+	 */
+	public void initBean(BeanParent beanParent) {
+		super.initBean(beanParent);
+		treePane.initBean(this);
+		infoPane.initBean(this);
 	}
 
 }

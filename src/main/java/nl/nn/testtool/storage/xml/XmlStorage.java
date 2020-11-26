@@ -70,7 +70,7 @@ public class XmlStorage implements CrudStorage {
 	 *
 	 * @param report Report to be written.
 	 * @param file   File to be written.
-	 * @throws StorageException
+	 * @throws StorageException ...
 	 */
 	protected void store(Report report, File file) throws StorageException {
 		try {

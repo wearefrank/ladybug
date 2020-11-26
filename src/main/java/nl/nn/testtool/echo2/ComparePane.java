@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden
+   Copyright 2018 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -58,7 +58,7 @@ public class ComparePane extends Tab implements BeanParent {
 	private CheckpointComponent checkpointComponent2;
 	private ReportsTreeCellRenderer reportsTreeCellRenderer;
 	private ReportXmlTransformer reportXmlTransformer;
-	private CrudStorage runStorage;
+	private CrudStorage testStorage;
 
 	public ComparePane() {
 		super();
@@ -72,8 +72,8 @@ public class ComparePane extends Tab implements BeanParent {
 		this.testTool = testTool;
 	}
 
-	public void setRunStorage(CrudStorage runStorage) {
-		this.runStorage = runStorage;
+	public void setTestStorage(CrudStorage testStorage) {
+		this.testStorage = testStorage;
 	}
 
 	public void setReportsComponent1(ReportsComponent reportsComponent1) {
@@ -191,7 +191,7 @@ public class ComparePane extends Tab implements BeanParent {
 		reportsComponent1.setReportXmlTransformer(reportXmlTransformer);
 		reportsComponent1.setComparePane(this);
 		reportComponent1.setTestTool(testTool);
-		reportComponent1.setRunStorage(runStorage);
+		reportComponent1.setTestStorage(testStorage);
 		reportComponent1.setTreePane(treePane1);
 		reportComponent1.setInfoPane(infoPane1);
 		pathComponent1.setTreePane(treePane1);
@@ -203,7 +203,7 @@ public class ComparePane extends Tab implements BeanParent {
 		reportsComponent2.setReportXmlTransformer(reportXmlTransformer);
 		reportsComponent2.setComparePane(this);
 		reportComponent2.setTestTool(testTool);
-		reportComponent2.setRunStorage(runStorage);
+		reportComponent2.setTestStorage(testStorage);
 		reportComponent2.setTreePane(treePane2);
 		reportComponent2.setInfoPane(infoPane2);
 		pathComponent2.setTreePane(treePane2);

@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden
+   Copyright 2018 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -45,16 +45,15 @@ public class TestTool {
 	private long maxMemoryUsage = 100000000L;
 	private Debugger debugger;
 	private boolean reportGeneratorEnabled = true;
-	private List reportsInProgress = new ArrayList();
-	private Map reportsInProgressByCorrelationId = new HashMap();
+	private List<Report> reportsInProgress = new ArrayList<Report>();
+	private Map<String, Report> reportsInProgressByCorrelationId = new HashMap<String, Report>();
 	private long numberOfReportsInProgress = 0;
 	private long reportsInProgressEstimatedMemoryUsage = 0;
-	private Map originalReports = new HashMap();
-	private List startpointProviders = new ArrayList();
-	private List startpointProviderNames = new ArrayList();
-	private LogStorage logStorage;
+	private Map<String, Report> originalReports = new HashMap<String, Report>();
+	private List<StartpointProvider> startpointProviders = new ArrayList<StartpointProvider>();
+	private List<String> startpointProviderNames = new ArrayList<String>();
+	private LogStorage debugStorage;
 	private MessageTransformer messageTransformer;
-	private List reportsToSkip = new ArrayList();
 	private String regexFilter;
 
 	public void setConfigName(String configName) {
@@ -119,12 +118,12 @@ public class TestTool {
 		}
 	}
 	
-	public void setLogStorage(LogStorage logStorage) {
-		this.logStorage = logStorage;
+	public void setDebugStorage(LogStorage debugStorage) {
+		this.debugStorage = debugStorage;
 	}
 
-	public LogStorage getLogStorage() {
-		return logStorage;
+	public LogStorage getDebugStorage() {
+		return debugStorage;
 	}
 
 	public void setMessageTransformer(MessageTransformer messageTransformer) {
@@ -147,59 +146,50 @@ public class TestTool {
 			String sourceClassName, String name, Object message, int checkpointType,
 			int levelChangeNextCheckpoint) {
 		synchronized(reportsInProgress) {
-			if (checkpointType == Checkpoint.TYPE_STARTPOINT
-					&& StringUtils.isNotEmpty(regexFilter)
-					&& name != null && !name.matches(regexFilter)) {
-				reportsToSkip.add(correlationId);
-			}
-			if (reportsToSkip.contains(correlationId)) {
-				//skip
-			} else {
-				Report report = (Report)reportsInProgressByCorrelationId.get(correlationId);
-				if (report == null && reportGeneratorEnabled) {
-					if (checkpointType == Checkpoint.TYPE_STARTPOINT) {
-						log.debug("Create new report for '" + correlationId + "'");
-						report = new Report();
-						report.setStartTime(System.currentTimeMillis());
-						report.setTestTool(this);
-						report.setCorrelationId(correlationId);
-						report.setName(name);
-						Report originalReport;
-						synchronized(originalReports) {
-							originalReport = (Report)originalReports.remove(correlationId);
-						}
-						if (originalReport == null) {
-							report.setStubStrategy(debugger.getDefaultStubStrategy());
-						} else {
-							report.setStubStrategy(originalReport.getStubStrategy());
-							report.setOriginalReport(originalReport);
-						}
-						reportsInProgress.add(0, report);
-						reportsInProgressByCorrelationId.put(correlationId, report);
-						numberOfReportsInProgress++;
+			Report report = (Report)reportsInProgressByCorrelationId.get(correlationId);
+			if (report == null && reportGeneratorEnabled) {
+				if (checkpointType == Checkpoint.TYPE_STARTPOINT) {
+					log.debug("Create new report for '" + correlationId + "'");
+					report = new Report();
+					report.setStartTime(System.currentTimeMillis());
+					report.setTestTool(this);
+					report.setCorrelationId(correlationId);
+					report.setName(name);
+					if (StringUtils.isNotEmpty(regexFilter) && !name.matches(regexFilter)) {
+						report.setReportFilterMatching(false);
+					}
+					Report originalReport;
+					synchronized(originalReports) {
+						originalReport = (Report)originalReports.remove(correlationId);
+					}
+					if (originalReport == null) {
+						report.setStubStrategy(debugger.getDefaultStubStrategy());
 					} else {
-						log.warn("Report for '" + correlationId + "' is null, could not add checkpoint '" + name + "'");
+						report.setStubStrategy(originalReport.getStubStrategy());
+						report.setOriginalReport(originalReport);
 					}
-				}
-				if (report != null) {
-					reportsInProgressEstimatedMemoryUsage = reportsInProgressEstimatedMemoryUsage - report.getEstimatedMemoryUsage();
-					message = report.checkpoint(threadId, sourceClassName, name, message, checkpointType, levelChangeNextCheckpoint);
-					reportsInProgressEstimatedMemoryUsage = reportsInProgressEstimatedMemoryUsage + report.getEstimatedMemoryUsage();
-					if (report.finished()) {
-						report.setEndTime(System.currentTimeMillis());						
-						log.debug("Report is finished for '" + correlationId + "'");
-						reportsInProgress.remove(report);
-						reportsInProgressByCorrelationId.remove(correlationId);
-						numberOfReportsInProgress--;
-						reportsInProgressEstimatedMemoryUsage = reportsInProgressEstimatedMemoryUsage - report.getEstimatedMemoryUsage();
-						logStorage.storeWithoutException(report);
-					}
+					reportsInProgress.add(0, report);
+					reportsInProgressByCorrelationId.put(correlationId, report);
+					numberOfReportsInProgress++;
+				} else {
+					log.warn("Report for '" + correlationId + "' is null, could not add checkpoint '" + name + "'");
 				}
 			}
-			if (checkpointType == Checkpoint.TYPE_ENDPOINT
-					&& StringUtils.isNotEmpty(regexFilter)
-					&& name != null && !name.matches(regexFilter)) {
-				reportsToSkip.remove(correlationId);
+			if (report != null) {
+				reportsInProgressEstimatedMemoryUsage = reportsInProgressEstimatedMemoryUsage - report.getEstimatedMemoryUsage();
+				message = report.checkpoint(threadId, sourceClassName, name, message, checkpointType, levelChangeNextCheckpoint);
+				reportsInProgressEstimatedMemoryUsage = reportsInProgressEstimatedMemoryUsage + report.getEstimatedMemoryUsage();
+				if (report.finished()) {
+					report.setEndTime(System.currentTimeMillis());
+					log.debug("Report is finished for '" + correlationId + "'");
+					reportsInProgress.remove(report);
+					reportsInProgressByCorrelationId.remove(correlationId);
+					numberOfReportsInProgress--;
+					reportsInProgressEstimatedMemoryUsage = reportsInProgressEstimatedMemoryUsage - report.getEstimatedMemoryUsage();
+					if (report.isReportFilterMatching()) {
+						debugStorage.storeWithoutException(report);
+					}
+				}
 			}
 		}
 		return message;
@@ -232,6 +222,11 @@ public class TestTool {
 	/**
 	 * Specify the name of a previous startpoint to abort to or a unique name
 	 * to finish the report or thread.
+	 * @param correlationId ...
+	 * @param sourceClassName ...
+	 * @param name ...
+	 * @param message ...
+	 * @return ...
 	 */
 	public Object abortpoint(String correlationId, String sourceClassName, String name, Object message) {
 		return checkpoint(correlationId, null, sourceClassName, name, message, Checkpoint.TYPE_ABORTPOINT, -1);
@@ -242,6 +237,8 @@ public class TestTool {
 	 * should be called by the parent thread. Specify a threadId that will also
 	 * be used by the child thread when calling threadStartpoint. The name of the
 	 * child thread can be used as threadId (when known at this point).
+	 * @param correlationId ...
+	 * @param threadId ...
 	 */
 	public void threadCreatepoint(String correlationId, String threadId) {
 		checkpoint(correlationId, threadId, null, null, null, Checkpoint.TYPE_THREADCREATEPOINT, 0);
@@ -250,6 +247,12 @@ public class TestTool {
 	/**
 	 * Startpoint for a child thread. Specify a threadId that was also used on
 	 * calling threadStartpoint.
+	 * @param correlationId ...
+	 * @param threadId ...
+	 * @param sourceClassName ...
+	 * @param name ...
+	 * @param message ...
+	 * @return ...
 	 */
 	public Object threadStartpoint(String correlationId, String threadId, String sourceClassName, String name, Object message) {
 		return checkpoint(correlationId, threadId, sourceClassName, name, message, Checkpoint.TYPE_THREADSTARTPOINT, 1);
@@ -258,6 +261,11 @@ public class TestTool {
 	/**
 	 * Startpoint for a child thread. This method can be used when the name of
 	 * the child thread was used as threadId on calling threadCreatepoint.
+	 * @param correlationId ...
+	 * @param sourceClassName ...
+	 * @param name ...
+	 * @param message ...
+	 * @return ...
 	 */
 	public Object threadStartpoint(String correlationId, String sourceClassName, String name, Object message) {
 		return threadStartpoint(correlationId, Thread.currentThread().getName(), sourceClassName, name, message);
@@ -310,6 +318,8 @@ public class TestTool {
      * next endpoint will be stubbed, hence code until the next endpoint can
      * be skipped. This method will always return null when report is not in
      * rerun.
+     * @param correlationId ...
+     * @return ...
      */
 	public Checkpoint getOriginalEndpointOrAbortpointForCurrentLevel(String correlationId) {
 		Checkpoint result = null;
@@ -328,7 +338,7 @@ public class TestTool {
 		}
 	}
 
-	public List getStubStrategies() {
+	public List<String> getStubStrategies() {
 		return debugger.getStubStrategies();
 	}
 
@@ -340,8 +350,8 @@ public class TestTool {
 	 * Check whether the checkpoint should be stubbed for the given stub
 	 * strategy.
 	 * 
-	 * @param checkpoint
-	 * @param strategy
+	 * @param checkpoint ...
+	 * @param strategy ...
 	 * @return whether the checkpoint should be stubbed
 	 */	
 	public boolean stub(Checkpoint checkpoint, String strategy) {
@@ -378,7 +388,7 @@ public class TestTool {
 		}
 	}
 	
-	public List getStartpointProviderNames() {
+	public List<String> getStartpointProviderNames() {
 		synchronized(startpointProviders) {
 			return startpointProviderNames;
 		}

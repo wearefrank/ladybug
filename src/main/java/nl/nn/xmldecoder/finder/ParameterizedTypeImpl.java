@@ -130,8 +130,8 @@ public class ParameterizedTypeImpl implements ParameterizedType {
 
     /**
      * Returns a <tt>Type</tt> object representing the type that this type
-     * is a member of.  For example, if this type is <tt>O<T>.I<S></tt>,
-     * return a representation of <tt>O<T></tt>.
+     * is a member of.  For example, if this type is <tt>O&lt;T&gt;.I&lt;S&gt;</tt>,
+     * return a representation of <tt>O&lt;T&gt;</tt>.
      *
      * <p>If this type is a top-level type, <tt>null</tt> is returned.
      *
