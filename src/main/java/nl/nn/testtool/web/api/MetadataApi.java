@@ -6,7 +6,6 @@ import nl.nn.testtool.storage.Storage;
 import nl.nn.testtool.storage.StorageException;
 import nl.nn.testtool.util.LogUtil;
 import org.apache.log4j.Logger;
-import org.springframework.stereotype.Service;
 
 import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.DefaultValue;
@@ -22,12 +21,12 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 @Path("/")
-@Service
 public class MetadataApi extends ApiBase {
 	private static final Logger logger = LogUtil.getLogger(MetadataApi.class);
 	public static Set<String> metadataFields;
@@ -44,14 +43,15 @@ public class MetadataApi extends ApiBase {
 
 		List<String> searchValues = new ArrayList<>();
 		List<String> metadataNames = new ArrayList<>();
+		Set<String> storedMetadataFields = getMetadataFields();
 		if (params == null || params.size() == 0) {
-			for(String field : getMetadataFields()) {
+			for(String field : storedMetadataFields) {
 				metadataNames.add(field);
 				searchValues.add(null);
 			}
 		} else {
 			for (String param : params.keySet()) {
-				if (!getMetadataFields().contains(param))
+				if (!storedMetadataFields.contains(param))
 					continue;
 
 				List<String> values = params.get(param);
@@ -94,8 +94,7 @@ public class MetadataApi extends ApiBase {
 	}
 
 	private Set<String> getMetadataFields() {
-		if (metadataFields == null)
-			metadataFields = getBean("metadataFields");
-		return metadataFields;
+		return new HashSet<String>(getBean("whiteBoxViewMetadataNames"));
+
 	}
 }
