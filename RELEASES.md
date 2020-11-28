@@ -6,6 +6,7 @@ Ladybug Test Tool release notes
 Upcoming
 --------
 
+- Exclude xml-apis (part of JDK nowadays, prevent conflicts)
 - Rename internal objects from run to test and from log to debug
 - Fix report filter for positive matching (report almost empty)
 - Add tool tip to report filter text field
