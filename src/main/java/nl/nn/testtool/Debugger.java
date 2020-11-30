@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden
+   Copyright 2018 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,15 +17,13 @@ package nl.nn.testtool;
 
 import java.util.List;
 
-import nl.nn.testtool.run.ReportRunner;
-
 /**
  * @author m00f069
  *
  * To change the template for this generated type comment go to
  * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
  */
-public interface Debugger {
+public interface Debugger extends Rerunner {
 
 	public List<String> getStubStrategies();
 
@@ -40,19 +38,6 @@ public interface Debugger {
 	 */
 	public boolean stub(Checkpoint checkpoint, String strategy);
 
-	/**
-	 * Rerun a previous generated report. This method should at least trigger
-	 * the same first checkpoint as has been triggered when the original report
-	 * was created.
-	 *  
-	 * @param correlationId   the correlationId to be used
-	 * @param originalReport  the original report that should be rerun
-	 * @param securityContext ...
-	 * @param reportRunner    ...
-	 * @return                an error message when an error occurred 
-	 */
-	public String rerun(String correlationId, Report originalReport, SecurityContext securityContext, ReportRunner reportRunner);
-	
 	/**
 	 * Method to be called from the Ladybug to notify the application using
 	 * the Ladybug of a change in the report generator's status.

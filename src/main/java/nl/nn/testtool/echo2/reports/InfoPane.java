@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden
+   Copyright 2018 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -111,8 +111,7 @@ public class InfoPane extends ContentPane implements BeanParent {
 
 	public void displayCheckpoint(Tree tree, TreePath treePath, DefaultMutableTreeNode node, 
 			Report report, Checkpoint checkpoint, Checkpoint checkpointCompare, boolean compare) {
-		checkpointComponent.displayCheckpoint(node, getPathAsString(treePath), 
-				report, checkpoint, checkpointCompare, compare);
+		checkpointComponent.displayCheckpoint(node, report, checkpoint, checkpointCompare, compare);
 		removeAll();
 		add(checkpointComponent, 0);
 	}

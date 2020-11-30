@@ -18,8 +18,10 @@ package nl.nn.testtool;
 import java.rmi.server.UID;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -44,6 +46,7 @@ public class TestTool {
 	private int maxMessageLength = -1;
 	private long maxMemoryUsage = 100000000L;
 	private Debugger debugger;
+	private Rerunner rerunner;
 	private boolean reportGeneratorEnabled = true;
 	private List<Report> reportsInProgress = new ArrayList<Report>();
 	private Map<String, Report> reportsInProgressByCorrelationId = new HashMap<String, Report>();
@@ -55,6 +58,9 @@ public class TestTool {
 	private LogStorage debugStorage;
 	private MessageTransformer messageTransformer;
 	private String regexFilter;
+	private String defaultStubStrategy = "Stub all external connection code";
+	private List<String> stubStrategies = new ArrayList<String>(); { stubStrategies.add(defaultStubStrategy); }
+	private Set<String> matchingStubStrategiesForExternalConnectionCode = new HashSet<>(stubStrategies);
 
 	public void setConfigName(String configName) {
 		this.configName = configName;
@@ -100,6 +106,18 @@ public class TestTool {
 		this.debugger = debugger;
 	}
 	
+	public Debugger getDebugger() {
+		return debugger;
+	}
+
+	public void setRerunner(Rerunner rerunner) {
+		this.rerunner = rerunner;
+	}
+	
+	public Rerunner getRerunner() {
+		return rerunner;
+	}
+
 	public void setReportGeneratorEnabled(boolean reportGeneratorEnabled) {
 		this.reportGeneratorEnabled = reportGeneratorEnabled;
 	}
@@ -113,7 +131,7 @@ public class TestTool {
 	 * implementation of the application using the Ladybug.
 	 */
 	public void sendReportGeneratorStatusUpdate() {
-		if(debugger != null) {
+		if (debugger != null) {
 			debugger.updateReportGeneratorStatus(isReportGeneratorEnabled());
 		}
 	}
@@ -133,7 +151,7 @@ public class TestTool {
 	public MessageTransformer getMessageTransformer() {
 		return messageTransformer;
 	}
-	
+
 	public void setRegexFilter(String regexFilter) {
 		this.regexFilter = regexFilter;
 	}
@@ -142,9 +160,41 @@ public class TestTool {
 		return regexFilter;
 	}
 
-	private Object checkpoint(String correlationId, String threadId,
-			String sourceClassName, String name, Object message, int checkpointType,
-			int levelChangeNextCheckpoint) {
+	public void setDefaultStubStrategy(String defaultStubStrategy) {
+		this.defaultStubStrategy = defaultStubStrategy;
+	}
+
+	public String getDefaultStubStrategy() {
+		if (debugger == null) {
+			return defaultStubStrategy;
+		} else {
+			return debugger.getDefaultStubStrategy();
+		}
+	}
+
+	public void setStubStrategies(List<String> stubStrategies) {
+		this.stubStrategies = stubStrategies;
+	}
+
+	public List<String> getStubStrategies() {
+		if (debugger == null) {
+			return stubStrategies;
+		} else {
+			return debugger.getStubStrategies();
+		}
+	}
+
+	public void setMatchingStubStrategiesForExternalConnectionCode(Set<String> matchingStubStrategiesForExternalConnectionCode) {
+		this.matchingStubStrategiesForExternalConnectionCode = matchingStubStrategiesForExternalConnectionCode;
+	}
+
+	public Set<String> getMatchingStubStrategiesForExternalConnectionCode() {
+		return matchingStubStrategiesForExternalConnectionCode;
+	}
+
+	private Object checkpoint(String correlationId, String threadId, String sourceClassName, String name,
+			Object message, StubableCode stubableCode, StubableCodeThrowsException stubableCodeThrowsException,
+			Set<String> matchingStubStrategies, int checkpointType, int levelChangeNextCheckpoint) {
 		synchronized(reportsInProgress) {
 			Report report = (Report)reportsInProgressByCorrelationId.get(correlationId);
 			if (report == null && reportGeneratorEnabled) {
@@ -163,7 +213,7 @@ public class TestTool {
 						originalReport = (Report)originalReports.remove(correlationId);
 					}
 					if (originalReport == null) {
-						report.setStubStrategy(debugger.getDefaultStubStrategy());
+						report.setStubStrategy(getDefaultStubStrategy());
 					} else {
 						report.setStubStrategy(originalReport.getStubStrategy());
 						report.setOriginalReport(originalReport);
@@ -177,7 +227,8 @@ public class TestTool {
 			}
 			if (report != null) {
 				reportsInProgressEstimatedMemoryUsage = reportsInProgressEstimatedMemoryUsage - report.getEstimatedMemoryUsage();
-				message = report.checkpoint(threadId, sourceClassName, name, message, checkpointType, levelChangeNextCheckpoint);
+				message = report.checkpoint(threadId, sourceClassName, name, message, stubableCode,
+						stubableCodeThrowsException, matchingStubStrategies, checkpointType, levelChangeNextCheckpoint);
 				reportsInProgressEstimatedMemoryUsage = reportsInProgressEstimatedMemoryUsage + report.getEstimatedMemoryUsage();
 				if (report.finished()) {
 					report.setEndTime(System.currentTimeMillis());
@@ -194,29 +245,162 @@ public class TestTool {
 		}
 		return message;
 	}
-	
+
 	public Object startpoint(String correlationId, String sourceClassName, String name, Object message) {
-		return checkpoint(correlationId, null, sourceClassName, name, message, Checkpoint.TYPE_STARTPOINT, 1);
+		return checkpoint(correlationId, null, sourceClassName, name, message, null, null, null,
+				Checkpoint.TYPE_STARTPOINT, 1);
+	}
+
+	public Object startpoint(String correlationId, String sourceClassName, String name, Object message,
+			Set<String> matchingStubStrategies) {
+		return checkpoint(correlationId, null, sourceClassName, name, message, null, null, matchingStubStrategies,
+				Checkpoint.TYPE_STARTPOINT, 1);
+	}
+
+	public Object startpoint(String correlationId, String sourceClassName, String name, StubableCode stubableCode,
+			Set<String> matchingStubStrategies) {
+		return checkpoint(correlationId, null, sourceClassName, name, null, stubableCode, null, matchingStubStrategies,
+				Checkpoint.TYPE_STARTPOINT, 1);
+	}
+
+	/**
+	 * Parameter throwsException determines the type of exception thrown. E.g. when set to (IOException)null the
+	 * compiler will report this method to throw an IOException which needs to be handled. When set to null the compiler
+	 * will not report an exception being thrown by this method.
+	 */
+	public <E extends Exception> Object startpoint(String correlationId, String sourceClassName, String name,
+			StubableCodeThrowsException stubableCodeThrowsException, Set<String> matchingStubStrategies,
+			E throwsException) throws E {
+		return checkpoint(correlationId, null, sourceClassName, name, null, null, stubableCodeThrowsException,
+				matchingStubStrategies, Checkpoint.TYPE_STARTPOINT, 1);
 	}
 
 	public Object endpoint(String correlationId, String sourceClassName, String name, Object message) {
-		return checkpoint(correlationId, null, sourceClassName, name, message, Checkpoint.TYPE_ENDPOINT, -1);
+		return checkpoint(correlationId, null, sourceClassName, name, message, null, null, null,
+				Checkpoint.TYPE_ENDPOINT, -1);
+	}
+
+	public Object endpoint(String correlationId, String sourceClassName, String name, Object message,
+			Set<String> matchingStubStrategies) {
+		return checkpoint(correlationId, null, sourceClassName, name, message, null, null, matchingStubStrategies,
+				Checkpoint.TYPE_ENDPOINT, -1);
+	}
+
+	public Object endpoint(String correlationId, String sourceClassName, String name, StubableCode stubableCode,
+			Set<String> matchingStubStrategies) {
+		return checkpoint(correlationId, null, sourceClassName, name, null, stubableCode, null, matchingStubStrategies,
+				Checkpoint.TYPE_ENDPOINT, -1);
+	}
+
+	/**
+	 * See description of parameter throwsException at startpoint method.
+	 */
+	public <E extends Exception> Object endpoint(String correlationId, String sourceClassName, String name,
+			StubableCodeThrowsException stubableCodeThrowsException, Set<String> matchingStubStrategies,
+			E throwsException) throws E {
+		return checkpoint(correlationId, null, sourceClassName, name, null, null, stubableCodeThrowsException,
+				matchingStubStrategies, Checkpoint.TYPE_ENDPOINT, -1);
+	}
+
+	/**
+	 * Convenient method for the most common use case for stubable code, stubbing all external connections related code.
+	 * The default stubbing strategy (Stub all external connection code) will be used as matching stub strategies.
+	 */
+	public Object endpoint(String correlationId, String sourceClassName, String name, ExternalConnectionCode externalConnectionCode) {
+		return checkpoint(correlationId, null, sourceClassName, name, null, externalConnectionCode, null, matchingStubStrategiesForExternalConnectionCode, Checkpoint.TYPE_ENDPOINT, -1);
+	}
+
+	/**
+	 * Convenient method for the most common use case for stubable code that throws exception, stubbing all external
+	 * connections related code.
+	 * The default stubbing strategy (Stub all external connection code) will be used as matching stub strategies.
+	 * See description of parameter throwsException at startpoint method.
+	 */
+	public <E extends Exception> Object endpoint(String correlationId, String sourceClassName, String name,
+			ExternalConnectionCodeThrowsException externalConnectionCodeThrowsException, E throwsException) throws E {
+		return checkpoint(correlationId, null, sourceClassName, name, null, null, externalConnectionCodeThrowsException,
+				matchingStubStrategiesForExternalConnectionCode, Checkpoint.TYPE_ENDPOINT, -1);
 	}
 
 	public Object inputpoint(String correlationId, String sourceClassName, String name, Object message) {
-		return checkpoint(correlationId, null, sourceClassName, name, message, Checkpoint.TYPE_INPUTPOINT, 0);
+		return checkpoint(correlationId, null, sourceClassName, name, message, null, null, null,
+				Checkpoint.TYPE_INPUTPOINT, 0);
+	}
+
+	public Object inputpoint(String correlationId, String sourceClassName, String name, Object message,
+			Set<String> matchingStubStrategies) {
+		return checkpoint(correlationId, null, sourceClassName, name, message, null, null, matchingStubStrategies,
+				Checkpoint.TYPE_INPUTPOINT, 0);
+	}
+
+	public Object inputpoint(String correlationId, String sourceClassName, String name, StubableCode stubableCode,
+			Set<String> matchingStubStrategies) {
+		return checkpoint(correlationId, null, sourceClassName, name, null, stubableCode, null, matchingStubStrategies,
+				Checkpoint.TYPE_INPUTPOINT, 0);
+	}
+
+	/**
+	 * See description of parameter throwsException at startpoint method.
+	 */
+	public <E extends Exception> Object inputpoint(String correlationId, String sourceClassName, String name,
+			StubableCodeThrowsException stubableCodeThrowsException, Set<String> matchingStubStrategies,
+			E throwsException) throws E {
+		return checkpoint(correlationId, null, sourceClassName, name, null, null, stubableCodeThrowsException,
+				matchingStubStrategies, Checkpoint.TYPE_INPUTPOINT, 0);
 	}
 
 	public Object outputpoint(String correlationId, String sourceClassName, String name, Object message) {
-		return checkpoint(correlationId, null, sourceClassName, name, message, Checkpoint.TYPE_OUTPUTPOINT, 0);
+		return checkpoint(correlationId, null, sourceClassName, name, message, null, null, null,
+				Checkpoint.TYPE_OUTPUTPOINT, 0);
+	}
+
+	public Object outputpoint(String correlationId, String sourceClassName, String name, Object message,
+			Set<String> matchingStubStrategies) {
+		return checkpoint(correlationId, null, sourceClassName, name, message, null, null, matchingStubStrategies,
+				Checkpoint.TYPE_OUTPUTPOINT, 0);
+	}
+
+	public Object outputpoint(String correlationId, String sourceClassName, String name, StubableCode stubableCode,
+			Set<String> matchingStubStrategies) {
+		return checkpoint(correlationId, null, sourceClassName, name, null, stubableCode, null, matchingStubStrategies,
+				Checkpoint.TYPE_OUTPUTPOINT, 0);
+	}
+
+	/**
+	 * See description of parameter throwsException at startpoint method.
+	 */
+	public <E extends Exception> Object outputpoint(String correlationId, String sourceClassName, String name,
+			StubableCodeThrowsException stubableCodeThrowsException, Set<String> matchingStubStrategies,
+			E throwsException) throws E {
+		return checkpoint(correlationId, null, sourceClassName, name, null, null, stubableCodeThrowsException,
+				matchingStubStrategies, Checkpoint.TYPE_OUTPUTPOINT, 0);
+	}
+
+	/**
+	 * Convenient method for the most common use case for stubable code, stubbing all external connections related code.
+	 * The default stubbing strategy (Stub all external connection code) will be used as matching stub strategies.
+	 */
+	public Object outputpoint(String correlationId, String sourceClassName, String name,
+			ExternalConnectionCode externalConnectionCode) {
+		return checkpoint(correlationId, null, sourceClassName, name, null, externalConnectionCode, null,
+				matchingStubStrategiesForExternalConnectionCode, Checkpoint.TYPE_OUTPUTPOINT, 0);
+	}
+
+	/**
+	 * Convenient method for the most common use case for stubable code that throws exception, stubbing all external
+	 * connections related code.
+	 * The default stubbing strategy (Stub all external connection code) will be used as matching stub strategies.
+	 * See description of parameter throwsException at startpoint method.
+	 */
+	public <E extends Exception> Object outputpoint(String correlationId, String sourceClassName, String name,
+			ExternalConnectionCodeThrowsException externalConnectionCodeThrowsException, E throwsException) throws E {
+		return checkpoint(correlationId, null, sourceClassName, name, null, null, externalConnectionCodeThrowsException,
+				matchingStubStrategiesForExternalConnectionCode, Checkpoint.TYPE_OUTPUTPOINT, 0);
 	}
 
 	public Object infopoint(String correlationId, String sourceClassName, String name, Object message) {
-		return checkpoint(correlationId, null, sourceClassName, name, message, Checkpoint.TYPE_INFOPOINT, 0);
-	}
-
-	public Object checkpoint(String correlationId, String sourceClassName, String name, Object message) {
-		return checkpoint(correlationId, null, sourceClassName, name, message, Checkpoint.TYPE_NONE, 0);
+		return checkpoint(correlationId, null, sourceClassName, name, message, null, null, null,
+				Checkpoint.TYPE_INFOPOINT, 0);
 	}
 
 	/**
@@ -229,7 +413,7 @@ public class TestTool {
 	 * @return ...
 	 */
 	public Object abortpoint(String correlationId, String sourceClassName, String name, Object message) {
-		return checkpoint(correlationId, null, sourceClassName, name, message, Checkpoint.TYPE_ABORTPOINT, -1);
+		return checkpoint(correlationId, null, sourceClassName, name, message, null, null, null, Checkpoint.TYPE_ABORTPOINT, -1);
 	}
 
 	/**
@@ -241,7 +425,7 @@ public class TestTool {
 	 * @param threadId ...
 	 */
 	public void threadCreatepoint(String correlationId, String threadId) {
-		checkpoint(correlationId, threadId, null, null, null, Checkpoint.TYPE_THREADCREATEPOINT, 0);
+		checkpoint(correlationId, threadId, null, null, null, null, null, null, Checkpoint.TYPE_THREADCREATEPOINT, 0);
 	}
 
 	/**
@@ -255,7 +439,7 @@ public class TestTool {
 	 * @return ...
 	 */
 	public Object threadStartpoint(String correlationId, String threadId, String sourceClassName, String name, Object message) {
-		return checkpoint(correlationId, threadId, sourceClassName, name, message, Checkpoint.TYPE_THREADSTARTPOINT, 1);
+		return checkpoint(correlationId, threadId, sourceClassName, name, message, null, null, null, Checkpoint.TYPE_THREADSTARTPOINT, 1);
 	}
 
 	/**
@@ -272,7 +456,7 @@ public class TestTool {
 	}
 
 	public Object threadEndpoint(String correlationId, String sourceClassName, String name, Object message) {
-		return checkpoint(correlationId, null, sourceClassName, name, message, Checkpoint.TYPE_THREADENDPOINT, -1);
+		return checkpoint(correlationId, null, sourceClassName, name, message, null, null, null, Checkpoint.TYPE_THREADENDPOINT, -1);
 	}
 
 	public static String getCorrelationId() {
@@ -287,25 +471,36 @@ public class TestTool {
 
 	public String rerun(String correlationId, Report report, SecurityContext securityContext, ReportRunner reportRunner) {
 		String errorMessage = null;
-		if (correlationId == null) {
-			correlationId = getCorrelationId();
-		}
-		boolean reportGeneratorEnabled = isReportGeneratorEnabled();
-		if (reportGeneratorEnabled) {
-			synchronized(originalReports) {
-				originalReports.put(correlationId, report);
+		if (rerunner == null && debugger == null) {
+			errorMessage = "No rerunner or debugger configured";
+		} else if (rerunner != null && debugger != null) {
+			errorMessage = "Both rerunner and debugger configured";
+		} else {
+			if (correlationId == null) {
+				correlationId = getCorrelationId();
 			}
-		}
-		try {
-			errorMessage = debugger.rerun(correlationId, report, securityContext, reportRunner);
-		} finally {
+			boolean reportGeneratorEnabled = isReportGeneratorEnabled();
 			if (reportGeneratorEnabled) {
-				Report originalReport;
 				synchronized(originalReports) {
-					originalReport = (Report)originalReports.remove(correlationId);
+					originalReports.put(correlationId, report);
 				}
-				if (errorMessage == null && originalReport != null) {
-					errorMessage = "Rerun didn't trigger any checkpoint";
+			}
+			try {
+				if (rerunner != null) {
+					errorMessage = rerunner.rerun(correlationId, report, securityContext, reportRunner);
+				} else {
+					errorMessage = debugger.rerun(correlationId, report, securityContext, reportRunner);
+				}
+			} finally {
+				if (reportGeneratorEnabled) {
+					Report originalReport;
+					synchronized(originalReports) {
+						originalReport = (Report)originalReports.remove(correlationId);
+					}
+					if (errorMessage == null && originalReport != null) {
+						errorMessage = "Rerun didn't trigger any checkpoint or new report didn't get correlationId '"
+								+ correlationId + "'";
+					}
 				}
 			}
 		}
@@ -336,14 +531,6 @@ public class TestTool {
 		synchronized(reportsInProgress) {
 			return (Report)reportsInProgressByCorrelationId.get(correlationId);
 		}
-	}
-
-	public List<String> getStubStrategies() {
-		return debugger.getStubStrategies();
-	}
-
-	public String getDefaultStubStrategy() {
-		return debugger.getDefaultStubStrategy();
 	}
 
 	/**

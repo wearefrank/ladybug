@@ -6,6 +6,14 @@ Ladybug Test Tool release notes
 Upcoming
 --------
 
+- Add easier way to integrate with Ladybug using subable code, matching stub strategies, default stub strategy "Stub all external connection code" and rerunner interface
+- Add StatusExtractor
+- Show encoding (object to string conversion) applied on message
+- Encode/decode bean messages to/from xml (with XMLEncoder and XMLDecoder) 
+- Encode/decode byte array messages to/from base64
+- Add Null="true" to report xml for null messages
+- Fix numbers in checkpoint path, not larger than 0 in some cases casing the wrong counterpart checkpoint to be selected in compare
+- Display correct checkpoint path (from Checkpoint instead of TreePath)
 - Exclude xml-apis (part of JDK nowadays, prevent conflicts)
 - Rename internal objects from run to test and from log to debug
 - Fix report filter for positive matching (report almost empty)
