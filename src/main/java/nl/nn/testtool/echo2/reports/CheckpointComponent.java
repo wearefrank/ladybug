@@ -184,21 +184,18 @@ public class CheckpointComponent extends MessageComponent {
 		}
 		messageHasBeenStubbedLabel.setVisible(checkpoint.getMessageHasBeenStubbed());
 		String message = null;
-		if (checkpoint.getMessage() != null) {
-			message = checkpoint.getMessage();
-			if (checkpoint.getPreTruncatedMessageLength() > 0) {
-				messageIsTruncatedLabel.setText("Message is truncated ("
-						+ (checkpoint.getPreTruncatedMessageLength() - testTool.getMaxMessageLength()) + " characters removed)");
-				messageIsTruncatedLabel.setVisible(true);
-			} else {
-				messageIsTruncatedLabel.setVisible(false);
-			}
-			if (checkpoint.getEncoding() > 0) {
-				messageIsEncodedLabel.setText("Message object is encoded to string (using " + checkpoint.getEncodingAsString() + ")");
-				messageIsEncodedLabel.setVisible(true);
-			} else {
-				messageIsEncodedLabel.setVisible(false);
-			}
+		if (checkpoint.getPreTruncatedMessageLength() > 0) {
+			messageIsTruncatedLabel.setText("Message is truncated ("
+					+ (checkpoint.getPreTruncatedMessageLength() - testTool.getMaxMessageLength()) + " characters removed)");
+			messageIsTruncatedLabel.setVisible(true);
+		} else {
+			messageIsTruncatedLabel.setVisible(false);
+		}
+		if (checkpoint.getEncoding() > 0) {
+			messageIsEncodedLabel.setText("Message object is encoded to string (using " + checkpoint.getEncodingAsString() + ")");
+			messageIsEncodedLabel.setVisible(true);
+		} else {
+			messageIsEncodedLabel.setVisible(false);
 		}
 		if (compare) {
 			String messageCompare = null;
