@@ -401,7 +401,7 @@ public class Echo2Application extends ApplicationInstance implements Application
 		try {
 			storage.store(report);
 		} catch (StorageException e) {
-			log.error(e);
+			log.error(e.getMessage(), e);
 			errorMessage = e.getMessage();
 		}
 		return errorMessage;
@@ -412,7 +412,7 @@ public class Echo2Application extends ApplicationInstance implements Application
 		try {
 			storage.update(report);
 		} catch (StorageException e) {
-			log.error(e);
+			log.error(e.getMessage(), e);
 			errorMessage = e.getMessage();
 		}
 		return errorMessage;
@@ -423,7 +423,7 @@ public class Echo2Application extends ApplicationInstance implements Application
 		try {
 			storage.delete(report);
 		} catch (StorageException e) {
-			log.error(e);
+			log.error(e.getMessage(), e);
 			errorMessage = e.getMessage();
 		}
 		return errorMessage;
@@ -441,7 +441,7 @@ public class Echo2Application extends ApplicationInstance implements Application
 				storage.delete(report);
 			}
 		} catch (StorageException e) {
-			log.error(e);
+			log.error(e.getMessage(), e);
 			errorMessage = e.getMessage();
 		}
 		return errorMessage;

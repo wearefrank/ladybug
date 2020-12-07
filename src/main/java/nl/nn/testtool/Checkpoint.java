@@ -361,7 +361,7 @@ public class Checkpoint implements Serializable, Cloneable {
 							}
 						}
 					} catch (StorageException e) {
-						log.error(e);
+						log.error(e.getMessage(), e);
 					}
 					// Attempt to fetch data from xpath in target checkpoint's XML message
 					if(targetReport != null) {
