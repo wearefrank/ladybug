@@ -46,6 +46,8 @@ public class CheckpointComponent extends MessageComponent {
 	private RadioButton radioButtonStubOptionYes;
 	private RadioButton radioButtonStubOptionNo;
 	private Label messageHasBeenStubbedLabel;
+	private Label messageIsNullLabel;
+	private Label messageIsEmptyStringLabel;
 	private Label messageIsTruncatedLabel;
 	private Label messageIsEncodedLabel;
 	private Label checkpointUIDLabel;
@@ -126,6 +128,16 @@ public class CheckpointComponent extends MessageComponent {
 		messageHasBeenStubbedLabel.setText("Message has been stubbed (copied from original report)");
 		add(messageHasBeenStubbedLabel);
 
+		messageIsNullLabel = Echo2Application.createInfoLabelWithColumnLayoutData();
+		messageIsNullLabel.setVisible(false);
+		messageIsNullLabel.setText("Message is null");
+		add(messageIsNullLabel);
+
+		messageIsEmptyStringLabel = Echo2Application.createInfoLabelWithColumnLayoutData();
+		messageIsEmptyStringLabel.setVisible(false);
+		messageIsEmptyStringLabel.setText("Message is an empty string");
+		add(messageIsEmptyStringLabel);
+
 		messageIsTruncatedLabel = Echo2Application.createInfoLabelWithColumnLayoutData();
 		messageIsTruncatedLabel.setVisible(false);
 		add(messageIsTruncatedLabel);
@@ -184,6 +196,14 @@ public class CheckpointComponent extends MessageComponent {
 		}
 		messageHasBeenStubbedLabel.setVisible(checkpoint.getMessageHasBeenStubbed());
 		String message = null;
+		if (checkpoint.getMessage() != null) {
+			message = checkpoint.getMessage();
+			messageIsNullLabel.setVisible(false);
+			messageIsEmptyStringLabel.setVisible(message.equals(""));
+		} else {
+			messageIsNullLabel.setVisible(true);
+			messageIsEmptyStringLabel.setVisible(false);
+		}
 		if (checkpoint.getPreTruncatedMessageLength() > 0) {
 			messageIsTruncatedLabel.setText("Message is truncated ("
 					+ (checkpoint.getPreTruncatedMessageLength() - testTool.getMaxMessageLength()) + " characters removed)");

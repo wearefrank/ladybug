@@ -6,6 +6,7 @@ Ladybug Test Tool release notes
 Upcoming
 --------
 
+- Show label when message is null or empty string
 - Update truncated and encoding label in GUI also when switching to checkpoint with null value
 - Add easier way to integrate with Ladybug using subable code, matching stub strategies, default stub strategy "Stub all external connection code" and rerunner interface
 - Add StatusExtractor

@@ -219,7 +219,7 @@ public class MessageComponent extends BaseComponent implements ActionListener {
 	public static void updateMessageColumn(String message, Column messageColumn, boolean compare,
 			String messageCompare) {
 		messageColumn.removeAll();
-		if (message == null) {
+		if (message == null || message.equals("")) {
 			messageColumn.setVisible(false);
 		} else {
 			LineNumberReader lineNumberReader = new LineNumberReader(new StringReader(message));
