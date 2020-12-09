@@ -26,6 +26,7 @@ import java.util.Set;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
+import lombok.SneakyThrows;
 import nl.nn.testtool.run.ReportRunner;
 import nl.nn.testtool.storage.LogStorage;
 import nl.nn.testtool.transform.MessageTransformer;
@@ -192,55 +193,68 @@ public class TestTool {
 		return matchingStubStrategiesForExternalConnectionCode;
 	}
 
+	@SneakyThrows
 	private Object checkpoint(String correlationId, String threadId, String sourceClassName, String name,
 			Object message, StubableCode stubableCode, StubableCodeThrowsException stubableCodeThrowsException,
 			Set<String> matchingStubStrategies, int checkpointType, int levelChangeNextCheckpoint) {
-		synchronized(reportsInProgress) {
-			Report report = (Report)reportsInProgressByCorrelationId.get(correlationId);
-			if (report == null && reportGeneratorEnabled) {
-				if (checkpointType == Checkpoint.TYPE_STARTPOINT) {
-					log.debug("Create new report for '" + correlationId + "'");
-					report = new Report();
-					report.setStartTime(System.currentTimeMillis());
-					report.setTestTool(this);
-					report.setCorrelationId(correlationId);
-					report.setName(name);
-					if (StringUtils.isNotEmpty(regexFilter) && !name.matches(regexFilter)) {
-						report.setReportFilterMatching(false);
-					}
-					Report originalReport;
-					synchronized(originalReports) {
-						originalReport = (Report)originalReports.remove(correlationId);
-					}
-					if (originalReport == null) {
-						report.setStubStrategy(getDefaultStubStrategy());
+		boolean executeStubableCode = true;
+		if (reportGeneratorEnabled) {
+			synchronized(reportsInProgress) {
+				Report report = (Report)reportsInProgressByCorrelationId.get(correlationId);
+				if (report == null) {
+					if (checkpointType == Checkpoint.TYPE_STARTPOINT) {
+						log.debug("Create new report for '" + correlationId + "'");
+						report = new Report();
+						report.setStartTime(System.currentTimeMillis());
+						report.setTestTool(this);
+						report.setCorrelationId(correlationId);
+						report.setName(name);
+						if (StringUtils.isNotEmpty(regexFilter) && !name.matches(regexFilter)) {
+							report.setReportFilterMatching(false);
+						}
+						Report originalReport;
+						synchronized(originalReports) {
+							originalReport = (Report)originalReports.remove(correlationId);
+						}
+						if (originalReport == null) {
+							report.setStubStrategy(getDefaultStubStrategy());
+						} else {
+							report.setStubStrategy(originalReport.getStubStrategy());
+							report.setOriginalReport(originalReport);
+						}
+						reportsInProgress.add(0, report);
+						reportsInProgressByCorrelationId.put(correlationId, report);
+						numberOfReportsInProgress++;
 					} else {
-						report.setStubStrategy(originalReport.getStubStrategy());
-						report.setOriginalReport(originalReport);
+						log.warn("Report for '" + correlationId + "' is null, could not add checkpoint '" + name + "'");
 					}
-					reportsInProgress.add(0, report);
-					reportsInProgressByCorrelationId.put(correlationId, report);
-					numberOfReportsInProgress++;
-				} else {
-					log.warn("Report for '" + correlationId + "' is null, could not add checkpoint '" + name + "'");
+				}
+				if (report != null) {
+					executeStubableCode = false;
+					reportsInProgressEstimatedMemoryUsage = reportsInProgressEstimatedMemoryUsage - report.getEstimatedMemoryUsage();
+					message = report.checkpoint(threadId, sourceClassName, name, message, stubableCode,
+							stubableCodeThrowsException, matchingStubStrategies, checkpointType, levelChangeNextCheckpoint);
+					reportsInProgressEstimatedMemoryUsage = reportsInProgressEstimatedMemoryUsage + report.getEstimatedMemoryUsage();
+					if (report.finished()) {
+						report.setEndTime(System.currentTimeMillis());
+						log.debug("Report is finished for '" + correlationId + "'");
+						reportsInProgress.remove(report);
+						reportsInProgressByCorrelationId.remove(correlationId);
+						numberOfReportsInProgress--;
+						reportsInProgressEstimatedMemoryUsage = reportsInProgressEstimatedMemoryUsage - report.getEstimatedMemoryUsage();
+						if (report.isReportFilterMatching()) {
+							debugStorage.storeWithoutException(report);
+						}
+					}
 				}
 			}
-			if (report != null) {
-				reportsInProgressEstimatedMemoryUsage = reportsInProgressEstimatedMemoryUsage - report.getEstimatedMemoryUsage();
-				message = report.checkpoint(threadId, sourceClassName, name, message, stubableCode,
-						stubableCodeThrowsException, matchingStubStrategies, checkpointType, levelChangeNextCheckpoint);
-				reportsInProgressEstimatedMemoryUsage = reportsInProgressEstimatedMemoryUsage + report.getEstimatedMemoryUsage();
-				if (report.finished()) {
-					report.setEndTime(System.currentTimeMillis());
-					log.debug("Report is finished for '" + correlationId + "'");
-					reportsInProgress.remove(report);
-					reportsInProgressByCorrelationId.remove(correlationId);
-					numberOfReportsInProgress--;
-					reportsInProgressEstimatedMemoryUsage = reportsInProgressEstimatedMemoryUsage - report.getEstimatedMemoryUsage();
-					if (report.isReportFilterMatching()) {
-						debugStorage.storeWithoutException(report);
-					}
-				}
+		}
+		if (executeStubableCode) {
+			if (stubableCode != null) {
+				message = stubableCode.execute();
+			}
+			if (stubableCodeThrowsException != null) {
+				message = stubableCodeThrowsException.execute();
 			}
 		}
 		return message;

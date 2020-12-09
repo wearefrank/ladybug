@@ -6,6 +6,7 @@ Ladybug Test Tool release notes
 Upcoming
 --------
 
+- Execute stubable code when report generator not enabled
 - Improve some log statements to print stracktrace
 - Show label when message is null or empty string
 - Update truncated and encoding label in GUI also when switching to checkpoint with null value
