@@ -11,33 +11,29 @@ Example usage of Ladybug
 
 To see Ladybug in action as part of the Frank!Framework go to:
 
-https://ibis4example.ibissource.org/iaf/gui/#!/testing/ladybug
+- https://ibis4example.ibissource.org/iaf/gui/#!/testing/ladybug
 
 For examples how to integrate Ladybug in you project see below.
 
 Direct integration of the Ladybug has been done in the OpenZaakBrug project:
 
-https://github.com/Sudwest-Fryslan/OpenZaakBrug
+- https://github.com/Sudwest-Fryslan/OpenZaakBrug
 
 The most important files to look at are:
 
-https://github.com/Sudwest-Fryslan/OpenZaakBrug/blob/master/src/main/java/nl/haarlem/translations/zdstozgw/Application.java
-
-https://github.com/Sudwest-Fryslan/OpenZaakBrug/blob/master/src/main/resources/spring-ladybug.xml
-
-https://github.com/Sudwest-Fryslan/OpenZaakBrug/tree/master/src/main/java/nl/haarlem/translations/zdstozgw/debug
-
-https://github.com/Sudwest-Fryslan/OpenZaakBrug/blob/master/src/main/java/nl/haarlem/translations/zdstozgw/controller/SoapController.java
-
-https://github.com/Sudwest-Fryslan/OpenZaakBrug/blob/master/src/main/java/nl/haarlem/translations/zdstozgw/translation/zgw/client/ZGWClient.java
+- https://github.com/Sudwest-Fryslan/OpenZaakBrug/blob/master/src/main/java/nl/haarlem/translations/zdstozgw/Application.java
+- https://github.com/Sudwest-Fryslan/OpenZaakBrug/blob/master/src/main/resources/spring-ladybug.xml
+- https://github.com/Sudwest-Fryslan/OpenZaakBrug/tree/master/src/main/java/nl/haarlem/translations/zdstozgw/debug
+- https://github.com/Sudwest-Fryslan/OpenZaakBrug/blob/master/src/main/java/nl/haarlem/translations/zdstozgw/controller/SoapController.java
+- https://github.com/Sudwest-Fryslan/OpenZaakBrug/blob/master/src/main/java/nl/haarlem/translations/zdstozgw/translation/zgw/client/ZGWClient.java
 
 The Frank!Framework is using AOP to integrate the Ladybug, see the Ladybug module of the Frank!Framework:
 
-https://github.com/ibissource/iaf/tree/master/ladybug
+- https://github.com/ibissource/iaf/tree/master/ladybug
 
 And the AOP related spring configuration xml:
 
-https://github.com/ibissource/iaf/blob/master/ladybug/src/main/resources/springIbisDebuggerAdvice.xml
+- https://github.com/ibissource/iaf/blob/master/ladybug/src/main/resources/springIbisDebuggerAdvice.xml
 
 
 Releases
