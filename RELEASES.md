@@ -6,6 +6,8 @@ Ladybug Test Tool release notes
 Upcoming
 --------
 
+- Make default update behaviour overwrite on XmlStorage
+- Fix unaccepted filename characters on XmlStorage
 - Execute stubable code when report generator not enabled
 - Improve some log statements to print stracktrace
 - Show label when message is null or empty string
@@ -33,8 +35,6 @@ Upcoming
 - Simplify syntax of cross-report variables
 - Add toggle options for showing storage and checkpoint IDs in the UI
 - Add timestamp to filename when downloading zipped reports
-- Make default update behaviour overwrite on XmlStorage
-- Fix unaccepted filename characters on XmlStorage
 
 
 
