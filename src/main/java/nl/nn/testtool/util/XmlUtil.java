@@ -1,5 +1,6 @@
 /*
    Copyright 2018 Nationale-Nederlanden
+   Copyright 2018 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,12 +16,19 @@
 */
 package nl.nn.testtool.util;
 
+import java.io.IOException;
 import java.io.StringReader;
 
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParserFactory;
 import javax.xml.transform.ErrorListener;
 import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.stream.StreamSource;
+
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.DefaultHandler;
 
 import net.sf.saxon.om.Item;
 import net.sf.saxon.trans.XPathException;
@@ -65,6 +73,21 @@ public class XmlUtil {
 	public static Source createXmlSourceFromString(String xml) {
 		StringReader stringReader = new StringReader(xml);
 		return new StreamSource(stringReader);
+	}
+
+	public static boolean isXml(String xml) {
+		InputSource inputSource = new InputSource(new StringReader(xml));
+		SAXParserFactory factory = new org.apache.xerces.jaxp.SAXParserFactoryImpl();
+		try {
+			factory.newSAXParser().parse(inputSource, new DefaultHandler());
+		} catch (SAXException e) {
+			return false;
+		} catch (IOException e) {
+			return false;
+		} catch (ParserConfigurationException e) {
+			return false;
+		}
+		return true;
 	}
 }
 
