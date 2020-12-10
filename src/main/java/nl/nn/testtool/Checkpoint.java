@@ -150,7 +150,7 @@ public class Checkpoint implements Serializable, Cloneable {
 				setMessage((String)message);
 			} else if (message instanceof Node) {
 				Node node = (Node)message;
-				setMessage(DOM2Writer.nodeToString(node));
+				setMessage(XmlUtil.nodeToString(node));
 				encoding = ENCODING_DOM_NODE;
 			} else if (message instanceof Date) {
 				setMessage(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format((Date)message));

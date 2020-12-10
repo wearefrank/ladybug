@@ -81,17 +81,6 @@ Implement a rerun method to be able to rerun reports and optionally stub certain
       <version>2.12.1-xml-schema-1.1</version>
     </dependency>
     <dependency>
-      <groupId>org.apache.ws.security</groupId>
-      <artifactId>wss4j</artifactId>
-      <version>1.5.11</version>
-      <exclusions>
-        <exclusion><!-- Part of JDK nowadays, prevent conflicts -->
-          <groupId>xml-apis</groupId>
-          <artifactId>xml-apis</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
       <groupId>org.projectlombok</groupId>
       <artifactId>lombok</artifactId>
       <version>1.18.10</version>

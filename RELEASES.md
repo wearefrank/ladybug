@@ -6,6 +6,7 @@ Ladybug Test Tool release notes
 Upcoming
 --------
 
+- Remove wss4j
 - Remove dom4j
 - Execute stubable code when report generator not enabled
 - Improve some log statements to print stracktrace
