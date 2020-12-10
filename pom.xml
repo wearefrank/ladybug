@@ -11,14 +11,16 @@
   </properties>
 
   <name>Ladybug Test Tool</name>
-  <description>Ladybug adds functional/message based debugging to your Java application. 
-Call the Ladybug at certain checkpoints in you code (either directly or using AOP) to generate tree based reports. 
-Implement a rerun method to be able to rerun reports and optionally stub certain checkpoints.</description>
+  <description>
+  Ladybug adds message based debugging and message based unit testing and system testing to your Java application. Call
+  Ladybug at certain checkpoints in you code (either directly or using AOP) to generate tree based reports. Implement a
+  rerun method to be able to rerun reports and optionally stub certain checkpoints for regression testing.
+  </description>
   <url>https://ibissource.org/</url>
 
   <organization>
-    <name>Ibissource.org</name>
-    <url>https://ibissource.org</url>
+    <name>WeAreFrank!</name>
+    <url>https://github.com/ibissource/ibis-ladybug</url>
   </organization>
 
   <licenses>
