@@ -6,6 +6,8 @@ Ladybug Test Tool release notes
 Upcoming
 --------
 
+- Make default update behaviour overwrite on XmlStorage
+- Fix unaccepted filename characters on XmlStorage
 - Remove wss4j
 - Remove dom4j
 - Execute stubable code when report generator not enabled

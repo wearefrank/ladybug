@@ -119,11 +119,12 @@ public class XmlStorage implements CrudStorage {
 			File reportFile;
 			if (metadata == null || addNew) {
 				File parentFolder = (report.getPath() != null) ? new File(reportsFolder, report.getPath()) : reportsFolder;
-				String filename = report.getName().replaceAll("[<>:\"\\/\\\\\\|\\?\\*]", "_");
+				String original_name = report.getName().replaceAll("[<>:\"\\/\\\\\\|\\?\\*]", "_");
+				String filename = original_name;
 				reportFile = new File(parentFolder, filename + FILE_EXTENSION);
 				int i = 2;
 				while (reportFile.isFile()) {
-					filename = report.getName() + " (" + (i++) + ")";
+					filename = original_name + " (" + (i++) + ")";
 					reportFile = new File(parentFolder, filename + FILE_EXTENSION);
 				}
 				report.setName(filename);
@@ -192,8 +193,15 @@ public class XmlStorage implements CrudStorage {
 
 	@Override
 	public void update(Report report) throws StorageException {
-		delete(report);
-		store(report, false);
+		try {
+			Metadata metadata = metadataHandler.getMetadata(report.getStorageId());
+			delete(report);
+			metadata.path = report.getPath();
+			metadataHandler.add(metadata);
+			store(report, false);
+		} catch (IOException e) {
+			throw new StorageException("Returned an error while updating metadata.", e);
+		}
 	}
 
 	@Override
