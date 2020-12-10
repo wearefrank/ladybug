@@ -33,6 +33,8 @@ Upcoming
 - Simplify syntax of cross-report variables
 - Add toggle options for showing storage and checkpoint IDs in the UI
 - Add timestamp to filename when downloading zipped reports
+- Make default update behaviour overwrite on XmlStorage
+- Fix unaccepted filename characters on XmlStorage
 
 
 
