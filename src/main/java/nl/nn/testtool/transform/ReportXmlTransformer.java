@@ -33,6 +33,7 @@ import javax.xml.transform.stream.StreamSource;
 import org.apache.log4j.Logger;
 
 import nl.nn.testtool.util.LogUtil;
+import nl.nn.testtool.util.XmlUtil;
 
 public class ReportXmlTransformer {
 	private Logger log = LogUtil.getLogger(this);
@@ -72,7 +73,7 @@ public class ReportXmlTransformer {
 
 	public void setXslt(String xslt) {
 		this.xslt = xslt;
-		TransformerFactory transformerFactory = new net.sf.saxon.TransformerFactoryImpl();
+		TransformerFactory transformerFactory = XmlUtil.getTransformerFactory();
 		TransformerFactoryErrorListener transformerFactoryErrorListener = new TransformerFactoryErrorListener();
 		transformerFactory.setErrorListener(transformerFactoryErrorListener);
 		try {

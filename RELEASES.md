@@ -8,10 +8,13 @@ Upcoming
 
 - Make default update behaviour overwrite on XmlStorage
 - Fix unaccepted filename characters on XmlStorage
+- Remove wss4j
+- Remove dom4j
 - Execute stubable code when report generator not enabled
 - Improve some log statements to print stracktrace
 - Show label when message is null or empty string
 - Update truncated and encoding label in GUI also when switching to checkpoint with null value
+- Upgrade dom4j from 1.6.1 to 2.1.3
 - Add easier way to integrate with Ladybug using subable code, matching stub strategies, default stub strategy "Stub all external connection code" and rerunner interface
 - Add StatusExtractor
 - Show encoding (object to string conversion) applied on message
