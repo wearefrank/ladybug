@@ -193,8 +193,15 @@ public class XmlStorage implements CrudStorage {
 
 	@Override
 	public void update(Report report) throws StorageException {
-		delete(report);
-		store(report, false);
+		try {
+			Metadata metadata = metadataHandler.getMetadata(report.getStorageId());
+			delete(report);
+			metadata.path = report.getPath();
+			metadataHandler.add(metadata);
+			store(report, false);
+		} catch (IOException e) {
+			throw new StorageException("Returned an error while updating metadata.", e);
+		}
 	}
 
 	@Override
