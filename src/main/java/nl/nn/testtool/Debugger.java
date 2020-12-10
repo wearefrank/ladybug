@@ -18,10 +18,7 @@ package nl.nn.testtool;
 import java.util.List;
 
 /**
- * @author m00f069
- *
- * To change the template for this generated type comment go to
- * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
+ * @author Jaco de Groot
  */
 public interface Debugger extends Rerunner {
 

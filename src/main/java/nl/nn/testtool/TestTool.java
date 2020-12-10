@@ -15,6 +15,7 @@
 */
 package nl.nn.testtool;
 
+import java.lang.invoke.MethodHandles;
 import java.rmi.server.UID;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -24,22 +25,19 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import lombok.SneakyThrows;
 import nl.nn.testtool.run.ReportRunner;
 import nl.nn.testtool.storage.LogStorage;
 import nl.nn.testtool.transform.MessageTransformer;
-import nl.nn.testtool.util.LogUtil;
 
 /**
- * @author m00f069
- *
- * To change the template for this generated type comment go to
- * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
+ * @author Jaco de Groot
  */
 public class TestTool {
-	private static Logger log = LogUtil.getLogger(TestTool.class);
+	private static Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 	public final static String LOGGING_STORAGE_NAME = "Logging";
 	private String configName;
 	private String configVersion;

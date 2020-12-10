@@ -66,10 +66,7 @@ import nl.nn.testtool.transform.ReportXmlTransformer;
 import nl.nn.testtool.util.CsvUtil;
 
 /**
- * @author m00f069
- *
- * To change the template for this generated type comment go to
- * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
+ * @author Jaco de Groot
  */
 public class TestComponent extends BaseComponent implements BeanParent, ActionListener {
 	private static final long serialVersionUID = 1L;

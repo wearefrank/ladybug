@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden
+   Copyright 2018 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,10 +15,12 @@
 */
 package nl.nn.testtool.echo2.reports;
 
+import java.lang.invoke.MethodHandles;
 import java.util.Enumeration;
 import java.util.Iterator;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import echopointng.Tree;
 import echopointng.tree.DefaultMutableTreeNode;
@@ -36,17 +38,13 @@ import nl.nn.testtool.filter.View;
 import nl.nn.testtool.storage.CrudStorage;
 import nl.nn.testtool.storage.Storage;
 import nl.nn.testtool.storage.StorageException;
-import nl.nn.testtool.util.LogUtil;
 
 /**
- * @author m00f069
- *
- * To change the template for this generated type comment go to
- * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
+ * Jaco de Groot
  */
 public class TreePane extends ContentPane implements TreeSelectionListener {
 	private static final long serialVersionUID = 1L;
-	protected Logger log = LogUtil.getLogger(this);
+	protected Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 	protected InfoPane infoPane;
 	private TreePane treePaneCounterpart;
 	private ReportsTreeCellRenderer reportsTreeCellRenderer;

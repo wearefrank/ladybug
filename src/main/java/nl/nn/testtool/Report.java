@@ -17,6 +17,7 @@ package nl.nn.testtool;
 
 import java.beans.Transient;
 import java.io.Serializable;
+import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -30,6 +31,8 @@ import java.util.Set;
 
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import lombok.SneakyThrows;
 import nl.nn.testtool.run.ReportRunner;
@@ -38,7 +41,6 @@ import nl.nn.testtool.transform.MessageTransformer;
 import nl.nn.testtool.transform.ReportXmlTransformer;
 import nl.nn.testtool.util.CsvUtil;
 import nl.nn.testtool.util.EscapeUtil;
-import nl.nn.testtool.util.LogUtil;
 import nl.nn.testtool.util.XmlUtil;
 
 /**
@@ -53,7 +55,7 @@ public class Report implements Serializable {
 	// exception. The serialVersionUID also only effects reading objects through
 	// ObjectInputStream, it doesn't effect reading objects through XMLDecoder.
 	private transient static final long serialVersionUID = 5;
-	private transient static Logger log = LogUtil.getLogger(Report.class);
+	private transient static Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 	private transient TestTool testTool;
 	// Please note that the set method should return void for XmlEncoder to
 	// store the property (hence the setVariableCsvWithoutException method)
@@ -595,7 +597,7 @@ public class Report implements Serializable {
 				}
 				if (message == null) {
 					stringBuffer.append(" Null=\"true\"/>");
-					} else {
+				} else {
 					if (XmlUtil.isXml(message)) {
 						String textDecl = null;
 						if (message.startsWith("<?")) {

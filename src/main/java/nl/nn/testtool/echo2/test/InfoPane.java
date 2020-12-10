@@ -21,10 +21,7 @@ import nextapp.echo2.app.ContentPane;
 import nl.nn.testtool.echo2.BeanParent;
 
 /**
- * @author m00f069
- *
- * To change the template for this generated type comment go to
- * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
+ * @author Jaco de Groot
  */
 public class InfoPane extends ContentPane implements BeanParent {
 	private static final long serialVersionUID = 1L;

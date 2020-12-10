@@ -6,6 +6,7 @@ Ladybug Test Tool release notes
 Upcoming
 --------
 
+- Replace log4j with slf4j
 - Make default update behaviour overwrite on XmlStorage
 - Fix unaccepted filename characters on XmlStorage
 - Remove wss4j
