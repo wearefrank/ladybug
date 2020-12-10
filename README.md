@@ -22,9 +22,13 @@ https://github.com/Sudwest-Fryslan/OpenZaakBrug
 The most important files to look at are:
 
 https://github.com/Sudwest-Fryslan/OpenZaakBrug/blob/master/src/main/java/nl/haarlem/translations/zdstozgw/Application.java
+
 https://github.com/Sudwest-Fryslan/OpenZaakBrug/blob/master/src/main/resources/spring-ladybug.xml
+
 https://github.com/Sudwest-Fryslan/OpenZaakBrug/tree/master/src/main/java/nl/haarlem/translations/zdstozgw/debug
+
 https://github.com/Sudwest-Fryslan/OpenZaakBrug/blob/master/src/main/java/nl/haarlem/translations/zdstozgw/controller/SoapController.java
+
 https://github.com/Sudwest-Fryslan/OpenZaakBrug/blob/master/src/main/java/nl/haarlem/translations/zdstozgw/translation/zgw/client/ZGWClient.java
 
 The Frank!Framework is using AOP to integrate the Ladybug, see the Ladybug module of the Frank!Framework:
@@ -45,6 +49,6 @@ See [release notes](RELEASES.md).
 Feedback
 ========
 
-For bug reports and feature requests create a new issue at <https://github.com/ibissource/iaf/issues>. The
-Frank!Framework is developed and maintained by [WeAreFrank!](https://wearefrank.nl/). Contact us at
-<https://wearefrank.nl/en/contact/> or send an email to info@wearefrank.nl.
+For bug reports and feature requests create a new issue at <https://github.com/ibissource/ibis-ladybug/issues>. Ladybug
+is developed and maintained by [WeAreFrank!](https://wearefrank.nl/). Contact us at <https://wearefrank.nl/en/contact/>
+or send an email to info@wearefrank.nl.
