@@ -91,7 +91,7 @@ public class MetadataHandler {
 				buildFromDirectory(file, searchSubDirs);
 
 			if (file.isFile() && file.getName().endsWith(XmlStorage.FILE_EXTENSION)) {
-				addFromFile(file);
+				addFromFile(file, false);
 			}
 		}
 
@@ -326,7 +326,7 @@ public class MetadataHandler {
 			String path = "/" + storage.getReportsFolder().toPath().relativize(file.toPath()).toString().replaceAll("\\\\", "/"); // Relativize
 			Metadata m = map.remove(path);
 			if (m == null || m.lastModified < file.lastModified()) {
-				Report report = addFromFile(file);
+				Report report = addFromFile(file, true);
 				if (report != null)
 					updatedIds.add(report.getStorageId());
 			}
@@ -339,7 +339,7 @@ public class MetadataHandler {
 	 *
 	 * @param file File to be read from.
 	 */
-	private Report addFromFile(File file) {
+	private Report addFromFile(File file, boolean update) {
 		if (file == null || !file.isFile() || !file.getName().endsWith(XmlStorage.FILE_EXTENSION))
 			return null;
 
@@ -368,27 +368,27 @@ public class MetadataHandler {
 
 			int storageId = report.getStorageId() == 0 ? getNextStorageId() : report.getStorageId();
 			if (metadataMap.containsKey(storageId)) {
-				Report report1 = null;
-				boolean nullPointerThrown = false;
-				try {
-					// Check if there's still a report in old storage id.
-					report1 = storage.getReport(storageId);
-				} catch (NullPointerException e) {
-					// This happens during init() when building from directory.
-					// In this case it's safer to assign a new storage id.
-					nullPointerThrown = true;
-				} catch (StorageException e) {
-					logger.error("File could not be opened with storage id [" + storageId + "].", e);
-				}
-
-				if (nullPointerThrown || report1 != null) {
-					if (report1.getStorageId() == storageId) {
-						while (metadataMap.containsKey(storageId))
-							storageId = getNextStorageId();
-					} else {
-						// The metadata for this file is not up to date.
-						addFromFile(new File(storage.resolvePath(storageId)));
+				if (update) {
+					Report report1 = null;
+					try {
+						// Check if there's still a report in old storage id.
+						report1 = storage.getReport(storageId);
+					} catch (StorageException e) {
+						logger.error("File could not be opened with storage id [" + storageId + "].", e);
 					}
+
+					if (report1 != null) {
+						if (report1.getStorageId() == storageId) {
+							while (metadataMap.containsKey(storageId))
+								storageId = getNextStorageId();
+						} else {
+							// The metadata for this file is not up to date.
+							addFromFile(new File(storage.resolvePath(storageId)), false);
+						}
+					}
+				} else {
+					while (metadataMap.containsKey(storageId))
+						storageId = getNextStorageId();
 				}
 			}
 			if (storageId >= lastStorageId)
