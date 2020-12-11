@@ -74,8 +74,8 @@ import nl.nn.testtool.transform.ReportXmlTransformer;
  */
 public class ReportsComponent extends BaseComponent implements BeanParent, ActionListener {
 	private static final long serialVersionUID = 1L;
+	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 	public static final String OPEN_REPORT_ALLOWED = "Allowed";
-	protected Logger secLog = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 	private List<String> changeReportGeneratorEnabledRoles;
 	// TODO testTool overbodig maken nu we storage van view halen?
 	private TestTool testTool;
@@ -621,14 +621,15 @@ public class ReportsComponent extends BaseComponent implements BeanParent, Actio
 					msg = msg + "disabled";
 				}
 				msg = msg + " by" + echo2Application.getCommandIssuedBy();
-				secLog.info(msg);
-				//TODO: 'audit' logging to regular log?
+				if (testTool.getSecurityLog() != null) {
+					testTool.getSecurityLog().info(msg);
+				} else {
+					log.debug(msg);
+				}
 			} else {
 				reportGeneratorEnabledErrorLabel.setText("Not allowed");
 				reportGeneratorEnabledErrorLabel.setVisible(true);
 			}
-		// Update the value according to Regexfield	
-			
 		} else if (e.getActionCommand().equals("UpdateRegexValues")) {
 			if (echo2Application.isUserInRoles(changeReportGeneratorEnabledRoles)) {
 					testTool.setRegexFilter(regexFilterField.getText());
@@ -636,8 +637,6 @@ public class ReportsComponent extends BaseComponent implements BeanParent, Actio
 			else {
 				reportGeneratorEnabledErrorLabel.setText("Not allowed");
 			}
-		// End Update the value according to Regexfield		
-		
 		} else if (e.getActionCommand().equals("OpenTransformationWindow")) {
 			transformationWindow.setVisible(true);
 		} else if (e.getActionCommand().equals("OpenLatestReports")) {

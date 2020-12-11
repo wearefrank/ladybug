@@ -37,8 +37,8 @@ import nl.nn.testtool.transform.MessageTransformer;
  * @author Jaco de Groot
  */
 public class TestTool {
-	private static Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-	public final static String LOGGING_STORAGE_NAME = "Logging";
+	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+	private static Logger securityLog;
 	private String configName;
 	private String configVersion;
 	private int maxCheckpoints = 2500;
@@ -60,6 +60,14 @@ public class TestTool {
 	private String defaultStubStrategy = "Stub all external connection code";
 	private List<String> stubStrategies = new ArrayList<String>(); { stubStrategies.add(defaultStubStrategy); }
 	private Set<String> matchingStubStrategiesForExternalConnectionCode = new HashSet<>(stubStrategies);
+
+	public void setSecurityLoggerName(String securityLoggerName) {
+		securityLog = LoggerFactory.getLogger(securityLoggerName);
+	}
+
+	public Logger getSecurityLog() {
+		return securityLog;
+	}
 
 	public void setConfigName(String configName) {
 		this.configName = configName;
