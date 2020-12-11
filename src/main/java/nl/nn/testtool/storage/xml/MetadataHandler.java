@@ -15,6 +15,13 @@
 */
 package nl.nn.testtool.storage.xml;
 
+import nl.nn.testtool.Report;
+import nl.nn.testtool.storage.StorageException;
+import nl.nn.xmldecoder.XMLDecoder;
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -30,14 +37,6 @@ import java.util.List;
 import java.util.Scanner;
 import java.util.Set;
 import java.util.regex.Pattern;
-
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import nl.nn.testtool.Report;
-import nl.nn.testtool.storage.StorageException;
-import nl.nn.xmldecoder.XMLDecoder;
 
 /**
  * Handles metadata for {@link XmlStorage}.
@@ -71,7 +70,7 @@ public class MetadataHandler {
 			logger.info("Metadata for ladybug already exists. Reading from file [" + metadataFile.getName() + "] ...");
 			readFromFile();
 		} else {
-			buildFromDirectory(metadataFile.getParentFile(), true);
+			buildFromDirectory(storage.getReportsFolder(), true);
 		}
 	}
 
@@ -292,7 +291,7 @@ public class MetadataHandler {
 			pathMap.remove(m.path + m.name + XmlStorage.FILE_EXTENSION);
 		}
 
-		Set<Integer> updatedIds = updateMetadata(metadataFile.getParentFile(), pathMap, null);
+		Set<Integer> updatedIds = updateMetadata(storage.getReportsFolder(), pathMap, null);
 		// Delete the remaining metadata.
 		for (String p : pathMap.keySet()) {
 			Metadata m = pathMap.get(p);
@@ -324,7 +323,7 @@ public class MetadataHandler {
 			} else if (!file.getName().endsWith(XmlStorage.FILE_EXTENSION)) {
 				continue;
 			}
-			String path = "/" + metadataFile.getParentFile().toPath().relativize(file.toPath()).toString().replaceAll("\\\\", "/"); // Relativize
+			String path = "/" + storage.getReportsFolder().toPath().relativize(file.toPath()).toString().replaceAll("\\\\", "/"); // Relativize
 			Metadata m = map.remove(path);
 			if (m == null || m.lastModified < file.lastModified()) {
 				Report report = addFromFile(file);
@@ -354,7 +353,7 @@ public class MetadataHandler {
 			Report report = (Report) decoder.readObject();
 			report.setStorage(this.storage);
 
-			String path = metadataFile.getParentFile().toPath().relativize(file.getParentFile().toPath()).toString() + "/";
+			String path = storage.getReportsFolder().toPath().relativize(file.getParentFile().toPath()).toString() + "/";
 			if (StringUtils.isNotEmpty(path)) {
 				path = path.replaceAll("\\\\", "/");
 				if (!path.endsWith("/"))
