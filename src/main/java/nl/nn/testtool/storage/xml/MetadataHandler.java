@@ -105,14 +105,16 @@ public class MetadataHandler {
 			HashMap<File, Report> reportsForStorageId = reports.get(storageId);
 			boolean originalStorageIdTaken = false;
 			for (File file : reportsForStorageId.keySet()) {
+				Report report = reportsForStorageId.get(file);
 				int targetStorageId = storageId;
 				if (originalStorageIdTaken) {
 					targetStorageId  = getNextStorageId();
 					while (reports.containsKey(targetStorageId) || metadataMap.containsKey(targetStorageId)) {
 						targetStorageId  = getNextStorageId();
 					}
+					logger.warn("Storage Id conflict on update! Changing storage id from [" + storageId + "] to [" +
+							targetStorageId + "] for report with correlation id [" + report.getCorrelationId() + "]");
 				}
-				Report report = reportsForStorageId.get(file);
 				report.setStorageId(targetStorageId);
 				try {
 					storage.store(report, file);
