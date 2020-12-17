@@ -117,9 +117,11 @@ public class MetadataHandler {
 				}
 				report.setStorageId(targetStorageId);
 				try {
+					if (originalStorageIdTaken)
+						storage.store(report, file);
 					Metadata metadata = Metadata.fromReport(report, file.lastModified());
 					add(metadata, false);
-				} catch (IOException e) {
+				} catch (StorageException | IOException e) {
 					logger.error("Error while updating metadata from file [" + file.getPath() + "]", e);
 				}
 				originalStorageIdTaken = true;
