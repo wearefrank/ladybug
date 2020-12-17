@@ -358,8 +358,13 @@ public class MetadataHandler {
 			Metadata m = map.remove(path);
 			if (m == null || m.lastModified < file.lastModified()) {
 				Report report = importFromFile(file, true, true);
+				if (report == null) {
+					map.put(path, m);
+					continue;
+				}
 				try {
-					storage.store(report, file);
+					if (m == null || !(m.path.equalsIgnoreCase(report.getPath()) && m.storageId == report.getStorageId()))
+						storage.store(report, file);
 
 					Metadata metadata = Metadata.fromReport(report, file.lastModified());
 					add(metadata, false);
@@ -413,9 +418,7 @@ public class MetadataHandler {
 				String oldpath = storage.resolvePath(storageId);
 				if (StringUtils.isNotEmpty(oldpath) && !oldpath.equalsIgnoreCase(file.getPath())) {
 					Report oldReport = importFromFile(new File(oldpath), false, false);
-					setMetadata = oldReport != null && report.getStorageId().equals(oldReport.getStorageId()) &&
-							!report.getCorrelationId().equalsIgnoreCase(oldReport.getCorrelationId());
-
+					setMetadata = oldReport != null && report.getStorageId().equals(oldReport.getStorageId());
 				} else {
 					setMetadata = false;
 				}
