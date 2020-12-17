@@ -283,7 +283,7 @@ public class MetadataHandler {
 		for (Integer storageId : metadataMap.keySet()) {
 			writer.append(metadataMap.get(storageId).toXml());
 		}
-		writer.append("<MetadataList>\n");
+		writer.append("</MetadataList>\n");
 		writer.close();
 	}
 
