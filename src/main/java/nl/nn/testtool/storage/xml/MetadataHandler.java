@@ -211,8 +211,6 @@ public class MetadataHandler {
 		if (StringUtils.isEmpty(m.path))
 			m.path = "/";
 		metadataMap.put(m.storageId, m);
-		// TODO: Find a more optimal way!
-		// The problem is xml is not suitable for big data, so can't append directly.
 		if (saveNow)
 			save();
 	}
