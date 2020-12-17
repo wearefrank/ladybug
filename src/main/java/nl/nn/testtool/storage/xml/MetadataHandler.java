@@ -374,9 +374,12 @@ public class MetadataHandler {
 	}
 
 	/**
-	 * Reads the report from the given file. Generates metadata and saves it.
+	 * Reads the report from the given file. Generates metadata and returns it.
 	 *
 	 * @param file File to be read from.
+	 * @param update True, if the goal of import is to update. In this case file will be compared to the cached metadata.
+	 * @param setMetadata True if report's storageId should be changed in case of conflicts.
+	 * @return Report generated from the given file.
 	 */
 	private Report importFromFile(File file, boolean update, boolean setMetadata) {
 		if (file == null || !file.isFile() || !file.getName().endsWith(XmlStorage.FILE_EXTENSION))
