@@ -6,7 +6,8 @@ Ladybug Test Tool release notes
 Upcoming
 --------
 
-- Improve storage id handling of XmlStorage while building from a filesystem.
+- Fix metadata file format for XmlStorage
+- Improve storage id handling of XmlStorage while reading from a filesystem.
 - Debug report discovery for XmlStorage
 - Make security log configurable
 - Upgrade junit from 4.12 to 4.13.1
