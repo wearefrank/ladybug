@@ -407,37 +407,21 @@ public class MetadataHandler {
 			report.setName(filename.substring(0, filename.length() - XmlStorage.FILE_EXTENSION.length()));
 
 			int storageId = report.getStorageId() == 0 ? getNextStorageId() : report.getStorageId();
-			if (metadataMap.containsKey(storageId)) {
-				if (update) {
-					Report report1 = null;
-					try {
-						// Check if there's still a report in old storage id.
-						report1 = storage.getReport(storageId);
-					} catch (StorageException e) {
-						logger.error("File could not be opened with storage id [" + storageId + "].", e);
-					}
+			if (metadataMap.containsKey(storageId) && update) {
+				String oldpath = storage.resolvePath(storageId);
+				if (StringUtils.isNotEmpty(oldpath) && !oldpath.equalsIgnoreCase(file.getPath())) {
+					Report oldReport = importFromFile(new File(oldpath), false, false);
+					setMetadata = oldReport != null && report.getStorageId().equals(oldReport.getStorageId()) &&
+							!report.getCorrelationId().equalsIgnoreCase(oldReport.getCorrelationId());
 
-					if (report1 != null) {
-						if (report1.getStorageId() == storageId) {
-							while (metadataMap.containsKey(storageId))
-								storageId = getNextStorageId();
-						} else {
-							// The metadata for this file is not up to date.
-							File reportFile = new File(storage.resolvePath(storageId));
-
-							Report report2 = importFromFile(reportFile, false, true);
-							storage.store(report2, reportFile);
-
-							Metadata metadata = Metadata.fromReport(report2, reportFile.lastModified());
-							add(metadata, false);
-						}
-					}
-				} else if (setMetadata) {
-					while (metadataMap.containsKey(storageId))
-						storageId = getNextStorageId();
+				} else {
+					setMetadata = false;
 				}
 			}
 			if (setMetadata) {
+				while (metadataMap.containsKey(storageId))
+					storageId = getNextStorageId();
+
 				if (storageId >= lastStorageId)
 					lastStorageId = storageId + 1;
 
