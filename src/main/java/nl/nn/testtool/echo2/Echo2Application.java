@@ -15,11 +15,13 @@
 */
 package nl.nn.testtool.echo2;
 
+import java.lang.invoke.MethodHandles;
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -59,11 +61,10 @@ import nl.nn.testtool.storage.CrudStorage;
 import nl.nn.testtool.storage.Storage;
 import nl.nn.testtool.storage.StorageException;
 import nl.nn.testtool.transform.ReportXmlTransformer;
-import nl.nn.testtool.util.LogUtil;
 
 public class Echo2Application extends ApplicationInstance implements ApplicationContextAware, BeanParent, SecurityContext {
 	private static final long serialVersionUID = 1L;
-	private static Logger log = LogUtil.getLogger(Echo2Application.class);
+	private static Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
 	// Three main colors on which both black an white text should be readable
 	// and which are best explained by their usage in buttons.

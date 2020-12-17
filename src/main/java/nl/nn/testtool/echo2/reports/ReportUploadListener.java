@@ -15,10 +15,12 @@
 */
 package nl.nn.testtool.echo2.reports;
 
+import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import nextapp.echo2.app.filetransfer.UploadEvent;
 import nextapp.echo2.app.filetransfer.UploadListener;
@@ -26,16 +28,12 @@ import nl.nn.testtool.echo2.test.TestComponent;
 import nl.nn.testtool.echo2.util.Upload;
 import nl.nn.testtool.storage.CrudStorage;
 import nl.nn.testtool.storage.StorageException;
-import nl.nn.testtool.util.LogUtil;
 
 /**
- * @author m00f069
- *
- * To change the template for this generated type comment go to
- * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
+ * @author Jaco de Groot
  */
 public class ReportUploadListener implements UploadListener {
-	Logger log = LogUtil.getLogger(this);
+	Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 	ReportsComponent reportsComponent;
 	TestComponent testComponent;
 	CrudStorage storage;

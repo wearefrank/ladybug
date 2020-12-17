@@ -1,5 +1,5 @@
 /*
-   Copyright 2018-2019 Nationale-Nederlanden
+   Copyright 2018-2019 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,19 +15,19 @@
 */
 package nl.nn.testtool;
 
+import java.lang.invoke.MethodHandles;
 import java.text.SimpleDateFormat;
 import java.util.Iterator;
 import java.util.List;
 
-import org.apache.log4j.Logger;
-
-import nl.nn.testtool.util.LogUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Jaco de Groot
  */
 public class MetadataExtractor {
-	private static Logger log = LogUtil.getLogger(MetadataExtractor.class);
+	private static Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 	public static final int VALUE_TYPE_OBJECT = 0;
 	public static final int VALUE_TYPE_STRING = 1;
 	public static final int VALUE_TYPE_GUI = 2;

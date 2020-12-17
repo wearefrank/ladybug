@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden
+   Copyright 2018 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,19 +16,10 @@
 package nl.nn.testtool.echo2.reports;
 
 import nextapp.echo2.app.ContentPane;
-import nl.nn.testtool.util.LogUtil;
 
-import org.apache.log4j.Logger;
-
-/**
- * @author m00035f
- *
- * To change the template for this generated type comment go to
- * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
- */
 public class ReportsListPane extends ContentPane {
-    private Logger log = LogUtil.getLogger(this);
-    private ReportsComponent reportsComponent;
+	private static final long serialVersionUID = 1L;
+	private ReportsComponent reportsComponent;
 
     public void setReportsComponent(ReportsComponent reportsComponent) {
         this.reportsComponent = reportsComponent;

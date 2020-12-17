@@ -15,13 +15,15 @@
 */
 package nl.nn.testtool.echo2.reports;
 
+import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.TooManyListenersException;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import echopointng.SelectFieldEx;
 import echopointng.table.DefaultSortableTableModel;
@@ -66,18 +68,14 @@ import nl.nn.testtool.storage.LogStorage;
 import nl.nn.testtool.storage.Storage;
 import nl.nn.testtool.storage.StorageException;
 import nl.nn.testtool.transform.ReportXmlTransformer;
-import nl.nn.testtool.util.LogUtil;
 
 /**
- * @author m00f069
- *
- * To change the template for this generated type comment go to
- * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
+ * @author Jaco de Groot
  */
 public class ReportsComponent extends BaseComponent implements BeanParent, ActionListener {
 	private static final long serialVersionUID = 1L;
+	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 	public static final String OPEN_REPORT_ALLOWED = "Allowed";
-	protected Logger secLog = LogUtil.getLogger("security");
 	private List<String> changeReportGeneratorEnabledRoles;
 	// TODO testTool overbodig maken nu we storage van view halen?
 	private TestTool testTool;
@@ -623,14 +621,15 @@ public class ReportsComponent extends BaseComponent implements BeanParent, Actio
 					msg = msg + "disabled";
 				}
 				msg = msg + " by" + echo2Application.getCommandIssuedBy();
-				secLog.info(msg);
-				//TODO: 'audit' logging to regular log?
+				if (testTool.getSecurityLog() != null) {
+					testTool.getSecurityLog().info(msg);
+				} else {
+					log.debug(msg);
+				}
 			} else {
 				reportGeneratorEnabledErrorLabel.setText("Not allowed");
 				reportGeneratorEnabledErrorLabel.setVisible(true);
 			}
-		// Update the value according to Regexfield	
-			
 		} else if (e.getActionCommand().equals("UpdateRegexValues")) {
 			if (echo2Application.isUserInRoles(changeReportGeneratorEnabledRoles)) {
 					testTool.setRegexFilter(regexFilterField.getText());
@@ -638,8 +637,6 @@ public class ReportsComponent extends BaseComponent implements BeanParent, Actio
 			else {
 				reportGeneratorEnabledErrorLabel.setText("Not allowed");
 			}
-		// End Update the value according to Regexfield		
-		
 		} else if (e.getActionCommand().equals("OpenTransformationWindow")) {
 			transformationWindow.setVisible(true);
 		} else if (e.getActionCommand().equals("OpenLatestReports")) {

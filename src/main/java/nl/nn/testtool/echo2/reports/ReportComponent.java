@@ -40,10 +40,7 @@ import nl.nn.testtool.echo2.util.Download;
 import nl.nn.testtool.storage.CrudStorage;
 
 /**
- * @author m00f069
- *
- * To change the template for this generated type comment go to
- * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
+ * @author Jaco de Groot
  */
 public class ReportComponent extends MessageComponent {
 	private static final long serialVersionUID = 1L;

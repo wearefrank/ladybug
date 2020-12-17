@@ -15,19 +15,13 @@
 */
 package nl.nn.testtool.storage.xml;
 
-import nl.nn.testtool.Report;
-import nl.nn.testtool.storage.StorageException;
-import nl.nn.testtool.util.LogUtil;
-import nl.nn.xmldecoder.XMLDecoder;
-import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
-
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -36,6 +30,14 @@ import java.util.List;
 import java.util.Scanner;
 import java.util.Set;
 import java.util.regex.Pattern;
+
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import nl.nn.testtool.Report;
+import nl.nn.testtool.storage.StorageException;
+import nl.nn.xmldecoder.XMLDecoder;
 
 /**
  * Handles metadata for {@link XmlStorage}.
@@ -46,7 +48,7 @@ public class MetadataHandler {
 	private HashMap<Integer, Metadata> metadataMap;
 	protected File metadataFile;
 	private int lastStorageId = 1;
-	private final Logger logger = LogUtil.getLogger(this.getClass());
+	private final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
 	/**
 	 * Creates a new file with the given path.

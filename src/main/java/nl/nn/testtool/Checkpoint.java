@@ -21,6 +21,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
+import java.lang.invoke.MethodHandles;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -33,8 +34,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
-import org.apache.ws.security.util.DOM2Writer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Node;
 
 import lombok.SneakyThrows;
@@ -43,7 +44,6 @@ import nl.nn.testtool.run.ReportRunner;
 import nl.nn.testtool.run.RunResult;
 import nl.nn.testtool.storage.StorageException;
 import nl.nn.testtool.util.ImportResult;
-import nl.nn.testtool.util.LogUtil;
 import nl.nn.testtool.util.XmlUtil;
 import nl.nn.xmldecoder.XMLDecoder;
 
@@ -53,7 +53,7 @@ import nl.nn.xmldecoder.XMLDecoder;
 public class Checkpoint implements Serializable, Cloneable {
 	// See comment above field serialVersionUID on class Report
 	private transient static final long serialVersionUID = 4;
-	private transient static Logger log = LogUtil.getLogger(Checkpoint.class);
+	private transient static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 	private Report report;
 	private String threadName;
 	private String sourceClassName;
@@ -150,7 +150,7 @@ public class Checkpoint implements Serializable, Cloneable {
 				setMessage((String)message);
 			} else if (message instanceof Node) {
 				Node node = (Node)message;
-				setMessage(DOM2Writer.nodeToString(node));
+				setMessage(XmlUtil.nodeToString(node));
 				encoding = ENCODING_DOM_NODE;
 			} else if (message instanceof Date) {
 				setMessage(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format((Date)message));

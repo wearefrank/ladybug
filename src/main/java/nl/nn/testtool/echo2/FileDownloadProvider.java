@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden
+   Copyright 2018 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,23 +18,19 @@ package nl.nn.testtool.echo2;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.ObjectOutputStream;
 import java.io.OutputStream;
-import java.util.zip.GZIPOutputStream;
+import java.lang.invoke.MethodHandles;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import nextapp.echo2.app.filetransfer.DownloadProvider;
-import nl.nn.testtool.util.LogUtil;
-
-import org.apache.log4j.Logger;
 
 /**
- * @author m00f069
- *
- * To change the template for this generated type comment go to
- * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
+ * @author Jaco de Groot
  */
 public class FileDownloadProvider implements DownloadProvider {
-	private Logger log = LogUtil.getLogger(this);
+	private Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 	private File file;
 	private String fileName;
 
