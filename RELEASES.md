@@ -6,6 +6,7 @@ Ladybug Test Tool release notes
 Upcoming
 --------
 
+- Make security log configurable
 - Upgrade junit from 4.12 to 4.13.1
 - Replace log4j with slf4j
 - Make default update behaviour overwrite on XmlStorage
