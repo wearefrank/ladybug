@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden
+   Copyright 2018 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,10 +17,10 @@ package nl.nn.testtool.echo2.util;
 
 import java.io.InputStream;
 
+import org.slf4j.Logger;
+
 import nl.nn.testtool.storage.CrudStorage;
 import nl.nn.testtool.util.Import;
-
-import org.apache.log4j.Logger;
 
 public class Upload {
 

@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -13,19 +13,29 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.testtool.storage;
+package nl.nn.testtool.metadata;
+
+import nl.nn.testtool.Checkpoint;
+import nl.nn.testtool.Report;
+import nl.nn.testtool.metadata.DefaultValueMetadataFieldExtractor;
 
 /**
  * @author Jaco de Groot
  */
-public class StorageException extends Exception {
-
-	public StorageException(String message) {
-		super(message);
+public class StatusExtractor extends DefaultValueMetadataFieldExtractor {
+	
+	public StatusExtractor() {
+		name = "status";
+		label = "Status";
 	}
 
-	public StorageException(String message, Throwable cause) {
-		super(message, cause);
+	public Object extractMetadata(Report report) {
+		for (Checkpoint checkpoint : report.getCheckpoints()) {
+			if (checkpoint.getType() == Checkpoint.TYPE_ABORTPOINT) {
+				return "Error";
+			}
+		}
+		return "Success";
 	}
 
 }

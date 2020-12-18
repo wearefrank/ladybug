@@ -15,14 +15,6 @@
 */
 package nl.nn.testtool.storage.xml;
 
-import nl.nn.testtool.Report;
-import nl.nn.testtool.storage.CrudStorage;
-import nl.nn.testtool.storage.StorageException;
-import nl.nn.testtool.util.LogUtil;
-import nl.nn.testtool.util.SearchUtil;
-import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
-
 import java.beans.XMLDecoder;
 import java.beans.XMLEncoder;
 import java.io.BufferedInputStream;
@@ -31,7 +23,17 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.lang.invoke.MethodHandles;
 import java.util.List;
+
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import nl.nn.testtool.Report;
+import nl.nn.testtool.storage.CrudStorage;
+import nl.nn.testtool.storage.StorageException;
+import nl.nn.testtool.util.SearchUtil;
 
 /**
  * Handles report storage for ladybug.
@@ -42,7 +44,7 @@ public class XmlStorage implements CrudStorage {
 	private String name, metadataFile, reportsFolderPath;
 	private MetadataHandler metadataHandler;
 	private File reportsFolder;
-	Logger logger = LogUtil.getLogger(XmlStorage.class);
+	Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
 	/**
 	 * Initializes the storage. Creating necessary folders and metadata file.
@@ -119,11 +121,12 @@ public class XmlStorage implements CrudStorage {
 			File reportFile;
 			if (metadata == null || addNew) {
 				File parentFolder = (report.getPath() != null) ? new File(reportsFolder, report.getPath()) : reportsFolder;
-				String filename = report.getName().replaceAll("[<>:\"\\/\\\\\\|\\?\\*]", "_");
+				String original_name = report.getName().replaceAll("[<>:\"\\/\\\\\\|\\?\\*]", "_");
+				String filename = original_name;
 				reportFile = new File(parentFolder, filename + FILE_EXTENSION);
 				int i = 2;
 				while (reportFile.isFile()) {
-					filename = report.getName() + " (" + (i++) + ")";
+					filename = original_name + " (" + (i++) + ")";
 					reportFile = new File(parentFolder, filename + FILE_EXTENSION);
 				}
 				report.setName(filename);
@@ -192,8 +195,15 @@ public class XmlStorage implements CrudStorage {
 
 	@Override
 	public void update(Report report) throws StorageException {
-		delete(report);
-		store(report, false);
+		try {
+			Metadata metadata = metadataHandler.getMetadata(report.getStorageId());
+			delete(report);
+			metadata.path = report.getPath();
+			metadataHandler.add(metadata);
+			store(report, false);
+		} catch (IOException e) {
+			throw new StorageException("Returned an error while updating metadata.", e);
+		}
 	}
 
 	@Override

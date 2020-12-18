@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden
+   Copyright 2018 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,21 +15,30 @@
 */
 package nl.nn.testtool;
 
+import lombok.SneakyThrows;
 import net.sf.saxon.trans.XPathException;
 import nl.nn.testtool.run.ReportRunner;
 import nl.nn.testtool.run.RunResult;
 import nl.nn.testtool.storage.StorageException;
 import nl.nn.testtool.util.ImportResult;
-import nl.nn.testtool.util.LogUtil;
 import nl.nn.testtool.util.XmlUtil;
+import nl.nn.xmldecoder.XMLDecoder;
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
-import org.apache.ws.security.util.DOM2Writer;
 import org.codehaus.jackson.annotate.JsonIgnore;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Node;
 
+import java.beans.ExceptionListener;
+import java.beans.XMLEncoder;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
+import java.lang.invoke.MethodHandles;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -44,27 +53,28 @@ import java.util.regex.Pattern;
 public class Checkpoint implements Serializable, Cloneable {
 	// See comment above field serialVersionUID on class Report
 	private transient static final long serialVersionUID = 4;
-	private transient static Logger log = LogUtil.getLogger(Checkpoint.class);
+	private transient static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 	private Report report;
 	private String threadName;
 	private String sourceClassName;
 	private String name;
 	private String message;
+	private int encoding = 0;
 	private int type;
 	private int level = 0;
 	private boolean messageHasBeenStubbed = false;
 	private int stub = STUB_FOLLOW_REPORT_STRATEGY;
 	private int preTruncatedMessageLength = -1;
 	private long estimatedMemoryUsage = -1;
-	private transient static Pattern genericVariablePattern;
-	private transient static Pattern externalVariablePattern;
 	private transient Map<String, Pattern> variablePatternMap;
-	static {
-		genericVariablePattern = Pattern.compile("\\$\\{.*?\\}");
-		externalVariablePattern = Pattern.compile("\\$\\{checkpoint\\(([0-9]+#[0-9]+)\\)(\\.xpath\\((.*?)\\)|)\\}");
-	}
-
-	public transient static final int TYPE_NONE = 0;
+	private transient static final Pattern GENERIC_VARIABLE_PATTERN = Pattern.compile("\\$\\{.*?\\}");
+	private transient static final Pattern EXTERNAL_VARIABLE_PATTERN = Pattern.compile("\\$\\{checkpoint\\(([0-9]+#[0-9]+)\\)(\\.xpath\\((.*?)\\)|)\\}");
+	public transient static final int ENCODING_NONE = 0;
+	public transient static final int ENCODING_XML_ENCODER = 1;
+	public transient static final int ENCODING_BASE64 = 2;
+	public transient static final int ENCODING_TO_STRING = 101; // No decoding supported (yet), int value might change in the future
+	public transient static final int ENCODING_DOM_NODE = 102; // No decoding supported (yet), int value might change in the future
+	public transient static final int ENCODING_DATE = 103; // No decoding supported (yet), int value might change in the future
 	public transient static final int TYPE_STARTPOINT = 1;
 	public transient static final int TYPE_ENDPOINT = 2;
 	public transient static final int TYPE_ABORTPOINT = 3;
@@ -137,19 +147,83 @@ public class Checkpoint implements Serializable, Cloneable {
 		this.message = message;
 	}
 
+	@SneakyThrows(UnsupportedEncodingException.class)
 	public void setMessage(Object message) {
 		if (message != null) {
-			if (message instanceof Node) {
+			if (message instanceof String) {
+				setMessage((String)message);
+			} else if (message instanceof Node) {
 				Node node = (Node)message;
-				setMessage(DOM2Writer.nodeToString(node));
+				setMessage(XmlUtil.nodeToString(node));
+				encoding = ENCODING_DOM_NODE;
+			} else if (message instanceof Date) {
+				setMessage(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format((Date)message));
+				encoding = ENCODING_DATE;
+			} else if (message instanceof byte[]) {
+				setMessage(java.util.Base64.getEncoder().encodeToString((byte[])message));
+				encoding = ENCODING_BASE64;
 			} else {
+				String xml = null;
+				ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+				XMLEncoder encoder = new XMLEncoder(byteArrayOutputStream);
+				XMLEncoderExceptionListener exceptionListener = new XMLEncoderExceptionListener();
+				encoder.setExceptionListener(exceptionListener);
+				encoder.writeObject(message);
+				encoder.close();
+				xml = byteArrayOutputStream.toString("UTF-8");
+				if (exceptionListener.isExceptionThrown()) {
+					// Object doesn't seem to be a bean
 				setMessage(message.toString());
+					encoding = ENCODING_TO_STRING;
+				} else {
+					setMessage(xml);
+					encoding = ENCODING_XML_ENCODER;
+				}
 			}
 		}
 	}
 
 	public String getMessage() {
 		return message;
+	}
+
+	@SneakyThrows(UnsupportedEncodingException.class)
+	public Object getMessageAsObject() {
+		if (encoding == ENCODING_BASE64) {
+			return java.util.Base64.getDecoder().decode(message);
+		} else if (encoding == ENCODING_XML_ENCODER) {
+			ByteArrayInputStream byteArrayInputStream = null;
+			byteArrayInputStream = new ByteArrayInputStream(message.getBytes("UTF-8"));
+			XMLDecoder xmlDecoder = new XMLDecoder(byteArrayInputStream);
+			return xmlDecoder.readObject();
+		} else {
+			return message;
+		}
+	}
+
+	public void setEncoding(int encoding) {
+		this.encoding = encoding;
+	}
+
+	public int getEncoding() {
+		return encoding;
+	}
+
+	public String getEncodingAsString() {
+		return getEncodingAsString(getEncoding());
+	}
+
+	public static String getEncodingAsString(int encoding) {
+		String encodingAsString = null;
+		switch (encoding) {
+			case ENCODING_NONE : encodingAsString = "None"; break;
+			case ENCODING_XML_ENCODER : encodingAsString = "XMLEncoder"; break;
+			case ENCODING_BASE64 : encodingAsString = "Base64"; break;
+			case ENCODING_TO_STRING : encodingAsString = "Object.toString()"; break;
+			case ENCODING_DOM_NODE : encodingAsString = "DOM2Writer.nodeToString(node)"; break;
+			case ENCODING_DATE : encodingAsString = "SimpleDateFormat(\"yyyy-MM-dd HH:mm:ss.SSS\")"; break;
+		}
+		return encodingAsString;
 	}
 
 	public void setType(int type) {
@@ -167,7 +241,6 @@ public class Checkpoint implements Serializable, Cloneable {
 	public static String getTypeAsString(int type) {
 		String typeAsString = null;
 		switch (type) {
-			case TYPE_NONE : typeAsString = "None"; break;
 			case TYPE_STARTPOINT : typeAsString = "Startpoint"; break;
 			case TYPE_ENDPOINT : typeAsString = "Endpoint"; break;
 			case TYPE_ABORTPOINT : typeAsString = "Abortpoint"; break;
@@ -209,12 +282,14 @@ public class Checkpoint implements Serializable, Cloneable {
 		Path path = new Path(level + 1);
 		path.setName(level, name);
 		int currentLevel = level;
+		String currentName = name;
 		for (int i = report.getCheckpoints().indexOf(this) - 1; i >= 0; i--) {
 			Checkpoint currentCheckpoint = (Checkpoint)report.getCheckpoints().get(i);
-			if (currentCheckpoint.getLevel() == currentLevel && currentCheckpoint.getName().equals(name)) {
+			if (currentCheckpoint.getLevel() == currentLevel && currentCheckpoint.getName().equals(currentName)) {
 				path.incrementCount(currentLevel);
 			} else if (currentCheckpoint.getLevel() < currentLevel) {
 				currentLevel = currentCheckpoint.getLevel();
+				currentName = currentCheckpoint.getName();
 				path.setName(currentLevel, currentCheckpoint.getName());
 			}
 		}
@@ -270,7 +345,7 @@ public class Checkpoint implements Serializable, Cloneable {
 			// 1. Parse external report variables
 			if(reportRunner != null) {
 				List<MatchResult> matchResults = new ArrayList<MatchResult>();
-				Matcher m = externalVariablePattern.matcher(getMessage());
+				Matcher m = EXTERNAL_VARIABLE_PATTERN.matcher(getMessage());
 				while(m.find()) {
 					matchResults.add(m.toMatchResult());
 				}
@@ -291,7 +366,7 @@ public class Checkpoint implements Serializable, Cloneable {
 							}
 						}
 					} catch (StorageException e) {
-						log.error(e);
+						log.error(e.getMessage(), e);
 					}
 					// Attempt to fetch data from xpath in target checkpoint's XML message
 					if(targetReport != null) {
@@ -305,7 +380,7 @@ public class Checkpoint implements Serializable, Cloneable {
 											try {
 												result = result.replace(matchResult.group(), xpathResult);
 											} catch (IllegalArgumentException e) {
-												if(genericVariablePattern.matcher(xpathResult).find()) {
+												if(GENERIC_VARIABLE_PATTERN.matcher(xpathResult).find()) {
 													log.warn(warningMessageHeader(matchResult.group())
 															+"Specified xpath expression points to incorrectly parsed parameter "+xpathResult+"; "
 															+ "see other recent log warnings for a possible cause");
@@ -350,7 +425,7 @@ public class Checkpoint implements Serializable, Cloneable {
 	
 	public boolean containsVariables() {
 		if(StringUtils.isEmpty(getMessage())) return false;
-		return genericVariablePattern.matcher(getMessage()).find();
+		return GENERIC_VARIABLE_PATTERN.matcher(getMessage()).find();
 	}
 
 	protected Map<String, Pattern> getVariablePatternMap(Map<String, String> variableMap) {
@@ -379,7 +454,7 @@ public class Checkpoint implements Serializable, Cloneable {
 	 */
 	public boolean updateVariables(List<ImportResult> importResults) {
 		boolean isVariablesUpdated = false;
-		Matcher m = externalVariablePattern.matcher(getMessage());
+		Matcher m = EXTERNAL_VARIABLE_PATTERN.matcher(getMessage());
 		List<MatchResult> matchResults = new ArrayList<MatchResult>();
 		while(m.find()) {
 			matchResults.add(m.toMatchResult());
@@ -397,4 +472,18 @@ public class Checkpoint implements Serializable, Cloneable {
 		}
 		return isVariablesUpdated;
 	}
+}
+
+class XMLEncoderExceptionListener implements ExceptionListener {
+	boolean exceptionThrown = false;
+
+	@Override
+	public void exceptionThrown(Exception e) {
+		exceptionThrown = true;
+	}
+
+	public boolean isExceptionThrown() {
+		return exceptionThrown;
+	}
+
 }

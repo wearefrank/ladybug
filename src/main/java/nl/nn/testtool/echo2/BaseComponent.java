@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden
+   Copyright 2018 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,20 +15,22 @@
 */
 package nl.nn.testtool.echo2;
 
-import org.apache.log4j.Logger;
+import java.lang.invoke.MethodHandles;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Insets;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.event.ActionEvent;
-import nl.nn.testtool.util.LogUtil;
 
 /**
  * @author Jaco de Groot
  */
 public class BaseComponent extends Column {
 	private static final long serialVersionUID = 1L;
-	protected Logger log = LogUtil.getLogger(this);
+	protected Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 	protected Label errorLabel;
 	protected Label okayLabel;
 
@@ -83,7 +85,6 @@ public class BaseComponent extends Column {
 				log.error(logMessage);
 			} else {
 				if (logMessage == null) {
-					// don't use log.error(t) as it will print the name of the Throwable but no stack trace
 					logMessage = t.getMessage();
 				}
 				log.error(logMessage, t);

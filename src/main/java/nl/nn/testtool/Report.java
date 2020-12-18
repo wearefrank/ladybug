@@ -15,23 +15,23 @@
 */
 package nl.nn.testtool;
 
+import lombok.SneakyThrows;
 import nl.nn.testtool.run.ReportRunner;
 import nl.nn.testtool.storage.Storage;
 import nl.nn.testtool.transform.MessageTransformer;
 import nl.nn.testtool.transform.ReportXmlTransformer;
 import nl.nn.testtool.util.CsvUtil;
 import nl.nn.testtool.util.EscapeUtil;
-import nl.nn.testtool.util.LogUtil;
+import nl.nn.testtool.util.XmlUtil;
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
 import org.codehaus.jackson.annotate.JsonIgnore;
-import org.dom4j.Document;
-import org.dom4j.DocumentException;
-import org.dom4j.DocumentHelper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.beans.Transient;
 import java.io.Serializable;
+import java.lang.invoke.MethodHandles;
 import java.util.*;
 
 /**
@@ -46,7 +46,7 @@ public class Report implements Serializable {
 	// exception. The serialVersionUID also only effects reading objects through
 	// ObjectInputStream, it doesn't effect reading objects through XMLDecoder.
 	private transient static final long serialVersionUID = 5;
-	private transient static Logger log = LogUtil.getLogger(Report.class);
+	private transient static Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 	private transient TestTool testTool;
 	// Please note that the set method should return void for XmlEncoder to
 	// store the property (hence the setVariableCsvWithoutException method)
@@ -72,7 +72,6 @@ public class Report implements Serializable {
 	private transient Storage storage;
 	private transient Integer storageId;
 	private transient Long storageSize;
-	private transient Report counterpart;
 	private transient ReportXmlTransformer reportXmlTransformer;
 	private transient ReportXmlTransformer globalReportXmlTransformer;
 	private transient String xml;
@@ -235,6 +234,11 @@ public class Report implements Serializable {
 	}
 
 	@Transient
+	public Report getOriginalReport() {
+		return originalReport;
+	}
+
+	@Transient
 	public void setReportFilterMatching(boolean reportFilterMatching) {
 		this.reportFilterMatching = reportFilterMatching;
 	}
@@ -244,7 +248,9 @@ public class Report implements Serializable {
 		return reportFilterMatching;
 	}
 
-	protected Object checkpoint(String threadId, String sourceClassName, String name, Object message, int checkpointType, int levelChangeNextCheckpoint) {
+	protected Object checkpoint(String threadId, String sourceClassName, String name, Object message,
+			StubableCode stubableCode, StubableCodeThrowsException stubableCodeThrowsException,
+			Set<String> matchingStubStrategies, int checkpointType, int levelChangeNextCheckpoint) {
 		if (checkpointType == Checkpoint.TYPE_THREADCREATEPOINT) {
 			String threadName = Thread.currentThread().getName();
 			int index=threads.indexOf(threadName);
@@ -258,12 +264,15 @@ public class Report implements Serializable {
 				threadParent.put(threadId, threadName);
 			}
 		} else {
-			message = addCheckpoint(threadId, sourceClassName, name, message, checkpointType, levelChangeNextCheckpoint);
+			message = addCheckpoint(threadId, sourceClassName, name, message, stubableCode, stubableCodeThrowsException,
+					matchingStubStrategies, checkpointType, levelChangeNextCheckpoint);
 		}
 		return message;
 	}
 
-	private Object addCheckpoint(String threadId, String sourceClassName, String name, Object message, int checkpointType, int levelChangeNextCheckpoint) {
+	private Object addCheckpoint(String threadId, String sourceClassName, String name, Object message,
+			StubableCode stubableCode, StubableCodeThrowsException stubableCodeThrowsException,
+			Set<String> matchingStubStrategies, int checkpointType, int levelChangeNextCheckpoint) {
 		String threadName = Thread.currentThread().getName();
 		Integer index = (Integer)threadIndex.get(threadName);
 		Integer level = (Integer)threadLevel.get(threadName);
@@ -286,7 +295,9 @@ public class Report implements Serializable {
 			if (index == null) {
 				log.warn("Unknown thread, ignored checkpoint " + getCheckpointLogDescription(name, checkpointType, level));
 			} else {
-				message = addCheckpoint(threadName, sourceClassName, name, message, checkpointType, index, level, levelChangeNextCheckpoint);
+				message = addCheckpoint(threadName, sourceClassName, name, message, stubableCode,
+						stubableCodeThrowsException, matchingStubStrategies, checkpointType, index, level,
+						levelChangeNextCheckpoint);
 				if (checkpointType == Checkpoint.TYPE_ABORTPOINT && checkpoints.size() < testTool.getMaxCheckpoints()) {
 					int firstLevel = ((Integer)threadFirstLevel.get(threadName)).intValue();
 					List<Checkpoint> checkpoints = getCheckpoints();
@@ -302,7 +313,9 @@ public class Report implements Serializable {
 								} else {
 									index = (Integer)threadIndex.get(threadName);
 									level = (Integer)threadLevel.get(threadName);
-									message = addCheckpoint(threadName, sourceClassName, name, message, checkpointType, index, level, levelChangeNextCheckpoint);
+									message = addCheckpoint(threadName, sourceClassName, name, message, stubableCode,
+											stubableCodeThrowsException, matchingStubStrategies, checkpointType, index,
+											level, levelChangeNextCheckpoint);
 								}
 							}
 						}
@@ -313,7 +326,11 @@ public class Report implements Serializable {
 		return message;
 	}
 
-	private Object addCheckpoint(String threadName, String sourceClassName, String name, Object message, int checkpointType, Integer index, Integer level, int levelChangeNextCheckpoint) {
+	@SneakyThrows
+	private Object addCheckpoint(String threadName, String sourceClassName, String name, Object message,
+			StubableCode stubableCode, StubableCodeThrowsException stubableCodeThrowsException,
+			Set<String> matchingStubStrategies, int checkpointType, Integer index, Integer level,
+			int levelChangeNextCheckpoint) {
 		if (!isReportFilterMatching()) {
 			if (logReportFilterMatching) {
 				log.debug("Report name doesn't match report filter regex, ignore checkpoint "
@@ -338,16 +355,28 @@ public class Report implements Serializable {
 		} else {
 			Checkpoint checkpoint = new Checkpoint(this, threadName, sourceClassName, name, message, checkpointType, level.intValue());
 			checkpoints.add(index.intValue(), checkpoint);
+			boolean stub = false;
 			if (originalReport != null) {
 				Path lastCheckpointPath = checkpoint.getPath();
 				Checkpoint originalCheckpoint = (Checkpoint)originalReport.getCheckpoint(lastCheckpointPath);
-				boolean stub = false;
 				if (originalCheckpoint == null) {
+					if (matchingStubStrategies != null) {
+						if (matchingStubStrategies.contains(originalReport.getStubStrategy())) {
+							stub = true;
+						}
+					} else if (testTool.getDebugger() != null) {
 					stub = testTool.stub(checkpoint, originalReport.getStubStrategy());
+					}
 				} else {
 					checkpoint.setStub(originalCheckpoint.getStub());
 					if (originalCheckpoint.getStub() == Checkpoint.STUB_FOLLOW_REPORT_STRATEGY) {
-						stub = testTool.stub(originalCheckpoint, originalCheckpoint.getReport().getStubStrategy());
+						if (matchingStubStrategies != null) {
+							if (matchingStubStrategies.contains(originalReport.getStubStrategy())) {
+								stub = true;
+							}
+						} else if (testTool.getDebugger() != null) {
+							stub = testTool.stub(originalCheckpoint, originalReport.getStubStrategy());
+						}
 					} else if (originalCheckpoint.getStub() == Checkpoint.STUB_NO) {
 						stub = false;
 					} else if (originalCheckpoint.getStub() == Checkpoint.STUB_YES) {
@@ -358,10 +387,25 @@ public class Report implements Serializable {
 					if (originalCheckpoint == null) {
 						message = "<stub>Could not find stub message for '" + lastCheckpointPath + "'</stub>";
 					} else {
-						message = originalCheckpoint.getMessage();
+						message = originalCheckpoint.getMessageAsObject();
 					}
 					checkpoint.setMessage(message);
 					checkpoint.setMessageHasBeenStubbed(true);
+				}
+			}
+			if (!stub) {
+				try {
+					if (stubableCode != null) {
+						message = stubableCode.execute();
+					}
+					if (stubableCodeThrowsException != null) {
+						message = stubableCodeThrowsException.execute();
+					}
+					checkpoint.setMessage(message);
+				} catch(Throwable t) {
+					checkpoints.remove(index.intValue());
+					testTool.abortpoint(correlationId, sourceClassName, name, t.getMessage());
+					throw t;
 				}
 			}
 			if(testTool.getMaxMessageLength() > 0 && message != null && message.toString().length() > testTool.getMaxMessageLength()) {
@@ -472,18 +516,6 @@ public class Report implements Serializable {
 
 	@Transient
 	@JsonIgnore
-	public void setCounterpart(Report report) {
-		counterpart = report;
-	}
-
-	@Transient
-	@JsonIgnore
-	public Report getCounterpart() {
-		return counterpart;
-	}
-
-	@Transient
-	@JsonIgnore
 	public void setDifferenceChecked(boolean differenceChecked) {
 		this.differenceChecked = differenceChecked;
 	}
@@ -557,29 +589,23 @@ public class Report implements Serializable {
 			stringBuffer.append(" EstimatedMemoryUsage=\"" + estimatedMemoryUsage + "\"");
 			stringBuffer.append(">");
 			for (Checkpoint checkpoint : checkpoints) {
-				Object object;
+				String message;
 				if(reportRunner != null && checkpoint.containsVariables()) {
-					object = checkpoint.getMessageWithResolvedVariables(reportRunner);
+					message = checkpoint.getMessageWithResolvedVariables(reportRunner);
 				} else {
-					object = checkpoint.getMessage();
+					message = checkpoint.getMessage();
 				}
-				if (object != null) {
 					stringBuffer.append("<Checkpoint");
 					stringBuffer.append(" Name=\"" + EscapeUtil.escapeXml(checkpoint.getName()) + "\"");
 					stringBuffer.append(" Type=\"" + EscapeUtil.escapeXml(checkpoint.getTypeAsString()) + "\"");
 					stringBuffer.append(" Level=\"" + checkpoint.getLevel() + "\"");
-					String message = object.toString();
-					Document document;
-					try {
-						document = DocumentHelper.parseText(message);
-					} catch (DocumentException e) {
-						document = null;
+				if (checkpoint.getEncoding() != Checkpoint.ENCODING_NONE) {
+					stringBuffer.append(" Encoding=\"" + checkpoint.getEncodingAsString() + "\"");
 					}
-					if (document == null) {
-						stringBuffer.append(">");
-						stringBuffer.append(EscapeUtil.escapeXml(message));
-						stringBuffer.append("</Checkpoint>");
+				if (message == null) {
+					stringBuffer.append(" Null=\"true\"/>");
 					} else {
+					if (XmlUtil.isXml(message)) {
 						String textDecl = null;
 						if (message.startsWith("<?")) {
 							int i = message.indexOf("?>") + 2;
@@ -592,8 +618,11 @@ public class Report implements Serializable {
 							stringBuffer.append(">");
 						}
 						stringBuffer.append(message);
-						stringBuffer.append("</Checkpoint>");
+					} else {
+						stringBuffer.append(">");
+						stringBuffer.append(EscapeUtil.escapeXml(message));
 					}
+					stringBuffer.append("</Checkpoint>");
 				}
 			}
 			stringBuffer.append("</Report>");

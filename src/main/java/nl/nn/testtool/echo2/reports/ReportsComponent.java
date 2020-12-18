@@ -15,35 +15,11 @@
 */
 package nl.nn.testtool.echo2.reports;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.TooManyListenersException;
-
-import org.apache.log4j.Logger;
-
 import echopointng.SelectFieldEx;
 import echopointng.table.DefaultSortableTableModel;
 import echopointng.table.SortableTable;
 import echopointng.tree.DefaultTreeCellRenderer;
-import nextapp.echo2.app.Border;
-import nextapp.echo2.app.Button;
-import nextapp.echo2.app.CheckBox;
-import nextapp.echo2.app.Color;
-import nextapp.echo2.app.Column;
-import nextapp.echo2.app.Component;
-import nextapp.echo2.app.Extent;
-import nextapp.echo2.app.FillImageBorder;
-import nextapp.echo2.app.Grid;
-import nextapp.echo2.app.Insets;
-import nextapp.echo2.app.Label;
-import nextapp.echo2.app.ListBox;
-import nextapp.echo2.app.Row;
-import nextapp.echo2.app.SelectField;
-import nextapp.echo2.app.Table;
-import nextapp.echo2.app.TextField;
-import nextapp.echo2.app.WindowPane;
+import nextapp.echo2.app.*;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import nextapp.echo2.app.filetransfer.UploadSelect;
@@ -66,18 +42,23 @@ import nl.nn.testtool.storage.LogStorage;
 import nl.nn.testtool.storage.Storage;
 import nl.nn.testtool.storage.StorageException;
 import nl.nn.testtool.transform.ReportXmlTransformer;
-import nl.nn.testtool.util.LogUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.lang.invoke.MethodHandles;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.TooManyListenersException;
 
 /**
- * @author m00f069
- *
- * To change the template for this generated type comment go to
- * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
+ * @author Jaco de Groot
  */
 public class ReportsComponent extends BaseComponent implements BeanParent, ActionListener {
 	private static final long serialVersionUID = 1L;
+	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 	public static final String OPEN_REPORT_ALLOWED = "Allowed";
-	protected Logger secLog = LogUtil.getLogger("security");
 	private List<String> changeReportGeneratorEnabledRoles;
 	// TODO testTool overbodig maken nu we storage van view halen?
 	private TestTool testTool;
@@ -623,14 +604,15 @@ public class ReportsComponent extends BaseComponent implements BeanParent, Actio
 					msg = msg + "disabled";
 				}
 				msg = msg + " by" + echo2Application.getCommandIssuedBy();
-				secLog.info(msg);
-				//TODO: 'audit' logging to regular log?
+				if (testTool.getSecurityLog() != null) {
+					testTool.getSecurityLog().info(msg);
+				} else {
+					log.debug(msg);
+				}
 			} else {
 				reportGeneratorEnabledErrorLabel.setText("Not allowed");
 				reportGeneratorEnabledErrorLabel.setVisible(true);
 			}
-		// Update the value according to Regexfield	
-			
 		} else if (e.getActionCommand().equals("UpdateRegexValues")) {
 			if (echo2Application.isUserInRoles(changeReportGeneratorEnabledRoles)) {
 					testTool.setRegexFilter(regexFilterField.getText());
@@ -638,8 +620,6 @@ public class ReportsComponent extends BaseComponent implements BeanParent, Actio
 			else {
 				reportGeneratorEnabledErrorLabel.setText("Not allowed");
 			}
-		// End Update the value according to Regexfield		
-		
 		} else if (e.getActionCommand().equals("OpenTransformationWindow")) {
 			transformationWindow.setVisible(true);
 		} else if (e.getActionCommand().equals("OpenLatestReports")) {

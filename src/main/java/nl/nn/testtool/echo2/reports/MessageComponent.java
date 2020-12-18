@@ -1,5 +1,5 @@
 /*
-   Copyright 2018-2019 Nationale-Nederlanden
+   Copyright 2018-2019 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -46,10 +46,7 @@ import nl.nn.testtool.echo2.util.Download;
 import nl.nn.testtool.echo2.util.PopupWindow;
 
 /**
- * @author m00f069
- *
- * To change the template for this generated type comment go to
- * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
+ * @author Jaco de Groot
  */
 public class MessageComponent extends BaseComponent implements ActionListener {
 	private static final long serialVersionUID = 1L;
@@ -219,7 +216,7 @@ public class MessageComponent extends BaseComponent implements ActionListener {
 	public static void updateMessageColumn(String message, Column messageColumn, boolean compare,
 			String messageCompare) {
 		messageColumn.removeAll();
-		if (message == null) {
+		if (message == null || message.equals("")) {
 			messageColumn.setVisible(false);
 		} else {
 			LineNumberReader lineNumberReader = new LineNumberReader(new StringReader(message));

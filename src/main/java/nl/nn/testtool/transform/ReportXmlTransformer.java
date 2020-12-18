@@ -1,5 +1,5 @@
 /*
-   Copyright 2018-2019 Nationale-Nederlanden
+   Copyright 2018-2019 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import java.io.PrintWriter;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
+import java.lang.invoke.MethodHandles;
 
 import javax.xml.transform.ErrorListener;
 import javax.xml.transform.Transformer;
@@ -30,12 +31,13 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import nl.nn.testtool.util.LogUtil;
+import nl.nn.testtool.util.XmlUtil;
 
 public class ReportXmlTransformer {
-	private Logger log = LogUtil.getLogger(this);
+	private Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 	private String xslt;
 	private Transformer transformer;
 	private String createTransformerError;
@@ -72,7 +74,7 @@ public class ReportXmlTransformer {
 
 	public void setXslt(String xslt) {
 		this.xslt = xslt;
-		TransformerFactory transformerFactory = new net.sf.saxon.TransformerFactoryImpl();
+		TransformerFactory transformerFactory = XmlUtil.getTransformerFactory();
 		TransformerFactoryErrorListener transformerFactoryErrorListener = new TransformerFactoryErrorListener();
 		transformerFactory.setErrorListener(transformerFactoryErrorListener);
 		try {
@@ -144,7 +146,7 @@ public class ReportXmlTransformer {
 }
 
 class TransformerFactoryErrorListener implements ErrorListener {
-	private Logger log = LogUtil.getLogger(this);
+	private Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 	String errorMessages;
 
 	public void error(TransformerException exception) {

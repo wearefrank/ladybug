@@ -6,6 +6,27 @@ Ladybug Test Tool release notes
 Upcoming
 --------
 
+- Make security log configurable
+- Upgrade junit from 4.12 to 4.13.1
+- Replace log4j with slf4j
+- Make default update behaviour overwrite on XmlStorage
+- Fix unaccepted filename characters on XmlStorage
+- Remove wss4j
+- Remove dom4j
+- Execute stubable code when report generator not enabled
+- Improve some log statements to print stracktrace
+- Show label when message is null or empty string
+- Update truncated and encoding label in GUI also when switching to checkpoint with null value
+- Upgrade dom4j from 1.6.1 to 2.1.3
+- Add easier way to integrate with Ladybug using subable code, matching stub strategies, default stub strategy "Stub all external connection code" and rerunner interface
+- Add StatusExtractor
+- Show encoding (object to string conversion) applied on message
+- Encode/decode bean messages to/from xml (with XMLEncoder and XMLDecoder) 
+- Encode/decode byte array messages to/from base64
+- Add Null="true" to report xml for null messages
+- Fix numbers in checkpoint path, not larger than 0 in some cases casing the wrong counterpart checkpoint to be selected in compare
+- Display correct checkpoint path (from Checkpoint instead of TreePath)
+- Exclude xml-apis (part of JDK nowadays, prevent conflicts)
 - Rename internal objects from run to test and from log to debug
 - Fix report filter for positive matching (report almost empty)
 - Add tool tip to report filter text field

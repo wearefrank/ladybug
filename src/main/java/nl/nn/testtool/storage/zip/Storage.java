@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden
+   Copyright 2018 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -29,16 +30,16 @@ import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import nl.nn.testtool.MetadataExtractor;
 import nl.nn.testtool.Report;
 import nl.nn.testtool.storage.StorageException;
-import nl.nn.testtool.util.LogUtil;
 import nl.nn.testtool.util.SearchUtil;
 
-import org.apache.log4j.Logger;
-
 public class Storage implements nl.nn.testtool.storage.Storage {
-	private static Logger log = LogUtil.getLogger(Storage.class);
+	private static Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 	
 	
 	private File file = new File("C:\\Temp\\tt.zip");

@@ -15,6 +15,13 @@
 */
 package nl.nn.testtool.storage.file;
 
+import nl.nn.testtool.MetadataExtractor;
+import nl.nn.testtool.Report;
+import nl.nn.testtool.storage.StorageException;
+import nl.nn.testtool.util.CSVReader;
+import nl.nn.testtool.util.SearchUtil;
+import org.slf4j.Logger;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -27,19 +34,8 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
-import nl.nn.testtool.MetadataExtractor;
-import nl.nn.testtool.Report;
-import nl.nn.testtool.storage.StorageException;
-import nl.nn.testtool.util.CSVReader;
-import nl.nn.testtool.util.SearchUtil;
-
-import org.apache.log4j.Logger;
-
 /**
- * @author m00f069
- *
- * To change the template for this generated type comment go to
- * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
+ * @author Jaco de Groot
  */
 public class TestStorage implements nl.nn.testtool.storage.CrudStorage {
 //TODO TestStorage -> CrudStorage?

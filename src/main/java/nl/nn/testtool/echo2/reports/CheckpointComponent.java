@@ -1,5 +1,5 @@
 /*
-   Copyright 2018-2019 Nationale-Nederlanden
+   Copyright 2018-2019 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -30,10 +30,7 @@ import nl.nn.testtool.echo2.util.Download;
 import nl.nn.testtool.storage.CrudStorage;
 
 /**
- * @author m00f069
- *
- * To change the template for this generated type comment go to
- * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
+ * @author Jaco de Groot
  */
 public class CheckpointComponent extends MessageComponent {
 	private static final long serialVersionUID = 1L;
@@ -46,7 +43,10 @@ public class CheckpointComponent extends MessageComponent {
 	private RadioButton radioButtonStubOptionYes;
 	private RadioButton radioButtonStubOptionNo;
 	private Label messageHasBeenStubbedLabel;
-	private Label messageWasTruncatedLabel;
+	private Label messageIsNullLabel;
+	private Label messageIsEmptyStringLabel;
+	private Label messageIsTruncatedLabel;
+	private Label messageIsEncodedLabel;
 	private Label checkpointUIDLabel;
 	private Label numberOfCharactersLabel;
 	private Label estimatedMemoryUsageLabel;
@@ -125,9 +125,23 @@ public class CheckpointComponent extends MessageComponent {
 		messageHasBeenStubbedLabel.setText("Message has been stubbed (copied from original report)");
 		add(messageHasBeenStubbedLabel);
 
-		messageWasTruncatedLabel = Echo2Application.createInfoLabelWithColumnLayoutData();
-		messageWasTruncatedLabel.setVisible(false);
-		add(messageWasTruncatedLabel);
+		messageIsNullLabel = Echo2Application.createInfoLabelWithColumnLayoutData();
+		messageIsNullLabel.setVisible(false);
+		messageIsNullLabel.setText("Message is null");
+		add(messageIsNullLabel);
+
+		messageIsEmptyStringLabel = Echo2Application.createInfoLabelWithColumnLayoutData();
+		messageIsEmptyStringLabel.setVisible(false);
+		messageIsEmptyStringLabel.setText("Message is an empty string");
+		add(messageIsEmptyStringLabel);
+
+		messageIsTruncatedLabel = Echo2Application.createInfoLabelWithColumnLayoutData();
+		messageIsTruncatedLabel.setVisible(false);
+		add(messageIsTruncatedLabel);
+
+		messageIsEncodedLabel = Echo2Application.createInfoLabelWithColumnLayoutData();
+		messageIsEncodedLabel.setVisible(false);
+		add(messageIsEncodedLabel);
 
 		add(messageColumn);
 		add(messageTextArea);
@@ -161,8 +175,8 @@ public class CheckpointComponent extends MessageComponent {
 		super.initBeanPost();
 	}
 
-	public void displayCheckpoint(DefaultMutableTreeNode node, String path, 
-			Report report, Checkpoint checkpoint, Checkpoint checkpointCompare, boolean compare) {
+	public void displayCheckpoint(DefaultMutableTreeNode node, Report report, Checkpoint checkpoint,
+			Checkpoint checkpointCompare, boolean compare) {
 		this.node = node;
 		this.report = report;
 		this.checkpoint = checkpoint;
@@ -181,14 +195,24 @@ public class CheckpointComponent extends MessageComponent {
 		String message = null;
 		if (checkpoint.getMessage() != null) {
 			message = checkpoint.getMessage();
-			
-			if(checkpoint.getPreTruncatedMessageLength() > 0) {
-				messageWasTruncatedLabel.setText("Message was truncated ("
-						+ (checkpoint.getPreTruncatedMessageLength() - testTool.getMaxMessageLength()) + " characters removed)");
-				messageWasTruncatedLabel.setVisible(true);
-			} else {
-				messageWasTruncatedLabel.setVisible(false);
-			}
+			messageIsNullLabel.setVisible(false);
+			messageIsEmptyStringLabel.setVisible(message.equals(""));
+		} else {
+			messageIsNullLabel.setVisible(true);
+			messageIsEmptyStringLabel.setVisible(false);
+		}
+		if (checkpoint.getPreTruncatedMessageLength() > 0) {
+			messageIsTruncatedLabel.setText("Message is truncated ("
+					+ (checkpoint.getPreTruncatedMessageLength() - testTool.getMaxMessageLength()) + " characters removed)");
+			messageIsTruncatedLabel.setVisible(true);
+		} else {
+			messageIsTruncatedLabel.setVisible(false);
+		}
+		if (checkpoint.getEncoding() > 0) {
+			messageIsEncodedLabel.setText("Message object is encoded to string (using " + checkpoint.getEncodingAsString() + ")");
+			messageIsEncodedLabel.setVisible(true);
+		} else {
+			messageIsEncodedLabel.setVisible(false);
 		}
 		if (compare) {
 			String messageCompare = null;
@@ -202,7 +226,7 @@ public class CheckpointComponent extends MessageComponent {
 		nameLabel.setText("Name: " + checkpoint.getName());
 		threadNameLabel.setText("Thread name: " + checkpoint.getThreadName());
 		sourceClassNameLabel.setText("Source class name: " + checkpoint.getSourceClassName());
-		pathLabel.setText("Path: " + path);
+		pathLabel.setText("Path: " + checkpoint.getPath());
 		checkpointUIDLabel.setText("Checkpoint UID: "+checkpoint.getUID());
 		numberOfCharactersLabel.setText("Number of characters: "+(checkpoint.getMessage() != null ? checkpoint.getMessage().length() : "0"));
 		estimatedMemoryUsageLabel.setText("EstimatedMemoryUsage: " + checkpoint.getEstimatedMemoryUsage() + " bytes");

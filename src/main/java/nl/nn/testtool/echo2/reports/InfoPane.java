@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden
+   Copyright 2018 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -26,10 +26,7 @@ import nl.nn.testtool.echo2.BaseComponent;
 import nl.nn.testtool.echo2.BeanParent;
 
 /**
- * @author m00f069
- *
- * To change the template for this generated type comment go to
- * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
+ * @author Jaco de Groot
  */
 public class InfoPane extends ContentPane implements BeanParent {
 	private static final long serialVersionUID = 1L;
@@ -111,8 +108,7 @@ public class InfoPane extends ContentPane implements BeanParent {
 
 	public void displayCheckpoint(Tree tree, TreePath treePath, DefaultMutableTreeNode node, 
 			Report report, Checkpoint checkpoint, Checkpoint checkpointCompare, boolean compare) {
-		checkpointComponent.displayCheckpoint(node, getPathAsString(treePath), 
-				report, checkpoint, checkpointCompare, compare);
+		checkpointComponent.displayCheckpoint(node, report, checkpoint, checkpointCompare, compare);
 		removeAll();
 		add(checkpointComponent, 0);
 	}
