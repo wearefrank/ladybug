@@ -285,6 +285,10 @@ public class XmlStorage implements CrudStorage {
 		return null;
 	}
 
+	protected File getReportsFolder() {
+		return reportsFolder;
+	}
+
 	@Override
 	public String getUserHelp(String column) {
 		return SearchUtil.getUserHelp();

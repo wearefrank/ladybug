@@ -15,6 +15,13 @@
 */
 package nl.nn.testtool.storage.xml;
 
+import nl.nn.testtool.Report;
+import nl.nn.testtool.storage.StorageException;
+import nl.nn.xmldecoder.XMLDecoder;
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -30,14 +37,6 @@ import java.util.List;
 import java.util.Scanner;
 import java.util.Set;
 import java.util.regex.Pattern;
-
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import nl.nn.testtool.Report;
-import nl.nn.testtool.storage.StorageException;
-import nl.nn.xmldecoder.XMLDecoder;
 
 /**
  * Handles metadata for {@link XmlStorage}.
@@ -71,7 +70,7 @@ public class MetadataHandler {
 			logger.info("Metadata for ladybug already exists. Reading from file [" + metadataFile.getName() + "] ...");
 			readFromFile();
 		} else {
-			buildFromDirectory(metadataFile.getParentFile(), true);
+			buildFromDirectory(storage.getReportsFolder(), true);
 		}
 	}
 
@@ -87,12 +86,45 @@ public class MetadataHandler {
 			return;
 
 		logger.info("Building from directory " + dir.getPath());
+		// Discover reports and group them according to their original storage id.
+		HashMap<Integer, HashMap<File, Report>> reports = new HashMap<>();
 		for (File file : dir.listFiles()) {
 			if (searchSubDirs && file.isDirectory())
-				buildFromDirectory(file, searchSubDirs);
+				buildFromDirectory(file, true);
 
 			if (file.isFile() && file.getName().endsWith(XmlStorage.FILE_EXTENSION)) {
-				addFromFile(file);
+				Report report = importFromFile(file, false, false);
+				HashMap<File, Report> reportsForStorageId = reports.computeIfAbsent(report.getStorageId(), k -> new HashMap<>());
+				reportsForStorageId.put(file, report);
+			}
+		}
+		// For each storage id, add reports to metadataMap.
+		// If there are multiple for same storage id, only one will keep it.
+		// other reports will be given a storageId that does not conflict with any discovered reports.
+		for (Integer storageId : reports.keySet()) {
+			HashMap<File, Report> reportsForStorageId = reports.get(storageId);
+			boolean originalStorageIdTaken = false;
+			for (File file : reportsForStorageId.keySet()) {
+				Report report = reportsForStorageId.get(file);
+				int targetStorageId = storageId;
+				if (originalStorageIdTaken) {
+					targetStorageId  = getNextStorageId();
+					while (reports.containsKey(targetStorageId) || metadataMap.containsKey(targetStorageId)) {
+						targetStorageId  = getNextStorageId();
+					}
+					logger.warn("Storage Id conflict on update! Changing storage id from [" + storageId + "] to [" +
+							targetStorageId + "] for report with correlation id [" + report.getCorrelationId() + "]");
+				}
+				report.setStorageId(targetStorageId);
+				try {
+					if (originalStorageIdTaken)
+						storage.store(report, file);
+					Metadata metadata = Metadata.fromReport(report, file.lastModified());
+					add(metadata, false);
+				} catch (StorageException | IOException e) {
+					logger.error("Error while updating metadata from file [" + file.getPath() + "]", e);
+				}
+				originalStorageIdTaken = true;
 			}
 		}
 
@@ -181,8 +213,6 @@ public class MetadataHandler {
 		if (StringUtils.isEmpty(m.path))
 			m.path = "/";
 		metadataMap.put(m.storageId, m);
-		// TODO: Find a more optimal way!
-		// The problem is xml is not suitable for big data, so can't append directly.
 		if (saveNow)
 			save();
 	}
@@ -253,7 +283,7 @@ public class MetadataHandler {
 		for (Integer storageId : metadataMap.keySet()) {
 			writer.append(metadataMap.get(storageId).toXml());
 		}
-		writer.append("<MetadataList>\n");
+		writer.append("</MetadataList>\n");
 		writer.close();
 	}
 
@@ -292,7 +322,7 @@ public class MetadataHandler {
 			pathMap.remove(m.path + m.name + XmlStorage.FILE_EXTENSION);
 		}
 
-		Set<Integer> updatedIds = updateMetadata(metadataFile.getParentFile(), pathMap, null);
+		Set<Integer> updatedIds = updateMetadata(storage.getReportsFolder(), pathMap, null);
 		// Delete the remaining metadata.
 		for (String p : pathMap.keySet()) {
 			Metadata m = pathMap.get(p);
@@ -324,10 +354,23 @@ public class MetadataHandler {
 			} else if (!file.getName().endsWith(XmlStorage.FILE_EXTENSION)) {
 				continue;
 			}
-			String path = "/" + metadataFile.getParentFile().toPath().relativize(file.toPath()).toString().replaceAll("\\\\", "/"); // Relativize
+			String path = "/" + storage.getReportsFolder().toPath().relativize(file.toPath()).toString().replaceAll("\\\\", "/"); // Relativize
 			Metadata m = map.remove(path);
 			if (m == null || m.lastModified < file.lastModified()) {
-				Report report = addFromFile(file);
+				Report report = importFromFile(file, true, true);
+				if (report == null) {
+					map.put(path, m);
+					continue;
+				}
+				try {
+					if (m == null || !(m.path.equalsIgnoreCase(report.getPath()) && m.storageId == report.getStorageId()))
+						storage.store(report, file);
+
+					Metadata metadata = Metadata.fromReport(report, file.lastModified());
+					add(metadata, false);
+				} catch (StorageException | IOException e) {
+					logger.error("Error while updating metadata from file [" + file.getPath() + "]", e);
+				}
 				if (report != null)
 					updatedIds.add(report.getStorageId());
 			}
@@ -336,11 +379,14 @@ public class MetadataHandler {
 	}
 
 	/**
-	 * Reads the report from the given file. Generates metadata and saves it.
+	 * Reads the report from the given file. Generates metadata and returns it.
 	 *
 	 * @param file File to be read from.
+	 * @param update True, if the goal of import is to update. In this case file will be compared to the cached metadata.
+	 * @param setMetadata True if report's storageId should be changed in case of conflicts.
+	 * @return Report generated from the given file.
 	 */
-	private Report addFromFile(File file) {
+	private Report importFromFile(File file, boolean update, boolean setMetadata) {
 		if (file == null || !file.isFile() || !file.getName().endsWith(XmlStorage.FILE_EXTENSION))
 			return null;
 
@@ -354,7 +400,7 @@ public class MetadataHandler {
 			Report report = (Report) decoder.readObject();
 			report.setStorage(this.storage);
 
-			String path = metadataFile.getParentFile().toPath().relativize(file.getParentFile().toPath()).toString() + "/";
+			String path = storage.getReportsFolder().toPath().relativize(file.getParentFile().toPath()).toString() + "/";
 			if (StringUtils.isNotEmpty(path)) {
 				path = path.replaceAll("\\\\", "/");
 				if (!path.endsWith("/"))
@@ -368,39 +414,24 @@ public class MetadataHandler {
 			report.setName(filename.substring(0, filename.length() - XmlStorage.FILE_EXTENSION.length()));
 
 			int storageId = report.getStorageId() == 0 ? getNextStorageId() : report.getStorageId();
-			if (metadataMap.containsKey(storageId)) {
-				Report report1 = null;
-				boolean nullPointerThrown = false;
-				try {
-					// Check if there's still a report in old storage id.
-					report1 = storage.getReport(storageId);
-				} catch (NullPointerException e) {
-					// This happens during init() when building from directory.
-					// In this case it's safer to assign a new storage id.
-					nullPointerThrown = true;
-				} catch (StorageException e) {
-					logger.error("File could not be opened with storage id [" + storageId + "].", e);
-				}
-
-				if (nullPointerThrown || report1 != null) {
-					if (report1.getStorageId() == storageId) {
-						while (metadataMap.containsKey(storageId))
-							storageId = getNextStorageId();
-					} else {
-						// The metadata for this file is not up to date.
-						addFromFile(new File(storage.resolvePath(storageId)));
-					}
+			if (metadataMap.containsKey(storageId) && update) {
+				String oldpath = storage.resolvePath(storageId);
+				if (StringUtils.isNotEmpty(oldpath) && !oldpath.equalsIgnoreCase(file.getPath())) {
+					Report oldReport = importFromFile(new File(oldpath), false, false);
+					setMetadata = oldReport != null && report.getStorageId().equals(oldReport.getStorageId());
+				} else {
+					setMetadata = false;
 				}
 			}
-			if (storageId >= lastStorageId)
-				lastStorageId = storageId + 1;
+			if (setMetadata) {
+				while (metadataMap.containsKey(storageId))
+					storageId = getNextStorageId();
 
-			report.setStorageId(storageId);
+				if (storageId >= lastStorageId)
+					lastStorageId = storageId + 1;
 
-			storage.store(report, file);
-
-			Metadata metadata = Metadata.fromReport(report, file.lastModified());
-			add(metadata, false);
+				report.setStorageId(storageId);
+			}
 			return report;
 		} catch (Exception e) {
 			logger.error("Exception during report deserialization.", e);
