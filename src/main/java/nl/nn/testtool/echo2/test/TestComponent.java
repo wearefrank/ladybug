@@ -15,32 +15,8 @@
 */
 package nl.nn.testtool.echo2.test;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map.Entry;
-import java.util.Scanner;
-import java.util.Set;
-import java.util.TooManyListenersException;
-
-import org.apache.commons.lang.StringUtils;
-
 import echopointng.ProgressBar;
-import nextapp.echo2.app.Button;
-import nextapp.echo2.app.CheckBox;
-import nextapp.echo2.app.Column;
-import nextapp.echo2.app.Component;
-import nextapp.echo2.app.Extent;
-import nextapp.echo2.app.FillImageBorder;
-import nextapp.echo2.app.Insets;
-import nextapp.echo2.app.Label;
-import nextapp.echo2.app.Row;
-import nextapp.echo2.app.TextArea;
-import nextapp.echo2.app.TextField;
-import nextapp.echo2.app.WindowPane;
+import nextapp.echo2.app.*;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import nextapp.echo2.app.filetransfer.UploadSelect;
@@ -64,6 +40,18 @@ import nl.nn.testtool.storage.Storage;
 import nl.nn.testtool.storage.StorageException;
 import nl.nn.testtool.transform.ReportXmlTransformer;
 import nl.nn.testtool.util.CsvUtil;
+import org.apache.commons.lang.StringUtils;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map.Entry;
+import java.util.Scanner;
+import java.util.Set;
+import java.util.TooManyListenersException;
 
 /**
  * @author Jaco de Groot
@@ -832,57 +820,50 @@ public class TestComponent extends BaseComponent implements BeanParent, ActionLi
 					echo2Application.openReportCompare(report, runResultReport, reportRunner);
 				}
 			}
-		} else if (e.getActionCommand().equals("Delete")
-				|| e.getActionCommand().equals("Replace")) {
+		} else if (e.getActionCommand().equals("Delete")) {
 			Button button = (Button)e.getSource();
 			Row row = (Row)button.getParent();
  			Report report = getReport(row);
 			if (report != null) {
-				String errorMessage = null;
-				Integer storageId = null;
-				Boolean isSelected = null;
-				Report runResultReport = null;
-				if (e.getActionCommand().equals("Replace")) {
-					storageId = new Integer(row.getId());
-					isSelected = ((CheckBox)row.getComponent(INDEX_CHECKBOX)).isSelected();
-					runResultReport = getRunResultReport(reportRunner.getResults().get(storageId).correlationId);
-					runResultReport.setTestTool(report.getTestTool());
-					runResultReport.setName(report.getName());
-					runResultReport.setDescription(report.getDescription());
-					if(report.getCheckpoints().get(0).containsVariables()) {
-						runResultReport.getCheckpoints().get(0).setMessage(report.getCheckpoints().get(0).getMessage());
-					}
-					runResultReport.setPath(report.getPath());
-					runResultReport.setTransformation(report.getTransformation());
-					runResultReport.setReportXmlTransformer(report.getReportXmlTransformer());
-					runResultReport.setVariableCsvWithoutException(report.getVariableCsv());
-					errorMessage = Echo2Application.store(testStorage, runResultReport);
-				}
+				String errorMessage = Echo2Application.delete(testStorage, report);
 				if (errorMessage == null) {
-					if (e.getActionCommand().equals("Replace")) {
-						reportRunner.getResults().remove(storageId);
-					}
-					errorMessage = Echo2Application.delete(testStorage, report);
-					if (errorMessage == null) {
-						if (treePane.getReportsWithDirtyPaths().remove(report.getStorageId())
-								&& e.getActionCommand().equals("Replace")) {
-							treePane.getReportsWithDirtyPaths().add(runResultReport.getStorageId());
-						}
-						if (e.getActionCommand().equals("Delete")) {
-							remove(row);
-						}
-						if (e.getActionCommand().equals("Replace")) {
-							refresh();
-							for (Row reportRow : getReportRows()) {
-								CheckBox checkbox = (CheckBox)reportRow.getComponent(INDEX_CHECKBOX);
-								if (new Integer(reportRow.getId()).equals(runResultReport.getStorageId())) {
-									checkbox.setSelected(isSelected);
-								}
-							}
-						}
-					}
+					remove(row);
+				} else {
+					displayAndLogError(errorMessage);
 				}
-				if(errorMessage != null) {
+			}
+		} else if (e.getActionCommand().equals("Replace")) {
+			Button button = (Button)e.getSource();
+			Row row = (Row)button.getParent();
+			Report report = getReport(row);
+			if (report != null) {
+				Integer storageId = new Integer(row.getId());
+				boolean isSelected = ((CheckBox)row.getComponent(INDEX_CHECKBOX)).isSelected();
+				Report runResultReport = getRunResultReport(reportRunner.getResults().get(storageId).correlationId);
+				runResultReport.setTestTool(report.getTestTool());
+				runResultReport.setName(report.getName());
+				runResultReport.setDescription(report.getDescription());
+				if(report.getCheckpoints().get(0).containsVariables()) {
+					runResultReport.getCheckpoints().get(0).setMessage(report.getCheckpoints().get(0).getMessage());
+				}
+				runResultReport.setPath(report.getPath());
+				runResultReport.setTransformation(report.getTransformation());
+				runResultReport.setReportXmlTransformer(report.getReportXmlTransformer());
+				runResultReport.setVariableCsvWithoutException(report.getVariableCsv());
+				runResultReport.setStorageId(report.getStorageId());
+				String errorMessage = Echo2Application.update(testStorage, runResultReport);
+				if (errorMessage == null) {
+					if (treePane.getReportsWithDirtyPaths().remove(report.getStorageId())) {
+						treePane.getReportsWithDirtyPaths().add(runResultReport.getStorageId());
+					}
+					refresh();
+					for (Row reportRow : getReportRows()) {
+						CheckBox checkbox = (CheckBox)reportRow.getComponent(INDEX_CHECKBOX);
+						if (new Integer(reportRow.getId()).equals(runResultReport.getStorageId())) {
+							checkbox.setSelected(isSelected);
+						}
+					}
+				} else {
 					displayAndLogError(errorMessage);
 				}
 			}
