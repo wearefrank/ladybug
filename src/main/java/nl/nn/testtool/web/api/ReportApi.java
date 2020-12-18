@@ -7,17 +7,18 @@ import nl.nn.testtool.storage.Storage;
 import nl.nn.testtool.storage.StorageException;
 import nl.nn.testtool.util.Export;
 import nl.nn.testtool.util.ExportResult;
-import nl.nn.testtool.util.LogUtil;
 import org.apache.commons.lang.StringUtils;
 import org.apache.cxf.jaxrs.ext.multipart.Attachment;
 import org.apache.cxf.jaxrs.ext.multipart.Multipart;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.InputStream;
+import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -26,7 +27,7 @@ import java.util.Scanner;
 
 @Path("/")
 public class ReportApi extends ApiBase {
-	private static final Logger logger = LogUtil.getLogger(ReportApi.class);
+	private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
 	@GET
 	@Path("/report/{storage}/{storageId}")
