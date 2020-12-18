@@ -1,8 +1,8 @@
 package nl.nn.testtool.web;
 
-import nl.nn.testtool.util.LogUtil;
 import org.apache.commons.io.IOUtils;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -11,6 +11,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.core.MediaType;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.invoke.MethodHandles;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
@@ -20,7 +21,7 @@ public class FrontendServlet extends HttpServlet {
 
 	private static final long serialVersionUID = 123L;
 	private Map<String, MediaType> mediaTypeMap;
-	private final Logger log = LogUtil.getLogger(this);
+	private final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
 	@Override
 	public void init() throws ServletException {

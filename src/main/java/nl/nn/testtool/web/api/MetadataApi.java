@@ -4,8 +4,8 @@ package nl.nn.testtool.web.api;
 import nl.nn.testtool.MetadataExtractor;
 import nl.nn.testtool.storage.Storage;
 import nl.nn.testtool.storage.StorageException;
-import nl.nn.testtool.util.LogUtil;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.DefaultValue;
@@ -19,6 +19,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
+import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -28,7 +29,7 @@ import java.util.Set;
 
 @Path("/")
 public class MetadataApi extends ApiBase {
-	private static final Logger logger = LogUtil.getLogger(MetadataApi.class);
+	private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 	public static Set<String> metadataFields;
 
 	@GET

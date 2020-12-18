@@ -1,15 +1,16 @@
 package nl.nn.testtool.web;
 
-import nl.nn.testtool.util.LogUtil;
 import org.apache.cxf.transport.servlet.CXFServlet;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.event.ContextRefreshedEvent;
 
+import java.lang.invoke.MethodHandles;
 import java.util.HashMap;
 import java.util.Map;
 
 public class ApiServlet extends CXFServlet {
-	Logger log = LogUtil.getLogger(this);
+	Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
 	public static Map<String, String> getInitParameters() {
 		Map<String, String> parameters = new HashMap<>();

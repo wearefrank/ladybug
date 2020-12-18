@@ -5,8 +5,8 @@ import nl.nn.testtool.run.ReportRunner;
 import nl.nn.testtool.run.RunResult;
 import nl.nn.testtool.storage.Storage;
 import nl.nn.testtool.storage.StorageException;
-import nl.nn.testtool.util.LogUtil;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.Consumes;
@@ -17,13 +17,14 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class RunApi extends ApiBase {
-	private static final Logger logger = LogUtil.getLogger(RunApi.class);
+	private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
 	@POST
 	@Path("/runner/run/{debugStorage}")
