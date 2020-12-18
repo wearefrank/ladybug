@@ -853,6 +853,7 @@ public class TestComponent extends BaseComponent implements BeanParent, ActionLi
 				runResultReport.setStorageId(report.getStorageId());
 				String errorMessage = Echo2Application.update(testStorage, runResultReport);
 				if (errorMessage == null) {
+					reportRunner.getResults().remove(storageId);
 					if (treePane.getReportsWithDirtyPaths().remove(report.getStorageId())) {
 						treePane.getReportsWithDirtyPaths().add(runResultReport.getStorageId());
 					}
