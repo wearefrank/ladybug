@@ -6,6 +6,7 @@ Ladybug Test Tool release notes
 Upcoming
 --------
 
+- Fix change in report name after replacement
 - Fix metadata file format for XmlStorage
 - Improve storage id handling of XmlStorage while reading from a filesystem.
 - Fix report discovery for XmlStorage
