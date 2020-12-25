@@ -7,6 +7,9 @@ function treeController() {
     ctrl.$onInit = function () {
         console.log("ONINITTT");
         ctrl.onAddRelay.add = ctrl.addTree;
+        ctrl.onSelectRelay.expand = ctrl.expand;
+        ctrl.onSelectRelay.collapse = ctrl.collapse;
+        ctrl.onSelectRelay.close = ctrl.close;
     }
 
     ctrl.remove_circulars = function (node) {
@@ -57,12 +60,12 @@ function treeController() {
     ctrl.updateTree = function () {
         $('#tree').treeview({
             data: ctrl.treeData,
-            onNodeSelected: ctrl.onSelectRelay,
+            onNodeSelected: ctrl.onSelect,
             onNodeUnselected: function (event, node) {
                 console.log("UNSELECTED");
                 console.log(event);
                 console.log(node);
-                ctrl.onSelectRelay(null, null);
+                ctrl.onSelect(null, null);
             }
         });
     }
@@ -126,7 +129,7 @@ function treeController() {
     };
 
     ctrl.close = function () {
-        let storageId = ctrl.getRootNode()["ladybug"]["storageId"];
+        let storageId = ctrl.rootNode["ladybug"]["storageId"];
         for (let i = 0; i < ctrl.treeData.length; i++) {
             if (storageId === ctrl.treeData[i]["ladybug"]["storageId"]) {
                 ctrl.treeData.splice(i, 1);
@@ -134,12 +137,34 @@ function treeController() {
             }
         }
         ctrl.updateTree();
-        ctrl.onSelectRelay(null, null);
+        ctrl.onSelect(null, null);
     }
 
-    ctrl.onSelectRelay = function(event, node) {
-        let rootNode = ctrl.getRootNode();
-        ctrl.onSelect({rootNode: rootNode, node: node, event:event});
+    ctrl.onSelect = function(event, node) {
+        ctrl.rootNode = ctrl.getRootNode();
+        ctrl.selectedNode = node;
+        ctrl.onSelectRelay.select(ctrl.rootNode, event, node);
+    }
+
+    ctrl.collapse = function () {
+        console.log("COLLAPSING " + ctrl.selectedNode.nodeId);
+        $('#tree').treeview('collapseNode', ctrl.selectedNode.nodeId);
+    }
+
+    ctrl.expand = function () {
+        let tree = $('#tree').treeview(true);
+        let node = tree.getNode(ctrl.selectedNode.nodeId);
+        let path = [];
+        path.push(node.nodeId);
+        while (node.parentId !== undefined) {
+            node = tree.getNode(node.parentId);
+            path.push(node.nodeId);
+        }
+        console.log("Expanding");
+        console.log(path);
+        for (let i = path.length - 1; i >= 0; i--) {
+            tree.expandNode(path[i]);
+        }
     }
 }
 
@@ -147,7 +172,7 @@ angular.module('myApp').component('reportTree', {
     templateUrl: 'components/tree/tree.html',
     controller: treeController,
     bindings: {
-        onSelect: '&',
+        onSelectRelay: '=',
         onAddRelay: '='
     }
 });
