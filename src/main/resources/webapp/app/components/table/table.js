@@ -38,28 +38,14 @@ function metadataTableController($http) {
     };
 
 
-    ctrl.downloadReports = function (source, exportReport, exportReportXml) {
+    ctrl.downloadReports = function (exportReport, exportReportXml) {
         let queryString = "?";
-        if (source === "table") {
-            for (let i = 0; i < ctrl.metadatas.length; i++) {
-                queryString += "id=" + ctrl.metadatas[i]["storageId"] + "&";
-            }
-        } else if (source === "tree") {
-            for (let i = 0; i < ctrl.treeData.length; i++) {
-                queryString += "id=" + ctrl.treeData[i]["ladybug"]["storageId"] + "&";
-            }
-        } else {
-            queryString += "id=" + ctrl.getRootNode()["ladybug"]["storageId"] + "&";
+        for (let i = 0; i < ctrl.metadatas.length; i++) {
+            queryString += "id=" + ctrl.metadatas[i]["storageId"] + "&";
         }
 
         window.open(ctrl.apiUrl + "/report/download/" + ctrl.storage +
             "/" + exportReport + "/" + exportReportXml + queryString.slice(0, -1));
-        // $http.get(ctrl.apiUrl + "/report/download/" + ctrl.storage + "/true/true?id=" + storageId, {data: [storageId]})
-        //     .then(function (response) {
-        //         console.log(response);
-        //     }, function (response) {
-        //         console.error(response);
-        //     });
     }
 
     /*
