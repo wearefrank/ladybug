@@ -181,12 +181,6 @@ angular.module('myApp.view1', ['ngRoute'])
             $scope.updateTree();
         };
 
-        $scope.openAll = function () {
-            $scope.metadatas.forEach(function (element) {
-                $scope.selectReport(element);
-            });
-        };
-
         $scope.closeAll = function () {
             $scope.treeData = [];
             $('#tree').treeview({data: []});

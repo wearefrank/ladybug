@@ -108,8 +108,14 @@ function metadataTableController($http) {
                 console.error(response);
             });
     };
+
+    ctrl.openAll = function () {
+        ctrl.metadatas.forEach(function (element) {
+            ctrl.selectReport(element);
+        });
+    };
+
     ctrl.refresh();
-    // TODO: selectreport and openall
 }
 
 angular.module('myApp').component('metadataTable', {
