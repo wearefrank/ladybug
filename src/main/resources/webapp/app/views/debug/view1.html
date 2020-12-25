@@ -1,29 +1,11 @@
 <!--Debug panel-->
 <div>
-    <metadata-table on-select="addTree(data)"></metadata-table>
+    <metadata-table on-select-relay="table2tree"></metadata-table>
     <div class="row">
         <!--    Treeview panel-->
         <!--        TODO: Add expand collapse download and close all buttons-->
         <div class="col resizable-horizontal">
-            <div class="row">
-                <button type="button" class="btn btn-outline-primary col-2" ng-click="expandAll()">Expand All</button>
-                <button type="button" class="btn btn-outline-primary col-2" ng-click="collapseAll()">Collapse All
-                </button>
-                <button type="button" class="btn btn-outline-primary col-2" ng-click="closeAll()">Close All</button>
-                <div class="input-group col-md-2">
-                    <div class="input-group-btn">
-                        <button type="button" class="btn btn-outline-primary dropdown-toggle" data-toggle="dropdown"
-                                aria-haspopup="true" aria-expanded="false">Download Tree <span class="caret"></span>
-                        </button>
-                        <ul class="dropdown-menu">
-                            <li><a href="#" ng-click="downloadReports('tree', true, true)">Reports & Messages</a></li>
-                            <li><a href="#" ng-click="downloadReports('tree', false, true)">Reports</a></li>
-                            <li><a href="#" ng-click="downloadReports('tree', true, false)">Messages</a></li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-            <div id="tree"></div>
+            <report-tree on-add-relay="table2tree" on-select="display_report"></report-tree>
         </div>
         <!-- Content panel-->
         <div class="col">
