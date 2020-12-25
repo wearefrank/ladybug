@@ -89,7 +89,7 @@ function metadataTableController($http) {
             .then(function (response) {
                 console.log(response);
                 console.log(response.data);
-                ctrl.onSelect({data: response.data});
+                ctrl.onSelectRelay.add(response.data);
             }, function (response) {
                 console.error(response);
             });
@@ -108,6 +108,6 @@ angular.module('myApp').component('metadataTable', {
     templateUrl: 'components/table/table.html',
     controller: metadataTableController,
     bindings: {
-        onSelect: '&'
+        onSelectRelay: '='
     }
 });
