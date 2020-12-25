@@ -5,68 +5,11 @@
         <!--    Treeview panel-->
         <!--        TODO: Add expand collapse download and close all buttons-->
         <div class="col resizable-horizontal">
-            <report-tree on-add-relay="table2tree" on-select="display_report"></report-tree>
+            <report-tree on-add-relay="table2tree" on-select-relay="tree2display"></report-tree>
         </div>
         <!-- Content panel-->
         <div class="col">
-            <div class="row" id="details-row">
-                <button type="button" class="btn btn-outline-primary col" ng-click="rerun()">Rerun</button>
-                <button type="button" class="btn btn-outline-primary col" ng-click="toggleEdit()" id="details-edit">
-                    Edit
-                </button>
-
-                <div class="input-group col">
-                    <div class="input-group-btn">
-                        <button type="button" class="btn btn-outline-primary dropdown-toggle" data-toggle="dropdown"
-                                aria-haspopup="true" aria-expanded="false">Download <span class="caret"></span>
-                        </button>
-                        <ul class="dropdown-menu">
-                            <li><a href="#" ng-click="downloadReports(null, true, true)">Report & Message</a></li>
-                            <li><a href="#" ng-click="downloadReports(null, false, true)">Report</a></li>
-                            <li><a href="#" ng-click="downloadReports(null, true, false)">Message</a></li>
-                        </ul>
-                    </div>
-                </div>
-                <div class="input-group col">
-                    <div class="input-group-btn">
-                        <button type="button" class="btn btn-outline-primary dropdown-toggle" data-toggle="dropdown"
-                                aria-haspopup="true" aria-expanded="false">Copy <span class="caret"></span>
-                        </button>
-                        <ul class="dropdown-menu">
-                            <li ng-repeat="(key, value) in availableStorages">
-                                <a href="#" ng-click="copyReport(key)">
-                                    {{value}}
-                                </a>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-                <button type="button" class="btn btn-outline-primary col" ng-click="expand()">Expand</button>
-                <button type="button" class="btn btn-outline-primary col" ng-click="collapse()">Collapse</button>
-                <button type="button" class="btn btn-outline-primary col" ng-click="close()">Close</button>
-            </div>
-            <div class="form-row">
-                <span class="col-md-2">
-                    Stub Strategy:
-                </span>
-                <div class="form-group col-md-4">
-                    <select class="form-control" ng-options="strategy for strategy in stubStrategies" ng-model="stubStrategySelect">
-                    </select>
-                </div>
-            </div>
-            <pre id="code-wrapper" class="prettify">
-                <code id="code" class="lang-xml">
-                    {{reportDetails.text}}
-                </code>
-            </pre>
-            <table>
-                <tbody>
-                <tr ng-repeat="(key, value) in reportDetails.values">
-                    <td>{{key}}</td>
-                    <td>{{value}}</td>
-                </tr>
-                </tbody>
-            </table>
+            <report-display on-select-relay="tree2display"></report-display>
         </div>
     </div>
 </div>
