@@ -11,7 +11,7 @@ angular.module('myApp.view2', ['ngRoute'])
 
     .controller('View2Ctrl', ['$scope', '$http', function ($scope, $http) {
         $scope.apiUrl = "http://localhost:8080/ibis_adapterframework_test_war_exploded/ladybug";
-        $scope.storage = 'runStorage';
+        $scope.storage = 'testStorage';
         $scope.moveTo = "/";
         $scope.showOptions = {ids: false, checkpoints: false};
         $scope.reports = [];

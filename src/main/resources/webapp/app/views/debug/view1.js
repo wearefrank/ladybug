@@ -12,7 +12,7 @@ angular.module('myApp.view1', ['ngRoute'])
     .controller('View1Ctrl', ['$scope', '$http', function ($scope, $http) {
         $scope.apiUrl = "http://localhost:8080/ibis_adapterframework_test_war_exploded/ladybug";
         $scope.columns = ['storageId', 'endTime', 'duration', 'name', 'correlationId', 'status', 'nrChpts', 'estMemUsage', 'storageSize'];
-        $scope.storage = "logStorage";
+        $scope.storage = "debugStorage";
         $scope.treeData = [];
         $scope.reports = [];
         $scope.reportDetails = {text: "", values: {}};
@@ -123,67 +123,62 @@ angular.module('myApp.view1', ['ngRoute'])
             }
         };
 
-        $scope.selectReport = function (metadata) {
-            console.log("CLICK");
-            console.log(metadata);
-            $http.get($scope.apiUrl + "/report/" + $scope.storage + "/" + metadata["storageId"])
-                .then(function (response) {
-                    console.log(response);
-                    console.log(response.data);
-                    $scope.reports[response.data["storageId"]] = response.data;
-                    let report = {
-                        text: response.data["name"],
-                        ladybug: response.data,
-                        icon: "fa fa-file-code",
-                        nodes: []
-                    };
-                    let checkpoints = response.data["checkpoints"];
-                    let nodes = report.nodes;
-                    let previous_node = null;
-                    for (let i = 0; i < checkpoints.length; i++) {
-                        let chkpt = checkpoints[i];
-                        let node = {text: chkpt["name"], ladybug: chkpt, level: chkpt["level"]};
+        /*
+         * Adds the given report data to the tree.
+         */
+        $scope.addTree = function (data){
+            console.log("CALLED ADDTREE!!!!");
+            $scope.reports[data["storageId"]] = data;
+            let report = {
+                text: data["name"],
+                ladybug: data,
+                icon: "fa fa-file-code",
+                nodes: []
+            };
+            let checkpoints = data["checkpoints"];
+            let nodes = report.nodes;
+            let previous_node = null;
+            for (let i = 0; i < checkpoints.length; i++) {
+                let chkpt = checkpoints[i];
+                let node = {text: chkpt["name"], ladybug: chkpt, level: chkpt["level"]};
 
-                        if (previous_node === null) {
-                            nodes.push(node);
-                            previous_node = node;
-                            console.log(" -- Added: " + node.text);
-                            continue;
-                        }
-                        let diff = (node.level - 1) - previous_node.level;
+                if (previous_node === null) {
+                    nodes.push(node);
+                    previous_node = node;
+                    console.log(" -- Added: " + node.text);
+                    continue;
+                }
+                let diff = (node.level - 1) - previous_node.level;
 
-                        while (diff !== 0) {
-                            console.log("aim: " + node.level);
-                            console.log("prev: " + previous_node.level);
-                            console.log("Prev Text: " + previous_node.text);
-                            console.log("diff: " + diff);
-                            if (diff < 0) {
-                                previous_node = previous_node.parent;
-                            } else {
-                                if (!("nodes" in previous_node) || previous_node["nodes"] === null) {
-                                    break;
-                                }
-                                previous_node = previous_node.nodes[previous_node.nodes - 1];
-                            }
-                            diff = (node.level - 1) - previous_node.level;
-                        }
+                while (diff !== 0) {
+                    console.log("aim: " + node.level);
+                    console.log("prev: " + previous_node.level);
+                    console.log("Prev Text: " + previous_node.text);
+                    console.log("diff: " + diff);
+                    if (diff < 0) {
+                        previous_node = previous_node.parent;
+                    } else {
                         if (!("nodes" in previous_node) || previous_node["nodes"] === null) {
-                            previous_node["nodes"] = [];
+                            break;
                         }
-                        previous_node["nodes"].push(node);
-                        node.parent = previous_node;
-                        previous_node = node;
-                        console.log(" -- Added: " + node.ladybug["index"] + " " + node.text);
-                        console.log(report);
+                        previous_node = previous_node.nodes[previous_node.nodes - 1];
                     }
-                    $scope.remove_circulars(report);
-                    $scope.treeData.push(report);
-                    console.log($scope.treeData);
-                    // Update tree
-                    $scope.updateTree();
-                }, function (response) {
-                    console.error(response);
-                });
+                    diff = (node.level - 1) - previous_node.level;
+                }
+                if (!("nodes" in previous_node) || previous_node["nodes"] === null) {
+                    previous_node["nodes"] = [];
+                }
+                previous_node["nodes"].push(node);
+                node.parent = previous_node;
+                previous_node = node;
+                console.log(" -- Added: " + node.ladybug["index"] + " " + node.text);
+                console.log(report);
+            }
+            $scope.remove_circulars(report);
+            $scope.treeData.push(report);
+            console.log($scope.treeData);
+            // Update tree
+            $scope.updateTree();
         };
 
         $scope.openAll = function () {

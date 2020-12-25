@@ -2,7 +2,7 @@ function metadataTableController($http) {
     var ctrl = this;
     ctrl.apiUrl = "http://localhost:8080/ibis_adapterframework_test_war_exploded/ladybug";
     ctrl.columns = ['storageId', 'endTime', 'duration', 'name', 'correlationId', 'status', 'nrChpts', 'estMemUsage', 'storageSize'];
-    ctrl.storage = "logStorage";
+    ctrl.storage = "debugStorage";
     ctrl.limit = 5;
     ctrl.filters = {"limit": ctrl.limit};
     ctrl.metadatas = [];
@@ -96,6 +96,18 @@ function metadataTableController($http) {
         ctrl.updateTable();
     }
 
+    ctrl.selectReport = function (metadata) {
+        console.log("CLICK");
+        console.log(metadata);
+        $http.get(ctrl.apiUrl + "/report/" + ctrl.storage + "/" + metadata["storageId"])
+            .then(function (response) {
+                console.log(response);
+                console.log(response.data);
+                ctrl.onSelect({data: response.data});
+            }, function (response) {
+                console.error(response);
+            });
+    };
     ctrl.refresh();
     // TODO: selectreport and openall
 }
@@ -104,8 +116,6 @@ angular.module('myApp').component('metadataTable', {
     templateUrl: 'components/table/table.html',
     controller: metadataTableController,
     bindings: {
-        hero: '<',
-        onDelete: '&',
-        onUpdate: '&'
+        onSelect: '&'
     }
 });
