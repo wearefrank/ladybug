@@ -1,0 +1,19 @@
+<div class="row">
+    <button type="button" class="btn btn-outline-primary col-2" ng-click="expandAll()">Expand All</button>
+    <button type="button" class="btn btn-outline-primary col-2" ng-click="collapseAll()">Collapse All
+    </button>
+    <button type="button" class="btn btn-outline-primary col-2" ng-click="closeAll()">Close All</button>
+    <div class="input-group col-md-2">
+        <div class="input-group-btn">
+            <button type="button" class="btn btn-outline-primary dropdown-toggle" data-toggle="dropdown"
+                    aria-haspopup="true" aria-expanded="false">Download Tree <span class="caret"></span>
+            </button>
+            <ul class="dropdown-menu">
+                <li><a href="#" ng-click="downloadReports(true, true)">Reports & Messages</a></li>
+                <li><a href="#" ng-click="downloadReports(false, true)">Reports</a></li>
+                <li><a href="#" ng-click="downloadReports(true, false)">Messages</a></li>
+            </ul>
+        </div>
+    </div>
+</div>
+<div id="tree"></div>
