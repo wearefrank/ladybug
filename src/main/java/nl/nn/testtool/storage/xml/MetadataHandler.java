@@ -17,14 +17,11 @@ package nl.nn.testtool.storage.xml;
 
 import nl.nn.testtool.Report;
 import nl.nn.testtool.storage.StorageException;
-import nl.nn.xmldecoder.XMLDecoder;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -93,9 +90,13 @@ public class MetadataHandler {
 				buildFromDirectory(file, true);
 
 			if (file.isFile() && file.getName().endsWith(XmlStorage.FILE_EXTENSION)) {
-				Report report = importFromFile(file, false, false);
-				HashMap<File, Report> reportsForStorageId = reports.computeIfAbsent(report.getStorageId(), k -> new HashMap<>());
-				reportsForStorageId.put(file, report);
+				try {
+					Report report = storage.readReportFromFile(file);
+					HashMap<File, Report> reportsForStorageId = reports.computeIfAbsent(report.getStorageId(), k -> new HashMap<>());
+					reportsForStorageId.put(file, report);
+				} catch (StorageException exception) {
+					logger.warn("Exception while reading report [" + file.getPath() + "] during build from directory.");
+				}
 			}
 		}
 		// For each storage id, add reports to metadataMap.
@@ -357,82 +358,24 @@ public class MetadataHandler {
 			String path = "/" + storage.getReportsFolder().toPath().relativize(file.toPath()).toString().replaceAll("\\\\", "/"); // Relativize
 			Metadata m = map.remove(path);
 			if (m == null || m.lastModified < file.lastModified()) {
-				Report report = importFromFile(file, true, true);
-				if (report == null) {
-					map.put(path, m);
-					continue;
-				}
 				try {
+					Report report = storage.readReportFromFile(file);
+					if (report == null) {
+						map.put(path, m);
+						continue;
+					}
+					// Todo: storage id update.
 					if (m == null || !(m.path.equalsIgnoreCase(report.getPath()) && m.storageId == report.getStorageId()))
 						storage.store(report, file);
 
 					Metadata metadata = Metadata.fromReport(report, file, storage.getReportsFolder());
 					add(metadata, false);
+					updatedIds.add(report.getStorageId());
 				} catch (StorageException | IOException e) {
 					logger.error("Error while updating metadata from file [" + file.getPath() + "]", e);
 				}
-				if (report != null)
-					updatedIds.add(report.getStorageId());
 			}
 		}
 		return updatedIds;
-	}
-
-	/**
-	 * Reads the report from the given file. Generates metadata and returns it.
-	 *
-	 * @param file File to be read from.
-	 * @param update True, if the goal of import is to update. In this case file will be compared to the cached metadata.
-	 * @param setMetadata True if report's storageId should be changed in case of conflicts.
-	 * @return Report generated from the given file.
-	 */
-	private Report importFromFile(File file, boolean update, boolean setMetadata) {
-		if (file == null || !file.isFile() || !file.getName().endsWith(XmlStorage.FILE_EXTENSION))
-			return null;
-
-		logger.debug("Adding from a new file: " + file.getPath());
-		FileInputStream inputStream = null;
-		XMLDecoder decoder = null;
-		try {
-			inputStream = new FileInputStream(file);
-			decoder = new XMLDecoder(new BufferedInputStream(inputStream));
-
-			Report report = (Report) decoder.readObject();
-			report.setStorage(this.storage);
-
-			int storageId = report.getStorageId() == 0 ? getNextStorageId() : report.getStorageId();
-			if (metadataMap.containsKey(storageId) && update) {
-				String oldpath = storage.resolvePath(storageId);
-				if (StringUtils.isNotEmpty(oldpath) && !oldpath.equalsIgnoreCase(file.getPath())) {
-					Report oldReport = importFromFile(new File(oldpath), false, false);
-					setMetadata = oldReport != null && report.getStorageId().equals(oldReport.getStorageId());
-				} else {
-					setMetadata = false;
-				}
-			}
-			if (setMetadata) {
-				while (metadataMap.containsKey(storageId))
-					storageId = getNextStorageId();
-
-				if (storageId >= lastStorageId)
-					lastStorageId = storageId + 1;
-
-				report.setStorageId(storageId);
-			}
-			return report;
-		} catch (Exception e) {
-			logger.error("Exception during report deserialization.", e);
-			if (decoder != null)
-				decoder.close();
-			if (inputStream != null) {
-				try {
-					inputStream.close();
-				} catch (Exception ignored) {
-					logger.error("Could not close the xml file.", ignored);
-				}
-			}
-		}
-		return null;
-
 	}
 }
