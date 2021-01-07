@@ -271,7 +271,7 @@ public class XmlStorage implements CrudStorage {
 	}
 
 	/**
-	 * Reads the report from the given file. Generates metadata and returns it.
+	 * Reads the report from the given file.
 	 *
 	 * @param file File to be read from.
 	 * @return Report generated from the given file.
