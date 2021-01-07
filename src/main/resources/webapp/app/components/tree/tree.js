@@ -3,6 +3,7 @@ function treeController() {
     ctrl.apiUrl = "http://localhost:8080/ibis_adapterframework_test_war_exploded/ladybug";
     ctrl.treeData = [];
     ctrl.reports = [];
+    ctrl.treeId = Math.random().toString(36).substring(7);
 
     ctrl.$onInit = function () {
         console.log("ONINITTT");
@@ -33,7 +34,7 @@ function treeController() {
     }
 
     ctrl.getRootNode = function () {
-        let tree = $('#tree').treeview(true);
+        let tree = $('#' + ctrl.treeId).treeview(true);
         if (tree.getSelected().length === 0)
             return;
         let node = tree.getSelected()[0];
@@ -45,20 +46,20 @@ function treeController() {
 
     ctrl.closeAll = function () {
         ctrl.treeData = [];
-        $('#tree').treeview({data: []});
+        $('#' + ctrl.treeId).treeview({data: []});
         ctrl.$apply();
     };
 
     ctrl.expandAll = function () {
-        $('#tree').treeview('expandAll', {levels: 99, silent: true});
+        $('#' + ctrl.treeId).treeview('expandAll', {levels: 99, silent: true});
     }
 
     ctrl.collapseAll = function () {
-        $('#tree').treeview('collapseAll', {silent: true});
+        $('#' + ctrl.treeId).treeview('collapseAll', {silent: true});
     }
 
     ctrl.updateTree = function () {
-        $('#tree').treeview({
+        $('#' + ctrl.treeId).treeview({
             data: ctrl.treeData,
             onNodeSelected: ctrl.onSelect,
             onNodeUnselected: function (event, node) {
@@ -148,11 +149,11 @@ function treeController() {
 
     ctrl.collapse = function () {
         console.log("COLLAPSING " + ctrl.selectedNode.nodeId);
-        $('#tree').treeview('collapseNode', ctrl.selectedNode.nodeId);
+        $('#' + ctrl.treeId).treeview('collapseNode', ctrl.selectedNode.nodeId);
     }
 
     ctrl.expand = function () {
-        let tree = $('#tree').treeview(true);
+        let tree = $('#' + ctrl.treeId).treeview(true);
         let node = tree.getNode(ctrl.selectedNode.nodeId);
         let path = [];
         path.push(node.nodeId);
