@@ -377,7 +377,6 @@ public class MetadataHandler {
 
 								if (storageId >= lastStorageId)
 									lastStorageId = storageId + 1;
-								System.err.println(" ---- Rewriting report!! " + file.getPath());
 								report.setStorageId(storageId);
 								storage.store(report, file);
 							}
