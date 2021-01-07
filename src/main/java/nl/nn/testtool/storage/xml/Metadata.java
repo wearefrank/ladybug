@@ -93,8 +93,9 @@ public class Metadata {
 	/**
 	 * Creates a metadata object from the given report and storage id.
 	 *
-	 * @param report    Report to be used for creating a metadata.
-	 * @param lastModified Last modified time for the report file.
+	 * @param report Report to be used for creating a metadata.
+	 * @param file File of the report.
+	 * @param root Directory to relativize the path from.
 	 * @return Metadata object that is created from the given report.
 	 */
 	public static Metadata fromReport(Report report, File file, File root) {
