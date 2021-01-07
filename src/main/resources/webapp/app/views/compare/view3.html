@@ -1,5 +1,18 @@
-<p>This is the partial for view 3.</p>
-<p>
-  Showing of 'interpolate' filter:
-  {{ 'Current version is v%VERSION%.' | interpolate }}
-</p>
+<div class="row">
+    <div class="col-6">
+        <report-tree on-select-relay="left_tree2display" on-add-relay="left_table2tree"></report-tree>
+    </div>
+    <div class="col-6">
+        <report-tree on-select-relay="right_tree2display" on-add-relay="right_table2tree"></report-tree>
+    </div>
+</div>
+<div class="row">
+    <div class="col-6">
+        <metadata-table on-select-relay="left_table2tree" ng-show="left_show"></metadata-table>
+        <report-display on-select-relay="left_tree2display" ng-show="!left_show"></report-display>
+    </div>
+    <div class="col-6">
+        <metadata-table on-select-relay="right_table2tree" ng-show="right_show"></metadata-table>
+        <report-display on-select-relay="right_tree2display" ng-show="!right_show"></report-display>
+    </div>
+</div>
