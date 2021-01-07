@@ -1,7 +1,7 @@
 function displayController($scope) {
     let ctrl = this;
     ctrl.apiUrl = "http://localhost:8080/ibis_adapterframework_test_war_exploded/ladybug";
-    ctrl.reportDetails = {text: "asdasd", values: {}};
+    ctrl.reportDetails = {text: "", values: {}};
     ctrl.stubStrategySelect = "";
     ctrl.availableStorages = {'runStorage': 'Test'};
 
@@ -93,7 +93,16 @@ function displayController($scope) {
     };
 
     ctrl.$onInit = function () {
-        ctrl.onSelectRelay.select = ctrl.display_report;
+        if ("select" in ctrl.onSelectRelay) {
+            let method = ctrl.onSelectRelay.select;
+            ctrl.onSelectRelay.select = function (rootNode, event, node) {
+                method(rootNode, event, node);
+                ctrl.display_report(rootNode, event, node);
+            }
+        } else {
+            ctrl.onSelectRelay.select = ctrl.display_report;
+        }
+
         ctrl.stubStrategies = $scope.testtoolStubStrategies;
     }
 }
