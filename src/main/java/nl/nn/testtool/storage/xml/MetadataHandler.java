@@ -364,9 +364,25 @@ public class MetadataHandler {
 						map.put(path, m);
 						continue;
 					}
-					// Todo: storage id update.
-					if (m == null || !(m.path.equalsIgnoreCase(report.getPath()) && m.storageId == report.getStorageId()))
-						storage.store(report, file);
+					int storageId = report.getStorageId();
+					Metadata oldMetadata = metadataMap.get(storageId);
+					// Check if there's a stored metadata with same storage id.
+					if (oldMetadata != null && !oldMetadata.equals(m)) {
+						String oldPath = storage.resolvePath(storageId);
+						if (StringUtils.isNotEmpty(oldPath) && !oldPath.equalsIgnoreCase(file.getPath())) {
+							Report oldReport = storage.readReportFromFile(new File(oldPath));
+							if (oldReport != null && report.getStorageId().equals(oldReport.getStorageId())) {
+								while (metadataMap.containsKey(storageId))
+									storageId = getNextStorageId();
+
+								if (storageId >= lastStorageId)
+									lastStorageId = storageId + 1;
+								System.err.println(" ---- Rewriting report!! " + file.getPath());
+								report.setStorageId(storageId);
+								storage.store(report, file);
+							}
+						}
+					}
 
 					Metadata metadata = Metadata.fromReport(report, file, storage.getReportsFolder());
 					add(metadata, false);
