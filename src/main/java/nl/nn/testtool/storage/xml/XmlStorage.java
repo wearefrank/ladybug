@@ -163,33 +163,10 @@ public class XmlStorage implements CrudStorage {
 			logger.warn("Given report path does not resolve to a file.");
 			return null;
 		}
-		FileInputStream inputStream = null;
-		XMLDecoder decoder = null;
-		try {
-			inputStream = new FileInputStream(reportFile);
-			decoder = new XMLDecoder(new BufferedInputStream(inputStream));
-			Report report = (Report) decoder.readObject();
-			report.setStorage(this);
-			inputStream.close();
-			decoder.close();
-
-			if (report.getStorageId() != m.storageId)
-				report.setStorageId(storageId);
-
-			return report;
-		} catch (Exception e) {
-			if (decoder != null)
-				decoder.close();
-
-			if (inputStream != null) {
-				try {
-					inputStream.close();
-				} catch (IOException ioException) {
-					throw new StorageException("Could not close the file input stream.", ioException);
-				}
-			}
-			throw new StorageException("Could not read the report file [" + reportFile.getPath() + "]", e);
-		}
+		Report report = readReportFromFile(reportFile);
+		if (report.getStorageId() != m.storageId)
+			report.setStorageId(storageId);
+		return report;
 	}
 
 	@Override
@@ -299,25 +276,24 @@ public class XmlStorage implements CrudStorage {
 	 * @param file File to be read from.
 	 * @return Report generated from the given file.
 	 */
-	protected Report readReportFromFile(File file) {
+	protected Report readReportFromFile(File file) throws StorageException {
 		if (file == null || !file.isFile() || !file.getName().endsWith(XmlStorage.FILE_EXTENSION))
 			return null;
 
-		logger.debug("Adding from a new file: " + file.getPath());
+		logger.debug("Reading from a new file: " + file.getPath());
 		FileInputStream inputStream = null;
 		XMLDecoder decoder = null;
-		Report report = null;
 		try {
 			inputStream = new FileInputStream(file);
 			decoder = new XMLDecoder(new BufferedInputStream(inputStream));
 
-			report = (Report) decoder.readObject();
+			Report report = (Report) decoder.readObject();
 			report.setStorage(this);
 
 			decoder.close();
 			inputStream.close();
+			return report;
 		} catch (Exception e) {
-			logger.error("Exception during report deserialization.", e);
 			if (decoder != null)
 				decoder.close();
 			if (inputStream != null) {
@@ -327,8 +303,8 @@ public class XmlStorage implements CrudStorage {
 					logger.error("Could not close the xml file.", ignored);
 				}
 			}
+			throw new StorageException("Exception while deserializing data from report file.", e);
 		}
-		return report;
 	}
 
 	/**
