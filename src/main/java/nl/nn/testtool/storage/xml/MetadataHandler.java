@@ -119,7 +119,7 @@ public class MetadataHandler {
 				try {
 					if (originalStorageIdTaken)
 						storage.store(report, file);
-					Metadata metadata = Metadata.fromReport(report, file.lastModified());
+					Metadata metadata = Metadata.fromReport(report, file, storage.getReportsFolder());
 					add(metadata, false);
 				} catch (StorageException | IOException e) {
 					logger.error("Error while updating metadata from file [" + file.getPath() + "]", e);
@@ -366,7 +366,7 @@ public class MetadataHandler {
 					if (m == null || !(m.path.equalsIgnoreCase(report.getPath()) && m.storageId == report.getStorageId()))
 						storage.store(report, file);
 
-					Metadata metadata = Metadata.fromReport(report, file.lastModified());
+					Metadata metadata = Metadata.fromReport(report, file, storage.getReportsFolder());
 					add(metadata, false);
 				} catch (StorageException | IOException e) {
 					logger.error("Error while updating metadata from file [" + file.getPath() + "]", e);
@@ -399,19 +399,6 @@ public class MetadataHandler {
 
 			Report report = (Report) decoder.readObject();
 			report.setStorage(this.storage);
-
-			String path = storage.getReportsFolder().toPath().relativize(file.getParentFile().toPath()).toString() + "/";
-			if (StringUtils.isNotEmpty(path)) {
-				path = path.replaceAll("\\\\", "/");
-				if (!path.endsWith("/"))
-					path += "/";
-			}
-			if (!path.startsWith("/"))
-				path = "/" + path;
-			report.setPath(path);
-
-			String filename = file.getName();
-			report.setName(filename.substring(0, filename.length() - XmlStorage.FILE_EXTENSION.length()));
 
 			int storageId = report.getStorageId() == 0 ? getNextStorageId() : report.getStorageId();
 			if (metadataMap.containsKey(storageId) && update) {

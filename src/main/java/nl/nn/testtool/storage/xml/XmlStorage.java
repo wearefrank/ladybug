@@ -15,6 +15,14 @@
 */
 package nl.nn.testtool.storage.xml;
 
+import nl.nn.testtool.Report;
+import nl.nn.testtool.storage.CrudStorage;
+import nl.nn.testtool.storage.StorageException;
+import nl.nn.testtool.util.SearchUtil;
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.beans.XMLDecoder;
 import java.beans.XMLEncoder;
 import java.io.BufferedInputStream;
@@ -25,15 +33,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.util.List;
-
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import nl.nn.testtool.Report;
-import nl.nn.testtool.storage.CrudStorage;
-import nl.nn.testtool.storage.StorageException;
-import nl.nn.testtool.util.SearchUtil;
 
 /**
  * Handles report storage for ladybug.
@@ -142,7 +141,7 @@ public class XmlStorage implements CrudStorage {
 			}
 
 			store(report, reportFile);
-			metadata = Metadata.fromReport(report, reportFile.lastModified());
+			metadata = Metadata.fromReport(report, reportFile, reportsFolder);
 			metadataHandler.add(metadata);
 
 		} catch (IOException e) {
