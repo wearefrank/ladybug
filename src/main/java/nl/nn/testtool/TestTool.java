@@ -200,7 +200,7 @@ public class TestTool {
 	}
 
 	@SneakyThrows
-	private Object checkpoint(String correlationId, String threadId, String sourceClassName, String name,
+	private Object checkpoint(String correlationId, String childThreadId, String sourceClassName, String name,
 			Object message, StubableCode stubableCode, StubableCodeThrowsException stubableCodeThrowsException,
 			Set<String> matchingStubStrategies, int checkpointType, int levelChangeNextCheckpoint) {
 		boolean executeStubableCode = true;
@@ -238,7 +238,7 @@ public class TestTool {
 				if (report != null) {
 					executeStubableCode = false;
 					reportsInProgressEstimatedMemoryUsage = reportsInProgressEstimatedMemoryUsage - report.getEstimatedMemoryUsage();
-					message = report.checkpoint(threadId, sourceClassName, name, message, stubableCode,
+					message = report.checkpoint(childThreadId, sourceClassName, name, message, stubableCode,
 							stubableCodeThrowsException, matchingStubStrategies, checkpointType, levelChangeNextCheckpoint);
 					reportsInProgressEstimatedMemoryUsage = reportsInProgressEstimatedMemoryUsage + report.getEstimatedMemoryUsage();
 					if (report.finished()) {
@@ -509,35 +509,35 @@ public class TestTool {
 
 	/**
 	 * Set a marker in the report for a child thread to appear. This method
-	 * should be called by the parent thread. Specify a threadId that will also
+	 * should be called by the parent thread. Specify a childThreadId that will also
 	 * be used by the child thread when calling threadStartpoint. The name of the
-	 * child thread can be used as threadId (when known at this point).
+	 * child thread can be used as childThreadId (when known at this point).
 	 * 
 	 * @param correlationId ...
-	 * @param threadId ...
+	 * @param childThreadId ...
 	 */
-	public void threadCreatepoint(String correlationId, String threadId) {
-		checkpoint(correlationId, threadId, null, null, null, null, null, null, Checkpoint.TYPE_THREADCREATEPOINT, 0);
+	public void threadCreatepoint(String correlationId, String childThreadId) {
+		checkpoint(correlationId, childThreadId, null, null, null, null, null, null, Checkpoint.TYPE_THREADCREATEPOINT, 0);
 	}
 
 	/**
-	 * Startpoint for a child thread. Specify a threadId that was also used on
+	 * Startpoint for a child thread. Specify a childThreadId that was also used when
 	 * calling threadStartpoint.
 	 * 
 	 * @param correlationId ...
-	 * @param threadId ...
+	 * @param childThreadId ...
 	 * @param sourceClassName ...
 	 * @param name ...
 	 * @param message ...
 	 * @return ...
 	 */
-	public Object threadStartpoint(String correlationId, String threadId, String sourceClassName, String name, Object message) {
-		return checkpoint(correlationId, threadId, sourceClassName, name, message, null, null, null, Checkpoint.TYPE_THREADSTARTPOINT, 1);
+	public Object threadStartpoint(String correlationId, String childThreadId, String sourceClassName, String name, Object message) {
+		return checkpoint(correlationId, childThreadId, sourceClassName, name, message, null, null, null, Checkpoint.TYPE_THREADSTARTPOINT, 1);
 	}
 
 	/**
 	 * Startpoint for a child thread. This method can be used when the name of
-	 * the child thread was used as threadId on calling threadCreatepoint.
+	 * the child thread was used as childThreadId when calling threadCreatepoint.
 	 * 
 	 * @param correlationId ...
 	 * @param sourceClassName ...
