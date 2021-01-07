@@ -294,6 +294,44 @@ public class XmlStorage implements CrudStorage {
 	}
 
 	/**
+	 * Reads the report from the given file. Generates metadata and returns it.
+	 *
+	 * @param file File to be read from.
+	 * @return Report generated from the given file.
+	 */
+	protected Report readReportFromFile(File file) {
+		if (file == null || !file.isFile() || !file.getName().endsWith(XmlStorage.FILE_EXTENSION))
+			return null;
+
+		logger.debug("Adding from a new file: " + file.getPath());
+		FileInputStream inputStream = null;
+		XMLDecoder decoder = null;
+		Report report = null;
+		try {
+			inputStream = new FileInputStream(file);
+			decoder = new XMLDecoder(new BufferedInputStream(inputStream));
+
+			report = (Report) decoder.readObject();
+			report.setStorage(this);
+
+			decoder.close();
+			inputStream.close();
+		} catch (Exception e) {
+			logger.error("Exception during report deserialization.", e);
+			if (decoder != null)
+				decoder.close();
+			if (inputStream != null) {
+				try {
+					inputStream.close();
+				} catch (Exception ignored) {
+					logger.error("Could not close the xml file.", ignored);
+				}
+			}
+		}
+		return report;
+	}
+
+	/**
 	 * Resolves the path of the report with given storage Id
 	 *
 	 * @param storageId Storage Id of the report to be resolved.
