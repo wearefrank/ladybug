@@ -6,6 +6,7 @@ Ladybug Test Tool release notes
 Upcoming
 --------
 
+- Refactor XmlStorage's MetadataHandler in order to minimize rewrites.
 - Fix metadata file format for XmlStorage
 - Improve storage id handling of XmlStorage while reading from a filesystem.
 - Fix report discovery for XmlStorage
