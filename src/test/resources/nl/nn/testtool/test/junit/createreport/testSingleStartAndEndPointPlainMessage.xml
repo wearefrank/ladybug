@@ -1,0 +1,11 @@
+<Report Name="startname"
+        Description=""
+        Path=""
+        CorrelationId="Original length: 52"
+        StartTime="Original length: 13"
+        EndTime="Original length: 13"
+        NumberOfCheckpoints="2"
+        EstimatedMemoryUsage="44">
+   <Checkpoint Name="startname" Type="Startpoint" Level="0">startmessage</Checkpoint>
+   <Checkpoint Name="endname" Type="Endpoint" Level="1">endmessage</Checkpoint>
+</Report>
