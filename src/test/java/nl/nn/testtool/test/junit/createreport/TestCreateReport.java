@@ -60,6 +60,11 @@ public class TestCreateReport extends TestCase {
 
 	@Override
 	public void setUp() {
+		File logsDir = new File("logs");
+		if (!logsDir.isDirectory()) {
+			logsDir.mkdir();
+		}
+		assertTrue(logsDir.isDirectory());
 		testTool.setRegexFilter(null);
 		Logger log = (Logger)LoggerFactory.getLogger("nl.nn.testtool");
 		listAppender = new ListAppender<>();
