@@ -6,6 +6,7 @@ Ladybug Test Tool release notes
 Upcoming
 --------
 
+- Upgrade ibis-echo2 from 2.0.2 to 2.0.3
 - Refactor XmlStorage's MetadataHandler in order to minimize rewrites.
 - Fix change in report name after replacement for XmlStorage
 - Add thread with warning when threadCreatepoint() (and threadStartpoint()) not used
