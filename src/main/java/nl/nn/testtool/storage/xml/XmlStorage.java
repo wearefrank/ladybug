@@ -1,5 +1,5 @@
 /*
-   Copyright 2020 WeAreFrank!
+   Copyright 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,6 +15,14 @@
 */
 package nl.nn.testtool.storage.xml;
 
+import nl.nn.testtool.Report;
+import nl.nn.testtool.storage.CrudStorage;
+import nl.nn.testtool.storage.StorageException;
+import nl.nn.testtool.util.SearchUtil;
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.beans.XMLDecoder;
 import java.beans.XMLEncoder;
 import java.io.BufferedInputStream;
@@ -25,15 +33,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.util.List;
-
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import nl.nn.testtool.Report;
-import nl.nn.testtool.storage.CrudStorage;
-import nl.nn.testtool.storage.StorageException;
-import nl.nn.testtool.util.SearchUtil;
 
 /**
  * Handles report storage for ladybug.
@@ -142,7 +141,7 @@ public class XmlStorage implements CrudStorage {
 			}
 
 			store(report, reportFile);
-			metadata = Metadata.fromReport(report, reportFile.lastModified());
+			metadata = Metadata.fromReport(report, reportFile, reportsFolder);
 			metadataHandler.add(metadata);
 
 		} catch (IOException e) {
@@ -164,33 +163,10 @@ public class XmlStorage implements CrudStorage {
 			logger.warn("Given report path does not resolve to a file.");
 			return null;
 		}
-		FileInputStream inputStream = null;
-		XMLDecoder decoder = null;
-		try {
-			inputStream = new FileInputStream(reportFile);
-			decoder = new XMLDecoder(new BufferedInputStream(inputStream));
-			Report report = (Report) decoder.readObject();
-			report.setStorage(this);
-			inputStream.close();
-			decoder.close();
-
-			if (report.getStorageId() != m.storageId)
-				report.setStorageId(storageId);
-
-			return report;
-		} catch (Exception e) {
-			if (decoder != null)
-				decoder.close();
-
-			if (inputStream != null) {
-				try {
-					inputStream.close();
-				} catch (IOException ioException) {
-					throw new StorageException("Could not close the file input stream.", ioException);
-				}
-			}
-			throw new StorageException("Could not read the report file [" + reportFile.getPath() + "]", e);
-		}
+		Report report = readReportFromFile(reportFile);
+		if (report.getStorageId() != m.storageId)
+			report.setStorageId(storageId);
+		return report;
 	}
 
 	@Override
@@ -285,9 +261,50 @@ public class XmlStorage implements CrudStorage {
 		return null;
 	}
 
+	protected File getReportsFolder() {
+		return reportsFolder;
+	}
+
 	@Override
 	public String getUserHelp(String column) {
 		return SearchUtil.getUserHelp();
+	}
+
+	/**
+	 * Reads the report from the given file.
+	 *
+	 * @param file File to be read from.
+	 * @return Report generated from the given file.
+	 */
+	protected Report readReportFromFile(File file) throws StorageException {
+		if (file == null || !file.isFile() || !file.getName().endsWith(XmlStorage.FILE_EXTENSION))
+			return null;
+
+		logger.debug("Reading from a new file: " + file.getPath());
+		FileInputStream inputStream = null;
+		XMLDecoder decoder = null;
+		try {
+			inputStream = new FileInputStream(file);
+			decoder = new XMLDecoder(new BufferedInputStream(inputStream));
+
+			Report report = (Report) decoder.readObject();
+			report.setStorage(this);
+
+			decoder.close();
+			inputStream.close();
+			return report;
+		} catch (Exception e) {
+			if (decoder != null)
+				decoder.close();
+			if (inputStream != null) {
+				try {
+					inputStream.close();
+				} catch (Exception ignored) {
+					logger.error("Could not close the xml file.", ignored);
+				}
+			}
+			throw new StorageException("Exception while deserializing data from report file.", e);
+		}
 	}
 
 	/**

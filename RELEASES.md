@@ -6,6 +6,12 @@ Ladybug Test Tool release notes
 Upcoming
 --------
 
+- Refactor XmlStorage's MetadataHandler in order to minimize rewrites.
+- Fix change in report name after replacement for XmlStorage
+- Add thread with warning when threadCreatepoint() (and threadStartpoint()) not used
+- Fix metadata file format for XmlStorage
+- Improve storage id handling of XmlStorage while reading from a filesystem.
+- Fix report discovery for XmlStorage
 - Make security log configurable
 - Upgrade junit from 4.12 to 4.13.1
 - Replace log4j with slf4j

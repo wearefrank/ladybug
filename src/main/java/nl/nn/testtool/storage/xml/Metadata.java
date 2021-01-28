@@ -1,5 +1,5 @@
 /*
-   Copyright 2020 WeAreFrank!
+   Copyright 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import nl.nn.testtool.Report;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
 
+import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -92,16 +93,30 @@ public class Metadata {
 	/**
 	 * Creates a metadata object from the given report and storage id.
 	 *
-	 * @param report    Report to be used for creating a metadata.
-	 * @param lastModified Last modified time for the report file.
+	 * @param report Report to be used for creating a metadata.
+	 * @param file File of the report.
+	 * @param root Directory to relativize the path from.
 	 * @return Metadata object that is created from the given report.
 	 */
-	public static Metadata fromReport(Report report, long lastModified) {
+	public static Metadata fromReport(Report report, File file, File root) {
 		String status = "Success";
 		if (report.getCheckpoints() != null && report.getCheckpoints().size() > 0) {
 			if (report.getCheckpoints().get(report.getCheckpoints().size() - 1).getType() == Checkpoint.TYPE_ABORTPOINT)
 				status = "Error";
 		}
+
+		String path = root.toPath().relativize(file.getParentFile().toPath()).toString() + "/";
+		if (StringUtils.isNotEmpty(path)) {
+			path = path.replaceAll("\\\\", "/");
+			if (!path.endsWith("/"))
+				path += "/";
+		}
+		if (!path.startsWith("/"))
+			path = "/" + path;
+
+		String filename = file.getName();
+		filename = filename.substring(0, filename.length() - XmlStorage.FILE_EXTENSION.length());
+
 		return new Metadata(
 				report.getStorageId(),
 				report.getEndTime() - report.getStartTime(),
@@ -109,12 +124,12 @@ public class Metadata {
 				report.getEstimatedMemoryUsage(),
 				report.getStorageSize() != null ? report.getStorageSize() : 0L,
 				report.getEndTime(),
-				report.getName(),
+				filename,
 				report.getCorrelationId(),
 				status,
-				report.getPath(),
+				path,
 				report.getDescription(),
-				lastModified);
+				file.lastModified());
 	}
 
 	public static Metadata fromXml(String xml) {
