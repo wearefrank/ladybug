@@ -94,14 +94,6 @@ public class MetadataApi extends ApiBase {
 		return Response.ok().entity(getMetadataFields()).build();
 	}
 
-	@GET
-	@Path("/{storage}/{lastmodified}")
-	@Produces(MediaType.APPLICATION_JSON)
-	public Response getLatestMetadata(@PathParam("storage") String storageParam, @PathParam("lastmodified") long lastModified) {
-		// Todo: implement this function's logic in storage interface.
-		return Response.status(Response.Status.NOT_IMPLEMENTED).build();
-	}
-
 	/**
 	 * @return Set of strings for list of parameters in metadata.
 	 */
