@@ -26,7 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-@Path("/")
+@Path("/metadata")
 public class MetadataApi extends ApiBase {
 	private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 	public static Set<String> metadataFields;
@@ -41,7 +41,7 @@ public class MetadataApi extends ApiBase {
 	 * @throws ApiException If an exception occurs during metadata search in storage.
 	 */
 	@GET
-	@Path("/metadata/{storage}/")
+	@Path("/{storage}/")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getMetadataList(@PathParam("storage") String storageParam, @DefaultValue("-1") @QueryParam("limit") int limit, @Context UriInfo uriInfo) throws ApiException {
 		// TODO: Sorting and filtering
@@ -93,14 +93,14 @@ public class MetadataApi extends ApiBase {
 	 * @return A response containing list of metadata fields.
 	 */
 	@GET
-	@Path("/metadata")
+	@Path("/")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getMetadataInformation() {
 		return Response.ok().entity(getMetadataFields()).build();
 	}
 
 	@GET
-	@Path("/metadata/{storage}/{lastmodified}")
+	@Path("/{storage}/{lastmodified}")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getLatestMetadata(@PathParam("storage") String storageParam, @PathParam("lastmodified") long lastModified) {
 		// Todo: implement this function's logic in storage interface.
