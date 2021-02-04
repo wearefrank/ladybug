@@ -23,11 +23,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@Path("/runner")
 public class RunApi extends ApiBase {
 	private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
 	@POST
-	@Path("/runner/run/{debugStorage}")
+	@Path("/run/{debugStorage}")
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Produces(MediaType.APPLICATION_JSON)
 	@Consumes(MediaType.APPLICATION_JSON)
@@ -47,18 +48,21 @@ public class RunApi extends ApiBase {
 				}
 			}
 		}
+
 		ReportRunner runner = getRunner(debugStorage);
-		runner.run(reports, false, false); // ???
+		String exception = runner.run(reports, true, true);
+
 		if (exceptions.size() > 0) {
 			String message = "Following exceptions were thrown, causing the related reports not to run. " + String.join(". ", exceptions);
 			return Response.serverError().entity(message).build();
+		} else if (exception != null) {
+			return Response.status(Response.Status.SERVICE_UNAVAILABLE).entity(exception).build();
 		}
-
-		return Response.ok().build();
+		return Response.ok(runner.getResults()).build();
 	}
 
 	@GET
-	@Path("/runner/result/{debugStorage}")
+	@Path("/result/{debugStorage}")
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getResults(@PathParam("debugStorage") String debugStorageParam) {
@@ -73,10 +77,10 @@ public class RunApi extends ApiBase {
 	}
 
 	@POST
-	@Path("/runner/reset")
+	@Path("/reset")
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	public Response resetAll() {
-		Object sessionAttr = getSessionAttr("reportRunner");
+		Object sessionAttr = getSessionAttr("reportRunner", false);
 		if (!(sessionAttr instanceof Map)) {
 			setSessionAttr("reportRunner", new HashMap<Object, Object>());
 			return Response.ok().build();
@@ -96,7 +100,7 @@ public class RunApi extends ApiBase {
 	}
 
 	@POST
-	@Path("/runner/reset/{debugStorage}")
+	@Path("/reset/{debugStorage}")
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	public Response resetRunner(@PathParam("debugStorage") String storageParam) {
 		Storage storage = getBean(storageParam);
@@ -108,7 +112,7 @@ public class RunApi extends ApiBase {
 	private ReportRunner getRunner(Storage debugStorage) {
 		Map<Object, Object> runners;
 
-		Object sessionAttr = getSessionAttr("reportRunner");
+		Object sessionAttr = getSessionAttr("reportRunner", false);
 		if (sessionAttr instanceof Map) {
 			runners = (Map) sessionAttr;
 		} else {
@@ -121,7 +125,7 @@ public class RunApi extends ApiBase {
 			runner = new ReportRunner();
 			runner.setTestTool(getBean("testTool"));
 			runner.setDebugStorage(debugStorage);
-			runner.setSecurityContext(null); // ????
+			runner.setSecurityContext(this);
 			runners.put(debugStorage, runner);
 		}
 
