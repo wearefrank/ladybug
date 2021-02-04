@@ -21,6 +21,9 @@ import java.util.Map;
 public class TestToolApi extends ApiBase {
 	private static ReportXmlTransformer reportXmlTransformer;
 
+	/**
+	 * @return Response containing test tool data.
+	 */
 	@GET
 	@Path("/")
 	@Produces(MediaType.APPLICATION_JSON)
@@ -35,6 +38,11 @@ public class TestToolApi extends ApiBase {
 		return Response.ok(map).build();
 	}
 
+	/**
+	 * Change settings of the testtool.
+	 *
+	 * @param map New settings that can contain (generatorEnabled, regexFilter)
+	 */
 	@POST
 	@Path("/")
 	@Consumes(MediaType.APPLICATION_JSON)
@@ -56,6 +64,12 @@ public class TestToolApi extends ApiBase {
 		return Response.ok().build();
 	}
 
+	/**
+	 * Returns the reports in progress.
+	 *
+	 * @param count Maximum number of reports to return.
+	 * @return Response containing a list of reports.
+	 */
 	@GET
 	@Path("/in-progress/{count}")
 	@Produces(MediaType.APPLICATION_JSON)
@@ -72,6 +86,11 @@ public class TestToolApi extends ApiBase {
 		return Response.ok(reports).build();
 	}
 
+	/**
+	 * Change the default transformation.
+	 *
+	 * @param map Map containing key "transformation"
+	 */
 	@POST
 	@Path("/transformation/")
 	@Consumes(MediaType.APPLICATION_JSON)
@@ -84,6 +103,9 @@ public class TestToolApi extends ApiBase {
 		return Response.ok().build();
 	}
 
+	/**
+	 * @return Response containing the current default transformation of the test tool.
+	 */
 	@GET
 	@Path("/transformation")
 	@Produces(MediaType.APPLICATION_JSON)
@@ -97,6 +119,9 @@ public class TestToolApi extends ApiBase {
 		return Response.ok(map).build();
 	}
 
+	/**
+	 * @return The bean named reportXmlTransformer
+	 */
 	public ReportXmlTransformer getReportXmlTransformer() {
 		if (reportXmlTransformer == null)
 			reportXmlTransformer = getBean("reportXmlTransformer");
