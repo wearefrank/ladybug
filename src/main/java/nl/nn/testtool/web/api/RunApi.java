@@ -8,7 +8,6 @@ import nl.nn.testtool.storage.StorageException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -29,7 +28,6 @@ public class RunApi extends ApiBase {
 
 	@POST
 	@Path("/run/{debugStorage}")
-	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Produces(MediaType.APPLICATION_JSON)
 	@Consumes(MediaType.APPLICATION_JSON)
 	public Response runReport(@PathParam("debugStorage") String debugStorageParam, Map<String, List<Integer>> sources) {
@@ -63,7 +61,6 @@ public class RunApi extends ApiBase {
 
 	@GET
 	@Path("/result/{debugStorage}")
-	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getResults(@PathParam("debugStorage") String debugStorageParam) {
 		Storage debugStorage = getBean(debugStorageParam);
@@ -78,7 +75,6 @@ public class RunApi extends ApiBase {
 
 	@POST
 	@Path("/reset")
-	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	public Response resetAll() {
 		Object sessionAttr = getSessionAttr("reportRunner", false);
 		if (!(sessionAttr instanceof Map)) {
@@ -101,7 +97,6 @@ public class RunApi extends ApiBase {
 
 	@POST
 	@Path("/reset/{debugStorage}")
-	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	public Response resetRunner(@PathParam("debugStorage") String storageParam) {
 		Storage storage = getBean(storageParam);
 		ReportRunner runner = getRunner(storage);
