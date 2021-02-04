@@ -1,4 +1,4 @@
-package nl.nn.testtool.web.api;
+package nl.nn.testtool.web.interceptors;
 
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerResponseContext;
