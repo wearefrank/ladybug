@@ -5,7 +5,6 @@ import nl.nn.testtool.TestTool;
 import nl.nn.testtool.transform.ReportXmlTransformer;
 import org.apache.commons.lang.StringUtils;
 
-import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -24,7 +23,6 @@ public class TestToolApi extends ApiBase {
 
 	@GET
 	@Path("/")
-	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getInfo() {
 		TestTool testTool = getBean("testTool");
@@ -39,7 +37,6 @@ public class TestToolApi extends ApiBase {
 
 	@POST
 	@Path("/")
-	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Consumes(MediaType.APPLICATION_JSON)
 	public Response setInfo(Map<String, String> map) {
 		TestTool testTool = getBean("testTool");
@@ -61,7 +58,6 @@ public class TestToolApi extends ApiBase {
 
 	@GET
 	@Path("/in-progress/{count}")
-	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getReportsInProgress(@PathParam("count") long count) {
 		TestTool testTool = getBean("testTool");
@@ -78,7 +74,6 @@ public class TestToolApi extends ApiBase {
 
 	@POST
 	@Path("/transformation/")
-	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Consumes(MediaType.APPLICATION_JSON)
 	public Response updateReportTransformation(Map<String, String> map) {
 		String transformation = map.get("transformation");
@@ -91,7 +86,6 @@ public class TestToolApi extends ApiBase {
 
 	@GET
 	@Path("/transformation")
-	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response updateReportTransformation() {
 		String transformation = getReportXmlTransformer().getXslt();
