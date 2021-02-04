@@ -7,7 +7,6 @@ import nl.nn.testtool.storage.StorageException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -34,7 +33,6 @@ public class MetadataApi extends ApiBase {
 
 	@GET
 	@Path("/metadata/{storage}/")
-	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getMetadataList(@PathParam("storage") String storageParam, @DefaultValue("-1") @QueryParam("limit") int limit, @Context UriInfo uriInfo) throws ApiException {
 		// TODO: Sorting and filtering
@@ -79,7 +77,6 @@ public class MetadataApi extends ApiBase {
 
 	@GET
 	@Path("/metadata")
-	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getMetadataInformation() {
 		return Response.ok().entity(getMetadataFields()).build();
@@ -87,7 +84,6 @@ public class MetadataApi extends ApiBase {
 
 	@GET
 	@Path("/metadata/{storage}/{lastmodified}")
-	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getLatestMetadata(@PathParam("storage") String storageParam, @PathParam("lastmodified") long lastModified) {
 		// Todo: implement this function's logic in storage interface.
