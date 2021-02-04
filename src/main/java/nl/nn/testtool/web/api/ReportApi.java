@@ -13,7 +13,6 @@ import org.apache.cxf.jaxrs.ext.multipart.Multipart;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -31,7 +30,6 @@ public class ReportApi extends ApiBase {
 
 	@GET
 	@Path("/report/{storage}/{storageId}")
-	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getReport(@PathParam("storage") String storageParam, @PathParam("storageId") int storageId) throws ApiException {
 		try {
@@ -48,7 +46,6 @@ public class ReportApi extends ApiBase {
 
 	@DELETE
 	@Path("/report/{storage}/{storageId}")
-	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	public Response deleteReport(@PathParam("storage") String storageParam, @PathParam("storageId") int storageId) {
 		Storage storage = getBean(storageParam);
 		if (!(storage instanceof CrudStorage)) {
@@ -69,7 +66,6 @@ public class ReportApi extends ApiBase {
 
 	@POST
 	@Path("/report/transformation/{storage}/{storageId}")
-	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Consumes(MediaType.APPLICATION_JSON)
 	public Response updateReportTransformation(@PathParam("storage") String storageParam, @PathParam("storageId") int storageId, Map<String, String> map) {
 		String transformation = map.get("transformation");
@@ -87,7 +83,6 @@ public class ReportApi extends ApiBase {
 
 	@GET
 	@Path("/report/transformation/{storage}/{storageId}")
-	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getReportTransformation(@PathParam("storage") String storageParam, @PathParam("storageId") int storageId) {
 		try {
@@ -103,7 +98,6 @@ public class ReportApi extends ApiBase {
 
 	@PUT
 	@Path("/report/store/{storage}")
-	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response copyReport(@PathParam("storage") String storageParam, Map<String, List<Integer>> sources, @HeaderParam("Access-Control-Allow-Headers") String requestHeader) {
