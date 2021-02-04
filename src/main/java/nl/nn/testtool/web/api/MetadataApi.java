@@ -4,8 +4,6 @@ package nl.nn.testtool.web.api;
 import nl.nn.testtool.MetadataExtractor;
 import nl.nn.testtool.storage.Storage;
 import nl.nn.testtool.storage.StorageException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
@@ -18,7 +16,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
-import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -28,8 +25,6 @@ import java.util.Set;
 
 @Path("/metadata")
 public class MetadataApi extends ApiBase {
-	private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-	public static Set<String> metadataFields;
 
 	/**
 	 * Searches the storage metadata.
@@ -112,6 +107,5 @@ public class MetadataApi extends ApiBase {
 	 */
 	private Set<String> getMetadataFields() {
 		return new HashSet<String>(getBean("whiteBoxViewMetadataNames"));
-
 	}
 }
