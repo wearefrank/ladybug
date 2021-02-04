@@ -26,6 +26,12 @@ import java.util.Map;
 public class RunApi extends ApiBase {
 	private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
+	/**
+	 * Rerun the given reports, and save the output the target storage.
+	 *
+	 * @param debugStorageParam Target storage to use as debug storage for re-runner.
+	 * @param sources Map containing storage names and storage ids for reports that will re-run.
+	 */
 	@POST
 	@Path("/run/{debugStorage}")
 	@Produces(MediaType.APPLICATION_JSON)
@@ -59,6 +65,10 @@ public class RunApi extends ApiBase {
 		return Response.ok(runner.getResults()).build();
 	}
 
+	/**
+	 * Get the results from the re-runner for the given debug storage.
+	 * @param debugStorageParam Name of the debug storage that runner uses.
+	 */
 	@GET
 	@Path("/result/{debugStorage}")
 	@Produces(MediaType.APPLICATION_JSON)
@@ -73,6 +83,9 @@ public class RunApi extends ApiBase {
 		return Response.ok(results).build();
 	}
 
+	/**
+	 * Resets all the report runners.
+	 */
 	@POST
 	@Path("/reset")
 	public Response resetAll() {
@@ -95,6 +108,10 @@ public class RunApi extends ApiBase {
 		return Response.ok().build();
 	}
 
+	/**
+	 * Resets the re-runner with the given debug storage.
+	 * @param storageParam Name of the debug storage.
+	 */
 	@POST
 	@Path("/reset/{debugStorage}")
 	public Response resetRunner(@PathParam("debugStorage") String storageParam) {
@@ -104,6 +121,13 @@ public class RunApi extends ApiBase {
 		return Response.ok().build();
 	}
 
+	/**
+	 * Return from the map, or generate report re-runner with the given debug storage.
+	 * With the API, each session can create multiple re-runners for different debug storages.
+	 *
+	 * @param debugStorage Debug storage.
+	 * @return ReportRunner that uses the given debug storage.
+	 */
 	private ReportRunner getRunner(Storage debugStorage) {
 		Map<Object, Object> runners;
 
