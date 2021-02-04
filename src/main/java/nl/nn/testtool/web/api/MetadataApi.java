@@ -31,12 +31,23 @@ public class MetadataApi extends ApiBase {
 	private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 	public static Set<String> metadataFields;
 
+	/**
+	 * Searches the storage metadata.
+	 *
+	 * @param storageParam Name of the storage to search.
+	 * @param limit Maximum number of results to return.
+	 * @param uriInfo Query parameters for search.
+	 * @return Response containing fields [List[String]] and values [List[List[Object]]].
+	 * @throws ApiException If an exception occurs during metadata search in storage.
+	 */
 	@GET
 	@Path("/metadata/{storage}/")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getMetadataList(@PathParam("storage") String storageParam, @DefaultValue("-1") @QueryParam("limit") int limit, @Context UriInfo uriInfo) throws ApiException {
 		// TODO: Sorting and filtering
 		MultivaluedMap<String, String> params = uriInfo.getQueryParameters();
+
+		// Make sure limit will not be included in searh parameters.
 		if (params != null)
 			params.remove("limit");
 
@@ -44,12 +55,14 @@ public class MetadataApi extends ApiBase {
 		List<String> metadataNames = new ArrayList<>();
 		Set<String> storedMetadataFields = getMetadataFields();
 		if (params == null || params.size() == 0) {
+			// Add all metadata fields to be extracted without filtering.
 			for(String field : storedMetadataFields) {
 				metadataNames.add(field);
 				searchValues.add(null);
 			}
 		} else {
 			for (String param : params.keySet()) {
+				// Extract search parameters for storage from the query parameters.
 				if (!storedMetadataFields.contains(param))
 					continue;
 
@@ -64,6 +77,7 @@ public class MetadataApi extends ApiBase {
 			}
 		}
 		try {
+			// Get storage, search for metadata, and return the results.
 			Storage storage = getBean(storageParam);
 			List<List<Object>> list = storage.getMetadata(limit, metadataNames, searchValues, MetadataExtractor.VALUE_TYPE_STRING);
 			Map<String, Object> out = new HashMap<>(2);
@@ -75,6 +89,9 @@ public class MetadataApi extends ApiBase {
 		}
 	}
 
+	/**
+	 * @return A response containing list of metadata fields.
+	 */
 	@GET
 	@Path("/metadata")
 	@Produces(MediaType.APPLICATION_JSON)
@@ -90,6 +107,9 @@ public class MetadataApi extends ApiBase {
 		return Response.status(Response.Status.NOT_IMPLEMENTED).build();
 	}
 
+	/**
+	 * @return Set of strings for list of parameters in metadata.
+	 */
 	private Set<String> getMetadataFields() {
 		return new HashSet<String>(getBean("whiteBoxViewMetadataNames"));
 
