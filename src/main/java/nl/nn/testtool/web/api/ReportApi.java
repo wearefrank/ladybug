@@ -28,6 +28,14 @@ import java.util.Scanner;
 public class ReportApi extends ApiBase {
 	private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
+	/**
+	 * Returns the report details for the given storage and id.
+	 *
+	 * @param storageParam Name of the storage.
+	 * @param storageId Storage id of the report.
+	 * @return A response containing serialized Report object.
+	 * @throws ApiException If exception is thrown while reading report.
+	 */
 	@GET
 	@Path("/report/{storage}/{storageId}")
 	@Produces(MediaType.APPLICATION_JSON)
@@ -44,6 +52,13 @@ public class ReportApi extends ApiBase {
 		}
 	}
 
+	/**
+	 * Deletes the report.
+	 *
+	 * @param storageParam Name of the storage.
+	 * @param storageId Storage id of the report to be deleted.
+	 * @return "Ok" if deleted properly, "Not implemented" if storage does not support deletion, "Not found" if report does not exist.
+	 */
 	@DELETE
 	@Path("/report/{storage}/{storageId}")
 	public Response deleteReport(@PathParam("storage") String storageParam, @PathParam("storageId") int storageId) {
@@ -64,6 +79,13 @@ public class ReportApi extends ApiBase {
 		return Response.ok().build();
 	}
 
+	/**
+	 * Update transformation for a specific report.
+	 *
+	 * @param storageParam Name of the storage.
+	 * @param storageId Storage id of the report.
+	 * @param map Map containing transformation.
+	 */
 	@POST
 	@Path("/report/transformation/{storage}/{storageId}")
 	@Consumes(MediaType.APPLICATION_JSON)
@@ -81,6 +103,13 @@ public class ReportApi extends ApiBase {
 		}
 	}
 
+	/**
+	 * Return transformation of a report.
+	 *
+	 * @param storageParam Name of the storage.
+	 * @param storageId Storage id of the report.
+	 * @return Response containing a map containing transformation.
+	 */
 	@GET
 	@Path("/report/transformation/{storage}/{storageId}")
 	@Produces(MediaType.APPLICATION_JSON)
@@ -96,11 +125,17 @@ public class ReportApi extends ApiBase {
 		}
 	}
 
+	/**
+	 * Copy the reports from the given storages and ids to the given target storage.
+	 *
+	 * @param storageParam Name of the target storage.
+	 * @param sources Map [String, Integer] where keys are storage names and integers are storage ids for the reports to be copied.
+	 */
 	@PUT
 	@Path("/report/store/{storage}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response copyReport(@PathParam("storage") String storageParam, Map<String, List<Integer>> sources, @HeaderParam("Access-Control-Allow-Headers") String requestHeader) {
+	public Response copyReport(@PathParam("storage") String storageParam, Map<String, List<Integer>> sources) {
 		Storage target = getBean(storageParam);
 		Map<String, String> exceptions = new HashMap<>();
 		for (String src : sources.keySet()) {
@@ -127,6 +162,12 @@ public class ReportApi extends ApiBase {
 		return Response.ok().build();
 	}
 
+	/**
+	 * Upload the given report to storage.
+	 *
+	 * @param storageParam Name of the target storage.
+	 * @param attachment Attachment containing report.
+	 */
 	@POST
 	@Path("/report/upload/{storage}")
 	@Produces(MediaType.TEXT_HTML)
@@ -147,6 +188,14 @@ public class ReportApi extends ApiBase {
 		return Response.status(Response.Status.BAD_REQUEST).entity(errorMessage).build();
 	}
 
+	/**
+	 * Download the given reports.
+	 *
+	 * @param storageParam Name of the storage.
+	 * @param exportReportParam "true" or "1" to save the serialized version of report.
+	 * @param exportReportXmlParam "true" or "1" to save Xml version of report.
+	 * @param storageIds List of storage ids to download.
+	 */
 	@GET
 	@Path("/report/download/{storage}/{exportReport}/{exportReportXml}")
 	@Produces("application/octet-stream")
@@ -174,6 +223,13 @@ public class ReportApi extends ApiBase {
 		}
 	}
 
+	/**
+	 * Copy or move report files in the same storage to different paths.
+	 *
+	 * @param storageParam Name of the storage.
+	 * @param storageId Storage id of the report to be moved.
+	 * @param map Map containing "path" and "action". Actions could be "copy" or "move".
+	 */
 	@PUT
 	@Path("/report/move/{storage}/{storageId}")
 	@Consumes(MediaType.APPLICATION_JSON)
@@ -206,6 +262,13 @@ public class ReportApi extends ApiBase {
 		}
 	}
 
+	/**
+	 * Cloning the reports with the given parameters.
+	 *
+	 * @param storageParam Name of the storage.
+	 * @param storageId Storage id of the report to be cloned.
+	 * @param map Map containing csv for cloning.
+	 */
 	@POST
 	@Path("/report/move/{storage}/{storageId}")
 	@Consumes(MediaType.APPLICATION_JSON)
