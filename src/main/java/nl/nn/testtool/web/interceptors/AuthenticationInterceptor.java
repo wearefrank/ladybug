@@ -1,4 +1,4 @@
-package nl.nn.testtool.web;
+package nl.nn.testtool.web.interceptors;
 
 import lombok.Getter;
 
