@@ -13,7 +13,15 @@ import org.apache.cxf.jaxrs.ext.multipart.Multipart;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.*;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.InputStream;
@@ -152,8 +160,6 @@ public class ReportApi extends ApiBase {
 				}
 			} catch (ApiException e) {
 				exceptions.put(src, e.getMessage());
-//				throw new ApiException("Exception while setting transformation for a report.", e);
-				return Response.serverError().build();
 			}
 		}
 		// TODO: Find a better error response code.
