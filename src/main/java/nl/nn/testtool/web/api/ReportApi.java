@@ -32,7 +32,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 
-@Path("/")
+@Path("/report")
 public class ReportApi extends ApiBase {
 	private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
@@ -45,7 +45,7 @@ public class ReportApi extends ApiBase {
 	 * @throws ApiException If exception is thrown while reading report.
 	 */
 	@GET
-	@Path("/report/{storage}/{storageId}")
+	@Path("/{storage}/{storageId}")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getReport(@PathParam("storage") String storageParam, @PathParam("storageId") int storageId) throws ApiException {
 		try {
@@ -68,7 +68,7 @@ public class ReportApi extends ApiBase {
 	 * @return "Ok" if deleted properly, "Not implemented" if storage does not support deletion, "Not found" if report does not exist.
 	 */
 	@DELETE
-	@Path("/report/{storage}/{storageId}")
+	@Path("/{storage}/{storageId}")
 	public Response deleteReport(@PathParam("storage") String storageParam, @PathParam("storageId") int storageId) {
 		Storage storage = getBean(storageParam);
 		if (!(storage instanceof CrudStorage)) {
@@ -95,7 +95,7 @@ public class ReportApi extends ApiBase {
 	 * @param map Map containing transformation.
 	 */
 	@POST
-	@Path("/report/transformation/{storage}/{storageId}")
+	@Path("/transformation/{storage}/{storageId}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	public Response updateReportTransformation(@PathParam("storage") String storageParam, @PathParam("storageId") int storageId, Map<String, String> map) {
 		String transformation = map.get("transformation");
@@ -119,7 +119,7 @@ public class ReportApi extends ApiBase {
 	 * @return Response containing a map containing transformation.
 	 */
 	@GET
-	@Path("/report/transformation/{storage}/{storageId}")
+	@Path("/transformation/{storage}/{storageId}")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getReportTransformation(@PathParam("storage") String storageParam, @PathParam("storageId") int storageId) {
 		try {
@@ -140,7 +140,7 @@ public class ReportApi extends ApiBase {
 	 * @param sources Map [String, Integer] where keys are storage names and integers are storage ids for the reports to be copied.
 	 */
 	@PUT
-	@Path("/report/store/{storage}")
+	@Path("/store/{storage}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response copyReport(@PathParam("storage") String storageParam, Map<String, List<Integer>> sources) {
@@ -175,7 +175,7 @@ public class ReportApi extends ApiBase {
 	 * @param attachment Attachment containing report.
 	 */
 	@POST
-	@Path("/report/upload/{storage}")
+	@Path("/upload/{storage}")
 	@Produces(MediaType.TEXT_HTML)
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
 	public Response uploadFile(@PathParam("storage") String storageParam, @Multipart("file") Attachment attachment) {
@@ -203,7 +203,7 @@ public class ReportApi extends ApiBase {
 	 * @param storageIds List of storage ids to download.
 	 */
 	@GET
-	@Path("/report/download/{storage}/{exportReport}/{exportReportXml}")
+	@Path("/download/{storage}/{exportReport}/{exportReportXml}")
 	@Produces("application/octet-stream")
 	@Consumes(MediaType.APPLICATION_JSON)
 	public Response downloadFile(@PathParam("storage") String storageParam, @PathParam("exportReport") String exportReportParam,
@@ -237,7 +237,7 @@ public class ReportApi extends ApiBase {
 	 * @param map Map containing "path" and "action". Actions could be "copy" or "move".
 	 */
 	@PUT
-	@Path("/report/move/{storage}/{storageId}")
+	@Path("/move/{storage}/{storageId}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	public Response updatePath(@PathParam("storage") String storageParam, @PathParam("storageId") int storageId, Map<String, String> map) {
 		CrudStorage storage = getBean(storageParam);
@@ -276,7 +276,7 @@ public class ReportApi extends ApiBase {
 	 * @param map Map containing csv for cloning.
 	 */
 	@POST
-	@Path("/report/move/{storage}/{storageId}")
+	@Path("/move/{storage}/{storageId}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response cloneReport(@QueryParam("storage") String storageParam, @QueryParam("storageId") int storageId, Map<String, String> map) {
