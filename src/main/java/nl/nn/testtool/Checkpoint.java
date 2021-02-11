@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2018 Nationale-Nederlanden, 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,15 +16,13 @@
 package nl.nn.testtool;
 
 import java.beans.ExceptionListener;
-import java.beans.XMLEncoder;
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
+import java.io.StringWriter;
 import java.lang.invoke.MethodHandles;
-import java.text.SimpleDateFormat;
+import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,16 +34,15 @@ import java.util.regex.Pattern;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.w3c.dom.Node;
 
-import lombok.SneakyThrows;
 import net.sf.saxon.trans.XPathException;
+import nl.nn.testtool.MessageCapturer.StreamingType;
+import nl.nn.testtool.MessageEncoder.ToStringResult;
 import nl.nn.testtool.run.ReportRunner;
 import nl.nn.testtool.run.RunResult;
 import nl.nn.testtool.storage.StorageException;
 import nl.nn.testtool.util.ImportResult;
 import nl.nn.testtool.util.XmlUtil;
-import nl.nn.xmldecoder.XMLDecoder;
 
 /**
  * @author Jaco de Groot
@@ -57,24 +54,19 @@ public class Checkpoint implements Serializable, Cloneable {
 	private Report report;
 	private String threadName;
 	private String sourceClassName;
+	private String messageClassName;
 	private String name;
 	private String message;
-	private int encoding = 0;
+	private String encoding;
+	private String streaming;
 	private int type;
 	private int level = 0;
-	private boolean messageHasBeenStubbed = false;
 	private int stub = STUB_FOLLOW_REPORT_STRATEGY;
+	private boolean stubbed = false;
 	private int preTruncatedMessageLength = -1;
-	private long estimatedMemoryUsage = -1;
 	private transient Map<String, Pattern> variablePatternMap;
 	private transient static final Pattern GENERIC_VARIABLE_PATTERN = Pattern.compile("\\$\\{.*?\\}");
 	private transient static final Pattern EXTERNAL_VARIABLE_PATTERN = Pattern.compile("\\$\\{checkpoint\\(([0-9]+#[0-9]+)\\)(\\.xpath\\((.*?)\\)|)\\}");
-	public transient static final int ENCODING_NONE = 0;
-	public transient static final int ENCODING_XML_ENCODER = 1;
-	public transient static final int ENCODING_BASE64 = 2;
-	public transient static final int ENCODING_TO_STRING = 101; // No decoding supported (yet), int value might change in the future
-	public transient static final int ENCODING_DOM_NODE = 102; // No decoding supported (yet), int value might change in the future
-	public transient static final int ENCODING_DATE = 103; // No decoding supported (yet), int value might change in the future
 	public transient static final int TYPE_STARTPOINT = 1;
 	public transient static final int TYPE_ENDPOINT = 2;
 	public transient static final int TYPE_ABORTPOINT = 3;
@@ -92,13 +84,11 @@ public class Checkpoint implements Serializable, Cloneable {
 		// Only for Java XML encoding/decoding! Use other constructor instead.
 	}
 
-	public Checkpoint(Report report, String threadName, String sourceClassName,
-			String name, Object message, int type, int level) {
+	public Checkpoint(Report report, String threadName, String sourceClassName,	String name, int type, int level) {
 		this.report = report;
 		this.threadName = threadName;
 		this.sourceClassName = sourceClassName;
 		this.name = name;
-		setMessage(message);
 		this.type = type;
 		this.level = level;
 	}
@@ -127,6 +117,14 @@ public class Checkpoint implements Serializable, Cloneable {
 		return sourceClassName;
 	}
 
+	public void setMessageClassName(String messageClassName) {
+		this.messageClassName = messageClassName;
+	}
+
+	public String getMessageClassName() {
+		return messageClassName;
+	}
+
 	public void setName(String name) {
 		this.name = name;
 	}
@@ -137,89 +135,163 @@ public class Checkpoint implements Serializable, Cloneable {
 
 	public void setMessage(String message) {
 		// report is null when called by XMLDecoder
-		if (report != null && report.getTestTool() != null && report.getMessageTransformer() != null) {
-			message = report.getMessageTransformer().transform(message);
+		if (report != null) {
+			message = report.truncateMessage(this, message);
+			if (report.getMessageTransformer() != null) {
+				message = report.getMessageTransformer().transform(message);
+			}
 		}
 		this.message = message;
 	}
 
-	@SneakyThrows(UnsupportedEncodingException.class)
-	public void setMessage(Object message) {
-		if (message != null) {
-			if (message instanceof String) {
-				setMessage((String)message);
-			} else if (message instanceof Node) {
-				Node node = (Node)message;
-				setMessage(XmlUtil.nodeToString(node));
-				encoding = ENCODING_DOM_NODE;
-			} else if (message instanceof Date) {
-				setMessage(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format((Date)message));
-				encoding = ENCODING_DATE;
-			} else if (message instanceof byte[]) {
-				setMessage(java.util.Base64.getEncoder().encodeToString((byte[])message));
-				encoding = ENCODING_BASE64;
+	public Object setMessage(Object message) {
+		ToStringResult toStringResult = report.getMessageEncoder().toString(message);
+		setMessage(toStringResult.getString());
+		if (toStringResult.getEncoding() != null) {
+			setEncoding(toStringResult.getEncoding());
+		}
+		if (toStringResult.getMessageClassName() != null) {
+			setMessageClassName(toStringResult.getMessageClassName());
+		}
+		if (message != null && report.getMessageCapturer() != null) {
+			if (report.isKnownStreamingMessage(message)) {
+				report.addStreamingMessageListener(message, this);
 			} else {
-				String xml = null;
-				ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-				XMLEncoder encoder = new XMLEncoder(byteArrayOutputStream);
-				XMLEncoderExceptionListener exceptionListener = new XMLEncoderExceptionListener();
-				encoder.setExceptionListener(exceptionListener);
-				encoder.writeObject(message);
-				encoder.close();
-				xml = byteArrayOutputStream.toString("UTF-8");
-				if (exceptionListener.isExceptionThrown()) {
-					// Object doesn't seem to be a bean
-					setMessage(message.toString());
-					encoding = ENCODING_TO_STRING;
-				} else {
-					setMessage(xml);
-					encoding = ENCODING_XML_ENCODER;
+				StreamingType streamingType = report.getMessageCapturer().getStreamingType(message);
+				if (streamingType == StreamingType.CHARACTER_STREAM || streamingType == StreamingType.BYTE_STREAM) {
+					TestTool testTool = report.getTestTool();
+					// Use array to work around final scope limitation for anonymous inner class
+					Object[] possiblyWrappedMessage = new Object[1];
+					if (streamingType == StreamingType.CHARACTER_STREAM) {
+						StringWriter stringWriter = new StringWriter() {
+								int length = 0;
+								boolean truncated = false;
+
+								@Override
+								public void write(String str) {
+									write(str.toCharArray(), 0, str.length());
+								}
+
+								@Override
+								public void write(String str, int off, int len) {
+									write(str.toCharArray(), off, len);
+								}
+
+								@Override
+								public void write(int c) {
+									char[] cbuf = new char[1];
+									cbuf[0] = (char)c;
+									write(cbuf, 0, 1);
+								}
+
+								@Override
+								public void write(char[] cbuf) {
+									write(cbuf, 0, cbuf.length);
+								}
+
+								@Override
+								public void write(char[] cbuf, int off, int len) {
+									if (length + len > testTool.getMaxMessageLength()) {
+										if (!truncated) {
+											super.write(cbuf, off, testTool.getMaxMessageLength() - length);
+											truncated = true;
+										}
+									}
+									length = length + len;
+									if (truncated) {
+										return;
+									} else {
+										super.write(cbuf, off, len);
+									}
+								}
+
+								@Override
+								public void close() throws IOException {
+									super.close();
+									int preTruncatedMessageLength = -1;
+									if (truncated) {
+										preTruncatedMessageLength = length;
+									}
+									report.closeStreamingMessage(possiblyWrappedMessage[0], streamingType.toString(), toString(), preTruncatedMessageLength);
+								}
+						};
+						message = report.getMessageCapturer().toWriter(message, stringWriter);
+					} else {
+						ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream() {
+								int length = 0;
+								boolean truncated = false;
+
+								@Override
+								public void write(int b) {
+									byte[] buf = new byte[1];
+									buf[0] = (byte)b;
+									write(buf, 0, 1);
+								}
+
+								@Override
+								public void write(byte[] b) {
+									write(b, 0, b.length);
+								}
+
+								@Override
+								public void write(byte[] b, int off, int len) {
+									if (length + len > testTool.getMaxMessageLength()) {
+										if (!truncated) {
+											super.write(b, off, testTool.getMaxMessageLength() - length);
+											truncated = true;
+										}
+									}
+									length = length + len;
+									if (truncated) {
+										return;
+									} else {
+										super.write(b, off, len);
+									}
+								}
+
+								@Override
+								public void close() throws IOException {
+									super.close();
+									int preTruncatedMessageLength = -1;
+									if (truncated) {
+										preTruncatedMessageLength = length;
+									}
+									report.closeStreamingMessage(possiblyWrappedMessage[0], streamingType.toString(), toByteArray(), preTruncatedMessageLength);
+								}
+						};
+						message = report.getMessageCapturer().toOutputStream(message, byteArrayOutputStream);
+					}
+					report.increaseMessageCapturersActiveCount();
+					report.addStreamingMessageListener(message, this);
+					possiblyWrappedMessage[0] = message;
 				}
 			}
 		}
+		return message;
 	}
 
 	public String getMessage() {
 		return message;
 	}
 
-	@SneakyThrows(UnsupportedEncodingException.class)
-	public Object getMessageAsObject() {
-		if (encoding == ENCODING_BASE64) {
-			return java.util.Base64.getDecoder().decode(message);
-		} else if (encoding == ENCODING_XML_ENCODER) {
-			ByteArrayInputStream byteArrayInputStream = null;
-			byteArrayInputStream = new ByteArrayInputStream(message.getBytes("UTF-8"));
-			XMLDecoder xmlDecoder = new XMLDecoder(byteArrayInputStream);
-			return xmlDecoder.readObject();
-		} else {
-			return message;
-		}
+	public Object getMessageAsObject() throws ParseException {
+		return report.getMessageEncoder().toObject(message, encoding);
 	}
 
-	public void setEncoding(int encoding) {
+	public void setEncoding(String encoding) {
 		this.encoding = encoding;
 	}
 
-	public int getEncoding() {
+	public String getEncoding() {
 		return encoding;
 	}
 
-	public String getEncodingAsString() {
-		return getEncodingAsString(getEncoding());
+	public void setStreaming(String streaming) {
+		this.streaming = streaming;
 	}
 
-	public static String getEncodingAsString(int encoding) {
-		String encodingAsString = null;
-		switch (encoding) {
-			case ENCODING_NONE : encodingAsString = "None"; break;
-			case ENCODING_XML_ENCODER : encodingAsString = "XMLEncoder"; break;
-			case ENCODING_BASE64 : encodingAsString = "Base64"; break;
-			case ENCODING_TO_STRING : encodingAsString = "Object.toString()"; break;
-			case ENCODING_DOM_NODE : encodingAsString = "DOM2Writer.nodeToString(node)"; break;
-			case ENCODING_DATE : encodingAsString = "SimpleDateFormat(\"yyyy-MM-dd HH:mm:ss.SSS\")"; break;
-		}
-		return encodingAsString;
+	public String getStreaming() {
+		return streaming;
 	}
 
 	public void setType(int type) {
@@ -257,20 +329,20 @@ public class Checkpoint implements Serializable, Cloneable {
 		return level;
 	}
 
-	public void setMessageHasBeenStubbed(boolean messageHasBeenStubbed) {
-		this.messageHasBeenStubbed = messageHasBeenStubbed;
-	}
-
-	public boolean getMessageHasBeenStubbed() {
-		return messageHasBeenStubbed;
-	}
-
 	public void setStub(int stub) {
 		this.stub = stub;
 	}
 
 	public int getStub() {
 		return stub;
+	}
+
+	public void setStubbed(boolean stubbed) {
+		this.stubbed = stubbed;
+	}
+
+	public boolean isStubbed() {
+		return stubbed;
 	}
 
 	public Path getPath() {
@@ -297,9 +369,7 @@ public class Checkpoint implements Serializable, Cloneable {
 	 * @return estimated memory usage in bytes
 	 */
 	public long getEstimatedMemoryUsage() {
-		if (estimatedMemoryUsage > -1) {
-			return estimatedMemoryUsage;
-		} else if (message == null) {
+		if (message == null) {
 			return 0L;
 		} else {
 			return message.length() * 2;
@@ -328,10 +398,6 @@ public class Checkpoint implements Serializable, Cloneable {
 
 	public int getPreTruncatedMessageLength() {
 		return preTruncatedMessageLength;
-	}
-	
-	public void setEstimatedMemoryUsage(long estimatedMemoryUsage) {
-		this.estimatedMemoryUsage = estimatedMemoryUsage;
 	}
 
 	public String getMessageWithResolvedVariables(ReportRunner reportRunner) {

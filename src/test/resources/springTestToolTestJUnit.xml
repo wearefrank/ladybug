@@ -9,7 +9,8 @@
 	"
 	>
 
-	<bean name="testTool" class="nl.nn.testtool.TestTool" scope="singleton">
+	<!-- Use prototype for JUnit tests to reset settings between tests -->
+	<bean name="testTool" class="nl.nn.testtool.TestTool" scope="prototype">
 		<property name="debugStorage">
 			<ref bean="debugStorage"/>
 		</property>

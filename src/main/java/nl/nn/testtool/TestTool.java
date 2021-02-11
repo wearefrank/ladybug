@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2018 Nationale-Nederlanden, 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -42,7 +42,7 @@ public class TestTool {
 	private String configName;
 	private String configVersion;
 	private int maxCheckpoints = 2500;
-	private int maxMessageLength = -1;
+	private int maxMessageLength = 10000000;
 	private long maxMemoryUsage = 100000000L;
 	private Debugger debugger;
 	private Rerunner rerunner;
@@ -55,6 +55,8 @@ public class TestTool {
 	private List<StartpointProvider> startpointProviders = new ArrayList<StartpointProvider>();
 	private List<String> startpointProviderNames = new ArrayList<String>();
 	private LogStorage debugStorage;
+	private MessageEncoder messageEncoder = new MessageEncoderImpl();
+	private MessageCapturer messageCapturer = new MessageCapturerImpl();
 	private MessageTransformer messageTransformer;
 	private String regexFilter;
 	private String defaultStubStrategy = "Stub all external connection code";
@@ -151,12 +153,28 @@ public class TestTool {
 		return debugStorage;
 	}
 
+	public void setMessageEncoder(MessageEncoder messageEncoder) {
+		this.messageEncoder = messageEncoder;
+	}
+
+	public MessageEncoder getMessageEncoder() {
+		return messageEncoder;
+	}
+
 	public void setMessageTransformer(MessageTransformer messageTransformer) {
 		this.messageTransformer = messageTransformer;
 	}
 
 	public MessageTransformer getMessageTransformer() {
 		return messageTransformer;
+	}
+
+	public void setMessageCapturer(MessageCapturer messageCapturer) {
+		this.messageCapturer = messageCapturer;
+	}
+
+	public MessageCapturer getMessageCapturer() {
+		return messageCapturer;
 	}
 
 	public void setRegexFilter(String regexFilter) {
@@ -205,8 +223,9 @@ public class TestTool {
 			Set<String> matchingStubStrategies, int checkpointType, int levelChangeNextCheckpoint) {
 		boolean executeStubableCode = true;
 		if (reportGeneratorEnabled) {
+			Report report;
 			synchronized(reportsInProgress) {
-				Report report = (Report)reportsInProgressByCorrelationId.get(correlationId);
+				report = (Report)reportsInProgressByCorrelationId.get(correlationId);
 				if (report == null) {
 					if (checkpointType == Checkpoint.TYPE_STARTPOINT) {
 						log.debug("Create new report for '" + correlationId + "'");
@@ -235,23 +254,19 @@ public class TestTool {
 						log.warn("Report for '" + correlationId + "' is null, could not add checkpoint '" + name + "'");
 					}
 				}
-				if (report != null) {
+			}
+			if (report != null) {
+				synchronized(report) {
 					executeStubableCode = false;
-					reportsInProgressEstimatedMemoryUsage = reportsInProgressEstimatedMemoryUsage - report.getEstimatedMemoryUsage();
+					long oldMemoryUsage = report.getEstimatedMemoryUsage();
 					message = report.checkpoint(childThreadId, sourceClassName, name, message, stubableCode,
 							stubableCodeThrowsException, matchingStubStrategies, checkpointType, levelChangeNextCheckpoint);
-					reportsInProgressEstimatedMemoryUsage = reportsInProgressEstimatedMemoryUsage + report.getEstimatedMemoryUsage();
-					if (report.finished()) {
-						report.setEndTime(System.currentTimeMillis());
-						log.debug("Report is finished for '" + correlationId + "'");
-						reportsInProgress.remove(report);
-						reportsInProgressByCorrelationId.remove(correlationId);
-						numberOfReportsInProgress--;
-						reportsInProgressEstimatedMemoryUsage = reportsInProgressEstimatedMemoryUsage - report.getEstimatedMemoryUsage();
-						if (report.isReportFilterMatching()) {
-							debugStorage.storeWithoutException(report);
-						}
+					report.setEndTime(System.currentTimeMillis());
+					synchronized(reportsInProgress) {
+						reportsInProgressEstimatedMemoryUsage = reportsInProgressEstimatedMemoryUsage
+								+ report.getEstimatedMemoryUsage() - oldMemoryUsage;
 					}
+					closeReport(report);
 				}
 			}
 		}
@@ -264,6 +279,37 @@ public class TestTool {
 			}
 		}
 		return message;
+	}
+
+	protected void closeReport(Report report) {
+		synchronized(report) {
+			if (report.finished() && !report.isClosed()) {
+				report.closeStreamingMessages();
+				report.setClosed(true);
+				log.debug("Report is finished for '" + report.getCorrelationId() + "'");
+				synchronized(reportsInProgress) {
+					reportsInProgress.remove(report);
+					reportsInProgressByCorrelationId.remove(report.getCorrelationId());
+					numberOfReportsInProgress--;
+					reportsInProgressEstimatedMemoryUsage = reportsInProgressEstimatedMemoryUsage - report.getEstimatedMemoryUsage();
+				}
+				if (report.isReportFilterMatching()) {
+					debugStorage.storeWithoutException(report);
+				}
+			}
+		}
+	}
+
+	public boolean messageCapturerWaitingForClose() {
+		synchronized(reportsInProgress) {
+			for (Report report : reportsInProgress) {
+				if (report.threadsFinished() && !report.messageCapturersFinished()
+						&& report.getEndTime() + 30000 < System.currentTimeMillis()) {
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 
 	public Object startpoint(String correlationId, String sourceClassName, String name, Object message) {

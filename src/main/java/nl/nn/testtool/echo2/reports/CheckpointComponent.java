@@ -1,5 +1,5 @@
 /*
-   Copyright 2018-2019 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2018-2019 Nationale-Nederlanden, 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -38,6 +38,7 @@ public class CheckpointComponent extends MessageComponent {
 	private Label nameLabel;
 	private Label threadNameLabel;
 	private Label sourceClassNameLabel;
+	private Label messageClassNameLabel;
 	private Label pathLabel;
 	private RadioButton radioButtonStubOptionFollowReportStrategy;
 	private RadioButton radioButtonStubOptionYes;
@@ -47,6 +48,7 @@ public class CheckpointComponent extends MessageComponent {
 	private Label messageIsEmptyStringLabel;
 	private Label messageIsTruncatedLabel;
 	private Label messageIsEncodedLabel;
+	private Label messageIsCapturedLabel;
 	private Label checkpointUIDLabel;
 	private Label numberOfCharactersLabel;
 	private Label estimatedMemoryUsageLabel;
@@ -143,6 +145,10 @@ public class CheckpointComponent extends MessageComponent {
 		messageIsEncodedLabel.setVisible(false);
 		add(messageIsEncodedLabel);
 
+		messageIsCapturedLabel = Echo2Application.createInfoLabelWithColumnLayoutData();
+		messageIsCapturedLabel.setVisible(false);
+		add(messageIsCapturedLabel);
+
 		add(messageColumn);
 		add(messageTextArea);
 
@@ -154,6 +160,9 @@ public class CheckpointComponent extends MessageComponent {
 		
 		sourceClassNameLabel = Echo2Application.createInfoLabelWithColumnLayoutData();
 		add(sourceClassNameLabel);
+		
+		messageClassNameLabel = Echo2Application.createInfoLabelWithColumnLayoutData();
+		add(messageClassNameLabel);
 		
 		pathLabel = Echo2Application.createInfoLabelWithColumnLayoutData();
 		add(pathLabel);
@@ -191,7 +200,7 @@ public class CheckpointComponent extends MessageComponent {
 			radioButtonStubOptionYes.setSelected(false);
 			radioButtonStubOptionNo.setSelected(false);
 		}
-		messageHasBeenStubbedLabel.setVisible(checkpoint.getMessageHasBeenStubbed());
+		messageHasBeenStubbedLabel.setVisible(checkpoint.isStubbed());
 		String message = null;
 		if (checkpoint.getMessage() != null) {
 			message = checkpoint.getMessage();
@@ -203,16 +212,22 @@ public class CheckpointComponent extends MessageComponent {
 		}
 		if (checkpoint.getPreTruncatedMessageLength() > 0) {
 			messageIsTruncatedLabel.setText("Message is truncated ("
-					+ (checkpoint.getPreTruncatedMessageLength() - testTool.getMaxMessageLength()) + " characters removed)");
+					+ (checkpoint.getPreTruncatedMessageLength() - checkpoint.getMessage().length()) + " characters removed)");
 			messageIsTruncatedLabel.setVisible(true);
 		} else {
 			messageIsTruncatedLabel.setVisible(false);
 		}
-		if (checkpoint.getEncoding() > 0) {
-			messageIsEncodedLabel.setText("Message object is encoded to string (using " + checkpoint.getEncodingAsString() + ")");
+		if (checkpoint.getEncoding() != null) {
+			messageIsEncodedLabel.setText("Message object of type " + checkpoint.getMessageClassName() + " is encoded to string using " + checkpoint.getEncoding());
 			messageIsEncodedLabel.setVisible(true);
 		} else {
 			messageIsEncodedLabel.setVisible(false);
+		}
+		if (checkpoint.getStreaming() != null) {
+			messageIsCapturedLabel.setText("Message was captured asynchronously from a " + checkpoint.getStreaming().toLowerCase() + " stream");
+			messageIsCapturedLabel.setVisible(true);
+		} else {
+			messageIsCapturedLabel.setVisible(false);
 		}
 		if (compare) {
 			String messageCompare = null;
@@ -226,6 +241,7 @@ public class CheckpointComponent extends MessageComponent {
 		nameLabel.setText("Name: " + checkpoint.getName());
 		threadNameLabel.setText("Thread name: " + checkpoint.getThreadName());
 		sourceClassNameLabel.setText("Source class name: " + checkpoint.getSourceClassName());
+		messageClassNameLabel.setText("Message class name: " + checkpoint.getMessageClassName());
 		pathLabel.setText("Path: " + checkpoint.getPath());
 		checkpointUIDLabel.setText("Checkpoint UID: "+checkpoint.getUID());
 		numberOfCharactersLabel.setText("Number of characters: "+(checkpoint.getMessage() != null ? checkpoint.getMessage().length() : "0"));

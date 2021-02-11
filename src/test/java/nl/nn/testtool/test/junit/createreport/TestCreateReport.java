@@ -15,13 +15,25 @@
 */
 package nl.nn.testtool.test.junit.createreport;
 
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertNotEquals;
+
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
+import java.io.Writer;
+import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 
+import org.apache.xerces.dom.DocumentImpl;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import ch.qos.logback.classic.Level;
@@ -30,32 +42,33 @@ import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.read.ListAppender;
 import junit.framework.AssertionFailedError;
 import junit.framework.TestCase;
+import nl.nn.testtool.MessageEncoderImpl;
 import nl.nn.testtool.Report;
 import nl.nn.testtool.TestTool;
 import nl.nn.testtool.storage.Storage;
 import nl.nn.testtool.storage.StorageException;
+import nl.nn.testtool.test.junit.util.TestExport;
 import nl.nn.testtool.transform.ReportXmlTransformer;
 
 /**
  * @author Jaco de Groot
  */
 public class TestCreateReport extends TestCase {
+	public static final String FILESYSTEM_PATH = "src/test/resources/";
+	public static final String RESOURCE_PATH = "nl/nn/testtool/test/junit/createreport/";
+	public static final String EXPECTED_SUFFIX = "-expected.xml";
+	public static final String ACTUAL_SUFFIX = "-actual.xml";
+	public static final String LOG_SUFFIX = "-FAILED.txt";
+	public static final String ASSERT_REPORT_XSLT = "transformReport.xslt";
+	private static final ApplicationContext context = new ClassPathXmlApplicationContext("springTestToolTestJUnit.xml");
+	private static final TestTool testTestTool = (TestTool)context.getBean("testTool");
+	private TestTool testTool;
 
-	private static TestTool testTool = (TestTool) new ClassPathXmlApplicationContext("springTestToolTestJUnit.xml").getBean("testTool");
-
-	// TODO [junit] overal checken of reports in progress?
-	
 	/*
 	ook met een thread testen die null als naam heeft
 	zelfde corr. id en andere thread
 	createThreadpoint met de subthread aanroepen
 	*/
-
-	/* GUI op zelfde storage laten werken als junit?
-	Controleren in GUI:
-	- Worden reports goed weergegeven?
-	- Wordt abort goed weergegeven?
-*/
 
 	private ListAppender<ILoggingEvent> listAppender;
 
@@ -66,11 +79,11 @@ public class TestCreateReport extends TestCase {
 			logsDir.mkdir();
 		}
 		assertTrue(logsDir.isDirectory());
-		testTool.setRegexFilter(null);
 		Logger log = (Logger)LoggerFactory.getLogger("nl.nn.testtool");
 		listAppender = new ListAppender<>();
 		listAppender.start();
 		log.addAppender(listAppender);
+		testTool = (TestTool)context.getBean("testTool");
 	}
 
 	@Override
@@ -79,27 +92,44 @@ public class TestCreateReport extends TestCase {
 		assertEquals(0, loggingEvents.size());
 	}
 
-	public void testSingleStartAndEndPointPlainMessage() {
-		String correlationId = getCorrelationId();
-		testTool.startpoint(correlationId, "startclassname", "startname", "startmessage");
-		testTool.endpoint(correlationId, "endclassname", "endname", "endmessage");
-		assertReport(correlationId, "test1.xslt");
+	public void testTestTool() {
+		// Assert prototype is used for bean so settings are reset between tests
+		assertNotEquals(testTestTool, testTool);
 	}
 
-	public void testTwoStartAndEndPointPlainMessages() {
+	public void testSingleStartAndEndPointPlainMessage() throws StorageException, IOException {
 		String correlationId = getCorrelationId();
-		testTool.startpoint(correlationId, "startclassname", "startname1", "startmessage1");
-		testTool.startpoint(correlationId, "startclassname", "startname2", "startmessage2");
-		testTool.endpoint(correlationId, "endclassname", "endname2", "endmessage2");
-		testTool.endpoint(correlationId, "endclassname", "endname1", "endmessage1");
-		assertReport(correlationId, "test1.xslt");
+		testTool.startpoint(correlationId, this.getClass().getTypeName(), "startname", "startmessage");
+		testTool.endpoint(correlationId, this.getClass().getTypeName(), "endname", "endmessage");
+		assertReport(correlationId);
 	}
 
-	public void testThread() {
+	public void testTwoStartAndEndPointPlainMessages() throws StorageException, IOException {
+		String correlationId = getCorrelationId();
+		testTool.startpoint(correlationId, null, "startname1", "startmessage1");
+		testTool.startpoint(correlationId, null, "startname2", "startmessage2");
+		testTool.endpoint(correlationId, null, "endname2", "endmessage2");
+		testTool.endpoint(correlationId, null, "endname1", "endmessage1");
+		assertReport(correlationId);
+	}
+
+	public void testSpecialValues() throws StorageException, IOException {
+		String correlationId = getCorrelationId();
+		testTool.startpoint(correlationId, null, "startname1", null);
+		testTool.infopoint(correlationId, null, "infoname1", new Date(0));
+		testTool.infopoint(correlationId, null, "infoname2", new IOException("Test with strange object"));
+		testTool.infopoint(correlationId, null, "infoname3", 123);
+		testTool.infopoint(correlationId, null, "infoname4", new Integer(456));
+		testTool.infopoint(correlationId, null, "infoname5", new DocumentImpl().createElement("NodeTest"));
+		testTool.endpoint(correlationId, null, "endname1", "");
+		assertReport(correlationId, true);
+	}
+
+	public void testThread() throws StorageException, IOException {
 		testThread(getCorrelationId(), true, true);
 	}
 
-	public void testThreadWithoutThreadCreatepoint() {
+	public void testThreadWithoutThreadCreatepoint() throws StorageException, IOException {
 		String correlationId = getCorrelationId();
 		testThread(correlationId, false, true);
 		List<ILoggingEvent> loggingEvents = listAppender.list;
@@ -110,7 +140,7 @@ public class TestCreateReport extends TestCase {
 		loggingEvents.remove(0);
 	}
 
-	public void testThreadWithoutThreadCreatepointAndThreadStartpoint() {
+	public void testThreadWithoutThreadCreatepointAndThreadStartpoint() throws StorageException, IOException {
 		String correlationId = getCorrelationId();
 		testThread(correlationId, false, false);
 		List<ILoggingEvent> loggingEvents = listAppender.list;
@@ -121,57 +151,57 @@ public class TestCreateReport extends TestCase {
 		loggingEvents.remove(0);
 	}
 
-	private void testThread(String correlationId, boolean useThreadCreatepoint, boolean useThreadStartpoint) {
+	private void testThread(String correlationId, boolean useThreadCreatepoint, boolean useThreadStartpoint) throws StorageException, IOException {
 		String childThreadId = correlationId + "-ChildThreadId";
 		String threadName = correlationId + "-ThreadName";
-		testTool.startpoint(correlationId, "startclassname", "startname1", "startmessage1");
+		testTool.startpoint(correlationId, null, "startname1", "startmessage1");
 		if (useThreadCreatepoint) {
 			testTool.threadCreatepoint(correlationId, childThreadId);
 		}
 		String originalThreadName = Thread.currentThread().getName();
 		Thread.currentThread().setName(threadName);
 		if (useThreadStartpoint) {
-			testTool.threadStartpoint(correlationId, childThreadId, "threadstartclassname", "startname2", "startmessage2");
+			testTool.threadStartpoint(correlationId, childThreadId, null, "startname2", "startmessage2");
 		}
-		testTool.startpoint(correlationId, "startclassname", "startname3", "startmessage3");
-		testTool.endpoint(correlationId, "endclassname", "endname3", "endmessage3");
+		testTool.startpoint(correlationId, null, "startname3", "startmessage3");
+		testTool.endpoint(correlationId, null, "endname3", "endmessage3");
 		if (useThreadStartpoint) {
-			testTool.threadEndpoint(correlationId, "threadendclassname", "endname2", "endmessage2");
+			testTool.threadEndpoint(correlationId, null, "endname2", "endmessage2");
 		}
 		Thread.currentThread().setName(originalThreadName);
-		testTool.endpoint(correlationId, "endclassname", "endname1", "endmessage1");
-		assertReport(correlationId, "test1.xslt");
+		testTool.endpoint(correlationId, null, "endname1", "endmessage1");
+		assertReport(correlationId);
 	}
 
-	public void testAbort() {
+	public void testAbort() throws StorageException, IOException {
 		String correlationId = getCorrelationId();
-		testTool.startpoint(correlationId, "startclassname", "startname1", "startmessage1");
-		testTool.startpoint(correlationId, "startclassname", "startname2", "startmessage2");
-		testTool.abortpoint(correlationId, "startclassname", "startname1", "endmessage2");
-		assertReport(correlationId, "test1.xslt");
+		testTool.startpoint(correlationId, null, "startname1", "startmessage1");
+		testTool.startpoint(correlationId, null, "startname2", "startmessage2");
+		testTool.abortpoint(correlationId, null, "startname1", "endmessage2");
+		assertReport(correlationId);
 	}
 
-	public void testAbortWithNonExistingStartname() {
+	public void testAbortWithNonExistingStartname() throws StorageException, IOException {
 		String correlationId = getCorrelationId();
-		testTool.startpoint(correlationId, "startclassname", "startname1", "startmessage1");
-		testTool.startpoint(correlationId, "startclassname", "startname2", "startmessage2");
-		testTool.abortpoint(correlationId, "abortclassname", "wrong", "endmessage2");
-		assertReport(correlationId, "test1.xslt");
+		testTool.startpoint(correlationId, null, "startname1", "startmessage1");
+		testTool.startpoint(correlationId, null, "startname2", "startmessage2");
+		testTool.abortpoint(correlationId, null, "wrong", "endmessage2");
+		assertReport(correlationId);
 	}
 
-	public void testAbortThread() {
+	public void testAbortThread() throws StorageException, IOException {
 		String correlationId = getCorrelationId();
 		String childThreadId = correlationId + "-ChildThreadId";
 		String threadName = correlationId + "-ThreadName";
-		testTool.startpoint(correlationId, "startclassname", "startname1", "startmessage1");
+		testTool.startpoint(correlationId, null, "startname1", "startmessage1");
 		testTool.threadCreatepoint(correlationId, childThreadId);
 		String originalThreadName = Thread.currentThread().getName();
 		Thread.currentThread().setName(threadName);
-		testTool.threadStartpoint(correlationId, childThreadId, "threadstartclassname", "startname2", "startmessage2");
-		testTool.abortpoint(correlationId, "abortclassname", "wrong", "endmessage2");
+		testTool.threadStartpoint(correlationId, childThreadId, null, "startname2", "startmessage2");
+		testTool.abortpoint(correlationId, null, "wrong", "endmessage2");
 		Thread.currentThread().setName(originalThreadName);
-		testTool.endpoint(correlationId, "endclassname", "endname1", "endmessage1");
-		assertReport(correlationId, "test1.xslt");
+		testTool.endpoint(correlationId, null, "endname1", "endmessage1");
+		assertReport(correlationId);
 	}
 
 	public void testIgnoreReport() throws StorageException {
@@ -179,10 +209,10 @@ public class TestCreateReport extends TestCase {
 		testTool.setRegexFilter("^(?!testIgnoreReport).*");
 		Report report1 = storage.getReport((Integer)storage.getStorageIds().get(0));
 		String correlationId = getCorrelationId();
-		testTool.startpoint(correlationId, "startclassname", "testIgnoreReport", "startmessage1");
-		testTool.startpoint(correlationId, "startclassname", "level2", "startmessage2");
-		testTool.endpoint(correlationId, "endclassname", "level2", "endmessage2");
-		testTool.endpoint(correlationId, "endclassname", "testIgnoreReport", "endmessage1");
+		testTool.startpoint(correlationId, null, "testIgnoreReport", "startmessage1");
+		testTool.startpoint(correlationId, null, "level2", "startmessage2");
+		testTool.endpoint(correlationId, null, "level2", "endmessage2");
+		testTool.endpoint(correlationId, null, "testIgnoreReport", "endmessage1");
 		Report report2 = storage.getReport((Integer)storage.getStorageIds().get(0));
 		try {
 			assertEquals(report1.toXml(), report2.toXml());
@@ -192,85 +222,179 @@ public class TestCreateReport extends TestCase {
 		}
 	}
 
-	public void testReportFilter() throws StorageException {
+	public void testReportFilter() throws StorageException, IOException {
 		testTool.setRegexFilter("startname1");
 		setName("testTwoStartAndEndPointPlainMessages");
 		testTwoStartAndEndPointPlainMessages();
 	}
 
-	private Report assertReport(String correlationId, String xslt) {
+	public void testStreams() throws IOException, StorageException {
+		String correlationId = getCorrelationId();
+		int maxMessageLength = 50;
+		testTool.setMaxMessageLength(maxMessageLength);
+		// Make byte array readable in expected and actual xml
+		testTool.setMessageEncoder(
+				new MessageEncoderImpl() {
+					@Override
+					public ToStringResult toString(Object message) {
+						if (message instanceof byte[]) {
+							return new ToStringResult(new String((byte[])message), "new String((byte[])message)");
+						}
+						return super.toString(message);
+					}
+				}
+		);
+		testTool.startpoint(correlationId, null, "startname", "startmessage");
+
+		Writer writerOriginalMessage = new StringWriter();
+		Writer writerMessage = (Writer)testTool.inputpoint(correlationId, null, "writer", writerOriginalMessage);
+		assertNotEquals(writerOriginalMessage, writerMessage);
+		testWriterMessage(writerMessage); // Before report is closed
+
+		writerOriginalMessage = new StringWriter();
+		writerMessage = (Writer)testTool.inputpoint(correlationId, null, "writer", writerOriginalMessage);
+		assertNotEquals(writerOriginalMessage, writerMessage);
+
+		// Assert no wrapping of message when same message is used again
+		assertEquals(writerMessage, testTool.inputpoint(correlationId, null, "outputstream", writerMessage));
+
+		ByteArrayOutputStream outputStreamOriginalMessage = new ByteArrayOutputStream();
+		OutputStream outputStreamMessage = (OutputStream)testTool.inputpoint(correlationId, null, "outputstream", outputStreamOriginalMessage);
+		assertNotEquals(outputStreamOriginalMessage, outputStreamMessage);
+		testOutputStreamMessage(outputStreamMessage); // Before report is closed
+
+		outputStreamOriginalMessage = new ByteArrayOutputStream();
+		outputStreamMessage = (OutputStream)testTool.inputpoint(correlationId, null, "outputstream", outputStreamOriginalMessage);
+		assertNotEquals(outputStreamOriginalMessage, outputStreamMessage);
+
+		// Assert no wrapping of message when used again
+		assertEquals(outputStreamMessage, testTool.inputpoint(correlationId, null, "outputstream", outputStreamMessage));
+
+		testTool.endpoint(correlationId, null, "endname", "endmessage");
+
+		testWriterMessage(writerMessage); // After report is closed
+
+		testOutputStreamMessage(outputStreamMessage); // After report is closed
+
+		assertReport(correlationId, true);
 		Storage storage = testTool.getDebugStorage();
-//		List metadataNames = new ArrayList();
-//		metadataNames.add("storageId");
-//		List metadata = null;
-//		try {
-//			metadata = storage.getMetadata(1, metadataNames, null, MetadataExtractor.VALUE_TYPE_OBJECT);
-//		} catch (StorageException e) {
-//		}
-//		assertNotNull(metadata);
+		Report report = storage.getReport((Integer)storage.getStorageIds().get(0));
+		assertEquals(report.getCheckpoints().get(1).getMessage(), writerOriginalMessage.toString().substring(0, maxMessageLength));
+		assertArrayEquals(report.getCheckpoints().get(4).getMessage().getBytes(), Arrays.copyOf(outputStreamOriginalMessage.toByteArray(), maxMessageLength));
+	}
 
-//TODO [junit] nette oplossing zoeken
-//Deze methode aan TestTool.java toevoegen:
-//		public static List getReportsInProgress() {
-//			return reportsInProgress;
-//		}
-//Dan kan dit worden gebruikt:
-//		List list = TestTool.getReportsInProgress();
-//		Iterator iterator = list.iterator();
-//		while (iterator.hasNext()) {
-//			Report report = (Report)iterator.next();
-//			ReportXmlTransformer reportXmlTransformer = new ReportXmlTransformer();
-//			assertNull(reportXmlTransformer.setXslt(getResource(xslt)));
-//			report.setReportXmlTransformer(reportXmlTransformer);
-//			System.out.println(getName() + " in progress: [" + report.toXml() + "]");
-//		}
-//		assertTrue(list.size() == 0);
+	public void testStreamsAllClosedBeforeReportIsClosed() throws IOException, StorageException {
+		String correlationId = getCorrelationId();
+		testTool.startpoint(correlationId, null, "startname", "startmessage");
 
-		Report report = null;
-		try {
-//exceptie laten gooien (try/catch weghalen)?
-//als er geen report is gemaakt klopt get(0) niet. in setUp() opslaan wat laatste storageId was en hier checken dat die niet hetzelfde is?
-			report = storage.getReport((Integer)storage.getStorageIds().get(0));
-		} catch (StorageException e) {
-		}
+		Writer writerOriginalMessage = new StringWriter();
+		Writer writerMessage = (Writer)testTool.inputpoint(correlationId, null, "writer", writerOriginalMessage);
+		assertNotEquals(writerOriginalMessage, writerMessage);
+		testWriterMessage(writerMessage);
+
+		testTool.endpoint(correlationId, null, "endname", "endmessage");
+
+		assertReport(correlationId);
+	}
+
+	private void testWriterMessage(Writer writerMessage) throws IOException {
+		writerMessage.write("Test Writer");
+		writerMessage.write(" write", 0, 6);
+		writerMessage.write(" write".toCharArray());
+		writerMessage.write("  writ".toCharArray(), 1, 5);
+		writerMessage.write(101);
+		writerMessage.append(' ');
+		writerMessage.append(" app ", 1, 4);
+		writerMessage.append("end random random random random random");
+		writerMessage.close();
+	}
+
+	private void testOutputStreamMessage(OutputStream outputStreamMessage) throws IOException {
+		outputStreamMessage.write("Test OutputStream ".getBytes());
+		outputStreamMessage.write(119);
+		String s = "rite random random random random random";
+		outputStreamMessage.write(s.getBytes(), 0, s.length());
+		outputStreamMessage.close();
+	}
+
+	private Report assertReport(String correlationId) throws StorageException, IOException {
+		return assertReport(correlationId, false);
+	}
+
+	private Report assertReport(String correlationId, boolean assertExport) throws StorageException, IOException {
+		assertEquals(0, testTool.getNumberOfReportsInProgress());
+		Storage storage = testTool.getDebugStorage();
+		Report report = storage.getReport((Integer)storage.getStorageIds().get(0));
+		assertEquals(correlationId, report.getCorrelationId());
 		assertNotNull(report);
 		ReportXmlTransformer reportXmlTransformer = new ReportXmlTransformer();
-		reportXmlTransformer.setXslt(getResource(xslt));
+		reportXmlTransformer.setXslt(getResource(RESOURCE_PATH, ASSERT_REPORT_XSLT, null));
 		report.setReportXmlTransformer(reportXmlTransformer);
-		String found = report.toXml();
-		String expected = getResource(getName() + ".xml");
-		if (!found.equals(expected)) {
-			System.err.println("===");
-			System.err.println("=== " + getName() + " ===");
-			System.err.println("===");
-			System.err.println("found:");
-			System.err.println("[" + found + "]");
-			System.err.println("expected:");
-			System.err.println("[" + expected + "]");
-			System.err.println("equal part:");
-			System.err.print("[");
-			int i = 0;
-			for (; i < found.length() && i < expected.length() && found.charAt(i) == expected.charAt(i); i++) {
-				System.err.print(found.charAt(i));
-			}
-			System.err.println("]");
-			System.err.println("found next char: " + found.charAt(i) + " (" + (int)found.charAt(i) + ")");
-			System.err.println("expected next char: " + expected.charAt(i) + " (" + (int)expected.charAt(i) + ")");
+		String actual = report.toXml();
+		assertXml(RESOURCE_PATH, getName(), actual);
+		if (assertExport) {
+			TestExport.assertExport(RESOURCE_PATH, getName() + "Export", correlationId, report, true);
 		}
-		assertEquals(found, expected);
 		return report;
+	}
+
+	public static void assertXml(String path, String testCaseName, String actual) throws StorageException, IOException {
+		File expectedfile = new File(FILESYSTEM_PATH + path + testCaseName + EXPECTED_SUFFIX);
+		File actualFile = new File(FILESYSTEM_PATH + path + testCaseName + ACTUAL_SUFFIX);
+		File logFile = new File(FILESYSTEM_PATH + path + testCaseName + LOG_SUFFIX);
+		String expected = getResource(path, testCaseName + EXPECTED_SUFFIX, "Replace with real expected string");
+		if (!expected.equals(actual)) {
+			StringBuffer buffer = new StringBuffer();
+			buffer.append("===\n");
+			buffer.append("=== " + testCaseName + " ===\n");
+			buffer.append("===\n");
+			buffer.append("expected:\n");
+			buffer.append("[" + expected + "]\n");
+			buffer.append("actual:\n");
+			buffer.append("[" + actual + "]\n");
+			buffer.append("equal part:\n");
+			buffer.append("[\n");
+			int i = 0;
+			for (; i < expected.length() && i < actual.length() && expected.charAt(i) == actual.charAt(i); i++) {
+				buffer.append(expected.charAt(i));
+			}
+			buffer.append("]\n");
+			if (i > expected.length()) {
+				buffer.append("expected next char: " + expected.charAt(i) + " (" + (int)expected.charAt(i) + ")\n");
+			}
+			if (i > actual.length()) {
+				buffer.append("actual next char: " + actual.charAt(i) + " (" + (int)actual.charAt(i) + ")\n");
+			}
+			writeFile(expectedfile, expected, false);
+			System.err.println("===>>> See " + expectedfile.getCanonicalPath());
+			writeFile(actualFile, actual, true);
+			System.err.println("===>>> See " + actualFile.getCanonicalPath());
+			writeFile(logFile, buffer.toString(), true);
+			System.err.println("===>>> See " + logFile.getCanonicalPath());
+		} else {
+			// Clean up previous run (file will only exist when previous run has failed)
+			actualFile.delete();
+			logFile.delete();
+		}
+		assertEquals(expected, actual);
 	}
 
 	private String getCorrelationId() {
 		return getName() + "-" + System.currentTimeMillis();
 	}
 
-	private String getResource(String name) {
+	public static String getResource(String path, String name, String valueToWriteWhenNotFound) throws IOException {
 		StringBuffer result = new StringBuffer();
-		String resourceName = "nl/nn/testtool/test/junit/createreport/" + name;
-		InputStream stream = getClass().getClassLoader().getResourceAsStream(resourceName);
+		String resourceName = path + name;
+		InputStream stream = TestCreateReport.class.getClassLoader().getResourceAsStream(resourceName);
 		if (stream == null) {
-			throw new junit.framework.AssertionFailedError("Could not find resource '" + resourceName + "'");
+			if (valueToWriteWhenNotFound == null) {
+				throw new junit.framework.AssertionFailedError("Could not find resource '" + resourceName + "'");
+			} else {
+				writeFile(new File(FILESYSTEM_PATH + path + name),
+						valueToWriteWhenNotFound, false);
+				return valueToWriteWhenNotFound;
+			}
 		}
 		byte[] bytes = new byte[1024];
 		int i;
@@ -286,5 +410,13 @@ public class TestCreateReport extends TestCase {
 			result.append("IOException reading xslt: " + e2.getMessage());
 		}
 		return result.toString();
+	}
+
+	private static void writeFile(File file, String content, boolean overwrite) throws IOException {
+		if (!(file.exists() && !overwrite)) {
+			FileWriter fileWriter = new FileWriter(file);
+			fileWriter.append(content);
+			fileWriter.close();
+		}
 	}
 }

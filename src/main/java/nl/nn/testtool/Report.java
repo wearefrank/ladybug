@@ -1,5 +1,5 @@
 /*
-   Copyright 2018-2020 WeAreFrank!
+   Copyright 2018-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,18 +22,21 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import lombok.Data;
 import lombok.SneakyThrows;
 import nl.nn.testtool.run.ReportRunner;
 import nl.nn.testtool.storage.Storage;
@@ -67,7 +70,7 @@ public class Report implements Serializable {
 	private String path;
 	private String stubStrategy;
 	private List<Checkpoint> checkpoints = new ArrayList<Checkpoint>();
-	private long estimatedMemoryUsage = 0;
+	private long estimatedMemoryUsage = 0L;
 	private String transformation;
 	private String variableCsv;
 	// Please note that the get and set methods need @Transient annotation for
@@ -78,9 +81,11 @@ public class Report implements Serializable {
 	private transient Map<String, Integer> threadFirstLevel = new HashMap<String, Integer>();
 	private transient Map<String, Integer> threadLevel = new HashMap<String, Integer>();
 	private transient Map<String, String> threadParent = new HashMap<String, String>();
+	private transient int threadsActiveCount = 0;
+	private transient boolean closed;
 	private transient Storage storage;
 	private transient Integer storageId;
-	private transient Long storageSize;
+	private transient long storageSize;
 	private transient ReportXmlTransformer reportXmlTransformer;
 	private transient ReportXmlTransformer globalReportXmlTransformer;
 	private transient String xml;
@@ -91,6 +96,9 @@ public class Report implements Serializable {
 	private transient boolean logReportFilterMatching = true;
 	private transient boolean logMaxCheckpoints = true;
 	private transient boolean logMaxMemoryUsage = true;
+	private transient AtomicInteger messageCapturersActiveCount = new AtomicInteger(0);
+	private transient Map<Object, Set<Checkpoint>> streamingMessageListeners = new HashMap<Object, Set<Checkpoint>>();
+	private transient Map<Object, StreamingMessageResult> streamingMessageResults = new HashMap<Object, StreamingMessageResult>();
 
 	public Report() {
 		String threadName = Thread.currentThread().getName();
@@ -98,6 +106,7 @@ public class Report implements Serializable {
 		threadCheckpointIndex.put(threadName, new Integer(0));
 		threadFirstLevel.put(threadName, new Integer(0));
 		threadLevel.put(threadName, new Integer(0));
+		threadsActiveCount++;
 	}
 
 	@Transient
@@ -108,6 +117,16 @@ public class Report implements Serializable {
 	@Transient
 	public TestTool getTestTool() {
 		return testTool;
+	}
+
+	@Transient
+	public void setClosed(boolean closed) {
+		this.closed = closed;
+	}
+
+	@Transient
+	public boolean isClosed() {
+		return closed;
 	}
 
 	@Transient
@@ -129,7 +148,7 @@ public class Report implements Serializable {
 	}
 
 	@Transient
-	public void setStorageSize(Long storageSize) {
+	public void setStorageSize(long storageSize) {
 		this.storageSize = storageSize;
 	}
 
@@ -285,6 +304,7 @@ public class Report implements Serializable {
 		threadFirstLevel.put(childThreadId, (Integer)threadLevel.get(parentThreadName));
 		threadLevel.put(childThreadId, (Integer)threadLevel.get(parentThreadName));
 		threadParent.put(childThreadId, parentThreadName);
+		threadsActiveCount++;
 	}
 
 	private Object addCheckpoint(String childThreadId, String sourceClassName, String name, Object message,
@@ -380,7 +400,7 @@ public class Report implements Serializable {
 				logMaxMemoryUsage = false;
 			}
 		} else {
-			Checkpoint checkpoint = new Checkpoint(this, threadName, sourceClassName, name, message, checkpointType, level.intValue());
+			Checkpoint checkpoint = new Checkpoint(this, threadName, sourceClassName, name, checkpointType, level.intValue());
 			checkpoints.add(index.intValue(), checkpoint);
 			boolean stub = false;
 			if (originalReport != null) {
@@ -416,8 +436,8 @@ public class Report implements Serializable {
 					} else {
 						message = originalCheckpoint.getMessageAsObject();
 					}
-					checkpoint.setMessage(message);
-					checkpoint.setMessageHasBeenStubbed(true);
+					message = checkpoint.setMessage(message);
+					checkpoint.setStubbed(true);
 				}
 			}
 			if (!stub) {
@@ -428,15 +448,12 @@ public class Report implements Serializable {
 					if (stubableCodeThrowsException != null) {
 						message = stubableCodeThrowsException.execute();
 					}
-					checkpoint.setMessage(message);
+					message = checkpoint.setMessage(message);
 				} catch(Throwable t) {
 					checkpoints.remove(index.intValue());
 					testTool.abortpoint(correlationId, sourceClassName, name, t.getMessage());
 					throw t;
 				}
-			}
-			if(testTool.getMaxMessageLength() > 0 && message != null && message.toString().length() > testTool.getMaxMessageLength()) {
-				checkpoint.setMessage(truncateMessage(checkpoint, message.toString()));
 			}
 			estimatedMemoryUsage += checkpoint.getEstimatedMemoryUsage();
 			if (log.isDebugEnabled()) {
@@ -450,25 +467,28 @@ public class Report implements Serializable {
 		}
 		level = new Integer(level.intValue() + levelChangeNextCheckpoint);
 		threadLevel.put(threadName, level);
+		if (level.equals(threadFirstLevel.get(threadName))) {
+			threadsActiveCount--;
+		}
 		return message;
 	}
-	
-	private String truncateMessage(Checkpoint checkpoint, String message) {
-		// For a message that is referenced by multiple checkpoints, have one truncated message that is
-		// referenced by those checkpoints, to prevent creating multiple String objects representing the
-		// same string and occupying unnecessary memory.
-		checkpoint.setPreTruncatedMessageLength(message.length());
-		if(truncatedMessageMap.containsKey(message)) {
-			checkpoint.setEstimatedMemoryUsage(0L);
-			return truncatedMessageMap.get(message);
-		} else {
-			String truncatedMessage = message.substring(0, testTool.getMaxMessageLength())
-				+ "... ("+(message.length() - testTool.getMaxMessageLength())+" more characters)";
-			
-			truncatedMessageMap.put(message, truncatedMessage);
-			checkpoint.setEstimatedMemoryUsage(2 * truncatedMessage.length());
-			return truncatedMessage;
+
+	protected String truncateMessage(Checkpoint checkpoint, String message) {
+		if (testTool.getMaxMessageLength() > -1 && message != null
+				&& message.toString().length() > testTool.getMaxMessageLength()) {
+			// For a message that is referenced by multiple checkpoints, have one truncated message that is
+			// referenced by those checkpoints, to prevent creating multiple String objects representing the
+			// same string and occupying unnecessary memory.
+			checkpoint.setPreTruncatedMessageLength(message.length());
+			if(truncatedMessageMap.containsKey(message)) {
+				return truncatedMessageMap.get(message);
+			} else {
+				String truncatedMessage = message.substring(0, testTool.getMaxMessageLength());
+				truncatedMessageMap.put(message, truncatedMessage);
+				return truncatedMessage;
+			}
 		}
+		return message;
 	}
 
 	public Checkpoint getOriginalEndpointOrAbortpointForCurrentLevel() {
@@ -494,15 +514,74 @@ public class Report implements Serializable {
 	}
 
 	protected boolean finished() {
-		boolean finished = true;
-		for (String threadName : threads) {
-			Integer level = threadLevel.get(threadName);
-			if (!level.equals(threadFirstLevel.get(threadName))) {
-				finished = false;
-				break;
+		return threadsFinished() && messageCapturersFinished();
+	}
+
+	protected boolean threadsFinished() {
+		return threadsActiveCount < 1;
+	}
+
+	protected boolean messageCapturersFinished() {
+		return getMessageCapturersActiveCount() < 1;
+	}
+
+	protected void addStreamingMessageListener(Object streamingMessage, Checkpoint checkpoint) {
+		synchronized(streamingMessageListeners) {
+			Set<Checkpoint> checkpoints = streamingMessageListeners.get(streamingMessage);
+			if (checkpoints == null) {
+				checkpoints = new HashSet<Checkpoint>();
+			}
+			checkpoints.add(checkpoint);
+			streamingMessageListeners.put(streamingMessage, checkpoints);
+		}
+	}
+
+	protected boolean isKnownStreamingMessage(Object streamingMessage) {
+		synchronized(streamingMessageListeners) {
+			return streamingMessageListeners.get(streamingMessage) != null;
+		}
+	}
+
+	protected void closeStreamingMessage(Object streamingMessage, String streamingType, Object message, int preTruncatedMessageLength) {
+		synchronized(streamingMessageListeners) {
+			StreamingMessageResult streamingMessageResult = new StreamingMessageResult();
+			streamingMessageResult.setStreamingType(streamingType);
+			streamingMessageResult.setMessage(message);
+			streamingMessageResult.setPreTruncatedMessageLength(preTruncatedMessageLength);
+			streamingMessageResults.put(streamingMessage, streamingMessageResult);
+			decreaseMessageCapturersActiveCount();
+		}
+		getTestTool().closeReport(this);
+	}
+
+	protected void closeStreamingMessages() {
+		synchronized(streamingMessageListeners) {
+			if (finished()) {
+				for (Object streamingMessage2 : streamingMessageListeners.keySet()) {
+					StreamingMessageResult streamingMessageResult = streamingMessageResults.get(streamingMessage2);
+					for (Checkpoint checkpoint : streamingMessageListeners.get(streamingMessage2)) {
+						checkpoint.setStreaming(streamingMessageResult.getStreamingType());
+						checkpoint.setMessage(streamingMessageResult.getMessage());
+						checkpoint.setPreTruncatedMessageLength(streamingMessageResult.getPreTruncatedMessageLength());
+						estimatedMemoryUsage += checkpoint.getEstimatedMemoryUsage();
+					}
+				}
+				streamingMessageListeners.clear();
+				streamingMessageResults.clear();
 			}
 		}
-		return finished;
+	}
+
+	protected void increaseMessageCapturersActiveCount() {
+		messageCapturersActiveCount.incrementAndGet();
+	}
+
+	protected void decreaseMessageCapturersActiveCount() {
+		messageCapturersActiveCount.decrementAndGet();
+	}
+
+	protected int getMessageCapturersActiveCount() {
+		return messageCapturersActiveCount.get();
 	}
 
 	public Checkpoint getCheckpoint(Path path) {
@@ -547,7 +626,7 @@ public class Report implements Serializable {
 	}
 
 	@Transient
-	public boolean getDifferenceChecked() {
+	public boolean isDifferenceChecked() {
 		return differenceChecked;
 	}
 
@@ -557,13 +636,20 @@ public class Report implements Serializable {
 	}
 
 	@Transient
-	public boolean getDifferenceFound() {
+	public boolean isDifferenceFound() {
 		return differenceFound;
 	}
 
-	@Transient
 	public MessageTransformer getMessageTransformer() {
 		return testTool.getMessageTransformer();
+	}
+
+	public MessageEncoder getMessageEncoder() {
+		return testTool.getMessageEncoder();
+	}
+
+	public MessageCapturer getMessageCapturer() {
+		return testTool.getMessageCapturer();
 	}
 
 	public Object clone() throws CloneNotSupportedException {
@@ -621,8 +707,17 @@ public class Report implements Serializable {
 				stringBuffer.append(" Name=\"" + EscapeUtil.escapeXml(checkpoint.getName()) + "\"");
 				stringBuffer.append(" Type=\"" + EscapeUtil.escapeXml(checkpoint.getTypeAsString()) + "\"");
 				stringBuffer.append(" Level=\"" + checkpoint.getLevel() + "\"");
-				if (checkpoint.getEncoding() != Checkpoint.ENCODING_NONE) {
-					stringBuffer.append(" Encoding=\"" + checkpoint.getEncodingAsString() + "\"");
+				if (checkpoint.getSourceClassName() != null) {
+					stringBuffer.append(" SourceClassName=\"" + EscapeUtil.escapeXml(checkpoint.getSourceClassName()) + "\"");
+				}
+				if (checkpoint.getPreTruncatedMessageLength() != -1) {
+					stringBuffer.append(" PreTruncatedMessageLength=\"" + checkpoint.getPreTruncatedMessageLength() + "\"");
+				}
+				if (checkpoint.getEncoding() != null) {
+					stringBuffer.append(" Encoding=\"" + EscapeUtil.escapeXml(checkpoint.getEncoding()) + "\"");
+				}
+				if (checkpoint.getStreaming() != null) {
+					stringBuffer.append(" Streaming=\"" + EscapeUtil.escapeXml(checkpoint.getStreaming()) + "\"");
 				}
 				if (message == null) {
 					stringBuffer.append(" Null=\"true\"/>");
@@ -686,9 +781,9 @@ public class Report implements Serializable {
 			return;
 		}
 		String errorMessage = CsvUtil.validateCsv(variableCsv, ";", 2);
-		if (errorMessage != null)
+		if (errorMessage != null) {
 			throw new IllegalArgumentException(errorMessage);
-
+		}
 		this.variableCsv = variableCsv;
 	}
 
@@ -810,4 +905,11 @@ class RefCompareMap<K, V> implements Map<K, V> {
 	public Collection<V> values() {
 		throw new NotImplementedException();
 	}
+}
+
+@Data
+class StreamingMessageResult {
+	String streamingType;
+	Object message;
+	int preTruncatedMessageLength;
 }

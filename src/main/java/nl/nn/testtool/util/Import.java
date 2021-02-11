@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2018 Nationale-Nederlanden, 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -101,7 +101,7 @@ public class Import {
 			gzipInputStream = new GZIPInputStream(inputStream);
 			xmlDecoder = new XMLDecoder(gzipInputStream);
 			version = (String)xmlDecoder.readObject();
-			log.debug("Decoded version: " + version);
+			if (log != null) log.debug("Decoded version: " + version);
 			report = (Report)xmlDecoder.readObject();
 			importResult.oldStorageId = report.getStorageId();
 			// Check for more than one report in the stream to be backwards
@@ -110,17 +110,19 @@ public class Import {
 			while (report != null) {
 				storage.store(report);
 				report = (Report)xmlDecoder.readObject();
-				log.debug("Decoded report: " + report.getName());
+				if (log != null) log.debug("Decoded report: " + report.getName());
 			}
 		} catch(ArrayIndexOutOfBoundsException e) {
 			// This happens to be the way in which it ends for the
 			// XML Object Decoder
-			log.debug("Last report in file read");
+			if (log != null) log.debug("Last report in file read");
 		} catch (Throwable t) {
 			importResult.errorMessage = "Caught unexpected throwable during import: " + t.getMessage();
-			log.error(errorMessage, t);
+			if (log != null) log.error(errorMessage, t);
 		} finally {
-			importResult.newStorageId = report.getStorageId();
+			if (report != null) {
+				importResult.newStorageId = report.getStorageId();
+			}
 			if (xmlDecoder != null) {
 				xmlDecoder.close();
 			}
@@ -128,14 +130,14 @@ public class Import {
 				try {
 					gzipInputStream.close();
 				} catch(IOException e) {
-					log.error("IOException closing gzipInputStream", e);
+					if (log != null) log.error("IOException closing gzipInputStream", e);
 				}
 			}
 			if (inputStream != null) {
 				try {
 					inputStream.close();
 				} catch(IOException e) {
-					log.error("IOException closing inputStream", e);
+					if (log != null) log.error("IOException closing inputStream", e);
 				}
 			}
 		}

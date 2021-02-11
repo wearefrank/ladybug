@@ -1,11 +1,12 @@
 <Report Name="startname"
         Description=""
         Path=""
-        CorrelationId="Original length: 52"
+        CorrelationId="Original length: 54"
         StartTime="Original length: 13"
         EndTime="Original length: 13"
-        NumberOfCheckpoints="2"
-        EstimatedMemoryUsage="44">
+        NumberOfCheckpoints="3"
+        EstimatedMemoryUsage="402">
    <Checkpoint Name="startname" Type="Startpoint" Level="0">startmessage</Checkpoint>
+   <Checkpoint Name="writer" Type="Inputpoint" Level="1" Streaming="Character">Test Writer write write write append random random random random random</Checkpoint>
    <Checkpoint Name="endname" Type="Endpoint" Level="1">endmessage</Checkpoint>
 </Report>
