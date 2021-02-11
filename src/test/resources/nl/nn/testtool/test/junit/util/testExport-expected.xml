@@ -69,7 +69,7 @@
    <long>9</long>
   </void>
   <void property="storageId">
-   <int>9</int>
+   <int>-99999</int>
   </void>
   <void property="stubStrategy">
    <string>stubStrategy</string>

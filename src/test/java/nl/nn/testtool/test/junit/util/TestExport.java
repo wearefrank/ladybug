@@ -154,6 +154,9 @@ public class TestExport extends TestCase {
 	}
 
 	public static void assertExport(String path, String testCaseName, String correlationId, Report report, boolean applyIgnores) throws IOException, StorageException {
+		// When storageId is a very low number (like when being build by the pipeline) the replace will potentially
+		// replace the wrong number, hence adjust the storage id to a more unique number
+		report.setStorageId(-99999);
 		byte[] bytes = Export.getReportBytes(report);
 		ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(bytes);
 		GZIPInputStream gzipInputStream = new GZIPInputStream(byteArrayInputStream);
@@ -165,6 +168,7 @@ public class TestExport extends TestCase {
 		}
 		String actual = stringBuffer.toString();
 		actual = actual.replaceFirst("java version=\".*\" class", "java version=\"IGNORE-JAVA-VERSION\" class");
+		actual = actual.replaceAll("java version=&quot;.*&quot; class", "java version=&quot;IGNORE-JAVA-VERSION&quot; class");
 		if (applyIgnores) {
 			// Correlation id sometimes contains start time, hence replace correlation id first
 			actual = actual.replaceFirst(correlationId, "IGNORE-CORRELATIONID");

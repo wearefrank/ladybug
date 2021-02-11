@@ -85,7 +85,7 @@
      </void>
      <void property="message">
       <string>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
-&lt;java version=&quot;1.8.0_252&quot; class=&quot;java.beans.XMLDecoder&quot;&gt;
+&lt;java version=&quot;IGNORE-JAVA-VERSION&quot; class=&quot;java.beans.XMLDecoder&quot;&gt;
  &lt;int&gt;123&lt;/int&gt;
 &lt;/java&gt;
 </string>
@@ -117,7 +117,7 @@
      </void>
      <void property="message">
       <string>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
-&lt;java version=&quot;1.8.0_252&quot; class=&quot;java.beans.XMLDecoder&quot;&gt;
+&lt;java version=&quot;IGNORE-JAVA-VERSION&quot; class=&quot;java.beans.XMLDecoder&quot;&gt;
  &lt;int&gt;456&lt;/int&gt;
 &lt;/java&gt;
 </string>
