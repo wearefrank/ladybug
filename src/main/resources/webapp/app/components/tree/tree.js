@@ -174,6 +174,7 @@ angular.module('myApp').component('reportTree', {
     controller: treeController,
     bindings: {
         onSelectRelay: '=',
-        onAddRelay: '='
+        onAddRelay: '=',
+        storage: '='
     }
 });
