@@ -6,6 +6,7 @@ Ladybug Test Tool release notes
 Upcoming
 --------
 
+- Show message on upload when no ttr files in zip
 - Add support for streams
 - Upgrade ibis-echo2 from 2.0.2 to 2.0.3
 - Refactor XmlStorage's MetadataHandler in order to minimize rewrites.

@@ -39,11 +39,12 @@ public class Import {
 		ZipEntry zipEntry = null;
 		List<ImportResult> importResults = new ArrayList<ImportResult>();
 		try {
+			int counter = 0;
 			zipEntry = zipInputStream.getNextEntry();
 			while (zipEntry != null && errorMessage == null) {
 				log.debug("Process zip entry: " + zipEntry.getName());
 				if (!zipEntry.isDirectory() && zipEntry.getName().endsWith(".ttr")) {
-					
+					counter++;
 					// GZIPInputStream and/or XMLDecoder seem to close the
 					// ZipInputStream after reading the first ZipEntry.
 					// Using an intermediate ByteArrayInputStream to prevent
@@ -59,7 +60,6 @@ public class Import {
 						length = zipInputStream.read(buffer);
 					}
 					ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(reportBytes);
-					
 					ImportResult importResult = importTtr(byteArrayInputStream, storage, log);
 					importResults.add(importResult);
 					errorMessage = importResult.errorMessage;
@@ -67,7 +67,9 @@ public class Import {
 				zipInputStream.closeEntry();
 				zipEntry = zipInputStream.getNextEntry();
 			}
-			
+			if (counter < 1) {
+				errorMessage = "No ttr files found in zip";
+			}
 			for(ImportResult importResult : importResults) {
 				Report report = storage.getReport(importResult.newStorageId);
 				if(report.getInputCheckpoint().containsVariables()) {
@@ -80,11 +82,13 @@ public class Import {
 				}
 			}
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			errorMessage = "IOException on zip import";
+			log.warn(errorMessage, e);
+			errorMessage = errorMessage + ": " + e.getMessage();
 		} catch (StorageException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			errorMessage = "StorageException on zip import";
+			log.warn(errorMessage, e);
+			errorMessage = errorMessage + ": " + e.getMessage();
 		}
 		return errorMessage;
 	}
