@@ -1,4 +1,4 @@
-function displayController($scope) {
+function displayController($scope, $http) {
     let ctrl = this;
     ctrl.apiUrl = "http://localhost:8080/ibis_adapterframework_test_war_exploded/ladybug";
     ctrl.reportDetails = {text: "", values: {}};
@@ -109,7 +109,7 @@ function displayController($scope) {
 
 angular.module('myApp').component('reportDisplay', {
     templateUrl: 'components/display/display.html',
-    controller: ['$scope', displayController],
+    controller: ['$scope', '$http', displayController],
     bindings: {
         onSelectRelay: '=',
     }
