@@ -28,6 +28,7 @@ import java.io.InputStream;
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
@@ -192,6 +193,36 @@ public class ReportApi extends ApiBase {
 			return Response.ok().build();
 		}
 		return Response.status(Response.Status.BAD_REQUEST).entity(errorMessage).build();
+	}
+
+	/**
+	 * Uploads the given report to in-memory storage it, parses it and then returns the report in json format.
+	 *
+	 * @param attachment Attachment containing report.
+	 * @return List of serialized report objects.
+	 */
+	@POST
+	@Path("/report/upload")
+	@Produces(MediaType.APPLICATION_JSON)
+	@Consumes(MediaType.MULTIPART_FORM_DATA)
+	public Response getFileReport(@Multipart("file") Attachment attachment) {
+		CrudStorage storage = new nl.nn.testtool.storage.memory.Storage();
+		String filename = attachment.getContentDisposition().getParameter("filename");
+		InputStream in = attachment.getObject(InputStream.class);
+		String errorMessage = Upload.upload(filename, in, storage, logger);
+		if (StringUtils.isNotEmpty(errorMessage))
+			return Response.status(Response.Status.BAD_REQUEST).entity(errorMessage).build();
+		try {
+			Iterator storageIdsIterator = storage.getStorageIds().iterator();
+			ArrayList<Report> reports = new ArrayList<>(storage.getStorageIds().size());
+			while (storageIdsIterator.hasNext()) {
+				Report report = storage.getReport((Integer) storageIdsIterator.next());
+				reports.add(report);
+			}
+			return Response.ok(reports).build();
+		} catch (StorageException e) {
+			throw new ApiException("Exception while getting the parsed reports from in-memory storage.", e);
+		}
 	}
 
 	/**
