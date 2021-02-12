@@ -13,6 +13,7 @@ function treeController() {
         ctrl.onSelectRelay.expand = ctrl.expand;
         ctrl.onSelectRelay.collapse = ctrl.collapse;
         ctrl.onSelectRelay.close = ctrl.close;
+        ctrl.updateTree();
     }
 
     ctrl.remove_circulars = function (node) {
@@ -41,7 +42,12 @@ function treeController() {
             return;
         let node = tree.getSelected()[0];
         while (node.parentId !== undefined) {
-            node = tree.getNode(node.parentId);
+            let tempNode = tree.getNode(node.parentId);
+
+            // In case static root node exists, it wil not have ladybug key.
+            if (!("ladybug" in tempNode)) return node;
+
+            node = tempNode
         }
         return node;
     }
@@ -61,8 +67,14 @@ function treeController() {
     }
 
     ctrl.updateTree = function () {
+        let tree = ctrl.treeData;
+        if (ctrl.staticRootNode !== undefined) {
+            tree = [ctrl.staticRootNode];
+            tree[0].nodes = ctrl.treeData;
+        }
+
         $('#' + ctrl.treeId).treeview({
-            data: ctrl.treeData,
+            data: tree,
             onNodeSelected: ctrl.onSelect,
             onNodeUnselected: function (event, node) {
                 console.log("UNSELECTED");
@@ -144,13 +156,27 @@ function treeController() {
     }
 
     ctrl.onSelect = function(event, node) {
-        ctrl.rootNode = ctrl.getRootNode();
-        ctrl.selectedNode = node;
-        ctrl.onSelectRelay.select(ctrl.rootNode, event, node);
+        console.log("Selected Node", node);
+        if (ctrl.staticRootNode !== undefined && node !== null && node.nodeId === 0) {
+            // Static Root Node is selected, unselect everything.
+            ctrl.unselectAll();
+        } else {
+            ctrl.rootNode = ctrl.getRootNode();
+            ctrl.selectedNode = node;
+            ctrl.onSelectRelay.select(ctrl.rootNode, event, node);
+        }
+    }
+
+    ctrl.unselectAll = function () {
+        let tree = $("#" + ctrl.treeId).treeview(true);
+
+        let selected = tree.getSelected();
+        for (let i = 0; i < selected.length; i++)
+            tree.unselectNode(selected[i]);
     }
 
     ctrl.getPath = function (node) {
-        if (node === undefined) return undefined;
+        if (node === undefined || node === null) return undefined;
         let tree = $('#' + ctrl.treeId).treeview(true);
         let path = []
         let parent = tree.getParent(node);
@@ -159,17 +185,19 @@ function treeController() {
             while (index < parent.nodes.length) {
                 if (parent.nodes[index].nodeId === node.nodeId) break;
                 index++;
-            }
+             }
             path.push(index);
             node = parent;
             parent = tree.getParent(node);
         }
-        let index = 0;
-        while (index < ctrl.treeData.length) {
-            if (ctrl.treeData[index].ladybug.storageId === node.ladybug.storageId) break;
-            index++;
+        if (ctrl.staticRootNode === undefined) {
+            let index = 0;
+            while (index < ctrl.treeData.length) {
+                if (ctrl.treeData[index].ladybug.storageId === node.ladybug.storageId) break;
+                index++;
+            }
+            path.push(index);
         }
-        path.push(index);
 
         return path.reverse();
     }
@@ -177,7 +205,14 @@ function treeController() {
     ctrl.selectPath = function (path) {
         if (path === undefined || path.length === 0) return;
 
-        let node = ctrl.treeData[path[0]];
+        let tree = $("#" + ctrl.treeId).treeview(true);
+        let node;
+        if (ctrl.staticRootNode === undefined) {
+            node = ctrl.treeData[path[0]];
+        } else {
+            node = tree.getNode(0).nodes[path[0]];
+        }
+
         if (node === undefined) return;
 
         for (let i = 1; i < path.length; i++) {
@@ -192,14 +227,11 @@ function treeController() {
                 node = node.nodes[node.nodes.length - 1];
             }
         }
-        let tree = $("#" + ctrl.treeId).treeview(true);
-
-        let selected = tree.getSelected();
-        for (let i = 0; i < selected.length; i++)
-            tree.unselectNode(selected[i]);
-        // Todo: add reports node at the root, and it will solve this problem, since you will be able to start with nodeId = 0
-        // tree.revealNode(node.nodeId);
-        tree.selectNode(node.nodeId);
+        if (!node.state.selected) {
+            ctrl.unselectAll();
+            tree.revealNode(node.nodeId);
+            tree.selectNode(node.nodeId);
+        }
     }
 
     ctrl.collapse = function () {
@@ -230,6 +262,7 @@ angular.module('myApp').component('reportTree', {
     bindings: {
         onSelectRelay: '=',
         onAddRelay: '=',
+        staticRootNode: '=',
         storage: '='
     }
 });
