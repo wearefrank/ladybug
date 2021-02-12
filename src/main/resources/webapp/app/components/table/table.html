@@ -7,7 +7,7 @@
                 data-target="#optionsModal">Options
         </button>
         <div class="col-md-1">
-            <input type="file" id="upload-file" style="display: none" ng-click="$ctrl.uploadReport()">
+            <input type="file" id="upload-file" style="display: none" custom-on-change="$ctrl.uploadReport">
             <button type="button" class="btn btn-outline-primary" onclick="$('#upload-file').click()">Upload
             </button>
         </div>

@@ -72,7 +72,14 @@ function metadataTableController($http) {
         for (let i = 0; i < files.length; i++) {
             let formdata = new FormData();
             formdata.append("file", files[i]);
-            $http.post(ctrl.apiUrl + "/report/upload/" + ctrl.storage, formdata, {headers: {"Content-Type": undefined}});
+            $http.post(ctrl.apiUrl + "/report/upload/", formdata, {headers: {"Content-Type": undefined}})
+                .then(function (response) {
+                    for (let i = 0; i < response.data.length; i++) {
+                        ctrl.onSelectRelay.add(response.data[i]);
+                    }
+                }, function (response) {
+                    console.log(response);
+                });
         }
     }
 
