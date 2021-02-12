@@ -8,6 +8,8 @@ function treeController() {
     ctrl.$onInit = function () {
         console.log("ONINITTT");
         ctrl.onAddRelay.add = ctrl.addTree;
+        ctrl.onSelectRelay.getPath = ctrl.getPath;
+        ctrl.onSelectRelay.selectPath = ctrl.selectPath;
         ctrl.onSelectRelay.expand = ctrl.expand;
         ctrl.onSelectRelay.collapse = ctrl.collapse;
         ctrl.onSelectRelay.close = ctrl.close;
@@ -145,6 +147,59 @@ function treeController() {
         ctrl.rootNode = ctrl.getRootNode();
         ctrl.selectedNode = node;
         ctrl.onSelectRelay.select(ctrl.rootNode, event, node);
+    }
+
+    ctrl.getPath = function (node) {
+        if (node === undefined) return undefined;
+        let tree = $('#' + ctrl.treeId).treeview(true);
+        let path = []
+        let parent = tree.getParent(node);
+        while (parent !== undefined) {
+            let index = 0;
+            while (index < parent.nodes.length) {
+                if (parent.nodes[index].nodeId === node.nodeId) break;
+                index++;
+            }
+            path.push(index);
+            node = parent;
+            parent = tree.getParent(node);
+        }
+        let index = 0;
+        while (index < ctrl.treeData.length) {
+            if (ctrl.treeData[index].ladybug.storageId === node.ladybug.storageId) break;
+            index++;
+        }
+        path.push(index);
+
+        return path.reverse();
+    }
+
+    ctrl.selectPath = function (path) {
+        if (path === undefined || path.length === 0) return;
+
+        let node = ctrl.treeData[path[0]];
+        if (node === undefined) return;
+
+        for (let i = 1; i < path.length; i++) {
+            if (node.nodes === undefined || node.nodes.length === 0) {
+                console.log("No nodes?");
+                break;
+            } else if (node.nodes.length > path[i]) {
+                console.log("Normal case", path[i], node);
+                node = node.nodes[path[i]]
+            } else {
+                console.log("Overflow", path[i], node);
+                node = node.nodes[node.nodes.length - 1];
+            }
+        }
+        let tree = $("#" + ctrl.treeId).treeview(true);
+
+        let selected = tree.getSelected();
+        for (let i = 0; i < selected.length; i++)
+            tree.unselectNode(selected[i]);
+        // Todo: add reports node at the root, and it will solve this problem, since you will be able to start with nodeId = 0
+        // tree.revealNode(node.nodeId);
+        tree.selectNode(node.nodeId);
     }
 
     ctrl.collapse = function () {
