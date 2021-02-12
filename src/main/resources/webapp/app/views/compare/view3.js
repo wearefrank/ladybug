@@ -10,6 +10,7 @@ angular.module('myApp.view3', ['ngRoute'])
 }])
 
 .controller('View3Ctrl', ['$scope', function($scope) {
+  $scope.storage = "debugStorage";
   $scope.left_table2tree = {};
   $scope.left_tree2display = {};
   $scope.right_table2tree = {};
@@ -18,11 +19,16 @@ angular.module('myApp.view3', ['ngRoute'])
   $scope.right_show = true;
 
   $scope.left_tree2display.select = function (rootNode, event, node) {
-      $scope.left_show = node === null;
+    $scope.left_show = node === null;
+    let path = $scope.left_tree2display.getPath(node);
+    $scope.right_tree2display.selectPath(path);
     $scope.$apply();
   };
+
   $scope.right_tree2display.select = function (rootNode, event, node) {
     $scope.right_show = node === null;
+    let path = $scope.right_tree2display.getPath(node);
+    $scope.left_tree2display.selectPath(path);
     $scope.$apply();
   };
 }]);
