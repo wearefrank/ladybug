@@ -563,6 +563,7 @@ public class Report implements Serializable {
 				for (Object streamingMessage : streamingMessageListeners.keySet()) {
 					StreamingMessageResult streamingMessageResult = streamingMessageResults.get(streamingMessage);
 					for (Checkpoint checkpoint : streamingMessageListeners.get(streamingMessage)) {
+						estimatedMemoryUsage -= checkpoint.getEstimatedMemoryUsage();
 						checkpoint.setStreaming(streamingMessageResult.getStreamingType());
 						Object message = streamingMessageResult.getMessage();
 						if (message instanceof String) {

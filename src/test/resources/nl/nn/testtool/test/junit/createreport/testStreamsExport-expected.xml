@@ -247,7 +247,7 @@
    <long>IGNORE-END-TIME</long>
   </void>
   <void property="estimatedMemoryUsage">
-   <long>1244</long>
+   <long>644</long>
   </void>
   <void property="name">
    <string>startname</string>

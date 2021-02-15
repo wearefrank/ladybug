@@ -5,7 +5,7 @@
         StartTime="Original length: 13"
         EndTime="Original length: 13"
         NumberOfCheckpoints="3"
-        EstimatedMemoryUsage="402">
+        EstimatedMemoryUsage="186">
    <Checkpoint Name="startname" Type="Startpoint" Level="0">startmessage</Checkpoint>
    <Checkpoint Name="writer"
                Type="Inputpoint"
