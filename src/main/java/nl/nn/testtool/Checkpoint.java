@@ -147,12 +147,8 @@ public class Checkpoint implements Serializable, Cloneable {
 	public Object setMessage(Object message) {
 		ToStringResult toStringResult = report.getMessageEncoder().toString(message);
 		setMessage(toStringResult.getString());
-		if (toStringResult.getEncoding() != null) {
-			setEncoding(toStringResult.getEncoding());
-		}
-		if (toStringResult.getMessageClassName() != null) {
-			setMessageClassName(toStringResult.getMessageClassName());
-		}
+		setEncoding(toStringResult.getEncoding());
+		setMessageClassName(toStringResult.getMessageClassName());
 		if (message != null && report.getMessageCapturer() != null) {
 			if (report.isKnownStreamingMessage(message)) {
 				report.addStreamingMessageListener(message, this);
@@ -212,7 +208,9 @@ public class Checkpoint implements Serializable, Cloneable {
 									if (truncated) {
 										preTruncatedMessageLength = length;
 									}
-									report.closeStreamingMessage(possiblyWrappedMessage[0], streamingType.toString(), toString(), preTruncatedMessageLength);
+									report.closeStreamingMessage(toStringResult.getMessageClassName(),
+											possiblyWrappedMessage[0], streamingType.toString(), toString(),
+											preTruncatedMessageLength);
 								}
 						};
 						message = report.getMessageCapturer().toWriter(message, stringWriter);
@@ -256,7 +254,9 @@ public class Checkpoint implements Serializable, Cloneable {
 									if (truncated) {
 										preTruncatedMessageLength = length;
 									}
-									report.closeStreamingMessage(possiblyWrappedMessage[0], streamingType.toString(), toByteArray(), preTruncatedMessageLength);
+									report.closeStreamingMessage(toStringResult.getMessageClassName(),
+											possiblyWrappedMessage[0], streamingType.toString(), toByteArray(),
+											preTruncatedMessageLength);
 								}
 						};
 						message = report.getMessageCapturer().toOutputStream(message, byteArrayOutputStream);
@@ -275,7 +275,7 @@ public class Checkpoint implements Serializable, Cloneable {
 	}
 
 	public Object getMessageAsObject() throws ParseException {
-		return report.getMessageEncoder().toObject(message, encoding);
+		return report.getMessageEncoder().toObject(this);
 	}
 
 	public void setEncoding(String encoding) {

@@ -38,6 +38,7 @@ import org.slf4j.LoggerFactory;
 
 import lombok.Data;
 import lombok.SneakyThrows;
+import nl.nn.testtool.MessageEncoder.ToStringResult;
 import nl.nn.testtool.run.ReportRunner;
 import nl.nn.testtool.storage.Storage;
 import nl.nn.testtool.transform.MessageTransformer;
@@ -542,9 +543,11 @@ public class Report implements Serializable {
 		}
 	}
 
-	protected void closeStreamingMessage(Object streamingMessage, String streamingType, Object message, int preTruncatedMessageLength) {
+	protected void closeStreamingMessage(String messageClassName, Object streamingMessage, String streamingType,
+			Object message, int preTruncatedMessageLength) {
 		synchronized(streamingMessageListeners) {
 			StreamingMessageResult streamingMessageResult = new StreamingMessageResult();
+			streamingMessageResult.setMessageClassName(messageClassName);
 			streamingMessageResult.setStreamingType(streamingType);
 			streamingMessageResult.setMessage(message);
 			streamingMessageResult.setPreTruncatedMessageLength(preTruncatedMessageLength);
@@ -557,11 +560,19 @@ public class Report implements Serializable {
 	protected void closeStreamingMessages() {
 		synchronized(streamingMessageListeners) {
 			if (finished()) {
-				for (Object streamingMessage2 : streamingMessageListeners.keySet()) {
-					StreamingMessageResult streamingMessageResult = streamingMessageResults.get(streamingMessage2);
-					for (Checkpoint checkpoint : streamingMessageListeners.get(streamingMessage2)) {
+				for (Object streamingMessage : streamingMessageListeners.keySet()) {
+					StreamingMessageResult streamingMessageResult = streamingMessageResults.get(streamingMessage);
+					for (Checkpoint checkpoint : streamingMessageListeners.get(streamingMessage)) {
 						checkpoint.setStreaming(streamingMessageResult.getStreamingType());
-						checkpoint.setMessage(streamingMessageResult.getMessage());
+						Object message = streamingMessageResult.getMessage();
+						if (message instanceof String) {
+							checkpoint.setMessage((String)message);
+						} else {
+							ToStringResult toStringResult = getMessageEncoder().toString(message);
+							checkpoint.setMessage(toStringResult.getString());
+							checkpoint.setEncoding(toStringResult.getEncoding());
+						}
+						checkpoint.setMessageClassName(streamingMessageResult.getMessageClassName());
 						checkpoint.setPreTruncatedMessageLength(streamingMessageResult.getPreTruncatedMessageLength());
 						estimatedMemoryUsage += checkpoint.getEstimatedMemoryUsage();
 					}
@@ -709,6 +720,9 @@ public class Report implements Serializable {
 				stringBuffer.append(" Level=\"" + checkpoint.getLevel() + "\"");
 				if (checkpoint.getSourceClassName() != null) {
 					stringBuffer.append(" SourceClassName=\"" + EscapeUtil.escapeXml(checkpoint.getSourceClassName()) + "\"");
+				}
+				if (checkpoint.getMessageClassName() != null) {
+					stringBuffer.append(" MessageClassName=\"" + EscapeUtil.escapeXml(checkpoint.getMessageClassName()) + "\"");
 				}
 				if (checkpoint.getPreTruncatedMessageLength() != -1) {
 					stringBuffer.append(" PreTruncatedMessageLength=\"" + checkpoint.getPreTruncatedMessageLength() + "\"");
@@ -909,6 +923,7 @@ class RefCompareMap<K, V> implements Map<K, V> {
 
 @Data
 class StreamingMessageResult {
+	String messageClassName;
 	String streamingType;
 	Object message;
 	int preTruncatedMessageLength;

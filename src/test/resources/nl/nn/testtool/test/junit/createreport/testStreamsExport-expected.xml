@@ -8,9 +8,6 @@
      <void property="message">
       <string>startmessage</string>
      </void>
-     <void property="messageClassName">
-      <string>java.lang.String</string>
-     </void>
      <void property="name">
       <string>startname</string>
      </void>
@@ -34,7 +31,7 @@
       <string>Test Writer write write write append random random</string>
      </void>
      <void property="messageClassName">
-      <string>java.lang.String</string>
+      <string>java.io.StringWriter</string>
      </void>
      <void property="name">
       <string>writer</string>
@@ -65,7 +62,7 @@
       <string>Test Writer write write write append random random</string>
      </void>
      <void property="messageClassName">
-      <string>java.lang.String</string>
+      <string>java.io.StringWriter</string>
      </void>
      <void property="name">
       <string>writer</string>
@@ -96,10 +93,10 @@
       <string>Test Writer write write write append random random</string>
      </void>
      <void property="messageClassName">
-      <string>java.lang.String</string>
+      <string>java.io.StringWriter</string>
      </void>
      <void property="name">
-      <string>outputstream</string>
+      <string>writer</string>
      </void>
      <void property="preTruncatedMessageLength">
       <int>71</int>
@@ -198,7 +195,7 @@
       <string>Test OutputStream write random random random rando</string>
      </void>
      <void property="messageClassName">
-      <string>nl.nn.testtool.MessageCapturerImpl$2</string>
+      <string>java.io.ByteArrayOutputStream</string>
      </void>
      <void property="name">
       <string>outputstream</string>
@@ -227,9 +224,6 @@
      </void>
      <void property="message">
       <string>endmessage</string>
-     </void>
-     <void property="messageClassName">
-      <string>java.lang.String</string>
      </void>
      <void property="name">
       <string>endname</string>

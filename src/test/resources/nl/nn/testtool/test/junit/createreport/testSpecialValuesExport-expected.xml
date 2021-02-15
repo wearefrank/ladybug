@@ -175,9 +175,6 @@
      <void property="message">
       <string></string>
      </void>
-     <void property="messageClassName">
-      <string>java.lang.String</string>
-     </void>
      <void property="name">
       <string>endname1</string>
      </void>

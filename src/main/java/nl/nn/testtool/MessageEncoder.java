@@ -62,12 +62,12 @@ public interface MessageEncoder {
 	}
 
 	/**
-	 * Decode the message from string back to an object for stubbing purposes.
+	 * Decode the message of a checkpoint from string back to an object for stubbing purposes.
 	 * 
-	 * @param message   string representation of the message
-	 * @param encoding  encoding method used when message was encoded to a string representation
-	 * @return          the message as an Object
+	 * @param checkpoint  the checkpoint holding the string representation and the encoding method used when message was
+	 *                    encoded and possible other relevant information to determine the original object type
+	 * @return            the message as an Object
 	 */
-	Object toObject(String message, String encoding);
+	Object toObject(Checkpoint checkpoint);
 
 }

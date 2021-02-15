@@ -6,6 +6,10 @@ Ladybug Test Tool release notes
 Upcoming
 --------
 
+- Use UTF-8 encoding for byte array when possible
+- Return stream object as stub when original message was a stream object
+- Set messageClassName only when message object is not a String object
+- Add messageClassName to toXML()
 - Show message on upload when no ttr files in zip
 - Add support for streams
 - Upgrade ibis-echo2 from 2.0.2 to 2.0.3

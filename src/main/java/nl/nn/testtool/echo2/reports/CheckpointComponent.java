@@ -47,8 +47,8 @@ public class CheckpointComponent extends MessageComponent {
 	private Label messageIsNullLabel;
 	private Label messageIsEmptyStringLabel;
 	private Label messageIsTruncatedLabel;
-	private Label messageIsEncodedLabel;
-	private Label messageIsCapturedLabel;
+	private Label messageEncodingLabel;
+	private Label messageStreamingLabel;
 	private Label checkpointUIDLabel;
 	private Label numberOfCharactersLabel;
 	private Label estimatedMemoryUsageLabel;
@@ -141,13 +141,13 @@ public class CheckpointComponent extends MessageComponent {
 		messageIsTruncatedLabel.setVisible(false);
 		add(messageIsTruncatedLabel);
 
-		messageIsEncodedLabel = Echo2Application.createInfoLabelWithColumnLayoutData();
-		messageIsEncodedLabel.setVisible(false);
-		add(messageIsEncodedLabel);
+		messageEncodingLabel = Echo2Application.createInfoLabelWithColumnLayoutData();
+		messageEncodingLabel.setVisible(false);
+		add(messageEncodingLabel);
 
-		messageIsCapturedLabel = Echo2Application.createInfoLabelWithColumnLayoutData();
-		messageIsCapturedLabel.setVisible(false);
-		add(messageIsCapturedLabel);
+		messageStreamingLabel = Echo2Application.createInfoLabelWithColumnLayoutData();
+		messageStreamingLabel.setVisible(false);
+		add(messageStreamingLabel);
 
 		add(messageColumn);
 		add(messageTextArea);
@@ -217,17 +217,22 @@ public class CheckpointComponent extends MessageComponent {
 		} else {
 			messageIsTruncatedLabel.setVisible(false);
 		}
-		if (checkpoint.getEncoding() != null) {
-			messageIsEncodedLabel.setText("Message object of type " + checkpoint.getMessageClassName() + " is encoded to string using " + checkpoint.getEncoding());
-			messageIsEncodedLabel.setVisible(true);
-		} else {
-			messageIsEncodedLabel.setVisible(false);
-		}
+		String type = null;
 		if (checkpoint.getStreaming() != null) {
-			messageIsCapturedLabel.setText("Message was captured asynchronously from a " + checkpoint.getStreaming().toLowerCase() + " stream");
-			messageIsCapturedLabel.setVisible(true);
+			type = checkpoint.getStreaming().toLowerCase() + " stream";
+			messageStreamingLabel.setText("Message was captured asynchronously from a " + type);
+			messageStreamingLabel.setVisible(true);
 		} else {
-			messageIsCapturedLabel.setVisible(false);
+			messageStreamingLabel.setVisible(false);
+		}
+		if (checkpoint.getEncoding() != null) {
+			if (type == null) {
+				type = checkpoint.getMessageClassName();
+			}
+			messageEncodingLabel.setText("Message of type " + type + " is encoded to string using " + checkpoint.getEncoding());
+			messageEncodingLabel.setVisible(true);
+		} else {
+			messageEncodingLabel.setVisible(false);
 		}
 		if (compare) {
 			String messageCompare = null;
@@ -241,7 +246,11 @@ public class CheckpointComponent extends MessageComponent {
 		nameLabel.setText("Name: " + checkpoint.getName());
 		threadNameLabel.setText("Thread name: " + checkpoint.getThreadName());
 		sourceClassNameLabel.setText("Source class name: " + checkpoint.getSourceClassName());
-		messageClassNameLabel.setText("Message class name: " + checkpoint.getMessageClassName());
+		String messageClassName = checkpoint.getMessageClassName();
+		if (messageClassName == null) {
+			messageClassName = "java.lang.String";
+		}
+		messageClassNameLabel.setText("Message class name: " + messageClassName);
 		pathLabel.setText("Path: " + checkpoint.getPath());
 		checkpointUIDLabel.setText("Checkpoint UID: "+checkpoint.getUID());
 		numberOfCharactersLabel.setText("Number of characters: "+(checkpoint.getMessage() != null ? checkpoint.getMessage().length() : "0"));

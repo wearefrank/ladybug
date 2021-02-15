@@ -21,6 +21,12 @@ import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
+import java.nio.charset.CharacterCodingException;
+import java.nio.charset.Charset;
+import java.nio.charset.CharsetDecoder;
+import java.nio.charset.CharsetEncoder;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -38,6 +44,7 @@ import nl.nn.xmldecoder.XMLDecoder;
  */
 public class MessageEncoderImpl implements MessageEncoder {
 	private static final String XML_ENCODER = "XMLEncoder";
+	private static final String UTF8_ENCODER = "UTF-8";
 	private static final String BASE64_ENCODER = "Base64";
 	private static final String TO_STRING_ENCODER = "toString()";
 	private static final String DOM_NODE_ENCODER = "XmlUtil.nodeToString()";
@@ -51,10 +58,10 @@ public class MessageEncoderImpl implements MessageEncoder {
 		ToStringResult toStringResult;
 		if (message == null) {
 			toStringResult = new ToStringResult(null, null);
+		} else if (message instanceof String) {
+			toStringResult = new ToStringResult((String)message, null);
 		} else {
-			if (message instanceof String) {
-				toStringResult = new ToStringResult((String)message, null);
-			} else if (message instanceof Writer) {
+			if (message instanceof Writer) {
 				toStringResult = new ToStringResult(
 						"Implement MessageCapturer or use MessageCapturerImpl to get the content of this writer: "
 						+ message.getClass().getTypeName(), null);
@@ -66,9 +73,17 @@ public class MessageEncoderImpl implements MessageEncoder {
 				Node node = (Node)message;
 				toStringResult = new ToStringResult(XmlUtil.nodeToString(node), DOM_NODE_ENCODER);
 			} else if (message instanceof Date) {
-				toStringResult = new ToStringResult(new SimpleDateFormat(DATE_PATTERN).format((Date)message), DATE_ENCODER);
+				toStringResult = new ToStringResult(new SimpleDateFormat(DATE_PATTERN).format((Date)message),
+						DATE_ENCODER);
 			} else if (message instanceof byte[]) {
-				toStringResult = new ToStringResult(java.util.Base64.getEncoder().encodeToString((byte[])message), BASE64_ENCODER);
+				CharsetDecoder charsetDecoder = Charset.forName("UTF-8").newDecoder();
+				try {
+					CharBuffer charBuffer = charsetDecoder.decode(ByteBuffer.wrap((byte[])message));
+					toStringResult = new ToStringResult(charBuffer.toString(), UTF8_ENCODER);
+				} catch (CharacterCodingException e) {
+					toStringResult = new ToStringResult(java.util.Base64.getEncoder().encodeToString((byte[])message),
+							BASE64_ENCODER);
+				}
 			} else {
 				String xml = null;
 				ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
@@ -92,14 +107,24 @@ public class MessageEncoderImpl implements MessageEncoder {
 
 	@Override
 	@SneakyThrows
-	public Object toObject(String message, String encoding) {
-		if (encoding == BASE64_ENCODER) {
-			return java.util.Base64.getDecoder().decode(message);
-		} else if (encoding == XML_ENCODER) {
+	public Object toObject(Checkpoint checkpoint) {
+		String message = checkpoint.getMessage();
+		String encoding = checkpoint.getEncoding();
+		if (encoding == XML_ENCODER) {
 			ByteArrayInputStream byteArrayInputStream = null;
 			byteArrayInputStream = new ByteArrayInputStream(message.getBytes("UTF-8"));
 			XMLDecoder xmlDecoder = new XMLDecoder(byteArrayInputStream);
 			return xmlDecoder.readObject();
+		} else if (encoding == UTF8_ENCODER) {
+			CharsetEncoder charsetEncoder = Charset.forName("UTF-8").newEncoder();
+			ByteBuffer byteBuffer = charsetEncoder.encode(CharBuffer.wrap(message));
+			if (checkpoint.getStreaming() == null) {
+				return new ByteArrayInputStream(byteBuffer.array());
+			} else {
+				return byteBuffer.array();
+			}
+		} else if (encoding == BASE64_ENCODER) {
+			return java.util.Base64.getDecoder().decode(message);
 		} else if (encoding == DATE_ENCODER) {
 			return new SimpleDateFormat(DATE_PATTERN).parse(message);
 		} else {

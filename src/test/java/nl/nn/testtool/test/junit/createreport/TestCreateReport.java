@@ -256,7 +256,7 @@ public class TestCreateReport extends TestCase {
 		assertNotEquals(writerOriginalMessage, writerMessage);
 
 		// Assert no wrapping of message when same message is used again
-		assertEquals(writerMessage, testTool.inputpoint(correlationId, null, "outputstream", writerMessage));
+		assertEquals(writerMessage, testTool.inputpoint(correlationId, null, "writer", writerMessage));
 
 		ByteArrayOutputStream outputStreamOriginalMessage = new ByteArrayOutputStream();
 		OutputStream outputStreamMessage = (OutputStream)testTool.inputpoint(correlationId, null, "outputstream", outputStreamOriginalMessage);
