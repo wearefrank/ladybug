@@ -61,14 +61,8 @@ public class MessageEncoderImpl implements MessageEncoder {
 		} else if (message instanceof String) {
 			toStringResult = new ToStringResult((String)message, null);
 		} else {
-			if (message instanceof Writer) {
-				toStringResult = new ToStringResult(
-						"Implement MessageCapturer or use MessageCapturerImpl to get the content of this writer: "
-						+ message.getClass().getTypeName(), null);
-			} else if (message instanceof OutputStream) {
-				toStringResult = new ToStringResult(
-						"Implement MessageCapturer or use MessageCapturerImpl to get the content of this output stream: "
-						+ message.getClass().getTypeName(), null);
+			if (message instanceof Writer || message instanceof OutputStream) {
+				toStringResult = new ToStringResult("Waiting for stream to be captured and closed...", null);
 			} else if (message instanceof Node) {
 				Node node = (Node)message;
 				toStringResult = new ToStringResult(XmlUtil.nodeToString(node), DOM_NODE_ENCODER);
