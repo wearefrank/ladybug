@@ -58,8 +58,6 @@ public class MetadataApi extends ApiBase {
 		} else {
 			for (String param : params.keySet()) {
 				// Extract search parameters for storage from the query parameters.
-				if (!storedMetadataFields.contains(param))
-					continue;
 
 				List<String> values = params.get(param);
 				metadataNames.add(param);
