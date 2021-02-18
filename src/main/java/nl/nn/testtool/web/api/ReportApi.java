@@ -1,5 +1,6 @@
 package nl.nn.testtool.web.api;
 
+import nl.nn.testtool.MetadataExtractor;
 import nl.nn.testtool.Report;
 import nl.nn.testtool.echo2.util.Upload;
 import nl.nn.testtool.storage.CrudStorage;
@@ -27,6 +28,8 @@ import javax.ws.rs.core.Response;
 import java.io.InputStream;
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -86,6 +89,32 @@ public class ReportApi extends ApiBase {
 			throw new ApiException("Exception while deleting a report.", e);
 		}
 		return Response.ok().build();
+	}
+
+	@GET
+	@Path("/report/latest/{storage}/{numberOfReports}")
+	public Response getLatestReports(@PathParam("storage") String storageParam, @PathParam("numberOfReports") int number) {
+		try {
+			Storage storage = getBean(storageParam);
+			List<List<Object>> metadata = storage.getMetadata(-1, Arrays.asList("storageId", "endTime"),
+					Arrays.asList(null, null), MetadataExtractor.VALUE_TYPE_OBJECT);
+			number = Math.min(metadata.size(), number);
+			if (number < 1)
+				return Response.noContent().build();
+			metadata.sort(new Comparator<List<Object>>() {
+				@Override
+				public int compare(List<Object> o1, List<Object> o2) {
+					return (int) ((Long) o1.get(1) - (Long) o2.get(1));
+				}
+			});
+			ArrayList<Report> reports = new ArrayList<>(number);
+			for (int i = 1; i <= number; i++) {
+				reports.add(storage.getReport((Integer) metadata.get(metadata.size() - i).get(0)));
+			}
+			return Response.ok(reports).build();
+		} catch (StorageException e) {
+			throw new ApiException("Exception while getting the latest " + number + " reports.", e);
+		}
 	}
 
 	/**
