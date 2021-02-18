@@ -56,6 +56,16 @@ angular.module('myApp.view1', ['ngRoute'])
                 "regexFilter": $scope.options["regexFilter"]});
             $http.post($scope.apiUrl + "/testtool/transformation", {"transformation": $scope.options['transformation']});
         }
+
+        $scope.openLatestReports = function (number) {
+            $http.get($scope.apiUrl + "/report/latest/" + $scope.storage + "/" + number)
+                .then(function (response) {
+                    response.data.forEach(function (report) {
+                        $scope.table2tree.add(report);
+                        console.log(report);
+                    });
+                });
+        }
         // TODO: Move
         // $scope.deleteSelected = function () {
         //     let tree = $('#tree').treeview(true);
