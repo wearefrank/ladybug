@@ -4,7 +4,7 @@ function metadataTableController($http) {
     ctrl.columns = ['storageId', 'endTime', 'duration', 'name', 'correlationId', 'status', 'nrChpts', 'estMemUsage', 'storageSize'];
     ctrl.storage = "debugStorage";
     ctrl.limit = 5;
-    ctrl.filters = {"limit": ctrl.limit};
+    ctrl.filters = {"limit": ctrl.limit, "sort": "", "order": "ascending"};
     ctrl.metadatas = [];
 
     /*
@@ -86,6 +86,16 @@ function metadataTableController($http) {
 
     ctrl.updateFilter = function (key, value) {
         ctrl.filters[key] = value;
+        ctrl.updateTable();
+    }
+
+    ctrl.updateOrder = function (column) {
+        ctrl.filters["sort"] = column;
+        if (ctrl.filters["order"] === "descending") {
+            ctrl.filters["order"] = "ascending";
+        } else {
+            ctrl.filters["order"] = "descending";
+        }
         ctrl.updateTable();
     }
 

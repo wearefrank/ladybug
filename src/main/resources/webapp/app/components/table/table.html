@@ -55,7 +55,10 @@
     <table class="table table-hover">
         <thead>
         <tr>
-            <th ng-repeat="column in $ctrl.columns">{{column}}</th>
+            <th ng-repeat="column in $ctrl.columns" ng-click="$ctrl.updateOrder(column)">
+                <i class="fas" ng-class="{'fa-sort-up': $ctrl.filters['order'] === 'ascending', 'fa-sort-down': $ctrl.filters['order'] === 'descending'}" ng-show="column === $ctrl.filters['sort']"></i>
+                {{column}}
+            </th>
         </tr>
         <tr>
             <th ng-repeat="column in $ctrl.columns">
