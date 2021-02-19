@@ -17,6 +17,7 @@ import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -38,26 +39,36 @@ public class MetadataApi extends ApiBase {
 	@GET
 	@Path("/{storage}/")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response getMetadataList(@PathParam("storage") String storageParam, @DefaultValue("-1") @QueryParam("limit") int limit, @Context UriInfo uriInfo) throws ApiException {
+	public Response getMetadataList(@PathParam("storage") String storageParam, @DefaultValue("-1") @QueryParam("limit") int limit ,
+									@DefaultValue("") @QueryParam("sort") String sortParam , @DefaultValue("Descending") @QueryParam("order") String order,
+									@Context UriInfo uriInfo) throws ApiException {
 		// TODO: Sorting and filtering
 		MultivaluedMap<String, String> params = uriInfo.getQueryParameters();
 
 		// Make sure limit will not be included in searh parameters.
-		if (params != null)
-			params.remove("limit");
+		if (params != null) {
+			for (String p : new String[]{"limit", "sort", "order"})
+				params.remove(p);
+		}
 
 		List<String> searchValues = new ArrayList<>();
 		List<String> metadataNames = new ArrayList<>();
 		Set<String> storedMetadataFields = getMetadataFields();
+		int sort = -1;
+		int index = 0;
 		if (params == null || params.size() == 0) {
 			// Add all metadata fields to be extracted without filtering.
 			for(String field : storedMetadataFields) {
+				if (field.equalsIgnoreCase(sortParam)) sort = index;
+				index ++;
 				metadataNames.add(field);
 				searchValues.add(null);
 			}
 		} else {
 			for (String param : params.keySet()) {
 				// Extract search parameters for storage from the query parameters.
+				if (param.equalsIgnoreCase(sortParam)) sort = index;
+				index ++;
 
 				List<String> values = params.get(param);
 				metadataNames.add(param);
@@ -72,7 +83,41 @@ public class MetadataApi extends ApiBase {
 		try {
 			// Get storage, search for metadata, and return the results.
 			Storage storage = getBean(storageParam);
-			List<List<Object>> list = storage.getMetadata(limit, metadataNames, searchValues, MetadataExtractor.VALUE_TYPE_STRING);
+			List<List<Object>> list;
+
+			if (sort != -1) {
+				// Sort based on one of the fields.
+				list = storage.getMetadata(-1, metadataNames, searchValues, MetadataExtractor.VALUE_TYPE_OBJECT);
+
+				// Get the class of the field to check if it implements Comparable.
+				if (list.isEmpty()) return Response.noContent().build();
+				Class clazz = list.get(0).get(sort).getClass();
+
+				if (Comparable.class.isAssignableFrom(clazz)) {
+					// Sort the metadata.
+					Class<? extends Comparable> clazz2 = (Class<? extends Comparable>) clazz;
+					int finalSort = sort;
+					int finalOrder = order.equalsIgnoreCase("ascending") || order.equalsIgnoreCase("asc") ? 1 : -1;
+					list.sort((o1, o2) -> clazz2.cast(o1.get(finalSort)).compareTo(clazz2.cast(o2.get(finalSort))) * finalOrder);
+				}
+
+				// Limit the output list and serialize into String.
+				limit = limit > 0 ? Math.min(limit, list.size()) : list.size();
+				ArrayList<List<Object>> outList = new ArrayList<>(limit);
+				MetadataExtractor metadataExtractor = new MetadataExtractor();
+				for (int i = 0; i < limit; i++) {
+					List<Object> row = list.get(i);
+					String[] stringRow = new String[row.size()];
+					for (int j = 0; j < stringRow.length; j++) {
+						stringRow[j] = metadataExtractor.fromObjectToString(metadataNames.get(j), row.get(j));
+					}
+					outList.add(Arrays.asList(stringRow));
+				}
+				list = outList;
+			} else {
+				// Return unsorted.
+				list = storage.getMetadata(limit, metadataNames, searchValues, MetadataExtractor.VALUE_TYPE_STRING);
+			}
 			Map<String, Object> out = new HashMap<>(2);
 			out.put("fields", metadataNames);
 			out.put("values", list);
