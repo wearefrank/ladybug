@@ -27,7 +27,7 @@ import nl.nn.testtool.Checkpoint;
 import nl.nn.testtool.Report;
 import nl.nn.testtool.storage.StorageException;
 import nl.nn.testtool.storage.memory.Storage;
-import nl.nn.testtool.test.junit.createreport.TestCreateReport;
+import nl.nn.testtool.test.junit.ReportRelatedTestCase;
 import nl.nn.testtool.transform.ReportXmlTransformer;
 import nl.nn.testtool.util.Export;
 import nl.nn.testtool.util.Import;
@@ -60,10 +60,10 @@ public class TestImport extends TestCase {
 		assertNull(result.getErrorMessage());
 		report = storage.getReport(result.getNewStorageId());
 		ReportXmlTransformer reportXmlTransformer = new ReportXmlTransformer();
-		reportXmlTransformer.setXslt(TestCreateReport.getResource(TestCreateReport.RESOURCE_PATH, TestCreateReport.ASSERT_REPORT_XSLT, null));
+		reportXmlTransformer.setXslt(ReportRelatedTestCase.getResource(ReportRelatedTestCase.RESOURCE_PATH, ReportRelatedTestCase.ASSERT_REPORT_XSLT, null));
 		report.setReportXmlTransformer(reportXmlTransformer);
 		String actual = report.toXml();
-		TestCreateReport.assertXml(path, testCaseName, actual);
+		ReportRelatedTestCase.assertXml(path, testCaseName, actual);
 	}
 
 }

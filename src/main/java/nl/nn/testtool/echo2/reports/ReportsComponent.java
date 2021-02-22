@@ -610,7 +610,7 @@ public class ReportsComponent extends BaseComponent implements BeanParent, Actio
 			optionsWindow.setVisible(true);
 		} else if (e.getActionCommand().equals("UpdateGeneratorEnabled")) {
 			if (echo2Application.isUserInRoles(changeReportGeneratorEnabledRoles)) {
-				String msg = "Report generator has been ";
+				String msg = "Report generator ";
 				if ("Yes".equals(reportGeneratorEnabledSelectField.getSelectedItem())) {
 					testTool.setReportGeneratorEnabled(true);
 					testTool.sendReportGeneratorStatusUpdate();

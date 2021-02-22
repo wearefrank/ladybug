@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.io.StringWriter;
 import java.lang.invoke.MethodHandles;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -63,6 +62,7 @@ public class Checkpoint implements Serializable, Cloneable {
 	private int level = 0;
 	private int stub = STUB_FOLLOW_REPORT_STRATEGY;
 	private boolean stubbed = false;
+	private String stubNotFound;
 	private int preTruncatedMessageLength = -1;
 	private transient Map<String, Pattern> variablePatternMap;
 	private transient static final Pattern GENERIC_VARIABLE_PATTERN = Pattern.compile("\\$\\{.*?\\}");
@@ -144,7 +144,7 @@ public class Checkpoint implements Serializable, Cloneable {
 		this.message = message;
 	}
 
-	public Object setMessage(Object message) {
+	public  <T> T setMessage(T message) {
 		ToStringResult toStringResult = report.getMessageEncoder().toString(message);
 		setMessage(toStringResult.getString());
 		setEncoding(toStringResult.getEncoding());
@@ -213,6 +213,7 @@ public class Checkpoint implements Serializable, Cloneable {
 											preTruncatedMessageLength);
 								}
 						};
+						// Message possibly wrapped by toWriter()
 						message = report.getMessageCapturer().toWriter(message, stringWriter);
 					} else {
 						ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream() {
@@ -259,9 +260,9 @@ public class Checkpoint implements Serializable, Cloneable {
 											preTruncatedMessageLength);
 								}
 						};
+						// Message possibly wrapped by toOutputStream()
 						message = report.getMessageCapturer().toOutputStream(message, byteArrayOutputStream);
 					}
-					report.increaseMessageCapturersActiveCount();
 					report.addStreamingMessageListener(message, this);
 					possiblyWrappedMessage[0] = message;
 				}
@@ -274,7 +275,7 @@ public class Checkpoint implements Serializable, Cloneable {
 		return message;
 	}
 
-	public Object getMessageAsObject() throws ParseException {
+	public Object getMessageAsObject() {
 		return report.getMessageEncoder().toObject(this);
 	}
 
@@ -343,6 +344,14 @@ public class Checkpoint implements Serializable, Cloneable {
 
 	public boolean isStubbed() {
 		return stubbed;
+	}
+
+	public void setStubNotFound(String stubNotFound) {
+		this.stubNotFound = stubNotFound;
+	}
+
+	public String getStubNotFound() {
+		return stubNotFound;
 	}
 
 	public Path getPath() {

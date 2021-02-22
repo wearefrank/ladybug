@@ -19,6 +19,7 @@ import java.beans.XMLEncoder;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
+import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.nio.ByteBuffer;
@@ -43,14 +44,14 @@ import nl.nn.xmldecoder.XMLDecoder;
  * @author Jaco de Groot
  */
 public class MessageEncoderImpl implements MessageEncoder {
-	private static final String XML_ENCODER = "XMLEncoder";
-	private static final String UTF8_ENCODER = "UTF-8";
-	private static final String BASE64_ENCODER = "Base64";
-	private static final String TO_STRING_ENCODER = "toString()";
-	private static final String DOM_NODE_ENCODER = "XmlUtil.nodeToString()";
+	public static final String XML_ENCODER = "XMLEncoder";
+	public static final String UTF8_ENCODER = "UTF-8";
+	public static final String BASE64_ENCODER = "Base64";
+	public static final String TO_STRING_ENCODER = "toString()";
+	public static final String DOM_NODE_ENCODER = "XmlUtil.nodeToString()";
 	// Don't use static final SimpleDateFormat, see SimpleDateFormat javadoc: It is recommended to create separate format instances for each thread.
-	private static final String DATE_PATTERN = "yyyy-MM-dd HH:mm:ss.SSS";
-	private static final String DATE_ENCODER = "SimpleDateFormat(\"" + DATE_PATTERN + "\")";
+	public static final String DATE_PATTERN = "yyyy-MM-dd HH:mm:ss.SSS";
+	public static final String DATE_ENCODER = "SimpleDateFormat(\"" + DATE_PATTERN + "\")";
 
 	@Override
 	@SneakyThrows(UnsupportedEncodingException.class)
@@ -61,15 +62,7 @@ public class MessageEncoderImpl implements MessageEncoder {
 		} else if (message instanceof String) {
 			toStringResult = new ToStringResult((String)message, null);
 		} else {
-			if (message instanceof Writer || message instanceof OutputStream) {
-				toStringResult = new ToStringResult("Waiting for stream to be captured and closed...", null);
-			} else if (message instanceof Node) {
-				Node node = (Node)message;
-				toStringResult = new ToStringResult(XmlUtil.nodeToString(node), DOM_NODE_ENCODER);
-			} else if (message instanceof Date) {
-				toStringResult = new ToStringResult(new SimpleDateFormat(DATE_PATTERN).format((Date)message),
-						DATE_ENCODER);
-			} else if (message instanceof byte[]) {
+			if (message instanceof byte[]) {
 				CharsetDecoder charsetDecoder = Charset.forName("UTF-8").newDecoder();
 				try {
 					CharBuffer charBuffer = charsetDecoder.decode(ByteBuffer.wrap((byte[])message));
@@ -78,6 +71,14 @@ public class MessageEncoderImpl implements MessageEncoder {
 					toStringResult = new ToStringResult(java.util.Base64.getEncoder().encodeToString((byte[])message),
 							BASE64_ENCODER);
 				}
+			} else if (message instanceof Writer || message instanceof OutputStream) {
+				toStringResult = new ToStringResult("Waiting for stream to be captured and closed...", null);
+			} else if (message instanceof Node) {
+				Node node = (Node)message;
+				toStringResult = new ToStringResult(XmlUtil.nodeToString(node), DOM_NODE_ENCODER);
+			} else if (message instanceof Date) {
+				toStringResult = new ToStringResult(new SimpleDateFormat(DATE_PATTERN).format((Date)message),
+						DATE_ENCODER);
 			} else {
 				String xml = null;
 				ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
@@ -103,26 +104,45 @@ public class MessageEncoderImpl implements MessageEncoder {
 	@SneakyThrows
 	public Object toObject(Checkpoint checkpoint) {
 		String message = checkpoint.getMessage();
-		String encoding = checkpoint.getEncoding();
-		if (encoding == XML_ENCODER) {
-			ByteArrayInputStream byteArrayInputStream = null;
-			byteArrayInputStream = new ByteArrayInputStream(message.getBytes("UTF-8"));
-			XMLDecoder xmlDecoder = new XMLDecoder(byteArrayInputStream);
-			return xmlDecoder.readObject();
-		} else if (encoding == UTF8_ENCODER) {
-			CharsetEncoder charsetEncoder = Charset.forName("UTF-8").newEncoder();
-			ByteBuffer byteBuffer = charsetEncoder.encode(CharBuffer.wrap(message));
-			if (checkpoint.getStreaming() == null) {
-				return new ByteArrayInputStream(byteBuffer.array());
-			} else {
-				return byteBuffer.array();
-			}
-		} else if (encoding == BASE64_ENCODER) {
-			return java.util.Base64.getDecoder().decode(message);
-		} else if (encoding == DATE_ENCODER) {
-			return new SimpleDateFormat(DATE_PATTERN).parse(message);
-		} else {
+		if (message == null) {
 			return message;
+		} else {
+			String encoding = checkpoint.getEncoding();
+			if (encoding == null) {
+				if (checkpoint.getStreaming() == null) {
+					return message;
+				} else {
+					return new StringReader(message);
+				}
+			} else if (encoding.equals(UTF8_ENCODER)) {
+				CharsetEncoder charsetEncoder = Charset.forName("UTF-8").newEncoder();
+				ByteBuffer byteBuffer = charsetEncoder.encode(CharBuffer.wrap(message));
+				byte[] bytes = new byte[byteBuffer.remaining()];
+				byteBuffer.get(bytes);
+				if (checkpoint.getStreaming() == null) {
+					return bytes;
+				} else {
+					return new ByteArrayInputStream(bytes);
+				}
+			} else if (encoding.equals(BASE64_ENCODER)) {
+				byte[] bytes = java.util.Base64.getDecoder().decode(message);
+				if (checkpoint.getStreaming() == null) {
+					return bytes;
+				} else {
+					return new ByteArrayInputStream(bytes);
+				}
+			} else if (encoding.equals(DOM_NODE_ENCODER)) {
+				return XmlUtil.stringToNode(message);
+			} else if (encoding.equals(DATE_ENCODER)) {
+				return new SimpleDateFormat(DATE_PATTERN).parse(message);
+			} else if (encoding.equals(XML_ENCODER)) {
+				ByteArrayInputStream byteArrayInputStream = null;
+				byteArrayInputStream = new ByteArrayInputStream(message.getBytes("UTF-8"));
+				XMLDecoder xmlDecoder = new XMLDecoder(byteArrayInputStream);
+				return xmlDecoder.readObject();
+			} else {
+				return message;
+			}
 		}
 	}
 

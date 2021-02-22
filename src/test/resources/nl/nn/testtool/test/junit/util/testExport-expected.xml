@@ -35,6 +35,9 @@
      <void property="stub">
       <int>3</int>
      </void>
+     <void property="stubNotFound">
+      <string>stubNotFound</string>
+     </void>
      <void property="stubbed">
       <boolean>true</boolean>
      </void>

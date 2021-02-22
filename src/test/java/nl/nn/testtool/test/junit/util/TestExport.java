@@ -33,7 +33,7 @@ import nl.nn.testtool.Checkpoint;
 import nl.nn.testtool.Report;
 import nl.nn.testtool.storage.StorageException;
 import nl.nn.testtool.storage.memory.Storage;
-import nl.nn.testtool.test.junit.createreport.TestCreateReport;
+import nl.nn.testtool.test.junit.ReportRelatedTestCase;
 import nl.nn.testtool.transform.ReportXmlTransformer;
 import nl.nn.testtool.util.Export;
 
@@ -153,7 +153,8 @@ public class TestExport extends TestCase {
 		}
 	}
 
-	public static void assertExport(String path, String testCaseName, String correlationId, Report report, boolean applyIgnores) throws IOException, StorageException {
+	public static void assertExport(String path, String testCaseName, String correlationId, Report report,
+			boolean applyToXmlIgnores) throws IOException, StorageException {
 		// When storageId is a very low number (like when being build by the pipeline) the replace will potentially
 		// replace the wrong number, hence adjust the storage id to a more unique number
 		report.setStorageId(-99999);
@@ -167,17 +168,11 @@ public class TestExport extends TestCase {
 			i = gzipInputStream.read();
 		}
 		String actual = stringBuffer.toString();
-		actual = actual.replaceFirst("java version=\".*\" class", "java version=\"IGNORE-JAVA-VERSION\" class");
-		actual = actual.replaceAll("java version=&quot;.*&quot; class", "java version=&quot;IGNORE-JAVA-VERSION&quot; class");
-		if (applyIgnores) {
-			// Correlation id sometimes contains start time, hence replace correlation id first
-			actual = actual.replaceFirst(correlationId, "IGNORE-CORRELATIONID");
-			// End time is sometimes the same as start time, hence replace end time first
-			actual = actual.replaceFirst("" + report.getEndTime(), "IGNORE-END-TIME");
-			actual = actual.replaceFirst("" + report.getStartTime(), "IGNORE-START-TIME");
-			actual = actual.replaceFirst("" + report.getStorageId(), "IGNORE-STORAGE-ID");
+		actual = ReportRelatedTestCase.applyXmlEncoderIgnores(actual);
+		if (applyToXmlIgnores) {
+			actual = ReportRelatedTestCase.applyToXmlIgnores(actual, report);
 		}
-		TestCreateReport.assertXml(path, testCaseName, actual);
+		ReportRelatedTestCase.assertXml(path, testCaseName, actual);
 	}
 
 }

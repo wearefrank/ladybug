@@ -43,9 +43,10 @@ public class MessageCapturerImpl implements MessageCapturer {
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
-	public Object toWriter(Object message, Writer writer) {
-		return new BufferedWriter((Writer)message) {
+	public <T> T toWriter(T message, Writer writer) {
+		return (T) new BufferedWriter((Writer)message) {
 
 			@Override
 			public void write(String str, int off, int len) throws IOException {
@@ -74,9 +75,10 @@ public class MessageCapturerImpl implements MessageCapturer {
 
 		};
 	}
+	@SuppressWarnings("unchecked")
 	@Override
-	public Object toOutputStream(Object message, OutputStream outputStream) {
-		return new BufferedOutputStream((OutputStream)message) {
+	public <T> T toOutputStream(T message, OutputStream outputStream) {
+		return (T) new BufferedOutputStream((OutputStream)message) {
 
 				@Override
 				public synchronized void write(int b) throws IOException {

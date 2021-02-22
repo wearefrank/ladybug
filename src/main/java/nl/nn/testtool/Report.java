@@ -29,7 +29,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang.StringUtils;
@@ -97,7 +96,6 @@ public class Report implements Serializable {
 	private transient boolean logReportFilterMatching = true;
 	private transient boolean logMaxCheckpoints = true;
 	private transient boolean logMaxMemoryUsage = true;
-	private transient AtomicInteger messageCapturersActiveCount = new AtomicInteger(0);
 	private transient Map<Object, Set<Checkpoint>> streamingMessageListeners = new HashMap<Object, Set<Checkpoint>>();
 	private transient Map<Object, StreamingMessageResult> streamingMessageResults = new HashMap<Object, StreamingMessageResult>();
 
@@ -266,7 +264,7 @@ public class Report implements Serializable {
 		return reportFilterMatching;
 	}
 
-	protected Object checkpoint(String childThreadId, String sourceClassName, String name, Object message,
+	protected <T> T checkpoint(String childThreadId, String sourceClassName, String name, T message,
 			StubableCode stubableCode, StubableCodeThrowsException stubableCodeThrowsException,
 			Set<String> matchingStubStrategies, int checkpointType, int levelChangeNextCheckpoint) {
 		String parentThreadName = Thread.currentThread().getName();
@@ -308,7 +306,7 @@ public class Report implements Serializable {
 		threadsActiveCount++;
 	}
 
-	private Object addCheckpoint(String childThreadId, String sourceClassName, String name, Object message,
+	private  <T> T addCheckpoint(String childThreadId, String sourceClassName, String name, T message,
 			StubableCode stubableCode, StubableCodeThrowsException stubableCodeThrowsException,
 			Set<String> matchingStubStrategies, int checkpointType, int levelChangeNextCheckpoint) {
 		String threadName = Thread.currentThread().getName();
@@ -375,7 +373,7 @@ public class Report implements Serializable {
 	}
 
 	@SneakyThrows
-	private Object addCheckpoint(String threadName, String sourceClassName, String name, Object message,
+	private  <T> T addCheckpoint(String threadName, String sourceClassName, String name, T message,
 			StubableCode stubableCode, StubableCodeThrowsException stubableCodeThrowsException,
 			Set<String> matchingStubStrategies, int checkpointType, Integer index, Integer level,
 			int levelChangeNextCheckpoint) {
@@ -432,10 +430,22 @@ public class Report implements Serializable {
 					}
 				}
 				if (stub) {
+					// In case a stream is stubbed the replaced stream needs to be closed as the system under test will
+					// read and close the stub which would leave the replaced stream unclosed
+					if (message instanceof AutoCloseable) {
+						((AutoCloseable)message).close();
+					}
 					if (originalCheckpoint == null) {
-						message = "<stub>Could not find stub message for '" + lastCheckpointPath + "'</stub>";
+						// Make it possible for a message encoder implementation that wraps all messages in a project
+						// specific message object to also wrap null
+						Checkpoint nullCheckpoint = new Checkpoint();
+						nullCheckpoint.setMessage(null);
+						nullCheckpoint.setReport(this);
+						getMessageEncoder().toObject(nullCheckpoint);
+						message = getMessageAsObject(nullCheckpoint);
+						checkpoint.setStubNotFound(lastCheckpointPath.toString());
 					} else {
-						message = originalCheckpoint.getMessageAsObject();
+						message = getMessageAsObject(originalCheckpoint);
 					}
 					message = checkpoint.setMessage(message);
 					checkpoint.setStubbed(true);
@@ -443,18 +453,13 @@ public class Report implements Serializable {
 			}
 			if (!stub) {
 				try {
-					if (stubableCode != null) {
-						message = stubableCode.execute();
-					}
-					if (stubableCodeThrowsException != null) {
-						message = stubableCodeThrowsException.execute();
-					}
-					message = checkpoint.setMessage(message);
+					message = TestTool.execute(stubableCode, stubableCodeThrowsException, message);
 				} catch(Throwable t) {
 					checkpoints.remove(index.intValue());
 					testTool.abortpoint(correlationId, sourceClassName, name, t.getMessage());
 					throw t;
 				}
+				message = checkpoint.setMessage(message);
 			}
 			estimatedMemoryUsage += checkpoint.getEstimatedMemoryUsage();
 			if (log.isDebugEnabled()) {
@@ -472,6 +477,11 @@ public class Report implements Serializable {
 			threadsActiveCount--;
 		}
 		return message;
+	}
+
+	@SuppressWarnings("unchecked")
+	private <T> T getMessageAsObject(Checkpoint checkpoint) {
+		return (T)checkpoint.getMessageAsObject();
 	}
 
 	protected String truncateMessage(Checkpoint checkpoint, String message) {
@@ -514,16 +524,12 @@ public class Report implements Serializable {
 		return result;
 	}
 
-	protected boolean finished() {
-		return threadsFinished() && messageCapturersFinished();
-	}
-
 	protected boolean threadsFinished() {
 		return threadsActiveCount < 1;
 	}
 
-	protected boolean messageCapturersFinished() {
-		return getMessageCapturersActiveCount() < 1;
+	protected boolean streamingMessageListenersFinished() {
+		return streamingMessageListeners.size() < 1;
 	}
 
 	protected void addStreamingMessageListener(Object streamingMessage, Checkpoint checkpoint) {
@@ -552,16 +558,21 @@ public class Report implements Serializable {
 			streamingMessageResult.setMessage(message);
 			streamingMessageResult.setPreTruncatedMessageLength(preTruncatedMessageLength);
 			streamingMessageResults.put(streamingMessage, streamingMessageResult);
-			decreaseMessageCapturersActiveCount();
+			closeStreamingMessageListeners();
 		}
 		getTestTool().closeReport(this);
 	}
 
-	protected void closeStreamingMessages() {
+	/**
+	 * Close all streaming message listeners for which the streaming message has been closed
+	 */
+	private void closeStreamingMessageListeners() {
 		synchronized(streamingMessageListeners) {
-			if (finished()) {
-				for (Object streamingMessage : streamingMessageListeners.keySet()) {
-					StreamingMessageResult streamingMessageResult = streamingMessageResults.get(streamingMessage);
+			Set<Object> finishedStreamingMessage = new HashSet<Object>();
+			for (Object streamingMessage : streamingMessageListeners.keySet()) {
+				StreamingMessageResult streamingMessageResult = streamingMessageResults.remove(streamingMessage);
+				if (streamingMessageResult != null) {
+					finishedStreamingMessage.add(streamingMessage);
 					for (Checkpoint checkpoint : streamingMessageListeners.get(streamingMessage)) {
 						estimatedMemoryUsage -= checkpoint.getEstimatedMemoryUsage();
 						checkpoint.setStreaming(streamingMessageResult.getStreamingType());
@@ -578,22 +589,11 @@ public class Report implements Serializable {
 						estimatedMemoryUsage += checkpoint.getEstimatedMemoryUsage();
 					}
 				}
-				streamingMessageListeners.clear();
-				streamingMessageResults.clear();
+			}
+			for (Object streamingMessage: finishedStreamingMessage) {
+				streamingMessageListeners.remove(streamingMessage);
 			}
 		}
-	}
-
-	protected void increaseMessageCapturersActiveCount() {
-		messageCapturersActiveCount.incrementAndGet();
-	}
-
-	protected void decreaseMessageCapturersActiveCount() {
-		messageCapturersActiveCount.decrementAndGet();
-	}
-
-	protected int getMessageCapturersActiveCount() {
-		return messageCapturersActiveCount.get();
 	}
 
 	public Checkpoint getCheckpoint(Path path) {
@@ -733,6 +733,15 @@ public class Report implements Serializable {
 				}
 				if (checkpoint.getStreaming() != null) {
 					stringBuffer.append(" Streaming=\"" + EscapeUtil.escapeXml(checkpoint.getStreaming()) + "\"");
+				}
+				if (checkpoint.getStub() != Checkpoint.STUB_FOLLOW_REPORT_STRATEGY) {
+					stringBuffer.append(" Stub=\"" + checkpoint.getStub() + "\"");
+				}
+				if (checkpoint.isStubbed()) {
+					stringBuffer.append(" Stubbed=\"" + checkpoint.isStubbed() + "\"");
+				}
+				if (checkpoint.getStubNotFound() != null) {
+					stringBuffer.append(" StubNotFound=\"" + checkpoint.getStubNotFound() + "\"");
 				}
 				if (message == null) {
 					stringBuffer.append(" Null=\"true\"/>");

@@ -54,6 +54,7 @@ public class ReportComponent extends MessageComponent {
 	private SelectField stubStrategySelectField;
 	private SelectField copyToSelectField;
 	private Label estimatedMemoryUsageLabel;
+	private Label correlationIdLabel;
 	private TextField nameTextField;
 	protected Column descriptionColumn;
 	private TextArea descriptionTextArea;
@@ -247,6 +248,8 @@ public class ReportComponent extends MessageComponent {
 		estimatedMemoryUsageLabel = Echo2Application.createInfoLabelWithColumnLayoutData();
 		add(estimatedMemoryUsageLabel);
 
+		correlationIdLabel = Echo2Application.createInfoLabelWithColumnLayoutData();
+		add(correlationIdLabel);
 
 		// "Are you sure?" window for delete button
 		{
@@ -314,9 +317,10 @@ public class ReportComponent extends MessageComponent {
 		}
 		messageTextArea.setVisible(false);
 		
-		storageIdLabel.setText("StorageId: " + report.getStorageId());
-		storageLabel.setText("Storage: " + report.getStorage().getName());
+		storageIdLabel.setText("StorageId: " + (report.getStorageId() == null ? "" : report.getStorageId()));
+		storageLabel.setText("Storage: " + (report.getStorage() == null ? "" : report.getStorage().getName()));
 		estimatedMemoryUsageLabel.setText("EstimatedMemoryUsage: " + report.getEstimatedMemoryUsage() + " bytes");
+		correlationIdLabel.setText("CorrelationId: " + report.getCorrelationId());
 		hideMessages();
 	}
 

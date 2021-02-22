@@ -23,7 +23,7 @@
                MessageClassName="java.lang.Integer"
                Encoding="XMLEncoder"
                TextDecl="&lt;?xml version=&#34;1.0&#34; encoding=&#34;UTF-8&#34;?&gt;">
-      <java version="1.8.0_252" class="java.beans.XMLDecoder">
+      <java version="IGNORE-JAVA-VERSION" class="java.beans.XMLDecoder">
          <int>123</int>
       </java>
    </Checkpoint>
@@ -33,7 +33,7 @@
                MessageClassName="java.lang.Integer"
                Encoding="XMLEncoder"
                TextDecl="&lt;?xml version=&#34;1.0&#34; encoding=&#34;UTF-8&#34;?&gt;">
-      <java version="1.8.0_252" class="java.beans.XMLDecoder">
+      <java version="IGNORE-JAVA-VERSION" class="java.beans.XMLDecoder">
          <int>456</int>
       </java>
    </Checkpoint>

@@ -43,7 +43,8 @@ public class CheckpointComponent extends MessageComponent {
 	private RadioButton radioButtonStubOptionFollowReportStrategy;
 	private RadioButton radioButtonStubOptionYes;
 	private RadioButton radioButtonStubOptionNo;
-	private Label messageHasBeenStubbedLabel;
+	private Label messageIsStubbedLabel;
+	private Label messageStubNotFoundLabel;
 	private Label messageIsNullLabel;
 	private Label messageIsEmptyStringLabel;
 	private Label messageIsTruncatedLabel;
@@ -122,10 +123,14 @@ public class CheckpointComponent extends MessageComponent {
 
 		add(okayLabel);
 
-		messageHasBeenStubbedLabel = Echo2Application.createInfoLabelWithColumnLayoutData();
-		messageHasBeenStubbedLabel.setVisible(false);
-		messageHasBeenStubbedLabel.setText("Message has been stubbed (copied from original report)");
-		add(messageHasBeenStubbedLabel);
+		messageIsStubbedLabel = Echo2Application.createInfoLabelWithColumnLayoutData();
+		messageIsStubbedLabel.setVisible(false);
+		messageIsStubbedLabel.setText("Message is stubbed (copied from original report)");
+		add(messageIsStubbedLabel);
+
+		messageStubNotFoundLabel = Echo2Application.createInfoLabelWithColumnLayoutData();
+		messageStubNotFoundLabel.setVisible(false);
+		add(messageStubNotFoundLabel);
 
 		messageIsNullLabel = Echo2Application.createInfoLabelWithColumnLayoutData();
 		messageIsNullLabel.setVisible(false);
@@ -154,19 +159,19 @@ public class CheckpointComponent extends MessageComponent {
 
 		nameLabel = Echo2Application.createInfoLabelWithColumnLayoutData();
 		add(nameLabel);
-		
+
 		threadNameLabel = Echo2Application.createInfoLabelWithColumnLayoutData();
 		add(threadNameLabel);
-		
+
 		sourceClassNameLabel = Echo2Application.createInfoLabelWithColumnLayoutData();
 		add(sourceClassNameLabel);
-		
+
 		messageClassNameLabel = Echo2Application.createInfoLabelWithColumnLayoutData();
 		add(messageClassNameLabel);
-		
+
 		pathLabel = Echo2Application.createInfoLabelWithColumnLayoutData();
 		add(pathLabel);
-		
+
 		checkpointUIDLabel = Echo2Application.createInfoLabelWithColumnLayoutData();
 		checkpointUIDLabel.setToolTipText("A unique identifier consisting of the report's storageId "
 				+ "and this checkpoint's index. Use this value as part of a variable in another report's "
@@ -200,7 +205,13 @@ public class CheckpointComponent extends MessageComponent {
 			radioButtonStubOptionYes.setSelected(false);
 			radioButtonStubOptionNo.setSelected(false);
 		}
-		messageHasBeenStubbedLabel.setVisible(checkpoint.isStubbed());
+		messageIsStubbedLabel.setVisible(checkpoint.isStubbed());
+		if (checkpoint.getStubNotFound() != null) {
+			messageStubNotFoundLabel.setText("Could not find stub message for '" + checkpoint.getStubNotFound());
+			messageStubNotFoundLabel.setVisible(true);
+		} else {
+			messageStubNotFoundLabel.setVisible(false);
+		}
 		String message = null;
 		if (checkpoint.getMessage() != null) {
 			message = checkpoint.getMessage();
@@ -220,7 +231,7 @@ public class CheckpointComponent extends MessageComponent {
 		String type = null;
 		if (checkpoint.getStreaming() != null) {
 			type = checkpoint.getStreaming().toLowerCase() + " stream";
-			messageStreamingLabel.setText("Message was captured asynchronously from a " + type);
+			messageStreamingLabel.setText("Message is captured asynchronously from a " + type);
 			messageStreamingLabel.setVisible(true);
 		} else {
 			messageStreamingLabel.setVisible(false);

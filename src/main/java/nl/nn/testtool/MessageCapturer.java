@@ -70,7 +70,7 @@ public interface MessageCapturer {
 	 *                      later the caller writes characters to the wrapper these characters can be captured by the
 	 *                      wrapper and copied to writer
 	 */
-	Object toWriter(Object message, Writer writer);
+	<T> T toWriter(T message, Writer writer);
 
 	/**
 	 * This method will be called for messages of {@link StreamingType} {@link StreamingType#BYTE_STREAM} to write a
@@ -85,6 +85,6 @@ public interface MessageCapturer {
 	 *                      later the caller writes bytes to the wrapper these bytes can be captured by the
 	 *                      wrapper and copied to outputStream
 	 */
-	Object toOutputStream(Object message, OutputStream outputStream);
+	<T> T toOutputStream(T message, OutputStream outputStream);
 
 }
