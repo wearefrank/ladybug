@@ -64,6 +64,7 @@ public interface MessageCapturer {
 	 * closing and storing the report. The characters written to this writer will be passed as a string to
 	 * {@link Checkpoint#setMessage(String)}.
 	 * 
+	 * @param <T>           type of message
 	 * @param message       the checkpoint message object
 	 * @param writer        write the data of the checkpoint message object to this writer
 	 * @return              the message itself, or a wrapper around it that will be passed back to the caller. When
@@ -79,6 +80,7 @@ public interface MessageCapturer {
 	 * closing and storing the report. The bytes written to this writer will be passed as a byte array to
 	 * {@link Checkpoint#setMessage(Object)}.
 	 * 
+	 * @param <T>           type of message
 	 * @param message       the checkpoint message object
 	 * @param outputStream  write the data of the checkpoint message object to this output stream
 	 * @return              the message itself, or a wrapper around it that will be passed back to the caller. When

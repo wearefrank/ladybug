@@ -6,6 +6,7 @@ Ladybug Test Tool release notes
 Upcoming
 --------
  
+- Use generics so no casting is needed for checkpoint methods
 - Use UTF-8 encoding for byte array when possible
 - Return stream object as stub when original message was a stream object
 - Set messageClassName only when message object is not a String object
