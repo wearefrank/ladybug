@@ -14,15 +14,7 @@ import org.apache.cxf.jaxrs.ext.multipart.Multipart;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.InputStream;
@@ -51,14 +43,19 @@ public class ReportApi extends ApiBase {
 	@GET
 	@Path("/report/{storage}/{storageId}")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response getReport(@PathParam("storage") String storageParam, @PathParam("storageId") int storageId) throws ApiException {
+	public Response getReport(@PathParam("storage") String storageParam, @PathParam("storageId") int storageId, @QueryParam("xml") @DefaultValue("false") boolean xml) throws ApiException {
 		try {
 			Storage storage = getBean(storageParam);
 			Report report = storage.getReport(storageId);
 			if (report == null)
 				return Response.status(Response.Status.NOT_FOUND).build();
-
-			return Response.ok().entity(report).build();
+			if (xml) {
+				HashMap<String, String> map = new HashMap<>(1);
+				map.put("xml", report.toXml());
+				return Response.ok(map).build();
+			} else {
+				return Response.ok().entity(report).build();
+			}
 		} catch (StorageException e) {
 			throw new ApiException("Exception while getting report [" + storageId + "] from storage [" + storageParam + "]", e);
 		}
