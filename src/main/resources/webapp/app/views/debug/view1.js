@@ -23,7 +23,7 @@ angular.module('myApp.view1', ['ngRoute'])
             "estMemory": 0,
             "reportsInProgress": 0,
             "transformation": "",
-            "transformationEnabled": false,
+            "transformationEnabled": true,
             "openLatest": 10,
             "openInProgress": 1
         };
