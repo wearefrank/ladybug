@@ -14,10 +14,10 @@
 <div class="row">
     <div class="col-6">
         <metadata-table on-select-relay="left_table2tree" ng-show="left_show"></metadata-table>
-        <report-display on-select-relay="left_tree2display" ng-show="!left_show" storage="storage"></report-display>
+        <report-display on-select-relay="left_tree2display" ng-show="!left_show" storage="storage" apply-transformer="true"></report-display>
     </div>
     <div class="col-6">
         <metadata-table on-select-relay="right_table2tree" ng-show="right_show"></metadata-table>
-        <report-display on-select-relay="right_tree2display" ng-show="!right_show" storage="storage"></report-display>
+        <report-display on-select-relay="right_tree2display" ng-show="!right_show" storage="storage" apply-transformer="true"></report-display>
     </div>
 </div>

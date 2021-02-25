@@ -82,7 +82,6 @@ function displayController($scope, $http) {
                 "Name:": ladybugData["name"],
                 "Thread name:": ladybugData["threadName"],
                 "Source class name:": ladybugData["sourceClassName"],
-                "Path:": "???",
                 "Checkpoint UID:": ladybugData["uid"],
                 "Number of characters:": "???",
                 "EstimatedMemoryUsage:": ladybugData["estimatedMemoryUsage"]
@@ -101,8 +100,9 @@ function displayController($scope, $http) {
             ctrl.reportDetails.text = ladybugData["message"];
             $('#code').text(ladybugData["message"]);
         } else {
-            console.log("URL:" + ctrl.apiUrl + "/report/" + ctrl.storage + "/" + ladybugData.storageId + "?xml=true");
-            $http.get(ctrl.apiUrl + "/report/" + ctrl.storage + "/" + ladybugData.storageId + "?xml=true")
+            let transformer = "applyTransformer" in ctrl && ctrl["applyTransformer"];
+            console.log("URL:" + ctrl.apiUrl + "/report/" + ctrl.storage + "/" + ladybugData.storageId + "?xml=true&globalTransformer=" + transformer);
+            $http.get(ctrl.apiUrl + "/report/" + ctrl.storage + "/" + ladybugData.storageId + "?xml=true&globalTransformer=" + transformer)
                 .then(function (response) {
                     console.log("Message", response.data);
                     // let reportXml = ctrl.escape_html(response.data["xml"]);
@@ -168,6 +168,7 @@ angular.module('myApp').component('reportDisplay', {
     controller: ['$scope', '$http', displayController],
     bindings: {
         onSelectRelay: '=',
+        applyTransformer: '=',
         storage: '='
     }
 });
