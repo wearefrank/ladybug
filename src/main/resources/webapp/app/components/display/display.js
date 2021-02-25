@@ -21,7 +21,7 @@ function displayController($scope, $http) {
     ctrl.toggleEdit = function () {
         console.log("toggling");
         let codeWrappers = $('#code-wrapper');
-        let htmlText = '<pre id="code-wrapper" class="prettify"><code id="code" class="lang-xml"></code></pre>';
+        let htmlText = '<pre id="code-wrapper"><code id="code" class="xml"></code></pre>';
         let buttonText = 'Edit';
 
         if (codeWrappers.get().length === 0 || codeWrappers.get()[0].tagName === "PRE") {
@@ -59,10 +59,22 @@ function displayController($scope, $http) {
         }
         let ladybugData = node["ladybug"];
         $('#code-wrapper').remove();
-        $('#details-row').after('<pre id="code-wrapper" class="prettify"><code id="code" class="lang-xml"></code></pre>');
+        $('#details-row').after('<pre id="code-wrapper"><code id="code" class="xml"></code></pre>');
+
+        if (ladybugData["stubStrategy"] === undefined) {
+            // If node is checkpoint
+            ctrl.display_checkpoint(ladybugData);
+        } else {
+            // If node is report
+            ctrl.display_report_(ladybugData);
+        }
+        ctrl.reportDetails.nodeId = node.nodeId;
+        if (!$scope.$$phase) $scope.$apply();
+    };
+
+    ctrl.display_checkpoint = function (ladybugData) {
+        console.log("ladybugData as checkpoint", ladybugData);
         $('#code').text(ladybugData["message"]);
-        console.log("ladybugData");
-        console.log(ladybugData["message"]);
         ctrl.reportDetails = {
             data: ladybugData,
             text: ladybugData["message"],
@@ -75,22 +87,66 @@ function displayController($scope, $http) {
                 "Number of characters:": "???",
                 "EstimatedMemoryUsage:": ladybugData["estimatedMemoryUsage"]
             },
-            nodeId: node.nodeId
         };
         let stubStrategySelect = ladybugData["stubStrategy"];
-        if (stubStrategySelect === undefined) {
-            // If node is checkpoint
-            stubStrategySelect = ladybugData["stub"];
-            ctrl.stubStrategies = ["Follow report strategy", "No", "Yes"];
-            ctrl.stubStrategySelect = ctrl.stubStrategies[stubStrategySelect + 1];
-        } else {
-            // If node is report
-            ctrl.stubStrategies = $scope.testtoolStubStrategies;
-            ctrl.stubStrategySelect = stubStrategySelect;
-        }
-        $scope.$apply();
-        PR.prettyPrint()
+        stubStrategySelect = ladybugData["stub"];
+        ctrl.stubStrategies = ["Follow report strategy", "No", "Yes"];
+        ctrl.stubStrategySelect = ctrl.stubStrategies[stubStrategySelect + 1];
+        ctrl.highlight_code();
     };
+
+    ctrl.display_report_ = function (ladybugData) {
+        console.log("ladybugData as report", ladybugData);
+        if ("message" in ladybugData) {
+            ctrl.reportDetails.text = ladybugData["message"];
+            $('#code').text(ladybugData["message"]);
+        } else {
+            console.log("URL:" + ctrl.apiUrl + "/report/" + ctrl.storage + "/" + ladybugData.storageId + "?xml=true");
+            $http.get(ctrl.apiUrl + "/report/" + ctrl.storage + "/" + ladybugData.storageId + "?xml=true")
+                .then(function (response) {
+                    console.log("Message", response.data);
+                    // let reportXml = ctrl.escape_html(response.data["xml"]);
+                    let reportXml = response.data["xml"]
+                    console.log("XML DATA", reportXml);
+                    ctrl.reportDetails.text = reportXml;
+                    ladybugData["message"] = reportXml;
+                    $('#code').text(reportXml);
+                    ctrl.highlight_code();
+                });
+        }
+        ctrl.reportDetails = {
+            data: ladybugData,
+            values: {
+                "Name:": ladybugData["name"],
+                "Path:": ladybugData["path"],
+                "Transformation:": ladybugData["transformation"],
+                "StorageId:": ladybugData["storageId"],
+                "Storage:": ctrl.storage,
+                "EstimatedMemoryUsage:": ladybugData["estimatedMemoryUsage"]
+            },
+        };
+        let stubStrategySelect = ladybugData["stubStrategy"];
+        ctrl.stubStrategies = $scope.testtoolStubStrategies;
+        ctrl.stubStrategySelect = stubStrategySelect;
+
+    }
+
+    ctrl.escape_html = function(unsafe) {
+        return unsafe
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
+    ctrl.highlight_code = function () {
+        console.log("Highlightin!!");
+        document.querySelectorAll('pre code').forEach((block) => {
+            console.log("LOL");
+            hljs.highlightBlock(block);
+        });
+    }
 
     ctrl.$onInit = function () {
         if ("select" in ctrl.onSelectRelay) {
@@ -112,5 +168,6 @@ angular.module('myApp').component('reportDisplay', {
     controller: ['$scope', '$http', displayController],
     bindings: {
         onSelectRelay: '=',
+        storage: '='
     }
 });
