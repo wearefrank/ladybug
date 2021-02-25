@@ -6,6 +6,7 @@ import nl.nn.testtool.echo2.util.Upload;
 import nl.nn.testtool.storage.CrudStorage;
 import nl.nn.testtool.storage.Storage;
 import nl.nn.testtool.storage.StorageException;
+import nl.nn.testtool.transform.ReportXmlTransformer;
 import nl.nn.testtool.util.Export;
 import nl.nn.testtool.util.ExportResult;
 import org.apache.commons.lang.StringUtils;
@@ -37,19 +38,29 @@ public class ReportApi extends ApiBase {
 	 *
 	 * @param storageParam Name of the storage.
 	 * @param storageId Storage id of the report.
+	 * @param xml True if Xml of the report needs to be returned.
+	 * @param globalTransformer True if reportXmlTransformer should be set for the report.
 	 * @return A response containing serialized Report object.
 	 * @throws ApiException If exception is thrown while reading report.
 	 */
 	@GET
 	@Path("/{storage}/{storageId}")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response getReport(@PathParam("storage") String storageParam, @PathParam("storageId") int storageId, @QueryParam("xml") @DefaultValue("false") boolean xml) throws ApiException {
+	public Response getReport(@PathParam("storage") String storageParam,
+							  @PathParam("storageId") int storageId,
+							  @QueryParam("xml") @DefaultValue("false") boolean xml,
+							  @QueryParam("globalTransformer") @DefaultValue("false") boolean globalTransformer) throws ApiException {
 		try {
 			Storage storage = getBean(storageParam);
 			Report report = storage.getReport(storageId);
 			if (report == null)
 				return Response.status(Response.Status.NOT_FOUND).build();
 			if (xml) {
+				if (globalTransformer) {
+					ReportXmlTransformer reportXmlTransformer = getBean("reportXmlTransformer");
+					if (reportXmlTransformer != null)
+						report.setGlobalReportXmlTransformer(reportXmlTransformer);
+				}
 				HashMap<String, String> map = new HashMap<>(1);
 				map.put("xml", report.toXml());
 				return Response.ok(map).build();
