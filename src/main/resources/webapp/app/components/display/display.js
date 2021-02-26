@@ -21,19 +21,30 @@ function displayController($scope, $http) {
     ctrl.toggleEdit = function () {
         console.log("toggling");
         let codeWrappers = $('#code-wrapper');
-        let htmlText = '<pre id="code-wrapper"><code id="code" class="xml"></code></pre>';
-        let buttonText = 'Edit';
 
         if (codeWrappers.get().length === 0 || codeWrappers.get()[0].tagName === "PRE") {
-            let rows = Math.min(20, ctrl.reportDetails.text.split('\n').length);
-            htmlText = '<div id="code-wrapper" class=\"form-group\"><textarea class=\"form-control\" id=\"code\" rows="' + rows + '"></textarea></div>';
-            buttonText = 'Save';
+            let htmlText = '<div id="code-wrapper" class=\"form-group\" style="min-height: 400px; min-width: 300px;"></div>';
+            let buttonText = 'Save';
+            codeWrappers.remove();
+            $('#details-edit').text(buttonText);
+            $('#details-row').after(htmlText);
+            require(['vs/editor/editor.main'], function () {
+                ctrl.editor = monaco.editor.create(document.getElementById('code-wrapper'), {
+                    value: ctrl.reportDetails.text,
+                    language: 'xml'
+                });
+            });
+        } else {
+            ctrl.reportDetails.text = (("editor" in ctrl) ? ctrl.editor.getValue() : ctrl.reportDetails.text);
+            let htmlText = '<pre id="code-wrapper"><code id="code" class="xml"></code></pre>';
+            let buttonText = 'Edit';
+            // TODO: Save the text|
+            codeWrappers.remove();
+            $('#details-edit').text(buttonText);
+            $('#details-row').after(htmlText);
+            $('#code').text(ctrl.reportDetails.text);
+            ctrl.highlight_code();
         }
-        // TODO: Save the text|
-        codeWrappers.remove();
-        $('#details-edit').text(buttonText);
-        $('#details-row').after(htmlText);
-        $('#code').text(ctrl.reportDetails.text);
     }
 
     ctrl.copyReport = function (to) {
