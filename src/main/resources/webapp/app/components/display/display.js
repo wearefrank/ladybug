@@ -53,12 +53,12 @@ function displayController($scope, $http) {
      */
     ctrl.display_report = function (rootNode, event, node) {
         ctrl.selectedNode = rootNode;
+        $('#code-wrapper').remove();
         if (node === null) {
             ctrl.reportDetails = {text: "", values: {}};
             return;
         }
         let ladybugData = node["ladybug"];
-        $('#code-wrapper').remove();
         $('#details-row').after('<pre id="code-wrapper"><code id="code" class="xml"></code></pre>');
 
         if (ladybugData["stubStrategy"] === undefined) {
