@@ -6,6 +6,16 @@ function metadataTableController($http) {
     ctrl.limit = 5;
     ctrl.filters = {"limit": ctrl.limit, "sort": "", "order": "ascending"};
     ctrl.metadatas = [];
+    ctrl.options = {
+        "generatorEnabled": true,
+        "regexFilter": "^(?!Pipeline WebControl).*",
+        "estMemory": 0,
+        "reportsInProgress": 0,
+        "transformation": "",
+        "transformationEnabled": true,
+        "openLatest": 10,
+        "openInProgress": 1
+    };
 
     /*
     * Sends a GET request to the server and updates the tables (ctrl.metadatas)
@@ -118,7 +128,50 @@ function metadataTableController($http) {
         });
     };
 
-    ctrl.refresh();
+    ctrl.updateOptions = function() {
+        $http.get(ctrl.apiUrl + "/testtool")
+            .then(function (response) {
+                ctrl.options = Object.assign(ctrl.options, response.data);
+                ctrl.testtoolStubStrategies = response.data["stubStrategies"];
+                ctrl.stubStrategies = ctrl.testtoolStubStrategies;
+                console.log("/testtool");
+                console.log(response);
+                console.log(ctrl.options);
+            }, function (response) {
+                console.log("/testtool failed");
+            });
+        $http.get(ctrl.apiUrl + "/testtool/transformation")
+            .then(function (response) {
+                ctrl.options = Object.assign(ctrl.options, response.data);
+                ctrl.options['transformationEnabled'] = ctrl.options['transformation'] !== "";
+                console.log("/testtool/transformation");
+            });
+    }
+
+    ctrl.saveOptions = function() {
+        console.log("Saving Options");
+        console.log(ctrl.options);
+        $http.post(ctrl.apiUrl + "/testtool", {
+            "generatorEnabled": ctrl.options['generatorEnabled'],
+            "regexFilter": ctrl.options["regexFilter"]});
+        $http.post(ctrl.apiUrl + "/testtool/transformation", {"transformation": ctrl.options['transformation']});
+    }
+
+    ctrl.openLatestReports = function (number) {
+        $http.get(ctrl.apiUrl + "/report/latest/" + ctrl.storage + "/" + number)
+            .then(function (response) {
+                response.data.forEach(function (report) {
+                    ctrl.onSelectRelay.add(report);
+                    console.log(report);
+                });
+            });
+    }
+
+    ctrl.$onInit = function () {
+        ctrl.updateOptions();
+        ctrl.refresh();
+        ctrl.onSelectRelay.transformationEnabled = ctrl.options.transformationEnabled;
+    }
 }
 
 angular.module('myApp').component('metadataTable', {
