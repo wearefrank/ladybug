@@ -55,7 +55,6 @@ function treeController() {
     ctrl.closeAll = function () {
         ctrl.treeData = [];
         $('#' + ctrl.treeId).treeview({data: []});
-        ctrl.$apply();
     };
 
     ctrl.expandAll = function () {
