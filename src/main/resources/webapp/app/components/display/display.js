@@ -4,6 +4,7 @@ function displayController($scope, $http) {
     ctrl.reportDetails = {text: "", values: {}};
     ctrl.stubStrategySelect = "";
     ctrl.availableStorages = {'runStorage': 'Test'};
+    ctrl.displayingReport = false;
 
     ctrl.rerun = function () {
         let data = {};
@@ -72,7 +73,7 @@ function displayController($scope, $http) {
         let ladybugData = node["ladybug"];
         $('#details-row').after('<pre id="code-wrapper"><code id="code" class="xml"></code></pre>');
 
-        if (ladybugData["stubStrategy"] === undefined) {
+        if (ctrl.isReportNode(node)) {
             // If node is checkpoint
             ctrl.display_checkpoint(ladybugData);
         } else {
@@ -157,6 +158,13 @@ function displayController($scope, $http) {
             console.log("LOL");
             hljs.highlightBlock(block);
         });
+    }
+
+    ctrl.isReportNode = function (node) {
+        if (node !== undefined && "ladybug" in node) {
+            ctrl.displayingReport = node["ladybug"]["stubStrategy"] === undefined
+        }
+        return ctrl.displayingReport;
     }
 
     ctrl.$onInit = function () {
