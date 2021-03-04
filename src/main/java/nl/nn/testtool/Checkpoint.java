@@ -279,6 +279,10 @@ public class Checkpoint implements Serializable, Cloneable {
 		return report.getMessageEncoder().toObject(this);
 	}
 
+	public <T> T getMessageAsObject(T messageToStub) {
+		return report.getMessageEncoder().toObject(this, messageToStub);
+	}
+
 	public void setEncoding(String encoding) {
 		this.encoding = encoding;
 	}

@@ -103,10 +103,12 @@ public class MessageEncoderImpl implements MessageEncoder {
 	@Override
 	@SneakyThrows
 	public Object toObject(Checkpoint checkpoint) {
-		String message = checkpoint.getMessage();
-		if (message == null) {
-			return message;
+		// Can be null when called from toObject(Checkpoint originalCheckpoint, T messageToStub), see javadoc on param
+		// originalCheckpoin in MessageEncoder
+		if (checkpoint == null || checkpoint.getMessage() == null) {
+			return null;
 		} else {
+			String message = checkpoint.getMessage();
 			String encoding = checkpoint.getEncoding();
 			if (encoding == null) {
 				if (checkpoint.getStreaming() == null) {
@@ -144,6 +146,18 @@ public class MessageEncoderImpl implements MessageEncoder {
 				return message;
 			}
 		}
+	}
+
+	@Override
+	@SneakyThrows
+	@SuppressWarnings("unchecked")
+	public <T> T toObject(Checkpoint originalCheckpoint, T messageToStub) {
+		// In case a stream is stubbed the replaced stream needs to be closed as the system under test will read and
+		// close the stub which would leave the replaced stream unclosed
+		if (messageToStub instanceof AutoCloseable) {
+			((AutoCloseable)messageToStub).close();
+		}
+		return (T) toObject(originalCheckpoint);
 	}
 
 }

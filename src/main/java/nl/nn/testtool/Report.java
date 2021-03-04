@@ -430,25 +430,12 @@ public class Report implements Serializable {
 					}
 				}
 				if (stub) {
-					// In case a stream is stubbed the replaced stream needs to be closed as the system under test will
-					// read and close the stub which would leave the replaced stream unclosed
-					if (message instanceof AutoCloseable) {
-						((AutoCloseable)message).close();
-					}
-					if (originalCheckpoint == null) {
-						// Make it possible for a message encoder implementation that wraps all messages in a project
-						// specific message object to also wrap null
-						Checkpoint nullCheckpoint = new Checkpoint();
-						nullCheckpoint.setMessage(null);
-						nullCheckpoint.setReport(this);
-						getMessageEncoder().toObject(nullCheckpoint);
-						message = getMessageAsObject(nullCheckpoint);
-						checkpoint.setStubNotFound(lastCheckpointPath.toString());
-					} else {
-						message = getMessageAsObject(originalCheckpoint);
-					}
-					message = checkpoint.setMessage(message);
 					checkpoint.setStubbed(true);
+					if (originalCheckpoint == null) {
+						checkpoint.setStubNotFound(lastCheckpointPath.toString());
+					}
+					message = getMessageEncoder().toObject(originalCheckpoint, message);
+					message = checkpoint.setMessage(message);
 				}
 			}
 			if (!stub) {
@@ -477,11 +464,6 @@ public class Report implements Serializable {
 			threadsActiveCount--;
 		}
 		return message;
-	}
-
-	@SuppressWarnings("unchecked")
-	private <T> T getMessageAsObject(Checkpoint checkpoint) {
-		return (T)checkpoint.getMessageAsObject();
 	}
 
 	protected String truncateMessage(Checkpoint checkpoint, String message) {

@@ -15,6 +15,8 @@
 */
 package nl.nn.testtool;
 
+import java.io.Closeable;
+
 import lombok.Getter;
 import lombok.Setter;
 import nl.nn.testtool.storage.xml.XmlStorage;
@@ -62,12 +64,31 @@ public interface MessageEncoder {
 	}
 
 	/**
-	 * Decode the message of a checkpoint from string back to an object for stubbing purposes.
+	 * Decode the message of a checkpoint from string back to an object. This method is typically used by
+	 * {@link Rerunner} implementations to get the initial message of a report and start a rerun.
 	 * 
 	 * @param checkpoint  the checkpoint holding the string representation and the encoding method used when message was
 	 *                    encoded and possible other relevant information to determine the original object type
 	 * @return            the message as an Object
 	 */
 	Object toObject(Checkpoint checkpoint);
+
+	/**
+	 * Decode the message of a checkpoint from string back to an object for stubbing purposes. This method will
+	 * generally do the same as {@link #toObject(Checkpoint)} but will give the implementation more information and a
+	 * possibility to for example close the message to stub in case it is {@link Closeable}. This method will be called
+	 * when a checkpoint needs to be stubbed.
+	 * 
+	 * @param originalCheckpoint  the checkpoint from the original report that will be used as a stub for the
+	 *                            counterpart checkpoint in the report in progress. The original checkpoint holds the
+	 *                            string representation and the encoding method used when the original message was
+	 *                            encoded and possible other relevant information to determine the original object type.
+	 *                            It can be null when the original checkpoint cannot be found (in that case the decision
+	 *                            to stub is not based on the original checkpoint but based on a stubbing strategy that
+	 *                            stubs certain types of checkpoints)
+	 * @param messageToStub       the message in the report in progress that needs to be stubbed
+	 * @return                    a stub for the message that needs to be stubbed
+	 */
+	<T> T toObject(Checkpoint originalCheckpoint, T messageToStub);
 
 }

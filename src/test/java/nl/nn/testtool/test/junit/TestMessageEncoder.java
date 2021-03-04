@@ -47,14 +47,16 @@ public class TestMessageEncoder extends TestCase {
 		ReportRelatedTestCase.assertXml(RESOURCE_PATH, getName(), actual);
 		checkpoint.setMessage(actual);
 		checkpoint.setEncoding(MessageEncoderImpl.XML_ENCODER);
-		assertEquals(10, messageEncoder.toObject(checkpoint));
+		assertEquals(10, checkpoint.getMessageAsObject());
+		assertEquals(new Integer(10), checkpoint.getMessageAsObject(new Integer(1)));
 
 		// Test Date
 		actual = messageEncoder.toString(new Date(0L)).getString();
 		assertEquals("1970-01-01 01:00:00.000", actual);
 		checkpoint.setMessage(actual);
 		checkpoint.setEncoding(MessageEncoderImpl.DATE_ENCODER);
-		assertEquals(new Date(0L), messageEncoder.toObject(checkpoint));
+		assertEquals(new Date(0L), checkpoint.getMessageAsObject());
+		assertEquals(new Date(0L), checkpoint.getMessageAsObject(new Date(10L)));
 
 		// Test Node
 		Node node = XmlUtil.stringToNode("<test/>");
@@ -64,7 +66,10 @@ public class TestMessageEncoder extends TestCase {
 		assertEquals("<test/>", actual);
 		checkpoint.setMessage(actual);
 		checkpoint.setEncoding(MessageEncoderImpl.DOM_NODE_ENCODER);
-		node = (Node)messageEncoder.toObject(checkpoint);
+		node = (Node)checkpoint.getMessageAsObject();
+		assertTrue(node instanceof Node);
+		assertEquals("test", node.getNodeName());
+		node = checkpoint.getMessageAsObject(XmlUtil.stringToNode("<test2/>"));
 		assertTrue(node instanceof Node);
 		assertEquals("test", node.getNodeName());
 	}

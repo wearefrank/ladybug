@@ -306,16 +306,34 @@ public class TestTool {
 		}
 	}
 
-	public boolean messageCapturerWaitingForClose() {
+	public boolean warnReportsInProgress() {
 		synchronized(reportsInProgress) {
 			for (Report report : reportsInProgress) {
-				if (report.threadsFinished() && !report.streamingMessageListenersFinished()
-						&& report.getEndTime() + 30000 < System.currentTimeMillis()) {
+				if (!messageCapturerWaitingForClose(report)
+						&& report.getEndTime() + (5 * 60 * 1000) < System.currentTimeMillis()) {
 					return true;
 				}
 			}
 		}
 		return false;
+	}
+
+	public boolean warnMessageCapturerWaitingForClose() {
+		synchronized(reportsInProgress) {
+			for (Report report : reportsInProgress) {
+				if (messageCapturerWaitingForClose(report)
+						&& report.getEndTime() + (30 * 1000) < System.currentTimeMillis()) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	private boolean messageCapturerWaitingForClose(Report report) {
+		synchronized(reportsInProgress) {
+			return report.threadsFinished() && !report.streamingMessageListenersFinished();
+		}
 	}
 
 	public <T> T startpoint(String correlationId, String sourceClassName, String name, T message) {
