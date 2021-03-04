@@ -7,6 +7,7 @@ function displayController($scope, $http) {
     ctrl.displayingReport = false;
     ctrl.id = Math.random().toString(36).substring(7);
     ctrl.editing = false;
+    ctrl.diff = [];
     $scope.overwritten_checkpoints = {}; // This will contain keys as checkpoint id, and values as edited values.
 
     ctrl.rerun = function () {
@@ -42,6 +43,10 @@ function displayController($scope, $http) {
         } else {
             let editedText = (("editor" in ctrl && save) ? ctrl.editor.getValue() : ctrl.reportDetails.text);
             if (editedText !== ctrl.reportDetails.text) {
+                let dmp = new diff_match_patch();
+                ctrl.diff = dmp.diff_main(ctrl.reportDetails.text, editedText);
+                dmp.diff_cleanupSemantic(ctrl.diff);
+                console.log("Diff", ctrl.diff);
                 $('#modal' + ctrl.id).modal('show');
             } else {
                 ctrl.saveEditField(false);

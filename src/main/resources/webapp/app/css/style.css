@@ -45,3 +45,10 @@ table .form-control {
     font-size: 1rem;
     margin: 0.5em;
 }
+
+.diff_added {
+    background: lawngreen;
+}
+.diff_deleted {
+    background: orangered;
+}

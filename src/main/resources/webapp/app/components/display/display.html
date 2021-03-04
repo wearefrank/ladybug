@@ -70,6 +70,9 @@
             </div>
             <div class="modal-body">
                 <p>Would you like to discard changes?</p>
+                <pre>
+                    <span ng-repeat="word in $ctrl.diff" ng-class="{diff_added: word[0] == 1, diff_deleted: word[0] == -1}">{{word[1]}}</span>
+                </pre>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-primary" ng-click="$ctrl.saveEditField(false)">Discard Changes</button>
