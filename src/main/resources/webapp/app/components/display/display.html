@@ -3,7 +3,9 @@
     <button type="button" class="btn btn-outline-primary col" ng-click="$ctrl.toggleEdit()" id="details-edit">
         Edit
     </button>
-
+    <button type="button" class="btn btn-outline-primary col" ng-click="$ctrl.saveEditField(true)" id="save" ng-show="$ctrl.editing">
+        Save
+    </button>
     <div class="input-group col">
         <div class="input-group-btn">
             <button type="button" class="btn btn-outline-primary dropdown-toggle" data-toggle="dropdown"
@@ -56,3 +58,24 @@
     </tr>
     </tbody>
 </table>
+
+<div class="modal" tabindex="-1" role="dialog" id="{{'modal' + $ctrl.id}}">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Discarding changes...</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>Would you like to discard changes?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" ng-click="$ctrl.saveEditField(false)">Discard Changes</button>
+                <button type="button" class="btn btn-primary" ng-click="$ctrl.saveEditField(true)">Save changes</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+            </div>
+        </div>
+    </div>
+</div>

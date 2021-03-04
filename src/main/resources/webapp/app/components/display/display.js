@@ -5,6 +5,8 @@ function displayController($scope, $http) {
     ctrl.stubStrategySelect = "";
     ctrl.availableStorages = {'runStorage': 'Test'};
     ctrl.displayingReport = false;
+    ctrl.id = Math.random().toString(36).substring(7);
+    ctrl.editing = false;
     $scope.overwritten_checkpoints = {}; // This will contain keys as checkpoint id, and values as edited values.
 
     ctrl.rerun = function () {
@@ -26,7 +28,7 @@ function displayController($scope, $http) {
 
         if (codeWrappers.get().length === 0 || codeWrappers.get()[0].tagName === "PRE") {
             let htmlText = '<div id="code-wrapper" class=\"form-group\" style="min-height: 400px; min-width: 300px;"></div>';
-            let buttonText = 'Save';
+            let buttonText = 'Read-only';
             codeWrappers.remove();
             $('#details-edit').text(buttonText);
             $('#details-row').after(htmlText);
@@ -35,21 +37,34 @@ function displayController($scope, $http) {
                     value: ctrl.reportDetails.text,
                     language: 'xml'
                 });
+                ctrl.editing = true;
             });
         } else {
-            ctrl.reportDetails.text = (("editor" in ctrl) ? ctrl.editor.getValue() : ctrl.reportDetails.text);
-            let htmlText = '<pre id="code-wrapper"><code id="code" class="xml"></code></pre>';
-            let buttonText = 'Edit';
-            // TODO: Save the text
-            if ("uid" in ctrl.reportDetails.data)
-                $scope.overwritten_checkpoints[ctrl.reportDetails.data.uid] = ctrl.reportDetails.text;
-            ctrl.reportDetails.data["message"] = ctrl.reportDetails.text;
-            codeWrappers.remove();
-            $('#details-edit').text(buttonText);
-            $('#details-row').after(htmlText);
-            $('#code').text(ctrl.reportDetails.text);
-            ctrl.highlight_code();
+            let editedText = (("editor" in ctrl && save) ? ctrl.editor.getValue() : ctrl.reportDetails.text);
+            if (editedText !== ctrl.reportDetails.text) {
+                $('#modal' + ctrl.id).modal('show');
+            } else {
+                ctrl.saveEditField(false);
+            }
         }
+    }
+
+    ctrl.saveEditField = function (save) {
+        let codeWrappers = $('#code-wrapper');
+        ctrl.reportDetails.text = ((save && "editor" in ctrl) ? ctrl.editor.getValue() : ctrl.reportDetails.text);
+        let htmlText = '<pre id="code-wrapper"><code id="code" class="xml"></code></pre>';
+        let buttonText = 'Edit';
+        // TODO: Save the text
+        if ("uid" in ctrl.reportDetails.data)
+            $scope.overwritten_checkpoints[ctrl.reportDetails.data.uid] = ctrl.reportDetails.text;
+        ctrl.reportDetails.data["message"] = ctrl.reportDetails.text;
+        codeWrappers.remove();
+        $('#details-edit').text(buttonText);
+        $('#details-row').after(htmlText);
+        $('#code').text(ctrl.reportDetails.text);
+        ctrl.highlight_code();
+        ctrl.editing = false;
+        $('#modal' + ctrl.id).modal('hide');
     }
 
     ctrl.copyReport = function (to) {
