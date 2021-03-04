@@ -145,6 +145,8 @@ public class TestExport extends TestCase {
 					// Ignore Checkpoint.setMessage(Object), use Checkpoint.setMessage(String)
 				} else if (verb.equals("get") && name.equals("typeAsString") && methods[i].getParameters().length > 0) {
 					// Ignore Checkpoint.getTypeAsString(int)
+				} else if (verb.equals("get") && name.equals("messageAsObject") && methods[i].getParameters().length > 0) {
+					// Ignore Checkpoint.getMessageAsObject(T)
 				} else {
 					assertNull(beanProperties.get(name));
 					beanProperties.put(name, methods[i]);

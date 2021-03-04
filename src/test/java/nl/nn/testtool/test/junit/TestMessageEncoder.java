@@ -25,8 +25,9 @@ import org.xml.sax.SAXException;
 
 import junit.framework.TestCase;
 import nl.nn.testtool.Checkpoint;
-import nl.nn.testtool.MessageEncoder;
 import nl.nn.testtool.MessageEncoderImpl;
+import nl.nn.testtool.Report;
+import nl.nn.testtool.TestTool;
 import nl.nn.testtool.storage.StorageException;
 import nl.nn.testtool.util.XmlUtil;
 
@@ -37,12 +38,15 @@ public class TestMessageEncoder extends TestCase {
 	public static final String RESOURCE_PATH = "nl/nn/testtool/test/junit/";
 
 	public void testToString() throws SAXException, IOException, ParserConfigurationException, StorageException {
-		MessageEncoder messageEncoder = new MessageEncoderImpl();
-		String actual;
+		TestTool testTool = new TestTool();
+		Report report = new Report();
+		report.setTestTool(testTool);
 		Checkpoint checkpoint = new Checkpoint();
+		checkpoint.setReport(report);
+		String actual;
 
 		// Test Integer
-		actual = messageEncoder.toString(10).getString();
+		actual = testTool.getMessageEncoder().toString(10).getString();
 		actual = ReportRelatedTestCase.applyXmlEncoderIgnores(actual);
 		ReportRelatedTestCase.assertXml(RESOURCE_PATH, getName(), actual);
 		checkpoint.setMessage(actual);
@@ -51,7 +55,7 @@ public class TestMessageEncoder extends TestCase {
 		assertEquals(new Integer(10), checkpoint.getMessageAsObject(new Integer(1)));
 
 		// Test Date
-		actual = messageEncoder.toString(new Date(0L)).getString();
+		actual = testTool.getMessageEncoder().toString(new Date(0L)).getString();
 		assertEquals("1970-01-01 01:00:00.000", actual);
 		checkpoint.setMessage(actual);
 		checkpoint.setEncoding(MessageEncoderImpl.DATE_ENCODER);
@@ -62,7 +66,7 @@ public class TestMessageEncoder extends TestCase {
 		Node node = XmlUtil.stringToNode("<test/>");
 		assertTrue(node instanceof Node);
 		assertEquals("test", node.getNodeName());
-		actual = messageEncoder.toString(node).getString();
+		actual = testTool.getMessageEncoder().toString(node).getString();
 		assertEquals("<test/>", actual);
 		checkpoint.setMessage(actual);
 		checkpoint.setEncoding(MessageEncoderImpl.DOM_NODE_ENCODER);
