@@ -5,6 +5,7 @@ function displayController($scope, $http) {
     ctrl.stubStrategySelect = "";
     ctrl.availableStorages = {'runStorage': 'Test'};
     ctrl.displayingReport = false;
+    $scope.overwritten_checkpoints = {}; // This will contain keys as checkpoint id, and values as edited values.
 
     ctrl.rerun = function () {
         let data = {};
@@ -39,7 +40,10 @@ function displayController($scope, $http) {
             ctrl.reportDetails.text = (("editor" in ctrl) ? ctrl.editor.getValue() : ctrl.reportDetails.text);
             let htmlText = '<pre id="code-wrapper"><code id="code" class="xml"></code></pre>';
             let buttonText = 'Edit';
-            // TODO: Save the text|
+            // TODO: Save the text
+            if ("uid" in ctrl.reportDetails.data)
+                $scope.overwritten_checkpoints[ctrl.reportDetails.data.uid] = ctrl.reportDetails.text;
+            ctrl.reportDetails.data["message"] = ctrl.reportDetails.text;
             codeWrappers.remove();
             $('#details-edit').text(buttonText);
             $('#details-row').after(htmlText);
@@ -85,11 +89,12 @@ function displayController($scope, $http) {
     };
 
     ctrl.display_checkpoint = function (ladybugData) {
-        console.log("ladybugData as checkpoint", ladybugData);
-        $('#code').text(ladybugData["message"]);
+        let message = ladybugData["message"];
+        if (ladybugData["uid"] in $scope.overwritten_checkpoints)
+            message = $scope.overwritten_checkpoints[ladybugData["uid"]];
         ctrl.reportDetails = {
             data: ladybugData,
-            text: ladybugData["message"],
+            text: message,
             values: {
                 "Name:": ladybugData["name"],
                 "Thread name:": ladybugData["threadName"],
@@ -99,15 +104,14 @@ function displayController($scope, $http) {
                 "EstimatedMemoryUsage:": ladybugData["estimatedMemoryUsage"]
             },
         };
-        let stubStrategySelect = ladybugData["stubStrategy"];
-        stubStrategySelect = ladybugData["stub"];
         ctrl.stubStrategies = ["Follow report strategy", "No", "Yes"];
-        ctrl.stubStrategySelect = ctrl.stubStrategies[stubStrategySelect + 1];
+        ctrl.stubStrategySelect = ctrl.stubStrategies[ladybugData["stub"] + 1];
+
+        $('#code').text(ctrl.reportDetails.text);
         ctrl.highlight_code();
     };
 
     ctrl.display_report_ = function (ladybugData) {
-        console.log("ladybugData as report", ladybugData);
         if ("message" in ladybugData) {
             ctrl.reportDetails.text = ladybugData["message"];
             $('#code').text(ladybugData["message"]);
@@ -121,7 +125,7 @@ function displayController($scope, $http) {
                     let reportXml = response.data["xml"]
                     console.log("XML DATA", reportXml);
                     ctrl.reportDetails.text = reportXml;
-                    ladybugData["message"] = reportXml;
+                    ladybugData.message = reportXml;
                     $('#code').text(reportXml);
                     ctrl.highlight_code();
                 });
@@ -162,7 +166,7 @@ function displayController($scope, $http) {
 
     ctrl.isReportNode = function (node) {
         if (node !== undefined && "ladybug" in node) {
-            ctrl.displayingReport = node["ladybug"]["stubStrategy"] === undefined
+            ctrl.displayingReport = node["ladybug"]["stubStrategy"] === undefined;
         }
         return ctrl.displayingReport;
     }
