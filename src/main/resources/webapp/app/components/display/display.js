@@ -24,14 +24,29 @@ function displayController($scope, $http) {
     };
 
     ctrl.toggleEdit = function () {
-        console.log("toggling");
+        let codeWrappers = $('#code-wrapper');
+        if (codeWrappers.get().length === 0 || codeWrappers.get()[0].tagName === "PRE") {
+            let buttonText = 'Read-only';
+            codeWrappers.remove();
+            $('#details-edit').text(buttonText);
+        }
+        if (ctrl.isReportNode()) {
+            ctrl.toggleEditReport();
+        } else {
+            ctrl.toggleEditCheckpoint();
+        }
+    }
+
+    ctrl.toggleEditReport = function () {
+        // TODO: Editing report
+    }
+
+    ctrl.toggleEditCheckpoint = function () {
+        console.log("toggling Checkpoint");
         let codeWrappers = $('#code-wrapper');
 
         if (codeWrappers.get().length === 0 || codeWrappers.get()[0].tagName === "PRE") {
             let htmlText = '<div id="code-wrapper" class=\"form-group\" style="min-height: 400px; min-width: 300px;"></div>';
-            let buttonText = 'Read-only';
-            codeWrappers.remove();
-            $('#details-edit').text(buttonText);
             $('#notifications' + ctrl.id).after(htmlText);
             require(['vs/editor/editor.main'], function () {
                 ctrl.editor = monaco.editor.create(document.getElementById('code-wrapper'), {
@@ -98,11 +113,11 @@ function displayController($scope, $http) {
         $('#notifications' + ctrl.id).after('<pre id="code-wrapper"><code id="code" class="xml"></code></pre>');
 
         if (ctrl.isReportNode(node)) {
-            // If node is checkpoint
-            ctrl.display_checkpoint(ladybugData);
-        } else {
             // If node is report
             ctrl.display_report_(ladybugData);
+        } else {
+            // If node is checkpoint
+            ctrl.display_checkpoint(ladybugData);
         }
         ctrl.reportDetails.nodeId = node.nodeId;
         if (!$scope.$$phase) $scope.$apply();
@@ -192,7 +207,7 @@ function displayController($scope, $http) {
 
     ctrl.isReportNode = function (node) {
         if (node !== undefined && "ladybug" in node) {
-            ctrl.displayingReport = node["ladybug"]["stubStrategy"] === undefined;
+            ctrl.displayingReport = node["ladybug"]["stub"] === undefined;
         }
         return ctrl.displayingReport;
     }
