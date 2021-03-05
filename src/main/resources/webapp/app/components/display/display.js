@@ -1,7 +1,7 @@
 function displayController($scope, $http) {
     let ctrl = this;
     ctrl.apiUrl = "http://localhost:8080/ibis_adapterframework_test_war_exploded/ladybug";
-    ctrl.reportDetails = {text: "", values: {}};
+    ctrl.reportDetails = {text: "", values: {}, notifications: {}};
     ctrl.stubStrategySelect = "";
     ctrl.availableStorages = {'runStorage': 'Test'};
     ctrl.displayingReport = false;
@@ -91,7 +91,7 @@ function displayController($scope, $http) {
         ctrl.selectedNode = rootNode;
         $('#code-wrapper').remove();
         if (node === null) {
-            ctrl.reportDetails = {text: "", values: {}};
+            ctrl.reportDetails = {text: "", values: {}, notifications: {}};
             return;
         }
         let ladybugData = node["ladybug"];
@@ -123,6 +123,7 @@ function displayController($scope, $http) {
                 "Number of characters:": "???",
                 "EstimatedMemoryUsage:": ladybugData["estimatedMemoryUsage"]
             },
+            notifications: {0: {level: "error", text: "I see you are displaying a checkpoint!"}}
         };
         ctrl.stubStrategies = ["Follow report strategy", "No", "Yes"];
         ctrl.stubStrategySelect = ctrl.stubStrategies[ladybugData["stub"] + 1];
@@ -160,11 +161,16 @@ function displayController($scope, $http) {
                 "Storage:": ctrl.storage,
                 "EstimatedMemoryUsage:": ladybugData["estimatedMemoryUsage"]
             },
+            notifications: {0: {level: "ok", text: "I see you are displaying a report!"}}
         };
         let stubStrategySelect = ladybugData["stubStrategy"];
         ctrl.stubStrategies = $scope.testtoolStubStrategies;
         ctrl.stubStrategySelect = stubStrategySelect;
 
+    }
+
+    ctrl.close_notification = function (key) {
+        delete ctrl.reportDetails.notifications[key];
     }
 
     ctrl.escape_html = function(unsafe) {

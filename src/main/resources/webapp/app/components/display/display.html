@@ -45,6 +45,13 @@
         </select>
     </div>
 </div>
+<div>
+    <div class="notification" ng-repeat="(key, notification) in $ctrl.reportDetails.notifications"
+         ng-class="{notification: notification.level === 'ok', error_notification: notification.level === 'error'}">
+        {{notification.text}}
+        <i class="fa fa-times" style="float: right" ng-click="$ctrl.close_notification(key)"></i>
+    </div>
+</div>
 <pre id="code-wrapper">
     <code id="code" class="xml">
         {{$ctrl.reportDetails.text}}
