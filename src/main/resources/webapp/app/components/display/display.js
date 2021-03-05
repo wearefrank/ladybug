@@ -46,13 +46,18 @@ function displayController($scope, $http) {
         let codeWrappers = $('#code-wrapper');
 
         if (codeWrappers.get().length === 0 || codeWrappers.get()[0].tagName === "PRE") {
-            let htmlText = '<div id="code-wrapper" class=\"form-group\" style="min-height: 400px; min-width: 300px;"></div>';
+            let height = Math.min((ctrl.reportDetails.text.split(/\r\n|\r|\n/).length + 1) * 15, 300);
+            console.log("Min Height", height)
+            let htmlText = '<div id="code-wrapper" class=\"form-group\" style="min-height: ' + height + 'px; min-width: 300px;"></div>';
             $('#notifications' + ctrl.id).after(htmlText);
             require(['vs/editor/editor.main'], function () {
                 ctrl.editor = monaco.editor.create(document.getElementById('code-wrapper'), {
                     value: ctrl.reportDetails.text,
-                    language: 'xml'
-                });
+                    language: 'xml',
+                    fontSize: "10px",
+                    scrollBeyondLastLine: false
+
+            });
                 ctrl.editing = true;
             });
         } else {
