@@ -32,7 +32,7 @@ function displayController($scope, $http) {
             let buttonText = 'Read-only';
             codeWrappers.remove();
             $('#details-edit').text(buttonText);
-            $('#details-row').after(htmlText);
+            $('#notifications' + ctrl.id).after(htmlText);
             require(['vs/editor/editor.main'], function () {
                 ctrl.editor = monaco.editor.create(document.getElementById('code-wrapper'), {
                     value: ctrl.reportDetails.text,
@@ -65,7 +65,7 @@ function displayController($scope, $http) {
         ctrl.reportDetails.data["message"] = ctrl.reportDetails.text;
         codeWrappers.remove();
         $('#details-edit').text(buttonText);
-        $('#details-row').after(htmlText);
+        $('#notifications' + ctrl.id).after(htmlText);
         $('#code').text(ctrl.reportDetails.text);
         ctrl.highlight_code();
         ctrl.editing = false;
@@ -95,7 +95,7 @@ function displayController($scope, $http) {
             return;
         }
         let ladybugData = node["ladybug"];
-        $('#details-row').after('<pre id="code-wrapper"><code id="code" class="xml"></code></pre>');
+        $('#notifications' + ctrl.id).after('<pre id="code-wrapper"><code id="code" class="xml"></code></pre>');
 
         if (ctrl.isReportNode(node)) {
             // If node is checkpoint

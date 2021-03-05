@@ -45,7 +45,7 @@
         </select>
     </div>
 </div>
-<div>
+<div id="{{'notifications' + $ctrl.id}}">
     <div class="notification" ng-repeat="(key, notification) in $ctrl.reportDetails.notifications"
          ng-class="{notification: notification.level === 'ok', error_notification: notification.level === 'error'}">
         {{notification.text}}
