@@ -52,10 +52,3 @@ table .form-control {
 .diff_deleted {
     background: orangered;
 }
-
-.notification {
-    background: lightgrey;
-}
-.error_notification {
-    background: indianred;
-}
