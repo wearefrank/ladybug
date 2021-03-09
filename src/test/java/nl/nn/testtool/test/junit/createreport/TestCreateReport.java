@@ -197,8 +197,13 @@ public class TestCreateReport extends ReportRelatedTestCase {
 					@SneakyThrows
 					public ToStringResult toString(Object message, String charset) {
 						if (message instanceof byte[]) {
-							return new ToStringResult(new String((byte[])message, charset),
-									"new String((byte[])message)");
+							String string;
+							if (charset == null) {
+								string = new String((byte[])message);
+							} else {
+								string = new String((byte[])message, charset);
+							}
+							return new ToStringResult(string, "new String((byte[])message)");
 						}
 						return super.toString(message, charset);
 					}
