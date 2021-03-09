@@ -20,6 +20,7 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Writer;
+import java.util.function.Consumer;
 
 /**
  * Default implementation of {@link MessageCapturer} used by {@link TestTool} that will wrap message objects that are an
@@ -77,7 +78,7 @@ public class MessageCapturerImpl implements MessageCapturer {
 	}
 	@SuppressWarnings("unchecked")
 	@Override
-	public <T> T toOutputStream(T message, OutputStream outputStream) {
+	public <T> T toOutputStream(T message, OutputStream outputStream, Consumer<String> charsetNotifier) {
 		return (T) new BufferedOutputStream((OutputStream)message) {
 
 				@Override

@@ -38,10 +38,13 @@ public interface MessageEncoder {
 	 * Encode the message from object to string.
 	 * 
 	 * @param message  the object to encode to string
+	 * @param charset  null or when
+	 *                 {@link MessageCapturer#toOutputStream(Object, java.io.OutputStream, java.util.function.Consumer)}
+	 *                 was called for this message the charset as notified by the application
 	 * @return         {@link ToStringResult} containing the string representation of the object, the name of the
 	 *                 encoding used (is null when no encoding was applied) and the class name of message
 	 */
-	ToStringResult toString(Object message);
+	public ToStringResult toString(Object message, String charset);
 
 	@Getter
 	@Setter
@@ -71,7 +74,7 @@ public interface MessageEncoder {
 	 *                    encoded and possible other relevant information to determine the original object type
 	 * @return            the message as an Object
 	 */
-	Object toObject(Checkpoint checkpoint);
+	public Object toObject(Checkpoint checkpoint);
 
 	/**
 	 * Decode the message of a checkpoint from string back to an object for stubbing purposes. This method will
@@ -79,6 +82,7 @@ public interface MessageEncoder {
 	 * possibility to for example close the message to stub in case it is {@link Closeable}. This method will be called
 	 * when a checkpoint needs to be stubbed.
 	 * 
+	 * @param <T>                 the type of message to stub
 	 * @param originalCheckpoint  the checkpoint from the original report that will be used as a stub for the
 	 *                            counterpart checkpoint in the report in progress. The original checkpoint holds the
 	 *                            string representation and the encoding method used when the original message was
@@ -89,6 +93,6 @@ public interface MessageEncoder {
 	 * @param messageToStub       the message in the report in progress that needs to be stubbed
 	 * @return                    a stub for the message that needs to be stubbed
 	 */
-	<T> T toObject(Checkpoint originalCheckpoint, T messageToStub);
+	public <T> T toObject(Checkpoint originalCheckpoint, T messageToStub);
 
 }

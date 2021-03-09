@@ -145,7 +145,10 @@ public class Checkpoint implements Serializable, Cloneable {
 	}
 
 	public  <T> T setMessage(T message) {
-		ToStringResult toStringResult = report.getMessageEncoder().toString(message);
+		// For streams message encoder and setMessage() with param type String will be called a second time in
+		// Report.closeStreamingMessageListeners(). The first call here will allow the message encoder to set the
+		// message to a value that shows that Ladybug is waiting for the stream to be read, captured and closed
+		ToStringResult toStringResult = report.getMessageEncoder().toString(message, null);
 		setMessage(toStringResult.getString());
 		setEncoding(toStringResult.getEncoding());
 		setMessageClassName(toStringResult.getMessageClassName());
@@ -158,6 +161,7 @@ public class Checkpoint implements Serializable, Cloneable {
 					TestTool testTool = report.getTestTool();
 					// Use array to work around final scope limitation for anonymous inner class
 					Object[] possiblyWrappedMessage = new Object[1];
+					String[] charset = new String[1];
 					if (streamingType == StreamingType.CHARACTER_STREAM) {
 						StringWriter stringWriter = new StringWriter() {
 								int length = 0;
@@ -209,8 +213,8 @@ public class Checkpoint implements Serializable, Cloneable {
 										preTruncatedMessageLength = length;
 									}
 									report.closeStreamingMessage(toStringResult.getMessageClassName(),
-											possiblyWrappedMessage[0], streamingType.toString(), toString(),
-											preTruncatedMessageLength);
+											possiblyWrappedMessage[0], streamingType.toString(), charset[0],
+											toString(), preTruncatedMessageLength);
 								}
 						};
 						// Message possibly wrapped by toWriter()
@@ -256,12 +260,13 @@ public class Checkpoint implements Serializable, Cloneable {
 										preTruncatedMessageLength = length;
 									}
 									report.closeStreamingMessage(toStringResult.getMessageClassName(),
-											possiblyWrappedMessage[0], streamingType.toString(), toByteArray(),
-											preTruncatedMessageLength);
+											possiblyWrappedMessage[0], streamingType.toString(), charset[0],
+											toByteArray(), preTruncatedMessageLength);
 								}
 						};
 						// Message possibly wrapped by toOutputStream()
-						message = report.getMessageCapturer().toOutputStream(message, byteArrayOutputStream);
+						message = report.getMessageCapturer().toOutputStream(message, byteArrayOutputStream,
+								charsetNotifier -> charset[0] = charsetNotifier);
 					}
 					report.addStreamingMessageListener(message, this);
 					possiblyWrappedMessage[0] = message;

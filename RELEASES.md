@@ -5,7 +5,8 @@ Ladybug Test Tool release notes
 
 Upcoming
 --------
- 
+
+- Enable application to notify the charset for binary streams
 - Show warning for reports in progress and message capturers waiting for close
 - Use generics so no casting is needed for checkpoint methods
 - Use UTF-8 encoding for byte array when possible

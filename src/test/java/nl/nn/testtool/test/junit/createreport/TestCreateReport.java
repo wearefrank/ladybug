@@ -193,11 +193,13 @@ public class TestCreateReport extends ReportRelatedTestCase {
 		testTool.setMessageEncoder(
 				new MessageEncoderImpl() {
 					@Override
-					public ToStringResult toString(Object message) {
+					@SneakyThrows
+					public ToStringResult toString(Object message, String charset) {
 						if (message instanceof byte[]) {
-							return new ToStringResult(new String((byte[])message), "new String((byte[])message)");
+							return new ToStringResult(new String((byte[])message, charset),
+									"new String((byte[])message)");
 						}
-						return super.toString(message);
+						return super.toString(message, charset);
 					}
 				}
 		);

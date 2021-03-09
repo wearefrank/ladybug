@@ -532,11 +532,12 @@ public class Report implements Serializable {
 	}
 
 	protected void closeStreamingMessage(String messageClassName, Object streamingMessage, String streamingType,
-			Object message, int preTruncatedMessageLength) {
+			String charset, Object message, int preTruncatedMessageLength) {
 		synchronized(streamingMessageListeners) {
 			StreamingMessageResult streamingMessageResult = new StreamingMessageResult();
 			streamingMessageResult.setMessageClassName(messageClassName);
 			streamingMessageResult.setStreamingType(streamingType);
+			streamingMessageResult.setCharset(charset);
 			streamingMessageResult.setMessage(message);
 			streamingMessageResult.setPreTruncatedMessageLength(preTruncatedMessageLength);
 			streamingMessageResults.put(streamingMessage, streamingMessageResult);
@@ -558,11 +559,12 @@ public class Report implements Serializable {
 					for (Checkpoint checkpoint : streamingMessageListeners.get(streamingMessage)) {
 						estimatedMemoryUsage -= checkpoint.getEstimatedMemoryUsage();
 						checkpoint.setStreaming(streamingMessageResult.getStreamingType());
+						String charset = streamingMessageResult.getCharset();
 						Object message = streamingMessageResult.getMessage();
 						if (message instanceof String) {
 							checkpoint.setMessage((String)message);
 						} else {
-							ToStringResult toStringResult = getMessageEncoder().toString(message);
+							ToStringResult toStringResult = getMessageEncoder().toString(message, charset);
 							checkpoint.setMessage(toStringResult.getString());
 							checkpoint.setEncoding(toStringResult.getEncoding());
 						}
@@ -917,6 +919,7 @@ class RefCompareMap<K, V> implements Map<K, V> {
 class StreamingMessageResult {
 	String messageClassName;
 	String streamingType;
+	String charset;
 	Object message;
 	int preTruncatedMessageLength;
 }

@@ -46,16 +46,18 @@ import nl.nn.xmldecoder.XMLDecoder;
 public class MessageEncoderImpl implements MessageEncoder {
 	public static final String XML_ENCODER = "XMLEncoder";
 	public static final String UTF8_ENCODER = "UTF-8";
+	public static final String CHARSET_ENCODER_PREFIX = "CHARSET-";
 	public static final String BASE64_ENCODER = "Base64";
 	public static final String TO_STRING_ENCODER = "toString()";
 	public static final String DOM_NODE_ENCODER = "XmlUtil.nodeToString()";
 	// Don't use static final SimpleDateFormat, see SimpleDateFormat javadoc: It is recommended to create separate format instances for each thread.
 	public static final String DATE_PATTERN = "yyyy-MM-dd HH:mm:ss.SSS";
 	public static final String DATE_ENCODER = "SimpleDateFormat(\"" + DATE_PATTERN + "\")";
+	public static final String WAITING_FOR_STREAM_MESSAGE = "Waiting for stream to be read, captured and closed...";
 
 	@Override
 	@SneakyThrows(UnsupportedEncodingException.class)
-	public ToStringResult toString(Object message) {
+	public ToStringResult toString(Object message, String charset) {
 		ToStringResult toStringResult;
 		if (message == null) {
 			toStringResult = new ToStringResult(null, null);
@@ -63,16 +65,23 @@ public class MessageEncoderImpl implements MessageEncoder {
 			toStringResult = new ToStringResult((String)message, null);
 		} else {
 			if (message instanceof byte[]) {
-				CharsetDecoder charsetDecoder = Charset.forName("UTF-8").newDecoder();
+				String encoding;
+				if (charset == null) {
+					charset = "UTF-8";
+					encoding = UTF8_ENCODER;
+				} else {
+					encoding = CHARSET_ENCODER_PREFIX + charset;
+				}
+				CharsetDecoder charsetDecoder = Charset.forName(charset).newDecoder();
 				try {
 					CharBuffer charBuffer = charsetDecoder.decode(ByteBuffer.wrap((byte[])message));
-					toStringResult = new ToStringResult(charBuffer.toString(), UTF8_ENCODER);
+					toStringResult = new ToStringResult(charBuffer.toString(), encoding);
 				} catch (CharacterCodingException e) {
 					toStringResult = new ToStringResult(java.util.Base64.getEncoder().encodeToString((byte[])message),
 							BASE64_ENCODER);
 				}
 			} else if (message instanceof Writer || message instanceof OutputStream) {
-				toStringResult = new ToStringResult("Waiting for stream to be captured and closed...", null);
+				toStringResult = new ToStringResult(WAITING_FOR_STREAM_MESSAGE, null);
 			} else if (message instanceof Node) {
 				Node node = (Node)message;
 				toStringResult = new ToStringResult(XmlUtil.nodeToString(node), DOM_NODE_ENCODER);
@@ -116,7 +125,10 @@ public class MessageEncoderImpl implements MessageEncoder {
 				} else {
 					return new StringReader(message);
 				}
-			} else if (encoding.equals(UTF8_ENCODER)) {
+			} else if (encoding.equals(UTF8_ENCODER) || encoding.startsWith(CHARSET_ENCODER_PREFIX)) {
+				if (encoding.startsWith(CHARSET_ENCODER_PREFIX)) {
+					encoding = encoding.substring(CHARSET_ENCODER_PREFIX.length());
+				}
 				CharsetEncoder charsetEncoder = Charset.forName("UTF-8").newEncoder();
 				ByteBuffer byteBuffer = charsetEncoder.encode(CharBuffer.wrap(message));
 				byte[] bytes = new byte[byteBuffer.remaining()];

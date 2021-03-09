@@ -46,7 +46,7 @@ public class TestMessageEncoder extends TestCase {
 		String actual;
 
 		// Test Integer
-		actual = testTool.getMessageEncoder().toString(10).getString();
+		actual = testTool.getMessageEncoder().toString(10, null).getString();
 		actual = ReportRelatedTestCase.applyXmlEncoderIgnores(actual);
 		ReportRelatedTestCase.assertXml(RESOURCE_PATH, getName(), actual);
 		checkpoint.setMessage(actual);
@@ -55,7 +55,7 @@ public class TestMessageEncoder extends TestCase {
 		assertEquals(new Integer(10), checkpoint.getMessageAsObject(new Integer(1)));
 
 		// Test Date
-		actual = testTool.getMessageEncoder().toString(new Date(0L)).getString();
+		actual = testTool.getMessageEncoder().toString(new Date(0L), null).getString();
 		assertEquals("1970-01-01 01:00:00.000", actual);
 		checkpoint.setMessage(actual);
 		checkpoint.setEncoding(MessageEncoderImpl.DATE_ENCODER);
@@ -66,7 +66,7 @@ public class TestMessageEncoder extends TestCase {
 		Node node = XmlUtil.stringToNode("<test/>");
 		assertTrue(node instanceof Node);
 		assertEquals("test", node.getNodeName());
-		actual = testTool.getMessageEncoder().toString(node).getString();
+		actual = testTool.getMessageEncoder().toString(node, null).getString();
 		assertEquals("<test/>", actual);
 		checkpoint.setMessage(actual);
 		checkpoint.setEncoding(MessageEncoderImpl.DOM_NODE_ENCODER);
