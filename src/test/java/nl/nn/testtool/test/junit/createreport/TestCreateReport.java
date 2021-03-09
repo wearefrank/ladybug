@@ -32,6 +32,7 @@ import org.apache.xerces.dom.DocumentImpl;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import junit.framework.AssertionFailedError;
+import lombok.SneakyThrows;
 import nl.nn.testtool.MessageEncoderImpl;
 import nl.nn.testtool.Report;
 import nl.nn.testtool.storage.Storage;
