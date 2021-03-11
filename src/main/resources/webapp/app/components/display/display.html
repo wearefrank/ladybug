@@ -52,11 +52,29 @@
         <i class="fa fa-times" style="float: right" ng-click="$ctrl.close_notification(key)"></i>
     </div>
 </div>
-<pre id="code-wrapper">
+<pre id="code-wrapper" ng-show="!$ctrl.editing">
     <code id="code" class="xml">
         {{$ctrl.reportDetails.text}}
     </code>
 </pre>
+<div ng-hide="!($ctrl.editing && $ctrl.displayingReport)">
+    <div class="form-group">
+        <label for="{{'editName' + $ctrl.id}}">Name</label>
+        <input type="email" class="form-control" id="{{'editName' + $ctrl.id}}" placeholder="Name">
+    </div>
+    <div class="form-group">
+        <label for="{{'editPath' + $ctrl.id}}">Path</label>
+        <input type="email" class="form-control" id="{{'editPath' + $ctrl.id}}" placeholder="name@example.com">
+    </div>
+    <div class="form-group">
+        <label for="{{'editorTransformation' + $ctrl.id}}">Transformation</label>
+        <div id="{{'editorTransformation' + $ctrl.id}}" class="form-group" style="height: 400px; width: 600px"></div>
+    </div>
+    <div class="form-group">
+        <label for="{{'editorVariables' + $ctrl.id}}">Variables</label>
+        <div id="{{'editorVariables' + $ctrl.id}}" class="form-group" style="height: 100px; width: 600px"></div>
+    </div>
+</div>
 <table>
     <tbody>
     <tr ng-repeat="(key, value) in $ctrl.reportDetails.values">

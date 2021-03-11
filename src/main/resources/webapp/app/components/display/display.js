@@ -30,6 +30,7 @@ function displayController($scope, $http) {
             codeWrappers.remove();
             $('#details-edit').text(buttonText);
         }
+
         if (ctrl.isReportNode()) {
             ctrl.toggleEditReport();
         } else {
@@ -38,7 +39,40 @@ function displayController($scope, $http) {
     }
 
     ctrl.toggleEditReport = function () {
-        // TODO: Editing report
+        console.log("toggling Report");
+
+        if (!ctrl.editing) {
+            require(['vs/editor/editor.main'], function () {
+                let transformation = "Example Str";
+                if ("transformation" in ctrl.reportDetails.data && ctrl.reportDetails.data.transformation)
+                    transformation = ctrl.reportDetails.data.transformation;
+
+                let variables = "Example Str";
+                if ("variables" in ctrl.reportDetails.data && ctrl.reportDetails.data.variables)
+                    variables = ctrl.reportDetails.data.variables;
+
+                ctrl.editor = {
+                    transformation: monaco.editor.create(document.getElementById('editorTransformation' + ctrl.id), {
+                        value: transformation,
+                        language: 'xml',
+                        fontSize: "10px",
+                    }),
+                    variable: monaco.editor.create(document.getElementById('editorVariables' + ctrl.id), {
+                        value: variables,
+                        language: 'csv',
+                        fontSize: "10px",
+                    }),
+                };
+                ctrl.editing = true;
+
+                if($scope.$root.$$phase !== '$apply' && $scope.$root.$$phase !== '$digest') $scope.$apply();
+                ctrl.editor.variable.layout();
+                ctrl.editor.transformation.layout();
+            });
+        } else {
+            // TODO Saving report
+        }
+        console.log("Return on toggle edit report");
     }
 
     ctrl.toggleEditCheckpoint = function () {
@@ -56,7 +90,6 @@ function displayController($scope, $http) {
                     language: 'xml',
                     fontSize: "10px",
                     scrollBeyondLastLine: false
-
             });
                 ctrl.editing = true;
             });
