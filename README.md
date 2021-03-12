@@ -1,9 +1,10 @@
 WeAreFrank! Ladybug Test Tool
 =============================
 
-Ladybug adds message based debugging and message based unit testing and system testing to your Java application. Call
-Ladybug at certain checkpoints in you code (either directly or using AOP) to generate tree based reports. Implement a
-rerun method to be able to rerun reports and optionally stub certain checkpoints for regression testing.
+Ladybug adds message based debugging and message based unit testing, system testing and regression testing to your Java
+application. Call Ladybug at certain checkpoints in your code (either directly or using AOP) to generate tree based
+reports. Implement a rerun method to be able to rerun reports and optionally stub certain checkpoints for regression
+testing.
 
 
 Example usage of Ladybug

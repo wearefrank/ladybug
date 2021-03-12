@@ -1,5 +1,5 @@
 /*
-   Copyright 2018-2019 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2018-2019 Nationale-Nederlanden, 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -38,15 +38,18 @@ public class CheckpointComponent extends MessageComponent {
 	private Label nameLabel;
 	private Label threadNameLabel;
 	private Label sourceClassNameLabel;
+	private Label messageClassNameLabel;
 	private Label pathLabel;
 	private RadioButton radioButtonStubOptionFollowReportStrategy;
 	private RadioButton radioButtonStubOptionYes;
 	private RadioButton radioButtonStubOptionNo;
-	private Label messageHasBeenStubbedLabel;
+	private Label messageIsStubbedLabel;
+	private Label messageStubNotFoundLabel;
 	private Label messageIsNullLabel;
 	private Label messageIsEmptyStringLabel;
 	private Label messageIsTruncatedLabel;
-	private Label messageIsEncodedLabel;
+	private Label messageEncodingLabel;
+	private Label messageStreamingLabel;
 	private Label checkpointUIDLabel;
 	private Label numberOfCharactersLabel;
 	private Label estimatedMemoryUsageLabel;
@@ -120,10 +123,14 @@ public class CheckpointComponent extends MessageComponent {
 
 		add(okayLabel);
 
-		messageHasBeenStubbedLabel = Echo2Application.createInfoLabelWithColumnLayoutData();
-		messageHasBeenStubbedLabel.setVisible(false);
-		messageHasBeenStubbedLabel.setText("Message has been stubbed (copied from original report)");
-		add(messageHasBeenStubbedLabel);
+		messageIsStubbedLabel = Echo2Application.createInfoLabelWithColumnLayoutData();
+		messageIsStubbedLabel.setVisible(false);
+		messageIsStubbedLabel.setText("Message is stubbed (copied from original report)");
+		add(messageIsStubbedLabel);
+
+		messageStubNotFoundLabel = Echo2Application.createInfoLabelWithColumnLayoutData();
+		messageStubNotFoundLabel.setVisible(false);
+		add(messageStubNotFoundLabel);
 
 		messageIsNullLabel = Echo2Application.createInfoLabelWithColumnLayoutData();
 		messageIsNullLabel.setVisible(false);
@@ -139,25 +146,32 @@ public class CheckpointComponent extends MessageComponent {
 		messageIsTruncatedLabel.setVisible(false);
 		add(messageIsTruncatedLabel);
 
-		messageIsEncodedLabel = Echo2Application.createInfoLabelWithColumnLayoutData();
-		messageIsEncodedLabel.setVisible(false);
-		add(messageIsEncodedLabel);
+		messageEncodingLabel = Echo2Application.createInfoLabelWithColumnLayoutData();
+		messageEncodingLabel.setVisible(false);
+		add(messageEncodingLabel);
+
+		messageStreamingLabel = Echo2Application.createInfoLabelWithColumnLayoutData();
+		messageStreamingLabel.setVisible(false);
+		add(messageStreamingLabel);
 
 		add(messageColumn);
 		add(messageTextArea);
 
 		nameLabel = Echo2Application.createInfoLabelWithColumnLayoutData();
 		add(nameLabel);
-		
+
 		threadNameLabel = Echo2Application.createInfoLabelWithColumnLayoutData();
 		add(threadNameLabel);
-		
+
 		sourceClassNameLabel = Echo2Application.createInfoLabelWithColumnLayoutData();
 		add(sourceClassNameLabel);
-		
+
+		messageClassNameLabel = Echo2Application.createInfoLabelWithColumnLayoutData();
+		add(messageClassNameLabel);
+
 		pathLabel = Echo2Application.createInfoLabelWithColumnLayoutData();
 		add(pathLabel);
-		
+
 		checkpointUIDLabel = Echo2Application.createInfoLabelWithColumnLayoutData();
 		checkpointUIDLabel.setToolTipText("A unique identifier consisting of the report's storageId "
 				+ "and this checkpoint's index. Use this value as part of a variable in another report's "
@@ -191,7 +205,13 @@ public class CheckpointComponent extends MessageComponent {
 			radioButtonStubOptionYes.setSelected(false);
 			radioButtonStubOptionNo.setSelected(false);
 		}
-		messageHasBeenStubbedLabel.setVisible(checkpoint.getMessageHasBeenStubbed());
+		messageIsStubbedLabel.setVisible(checkpoint.isStubbed());
+		if (checkpoint.getStubNotFound() != null) {
+			messageStubNotFoundLabel.setText("Could not find stub message for '" + checkpoint.getStubNotFound());
+			messageStubNotFoundLabel.setVisible(true);
+		} else {
+			messageStubNotFoundLabel.setVisible(false);
+		}
 		String message = null;
 		if (checkpoint.getMessage() != null) {
 			message = checkpoint.getMessage();
@@ -203,16 +223,27 @@ public class CheckpointComponent extends MessageComponent {
 		}
 		if (checkpoint.getPreTruncatedMessageLength() > 0) {
 			messageIsTruncatedLabel.setText("Message is truncated ("
-					+ (checkpoint.getPreTruncatedMessageLength() - testTool.getMaxMessageLength()) + " characters removed)");
+					+ (checkpoint.getPreTruncatedMessageLength() - checkpoint.getMessage().length()) + " characters removed)");
 			messageIsTruncatedLabel.setVisible(true);
 		} else {
 			messageIsTruncatedLabel.setVisible(false);
 		}
-		if (checkpoint.getEncoding() > 0) {
-			messageIsEncodedLabel.setText("Message object is encoded to string (using " + checkpoint.getEncodingAsString() + ")");
-			messageIsEncodedLabel.setVisible(true);
+		String type = null;
+		if (checkpoint.getStreaming() != null) {
+			type = checkpoint.getStreaming().toLowerCase() + " stream";
+			messageStreamingLabel.setText("Message is captured asynchronously from a " + type);
+			messageStreamingLabel.setVisible(true);
 		} else {
-			messageIsEncodedLabel.setVisible(false);
+			messageStreamingLabel.setVisible(false);
+		}
+		if (checkpoint.getEncoding() != null) {
+			if (type == null) {
+				type = checkpoint.getMessageClassName();
+			}
+			messageEncodingLabel.setText("Message of type " + type + " is encoded to string using " + checkpoint.getEncoding());
+			messageEncodingLabel.setVisible(true);
+		} else {
+			messageEncodingLabel.setVisible(false);
 		}
 		if (compare) {
 			String messageCompare = null;
@@ -226,6 +257,11 @@ public class CheckpointComponent extends MessageComponent {
 		nameLabel.setText("Name: " + checkpoint.getName());
 		threadNameLabel.setText("Thread name: " + checkpoint.getThreadName());
 		sourceClassNameLabel.setText("Source class name: " + checkpoint.getSourceClassName());
+		String messageClassName = checkpoint.getMessageClassName();
+		if (messageClassName == null) {
+			messageClassName = "java.lang.String";
+		}
+		messageClassNameLabel.setText("Message class name: " + messageClassName);
 		pathLabel.setText("Path: " + checkpoint.getPath());
 		checkpointUIDLabel.setText("Checkpoint UID: "+checkpoint.getUID());
 		numberOfCharactersLabel.setText("Number of characters: "+(checkpoint.getMessage() != null ? checkpoint.getMessage().length() : "0"));

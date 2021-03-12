@@ -6,6 +6,16 @@ Ladybug Test Tool release notes
 Upcoming
 --------
 
+- Enable application to notify the charset for binary streams
+- Show warning for reports in progress and message capturers waiting for close
+- Use generics so no casting is needed for checkpoint methods
+- Use UTF-8 encoding for byte array when possible
+- Return stream object as stub when original message was a stream object
+- Set messageClassName only when message object is not a String object
+- Add messageClassName to toXML()
+- Show message on upload when no ttr files in zip
+- Add support for streams
+- Upgrade ibis-echo2 from 2.0.2 to 2.0.3
 - Refactor XmlStorage's MetadataHandler in order to minimize rewrites.
 - Fix change in report name after replacement for XmlStorage
 - Add thread with warning when threadCreatepoint() (and threadStartpoint()) not used

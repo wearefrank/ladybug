@@ -1,3 +1,4 @@
-target
-.classpath
-.settings
+/logs
+/target
+/.classpath
+/.settings

@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2018 Nationale-Nederlanden, 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -54,8 +54,8 @@ public class ReportsTreeCellRenderer extends DefaultTreeCellRenderer {
 				if(showReportAndCheckpointIds) {
 					label.setText("["+report.getStorageId()+"] "+report.getName());
 				}
-				if (report.getDifferenceChecked()) {
-					if (report.getDifferenceFound()) {
+				if (report.isDifferenceChecked()) {
+					if (report.isDifferenceFound()) {
 						label.setForeground(Echo2Application.getDifferenceFoundLabelColor());
 						specialForeground = true;
 					} else {

@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2018 Nationale-Nederlanden, 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -39,11 +39,12 @@ public class Import {
 		ZipEntry zipEntry = null;
 		List<ImportResult> importResults = new ArrayList<ImportResult>();
 		try {
+			int counter = 0;
 			zipEntry = zipInputStream.getNextEntry();
 			while (zipEntry != null && errorMessage == null) {
 				log.debug("Process zip entry: " + zipEntry.getName());
 				if (!zipEntry.isDirectory() && zipEntry.getName().endsWith(".ttr")) {
-					
+					counter++;
 					// GZIPInputStream and/or XMLDecoder seem to close the
 					// ZipInputStream after reading the first ZipEntry.
 					// Using an intermediate ByteArrayInputStream to prevent
@@ -59,7 +60,6 @@ public class Import {
 						length = zipInputStream.read(buffer);
 					}
 					ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(reportBytes);
-					
 					ImportResult importResult = importTtr(byteArrayInputStream, storage, log);
 					importResults.add(importResult);
 					errorMessage = importResult.errorMessage;
@@ -67,7 +67,9 @@ public class Import {
 				zipInputStream.closeEntry();
 				zipEntry = zipInputStream.getNextEntry();
 			}
-			
+			if (counter < 1) {
+				errorMessage = "No ttr files found in zip";
+			}
 			for(ImportResult importResult : importResults) {
 				Report report = storage.getReport(importResult.newStorageId);
 				if(report.getInputCheckpoint().containsVariables()) {
@@ -80,11 +82,13 @@ public class Import {
 				}
 			}
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			errorMessage = "IOException on zip import";
+			log.warn(errorMessage, e);
+			errorMessage = errorMessage + ": " + e.getMessage();
 		} catch (StorageException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			errorMessage = "StorageException on zip import";
+			log.warn(errorMessage, e);
+			errorMessage = errorMessage + ": " + e.getMessage();
 		}
 		return errorMessage;
 	}
@@ -101,7 +105,7 @@ public class Import {
 			gzipInputStream = new GZIPInputStream(inputStream);
 			xmlDecoder = new XMLDecoder(gzipInputStream);
 			version = (String)xmlDecoder.readObject();
-			log.debug("Decoded version: " + version);
+			if (log != null) log.debug("Decoded version: " + version);
 			report = (Report)xmlDecoder.readObject();
 			importResult.oldStorageId = report.getStorageId();
 			// Check for more than one report in the stream to be backwards
@@ -110,17 +114,19 @@ public class Import {
 			while (report != null) {
 				storage.store(report);
 				report = (Report)xmlDecoder.readObject();
-				log.debug("Decoded report: " + report.getName());
+				if (log != null) log.debug("Decoded report: " + report.getName());
 			}
 		} catch(ArrayIndexOutOfBoundsException e) {
 			// This happens to be the way in which it ends for the
 			// XML Object Decoder
-			log.debug("Last report in file read");
+			if (log != null) log.debug("Last report in file read");
 		} catch (Throwable t) {
 			importResult.errorMessage = "Caught unexpected throwable during import: " + t.getMessage();
-			log.error(errorMessage, t);
+			if (log != null) log.error(errorMessage, t);
 		} finally {
-			importResult.newStorageId = report.getStorageId();
+			if (report != null) {
+				importResult.newStorageId = report.getStorageId();
+			}
 			if (xmlDecoder != null) {
 				xmlDecoder.close();
 			}
@@ -128,14 +134,14 @@ public class Import {
 				try {
 					gzipInputStream.close();
 				} catch(IOException e) {
-					log.error("IOException closing gzipInputStream", e);
+					if (log != null) log.error("IOException closing gzipInputStream", e);
 				}
 			}
 			if (inputStream != null) {
 				try {
 					inputStream.close();
 				} catch(IOException e) {
-					log.error("IOException closing inputStream", e);
+					if (log != null) log.error("IOException closing inputStream", e);
 				}
 			}
 		}
