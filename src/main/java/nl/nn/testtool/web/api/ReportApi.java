@@ -166,15 +166,20 @@ public class ReportApi extends ApiBase {
 				report.setVariableCsv(variables);
 			}
 
+			HashMap<String, Serializable> result = new HashMap<>(3);
 			report.flushCachedXml();
 			boolean storageUpdated = false;
 			if (storage instanceof CrudStorage) {
 				CrudStorage crudStorage = (CrudStorage) storage;
 				crudStorage.update(report);
 				storageUpdated = true;
+			} else {
+				ReportXmlTransformer reportXmlTransformer = getBean("reportXmlTransformer");
+				if (reportXmlTransformer != null)
+					report.setGlobalReportXmlTransformer(reportXmlTransformer);
+				result.put("xml", report.toXml());
 			}
 
-			HashMap<String, Serializable> result = new HashMap<>();
 			result.put("storageUpdated", storageUpdated);
 			result.put("report", report);
 			return Response.ok(result).build();
