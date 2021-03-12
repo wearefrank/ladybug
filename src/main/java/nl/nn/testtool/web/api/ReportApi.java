@@ -2,6 +2,7 @@ package nl.nn.testtool.web.api;
 
 import nl.nn.testtool.MetadataExtractor;
 import nl.nn.testtool.Report;
+import nl.nn.testtool.echo2.test.TestComponent;
 import nl.nn.testtool.echo2.util.Upload;
 import nl.nn.testtool.storage.CrudStorage;
 import nl.nn.testtool.storage.Storage;
@@ -19,6 +20,7 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.InputStream;
+import java.io.Serializable;
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -29,7 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 
-@Path("/report")
+@Path("/")
 public class ReportApi extends ApiBase {
 	private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
@@ -44,7 +46,7 @@ public class ReportApi extends ApiBase {
 	 * @throws ApiException If exception is thrown while reading report.
 	 */
 	@GET
-	@Path("/{storage}/{storageId}")
+	@Path("/report/{storage}/{storageId}")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getReport(@PathParam("storage") String storageParam,
 							  @PathParam("storageId") int storageId,
@@ -80,7 +82,7 @@ public class ReportApi extends ApiBase {
 	 * @return "Ok" if deleted properly, "Not implemented" if storage does not support deletion, "Not found" if report does not exist.
 	 */
 	@DELETE
-	@Path("/{storage}/{storageId}")
+	@Path("/report/{storage}/{storageId}")
 	public Response deleteReport(@PathParam("storage") String storageParam, @PathParam("storageId") int storageId) {
 		Storage storage = getBean(storageParam);
 		if (!(storage instanceof CrudStorage)) {
@@ -126,24 +128,56 @@ public class ReportApi extends ApiBase {
 	}
 
 	/**
-	 * Update transformation for a specific report.
+	 * Update the report with the given values..
 	 *
 	 * @param storageParam Name of the storage.
 	 * @param storageId Storage id of the report.
-	 * @param map Map containing transformation.
+	 * @param map Map containing ["name" or "path" or "variables" or "description" or "transformation"]
 	 */
 	@POST
-	@Path("/transformation/{storage}/{storageId}")
+	@Path("/report/{storage}/{storageId}")
 	@Consumes(MediaType.APPLICATION_JSON)
-	public Response updateReportTransformation(@PathParam("storage") String storageParam, @PathParam("storageId") int storageId, Map<String, String> map) {
-		String transformation = map.get("transformation");
-		if (StringUtils.isEmpty(transformation))
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response updateReport(@PathParam("storage") String storageParam, @PathParam("storageId") int storageId, Map<String, String> map) {
+		String[] fields = new String[]{"name", "path", "variables", "description", "transformation"};
+		if (map.isEmpty() || !mapContainsOnly(map, null, fields))
 			return Response.status(Response.Status.BAD_REQUEST).build();
 
 		try {
 			Storage storage = getBean(storageParam);
-			storage.getReport(storageId).setTransformation(transformation);
-			return Response.ok().build();
+			Report report = storage.getReport(storageId);
+			if (report == null)
+				return Response.status(Response.Status.NOT_FOUND).build();
+
+			if (StringUtils.isNotEmpty(map.get("name")))
+				report.setName(map.get("name"));
+
+			if (StringUtils.isNotEmpty(map.get("path")))
+				report.setPath(TestComponent.normalizePath(map.get("path")));
+
+			if (StringUtils.isNotEmpty(map.get("description")))
+				report.setDescription(map.get("description"));
+
+			if (StringUtils.isNotEmpty(map.get("transformation")))
+				report.setTransformation(map.get("transformation"));
+
+			String variables = map.get("variables");
+			if (variables != null && !variables.equals(report.getVariableCsv())) {
+				report.setVariableCsv(variables);
+			}
+
+			report.flushCachedXml();
+			boolean storageUpdated = false;
+			if (storage instanceof CrudStorage) {
+				CrudStorage crudStorage = (CrudStorage) storage;
+				crudStorage.update(report);
+				storageUpdated = true;
+			}
+
+			HashMap<String, Serializable> result = new HashMap<>();
+			result.put("storageUpdated", storageUpdated);
+			result.put("report", report);
+			return Response.ok(result).build();
 		} catch (StorageException e) {
 			throw new ApiException("Exception while setting transformation for a report.", e);
 		}
@@ -157,7 +191,7 @@ public class ReportApi extends ApiBase {
 	 * @return Response containing a map containing transformation.
 	 */
 	@GET
-	@Path("/transformation/{storage}/{storageId}")
+	@Path("/report/transformation/{storage}/{storageId}")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getReportTransformation(@PathParam("storage") String storageParam, @PathParam("storageId") int storageId) {
 		try {
@@ -178,7 +212,7 @@ public class ReportApi extends ApiBase {
 	 * @param sources Map [String, Integer] where keys are storage names and integers are storage ids for the reports to be copied.
 	 */
 	@PUT
-	@Path("/store/{storage}")
+	@Path("/report/store/{storage}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response copyReport(@PathParam("storage") String storageParam, Map<String, List<Integer>> sources) {
@@ -213,7 +247,7 @@ public class ReportApi extends ApiBase {
 	 * @param attachment Attachment containing report.
 	 */
 	@POST
-	@Path("/upload/{storage}")
+	@Path("/report/upload/{storage}")
 	@Produces(MediaType.TEXT_HTML)
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
 	public Response uploadFile(@PathParam("storage") String storageParam, @Multipart("file") Attachment attachment) {
@@ -271,7 +305,7 @@ public class ReportApi extends ApiBase {
 	 * @param storageIds List of storage ids to download.
 	 */
 	@GET
-	@Path("/download/{storage}/{exportReport}/{exportReportXml}")
+	@Path("/report/download/{storage}/{exportReport}/{exportReportXml}")
 	@Produces("application/octet-stream")
 	@Consumes(MediaType.APPLICATION_JSON)
 	public Response downloadFile(@PathParam("storage") String storageParam, @PathParam("exportReport") String exportReportParam,
@@ -305,7 +339,7 @@ public class ReportApi extends ApiBase {
 	 * @param map Map containing "path" and "action". Actions could be "copy" or "move".
 	 */
 	@PUT
-	@Path("/move/{storage}/{storageId}")
+	@Path("/report/move/{storage}/{storageId}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	public Response updatePath(@PathParam("storage") String storageParam, @PathParam("storageId") int storageId, Map<String, String> map) {
 		CrudStorage storage = getBean(storageParam);
@@ -344,7 +378,7 @@ public class ReportApi extends ApiBase {
 	 * @param map Map containing csv for cloning.
 	 */
 	@POST
-	@Path("/move/{storage}/{storageId}")
+	@Path("/report/move/{storage}/{storageId}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response cloneReport(@QueryParam("storage") String storageParam, @QueryParam("storageId") int storageId, Map<String, String> map) {

@@ -71,6 +71,29 @@ public abstract class ApiBase implements SecurityContext {
 		return false;
 	}
 
+	/**
+	 * Checks if the given map contains the given arrays of keys, and only those keys.
+	 * @param map Map to be checked.
+	 * @param mandatory List of mandatory keys. If any of them is not present, will return false.
+	 * @param optional List of optional keys.
+	 * @return True if the given two arrays are the only keys in the given map.
+	 */
+	public boolean mapContainsOnly(Map<String, ?> map,String[] mandatory, String[] optional) {
+		int count = 0;
+		if (mandatory != null) {
+			for (String field : mandatory) {
+				if (!map.containsKey(field)) return false;
+			}
+			count = mandatory.length;
+		}
+		if (optional != null) {
+			for (String field: optional) {
+				if (map.containsKey(field)) count++;
+			}
+		}
+		return map.size() == count;
+	}
+
 	public static void setApplicationContext(ApplicationContext context) {
 		applicationContext = context;
 	}
