@@ -57,22 +57,26 @@
         {{$ctrl.reportDetails.text}}
     </code>
 </pre>
-<div ng-hide="!($ctrl.editing && $ctrl.displayingReport)">
+<div ng-show="$ctrl.editing && $ctrl.displayingReport">
     <div class="form-group">
         <label for="{{'editName' + $ctrl.id}}">Name</label>
-        <input type="email" class="form-control" id="{{'editName' + $ctrl.id}}" placeholder="Name">
+        <input type="text" class="form-control" id="{{'editName' + $ctrl.id}}" placeholder="Name">
+    </div>
+    <div class="form-group">
+        <label for="{{'editDescription' + $ctrl.id}}">Description</label>
+        <textarea class="form-control" id="{{'editDescription' + $ctrl.id}}" placeholder="Description"></textarea>
     </div>
     <div class="form-group">
         <label for="{{'editPath' + $ctrl.id}}">Path</label>
-        <input type="email" class="form-control" id="{{'editPath' + $ctrl.id}}" placeholder="name@example.com">
+        <input type="text" class="form-control" id="{{'editPath' + $ctrl.id}}" placeholder="/path/to/report/">
     </div>
     <div class="form-group">
         <label for="{{'editorTransformation' + $ctrl.id}}">Transformation</label>
-        <div id="{{'editorTransformation' + $ctrl.id}}" class="form-group" style="height: 400px; width: 600px"></div>
+        <div id="{{'editorTransformation' + $ctrl.id}}" class="form-group" style="height: 400px; width: 600px; border: 1px solid #ced4da; border-radius: .25rem;"></div>
     </div>
     <div class="form-group">
         <label for="{{'editorVariables' + $ctrl.id}}">Variables</label>
-        <div id="{{'editorVariables' + $ctrl.id}}" class="form-group" style="height: 100px; width: 600px"></div>
+        <div id="{{'editorVariables' + $ctrl.id}}" class="form-group" style="height: 100px; width: 600px; border: 1px solid #ced4da; border-radius: .25rem;"></div>
     </div>
 </div>
 <table>
@@ -88,16 +92,18 @@
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Discarding changes...</h5>
+                <h5 class="modal-title">Would you like to discard changes?</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
             <div class="modal-body">
-                <p>Would you like to discard changes?</p>
-                <pre>
-                    <span ng-repeat="word in $ctrl.diff" ng-class="{diff_added: word[0] == 1, diff_deleted: word[0] == -1}">{{word[1]}}</span>
-                </pre>
+                <div ng-repeat="group in $ctrl.diff">
+                    <h5>{{group.text}}</h5>
+                    <pre>
+                        <span ng-repeat="word in group.diff" ng-class="{diff_added: word[0] == 1, diff_deleted: word[0] == -1}">{{word[1]}}</span>
+                    </pre>
+                </div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-primary" ng-click="$ctrl.saveEditField(false)">Discard Changes</button>
