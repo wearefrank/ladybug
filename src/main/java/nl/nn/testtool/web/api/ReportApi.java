@@ -2,6 +2,7 @@ package nl.nn.testtool.web.api;
 
 import nl.nn.testtool.MetadataExtractor;
 import nl.nn.testtool.Report;
+import nl.nn.testtool.echo2.test.TestComponent;
 import nl.nn.testtool.echo2.util.Upload;
 import nl.nn.testtool.storage.CrudStorage;
 import nl.nn.testtool.storage.Storage;
@@ -19,6 +20,7 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.InputStream;
+import java.io.Serializable;
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -126,24 +128,56 @@ public class ReportApi extends ApiBase {
 	}
 
 	/**
-	 * Update transformation for a specific report.
+	 * Update the report with the given values..
 	 *
 	 * @param storageParam Name of the storage.
 	 * @param storageId Storage id of the report.
-	 * @param map Map containing transformation.
+	 * @param map Map containing ["name" or "path" or "variables" or "description" or "transformation"]
 	 */
 	@POST
-	@Path("/report/transformation/{storage}/{storageId}")
+	@Path("/report/{storage}/{storageId}")
 	@Consumes(MediaType.APPLICATION_JSON)
-	public Response updateReportTransformation(@PathParam("storage") String storageParam, @PathParam("storageId") int storageId, Map<String, String> map) {
-		String transformation = map.get("transformation");
-		if (StringUtils.isEmpty(transformation))
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response updateReport(@PathParam("storage") String storageParam, @PathParam("storageId") int storageId, Map<String, String> map) {
+		String[] fields = new String[]{"name", "path", "variables", "description", "transformation"};
+		if (map.isEmpty() || !mapContainsOnly(map, null, fields))
 			return Response.status(Response.Status.BAD_REQUEST).build();
 
 		try {
 			Storage storage = getBean(storageParam);
-			storage.getReport(storageId).setTransformation(transformation);
-			return Response.ok().build();
+			Report report = storage.getReport(storageId);
+			if (report == null)
+				return Response.status(Response.Status.NOT_FOUND).build();
+
+			if (StringUtils.isNotEmpty(map.get("name")))
+				report.setName(map.get("name"));
+
+			if (StringUtils.isNotEmpty(map.get("path")))
+				report.setPath(TestComponent.normalizePath(map.get("path")));
+
+			if (StringUtils.isNotEmpty(map.get("description")))
+				report.setDescription(map.get("description"));
+
+			if (StringUtils.isNotEmpty(map.get("transformation")))
+				report.setTransformation(map.get("transformation"));
+
+			String variables = map.get("variables");
+			if (variables != null && !variables.equals(report.getVariableCsv())) {
+				report.setVariableCsv(variables);
+			}
+
+			report.flushCachedXml();
+			boolean storageUpdated = false;
+			if (storage instanceof CrudStorage) {
+				CrudStorage crudStorage = (CrudStorage) storage;
+				crudStorage.update(report);
+				storageUpdated = true;
+			}
+
+			HashMap<String, Serializable> result = new HashMap<>();
+			result.put("storageUpdated", storageUpdated);
+			result.put("report", report);
+			return Response.ok(result).build();
 		} catch (StorageException e) {
 			throw new ApiException("Exception while setting transformation for a report.", e);
 		}
