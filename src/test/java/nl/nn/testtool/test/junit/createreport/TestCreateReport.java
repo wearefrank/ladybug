@@ -173,7 +173,6 @@ public class TestCreateReport extends ReportRelatedTestCase {
 		Report report = findAndGetReport(testTool, storage, correlationId, false);
 		assertNull("Report should have been ignored", report);
 	}
-	}
 
 	public void testReportFilter() throws StorageException, IOException {
 		testTool.setRegexFilter("startname1");
