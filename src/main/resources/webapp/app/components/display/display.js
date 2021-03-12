@@ -8,7 +8,7 @@ function displayController($scope, $http) {
     ctrl.id = Math.random().toString(36).substring(7);
     ctrl.editing = false;
     ctrl.diff = [];
-    $scope.overwritten_checkpoints = {}; // This will contain keys as checkpoint id, and values as edited values.
+    $scope.overwritten_checkpoints = {"report": {}, "checkpoint": {}}; // This will contain keys as checkpoint id, and values as edited values.
 
     ctrl.rerun = function () {
         let data = {};
@@ -40,27 +40,31 @@ function displayController($scope, $http) {
 
     ctrl.toggleEditReport = function () {
         console.log("toggling Report");
+        let originalTransformation = "";
+        if ("transformation" in ctrl.reportDetails.data && ctrl.reportDetails.data.transformation)
+            originalTransformation = ctrl.reportDetails.data.transformation;
+        let originalVariables = "";
+        if ("variables" in ctrl.reportDetails.data && ctrl.reportDetails.data.variables)
+            originalVariables = ctrl.reportDetails.data.variables;
 
         if (!ctrl.editing) {
             require(['vs/editor/editor.main'], function () {
-                let transformation = "Example Str";
-                if ("transformation" in ctrl.reportDetails.data && ctrl.reportDetails.data.transformation)
-                    transformation = ctrl.reportDetails.data.transformation;
-
-                let variables = "Example Str";
-                if ("variables" in ctrl.reportDetails.data && ctrl.reportDetails.data.variables)
-                    variables = ctrl.reportDetails.data.variables;
-
                 ctrl.editor = {
                     transformation: monaco.editor.create(document.getElementById('editorTransformation' + ctrl.id), {
-                        value: transformation,
+                        value: originalTransformation,
                         language: 'xml',
                         fontSize: "10px",
+                        minimap: {
+                            enabled: false
+                        }
                     }),
                     variable: monaco.editor.create(document.getElementById('editorVariables' + ctrl.id), {
-                        value: variables,
+                        value: originalVariables,
                         language: 'csv',
                         fontSize: "10px",
+                        minimap: {
+                            enabled: false
+                        }
                     }),
                 };
                 ctrl.editing = true;
@@ -69,10 +73,34 @@ function displayController($scope, $http) {
                 ctrl.editor.variable.layout();
                 ctrl.editor.transformation.layout();
             });
+            $("#editName" + ctrl.id).val(ctrl.reportDetails.data.name);
+            $("#editPath" + ctrl.id).val(ctrl.reportDetails.data.path);
+            $("#editDescription" + ctrl.id).val(ctrl.reportDetails.data.description);
         } else {
-            // TODO Saving report
+            let dmp = new diff_match_patch();
+            ctrl.diff = [];
+            ctrl.addToDiff(dmp, ctrl.reportDetails.data.name, $("#editName" + ctrl.id).val(), "Name:");
+            ctrl.addToDiff(dmp, ctrl.reportDetails.data.path, $("#editPath" + ctrl.id).val(), "Path:");
+            ctrl.addToDiff(dmp, ctrl.reportDetails.data.description, $("#editDescription" + ctrl.id).val(), "Description:");
+            ctrl.addToDiff(dmp, originalTransformation, ctrl.editor.transformation.getValue(), "Transformation:");
+            ctrl.addToDiff(dmp, originalVariables, ctrl.editor.variable.getValue(), "Variables:");
+            $('#modal' + ctrl.id).modal('show');
         }
         console.log("Return on toggle edit report");
+    }
+
+    ctrl.addToDiff = function (dmp, original, newText, text) {
+        if (original === undefined || original === null) original = "";
+        if (newText === undefined || newText === null) newText = "";
+        if (text === undefined || text === null) text = "";
+
+        if (newText !== original) {
+            let diff = dmp.diff_main(original, newText);
+            dmp.diff_cleanupSemantic(diff);
+            ctrl.diff.push({text: text, diff: diff});
+            return true;
+        }
+        return false;
     }
 
     ctrl.toggleEditCheckpoint = function () {
@@ -96,10 +124,9 @@ function displayController($scope, $http) {
         } else {
             let editedText = (("editor" in ctrl && save) ? ctrl.editor.getValue() : ctrl.reportDetails.text);
             if (editedText !== ctrl.reportDetails.text) {
+                ctrl.diff = [];
                 let dmp = new diff_match_patch();
-                ctrl.diff = dmp.diff_main(ctrl.reportDetails.text, editedText);
-                dmp.diff_cleanupSemantic(ctrl.diff);
-                console.log("Diff", ctrl.diff);
+                ctrl.addToDiff(dmp, ctrl.reportDetails.text, editedText, "Text:");
                 $('#modal' + ctrl.id).modal('show');
             } else {
                 ctrl.saveEditField(false);
@@ -108,21 +135,53 @@ function displayController($scope, $http) {
     }
 
     ctrl.saveEditField = function (save) {
-        let codeWrappers = $('#code-wrapper');
-        ctrl.reportDetails.text = ((save && "editor" in ctrl) ? ctrl.editor.getValue() : ctrl.reportDetails.text);
-        let htmlText = '<pre id="code-wrapper"><code id="code" class="xml"></code></pre>';
-        let buttonText = 'Edit';
-        // TODO: Save the text
-        if ("uid" in ctrl.reportDetails.data)
-            $scope.overwritten_checkpoints[ctrl.reportDetails.data.uid] = ctrl.reportDetails.text;
-        ctrl.reportDetails.data["message"] = ctrl.reportDetails.text;
-        codeWrappers.remove();
-        $('#details-edit').text(buttonText);
-        $('#notifications' + ctrl.id).after(htmlText);
-        $('#code').text(ctrl.reportDetails.text);
-        ctrl.highlight_code();
-        ctrl.editing = false;
-        $('#modal' + ctrl.id).modal('hide');
+        if (ctrl.isReportNode()) {
+            let originalTransformation = "";
+            if ("transformation" in ctrl.reportDetails.data && ctrl.reportDetails.data.transformation)
+                originalTransformation = ctrl.reportDetails.data.transformation;
+            let originalVariables = "";
+            if ("variables" in ctrl.reportDetails.data && ctrl.reportDetails.data.variables)
+                originalVariables = ctrl.reportDetails.data.variables;
+
+            let updated = {};
+            let data = [
+                {"text": "name", "original": ctrl.reportDetails.data.name, "new": $("#editName" + ctrl.id).val()},
+                {"text": "path", "original": ctrl.reportDetails.data.path, "new": $("#editPath" + ctrl.id).val()},
+                {"text": "description", "original": ctrl.reportDetails.data.description, "new": $("#editDescription" + ctrl.id).val()},
+                {"text": "transformation", "original": originalTransformation, "new": ctrl.editor.transformation.getValue()},
+                {"text": "variables", "original": originalVariables, "new": ctrl.editor.variable.getValue()},
+            ]
+            for (let i = 0; i < data.length; i++) {
+                if (data[i]["original"] !== data[i]["new"])
+                    updated[data[i]["text"]] = data[i]["new"];
+            }
+            if (Object.keys(updated).length !== 0) {
+                $http.post(ctrl.apiUrl + "/report/" + ctrl.storage + "/" + ctrl.selectedNode["ladybug"]["storageId"], updated)
+                    .then(function (response) {
+                        let ladybugData = response.data.report;
+                        if ("xml" in response.data) ladybugData.message = response.data.xml;
+                        console.log("Response", response.data);
+                        console.log("Response to update", ladybugData);
+                        $scope.overwritten_checkpoints["report"][ladybugData.storageId] = ladybugData;
+                        $('#details-edit').text("Edit");
+                        ctrl.editing = false;
+                        $('#modal' + ctrl.id).modal('hide');
+                        ctrl.display_report(ctrl.selectedNode, null, null);
+                    }, function (response) {
+                        console.log(response);
+                    });
+            }
+        } else {
+            console.log("Saving checkpoint", save);
+            ctrl.reportDetails.text = ((save && "editor" in ctrl) ? ctrl.editor.getValue() : ctrl.reportDetails.text);
+            $scope.overwritten_checkpoints["checkpoint"][ctrl.reportDetails.data.uid] = ctrl.reportDetails.text;
+            ctrl.reportDetails.data["message"] = ctrl.reportDetails.text;
+            $('#details-edit').text("Edit");
+            ctrl.editing = false;
+            $('#modal' + ctrl.id).modal('hide');
+            console.log("Saving checkpoint", save);
+            ctrl.display_report(ctrl.selectedNode, null, null);
+        }
     }
 
     ctrl.copyReport = function (to) {
@@ -143,11 +202,16 @@ function displayController($scope, $http) {
     ctrl.display_report = function (rootNode, event, node) {
         ctrl.selectedNode = rootNode;
         $('#code-wrapper').remove();
-        if (node === null) {
+        let ladybugData;
+        console.log("Displaying edit report", ctrl.editing && ctrl.displayingReport);
+        if (node === null && rootNode === null) {
             ctrl.reportDetails = {text: "", values: {}, notifications: {}};
             return;
+        } else if (node === null && rootNode !== null) {
+            ladybugData = ctrl.reportDetails.data;
+        } else {
+            ladybugData = node["ladybug"];
         }
-        let ladybugData = node["ladybug"];
         $('#notifications' + ctrl.id).after('<pre id="code-wrapper"><code id="code" class="xml"></code></pre>');
 
         if (ctrl.isReportNode(node)) {
@@ -157,14 +221,18 @@ function displayController($scope, $http) {
             // If node is checkpoint
             ctrl.display_checkpoint(ladybugData);
         }
-        ctrl.reportDetails.nodeId = node.nodeId;
-        if (!$scope.$$phase) $scope.$apply();
+        if (node) ctrl.reportDetails.nodeId = node.nodeId;
+        try {
+            if (!$scope.$$phase) $scope.$apply();
+        } catch (e) {
+            console.log("Error from $scope.$apply", e);
+        }
     };
 
     ctrl.display_checkpoint = function (ladybugData) {
         let message = ladybugData["message"];
-        if (ladybugData["uid"] in $scope.overwritten_checkpoints)
-            message = $scope.overwritten_checkpoints[ladybugData["uid"]];
+        if (ladybugData["uid"] in $scope.overwritten_checkpoints["checkpoint"])
+            message = $scope.overwritten_checkpoints["checkpoint"][ladybugData["uid"]];
         ctrl.reportDetails = {
             data: ladybugData,
             text: message,
@@ -186,6 +254,9 @@ function displayController($scope, $http) {
     };
 
     ctrl.display_report_ = function (ladybugData) {
+        if (ladybugData.storageId in $scope.overwritten_checkpoints["report"]) {
+            ladybugData = $scope.overwritten_checkpoints.report[ladybugData.storageId];
+        }
         if ("message" in ladybugData) {
             ctrl.reportDetails.text = ladybugData["message"];
             $('#code').text(ladybugData["message"]);
@@ -244,7 +315,7 @@ function displayController($scope, $http) {
     }
 
     ctrl.isReportNode = function (node) {
-        if (node !== undefined && "ladybug" in node) {
+        if (node && "ladybug" in node) {
             ctrl.displayingReport = node["ladybug"]["stub"] === undefined;
         }
         return ctrl.displayingReport;
