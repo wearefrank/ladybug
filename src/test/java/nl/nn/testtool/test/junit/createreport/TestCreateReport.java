@@ -174,6 +174,18 @@ public class TestCreateReport extends ReportRelatedTestCase {
 		assertNull("Report should have been ignored", report);
 	}
 
+	public void testIgnoreReportAndAbort() throws StorageException {
+		Storage storage = testTool.getDebugStorage();
+		testTool.setRegexFilter("^(?!testIgnoreReport).*");
+		String correlationId = getCorrelationId();
+		testTool.startpoint(correlationId, null, "testIgnoreReport", "startmessage1");
+		testTool.startpoint(correlationId, null, "level2", "startmessage2");
+		testTool.abortpoint(correlationId, null, "level2", "abortmessage2");
+		testTool.abortpoint(correlationId, null, "testIgnoreReport", "abortmessage1");
+		Report report = findAndGetReport(testTool, storage, correlationId, false);
+		assertNull("Report should have been ignored", report);
+	}
+
 	public void testReportFilter() throws StorageException, IOException {
 		testTool.setRegexFilter("startname1");
 		setName("testTwoStartAndEndPointPlainMessages");

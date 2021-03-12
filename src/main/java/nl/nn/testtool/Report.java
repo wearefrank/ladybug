@@ -449,14 +449,14 @@ public class Report implements Serializable {
 				message = checkpoint.setMessage(message);
 			}
 			estimatedMemoryUsage += checkpoint.getEstimatedMemoryUsage();
+			for (int i = threads.indexOf(threadName); i < threads.size(); i++) {
+				String key = threads.get(i);
+				Integer value = (Integer)threadCheckpointIndex.get(key);
+				threadCheckpointIndex.put(key, new Integer(value.intValue() + 1));
+			}
 			if (log.isDebugEnabled()) {
 				log.debug("Added checkpoint " + getCheckpointLogDescription(name, checkpointType, level));
 			}
-		}
-		for (int i = threads.indexOf(threadName); i < threads.size(); i++) {
-			String key = threads.get(i);
-			Integer value = (Integer)threadCheckpointIndex.get(key);
-			threadCheckpointIndex.put(key, new Integer(value.intValue() + 1));
 		}
 		level = new Integer(level.intValue() + levelChangeNextCheckpoint);
 		threadLevel.put(threadName, level);
