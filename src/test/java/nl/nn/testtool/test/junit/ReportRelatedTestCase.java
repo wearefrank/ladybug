@@ -88,8 +88,9 @@ public class ReportRelatedTestCase extends TestCase {
 		return assertReport(correlationId, false, false, false);
 	}
 
-	protected Report assertReport(String correlationId, boolean applyToXmlIgnores, boolean applyXmlEncoderIgnores, boolean assertExport) throws StorageException, IOException {
-		assertEquals(0, testTool.getNumberOfReportsInProgress());
+	protected Report assertReport(String correlationId, boolean applyXmlEncoderIgnores,
+			boolean applyEpochTimestampIgnore, boolean assertExport) throws StorageException, IOException {
+		assertEquals("Found report(s) in progress,", 0, testTool.getNumberOfReportsInProgress());
 		Storage storage = testTool.getDebugStorage();
 		Report report = storage.getReport((Integer)storage.getStorageIds().get(0));
 		assertEquals(correlationId, report.getCorrelationId());
@@ -98,15 +99,16 @@ public class ReportRelatedTestCase extends TestCase {
 		reportXmlTransformer.setXslt(getResource(RESOURCE_PATH, ASSERT_REPORT_XSLT, null));
 		report.setReportXmlTransformer(reportXmlTransformer);
 		String actual = report.toXml();
-		if (applyToXmlIgnores) {
-			actual = applyXmlEncoderIgnores(actual);
-		}
 		if (applyXmlEncoderIgnores) {
 			actual = applyXmlEncoderIgnores(actual);
 		}
+		if (applyEpochTimestampIgnore) {
+			actual = applyEpochTimestampIgnores(actual);
+		}
 		assertXml(resourcePath, getName(), actual);
 		if (assertExport) {
-			TestExport.assertExport(resourcePath, getName() + "Export", correlationId, report, true);
+			TestExport.assertExport(resourcePath, getName() + "Export", correlationId, report, true
+					, applyEpochTimestampIgnore);
 		}
 		return report;
 	}
@@ -155,9 +157,14 @@ public class ReportRelatedTestCase extends TestCase {
 	public static String applyToXmlIgnores(String xml, Report report) {
 		// Correlation id sometimes contains start time, hence replace correlation id first
 		xml = xml.replaceFirst(report.getCorrelationId(), "IGNORE-CORRELATIONID");
-		// End time is sometimes the same as start time, hence replace end time first
-		xml = xml.replaceFirst("" + report.getEndTime(), "IGNORE-END-TIME");
-		xml = xml.replaceFirst("" + report.getStartTime(), "IGNORE-START-TIME");
+		// End time is sometimes the same as start time, hence replace in correct order
+		if (xml.indexOf("tartTime") < xml.indexOf("ndTime")) {
+			xml = xml.replaceFirst("" + report.getStartTime(), "IGNORE-START-TIME");
+			xml = xml.replaceFirst("" + report.getEndTime(), "IGNORE-END-TIME");
+		} else {
+			xml = xml.replaceFirst("" + report.getEndTime(), "IGNORE-END-TIME");
+			xml = xml.replaceFirst("" + report.getStartTime(), "IGNORE-START-TIME");
+		}
 		xml = xml.replaceFirst("" + report.getStorageId(), "IGNORE-STORAGE-ID");
 		return xml;
 	}
@@ -166,6 +173,10 @@ public class ReportRelatedTestCase extends TestCase {
 		xml = xml.replaceAll("java version=\".*\" class", "java version=\"IGNORE-JAVA-VERSION\" class");
 		xml = xml.replaceAll("java version=&quot;.*&quot; class", "java version=&quot;IGNORE-JAVA-VERSION&quot; class");
 		return xml;
+	}
+
+	public static String applyEpochTimestampIgnores(String string) {
+		return string.replaceFirst("1970-01-01T..:..:00\\.000\\+....", "1970-01-01TXX:XX:00.000+XXXX");
 	}
 
 	public static String getResource(String path, String name, String valueToWriteWhenNotFound) throws IOException {

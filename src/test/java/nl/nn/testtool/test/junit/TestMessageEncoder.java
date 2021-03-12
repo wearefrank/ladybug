@@ -56,8 +56,9 @@ public class TestMessageEncoder extends TestCase {
 		assertEquals(new Integer(10), checkpoint.getMessageAsObject(new Integer(1)));
 
 		// Test Date
-		actual = testTool.getMessageEncoder().toString(new Date(0L), null).getString();
-		String offset = new SimpleDateFormat("Z").format(new Date());
+		Date date = new Date(0L);
+		actual = testTool.getMessageEncoder().toString(date, null).getString();
+		String offset = new SimpleDateFormat("Z").format(date);
 		assertEquals("1970-01-01T" + offset.substring(1, 3) + ":" + offset.substring(3, 5) + ":00.000" + offset, actual);
 		checkpoint.setMessage(actual);
 		checkpoint.setEncoding(MessageEncoderImpl.DATE_ENCODER);
