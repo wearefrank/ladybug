@@ -15,19 +15,18 @@
 */
 package nl.nn.testtool;
 
-import lombok.SneakyThrows;
 import net.sf.saxon.trans.XPathException;
+import nl.nn.testtool.MessageCapturer.StreamingType;
+import nl.nn.testtool.MessageEncoder.ToStringResult;
 import nl.nn.testtool.run.ReportRunner;
 import nl.nn.testtool.run.RunResult;
 import nl.nn.testtool.storage.StorageException;
 import nl.nn.testtool.util.ImportResult;
 import nl.nn.testtool.util.XmlUtil;
-import nl.nn.xmldecoder.XMLDecoder;
 import org.apache.commons.lang.StringUtils;
 import org.codehaus.jackson.annotate.JsonIgnore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.w3c.dom.Node;
 
 import java.beans.ExceptionListener;
 import java.io.ByteArrayOutputStream;
@@ -43,19 +42,6 @@ import java.util.Map.Entry;
 import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import net.sf.saxon.trans.XPathException;
-import nl.nn.testtool.MessageCapturer.StreamingType;
-import nl.nn.testtool.MessageEncoder.ToStringResult;
-import nl.nn.testtool.run.ReportRunner;
-import nl.nn.testtool.run.RunResult;
-import nl.nn.testtool.storage.StorageException;
-import nl.nn.testtool.util.ImportResult;
-import nl.nn.testtool.util.XmlUtil;
 
 /**
  * @author Jaco de Groot
@@ -298,10 +284,12 @@ public class Checkpoint implements Serializable, Cloneable {
 		return message;
 	}
 
+	@JsonIgnore
 	public Object getMessageAsObject() {
 		return report.getMessageEncoder().toObject(this);
 		}
 
+	@JsonIgnore
 	public <T> T getMessageAsObject(T messageToStub) {
 		return report.getMessageEncoder().toObject(this, messageToStub);
 	}

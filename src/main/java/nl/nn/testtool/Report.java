@@ -15,26 +15,6 @@
 */
 package nl.nn.testtool;
 
-import java.beans.Transient;
-import java.io.Serializable;
-import java.lang.invoke.MethodHandles;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Scanner;
-import java.util.Set;
-
-import org.apache.commons.lang.NotImplementedException;
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import lombok.Data;
 import lombok.SneakyThrows;
 import nl.nn.testtool.MessageEncoder.ToStringResult;
@@ -669,10 +649,14 @@ public class Report implements Serializable {
 		return testTool.getMessageTransformer();
 	}
 
+	@Transient
+	@JsonIgnore
 	public MessageEncoder getMessageEncoder() {
 		return testTool.getMessageEncoder();
 	}
 
+	@Transient
+	@JsonIgnore
 	public MessageCapturer getMessageCapturer() {
 		return testTool.getMessageCapturer();
 	}
