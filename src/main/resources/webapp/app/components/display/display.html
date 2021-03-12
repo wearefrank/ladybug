@@ -1,9 +1,9 @@
-<div class="row" id="details-row">
+<div class="row" id="{{'details-row' + $ctrl.id}}">
     <button type="button" class="btn btn-outline-primary col" ng-click="$ctrl.rerun()">Rerun</button>
-    <button type="button" class="btn btn-outline-primary col" ng-click="$ctrl.toggleEdit()" id="details-edit">
+    <button type="button" class="btn btn-outline-primary col" ng-click="$ctrl.toggleEdit()" id="{{'details-edit' + $ctrl.id}}">
         Edit
     </button>
-    <button type="button" class="btn btn-outline-primary col" ng-click="$ctrl.saveEditField(true)" id="save" ng-show="$ctrl.editing">
+    <button type="button" class="btn btn-outline-primary col" ng-click="$ctrl.saveEditField(true)" id="{{'save' + $ctrl.id}}" ng-show="$ctrl.editing">
         Save
     </button>
     <div class="input-group col">
@@ -52,8 +52,8 @@
         <i class="fa fa-times" style="float: right" ng-click="$ctrl.close_notification(key)"></i>
     </div>
 </div>
-<pre id="code-wrapper" ng-show="!$ctrl.editing">
-    <code id="code" class="xml">
+<pre id="{{'code-wrapper' + $ctrl.id}}" ng-show="!$ctrl.editing">
+    <code id="{{'code' + $ctrl.id}}" class="xml">
         {{$ctrl.reportDetails.text}}
     </code>
 </pre>
