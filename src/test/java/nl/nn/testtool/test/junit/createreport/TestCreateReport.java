@@ -80,7 +80,7 @@ public class TestCreateReport extends ReportRelatedTestCase {
 		testTool.infopoint(correlationId, null, "infoname4", new Integer(456));
 		testTool.infopoint(correlationId, null, "infoname5", new DocumentImpl().createElement("NodeTest"));
 		testTool.endpoint(correlationId, null, "endname1", "");
-		assertReport(correlationId, false, true, true);
+		assertReport(correlationId, true, true, true);
 	}
 
 	public void testThread() throws StorageException, IOException {
