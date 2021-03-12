@@ -165,19 +165,14 @@ public class TestCreateReport extends ReportRelatedTestCase {
 	public void testIgnoreReport() throws StorageException {
 		Storage storage = testTool.getDebugStorage();
 		testTool.setRegexFilter("^(?!testIgnoreReport).*");
-		Report report1 = storage.getReport((Integer)storage.getStorageIds().get(0));
 		String correlationId = getCorrelationId();
 		testTool.startpoint(correlationId, null, "testIgnoreReport", "startmessage1");
 		testTool.startpoint(correlationId, null, "level2", "startmessage2");
 		testTool.endpoint(correlationId, null, "level2", "endmessage2");
 		testTool.endpoint(correlationId, null, "testIgnoreReport", "endmessage1");
-		Report report2 = storage.getReport((Integer)storage.getStorageIds().get(0));
-		try {
-			assertEquals(report1.toXml(), report2.toXml());
-		} catch(AssertionFailedError e) {
-			System.err.println("Following report should have been ignored: " + report2.toXml());
-			throw e;
-		}
+		Report report = findAndGetReport(testTool, storage, correlationId, false);
+		assertNull("Report should have been ignored", report);
+	}
 	}
 
 	public void testReportFilter() throws StorageException, IOException {
@@ -243,7 +238,7 @@ public class TestCreateReport extends ReportRelatedTestCase {
 
 		assertReport(correlationId, false, false, true);
 		Storage storage = testTool.getDebugStorage();
-		Report report = storage.getReport((Integer)storage.getStorageIds().get(0));
+		Report report = findAndGetReport(testTool, storage, correlationId);
 		assertEquals(report.getCheckpoints().get(1).getMessage(), writerOriginalMessage.toString().substring(0, maxMessageLength));
 		assertArrayEquals(report.getCheckpoints().get(4).getMessage().getBytes(), Arrays.copyOf(outputStreamOriginalMessage.toByteArray(), maxMessageLength));
 	}

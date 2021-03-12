@@ -22,7 +22,9 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
@@ -32,6 +34,7 @@ import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.read.ListAppender;
 import junit.framework.TestCase;
+import nl.nn.testtool.MetadataExtractor;
 import nl.nn.testtool.Report;
 import nl.nn.testtool.TestTool;
 import nl.nn.testtool.storage.Storage;
@@ -49,8 +52,10 @@ public class ReportRelatedTestCase extends TestCase {
 	public static final String ACTUAL_SUFFIX = "-actual.xml";
 	public static final String LOG_SUFFIX = "-FAILED.txt";
 	public static final String ASSERT_REPORT_XSLT = "transformReport.xslt";
-	private static final ApplicationContext context = new ClassPathXmlApplicationContext("springTestToolTestJUnit.xml");
-	private static final TestTool testTestTool = (TestTool)context.getBean("testTool");
+	// Use this context at least in all tests that use debug storage otherwise when more then one context is creating
+	// storage beans the storageId's are likely to not be unique anymore which will give unexpected results
+	public static final ApplicationContext CONTEXT = new ClassPathXmlApplicationContext("springTestToolTestJUnit.xml");
+	private static final TestTool testTestTool = (TestTool)CONTEXT.getBean("testTool");
 	protected TestTool testTool;
 	protected ListAppender<ILoggingEvent> listAppender;
 	public String resourcePath = "Override this value!";
@@ -66,12 +71,17 @@ public class ReportRelatedTestCase extends TestCase {
 		listAppender = new ListAppender<>();
 		listAppender.start();
 		log.addAppender(listAppender);
-		testTool = (TestTool)context.getBean("testTool");
+		testTool = (TestTool)CONTEXT.getBean("testTool");
 	}
 
 	@Override
 	public void tearDown() {
 		List<ILoggingEvent> loggingEvents = listAppender.list;
+		String logMessage = null;
+		if (loggingEvents.size() > 0) {
+			logMessage = loggingEvents.get(0).getMessage();
+			assertNull(logMessage); // Shows log message when it fails
+		}
 		assertEquals(0, loggingEvents.size());
 	}
 
@@ -81,7 +91,11 @@ public class ReportRelatedTestCase extends TestCase {
 	}
 
 	protected String getCorrelationId() {
-		return getName() + "-" + System.currentTimeMillis();
+		return getCorrelationId(getName());
+	}
+
+	public static String getCorrelationId(String name) {
+		return name + "-" + UUID.randomUUID();
 	}
 
 	protected Report assertReport(String correlationId) throws StorageException, IOException {
@@ -92,9 +106,7 @@ public class ReportRelatedTestCase extends TestCase {
 			boolean applyEpochTimestampIgnore, boolean assertExport) throws StorageException, IOException {
 		assertEquals("Found report(s) in progress,", 0, testTool.getNumberOfReportsInProgress());
 		Storage storage = testTool.getDebugStorage();
-		Report report = storage.getReport((Integer)storage.getStorageIds().get(0));
-		assertEquals(correlationId, report.getCorrelationId());
-		assertNotNull(report);
+		Report report = findAndGetReport(testTool, storage, correlationId);
 		ReportXmlTransformer reportXmlTransformer = new ReportXmlTransformer();
 		reportXmlTransformer.setXslt(getResource(RESOURCE_PATH, ASSERT_REPORT_XSLT, null));
 		report.setReportXmlTransformer(reportXmlTransformer);
@@ -109,6 +121,34 @@ public class ReportRelatedTestCase extends TestCase {
 		if (assertExport) {
 			TestExport.assertExport(resourcePath, getName() + "Export", correlationId, report, true
 					, applyEpochTimestampIgnore);
+		}
+		return report;
+	}
+
+	public static Report findAndGetReport(TestTool testTool, Storage storage, String correlationId) throws StorageException {
+		return findAndGetReport(testTool, storage, correlationId, true);
+	}
+
+	public static Report findAndGetReport(TestTool testTool, Storage storage, String correlationId, boolean assertFound)
+			throws StorageException {
+		// In the Spring config for the JUnit tests bean testTool has scope prototype (see comment in config), hence use
+		// the same instance here instead of using getBean()
+		assertNull("Report should not be in progress", testTool.getReportInProgress(correlationId));
+		List<String> metadataNames = new ArrayList<String>();
+		metadataNames.add("storageId");
+		metadataNames.add("correlationId");
+		List<String> searchValues = new ArrayList<String>();
+		searchValues.add(null);
+		searchValues.add(correlationId);
+		List<List<Object>> metadata = storage.getMetadata(2, metadataNames, searchValues,
+				MetadataExtractor.VALUE_TYPE_OBJECT);
+		if (assertFound) {
+			assertEquals("Didn't find exactly 1 report with correlationId " + correlationId + ",", metadata.size(), 1);
+		}
+		Report report = null;
+		if (metadata.size() > 0) {
+			report = storage.getReport((Integer)metadata.get(0).get(0));
+			assertEquals(correlationId, report.getCorrelationId());
 		}
 		return report;
 	}

@@ -49,10 +49,10 @@ public class TestImport extends TestCase {
 		checkpoints.add(new Checkpoint(report, "threadName1", "sourceClassName1", "name1", 1, 2));
 		checkpoints.add(new Checkpoint(report, "threadName2", "sourceClassName2", "name1", 3, 4));
 		report.setCheckpoints(checkpoints);
-		assertImport(TestExport.RESOURCE_PATH, getName(), report.getCorrelationId(), report);
+		assertImport(TestExport.RESOURCE_PATH, getName(), report);
 	}
 
-	public static void assertImport(String path, String testCaseName, String correlationId, Report report) throws IOException, StorageException {
+	public static void assertImport(String path, String testCaseName, Report report) throws IOException, StorageException {
 		byte[] bytes = Export.getReportBytes(report);
 		InputStream inputStream = new ByteArrayInputStream(bytes);
 		Storage storage = new Storage();

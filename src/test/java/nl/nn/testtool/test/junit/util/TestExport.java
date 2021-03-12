@@ -42,7 +42,6 @@ import nl.nn.testtool.util.Export;
  */
 public class TestExport extends TestCase {
 	public static final String RESOURCE_PATH = "nl/nn/testtool/test/junit/util/";
-	private static final ApplicationContext context = new ClassPathXmlApplicationContext("springTestToolTestJUnit.xml");
 
 	public void testExport() throws IllegalAccessException, IllegalArgumentException, InvocationTargetException, IOException, StorageException {
 		Report report = new Report();
@@ -89,7 +88,7 @@ public class TestExport extends TestCase {
 				} else if (name.equals("globalReportXmlTransformer")) {
 					report.setGlobalReportXmlTransformer(new ReportXmlTransformer());
 				} else if (!name.equals("storageId") && !name.equals("checkpoints")) {
-					method.invoke(report, context.getBean(name));
+					method.invoke(report, ReportRelatedTestCase.CONTEXT.getBean(name));
 				} else if (name.equals("checkpoints")) {
 					// Ignore, done manually
 				} else {

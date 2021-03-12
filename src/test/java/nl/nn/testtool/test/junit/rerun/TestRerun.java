@@ -19,9 +19,6 @@ import static org.junit.Assert.assertNotEquals;
 
 import java.io.IOException;
 
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
-
 import junit.framework.TestCase;
 import lombok.SneakyThrows;
 import nl.nn.testtool.Checkpoint;
@@ -39,11 +36,10 @@ import nl.nn.testtool.test.junit.ReportRelatedTestCase;
  */
 public class TestRerun extends TestCase {
 	public static final String RESOURCE_PATH = "nl/nn/testtool/test/junit/rerun/";
-	private static final ApplicationContext context = new ClassPathXmlApplicationContext("springTestToolTestJUnit.xml");
 	private static Integer i = 0;
 
 	public void testRerun() throws StorageException, IOException {
-		TestTool testTool = (TestTool)context.getBean("testTool");
+		TestTool testTool = (TestTool)ReportRelatedTestCase.CONTEXT.getBean("testTool");
 		testTool.setRerunner(new Rerunner() {
 			@SneakyThrows
 			@Override
@@ -57,10 +53,11 @@ public class TestRerun extends TestCase {
 				return null;
 			}
 		});
-		addSomething(testTool, "doSomething-" + System.currentTimeMillis(), 10);
+		String correlationId = ReportRelatedTestCase.getCorrelationId(getName());
+		addSomething(testTool, correlationId, 10);
 		assertEquals((Integer)10, i);
 		Storage storage = testTool.getDebugStorage();
-		Report report = storage.getReport((Integer)storage.getStorageIds().get(0));
+		Report report = ReportRelatedTestCase.findAndGetReport(testTool, storage, correlationId);
 		report.setTestTool(testTool);
 		report.getCheckpoints().get(1).setStub(Checkpoint.STUB_YES);
 		String actual = report.toXml();
@@ -68,8 +65,7 @@ public class TestRerun extends TestCase {
 		actual = ReportRelatedTestCase.applyXmlEncoderIgnores(actual);
 		ReportRelatedTestCase.assertXml(RESOURCE_PATH, getName(), actual);
 		Integer storageId = (Integer)storage.getStorageIds().get(0);
-		assertNull(
-				testTool.rerun("rerun-" + System.currentTimeMillis(), report, null, null));
+		assertNull(testTool.rerun("rerun-" + System.currentTimeMillis(), report, null, null));
 		assertNotEquals(storageId, (Integer)storage.getStorageIds().get(0));
 		assertEquals((Integer)10, i);
 	}

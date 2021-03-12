@@ -18,6 +18,9 @@ package nl.nn.testtool.test.junit;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import nl.nn.testtool.test.junit.createreport.TestCreateReport;
+import nl.nn.testtool.test.junit.rerun.TestRerun;
+import nl.nn.testtool.test.junit.util.TestExport;
+import nl.nn.testtool.test.junit.util.TestImport;
 import nl.nn.testtool.test.junit.util.TestSearchUtil;
 
 public class AllTests extends TestSuite {
@@ -26,7 +29,11 @@ public class AllTests extends TestSuite {
 		TestSuite testSuite = new TestSuite("All tests");
 		try {
 			testSuite.addTest(new TestSuite(TestCreateReport.class));
+			testSuite.addTest(new TestSuite(TestRerun.class));
+			testSuite.addTest(new TestSuite(TestExport.class));
+			testSuite.addTest(new TestSuite(TestImport.class));
 			testSuite.addTest(new TestSuite(TestSearchUtil.class));
+			testSuite.addTest(new TestSuite(TestMessageEncoder.class));
 		} catch(Throwable t) {
 			System.out.println("Caught throwable adding test suites: " + t.getMessage());
 			t.printStackTrace(System.out);
