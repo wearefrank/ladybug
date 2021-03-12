@@ -51,7 +51,7 @@ public class MessageEncoderImpl implements MessageEncoder {
 	public static final String TO_STRING_ENCODER = "toString()";
 	public static final String DOM_NODE_ENCODER = "XmlUtil.nodeToString()";
 	// Don't use static final SimpleDateFormat, see SimpleDateFormat javadoc: It is recommended to create separate format instances for each thread.
-	public static final String DATE_PATTERN = "yyyy-MM-dd HH:mm:ss.SSS";
+	public static final String DATE_PATTERN = "yyyy-MM-dd'T'HH:mm:ss.SSSZ";
 	public static final String DATE_ENCODER = "SimpleDateFormat(\"" + DATE_PATTERN + "\")";
 	public static final String WAITING_FOR_STREAM_MESSAGE = "Waiting for stream to be read, captured and closed...";
 

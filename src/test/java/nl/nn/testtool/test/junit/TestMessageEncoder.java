@@ -16,6 +16,7 @@
 package nl.nn.testtool.test.junit;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -56,7 +57,8 @@ public class TestMessageEncoder extends TestCase {
 
 		// Test Date
 		actual = testTool.getMessageEncoder().toString(new Date(0L), null).getString();
-		assertEquals("1970-01-01 01:00:00.000", actual);
+		String offset = new SimpleDateFormat("Z").format(new Date());
+		assertEquals("1970-01-01T" + offset.substring(1, 3) + ":" + offset.substring(3, 5) + ":00.000" + offset, actual);
 		checkpoint.setMessage(actual);
 		checkpoint.setEncoding(MessageEncoderImpl.DATE_ENCODER);
 		assertEquals(new Date(0L), checkpoint.getMessageAsObject());

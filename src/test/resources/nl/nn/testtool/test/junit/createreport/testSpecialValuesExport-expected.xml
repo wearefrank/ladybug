@@ -22,13 +22,13 @@
    <void method="add">
     <object class="nl.nn.testtool.Checkpoint">
      <void property="encoding">
-      <string>SimpleDateFormat(&quot;yyyy-MM-dd HH:mm:ss.SSS&quot;)</string>
+      <string>SimpleDateFormat(&quot;yyyy-MM-dd&apos;T&apos;HH:mm:ss.SSSZ&quot;)</string>
      </void>
      <void property="level">
       <int>1</int>
      </void>
      <void property="message">
-      <string>1970-01-01 01:00:00.000</string>
+      <string>1970-01-01T01:00:00.000+0100</string>
      </void>
      <void property="messageClassName">
       <string>java.util.Date</string>
@@ -197,7 +197,7 @@
    <long>IGNORE-END-TIME</long>
   </void>
   <void property="estimatedMemoryUsage">
-   <long>638</long>
+   <long>648</long>
   </void>
   <void property="name">
    <string>startname1</string>
