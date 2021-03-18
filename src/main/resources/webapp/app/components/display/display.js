@@ -1,3 +1,5 @@
+'use strict';
+
 function displayController($rootScope, $scope, $http) {
     let ctrl = this;
     ctrl.apiUrl = "http://localhost:8080/ibis_adapterframework_test_war_exploded/ladybug";
