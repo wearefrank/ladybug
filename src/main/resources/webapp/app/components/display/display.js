@@ -1,4 +1,4 @@
-function displayController($scope, $http) {
+function displayController($rootScope, $scope, $http) {
     let ctrl = this;
     ctrl.apiUrl = "http://localhost:8080/ibis_adapterframework_test_war_exploded/ladybug";
     ctrl.reportDetails = {text: "", values: {}, notifications: {}};
@@ -8,7 +8,6 @@ function displayController($scope, $http) {
     ctrl.id = Math.random().toString(36).substring(7);
     ctrl.editing = false;
     ctrl.diff = [];
-    $scope.overwritten_checkpoints = {"report": {}, "checkpoint": {}}; // This will contain keys as checkpoint id, and values as edited values.
 
     ctrl.rerun = function () {
         let data = {};
@@ -118,7 +117,7 @@ function displayController($scope, $http) {
                     language: 'xml',
                     fontSize: "10px",
                     scrollBeyondLastLine: false
-            });
+                });
                 ctrl.editing = true;
             });
         } else {
@@ -162,7 +161,7 @@ function displayController($scope, $http) {
                         if ("xml" in response.data) ladybugData.message = response.data.xml;
                         console.log("Response", response.data);
                         console.log("Response to update", ladybugData);
-                        $scope.overwritten_checkpoints["report"][ladybugData.storageId] = ladybugData;
+                        $rootScope.overwritten_checkpoints["report"][ladybugData.storageId] = ladybugData;
                         $('#details-edit' + ctrl.id).text("Edit");
                         ctrl.editing = false;
                         $('#modal' + ctrl.id).modal('hide');
@@ -174,7 +173,7 @@ function displayController($scope, $http) {
         } else {
             console.log("Saving checkpoint", save);
             ctrl.reportDetails.text = ((save && "editor" in ctrl) ? ctrl.editor.getValue() : ctrl.reportDetails.text);
-            $scope.overwritten_checkpoints["checkpoint"][ctrl.reportDetails.data.uid] = ctrl.reportDetails.text;
+            $rootScope.overwritten_checkpoints["checkpoint"][ctrl.reportDetails.data.uid] = ctrl.reportDetails.text;
             ctrl.reportDetails.data["message"] = ctrl.reportDetails.text;
             $('#details-edit' + ctrl.id).text("Edit");
             ctrl.editing = false;
@@ -231,8 +230,8 @@ function displayController($scope, $http) {
 
     ctrl.display_checkpoint = function (ladybugData) {
         let message = ladybugData["message"];
-        if (ladybugData["uid"] in $scope.overwritten_checkpoints["checkpoint"])
-            message = $scope.overwritten_checkpoints["checkpoint"][ladybugData["uid"]];
+        if (ladybugData["uid"] in $rootScope.overwritten_checkpoints["checkpoint"])
+            message = $rootScope.overwritten_checkpoints["checkpoint"][ladybugData["uid"]];
         ctrl.reportDetails = {
             data: ladybugData,
             text: message,
@@ -254,8 +253,8 @@ function displayController($scope, $http) {
     };
 
     ctrl.display_report_ = function (ladybugData) {
-        if (ladybugData.storageId in $scope.overwritten_checkpoints["report"]) {
-            ladybugData = $scope.overwritten_checkpoints.report[ladybugData.storageId];
+        if (ladybugData.storageId in $rootScope.overwritten_checkpoints["report"]) {
+            ladybugData = $rootScope.overwritten_checkpoints.report[ladybugData.storageId];
         }
         if ("message" in ladybugData) {
             ctrl.reportDetails.text = ladybugData["message"];
@@ -333,12 +332,16 @@ function displayController($scope, $http) {
         }
 
         ctrl.stubStrategies = $scope.testtoolStubStrategies;
+
+        // This will contain edited reports and checkpoint that have not been saved in the storage.
+        if (! ($rootScope.overwritten_checkpoints))
+            $rootScope.overwritten_checkpoints = {"report": {}, "checkpoint": {}};
     }
 }
 
 angular.module('myApp').component('reportDisplay', {
     templateUrl: 'components/display/display.html',
-    controller: ['$scope', '$http', displayController],
+    controller: ['$rootScope', '$scope', '$http', displayController],
     bindings: {
         onSelectRelay: '=',
         applyTransformer: '=',
