@@ -1,9 +1,11 @@
 <div class="row" id="{{'details-row' + $ctrl.id}}">
     <button type="button" class="btn btn-outline-primary col" ng-click="$ctrl.rerun()">Rerun</button>
-    <button type="button" class="btn btn-outline-primary col" ng-click="$ctrl.toggleEdit()" id="{{'details-edit' + $ctrl.id}}">
+    <button type="button" class="btn btn-outline-primary col" ng-click="$ctrl.toggleEdit()"
+            id="{{'details-edit' + $ctrl.id}}">
         Edit
     </button>
-    <button type="button" class="btn btn-outline-primary col" ng-click="$ctrl.saveEditField(true)" id="{{'save' + $ctrl.id}}" ng-show="$ctrl.editing">
+    <button type="button" class="btn btn-outline-primary col" ng-click="$ctrl.saveEditField(true)"
+            id="{{'save' + $ctrl.id}}" ng-show="$ctrl.editing">
         Save
     </button>
     <div class="input-group col">
@@ -33,7 +35,8 @@
         </div>
     </div>
     <button type="button" class="btn btn-outline-primary col" ng-click="$ctrl.onSelectRelay.expand()">Expand</button>
-    <button type="button" class="btn btn-outline-primary col" ng-click="$ctrl.onSelectRelay.collapse()">Collapse</button>
+    <button type="button" class="btn btn-outline-primary col" ng-click="$ctrl.onSelectRelay.collapse()">Collapse
+    </button>
     <button type="button" class="btn btn-outline-primary col" ng-click="$ctrl.onSelectRelay.close()">Close</button>
 </div>
 <div class="form-row">
@@ -41,7 +44,8 @@
                     Stub Strategy:
                 </span>
     <div class="form-group col-md-4">
-        <select class="form-control" ng-options="strategy for strategy in $ctrl.stubStrategies" ng-model="$ctrl.stubStrategySelect">
+        <select class="form-control" ng-options="strategy for strategy in $ctrl.stubStrategies"
+                ng-model="$ctrl.stubStrategySelect">
         </select>
     </div>
 </div>
@@ -52,11 +56,33 @@
         <i class="fa fa-times" style="float: right" ng-click="$ctrl.close_notification(key)"></i>
     </div>
 </div>
-<pre id="{{'code-wrapper' + $ctrl.id}}" ng-show="!$ctrl.editing">
-    <code id="{{'code' + $ctrl.id}}" class="xml">
-        {{$ctrl.reportDetails.text}}
-    </code>
-</pre>
+
+<!-- Display highlighted code -->
+<div ng-show="!$ctrl.editing">
+    <div ng-show="$ctrl.reportDetails.hasOwnProperty('diff')" id="{{'diff-wrapper' + $ctrl.id}}">
+        <span>Diff</span>
+        <table class="table table-striped">
+            <tbody>
+                <tr ng-repeat="line in $ctrl.reportDetails.diff" class="xml"
+                      ng-class="{diff_added: line[0] == $ctrl.reportDetails.diffIdentifier, diff_deleted: line[0] == -1 * $ctrl.reportDetails.diffIdentifier}">
+                    <td>{{((line[0] !== -1 * $ctrl.reportDetails.diffIdentifier) ? line[1] : '')}}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <pre ng-if="!$ctrl.reportDetails.hasOwnProperty('diff')" id="{{'code-wrapper' + $ctrl.id}}">
+        <span>Highlighted code</span>
+        <code id="{{'code' + $ctrl.id}}" class="xml">
+            {{$ctrl.reportDetails.text}}
+        </code>
+    </pre>
+</div>
+
+<!-- Display Monaco for Checkpoint Editing -->
+<div ng-show="$ctrl.editing && !$ctrl.displayingReport" id="{{'checkpoint-monaco' + $ctrl.id}}" class="form-group"
+     style="height: 300px; min-width: 300px;"></div>
+
+<!-- Display report edit -->
 <div ng-show="$ctrl.editing && $ctrl.displayingReport">
     <div class="form-group">
         <label for="{{'editName' + $ctrl.id}}">Name</label>
@@ -72,11 +98,13 @@
     </div>
     <div class="form-group">
         <label for="{{'editorTransformation' + $ctrl.id}}">Transformation</label>
-        <div id="{{'editorTransformation' + $ctrl.id}}" class="form-group" style="height: 400px; width: 600px; border: 1px solid #ced4da; border-radius: .25rem;"></div>
+        <div id="{{'editorTransformation' + $ctrl.id}}" class="form-group"
+             style="height: 400px; width: 600px; border: 1px solid #ced4da; border-radius: .25rem;"></div>
     </div>
     <div class="form-group">
         <label for="{{'editorVariables' + $ctrl.id}}">Variables</label>
-        <div id="{{'editorVariables' + $ctrl.id}}" class="form-group" style="height: 100px; width: 600px; border: 1px solid #ced4da; border-radius: .25rem;"></div>
+        <div id="{{'editorVariables' + $ctrl.id}}" class="form-group"
+             style="height: 100px; width: 600px; border: 1px solid #ced4da; border-radius: .25rem;"></div>
     </div>
 </div>
 <table>
@@ -101,12 +129,14 @@
                 <div ng-repeat="group in $ctrl.diff">
                     <h5>{{group.text}}</h5>
                     <pre>
-                        <span ng-repeat="word in group.diff" ng-class="{diff_added: word[0] == 1, diff_deleted: word[0] == -1}">{{word[1]}}</span>
+                        <span ng-repeat="word in group.diff"
+                              ng-class="{diff_added: word[0] == 1, diff_deleted: word[0] == -1}">{{word[1]}}</span>
                     </pre>
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-primary" ng-click="$ctrl.saveEditField(false)">Discard Changes</button>
+                <button type="button" class="btn btn-primary" ng-click="$ctrl.saveEditField(false)">Discard Changes
+                </button>
                 <button type="button" class="btn btn-primary" ng-click="$ctrl.saveEditField(true)">Save changes</button>
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
             </div>
