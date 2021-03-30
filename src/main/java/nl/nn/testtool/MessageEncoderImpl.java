@@ -19,7 +19,9 @@ import java.beans.XMLEncoder;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.io.StringReader;
+import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.nio.ByteBuffer;
@@ -48,6 +50,7 @@ public class MessageEncoderImpl implements MessageEncoder {
 	public static final String UTF8_ENCODER = "UTF-8";
 	public static final String CHARSET_ENCODER_PREFIX = "CHARSET-";
 	public static final String BASE64_ENCODER = "Base64";
+	public static final String THROWABLE_ENCODER = "printStackTrace()";
 	public static final String TO_STRING_ENCODER = "toString()";
 	public static final String DOM_NODE_ENCODER = "XmlUtil.nodeToString()";
 	// Don't use static final SimpleDateFormat, see SimpleDateFormat javadoc: It is recommended to create separate format instances for each thread.
@@ -82,6 +85,10 @@ public class MessageEncoderImpl implements MessageEncoder {
 				}
 			} else if (message instanceof Writer || message instanceof OutputStream) {
 				toStringResult = new ToStringResult(WAITING_FOR_STREAM_MESSAGE, null);
+			} else if (message instanceof Throwable) {
+				StringWriter stringWriter = new StringWriter();
+				((Throwable)message).printStackTrace(new PrintWriter(stringWriter));
+				toStringResult = new ToStringResult(stringWriter.toString(), THROWABLE_ENCODER);
 			} else if (message instanceof Node) {
 				Node node = (Node)message;
 				toStringResult = new ToStringResult(XmlUtil.nodeToString(node), DOM_NODE_ENCODER);

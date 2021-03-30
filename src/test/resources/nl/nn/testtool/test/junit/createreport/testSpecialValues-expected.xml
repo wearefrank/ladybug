@@ -1,12 +1,12 @@
-<Report Name="startname1"
+<Report Name="name1"
         Description=""
         Path=""
         CorrelationId="Original length: 54"
         StartTime="Original length: 13"
         EndTime="Original length: 13"
         NumberOfCheckpoints="7"
-        EstimatedMemoryUsage="648">
-   <Checkpoint Name="startname1" Type="Startpoint" Level="0" Null="true"/>
+        EstimatedMemoryUsage="IGNORE">
+   <Checkpoint Name="name1" Type="Startpoint" Level="0" Null="true"/>
    <Checkpoint Name="infoname1"
                Type="Infopoint"
                Level="1"
@@ -16,7 +16,9 @@
                Type="Infopoint"
                Level="1"
                MessageClassName="java.io.IOException"
-               Encoding="toString()">java.io.IOException: Test with strange object</Checkpoint>
+               Encoding="printStackTrace()">java.io.IOException: Test with strange object
+	at nl.nn.testtool.test.junit.IGNORE)
+</Checkpoint>
    <Checkpoint Name="infoname3"
                Type="Infopoint"
                Level="1"
@@ -44,5 +46,5 @@
                Encoding="XmlUtil.nodeToString()">
       <NodeTest/>
    </Checkpoint>
-   <Checkpoint Name="endname1" Type="Endpoint" Level="1"/>
+   <Checkpoint Name="name1" Type="Endpoint" Level="1"/>
 </Report>

@@ -6,6 +6,13 @@ Ladybug Test Tool release notes
 Upcoming
 --------
 
+- Add method to close report or thread in report
+
+
+
+2.1
+---
+
 - Fix IndexOutOfBoundsException on abort when ignoring report
 - Enable application to notify the charset for binary streams
 - Show warning for reports in progress and message capturers waiting for close

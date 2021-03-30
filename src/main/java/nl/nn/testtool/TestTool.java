@@ -50,10 +50,7 @@ public class TestTool {
 	private List<Report> reportsInProgress = new ArrayList<Report>();
 	private Map<String, Report> reportsInProgressByCorrelationId = new HashMap<String, Report>();
 	private long numberOfReportsInProgress = 0;
-	private long reportsInProgressEstimatedMemoryUsage = 0;
 	private Map<String, Report> originalReports = new HashMap<String, Report>();
-	private List<StartpointProvider> startpointProviders = new ArrayList<StartpointProvider>();
-	private List<String> startpointProviderNames = new ArrayList<String>();
 	private LogStorage debugStorage;
 	private MessageEncoder messageEncoder = new MessageEncoderImpl();
 	private MessageCapturer messageCapturer = new MessageCapturerImpl();
@@ -257,14 +254,8 @@ public class TestTool {
 			if (report != null) {
 				synchronized(report) {
 					executeStubableCode = false;
-					long oldMemoryUsage = report.getEstimatedMemoryUsage();
 					message = report.checkpoint(childThreadId, sourceClassName, name, message, stubableCode,
 							stubableCodeThrowsException, matchingStubStrategies, checkpointType, levelChangeNextCheckpoint);
-					report.setEndTime(System.currentTimeMillis());
-					synchronized(reportsInProgress) {
-						reportsInProgressEstimatedMemoryUsage = reportsInProgressEstimatedMemoryUsage
-								+ report.getEstimatedMemoryUsage() - oldMemoryUsage;
-					}
 					closeReport(report);
 				}
 			}
@@ -291,13 +282,13 @@ public class TestTool {
 	protected void closeReport(Report report) {
 		synchronized(report) {
 			if (!report.isClosed() && report.threadsFinished() && report.streamingMessageListenersFinished()) {
+				report.setEndTime(System.currentTimeMillis());
 				report.setClosed(true);
 				log.debug("Report is finished for '" + report.getCorrelationId() + "'");
 				synchronized(reportsInProgress) {
 					reportsInProgress.remove(report);
 					reportsInProgressByCorrelationId.remove(report.getCorrelationId());
 					numberOfReportsInProgress--;
-					reportsInProgressEstimatedMemoryUsage = reportsInProgressEstimatedMemoryUsage - report.getEstimatedMemoryUsage();
 				}
 				if (report.isReportFilterMatching()) {
 					debugStorage.storeWithoutException(report);
@@ -574,8 +565,8 @@ public class TestTool {
 	}
 
 	/**
-	 * Specify the name of a previous startpoint to abort to or a unique name
-	 * to finish the report or thread.
+	 * Use abortpoint instead of endpoint in case an exception is thrown after a startpoint. The exception object can
+	 * be passed as the message parameter.
 	 * 
 	 * @param <T> ...
 	 * @param correlationId ...
@@ -593,7 +584,7 @@ public class TestTool {
 	 * Set a marker in the report for a child thread to appear. This method
 	 * should be called by the parent thread. Specify a childThreadId that will also
 	 * be used by the child thread when calling threadStartpoint. The name of the
-	 * child thread can be used as childThreadId (when known at this point).
+	 * child thread can be used as childThreadId (when unique and known at this point).
 	 * 
 	 * @param correlationId ...
 	 * @param childThreadId ...
@@ -639,6 +630,64 @@ public class TestTool {
 	public <T> T threadEndpoint(String correlationId, String sourceClassName, String name, T message) {
 		return checkpoint(correlationId, null, sourceClassName, name, message, null, null, null,
 				Checkpoint.TYPE_THREADENDPOINT, -1);
+	}
+
+	/**
+	 * Mark a thread as finished. When all threads are finished the report will be closed and written to storage. When
+	 * all checkpoints are properly surrounded with a try/catch it should not be necessary to call this method. On the
+	 * other hand, to be on the safe side it is wise to call this method in the finally of the root startpoint of the
+	 * thread to prevent reports staying in progress and consuming memory. See code example at {@link #close(String)}
+	 * also.
+	 * 
+	 * When a threadCreatepoint is called but it is not certain whether this thread will execute his method can be used
+	 * to mark this thread as finished at a point where it is clear that this thread will not start.
+	 * 
+	 * @param correlationId ...
+	 * @param threadName    name of the thread to close or null to close all threads (name of a thread cannot be null as
+	 *                      Thread.setName(null) will result in: java.lang.NullPointerException: name cannot be null)
+	 */
+	public void close(String correlationId, String threadName) {
+		Report report;
+		synchronized(reportsInProgress) {
+			report = (Report)reportsInProgressByCorrelationId.get(correlationId);
+		}
+		if (report != null) {
+			synchronized(report) {
+				if (threadName == null) {
+					report.close();
+				} else {
+					report.close(threadName);
+				}
+				closeReport(report);
+			}
+		}
+	}
+
+	/**
+	 * Mark all threads as finished and close the report, hence write the report to storage. When all checkpoints are
+	 * properly surrounded with a try/catch it should not be necessary to call this method. On the other hand, to be on
+	 * the safe side it is wise to call this method in the finally of the root startpoint of the report to prevent
+	 * reports staying in progress and consuming memory. Hence for the top level startpoint use:
+	 * 
+	 * <code>
+	 * try {
+	 *     startpoint();
+	 *     inputpoint();
+	 *     infopoint();
+	 *     outputpoint();
+	 *     endpoint();
+	 * } catch(Throwable t) {
+	 *     abortpoint();
+	 *     throw t;
+	 * } finally {
+	 *     close();
+	 * }
+	 *</code>
+	 * 
+	 * @param correlationId ...
+	 */
+	public void close(String correlationId) {
+		close(correlationId, null);
 	}
 
 	public static String getCorrelationId() {
@@ -765,31 +814,13 @@ public class TestTool {
 	}
 
 	public long getReportsInProgressEstimatedMemoryUsage() {
-		return reportsInProgressEstimatedMemoryUsage;
-	}
-	
-	public void register(StartpointProvider startpointProvider) {
-		synchronized(startpointProviders) {
-			startpointProviders.add(startpointProvider);
-			startpointProviderNames.add(startpointProvider.getName());
-		}
-	}
-	
-	public List<String> getStartpointProviderNames() {
-		synchronized(startpointProviders) {
-			return startpointProviderNames;
-		}
-	}
-	
-	public StartpointProvider getStartpointProvider(String name) {
-		synchronized(startpointProviders) {
-			int i = startpointProviderNames.indexOf(name);
-			if (i == -1) {
-				return null;
-			} else {
-				return (StartpointProvider)startpointProviders.get(i);
+		long reportsInProgressEstimatedMemoryUsage = 0;
+		synchronized(reportsInProgress) {
+			for (Report report : reportsInProgress) {
+				reportsInProgressEstimatedMemoryUsage += report.getEstimatedMemoryUsage();
 			}
 		}
+		return reportsInProgressEstimatedMemoryUsage;
 	}
 
 	public static String getName() {

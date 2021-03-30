@@ -6,7 +6,7 @@
    <void method="add">
     <object class="nl.nn.testtool.Checkpoint">
      <void property="name">
-      <string>startname1</string>
+      <string>name1</string>
      </void>
      <void property="report">
       <object idref="Report0"/>
@@ -50,13 +50,15 @@
    <void method="add">
     <object class="nl.nn.testtool.Checkpoint">
      <void property="encoding">
-      <string>toString()</string>
+      <string>printStackTrace()</string>
      </void>
      <void property="level">
       <int>1</int>
      </void>
      <void property="message">
-      <string>java.io.IOException: Test with strange object</string>
+      <string>java.io.IOException: Test with strange object&#13;
+	at nl.nn.testtool.test.junit.IGNORE)&#13;
+</string>
      </void>
      <void property="messageClassName">
       <string>java.io.IOException</string>
@@ -176,7 +178,7 @@
       <string></string>
      </void>
      <void property="name">
-      <string>endname1</string>
+      <string>name1</string>
      </void>
      <void property="report">
       <object idref="Report0"/>
@@ -197,10 +199,10 @@
    <long>IGNORE-END-TIME</long>
   </void>
   <void property="estimatedMemoryUsage">
-   <long>648</long>
+   <long>IGNORE</long>
   </void>
   <void property="name">
-   <string>startname1</string>
+   <string>name1</string>
   </void>
   <void property="startTime">
    <long>IGNORE-START-TIME</long>

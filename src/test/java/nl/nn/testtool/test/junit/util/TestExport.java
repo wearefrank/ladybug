@@ -131,7 +131,7 @@ public class TestExport extends TestCase {
 		List<Checkpoint> checkpoints = new ArrayList<Checkpoint>();
 		checkpoints.add(checkpoint);
 		report.setCheckpoints(checkpoints);
-		assertExport(RESOURCE_PATH, getName(), report.getCorrelationId(), report, false, false);
+		assertExport(RESOURCE_PATH, getName(), report.getCorrelationId(), report, false, false, true);
 	}
 
 	private static void getBeanProperties(Class<?> clazz, String verb, Map<String, Method> beanProperties) {
@@ -155,7 +155,8 @@ public class TestExport extends TestCase {
 	}
 
 	public static void assertExport(String path, String testCaseName, String correlationId, Report report,
-			boolean applyToXmlIgnores, boolean applyEpochTimestampIgnores) throws IOException, StorageException {
+			boolean applyToXmlIgnores, boolean applyEpochTimestampIgnores, boolean applyStackTraceIgnores)
+			throws IOException, StorageException {
 		// When storageId is a very low number (like when being build by the pipeline) the replace will potentially
 		// replace the wrong number, hence adjust the storage id to a more unique number
 		report.setStorageId(-99999);
@@ -175,6 +176,9 @@ public class TestExport extends TestCase {
 		}
 		if (applyEpochTimestampIgnores) {
 			actual = ReportRelatedTestCase.applyEpochTimestampIgnores(actual);
+		}
+		if (applyStackTraceIgnores) {
+			actual = ReportRelatedTestCase.applyStackTraceIgnores(actual);
 		}
 		ReportRelatedTestCase.assertXml(path, testCaseName, actual);
 	}

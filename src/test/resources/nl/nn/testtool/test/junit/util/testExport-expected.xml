@@ -60,7 +60,7 @@
    <long>7</long>
   </void>
   <void property="estimatedMemoryUsage">
-   <long>20</long>
+   <long>IGNORE</long>
   </void>
   <void property="name">
    <string>name</string>

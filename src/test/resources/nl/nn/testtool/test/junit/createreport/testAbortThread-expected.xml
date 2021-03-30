@@ -1,13 +1,15 @@
-<Report Name="startname1"
+<Report Name="name1"
         Description=""
         Path=""
         CorrelationId="Original length: 52"
         StartTime="Original length: 13"
         EndTime="Original length: 13"
-        NumberOfCheckpoints="4"
-        EstimatedMemoryUsage="96">
-   <Checkpoint Name="startname1" Type="Startpoint" Level="0">startmessage1</Checkpoint>
-   <Checkpoint Name="startname2" Type="ThreadStartpoint" Level="1">startmessage2</Checkpoint>
-   <Checkpoint Name="wrong" Type="Abortpoint" Level="2">endmessage2</Checkpoint>
-   <Checkpoint Name="endname1" Type="Endpoint" Level="1">endmessage1</Checkpoint>
+        NumberOfCheckpoints="6"
+        EstimatedMemoryUsage="152">
+   <Checkpoint Name="name1" Type="Startpoint" Level="0">startmessage1</Checkpoint>
+   <Checkpoint Name="name2" Type="ThreadStartpoint" Level="1">startmessage2</Checkpoint>
+   <Checkpoint Name="name3" Type="Startpoint" Level="2">startmessage3</Checkpoint>
+   <Checkpoint Name="name3" Type="Abortpoint" Level="3">abortmessage3</Checkpoint>
+   <Checkpoint Name="name2" Type="Abortpoint" Level="2">abortmessage2</Checkpoint>
+   <Checkpoint Name="name1" Type="Endpoint" Level="1">endmessage1</Checkpoint>
 </Report>

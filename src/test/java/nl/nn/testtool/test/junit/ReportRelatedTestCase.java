@@ -99,11 +99,12 @@ public class ReportRelatedTestCase extends TestCase {
 	}
 
 	protected Report assertReport(String correlationId) throws StorageException, IOException {
-		return assertReport(correlationId, false, false, false);
+		return assertReport(correlationId, false, false, false, false);
 	}
 
 	protected Report assertReport(String correlationId, boolean applyXmlEncoderIgnores,
-			boolean applyEpochTimestampIgnore, boolean assertExport) throws StorageException, IOException {
+			boolean applyEpochTimestampIgnore, boolean applyStackTraceIgnores, boolean assertExport)
+			throws StorageException, IOException {
 		assertEquals("Found report(s) in progress,", 0, testTool.getNumberOfReportsInProgress());
 		Storage storage = testTool.getDebugStorage();
 		Report report = findAndGetReport(testTool, storage, correlationId);
@@ -117,10 +118,13 @@ public class ReportRelatedTestCase extends TestCase {
 		if (applyEpochTimestampIgnore) {
 			actual = applyEpochTimestampIgnores(actual);
 		}
+		if (applyStackTraceIgnores) {
+			actual = applyStackTraceIgnores(actual);
+		}
 		assertXml(resourcePath, getName(), actual);
 		if (assertExport) {
 			TestExport.assertExport(resourcePath, getName() + "Export", correlationId, report, true
-					, applyEpochTimestampIgnore);
+					, applyEpochTimestampIgnore, applyStackTraceIgnores);
 		}
 		return report;
 	}
@@ -217,6 +221,21 @@ public class ReportRelatedTestCase extends TestCase {
 
 	public static String applyEpochTimestampIgnores(String string) {
 		return string.replaceFirst("1970-01-01T..:..:00\\.000\\+....", "1970-01-01TXX:XX:00.000+XXXX");
+	}
+
+	public static String applyStackTraceIgnores(String string) {
+		// (?s) enables dotall so the expression . will also match line terminator
+		if (string.startsWith("<Report")) {
+			return string.replaceFirst("EstimatedMemoryUsage=\".*\">",
+									   "EstimatedMemoryUsage=\"IGNORE\">")
+					.replaceFirst("(?s)at nl.nn.testtool.test.junit..*\\)\n</Checkpoint>",
+									  "at nl.nn.testtool.test.junit.IGNORE)\n</Checkpoint>");
+		} else {
+			return string.replaceFirst("estimatedMemoryUsage\">\n   <long>.*</long>",
+									   "estimatedMemoryUsage\">\n   <long>IGNORE</long>")
+					.replaceFirst("(?s)at nl.nn.testtool.test.junit..*\\)&#13;\n</string>",
+									  "at nl.nn.testtool.test.junit.IGNORE)&#13;\n</string>");
+		}
 	}
 
 	public static String getResource(String path, String name, String valueToWriteWhenNotFound) throws IOException {
