@@ -233,8 +233,8 @@ public class ReportRelatedTestCase extends TestCase {
 		} else {
 			return string.replaceFirst("estimatedMemoryUsage\">\n   <long>.*</long>",
 									   "estimatedMemoryUsage\">\n   <long>IGNORE</long>")
-					.replaceFirst("(?s)at nl.nn.testtool.test.junit..*\\)(&#13;)?\n</string>",
-									  "at nl.nn.testtool.test.junit.IGNORE)\n</string>");
+					.replaceFirst("(?s)java.io.IOException: Test with strange object.*\\)(&#13;)?\n</string>",
+									  "java.io.IOException: Test with strange objectIGNORE)\n</string>");
 		}
 	}
 
