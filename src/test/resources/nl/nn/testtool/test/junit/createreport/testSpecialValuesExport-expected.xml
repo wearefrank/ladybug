@@ -56,8 +56,7 @@
       <int>1</int>
      </void>
      <void property="message">
-      <string>java.io.IOException: Test with strange object&#13;
-	at nl.nn.testtool.test.junit.IGNORE)&#13;
+      <string>java.io.IOException: Test with strange objectIGNORE)
 </string>
      </void>
      <void property="messageClassName">
