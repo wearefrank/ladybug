@@ -18,6 +18,7 @@ package nl.nn.testtool.test.junit.createreport;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertNotEquals;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -27,12 +28,15 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
+import java.util.function.Consumer;
 
 import org.apache.xerces.dom.DocumentImpl;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import lombok.SneakyThrows;
+import nl.nn.testtool.Checkpoint;
+import nl.nn.testtool.MessageCapturerImpl;
 import nl.nn.testtool.MessageEncoderImpl;
 import nl.nn.testtool.Report;
 import nl.nn.testtool.storage.Storage;
@@ -345,6 +349,39 @@ public class TestCreateReport extends ReportRelatedTestCase {
 		testTool.endpoint(correlationId, null, "name", "endmessage");
 
 		assertReport(correlationId);
+	}
+
+	public void testStreamWithCharset() throws IOException, StorageException {
+		byte[] bytes = new byte[2];
+		bytes[0] = (byte)235; // ë
+		bytes[1] = (byte)169; // ©
+		String actual = testTool.getMessageEncoder().toString(bytes, "ISO-8859-1").getString();
+		assertEquals("ë©" , actual);
+		testTool.setMessageCapturer(new MessageCapturerImpl() {
+			@Override
+			@SneakyThrows
+			public <T> T toOutputStream(T message, OutputStream outputStream, Consumer<String> charsetNotifier) {
+				charsetNotifier.accept("ISO-8859-1");
+				return super.toOutputStream(message, outputStream, charsetNotifier);
+			}
+		});
+		String correlationId = getCorrelationId();
+		ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+		OutputStream outputStream =
+				testTool.startpoint(correlationId, "sourceClassName", "name", byteArrayOutputStream);
+		testTool.endpoint(correlationId, "sourceClassName", "name", "message");
+		outputStream.write(bytes);
+		outputStream.close();
+		Report report = assertReport(correlationId);
+		report.setTestTool(testTool);
+		Checkpoint checkpoint = report.getCheckpoints().get(0);
+		assertEquals("CHARSET-ISO-8859-1", checkpoint.getEncoding());
+		ByteArrayInputStream byteArrayInputStream = (ByteArrayInputStream)checkpoint.getMessageAsObject();
+		assertEquals(bytes[0], (byte)byteArrayInputStream.read());
+		assertEquals(bytes[1], (byte)byteArrayInputStream.read());
+		byteArrayInputStream = checkpoint.getMessageAsObject(new ByteArrayInputStream(new byte[0]));
+		assertEquals(235, byteArrayInputStream.read());
+		assertEquals(169, byteArrayInputStream.read());
 	}
 
 	private void testWriterMessage(Writer writerMessage) throws IOException {

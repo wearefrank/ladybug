@@ -60,7 +60,7 @@ public class TestImport extends TestCase {
 		assertNull(result.getErrorMessage());
 		report = storage.getReport(result.getNewStorageId());
 		ReportXmlTransformer reportXmlTransformer = new ReportXmlTransformer();
-		reportXmlTransformer.setXslt(ReportRelatedTestCase.getResource(ReportRelatedTestCase.RESOURCE_PATH, ReportRelatedTestCase.ASSERT_REPORT_XSLT, null));
+		reportXmlTransformer.setXslt(ReportRelatedTestCase.getResource(ReportRelatedTestCase.RESOURCE_PATH, ReportRelatedTestCase.ASSERT_REPORT_XSLT));
 		report.setReportXmlTransformer(reportXmlTransformer);
 		String actual = report.toXml();
 		ReportRelatedTestCase.assertXml(path, testCaseName, actual);

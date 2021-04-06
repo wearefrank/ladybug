@@ -109,7 +109,7 @@ public class ReportRelatedTestCase extends TestCase {
 		Storage storage = testTool.getDebugStorage();
 		Report report = findAndGetReport(testTool, storage, correlationId);
 		ReportXmlTransformer reportXmlTransformer = new ReportXmlTransformer();
-		reportXmlTransformer.setXslt(getResource(RESOURCE_PATH, ASSERT_REPORT_XSLT, null));
+		reportXmlTransformer.setXslt(getResource(RESOURCE_PATH, ASSERT_REPORT_XSLT));
 		report.setReportXmlTransformer(reportXmlTransformer);
 		String actual = report.toXml();
 		if (applyXmlEncoderIgnores) {
@@ -147,7 +147,7 @@ public class ReportRelatedTestCase extends TestCase {
 		List<List<Object>> metadata = storage.getMetadata(2, metadataNames, searchValues,
 				MetadataExtractor.VALUE_TYPE_OBJECT);
 		if (assertFound) {
-			assertEquals("Didn't find exactly 1 report with correlationId " + correlationId + ",", metadata.size(), 1);
+			assertEquals("Didn't find exactly 1 report with correlationId " + correlationId + ",", 1, metadata.size());
 		}
 		Report report = null;
 		if (metadata.size() > 0) {
@@ -161,7 +161,7 @@ public class ReportRelatedTestCase extends TestCase {
 		File expectedfile = new File(FILESYSTEM_PATH + path + testCaseName + EXPECTED_SUFFIX);
 		File actualFile = new File(FILESYSTEM_PATH + path + testCaseName + ACTUAL_SUFFIX);
 		File logFile = new File(FILESYSTEM_PATH + path + testCaseName + LOG_SUFFIX);
-		String expected = getResource(path, testCaseName + EXPECTED_SUFFIX, "Replace with real expected string");
+		String expected = getResource(path, testCaseName + EXPECTED_SUFFIX, true);
 		if (!expected.equals(actual)) {
 			StringBuffer buffer = new StringBuffer();
 			buffer.append("===\n");
@@ -238,17 +238,23 @@ public class ReportRelatedTestCase extends TestCase {
 		}
 	}
 
-	public static String getResource(String path, String name, String valueToWriteWhenNotFound) throws IOException {
+	public static String getResource(String path, String name) throws IOException {
+		return getResource(path, name, false);
+	}
+
+	public static String getResource(String path, String name, boolean createResourceWithMessageWhenNotFound)
+			throws IOException {
 		StringBuffer result = new StringBuffer();
 		String resourceName = path + name;
 		InputStream stream = ReportRelatedTestCase.class.getClassLoader().getResourceAsStream(resourceName);
 		if (stream == null) {
-			if (valueToWriteWhenNotFound == null) {
-				throw new junit.framework.AssertionFailedError("Could not find resource '" + resourceName + "'");
+			if (createResourceWithMessageWhenNotFound) {
+				String fileName = FILESYSTEM_PATH + path + name;
+				String message = "Replace content of " + fileName + " with expected value";
+				writeFile(new File(fileName), message, false);
+				return message;
 			} else {
-				writeFile(new File(FILESYSTEM_PATH + path + name),
-						valueToWriteWhenNotFound, false);
-				return valueToWriteWhenNotFound;
+				throw new junit.framework.AssertionFailedError("Could not find resource '" + resourceName + "'");
 			}
 		}
 		byte[] bytes = new byte[1024];

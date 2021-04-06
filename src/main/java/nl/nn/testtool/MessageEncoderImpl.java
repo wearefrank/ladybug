@@ -136,7 +136,7 @@ public class MessageEncoderImpl implements MessageEncoder {
 				if (encoding.startsWith(CHARSET_ENCODER_PREFIX)) {
 					encoding = encoding.substring(CHARSET_ENCODER_PREFIX.length());
 				}
-				CharsetEncoder charsetEncoder = Charset.forName("UTF-8").newEncoder();
+				CharsetEncoder charsetEncoder = Charset.forName(encoding).newEncoder();
 				ByteBuffer byteBuffer = charsetEncoder.encode(CharBuffer.wrap(message));
 				byte[] bytes = new byte[byteBuffer.remaining()];
 				byteBuffer.get(bytes);
