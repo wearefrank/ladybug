@@ -6,6 +6,7 @@ Ladybug Test Tool release notes
 Upcoming
 --------
 
+- Stream Reader and InputStream
 - Fix: toObject is using UTF-8 instead of value from charsetNotifier
 - Add method to close report or thread in report
 

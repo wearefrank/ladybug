@@ -15,16 +15,17 @@
 */
 package nl.nn.testtool.test.junit.createreport;
 
-import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertNotEquals;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.Reader;
+import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -37,6 +38,7 @@ import ch.qos.logback.classic.spi.ILoggingEvent;
 import lombok.SneakyThrows;
 import nl.nn.testtool.Checkpoint;
 import nl.nn.testtool.MessageCapturerImpl;
+import nl.nn.testtool.MessageEncoder;
 import nl.nn.testtool.MessageEncoderImpl;
 import nl.nn.testtool.Report;
 import nl.nn.testtool.storage.Storage;
@@ -275,10 +277,57 @@ public class TestCreateReport extends ReportRelatedTestCase {
 		assertEquals("endmessage2", endmessage2);
 	}
 
-	public void testStreams() throws IOException, StorageException {
+	public void testStreamsWithReaderAndInputStream() throws IOException, StorageException {
+		String correlationId = getCorrelationId();
+		int maxMessageLength = 15;
+		testTool.setMaxMessageLength(maxMessageLength);
+		testTool.startpoint(correlationId, null, "name", "startmessage");
+
+		Reader readerOriginalMessage = new StringReader("Random string 11");
+		Reader readerMessage = testTool.inputpoint(correlationId, null, "reader", readerOriginalMessage);
+		assertNotEquals(readerOriginalMessage, readerMessage);
+		testReaderMessage(readerMessage); // Before report is closed
+
+		readerOriginalMessage = new StringReader("Random string 22");
+		readerMessage = testTool.inputpoint(correlationId, null, "reader", readerOriginalMessage);
+		assertNotEquals(readerOriginalMessage, readerMessage);
+
+		// Assert no wrapping of message when same message is used again
+		assertEquals(readerMessage, testTool.inputpoint(correlationId, null, "reader", readerMessage));
+
+		ByteArrayInputStream inputStreamOriginalMessage = new ByteArrayInputStream("Random string 33".getBytes());
+		InputStream inputStreamMessage = testTool.inputpoint(correlationId, null, "inputstream", inputStreamOriginalMessage);
+		assertNotEquals(inputStreamOriginalMessage, inputStreamMessage);
+		testInputStreamMessage(inputStreamMessage); // Before report is closed
+
+		inputStreamOriginalMessage = new ByteArrayInputStream("Random string 44".getBytes());
+		inputStreamMessage = testTool.inputpoint(correlationId, null, "inputstream", inputStreamOriginalMessage);
+		assertNotEquals(inputStreamOriginalMessage, inputStreamMessage);
+
+		// Assert no wrapping of message when used again
+		assertEquals(inputStreamMessage, testTool.inputpoint(correlationId, null, "inputstream", inputStreamMessage));
+
+		testTool.endpoint(correlationId, null, "name", "endmessage");
+
+		testReaderMessage(readerMessage); // After report is closed
+
+		testInputStreamMessage(inputStreamMessage); // After report is closed
+
+		assertReport(correlationId, false, false, false, true);
+
+		Storage storage = testTool.getDebugStorage();
+		Report report = findAndGetReport(testTool, storage, correlationId);
+		assertEquals("java.io.StringReader",
+				testTool.getMessageEncoder().toObject(report.getCheckpoints().get(1)).getClass().getTypeName());
+		assertEquals("java.io.ByteArrayInputStream",
+				testTool.getMessageEncoder().toObject(report.getCheckpoints().get(4)).getClass().getTypeName());
+	}
+
+	public void testStreamsWithWriterAndOutputStream() throws IOException, StorageException {
 		String correlationId = getCorrelationId();
 		int maxMessageLength = 50;
 		testTool.setMaxMessageLength(maxMessageLength);
+		MessageEncoder defaultMessageEncoder = testTool.getMessageEncoder();
 		// Make byte array readable in expected and actual xml
 		testTool.setMessageEncoder(
 				new MessageEncoderImpl() {
@@ -325,16 +374,34 @@ public class TestCreateReport extends ReportRelatedTestCase {
 		assertEquals(outputStreamMessage, testTool.inputpoint(correlationId, null, "outputstream", outputStreamMessage));
 
 		testTool.endpoint(correlationId, null, "name", "endmessage");
-
 		testWriterMessage(writerMessage); // After report is closed
-
 		testOutputStreamMessage(outputStreamMessage); // After report is closed
-
 		assertReport(correlationId, false, false, false, true);
+
 		Storage storage = testTool.getDebugStorage();
 		Report report = findAndGetReport(testTool, storage, correlationId);
-		assertEquals(report.getCheckpoints().get(1).getMessage(), writerOriginalMessage.toString().substring(0, maxMessageLength));
-		assertArrayEquals(report.getCheckpoints().get(4).getMessage().getBytes(), Arrays.copyOf(outputStreamOriginalMessage.toByteArray(), maxMessageLength));
+		Checkpoint checkpoint = report.getCheckpoints().get(1);
+		assertEquals(checkpoint.getMessage(), writerOriginalMessage.toString().substring(0, maxMessageLength));
+		Object messageToStub = new StringWriter();
+		Object message = testTool.getMessageEncoder().toObject(checkpoint, messageToStub);
+		assertEquals("java.io.StringWriter", message.getClass().getTypeName());
+
+		// Write new report with default message encoder to test toObject
+		testTool.setMessageEncoder(defaultMessageEncoder);
+		correlationId = getCorrelationId();
+		outputStreamOriginalMessage = new ByteArrayOutputStream();
+		outputStreamMessage = testTool.startpoint(correlationId, null, "outputstream", outputStreamOriginalMessage);
+		outputStreamMessage.write("Hello World!".getBytes("UTF-8"));
+		outputStreamMessage.close();
+		outputStreamOriginalMessage = new ByteArrayOutputStream();
+		outputStreamMessage = testTool.endpoint(correlationId, null, "outputstream", outputStreamOriginalMessage);
+		outputStreamMessage.close();
+		report = findAndGetReport(testTool, storage, correlationId);
+		checkpoint = report.getCheckpoints().get(0);
+		messageToStub = new ByteArrayOutputStream();
+		message = defaultMessageEncoder.toObject(checkpoint, messageToStub);
+		assertEquals("java.io.ByteArrayOutputStream", message.getClass().getTypeName());
+		assertEquals("Hello World!", ((ByteArrayOutputStream)message).toString("UTF-8"));
 	}
 
 	public void testStreamsAllClosedBeforeReportIsClosed() throws IOException, StorageException {
@@ -384,6 +451,13 @@ public class TestCreateReport extends ReportRelatedTestCase {
 		assertEquals(169, byteArrayInputStream.read());
 	}
 
+	private void testReaderMessage(Reader readerMessage) throws IOException {
+		readerMessage.read();
+		readerMessage.read(new char[4]);
+		readerMessage.read(new char[20], 5, 10);
+		readerMessage.close();
+	}
+
 	private void testWriterMessage(Writer writerMessage) throws IOException {
 		writerMessage.write("Test Writer");
 		writerMessage.write(" write", 0, 6);
@@ -394,6 +468,13 @@ public class TestCreateReport extends ReportRelatedTestCase {
 		writerMessage.append(" app ", 1, 4);
 		writerMessage.append("end random random random random random");
 		writerMessage.close();
+	}
+
+	private void testInputStreamMessage(InputStream inputStreamMessage) throws IOException {
+		inputStreamMessage.read();
+		inputStreamMessage.read(new byte[4]);
+		inputStreamMessage.read(new byte[20], 5, 10);
+		inputStreamMessage.close();
 	}
 
 	private void testOutputStreamMessage(OutputStream outputStreamMessage) throws IOException {

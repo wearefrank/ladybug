@@ -18,8 +18,10 @@ package nl.nn.testtool;
 import java.beans.XMLEncoder;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
@@ -83,7 +85,8 @@ public class MessageEncoderImpl implements MessageEncoder {
 					toStringResult = new ToStringResult(java.util.Base64.getEncoder().encodeToString((byte[])message),
 							BASE64_ENCODER);
 				}
-			} else if (message instanceof Writer || message instanceof OutputStream) {
+			} else if (message instanceof Reader || message instanceof InputStream
+					|| message instanceof Writer || message instanceof OutputStream) {
 				toStringResult = new ToStringResult(WAITING_FOR_STREAM_MESSAGE, null);
 			} else if (message instanceof Throwable) {
 				StringWriter stringWriter = new StringWriter();
@@ -119,52 +122,7 @@ public class MessageEncoderImpl implements MessageEncoder {
 	@Override
 	@SneakyThrows
 	public Object toObject(Checkpoint checkpoint) {
-		// Can be null when called from toObject(Checkpoint originalCheckpoint, T messageToStub), see javadoc on param
-		// originalCheckpoin in MessageEncoder
-		if (checkpoint == null || checkpoint.getMessage() == null) {
-			return null;
-		} else {
-			String message = checkpoint.getMessage();
-			String encoding = checkpoint.getEncoding();
-			if (encoding == null) {
-				if (checkpoint.getStreaming() == null) {
-					return message;
-				} else {
-					return new StringReader(message);
-				}
-			} else if (encoding.equals(UTF8_ENCODER) || encoding.startsWith(CHARSET_ENCODER_PREFIX)) {
-				if (encoding.startsWith(CHARSET_ENCODER_PREFIX)) {
-					encoding = encoding.substring(CHARSET_ENCODER_PREFIX.length());
-				}
-				CharsetEncoder charsetEncoder = Charset.forName(encoding).newEncoder();
-				ByteBuffer byteBuffer = charsetEncoder.encode(CharBuffer.wrap(message));
-				byte[] bytes = new byte[byteBuffer.remaining()];
-				byteBuffer.get(bytes);
-				if (checkpoint.getStreaming() == null) {
-					return bytes;
-				} else {
-					return new ByteArrayInputStream(bytes);
-				}
-			} else if (encoding.equals(BASE64_ENCODER)) {
-				byte[] bytes = java.util.Base64.getDecoder().decode(message);
-				if (checkpoint.getStreaming() == null) {
-					return bytes;
-				} else {
-					return new ByteArrayInputStream(bytes);
-				}
-			} else if (encoding.equals(DOM_NODE_ENCODER)) {
-				return XmlUtil.stringToNode(message);
-			} else if (encoding.equals(DATE_ENCODER)) {
-				return new SimpleDateFormat(DATE_PATTERN).parse(message);
-			} else if (encoding.equals(XML_ENCODER)) {
-				ByteArrayInputStream byteArrayInputStream = null;
-				byteArrayInputStream = new ByteArrayInputStream(message.getBytes("UTF-8"));
-				XMLDecoder xmlDecoder = new XMLDecoder(byteArrayInputStream);
-				return xmlDecoder.readObject();
-			} else {
-				return message;
-			}
-		}
+		return toObject(checkpoint, null);
 	}
 
 	@Override
@@ -176,7 +134,62 @@ public class MessageEncoderImpl implements MessageEncoder {
 		if (messageToStub instanceof AutoCloseable) {
 			((AutoCloseable)messageToStub).close();
 		}
-		return (T) toObject(originalCheckpoint);
+		// Can be null when called from toObject(Checkpoint originalCheckpoint, T messageToStub), see javadoc on param
+		// originalCheckpoint in MessageEncoder
+		if (originalCheckpoint == null || originalCheckpoint.getMessage() == null) {
+			return null;
+		} else {
+			String message = originalCheckpoint.getMessage();
+			String encoding = originalCheckpoint.getEncoding();
+			if (encoding == null) {
+				if (originalCheckpoint.getStreaming() == null) {
+					return (T)message;
+				} else {
+					if (messageToStub instanceof Writer) {
+						((Writer)messageToStub).write(message);
+						return messageToStub;
+					} else {
+						return (T)new StringReader(message);
+					}
+				}
+			} else if (encoding.equals(UTF8_ENCODER) || encoding.startsWith(CHARSET_ENCODER_PREFIX)) {
+				if (encoding.startsWith(CHARSET_ENCODER_PREFIX)) {
+					encoding = encoding.substring(CHARSET_ENCODER_PREFIX.length());
+				}
+				CharsetEncoder charsetEncoder = Charset.forName(encoding).newEncoder();
+				ByteBuffer byteBuffer = charsetEncoder.encode(CharBuffer.wrap(message));
+				byte[] bytes = new byte[byteBuffer.remaining()];
+				byteBuffer.get(bytes);
+				if (originalCheckpoint.getStreaming() == null) {
+					return (T)bytes;
+				} else {
+					if (messageToStub instanceof OutputStream) {
+						((OutputStream)messageToStub).write(bytes);
+						return messageToStub;
+					} else {
+						return (T)new ByteArrayInputStream(bytes);
+					}
+				}
+			} else if (encoding.equals(BASE64_ENCODER)) {
+				byte[] bytes = java.util.Base64.getDecoder().decode(message);
+				if (originalCheckpoint.getStreaming() == null) {
+					return (T)bytes;
+				} else {
+					return (T)new ByteArrayInputStream(bytes);
+				}
+			} else if (encoding.equals(DOM_NODE_ENCODER)) {
+				return (T)XmlUtil.stringToNode(message);
+			} else if (encoding.equals(DATE_ENCODER)) {
+				return (T)new SimpleDateFormat(DATE_PATTERN).parse(message);
+			} else if (encoding.equals(XML_ENCODER)) {
+				ByteArrayInputStream byteArrayInputStream = null;
+				byteArrayInputStream = new ByteArrayInputStream(message.getBytes("UTF-8"));
+				XMLDecoder xmlDecoder = new XMLDecoder(byteArrayInputStream);
+				return (T)xmlDecoder.readObject();
+			} else {
+				return (T)message;
+			}
+		}
 	}
 
 }
