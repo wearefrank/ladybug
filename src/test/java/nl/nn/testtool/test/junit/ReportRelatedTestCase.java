@@ -90,12 +90,8 @@ public class ReportRelatedTestCase extends TestCase {
 		assertNotEquals(testTestTool, testTool);
 	}
 
-	protected String getCorrelationId() {
-		return getCorrelationId(getName());
-	}
-
-	public static String getCorrelationId(String name) {
-		return name + "-" + UUID.randomUUID();
+	public static String getCorrelationId() {
+		return UUID.randomUUID().toString();
 	}
 
 	protected Report assertReport(String correlationId) throws StorageException, IOException {

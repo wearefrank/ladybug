@@ -1,11 +1,11 @@
-<Report Name="name1"
+<Report Name="testMaxCheckpoints"
         Description=""
         Path=""
-        CorrelationId="Original length: 55"
+        CorrelationId="Original length: 36"
         StartTime="Original length: 13"
         EndTime="Original length: 13"
         NumberOfCheckpoints="2"
         EstimatedMemoryUsage="52">
-   <Checkpoint Name="name1" Type="Startpoint" Level="0">startmessage1</Checkpoint>
+   <Checkpoint Name="testMaxCheckpoints" Type="Startpoint" Level="0">startmessage1</Checkpoint>
    <Checkpoint Name="name2" Type="Startpoint" Level="1">startmessage2</Checkpoint>
 </Report>

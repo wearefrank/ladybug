@@ -1,12 +1,14 @@
-<Report Name="name"
+<Report Name="testStreamsWithReaderAndInputStream"
         Description=""
         Path=""
-        CorrelationId="Original length: 72"
+        CorrelationId="Original length: 36"
         StartTime="Original length: 13"
         EndTime="Original length: 13"
         NumberOfCheckpoints="8"
         EstimatedMemoryUsage="224">
-   <Checkpoint Name="name" Type="Startpoint" Level="0">startmessage</Checkpoint>
+   <Checkpoint Name="testStreamsWithReaderAndInputStream"
+               Type="Startpoint"
+               Level="0">startmessage</Checkpoint>
    <Checkpoint Name="reader"
                Type="Inputpoint"
                Level="1"
@@ -40,5 +42,7 @@
                MessageClassName="java.io.ByteArrayInputStream"
                Encoding="UTF-8"
                Streaming="Byte">Random string 4</Checkpoint>
-   <Checkpoint Name="name" Type="Endpoint" Level="1">endmessage</Checkpoint>
+   <Checkpoint Name="testStreamsWithReaderAndInputStream"
+               Type="Endpoint"
+               Level="1">endmessage</Checkpoint>
 </Report>

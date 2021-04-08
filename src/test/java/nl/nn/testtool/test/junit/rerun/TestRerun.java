@@ -49,12 +49,12 @@ public class TestRerun extends TestCase {
 				Integer firstMessage = (Integer)originalReport.getCheckpoints().get(0).getMessageAsObject();
 				assertEquals((Integer)10, firstMessage);
 				firstMessage = 100;
-				addSomething(testTool, correlationId, firstMessage);
+				addSomething(testTool, correlationId, getName(), firstMessage);
 				return null;
 			}
 		});
-		String correlationId = ReportRelatedTestCase.getCorrelationId(getName());
-		addSomething(testTool, correlationId, 10);
+		String correlationId = ReportRelatedTestCase.getCorrelationId();
+		addSomething(testTool, correlationId, getName(), 10);
 		assertEquals((Integer)10, i);
 		Storage storage = testTool.getDebugStorage();
 		Report report = ReportRelatedTestCase.findAndGetReport(testTool, storage, correlationId);
@@ -65,15 +65,15 @@ public class TestRerun extends TestCase {
 		actual = ReportRelatedTestCase.applyXmlEncoderIgnores(actual);
 		ReportRelatedTestCase.assertXml(RESOURCE_PATH, getName(), actual);
 		Integer storageId = (Integer)storage.getStorageIds().get(0);
-		assertNull(testTool.rerun("rerun-" + System.currentTimeMillis(), report, null, null));
+		assertNull(testTool.rerun(ReportRelatedTestCase.getCorrelationId(), report, null, null));
 		assertNotEquals(storageId, (Integer)storage.getStorageIds().get(0));
 		assertEquals((Integer)10, i);
 	}
 
-	private static void addSomething(TestTool testTool, String correlationId, Integer something) {
-		something = testTool.startpoint(correlationId, null, "start", something);
+	private static void addSomething(TestTool testTool, String correlationId, String name, Integer something) {
+		something = testTool.startpoint(correlationId, null, name, something);
 		i = i + something;
-		i = testTool.endpoint(correlationId, null, "start", i);
+		i = testTool.endpoint(correlationId, null, name, i);
 	}
 
 }

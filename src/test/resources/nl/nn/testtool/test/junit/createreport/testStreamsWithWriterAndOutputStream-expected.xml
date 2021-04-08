@@ -1,12 +1,14 @@
-<Report Name="name"
+<Report Name="testStreamsWithWriterAndOutputStream"
         Description=""
         Path=""
-        CorrelationId="Original length: 73"
+        CorrelationId="Original length: 36"
         StartTime="Original length: 13"
         EndTime="Original length: 13"
         NumberOfCheckpoints="8"
         EstimatedMemoryUsage="644">
-   <Checkpoint Name="name" Type="Startpoint" Level="0">startmessage</Checkpoint>
+   <Checkpoint Name="testStreamsWithWriterAndOutputStream"
+               Type="Startpoint"
+               Level="0">startmessage</Checkpoint>
    <Checkpoint Name="writer"
                Type="Inputpoint"
                Level="1"
@@ -46,5 +48,7 @@
                PreTruncatedMessageLength="58"
                Encoding="new String((byte[])message)"
                Streaming="Byte">Test OutputStream write random random random rando</Checkpoint>
-   <Checkpoint Name="name" Type="Endpoint" Level="1">endmessage</Checkpoint>
+   <Checkpoint Name="testStreamsWithWriterAndOutputStream"
+               Type="Endpoint"
+               Level="1">endmessage</Checkpoint>
 </Report>

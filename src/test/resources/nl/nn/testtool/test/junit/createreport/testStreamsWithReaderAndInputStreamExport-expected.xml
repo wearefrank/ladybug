@@ -9,7 +9,7 @@
       <string>startmessage</string>
      </void>
      <void property="name">
-      <string>name</string>
+      <string>testStreamsWithReaderAndInputStream</string>
      </void>
      <void property="report">
       <object idref="Report0"/>
@@ -208,7 +208,7 @@
       <string>endmessage</string>
      </void>
      <void property="name">
-      <string>name</string>
+      <string>testStreamsWithReaderAndInputStream</string>
      </void>
      <void property="report">
       <object idref="Report0"/>
@@ -232,7 +232,7 @@
    <long>224</long>
   </void>
   <void property="name">
-   <string>name</string>
+   <string>testStreamsWithReaderAndInputStream</string>
   </void>
   <void property="startTime">
    <long>IGNORE-START-TIME</long>

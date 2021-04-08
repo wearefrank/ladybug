@@ -6,7 +6,7 @@
    <void method="add">
     <object class="nl.nn.testtool.Checkpoint">
      <void property="name">
-      <string>name1</string>
+      <string>testSpecialValues</string>
      </void>
      <void property="report">
       <object idref="Report0"/>
@@ -177,7 +177,7 @@
       <string></string>
      </void>
      <void property="name">
-      <string>name1</string>
+      <string>testSpecialValues</string>
      </void>
      <void property="report">
       <object idref="Report0"/>
@@ -201,7 +201,7 @@
    <long>IGNORE</long>
   </void>
   <void property="name">
-   <string>name1</string>
+   <string>testSpecialValues</string>
   </void>
   <void property="startTime">
    <long>IGNORE-START-TIME</long>
