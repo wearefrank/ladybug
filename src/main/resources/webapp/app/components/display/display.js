@@ -1,6 +1,6 @@
 'use strict';
 
-function displayController($rootScope, $scope, $http) {
+function displayController($rootScope, $scope, $compile, $http) {
     let ctrl = this;
     ctrl.apiUrl = "http://localhost:8080/ibis_adapterframework_test_war_exploded/ladybug";
     ctrl.reportDetails = {text: "", values: {}, notifications: {}};
@@ -13,14 +13,16 @@ function displayController($rootScope, $scope, $http) {
 
     ctrl.rerun = function () {
         let data = {};
-        data[$scope.storage] = [ctrl.selectedNode["ladybug"]["storageId"]];
-        console.log("RERUN");
-        console.log(data);
+        let storageId = ctrl.selectedNode["ladybug"]["storageId"];
+        data[$scope.storage] = [];
+        console.info("Rerunning the report with storage id", storageId);
         $http.post(ctrl.apiUrl + "/runner/run/" + ctrl.storage, data)
             .then(function (response) {
-                console.log(response);
+                console.debug("Rerun is successful", response);
             }, function (response) {
-                console.log(response);
+                createToast("Rerun failed!", "Rerun of the report with storage id [" + storageId + "] failed.",
+                $scope, $compile);
+                console.error("Rerun failed!", response);
             });
     };
 
@@ -38,7 +40,7 @@ function displayController($rootScope, $scope, $http) {
     }
 
     ctrl.toggleEditReport = function () {
-        console.log("toggling Report");
+        console.info("Toggling edit for report");
         let originalTransformation = "";
         if ("transformation" in ctrl.reportDetails.data && ctrl.reportDetails.data.transformation)
             originalTransformation = ctrl.reportDetails.data.transformation;
@@ -86,7 +88,6 @@ function displayController($rootScope, $scope, $http) {
             ctrl.addToDiff(dmp, originalVariables, ctrl.editor.variable.getValue(), "Variables:");
             $('#modal' + ctrl.id).modal('show');
         }
-        console.log("Return on toggle edit report");
     }
 
     ctrl.addToDiff = function (dmp, original, newText, text) {
@@ -104,7 +105,7 @@ function displayController($rootScope, $scope, $http) {
     }
 
     ctrl.toggleEditCheckpoint = function () {
-        console.log("toggling Checkpoint");
+        console.info("Toggling edit for report");
         if (ctrl.editing) {
             let editedText = (("editor" in ctrl) ? ctrl.editor.getValue() : ctrl.reportDetails.text);
             if (editedText !== ctrl.reportDetails.text) {
@@ -117,7 +118,6 @@ function displayController($rootScope, $scope, $http) {
             }
         } else {
             let height = Math.min((ctrl.reportDetails.text.split(/\r\n|\r|\n/).length + 1) * 15, 300);
-            console.log("Min Height", height)
             $('#checkpoint-monaco' + ctrl.id).css('height', height + 'px');
             ctrl.editing = true;
             require(['vs/editor/editor.main'], function () {
@@ -135,6 +135,7 @@ function displayController($rootScope, $scope, $http) {
     }
 
     ctrl.saveEditField = function (save) {
+        console.info("Saving edit field values.");
         if (ctrl.isReportNode()) {
             let originalTransformation = "";
             if ("transformation" in ctrl.reportDetails.data && ctrl.reportDetails.data.transformation)
@@ -156,36 +157,41 @@ function displayController($rootScope, $scope, $http) {
                     updated[data[i]["text"]] = data[i]["new"];
             }
             if (Object.keys(updated).length !== 0) {
+                console.debug("Updating the report data with values", updated);
                 $http.post(ctrl.apiUrl + "/report/" + ctrl.storage + "/" + ctrl.selectedNode["ladybug"]["storageId"], updated)
                     .then(function (response) {
                         let ladybugData = response.data.report;
                         if ("xml" in response.data) ladybugData.message = response.data.xml;
-                        console.log("Response", response.data);
-                        console.log("Response to update", ladybugData);
                         $rootScope.overwritten_checkpoints["report"][ladybugData.storageId] = ladybugData;
+
                         $('#details-edit' + ctrl.id).text("Edit");
                         ctrl.editing = false;
                         $('#modal' + ctrl.id).modal('hide');
-                        ctrl.display_report(ctrl.selectedNode, null, null);
+                        ctrl.display_node(ctrl.selectedNode, null, null);
                     }, function (response) {
+                        // TODO: Introduce alerts!
                         console.log(response);
                     });
             }
         } else {
-            console.log("Saving checkpoint", save);
             ctrl.reportDetails.text = ((save && "editor" in ctrl) ? ctrl.editor.getValue() : ctrl.reportDetails.text);
+
+            console.debug("Updating checkpoint data with", {"text": ctrl.reportDetails.text});
             $rootScope.overwritten_checkpoints["checkpoint"][ctrl.reportDetails.data.uid] = ctrl.reportDetails.text;
             ctrl.reportDetails.data["message"] = ctrl.reportDetails.text;
+
             $('#details-edit' + ctrl.id).text("Edit");
             ctrl.editing = false;
             $('#modal' + ctrl.id).modal('hide');
-            ctrl.display_report(ctrl.selectedNode, null, null);
+            ctrl.display_node(ctrl.selectedNode, null, null);
         }
     }
 
     ctrl.copyReport = function (to) {
         let data = {};
-        data[ctrl.storage] = [ctrl.selectedNode["ladybug"]["storageId"]];
+        let storageId = ctrl.selectedNode["ladybug"]["storageId"]
+        data[ctrl.storage] = [storageId];
+        console.info("Copying report with storage id [" + storageId + "] to [" + to + "]");
         $http.put(ctrl.apiUrl + "/report/store/" + to, data);
     }
 
@@ -196,12 +202,12 @@ function displayController($rootScope, $scope, $http) {
     }
 
     /*
-     * Displays a selected reports in the content pane.
+     * Displays a selected nodes in the content pane.
      */
-    ctrl.display_report = function (rootNode, event, node) {
+    ctrl.display_node = function (rootNode, event, node) {
         ctrl.selectedNode = rootNode;
         let ladybugData;
-        console.log("Displaying edit report", ctrl.editing && ctrl.displayingReport);
+
         if (node === null && rootNode === null) {
             ctrl.reportDetails = {text: "", values: {}, notifications: {}};
             return;
@@ -210,9 +216,12 @@ function displayController($rootScope, $scope, $http) {
         } else {
             ladybugData = node["ladybug"];
         }
+
+        console.info("Displaying node");
+        console.debug("Displaying", ladybugData);
         if (ctrl.isReportNode(node)) {
             // If node is report
-            ctrl.display_report_(ladybugData);
+            ctrl.display_report(ladybugData);
         } else {
             // If node is checkpoint
             ctrl.display_checkpoint(ladybugData);
@@ -226,7 +235,7 @@ function displayController($rootScope, $scope, $http) {
         try {
             if (!$scope.$$phase) $scope.$apply();
         } catch (e) {
-            console.log("Error from $scope.$apply", e);
+            console.error("Error from $scope.$apply", e);
         }
     };
 
@@ -254,27 +263,25 @@ function displayController($rootScope, $scope, $http) {
         ctrl.highlight_code();
     };
 
-    ctrl.display_report_ = function (ladybugData) {
+    ctrl.display_report = function (ladybugData) {
         if (ladybugData.storageId in $rootScope.overwritten_checkpoints["report"]) {
             ladybugData = $rootScope.overwritten_checkpoints.report[ladybugData.storageId];
         }
         if ("message" in ladybugData) {
             ctrl.reportDetails.text = ladybugData["message"];
-            console.log("Supposed to show", ladybugData["message"]);
             $('#code' + ctrl.id).text(ladybugData["message"]);
         } else {
             let transformer = "applyTransformer" in ctrl && ctrl["applyTransformer"];
-            console.log("URL:" + ctrl.apiUrl + "/report/" + ctrl.storage + "/" + ladybugData.storageId + "?xml=true&globalTransformer=" + transformer);
+            console.info("Getting message with URL: " + ctrl.apiUrl + "/report/" + ctrl.storage + "/" + ladybugData.storageId +
+                "?xml=true&globalTransformer=" + transformer);
             $http.get(ctrl.apiUrl + "/report/" + ctrl.storage + "/" + ladybugData.storageId + "?xml=true&globalTransformer=" + transformer)
                 .then(function (response) {
-                    console.log("Message", response.data);
-                    // let reportXml = ctrl.escape_html(response.data["xml"]);
+                    console.debug("Returned message", response.data);
+
                     let reportXml = response.data["xml"]
-                    console.log("XML DATA", reportXml);
                     ctrl.reportDetails.text = reportXml;
                     ladybugData.message = reportXml;
                     $('#code' + ctrl.id).text(reportXml);
-                    console.log("Supposed to show2", ladybugData["message"]);
                     ctrl.highlight_code();
                 });
         }
@@ -297,14 +304,12 @@ function displayController($rootScope, $scope, $http) {
     }
 
     ctrl.applyCompare = function (diff, identifier) {
-        console.log("Diff", diff, "Identifier", identifier);
         ctrl.reportDetails.diff = diff;
         ctrl.reportDetails.diffIdentifier = identifier;
         ctrl.highlight_code();
     }
 
     ctrl.getReportText = function () {
-        console.log("Returning TEXT!!!", ctrl.reportDetails.text);
         return ctrl.reportDetails.text;
     }
 
@@ -322,9 +327,7 @@ function displayController($rootScope, $scope, $http) {
     }
 
     ctrl.highlight_code = function () {
-        console.log("Highlightin!!");
         document.querySelectorAll('pre code').forEach((block) => {
-            console.log("LOL");
             hljs.highlightBlock(block);
         });
     }
@@ -341,10 +344,10 @@ function displayController($rootScope, $scope, $http) {
             let method = ctrl.onSelectRelay.select;
             ctrl.onSelectRelay.select = function (rootNode, event, node) {
                 method(rootNode, event, node);
-                ctrl.display_report(rootNode, event, node);
+                ctrl.display_node(rootNode, event, node);
             }
         } else {
-            ctrl.onSelectRelay.select = ctrl.display_report;
+            ctrl.onSelectRelay.select = ctrl.display_node;
         }
         ctrl.onSelectRelay.getReportText = ctrl.getReportText;
         ctrl.onSelectRelay.applyCompare = ctrl.applyCompare;
@@ -359,7 +362,7 @@ function displayController($rootScope, $scope, $http) {
 
 angular.module('myApp').component('reportDisplay', {
     templateUrl: 'components/display/display.html',
-    controller: ['$rootScope', '$scope', '$http', displayController],
+    controller: ['$rootScope', '$scope', '$compile', '$http', displayController],
     bindings: {
         onSelectRelay: '=',
         applyTransformer: '=',

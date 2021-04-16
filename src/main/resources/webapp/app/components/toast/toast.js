@@ -2,8 +2,6 @@
 
 function toastController() {
     let ctrl = this;
-    ctrl.timeText = "Just now";
-    console.log("toast with title " + ctrl.title);
 
     ctrl.$onInit = function () {
         // TODO: Fix. I believe when onInit is called dom is not ready (in a sense that #toast+componentId is not set properly.
@@ -11,6 +9,7 @@ function toastController() {
     }
 
     ctrl.initToast = function () {
+        console.debug("Creating toast with data", {"title": ctrl.title, "text": ctrl.text, "id": ctrl.componentId});
         let toast = $('#toast' + ctrl.componentId);
         toast.toast({delay: 10000});
 
@@ -38,6 +37,4 @@ var createToast = function (title, text, $scope, $compile) {
     let toastid = Math.random().toString(36).substring(7);
     $('body').append($compile("<toast title='" + title + "' text='" + text + "' " +
         "component-id='" + toastid + "' id='" + toastid + "'></toast>")($scope));
-    console.log("appended toast");
-
 };

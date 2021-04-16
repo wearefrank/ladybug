@@ -8,7 +8,6 @@ function treeController() {
     ctrl.treeId = Math.random().toString(36).substring(7);
 
     ctrl.$onInit = function () {
-        console.log("Tree init");
         ctrl.onAddRelay.add = ctrl.addTree;
         ctrl.onSelectRelay.getPath = ctrl.getPath;
         ctrl.onSelectRelay.selectPath = ctrl.selectPath;
@@ -16,7 +15,6 @@ function treeController() {
         ctrl.onSelectRelay.collapse = ctrl.collapse;
         ctrl.onSelectRelay.close = ctrl.close;
         ctrl.updateTree();
-        console.log("OnSelectRelay", ctrl.onAddRelay);
         if (ctrl.onAddRelay.hasOwnProperty("postInit") && typeof ctrl.onAddRelay.postInit === 'function') {
             ctrl.onAddRelay.postInit();
         }
@@ -38,6 +36,7 @@ function treeController() {
         for (let i = 0; i < ctrl.treeData.length; i++) {
             queryString += "id=" + ctrl.treeData[i]["ladybug"]["storageId"] + "&";
         }
+        console.info("Downloading reports with query", queryString);
         window.open(ctrl.apiUrl + "/report/download/" + ctrl.storage +
             "/" + exportReport + "/" + exportReportXml + queryString.slice(0, -1));
     }
@@ -78,13 +77,11 @@ function treeController() {
             tree[0].nodes = ctrl.treeData;
         }
 
+        console.debug("Updating tree", tree);
         $('#' + ctrl.treeId).treeview({
             data: tree,
             onNodeSelected: ctrl.onSelect,
             onNodeUnselected: function (event, node) {
-                console.log("UNSELECTED");
-                console.log(event);
-                console.log(node);
                 ctrl.onSelect(null, null);
             }
         });
@@ -94,6 +91,9 @@ function treeController() {
      * Adds the given report data to the tree.
      */
     ctrl.addTree = function (data){
+        console.info("Adding new report to tree with storage id [" + data["storageId"] + "]");
+        console.debug("New report:", data);
+
         ctrl.reports[data["storageId"]] = data;
         let report = {
             text: data["name"],
@@ -132,12 +132,10 @@ function treeController() {
             previous_node["nodes"].push(node);
             node.parent = previous_node;
             previous_node = node;
-            console.log(" -- Added: " + node.ladybug["index"] + " " + node.text);
-            console.log(report);
         }
         ctrl.remove_circulars(report);
         ctrl.treeData.push(report);
-        console.log(ctrl.treeData);
+
         // Update tree
         ctrl.updateTree();
     };
@@ -155,7 +153,7 @@ function treeController() {
     }
 
     ctrl.onSelect = function(event, node) {
-        console.log("Selected Node", node);
+        console.debug("Selected tree node", node);
         if (ctrl.staticRootNode !== undefined && node !== null && node.nodeId === 0) {
             // Static Root Node is selected, unselect everything.
             ctrl.unselectAll();
@@ -204,6 +202,7 @@ function treeController() {
     ctrl.selectPath = function (path) {
         if (path === undefined || path.length === 0) return;
 
+        console.debug("Opening node with path", path);
         let tree = $("#" + ctrl.treeId).treeview(true);
         let node;
         if (ctrl.staticRootNode === undefined) {
@@ -216,13 +215,12 @@ function treeController() {
 
         for (let i = 1; i < path.length; i++) {
             if (node.nodes === undefined || node.nodes.length === 0) {
-                console.log("No nodes?");
+                console.warn("Requested node could not be found with the remaining path", path.splice(i));
                 break;
             } else if (node.nodes.length > path[i]) {
-                console.log("Normal case", path[i], node);
                 node = node.nodes[path[i]]
             } else {
-                console.log("Overflow", path[i], node);
+                console.warn("Overflow while getting node with path", path[i], node);
                 node = node.nodes[node.nodes.length - 1];
             }
         }
@@ -234,12 +232,11 @@ function treeController() {
             }
         } catch (e) {
             tree.selectNode(node.nodeId);
-            console.log(e);
+            console.error(e);
         }
     }
 
     ctrl.collapse = function () {
-        console.log("COLLAPSING " + ctrl.selectedNode.nodeId);
         $('#' + ctrl.treeId).treeview('collapseNode', ctrl.selectedNode.nodeId);
     }
 
@@ -252,8 +249,6 @@ function treeController() {
             node = tree.getNode(node.parentId);
             path.push(node.nodeId);
         }
-        console.log("Expanding");
-        console.log(path);
         for (let i = path.length - 1; i >= 0; i--) {
             tree.expandNode(path[i]);
         }
