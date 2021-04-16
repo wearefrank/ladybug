@@ -8,7 +8,7 @@ function treeController() {
     ctrl.treeId = Math.random().toString(36).substring(7);
 
     ctrl.$onInit = function () {
-        console.log("ONINITTT");
+        console.log("Tree init");
         ctrl.onAddRelay.add = ctrl.addTree;
         ctrl.onSelectRelay.getPath = ctrl.getPath;
         ctrl.onSelectRelay.selectPath = ctrl.selectPath;
@@ -16,6 +16,10 @@ function treeController() {
         ctrl.onSelectRelay.collapse = ctrl.collapse;
         ctrl.onSelectRelay.close = ctrl.close;
         ctrl.updateTree();
+        console.log("OnSelectRelay", ctrl.onAddRelay);
+        if (ctrl.onAddRelay.hasOwnProperty("postInit") && typeof ctrl.onAddRelay.postInit === 'function') {
+            ctrl.onAddRelay.postInit();
+        }
     }
 
     ctrl.remove_circulars = function (node) {
@@ -90,7 +94,6 @@ function treeController() {
      * Adds the given report data to the tree.
      */
     ctrl.addTree = function (data){
-        console.log("CALLED ADDTREE!!!!");
         ctrl.reports[data["storageId"]] = data;
         let report = {
             text: data["name"],
@@ -108,16 +111,11 @@ function treeController() {
             if (previous_node === null) {
                 nodes.push(node);
                 previous_node = node;
-                console.log(" -- Added: " + node.text);
                 continue;
             }
             let diff = (node.level - 1) - previous_node.level;
 
             while (diff !== 0) {
-                console.log("aim: " + node.level);
-                console.log("prev: " + previous_node.level);
-                console.log("Prev Text: " + previous_node.text);
-                console.log("diff: " + diff);
                 if (diff < 0) {
                     previous_node = previous_node.parent;
                 } else {
@@ -228,10 +226,15 @@ function treeController() {
                 node = node.nodes[node.nodes.length - 1];
             }
         }
-        if (!node.state.selected) {
-            ctrl.unselectAll();
-            tree.revealNode(node.nodeId);
+        try {
+            if (!node.state.selected) {
+                ctrl.unselectAll();
+                tree.revealNode(node.nodeId);
+                tree.selectNode(node.nodeId);
+            }
+        } catch (e) {
             tree.selectNode(node.nodeId);
+            console.log(e);
         }
     }
 

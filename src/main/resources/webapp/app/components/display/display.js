@@ -231,7 +231,7 @@ function displayController($rootScope, $scope, $http) {
     };
 
     ctrl.display_checkpoint = function (ladybugData) {
-        let message = ladybugData["message"];
+        let message = (ladybugData.hasOwnProperty("message") &&  ladybugData.message !== null) ? ladybugData.message : "";
         if (ladybugData["uid"] in $rootScope.overwritten_checkpoints["checkpoint"])
             message = $rootScope.overwritten_checkpoints["checkpoint"][ladybugData["uid"]];
         ctrl.reportDetails = {
