@@ -50,17 +50,24 @@
    <void method="add">
     <object class="nl.nn.testtool.Checkpoint">
      <void property="encoding">
-      <string>printStackTrace()</string>
+      <string>XMLEncoder</string>
      </void>
      <void property="level">
       <int>1</int>
      </void>
      <void property="message">
-      <string>java.io.IOException: Test with strange objectIGNORE)
+      <string>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;java version=&quot;IGNORE-JAVA-VERSION&quot; class=&quot;java.beans.XMLDecoder&quot;&gt;
+ &lt;object class=&quot;java.util.HashSet&quot;&gt;
+  &lt;void method=&quot;add&quot;&gt;
+   &lt;string&gt;Test with strange object&lt;/string&gt;
+  &lt;/void&gt;
+ &lt;/object&gt;
+&lt;/java&gt;
 </string>
      </void>
      <void property="messageClassName">
-      <string>java.io.IOException</string>
+      <string>java.util.HashSet</string>
      </void>
      <void property="name">
       <string>infoname2</string>

@@ -528,7 +528,7 @@ public class Report implements Serializable {
 	}
 
 	protected void closeStreamingMessage(String messageClassName, Object streamingMessage, String streamingType,
-			String charset, Object message, int preTruncatedMessageLength) {
+			String charset, Object message, int preTruncatedMessageLength, Throwable exception) {
 		synchronized(streamingMessageListeners) {
 			StreamingMessageResult streamingMessageResult = new StreamingMessageResult();
 			streamingMessageResult.setMessageClassName(messageClassName);
@@ -536,6 +536,7 @@ public class Report implements Serializable {
 			streamingMessageResult.setCharset(charset);
 			streamingMessageResult.setMessage(message);
 			streamingMessageResult.setPreTruncatedMessageLength(preTruncatedMessageLength);
+			streamingMessageResult.setException(exception);
 			streamingMessageResults.put(streamingMessage, streamingMessageResult);
 			closeStreamingMessageListeners();
 		}
@@ -555,14 +556,18 @@ public class Report implements Serializable {
 					for (Checkpoint checkpoint : streamingMessageListeners.get(streamingMessage)) {
 						estimatedMemoryUsage -= checkpoint.getEstimatedMemoryUsage();
 						checkpoint.setStreaming(streamingMessageResult.getStreamingType());
-						Object message = streamingMessageResult.getMessage();
-						if (message instanceof String) {
-							checkpoint.setMessage((String)message);
+						if (streamingMessageResult.getException() != null) {
+							checkpoint.setMessage(streamingMessageResult.getException());
 						} else {
-							String charset = streamingMessageResult.getCharset();
-							ToStringResult toStringResult = getMessageEncoder().toString(message, charset);
-							checkpoint.setMessage(toStringResult.getString());
-							checkpoint.setEncoding(toStringResult.getEncoding());
+							Object message = streamingMessageResult.getMessage();
+							if (message instanceof String) {
+								checkpoint.setMessage((String)message);
+							} else {
+								String charset = streamingMessageResult.getCharset();
+								ToStringResult toStringResult = getMessageEncoder().toString(message, charset);
+								checkpoint.setMessage(toStringResult.getString());
+								checkpoint.setEncoding(toStringResult.getEncoding());
+							}
 						}
 						checkpoint.setMessageClassName(streamingMessageResult.getMessageClassName());
 						checkpoint.setPreTruncatedMessageLength(streamingMessageResult.getPreTruncatedMessageLength());
@@ -919,4 +924,5 @@ class StreamingMessageResult {
 	String charset;
 	Object message;
 	int preTruncatedMessageLength;
+	Throwable exception;
 }

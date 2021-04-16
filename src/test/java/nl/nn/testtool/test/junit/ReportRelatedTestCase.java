@@ -224,12 +224,12 @@ public class ReportRelatedTestCase extends TestCase {
 		if (string.startsWith("<Report")) {
 			return string.replaceFirst("EstimatedMemoryUsage=\".*\">",
 									   "EstimatedMemoryUsage=\"IGNORE\">")
-					.replaceFirst("(?s)at nl.nn.testtool.test.junit..*\\)\n</Checkpoint>",
+					.replaceAll("(?s)at nl.nn.testtool.test.junit..[^<]*\\)\n</Checkpoint>",
 									  "at nl.nn.testtool.test.junit.IGNORE)\n</Checkpoint>");
 		} else {
 			return string.replaceFirst("estimatedMemoryUsage\">\n   <long>.*</long>",
 									   "estimatedMemoryUsage\">\n   <long>IGNORE</long>")
-					.replaceFirst("(?s)java.io.IOException: Test with strange object.*\\)(&#13;)?\n</string>",
+					.replaceAll("(?s)java.io.IOException: Test with strange object.[^<]*\\)(&#13;)?\n</string>",
 									  "java.io.IOException: Test with strange objectIGNORE)\n</string>");
 		}
 	}

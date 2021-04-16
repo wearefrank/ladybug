@@ -35,11 +35,15 @@ import nl.nn.testtool.storage.CrudStorage;
 public class CheckpointComponent extends MessageComponent {
 	private static final long serialVersionUID = 1L;
 	private Checkpoint checkpoint;
-	private Label nameLabel;
-	private Label threadNameLabel;
-	private Label sourceClassNameLabel;
-	private Label messageClassNameLabel;
-	private Label pathLabel;
+	private Label namePropertyLabel;
+	private Label threadNamePropertyLabel;
+	private Label sourceClassNamePropertyLabel;
+	private Label messageClassNamePropertyLabel;
+	private Label pathPropertyLabel;
+	private Label checkpointUIDPropertyLabel;
+	private Label encodingPropertyLabel;
+	private Label numberOfCharactersPropertyLabel;
+	private Label estimatedMemoryUsagePropertyLabel;
 	private RadioButton radioButtonStubOptionFollowReportStrategy;
 	private RadioButton radioButtonStubOptionYes;
 	private RadioButton radioButtonStubOptionNo;
@@ -50,9 +54,6 @@ public class CheckpointComponent extends MessageComponent {
 	private Label messageIsTruncatedLabel;
 	private Label messageEncodingLabel;
 	private Label messageStreamingLabel;
-	private Label checkpointUIDLabel;
-	private Label numberOfCharactersLabel;
-	private Label estimatedMemoryUsageLabel;
 
 	public CheckpointComponent() {
 		super();
@@ -157,34 +158,37 @@ public class CheckpointComponent extends MessageComponent {
 		add(messageColumn);
 		add(messageTextArea);
 
-		nameLabel = Echo2Application.createInfoLabelWithColumnLayoutData();
-		add(nameLabel);
+		namePropertyLabel = Echo2Application.createInfoLabelWithColumnLayoutData();
+		add(namePropertyLabel);
 
-		threadNameLabel = Echo2Application.createInfoLabelWithColumnLayoutData();
-		add(threadNameLabel);
+		threadNamePropertyLabel = Echo2Application.createInfoLabelWithColumnLayoutData();
+		add(threadNamePropertyLabel);
 
-		sourceClassNameLabel = Echo2Application.createInfoLabelWithColumnLayoutData();
-		add(sourceClassNameLabel);
+		sourceClassNamePropertyLabel = Echo2Application.createInfoLabelWithColumnLayoutData();
+		add(sourceClassNamePropertyLabel);
 
-		messageClassNameLabel = Echo2Application.createInfoLabelWithColumnLayoutData();
-		add(messageClassNameLabel);
+		messageClassNamePropertyLabel = Echo2Application.createInfoLabelWithColumnLayoutData();
+		add(messageClassNamePropertyLabel);
 
-		pathLabel = Echo2Application.createInfoLabelWithColumnLayoutData();
-		add(pathLabel);
+		pathPropertyLabel = Echo2Application.createInfoLabelWithColumnLayoutData();
+		add(pathPropertyLabel);
 
-		checkpointUIDLabel = Echo2Application.createInfoLabelWithColumnLayoutData();
-		checkpointUIDLabel.setToolTipText("A unique identifier consisting of the report's storageId "
+		checkpointUIDPropertyLabel = Echo2Application.createInfoLabelWithColumnLayoutData();
+		checkpointUIDPropertyLabel.setToolTipText("A unique identifier consisting of the report's storageId "
 				+ "and this checkpoint's index. Use this value as part of a variable in another report's "
 				+ "input message to use this checkpoint's message as input. Example: ${checkpoint(287#13)}.\n\n"
 				+ "If this message is a valid XML message and you'd like to use a specific part of its data "
 				+ "instead, extend your variable to, for example, ${checkpoint(287#13).xpath(results/result[1])}.");
-		add(checkpointUIDLabel);
+		add(checkpointUIDPropertyLabel);
 
-		numberOfCharactersLabel = Echo2Application.createInfoLabelWithColumnLayoutData();
-		add(numberOfCharactersLabel);
-		
-		estimatedMemoryUsageLabel = Echo2Application.createInfoLabelWithColumnLayoutData();
-		add(estimatedMemoryUsageLabel);
+		encodingPropertyLabel = Echo2Application.createInfoLabelWithColumnLayoutData();
+		add(encodingPropertyLabel);
+
+		numberOfCharactersPropertyLabel = Echo2Application.createInfoLabelWithColumnLayoutData();
+		add(numberOfCharactersPropertyLabel);
+
+		estimatedMemoryUsagePropertyLabel = Echo2Application.createInfoLabelWithColumnLayoutData();
+		add(estimatedMemoryUsagePropertyLabel);
 
 		super.initBeanPost();
 	}
@@ -254,18 +258,19 @@ public class CheckpointComponent extends MessageComponent {
 		} else {
 			setMessage(message);
 		}
-		nameLabel.setText("Name: " + checkpoint.getName());
-		threadNameLabel.setText("Thread name: " + checkpoint.getThreadName());
-		sourceClassNameLabel.setText("Source class name: " + checkpoint.getSourceClassName());
+		namePropertyLabel.setText("Name: " + checkpoint.getName());
+		threadNamePropertyLabel.setText("Thread name: " + checkpoint.getThreadName());
+		sourceClassNamePropertyLabel.setText("Source class name: " + checkpoint.getSourceClassName());
 		String messageClassName = checkpoint.getMessageClassName();
 		if (messageClassName == null) {
 			messageClassName = "java.lang.String";
 		}
-		messageClassNameLabel.setText("Message class name: " + messageClassName);
-		pathLabel.setText("Path: " + checkpoint.getPath());
-		checkpointUIDLabel.setText("Checkpoint UID: "+checkpoint.getUID());
-		numberOfCharactersLabel.setText("Number of characters: "+(checkpoint.getMessage() != null ? checkpoint.getMessage().length() : "0"));
-		estimatedMemoryUsageLabel.setText("EstimatedMemoryUsage: " + checkpoint.getEstimatedMemoryUsage() + " bytes");
+		messageClassNamePropertyLabel.setText("Message class name: " + messageClassName);
+		pathPropertyLabel.setText("Path: " + checkpoint.getPath());
+		checkpointUIDPropertyLabel.setText("Checkpoint UID: "+checkpoint.getUID());
+		encodingPropertyLabel.setText("Encoding: "+checkpoint.getEncoding());
+		numberOfCharactersPropertyLabel.setText("Number of characters: "+(checkpoint.getMessage() != null ? checkpoint.getMessage().length() : "0"));
+		estimatedMemoryUsagePropertyLabel.setText("EstimatedMemoryUsage: " + checkpoint.getEstimatedMemoryUsage() + " bytes");
 		hideMessages();
 	}
 

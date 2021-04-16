@@ -6,6 +6,8 @@ Ladybug Test Tool release notes
 Upcoming
 --------
 
+- Enable application to notify Ladybug of an exception being thrown during processing of a stream
+- Highlight in tree when message is an exception
 - Stream Reader and InputStream
 - Fix: toObject is using UTF-8 instead of value from charsetNotifier
 - Add method to close report or thread in report

@@ -29,6 +29,7 @@ import java.io.Writer;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Consumer;
 
 import org.apache.xerces.dom.DocumentImpl;
@@ -81,12 +82,36 @@ public class TestCreateReport extends ReportRelatedTestCase {
 		String correlationId = getCorrelationId();
 		testTool.startpoint(correlationId, null, getName(), null);
 		testTool.infopoint(correlationId, null, "infoname1", new Date(0));
-		testTool.infopoint(correlationId, null, "infoname2", new IOException("Test with strange object"));
+		Set<String> set = new HashSet<String>();
+		set.add("Test with strange object");
+		testTool.infopoint(correlationId, null, "infoname2", set);
 		testTool.infopoint(correlationId, null, "infoname3", 123);
 		testTool.infopoint(correlationId, null, "infoname4", new Integer(456));
 		testTool.infopoint(correlationId, null, "infoname5", new DocumentImpl().createElement("NodeTest"));
 		testTool.endpoint(correlationId, null, getName(), "");
 		assertReport(correlationId, true, true, true, true);
+	}
+
+	public void testExceptionAsMessage() throws StorageException, IOException  {
+		String correlationId = getCorrelationId();
+		Exception exception = new Exception("My Exception");
+		// Checkpoints are added on odd and even level to make it possible to visually check the colors in the tree
+		// at http://localhost/testtool using ibis-ladybug-test-webapp
+		testTool.startpoint(correlationId, null, getName(), exception);
+		testTool.inputpoint(correlationId, null, "input", exception);
+		testTool.outputpoint(correlationId, null, "output", exception);
+		testTool.infopoint(correlationId, null, "info", exception);
+		testTool.threadStartpoint(correlationId, null, "thread start", exception);
+		testTool.threadEndpoint(correlationId, null, "thread end", exception);
+		testTool.startpoint(correlationId, null, "start", exception);
+		testTool.inputpoint(correlationId, null, "input", exception);
+		testTool.outputpoint(correlationId, null, "output", exception);
+		testTool.infopoint(correlationId, null, "info", exception);
+		testTool.threadStartpoint(correlationId, null, "thread start", exception);
+		testTool.threadEndpoint(correlationId, null, "thread end", exception);
+		testTool.endpoint(correlationId, null, "end", exception);
+		testTool.endpoint(correlationId, null, getName(), exception);
+		assertReport(correlationId, false, false, true, false);
 	}
 
 	public void testThread() throws StorageException, IOException {
@@ -427,9 +452,10 @@ public class TestCreateReport extends ReportRelatedTestCase {
 		testTool.setMessageCapturer(new MessageCapturerImpl() {
 			@Override
 			@SneakyThrows
-			public <T> T toOutputStream(T message, OutputStream outputStream, Consumer<String> charsetNotifier) {
+			public <T> T toOutputStream(T message, OutputStream outputStream, Consumer<String> charsetNotifier,
+					Consumer<Throwable> exceptionNotifier) {
 				charsetNotifier.accept("ISO-8859-1");
-				return super.toOutputStream(message, outputStream, charsetNotifier);
+				return super.toOutputStream(message, outputStream, charsetNotifier, exceptionNotifier);
 			}
 		});
 		String correlationId = getCorrelationId();
@@ -449,6 +475,26 @@ public class TestCreateReport extends ReportRelatedTestCase {
 		byteArrayInputStream = checkpoint.getMessageAsObject(new ByteArrayInputStream(new byte[0]));
 		assertEquals(235, byteArrayInputStream.read());
 		assertEquals(169, byteArrayInputStream.read());
+	}
+
+	public void testStreamWithException() throws IOException, StorageException {
+		testTool.setMessageCapturer(new MessageCapturerImpl() {
+			@Override
+			@SneakyThrows
+			public <T> T toOutputStream(T message, OutputStream outputStream, Consumer<String> charsetNotifier,
+					Consumer<Throwable> exceptionNotifier) {
+				exceptionNotifier.accept(new IOException("Notify exception"));
+				return super.toOutputStream(message, outputStream, charsetNotifier, exceptionNotifier);
+			}
+		});
+		String correlationId = getCorrelationId();
+		ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+		OutputStream outputStream =
+				testTool.startpoint(correlationId, "sourceClassName", getName(), byteArrayOutputStream);
+		outputStream.write("Message".getBytes());
+		outputStream.close();
+		testTool.endpoint(correlationId, "sourceClassName", getName(), "message");
+		assertReport(correlationId, false, false, true, false);
 	}
 
 	private void testReaderMessage(Reader readerMessage) throws IOException {

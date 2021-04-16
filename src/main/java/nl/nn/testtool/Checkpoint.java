@@ -162,6 +162,7 @@ public class Checkpoint implements Serializable, Cloneable {
 					// Use array to work around final scope limitation for anonymous inner class
 					Object[] possiblyWrappedMessage = new Object[1];
 					String[] charset = new String[1];
+					Throwable[] exception = new Throwable[1];
 					if (streamingType == StreamingType.CHARACTER_STREAM) {
 						StringWriter stringWriter = new StringWriter() {
 								int length = 0;
@@ -214,11 +215,12 @@ public class Checkpoint implements Serializable, Cloneable {
 									}
 									report.closeStreamingMessage(toStringResult.getMessageClassName(),
 											possiblyWrappedMessage[0], streamingType.toString(), charset[0],
-											toString(), preTruncatedMessageLength);
+											toString(), preTruncatedMessageLength, exception[0]);
 								}
 						};
 						// Message possibly wrapped by toWriter()
-						message = report.getMessageCapturer().toWriter(message, stringWriter);
+						message = report.getMessageCapturer().toWriter(message, stringWriter,
+								exceptionNotifier -> exception[0] = exceptionNotifier);
 					} else {
 						ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream() {
 								int length = 0;
@@ -261,12 +263,13 @@ public class Checkpoint implements Serializable, Cloneable {
 									}
 									report.closeStreamingMessage(toStringResult.getMessageClassName(),
 											possiblyWrappedMessage[0], streamingType.toString(), charset[0],
-											toByteArray(), preTruncatedMessageLength);
+											toByteArray(), preTruncatedMessageLength, exception[0]);
 								}
 						};
 						// Message possibly wrapped by toOutputStream()
 						message = report.getMessageCapturer().toOutputStream(message, byteArrayOutputStream,
-								charsetNotifier -> charset[0] = charsetNotifier);
+								charsetNotifier -> charset[0] = charsetNotifier,
+								exceptionNotifier -> exception[0] = exceptionNotifier);
 					}
 					report.addStreamingMessageListener(message, this);
 					possiblyWrappedMessage[0] = message;

@@ -50,7 +50,7 @@ public class MessageCapturerImpl implements MessageCapturer {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public <T> T toWriter(T message, Writer writer) {
+	public <T> T toWriter(T message, Writer writer, Consumer<Throwable> exceptionNotifier) {
 		if (message instanceof Reader) {
 
 			return (T) new BufferedReader((Reader)message) {
@@ -113,7 +113,8 @@ public class MessageCapturerImpl implements MessageCapturer {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public <T> T toOutputStream(T message, OutputStream outputStream, Consumer<String> charsetNotifier) {
+	public <T> T toOutputStream(T message, OutputStream outputStream, Consumer<String> charsetNotifier,
+			Consumer<Throwable> exceptionNotifier) {
 		if (message instanceof InputStream) {
 
 			return (T) new BufferedInputStream((InputStream)message) {

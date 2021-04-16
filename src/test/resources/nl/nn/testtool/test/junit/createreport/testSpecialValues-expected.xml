@@ -18,10 +18,17 @@
    <Checkpoint Name="infoname2"
                Type="Infopoint"
                Level="1"
-               MessageClassName="java.io.IOException"
-               Encoding="printStackTrace()">java.io.IOException: Test with strange object
-	at nl.nn.testtool.test.junit.IGNORE)
-</Checkpoint>
+               MessageClassName="java.util.HashSet"
+               Encoding="XMLEncoder"
+               TextDecl="&lt;?xml version=&#34;1.0&#34; encoding=&#34;UTF-8&#34;?&gt;">
+      <java version="IGNORE-JAVA-VERSION" class="java.beans.XMLDecoder">
+         <object class="java.util.HashSet">
+            <void method="add">
+               <string>Test with strange object</string>
+            </void>
+         </object>
+      </java>
+   </Checkpoint>
    <Checkpoint Name="infoname3"
                Type="Infopoint"
                Level="1"
