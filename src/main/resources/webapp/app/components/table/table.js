@@ -23,6 +23,7 @@ function metadataTableController($scope, $compile, $http) {
     * Sends a GET request to the server and updates the tables (ctrl.metadatas)
     */
     ctrl.updateTable = function () {
+        console.info("Updating metadata table with filters", ctrl.filters);
         $http.get(ctrl.apiUrl + "/metadata/" + ctrl.storage, {params: ctrl.filters}).then(function (response) {
             let fields = response.data["fields"];
             let values = response.data["values"];
@@ -42,14 +43,6 @@ function metadataTableController($scope, $compile, $http) {
             console.error("Could not update table!", response);
         });
     };
-    ctrl.delete = function() {
-        ctrl.onDelete({hero: ctrl.hero});
-    };
-
-    ctrl.update = function(prop, value) {
-        ctrl.onUpdate({hero: ctrl.hero, prop: prop, value: value});
-    };
-
 
     ctrl.downloadReports = function (exportReport, exportReportXml) {
         let queryString = "?";
@@ -57,6 +50,7 @@ function metadataTableController($scope, $compile, $http) {
             queryString += "id=" + ctrl.metadatas[i]["storageId"] + "&";
         }
 
+        console.info("Downloading reports with query [" + queryString + "]");
         window.open(ctrl.apiUrl + "/report/download/" + ctrl.storage +
             "/" + exportReport + "/" + exportReportXml + queryString.slice(0, -1));
     }
@@ -65,6 +59,7 @@ function metadataTableController($scope, $compile, $http) {
      * Refreshes the content of the table, including getting new columns
      */
     ctrl.refresh = function () {
+        console.info("Refreshing metadata.");
         $http.get(ctrl.apiUrl + '/metadata').then(function (response) {
             ctrl.columns = response.data;
             ctrl.columns.forEach(function (element) {
@@ -84,6 +79,8 @@ function metadataTableController($scope, $compile, $http) {
         if (files.length === 0)
             return;
         for (let i = 0; i < files.length; i++) {
+            console.info("Uploading report from file", files[i].name);
+
             let formdata = new FormData();
             formdata.append("file", files[i]);
             $http.post(ctrl.apiUrl + "/report/upload/", formdata, {headers: {"Content-Type": undefined}})
@@ -116,12 +113,10 @@ function metadataTableController($scope, $compile, $http) {
     }
 
     ctrl.selectReport = function (metadata) {
-        console.log("CLICK");
-        console.log(metadata);
+        console.info("Report selected", metadata);
         $http.get(ctrl.apiUrl + "/report/" + ctrl.storage + "/" + metadata["storageId"])
             .then(function (response) {
-                console.log(response);
-                console.log(response.data);
+                console.debug("Opening report", response.data);
                 ctrl.onSelectRelay.add(response.data);
             }, function (response) {
                 createToast("Error on report!",
@@ -138,28 +133,29 @@ function metadataTableController($scope, $compile, $http) {
     };
 
     ctrl.updateOptions = function() {
+        console.info("Updating options");
         $http.get(ctrl.apiUrl + "/testtool")
             .then(function (response) {
                 ctrl.options = Object.assign(ctrl.options, response.data);
                 ctrl.testtoolStubStrategies = response.data["stubStrategies"];
                 ctrl.stubStrategies = ctrl.testtoolStubStrategies;
-                console.log("/testtool");
-                console.log(response);
-                console.log(ctrl.options);
+                console.debug("Updated options", ctrl.options);
             }, function (response) {
-                console.log("/testtool failed");
+                createToast("Could not access Ladybug Api",
+                    "Can not retrieve testtool information.", $scope, $compile);
+                console.error("Could not access Ladybug Api", response);
             });
+        console.info("Updating transformations");
         $http.get(ctrl.apiUrl + "/testtool/transformation")
             .then(function (response) {
                 ctrl.options = Object.assign(ctrl.options, response.data);
                 ctrl.options['transformationEnabled'] = ctrl.options['transformation'] !== "";
-                console.log("/testtool/transformation");
+                console.debug("Updated transformation", ctrl.options['transformation']);
             });
     }
 
     ctrl.saveOptions = function() {
-        console.log("Saving Options");
-        console.log(ctrl.options);
+        console.info("Saving Options", ctrl.options);
         $http.post(ctrl.apiUrl + "/testtool", {
             "generatorEnabled": ctrl.options['generatorEnabled'],
             "regexFilter": ctrl.options["regexFilter"]});
@@ -167,11 +163,12 @@ function metadataTableController($scope, $compile, $http) {
     }
 
     ctrl.openLatestReports = function (number) {
+        console.info("Opening latest" + number + "reports");
         $http.get(ctrl.apiUrl + "/report/latest/" + ctrl.storage + "/" + number)
             .then(function (response) {
                 response.data.forEach(function (report) {
                     ctrl.onSelectRelay.add(report);
-                    console.log(report);
+                    console.debug("Opening latest report:", report);
                 });
             });
     }
