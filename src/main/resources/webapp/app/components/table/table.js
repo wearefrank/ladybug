@@ -1,6 +1,6 @@
 'use strict';
 
-function metadataTableController($http) {
+function metadataTableController($scope, $compile, $http) {
     var ctrl = this;
     ctrl.apiUrl = "http://localhost:8080/ibis_adapterframework_test_war_exploded/ladybug";
     ctrl.columns = ['storageId', 'endTime', 'duration', 'name', 'correlationId', 'status', 'nrChpts', 'estMemUsage', 'storageSize'];
@@ -38,7 +38,8 @@ function metadataTableController($http) {
                 ctrl.metadatas.push(row);
             });
         }, function (response) {
-            console.error(response);
+            createToast("Could not update table!", "Error while getting metadata.", $scope, $compile)
+            console.error("Could not update table!", response);
         });
     };
     ctrl.delete = function() {
@@ -73,7 +74,8 @@ function metadataTableController($http) {
             });
             ctrl.updateTable();
         }, function (response) {
-            console.error(response);
+            createToast("Error on refresh!", "Error while getting metadata columns.", $scope, $compile);
+            console.error("Error on refresh!", response);
         });
     };
 
@@ -90,7 +92,9 @@ function metadataTableController($http) {
                         ctrl.onSelectRelay.add(response.data[i]);
                     }
                 }, function (response) {
-                    console.log(response);
+                    createToast("Error on upload!", "Error while uploading the report [" + files[i].name + "]",
+                        $scope, $compile);
+                    console.error("Error on upload!", response);
                 });
         }
     }
@@ -120,7 +124,10 @@ function metadataTableController($http) {
                 console.log(response.data);
                 ctrl.onSelectRelay.add(response.data);
             }, function (response) {
-                console.error(response);
+                createToast("Error on report!",
+                    "Could not get the report with storage id [" + metadata["storageId"] + "]",
+                    $scope, $compile);
+                console.error("Error on report!", response);
             });
     };
 
@@ -178,7 +185,7 @@ function metadataTableController($http) {
 
 angular.module('myApp').component('metadataTable', {
     templateUrl: 'components/table/table.html',
-    controller: metadataTableController,
+    controller: ['$scope', '$compile', '$http', metadataTableController],
     bindings: {
         onSelectRelay: '='
     }
