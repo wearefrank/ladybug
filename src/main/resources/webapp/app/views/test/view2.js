@@ -63,6 +63,9 @@ angular.module('myApp.view2', ['ngRoute'])
         }
 
         $scope.openReport = function (reports) {
+            let s = "http://localhost:8000/#!/report?storage=" + $scope.storage + "&storageId=" + reports[0]["storageId"];
+            console.log(s);
+            window.location = s;
         };
 
         $scope.runReport = function () {
