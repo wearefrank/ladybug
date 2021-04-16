@@ -43,7 +43,7 @@ angular.module('myApp.report', ['ngRoute'])
                 $scope.add_tab(response.data.name, response.data.storageId, searchObject.storage);
                 $scope.addRelay.add(response.data);
                 window.setTimeout(() => {
-                    $scope.tree2display.selectPath([0, 0]);
+                    $scope.tree2display.selectPath([0]);
                 }, 500);
             }, function (response) {
                 console.error(response);
