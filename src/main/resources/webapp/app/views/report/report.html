@@ -1,0 +1,12 @@
+<div>
+    <div class="row">
+        <!--    Treeview panel-->
+        <div class="col resizable-horizontal">
+            <report-tree on-add-relay="addRelay" on-select-relay="tree2display" storage="storage"></report-tree>
+        </div>
+        <!-- Content panel-->
+        <div class="col">
+            <report-display on-select-relay="tree2display" storage="storage" apply-transformer="table2tree.transformationEnabled"></report-display>
+        </div>
+    </div>
+</div>
