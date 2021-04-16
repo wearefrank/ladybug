@@ -21,14 +21,20 @@ angular.module('myApp.report', ['ngRoute'])
     console.log("Report Controller Started");
 
     $scope.delete_tab = function (storageId) {
+        console.log("Jamiryooooo");
         $("#" + storageId).remove();
         window.location = "#!/view1";
     }
 
     $scope.add_tab = function (tabName, storageId, storage) {
         $rootScope.tabs[storageId] = tabName;
-        $('#ladybug-tabs').append("<li class=\"nav-item active\" id=\"" + storageId + "\"><a href=\"#!/report?storage="
-            + storage + "&storageId=" + storageId + "\" " +  "class=\"nav-link active\">" + tabName + "</a></li>");
+        let close = "<i class=\"fa fa-times\" aria-hidden=\"true\" " +
+            "onclick=\"$('#" + storageId + "').remove();window.location = '#!/view1';\"></i>";
+
+        $('#ladybug-tabs').append(
+            "<li class=\"nav-item active\" id=\"" + storageId + "\">" +
+            "<a href=\"#!/report?storage=" + storage +  "&storageId=" + storageId + "\" " +  "class=\"nav-link active\">" +
+            tabName + "</a>" + close + "</li>");
     }
 
     $scope.addRelay.postInit = function() {
