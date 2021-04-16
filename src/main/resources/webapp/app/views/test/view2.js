@@ -9,7 +9,7 @@ angular.module('myApp.view2', ['ngRoute'])
         });
     }])
 
-    .controller('View2Ctrl', ['$scope', '$http', function ($scope, $http) {
+    .controller('View2Ctrl', ['$scope', '$http', '$compile', function ($scope, $http, $compile) {
         $scope.apiUrl = "http://localhost:8080/ibis_adapterframework_test_war_exploded/ladybug";
         $scope.storage = 'testStorage';
         $scope.moveTo = "/";
@@ -80,7 +80,14 @@ angular.module('myApp.view2', ['ngRoute'])
                     console.log("RUN RETURN");
                     console.log(response);
                 }, function (response) {
-                    console.error(response);
+                    let storageIds = "";
+                    for (let i = 0; i < reports.length; i++) {
+                        storageIds = storageIds + reports[i]["storageId"] + ", ";
+                    }
+                    createToast("Error while running!",
+                        "Error while running the reports [" + storageIds.slice(0, storageIds.length - 2) + "]",
+                        $scope, $compile);
+                    console.error("Error while running!", response);
                 })
         };
 
@@ -130,6 +137,7 @@ angular.module('myApp.view2', ['ngRoute'])
                     });
                     $scope.treeSelect();
                 }, function (response) {
+                    createToast("Error!", "Error while getting tree metadata.", $scope, $compile);
                     console.error(response);
                 });
         };
@@ -184,7 +192,8 @@ angular.module('myApp.view2', ['ngRoute'])
                     $scope.cloneInputs.storageId = storageId;
                     $('#cloneModal').modal('show');
                 }, function (response) {
-                    alert("couldnt get report!");
+                    createToast("Error while getting Report!",
+                        "Could not get the report with storage id [" + storageId + "]", $scope, $compile);
                     console.log(response);
                 })
         }
@@ -202,8 +211,10 @@ angular.module('myApp.view2', ['ngRoute'])
                     force: $scope.cloneInputs.force
                 }).then($scope.closeCloneModal, function (response) {
                 $scope.cloneInputs.force = true;
-                alert("couldnt clone it");
-                console.log(response);
+                createToast("Could not clone!",
+                    "Could not clone the report with storage id [" + $scope.cloneInputs.storageId + "]",
+                    $scope, $compile);
+                console.log("Could not clone!", response);
             })
         }
 
