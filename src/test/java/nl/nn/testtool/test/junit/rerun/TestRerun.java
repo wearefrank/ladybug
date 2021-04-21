@@ -19,9 +19,6 @@ import static org.junit.Assert.assertNotEquals;
 
 import java.io.IOException;
 
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
-
 import junit.framework.TestCase;
 import lombok.SneakyThrows;
 import nl.nn.testtool.Checkpoint;
@@ -39,11 +36,10 @@ import nl.nn.testtool.test.junit.ReportRelatedTestCase;
  */
 public class TestRerun extends TestCase {
 	public static final String RESOURCE_PATH = "nl/nn/testtool/test/junit/rerun/";
-	private static final ApplicationContext context = new ClassPathXmlApplicationContext("springTestToolTestJUnit.xml");
 	private static Integer i = 0;
 
 	public void testRerun() throws StorageException, IOException {
-		TestTool testTool = (TestTool)context.getBean("testTool");
+		TestTool testTool = (TestTool)ReportRelatedTestCase.CONTEXT.getBean("testTool");
 		testTool.setRerunner(new Rerunner() {
 			@SneakyThrows
 			@Override
@@ -53,14 +49,15 @@ public class TestRerun extends TestCase {
 				Integer firstMessage = (Integer)originalReport.getCheckpoints().get(0).getMessageAsObject();
 				assertEquals((Integer)10, firstMessage);
 				firstMessage = 100;
-				addSomething(testTool, correlationId, firstMessage);
+				addSomething(testTool, correlationId, getName(), firstMessage);
 				return null;
 			}
 		});
-		addSomething(testTool, "doSomething-" + System.currentTimeMillis(), 10);
+		String correlationId = ReportRelatedTestCase.getCorrelationId();
+		addSomething(testTool, correlationId, getName(), 10);
 		assertEquals((Integer)10, i);
 		Storage storage = testTool.getDebugStorage();
-		Report report = storage.getReport((Integer)storage.getStorageIds().get(0));
+		Report report = ReportRelatedTestCase.findAndGetReport(testTool, storage, correlationId);
 		report.setTestTool(testTool);
 		report.getCheckpoints().get(1).setStub(Checkpoint.STUB_YES);
 		String actual = report.toXml();
@@ -68,16 +65,15 @@ public class TestRerun extends TestCase {
 		actual = ReportRelatedTestCase.applyXmlEncoderIgnores(actual);
 		ReportRelatedTestCase.assertXml(RESOURCE_PATH, getName(), actual);
 		Integer storageId = (Integer)storage.getStorageIds().get(0);
-		assertNull(
-				testTool.rerun("rerun-" + System.currentTimeMillis(), report, null, null));
+		assertNull(testTool.rerun(ReportRelatedTestCase.getCorrelationId(), report, null, null));
 		assertNotEquals(storageId, (Integer)storage.getStorageIds().get(0));
 		assertEquals((Integer)10, i);
 	}
 
-	private static void addSomething(TestTool testTool, String correlationId, Integer something) {
-		something = testTool.startpoint(correlationId, null, "start", something);
+	private static void addSomething(TestTool testTool, String correlationId, String name, Integer something) {
+		something = testTool.startpoint(correlationId, null, name, something);
 		i = i + something;
-		i = testTool.endpoint(correlationId, null, "start", i);
+		i = testTool.endpoint(correlationId, null, name, i);
 	}
 
 }

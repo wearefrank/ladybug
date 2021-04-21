@@ -5,8 +5,11 @@
   <void property="checkpoints">
    <void method="add">
     <object class="nl.nn.testtool.Checkpoint">
+     <void property="message">
+      <string>startmessage</string>
+     </void>
      <void property="name">
-      <string>testSpecialValues</string>
+      <string>testStreamsWithWriterAndOutputStream</string>
      </void>
      <void property="report">
       <object idref="Report0"/>
@@ -16,162 +19,201 @@
      </void>
      <void property="type">
       <int>1</int>
+     </void>
+    </object>
+   </void>
+   <void method="add">
+    <object class="nl.nn.testtool.Checkpoint">
+     <void property="level">
+      <int>1</int>
+     </void>
+     <void property="message">
+      <string>Test Writer write write write append random random</string>
+     </void>
+     <void property="messageClassName">
+      <string>java.io.StringWriter</string>
+     </void>
+     <void property="name">
+      <string>writer</string>
+     </void>
+     <void property="preTruncatedMessageLength">
+      <int>71</int>
+     </void>
+     <void property="report">
+      <object idref="Report0"/>
+     </void>
+     <void property="streaming">
+      <string>Character</string>
+     </void>
+     <void property="threadName">
+      <string>main</string>
+     </void>
+     <void property="type">
+      <int>4</int>
+     </void>
+    </object>
+   </void>
+   <void method="add">
+    <object class="nl.nn.testtool.Checkpoint">
+     <void property="level">
+      <int>1</int>
+     </void>
+     <void property="message">
+      <string>Test Writer write write write append random random</string>
+     </void>
+     <void property="messageClassName">
+      <string>java.io.StringWriter</string>
+     </void>
+     <void property="name">
+      <string>writer</string>
+     </void>
+     <void property="preTruncatedMessageLength">
+      <int>71</int>
+     </void>
+     <void property="report">
+      <object idref="Report0"/>
+     </void>
+     <void property="streaming">
+      <string>Character</string>
+     </void>
+     <void property="threadName">
+      <string>main</string>
+     </void>
+     <void property="type">
+      <int>4</int>
+     </void>
+    </object>
+   </void>
+   <void method="add">
+    <object class="nl.nn.testtool.Checkpoint">
+     <void property="level">
+      <int>1</int>
+     </void>
+     <void property="message">
+      <string>Test Writer write write write append random random</string>
+     </void>
+     <void property="messageClassName">
+      <string>java.io.StringWriter</string>
+     </void>
+     <void property="name">
+      <string>writer</string>
+     </void>
+     <void property="preTruncatedMessageLength">
+      <int>71</int>
+     </void>
+     <void property="report">
+      <object idref="Report0"/>
+     </void>
+     <void property="streaming">
+      <string>Character</string>
+     </void>
+     <void property="threadName">
+      <string>main</string>
+     </void>
+     <void property="type">
+      <int>4</int>
      </void>
     </object>
    </void>
    <void method="add">
     <object class="nl.nn.testtool.Checkpoint">
      <void property="encoding">
-      <string>SimpleDateFormat(&quot;yyyy-MM-dd&apos;T&apos;HH:mm:ss.SSSZ&quot;)</string>
+      <string>new String((byte[])message)</string>
      </void>
      <void property="level">
       <int>1</int>
      </void>
      <void property="message">
-      <string>1970-01-01TXX:XX:00.000+XXXX</string>
+      <string>Test OutputStream write random random random rando</string>
      </void>
      <void property="messageClassName">
-      <string>java.util.Date</string>
+      <string>java.io.ByteArrayOutputStream</string>
      </void>
      <void property="name">
-      <string>infoname1</string>
+      <string>outputstream</string>
+     </void>
+     <void property="preTruncatedMessageLength">
+      <int>58</int>
      </void>
      <void property="report">
       <object idref="Report0"/>
+     </void>
+     <void property="streaming">
+      <string>Byte</string>
      </void>
      <void property="threadName">
       <string>main</string>
      </void>
      <void property="type">
-      <int>6</int>
+      <int>4</int>
      </void>
     </object>
    </void>
    <void method="add">
     <object class="nl.nn.testtool.Checkpoint">
      <void property="encoding">
-      <string>XMLEncoder</string>
+      <string>new String((byte[])message)</string>
      </void>
      <void property="level">
       <int>1</int>
      </void>
      <void property="message">
-      <string>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
-&lt;java version=&quot;IGNORE-JAVA-VERSION&quot; class=&quot;java.beans.XMLDecoder&quot;&gt;
- &lt;object class=&quot;java.util.HashSet&quot;&gt;
-  &lt;void method=&quot;add&quot;&gt;
-   &lt;string&gt;Test with strange object&lt;/string&gt;
-  &lt;/void&gt;
- &lt;/object&gt;
-&lt;/java&gt;
-</string>
+      <string>Test OutputStream write random random random rando</string>
      </void>
      <void property="messageClassName">
-      <string>java.util.HashSet</string>
+      <string>java.io.ByteArrayOutputStream</string>
      </void>
      <void property="name">
-      <string>infoname2</string>
+      <string>outputstream</string>
+     </void>
+     <void property="preTruncatedMessageLength">
+      <int>58</int>
      </void>
      <void property="report">
       <object idref="Report0"/>
+     </void>
+     <void property="streaming">
+      <string>Byte</string>
      </void>
      <void property="threadName">
       <string>main</string>
      </void>
      <void property="type">
-      <int>6</int>
+      <int>4</int>
      </void>
     </object>
    </void>
    <void method="add">
     <object class="nl.nn.testtool.Checkpoint">
      <void property="encoding">
-      <string>XMLEncoder</string>
+      <string>new String((byte[])message)</string>
      </void>
      <void property="level">
       <int>1</int>
      </void>
      <void property="message">
-      <string>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
-&lt;java version=&quot;IGNORE-JAVA-VERSION&quot; class=&quot;java.beans.XMLDecoder&quot;&gt;
- &lt;int&gt;123&lt;/int&gt;
-&lt;/java&gt;
-</string>
+      <string>Test OutputStream write random random random rando</string>
      </void>
      <void property="messageClassName">
-      <string>java.lang.Integer</string>
+      <string>java.io.ByteArrayOutputStream</string>
      </void>
      <void property="name">
-      <string>infoname3</string>
+      <string>outputstream</string>
+     </void>
+     <void property="preTruncatedMessageLength">
+      <int>58</int>
      </void>
      <void property="report">
       <object idref="Report0"/>
+     </void>
+     <void property="streaming">
+      <string>Byte</string>
      </void>
      <void property="threadName">
       <string>main</string>
      </void>
      <void property="type">
-      <int>6</int>
-     </void>
-    </object>
-   </void>
-   <void method="add">
-    <object class="nl.nn.testtool.Checkpoint">
-     <void property="encoding">
-      <string>XMLEncoder</string>
-     </void>
-     <void property="level">
-      <int>1</int>
-     </void>
-     <void property="message">
-      <string>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
-&lt;java version=&quot;IGNORE-JAVA-VERSION&quot; class=&quot;java.beans.XMLDecoder&quot;&gt;
- &lt;int&gt;456&lt;/int&gt;
-&lt;/java&gt;
-</string>
-     </void>
-     <void property="messageClassName">
-      <string>java.lang.Integer</string>
-     </void>
-     <void property="name">
-      <string>infoname4</string>
-     </void>
-     <void property="report">
-      <object idref="Report0"/>
-     </void>
-     <void property="threadName">
-      <string>main</string>
-     </void>
-     <void property="type">
-      <int>6</int>
-     </void>
-    </object>
-   </void>
-   <void method="add">
-    <object class="nl.nn.testtool.Checkpoint">
-     <void property="encoding">
-      <string>XmlUtil.nodeToString()</string>
-     </void>
-     <void property="level">
-      <int>1</int>
-     </void>
-     <void property="message">
-      <string>&lt;NodeTest/&gt;</string>
-     </void>
-     <void property="messageClassName">
-      <string>org.apache.xerces.dom.ElementImpl</string>
-     </void>
-     <void property="name">
-      <string>infoname5</string>
-     </void>
-     <void property="report">
-      <object idref="Report0"/>
-     </void>
-     <void property="threadName">
-      <string>main</string>
-     </void>
-     <void property="type">
-      <int>6</int>
+      <int>4</int>
      </void>
     </object>
    </void>
@@ -181,10 +223,10 @@
       <int>1</int>
      </void>
      <void property="message">
-      <string></string>
+      <string>endmessage</string>
      </void>
      <void property="name">
-      <string>testSpecialValues</string>
+      <string>testStreamsWithWriterAndOutputStream</string>
      </void>
      <void property="report">
       <object idref="Report0"/>
@@ -205,10 +247,10 @@
    <long>IGNORE-END-TIME</long>
   </void>
   <void property="estimatedMemoryUsage">
-   <long>IGNORE</long>
+   <long>644</long>
   </void>
   <void property="name">
-   <string>testSpecialValues</string>
+   <string>testStreamsWithWriterAndOutputStream</string>
   </void>
   <void property="startTime">
    <long>IGNORE-START-TIME</long>

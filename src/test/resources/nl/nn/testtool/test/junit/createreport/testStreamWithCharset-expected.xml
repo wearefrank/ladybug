@@ -1,0 +1,20 @@
+<Report Name="testStreamWithCharset"
+        Description=""
+        Path=""
+        CorrelationId="Original length: 36"
+        StartTime="Original length: 13"
+        EndTime="Original length: 13"
+        NumberOfCheckpoints="2"
+        EstimatedMemoryUsage="18">
+   <Checkpoint Name="testStreamWithCharset"
+               Type="Startpoint"
+               Level="0"
+               SourceClassName="sourceClassName"
+               MessageClassName="java.io.ByteArrayOutputStream"
+               Encoding="CHARSET-ISO-8859-1"
+               Streaming="Byte">ë©</Checkpoint>
+   <Checkpoint Name="testStreamWithCharset"
+               Type="Endpoint"
+               Level="1"
+               SourceClassName="sourceClassName">message</Checkpoint>
+</Report>

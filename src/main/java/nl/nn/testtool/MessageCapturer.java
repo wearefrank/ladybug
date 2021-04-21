@@ -50,8 +50,8 @@ public interface MessageCapturer {
 
 	/**
 	 * Get {@link StreamingType} of message. The {@link StreamingType} returned will determine whether
-	 * {@link #toWriter(Object, Writer)} or {@link #toOutputStream(Object, OutputStream, Consumer)} will be called (or none of
-	 * them).
+	 * {@link #toWriter(Object, Writer, Consumer)} or {@link #toOutputStream(Object, OutputStream, Consumer, Consumer)}
+	 * will be called (or none of them).
 	 * 
 	 * @param message  the message for which to return the {@link StreamingType}
 	 * @return         the {@link StreamingType} for the specified message
@@ -65,14 +65,16 @@ public interface MessageCapturer {
 	 * closing and storing the report. The characters written to this writer will be passed as a string to
 	 * {@link Checkpoint#setMessage(String)}.
 	 * 
-	 * @param <T>              type of message
-	 * @param message          the checkpoint message object
-	 * @param writer           write the data of the checkpoint message object to this writer
-	 * @return                 the message itself, or a wrapper around it that will be passed back to the caller. When
-	 *                         later the caller writes characters to the wrapper these characters can be captured by the
-	 *                         wrapper and copied to writer
+	 * @param <T>                type of message
+	 * @param message            the checkpoint message object
+	 * @param writer             write the data of the checkpoint message object to this writer
+	 * @param exceptionNotifier  enables application to notify Ladybug of an exception being thrown during processing of
+	 *                           the stream
+	 * @return                   the message itself, or a wrapper around it that will be passed back to the caller. When
+	 *                           later the caller reads characters from the wrapper or writes characters to the wrapper
+	 *                           these characters can be captured by the wrapper and copied to writer
 	 */
-	public <T> T toWriter(T message, Writer writer);
+	public <T> T toWriter(T message, Writer writer, Consumer<Throwable> exceptionNotifier);
 
 	/**
 	 * This method will be called for messages of {@link StreamingType} {@link StreamingType#BYTE_STREAM} to write a
@@ -82,15 +84,18 @@ public interface MessageCapturer {
 	 * {@link Checkpoint#setMessage(Object)} using {@link MessageEncoder#toString(Object, String)} with the charset that
 	 * the application optionally notified the Ladybug of.
 	 * 
-	 * @param <T>              type of message
-	 * @param message          the checkpoint message object
-	 * @param outputStream     write the data of the checkpoint message object to this output stream
-	 * @param charsetNotifier  enables application to notify Ladybug of the charset that probably is the most proper to
-	 *                         render the outputStream to characters
-	 * @return                 the message itself, or a wrapper around it that will be passed back to the caller. When
-	 *                         later the caller writes bytes to the wrapper these bytes can be captured by the
-	 *                         wrapper and copied to outputStream
+	 * @param <T>                type of message
+	 * @param message            the checkpoint message object
+	 * @param outputStream       write the data of the checkpoint message object to this output stream
+	 * @param charsetNotifier    enables application to notify Ladybug of the charset that probably is the most proper
+	 *                           to render the outputStream to characters
+	 * @param exceptionNotifier  enables application to notify Ladybug of an exception being thrown during processing of
+	 *                           the stream
+	 * @return                   the message itself, or a wrapper around it that will be passed back to the caller. When
+	 *                           later the caller read bytes from the wrapper or writes bytes to the wrapper these bytes
+	 *                           can be captured by the wrapper and copied to outputStream
 	 */
-	public <T> T toOutputStream(T message, OutputStream outputStream, Consumer<String> charsetNotifier);
+	public <T> T toOutputStream(T message, OutputStream outputStream, Consumer<String> charsetNotifier,
+			Consumer<Throwable> exceptionNotifier);
 
 }

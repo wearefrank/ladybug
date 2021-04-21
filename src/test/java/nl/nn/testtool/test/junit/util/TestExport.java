@@ -42,7 +42,6 @@ import nl.nn.testtool.util.Export;
  */
 public class TestExport extends TestCase {
 	public static final String RESOURCE_PATH = "nl/nn/testtool/test/junit/util/";
-	private static final ApplicationContext context = new ClassPathXmlApplicationContext("springTestToolTestJUnit.xml");
 
 	public void testExport() throws IllegalAccessException, IllegalArgumentException, InvocationTargetException, IOException, StorageException {
 		Report report = new Report();
@@ -89,7 +88,7 @@ public class TestExport extends TestCase {
 				} else if (name.equals("globalReportXmlTransformer")) {
 					report.setGlobalReportXmlTransformer(new ReportXmlTransformer());
 				} else if (!name.equals("storageId") && !name.equals("checkpoints")) {
-					method.invoke(report, context.getBean(name));
+					method.invoke(report, ReportRelatedTestCase.CONTEXT.getBean(name));
 				} else if (name.equals("checkpoints")) {
 					// Ignore, done manually
 				} else {
@@ -132,7 +131,7 @@ public class TestExport extends TestCase {
 		List<Checkpoint> checkpoints = new ArrayList<Checkpoint>();
 		checkpoints.add(checkpoint);
 		report.setCheckpoints(checkpoints);
-		assertExport(RESOURCE_PATH, getName(), report.getCorrelationId(), report, false, false);
+		assertExport(RESOURCE_PATH, getName(), report.getCorrelationId(), report, false, false, true);
 	}
 
 	private static void getBeanProperties(Class<?> clazz, String verb, Map<String, Method> beanProperties) {
@@ -156,7 +155,8 @@ public class TestExport extends TestCase {
 	}
 
 	public static void assertExport(String path, String testCaseName, String correlationId, Report report,
-			boolean applyToXmlIgnores, boolean applyEpochTimestampIgnores) throws IOException, StorageException {
+			boolean applyToXmlIgnores, boolean applyEpochTimestampIgnores, boolean applyStackTraceIgnores)
+			throws IOException, StorageException {
 		// When storageId is a very low number (like when being build by the pipeline) the replace will potentially
 		// replace the wrong number, hence adjust the storage id to a more unique number
 		report.setStorageId(-99999);
@@ -176,6 +176,9 @@ public class TestExport extends TestCase {
 		}
 		if (applyEpochTimestampIgnores) {
 			actual = ReportRelatedTestCase.applyEpochTimestampIgnores(actual);
+		}
+		if (applyStackTraceIgnores) {
+			actual = ReportRelatedTestCase.applyStackTraceIgnores(actual);
 		}
 		ReportRelatedTestCase.assertXml(path, testCaseName, actual);
 	}

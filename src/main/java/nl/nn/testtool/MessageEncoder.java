@@ -39,8 +39,9 @@ public interface MessageEncoder {
 	 * 
 	 * @param message  the object to encode to string
 	 * @param charset  null or when
-	 *                 {@link MessageCapturer#toOutputStream(Object, java.io.OutputStream, java.util.function.Consumer)}
-	 *                 was called for this message the charset as notified by the application
+	 *                 {@link MessageCapturer#toOutputStream(Object, java.io.OutputStream, java.util.function.Consumer,
+	 *                 java.util.function.Consumer)} was called for this message the charset as notified by the
+	 *                 application
 	 * @return         {@link ToStringResult} containing the string representation of the object, the name of the
 	 *                 encoding used (is null when no encoding was applied) and the class name of message
 	 */

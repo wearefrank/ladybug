@@ -22,7 +22,9 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
@@ -32,6 +34,7 @@ import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.read.ListAppender;
 import junit.framework.TestCase;
+import nl.nn.testtool.MetadataExtractor;
 import nl.nn.testtool.Report;
 import nl.nn.testtool.TestTool;
 import nl.nn.testtool.storage.Storage;
@@ -49,8 +52,10 @@ public class ReportRelatedTestCase extends TestCase {
 	public static final String ACTUAL_SUFFIX = "-actual.xml";
 	public static final String LOG_SUFFIX = "-FAILED.txt";
 	public static final String ASSERT_REPORT_XSLT = "transformReport.xslt";
-	private static final ApplicationContext context = new ClassPathXmlApplicationContext("springTestToolTestJUnit.xml");
-	private static final TestTool testTestTool = (TestTool)context.getBean("testTool");
+	// Use this context at least in all tests that use debug storage otherwise when more then one context is creating
+	// storage beans the storageId's are likely to not be unique anymore which will give unexpected results
+	public static final ApplicationContext CONTEXT = new ClassPathXmlApplicationContext("springTestToolTestJUnit.xml");
+	private static final TestTool testTestTool = (TestTool)CONTEXT.getBean("testTool");
 	protected TestTool testTool;
 	protected ListAppender<ILoggingEvent> listAppender;
 	public String resourcePath = "Override this value!";
@@ -66,12 +71,17 @@ public class ReportRelatedTestCase extends TestCase {
 		listAppender = new ListAppender<>();
 		listAppender.start();
 		log.addAppender(listAppender);
-		testTool = (TestTool)context.getBean("testTool");
+		testTool = (TestTool)CONTEXT.getBean("testTool");
 	}
 
 	@Override
 	public void tearDown() {
 		List<ILoggingEvent> loggingEvents = listAppender.list;
+		String logMessage = null;
+		if (loggingEvents.size() > 0) {
+			logMessage = loggingEvents.get(0).getMessage();
+			assertNull(logMessage); // Shows log message when it fails
+		}
 		assertEquals(0, loggingEvents.size());
 	}
 
@@ -80,23 +90,22 @@ public class ReportRelatedTestCase extends TestCase {
 		assertNotEquals(testTestTool, testTool);
 	}
 
-	protected String getCorrelationId() {
-		return getName() + "-" + System.currentTimeMillis();
+	public static String getCorrelationId() {
+		return UUID.randomUUID().toString();
 	}
 
 	protected Report assertReport(String correlationId) throws StorageException, IOException {
-		return assertReport(correlationId, false, false, false);
+		return assertReport(correlationId, false, false, false, false);
 	}
 
 	protected Report assertReport(String correlationId, boolean applyXmlEncoderIgnores,
-			boolean applyEpochTimestampIgnore, boolean assertExport) throws StorageException, IOException {
+			boolean applyEpochTimestampIgnore, boolean applyStackTraceIgnores, boolean assertExport)
+			throws StorageException, IOException {
 		assertEquals("Found report(s) in progress,", 0, testTool.getNumberOfReportsInProgress());
 		Storage storage = testTool.getDebugStorage();
-		Report report = storage.getReport((Integer)storage.getStorageIds().get(0));
-		assertEquals(correlationId, report.getCorrelationId());
-		assertNotNull(report);
+		Report report = findAndGetReport(testTool, storage, correlationId);
 		ReportXmlTransformer reportXmlTransformer = new ReportXmlTransformer();
-		reportXmlTransformer.setXslt(getResource(RESOURCE_PATH, ASSERT_REPORT_XSLT, null));
+		reportXmlTransformer.setXslt(getResource(RESOURCE_PATH, ASSERT_REPORT_XSLT));
 		report.setReportXmlTransformer(reportXmlTransformer);
 		String actual = report.toXml();
 		if (applyXmlEncoderIgnores) {
@@ -105,10 +114,41 @@ public class ReportRelatedTestCase extends TestCase {
 		if (applyEpochTimestampIgnore) {
 			actual = applyEpochTimestampIgnores(actual);
 		}
+		if (applyStackTraceIgnores) {
+			actual = applyStackTraceIgnores(actual);
+		}
 		assertXml(resourcePath, getName(), actual);
 		if (assertExport) {
 			TestExport.assertExport(resourcePath, getName() + "Export", correlationId, report, true
-					, applyEpochTimestampIgnore);
+					, applyEpochTimestampIgnore, applyStackTraceIgnores);
+		}
+		return report;
+	}
+
+	public static Report findAndGetReport(TestTool testTool, Storage storage, String correlationId) throws StorageException {
+		return findAndGetReport(testTool, storage, correlationId, true);
+	}
+
+	public static Report findAndGetReport(TestTool testTool, Storage storage, String correlationId, boolean assertFound)
+			throws StorageException {
+		// In the Spring config for the JUnit tests bean testTool has scope prototype (see comment in config), hence use
+		// the same instance here instead of using getBean()
+		assertNull("Report should not be in progress", testTool.getReportInProgress(correlationId));
+		List<String> metadataNames = new ArrayList<String>();
+		metadataNames.add("storageId");
+		metadataNames.add("correlationId");
+		List<String> searchValues = new ArrayList<String>();
+		searchValues.add(null);
+		searchValues.add(correlationId);
+		List<List<Object>> metadata = storage.getMetadata(2, metadataNames, searchValues,
+				MetadataExtractor.VALUE_TYPE_OBJECT);
+		if (assertFound) {
+			assertEquals("Didn't find exactly 1 report with correlationId " + correlationId + ",", 1, metadata.size());
+		}
+		Report report = null;
+		if (metadata.size() > 0) {
+			report = storage.getReport((Integer)metadata.get(0).get(0));
+			assertEquals(correlationId, report.getCorrelationId());
 		}
 		return report;
 	}
@@ -117,7 +157,7 @@ public class ReportRelatedTestCase extends TestCase {
 		File expectedfile = new File(FILESYSTEM_PATH + path + testCaseName + EXPECTED_SUFFIX);
 		File actualFile = new File(FILESYSTEM_PATH + path + testCaseName + ACTUAL_SUFFIX);
 		File logFile = new File(FILESYSTEM_PATH + path + testCaseName + LOG_SUFFIX);
-		String expected = getResource(path, testCaseName + EXPECTED_SUFFIX, "Replace with real expected string");
+		String expected = getResource(path, testCaseName + EXPECTED_SUFFIX, true);
 		if (!expected.equals(actual)) {
 			StringBuffer buffer = new StringBuffer();
 			buffer.append("===\n");
@@ -179,17 +219,38 @@ public class ReportRelatedTestCase extends TestCase {
 		return string.replaceFirst("1970-01-01T..:..:00\\.000\\+....", "1970-01-01TXX:XX:00.000+XXXX");
 	}
 
-	public static String getResource(String path, String name, String valueToWriteWhenNotFound) throws IOException {
+	public static String applyStackTraceIgnores(String string) {
+		// (?s) enables dotall so the expression . will also match line terminator
+		if (string.startsWith("<Report")) {
+			return string.replaceFirst("EstimatedMemoryUsage=\".*\">",
+									   "EstimatedMemoryUsage=\"IGNORE\">")
+					.replaceAll("(?s)at nl.nn.testtool.test.junit..[^<]*\\)\n</Checkpoint>",
+									  "at nl.nn.testtool.test.junit.IGNORE)\n</Checkpoint>");
+		} else {
+			return string.replaceFirst("estimatedMemoryUsage\">\n   <long>.*</long>",
+									   "estimatedMemoryUsage\">\n   <long>IGNORE</long>")
+					.replaceAll("(?s)java.io.IOException: Test with strange object.[^<]*\\)(&#13;)?\n</string>",
+									  "java.io.IOException: Test with strange objectIGNORE)\n</string>");
+		}
+	}
+
+	public static String getResource(String path, String name) throws IOException {
+		return getResource(path, name, false);
+	}
+
+	public static String getResource(String path, String name, boolean createResourceWithMessageWhenNotFound)
+			throws IOException {
 		StringBuffer result = new StringBuffer();
 		String resourceName = path + name;
 		InputStream stream = ReportRelatedTestCase.class.getClassLoader().getResourceAsStream(resourceName);
 		if (stream == null) {
-			if (valueToWriteWhenNotFound == null) {
-				throw new junit.framework.AssertionFailedError("Could not find resource '" + resourceName + "'");
+			if (createResourceWithMessageWhenNotFound) {
+				String fileName = FILESYSTEM_PATH + path + name;
+				String message = "Replace content of " + fileName + " with expected value";
+				writeFile(new File(fileName), message, false);
+				return message;
 			} else {
-				writeFile(new File(FILESYSTEM_PATH + path + name),
-						valueToWriteWhenNotFound, false);
-				return valueToWriteWhenNotFound;
+				throw new junit.framework.AssertionFailedError("Could not find resource '" + resourceName + "'");
 			}
 		}
 		byte[] bytes = new byte[1024];

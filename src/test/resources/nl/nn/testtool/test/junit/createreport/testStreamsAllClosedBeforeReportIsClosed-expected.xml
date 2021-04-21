@@ -1,16 +1,20 @@
-<Report Name="startname"
+<Report Name="testStreamsAllClosedBeforeReportIsClosed"
         Description=""
         Path=""
-        CorrelationId="Original length: 54"
+        CorrelationId="Original length: 36"
         StartTime="Original length: 13"
         EndTime="Original length: 13"
         NumberOfCheckpoints="3"
         EstimatedMemoryUsage="186">
-   <Checkpoint Name="startname" Type="Startpoint" Level="0">startmessage</Checkpoint>
+   <Checkpoint Name="testStreamsAllClosedBeforeReportIsClosed"
+               Type="Startpoint"
+               Level="0">startmessage</Checkpoint>
    <Checkpoint Name="writer"
                Type="Inputpoint"
                Level="1"
                MessageClassName="java.io.StringWriter"
                Streaming="Character">Test Writer write write write append random random random random random</Checkpoint>
-   <Checkpoint Name="endname" Type="Endpoint" Level="1">endmessage</Checkpoint>
+   <Checkpoint Name="testStreamsAllClosedBeforeReportIsClosed"
+               Type="Endpoint"
+               Level="1">endmessage</Checkpoint>
 </Report>

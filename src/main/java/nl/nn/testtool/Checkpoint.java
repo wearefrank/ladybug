@@ -43,6 +43,7 @@ import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+
 /**
  * @author Jaco de Groot
  */
@@ -79,7 +80,7 @@ public class Checkpoint implements Serializable, Cloneable {
 	public transient static final int STUB_FOLLOW_REPORT_STRATEGY = -1;
 	public transient static final int STUB_NO = 0;
 	public transient static final int STUB_YES = 1;
-	
+
 	public Checkpoint() {
 		// Only for Java XML encoding/decoding! Use other constructor instead.
 	}
@@ -143,7 +144,7 @@ public class Checkpoint implements Serializable, Cloneable {
 			message = report.truncateMessage(this, message);
 			if (report.getMessageTransformer() != null) {
 			message = report.getMessageTransformer().transform(message);
-		}
+			}
 		}
 		this.message = message;
 	}
@@ -166,6 +167,7 @@ public class Checkpoint implements Serializable, Cloneable {
 					// Use array to work around final scope limitation for anonymous inner class
 					Object[] possiblyWrappedMessage = new Object[1];
 					String[] charset = new String[1];
+					Throwable[] exception = new Throwable[1];
 					if (streamingType == StreamingType.CHARACTER_STREAM) {
 						StringWriter stringWriter = new StringWriter() {
 								int length = 0;
@@ -204,10 +206,10 @@ public class Checkpoint implements Serializable, Cloneable {
 									length = length + len;
 									if (truncated) {
 										return;
-				} else {
+									} else {
 										super.write(cbuf, off, len);
-				}
-			}
+									}
+								}
 
 								@Override
 								public void close() throws IOException {
@@ -215,14 +217,15 @@ public class Checkpoint implements Serializable, Cloneable {
 									int preTruncatedMessageLength = -1;
 									if (truncated) {
 										preTruncatedMessageLength = length;
-		}
+									}
 									report.closeStreamingMessage(toStringResult.getMessageClassName(),
 											possiblyWrappedMessage[0], streamingType.toString(), charset[0],
-											toString(), preTruncatedMessageLength);
+											toString(), preTruncatedMessageLength, exception[0]);
 								}
 						};
 						// Message possibly wrapped by toWriter()
-						message = report.getMessageCapturer().toWriter(message, stringWriter);
+						message = report.getMessageCapturer().toWriter(message, stringWriter,
+								exceptionNotifier -> exception[0] = exceptionNotifier);
 					} else {
 						ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream() {
 								int length = 0;
@@ -265,12 +268,13 @@ public class Checkpoint implements Serializable, Cloneable {
 									}
 									report.closeStreamingMessage(toStringResult.getMessageClassName(),
 											possiblyWrappedMessage[0], streamingType.toString(), charset[0],
-											toByteArray(), preTruncatedMessageLength);
+											toByteArray(), preTruncatedMessageLength, exception[0]);
 								}
 						};
 						// Message possibly wrapped by toOutputStream()
 						message = report.getMessageCapturer().toOutputStream(message, byteArrayOutputStream,
-								charsetNotifier -> charset[0] = charsetNotifier);
+								charsetNotifier -> charset[0] = charsetNotifier,
+								exceptionNotifier -> exception[0] = exceptionNotifier);
 					}
 					report.addStreamingMessageListener(message, this);
 					possiblyWrappedMessage[0] = message;
@@ -287,7 +291,7 @@ public class Checkpoint implements Serializable, Cloneable {
 	@JsonIgnore
 	public Object getMessageAsObject() {
 		return report.getMessageEncoder().toObject(this);
-		}
+	}
 
 	@JsonIgnore
 	public <T> T getMessageAsObject(T messageToStub) {
@@ -344,11 +348,11 @@ public class Checkpoint implements Serializable, Cloneable {
 	public int getLevel() {
 		return level;
 	}
-	
+
 	public void setStub(int stub) {
 		this.stub = stub;
 	}
-	
+
 	public int getStub() {
 		return stub;
 	}
@@ -424,7 +428,7 @@ public class Checkpoint implements Serializable, Cloneable {
 	public int getPreTruncatedMessageLength() {
 		return preTruncatedMessageLength;
 	}
-	
+
 	public String getMessageWithResolvedVariables(ReportRunner reportRunner) {
 		String result = getMessage();
 		if(getMessage() != null && containsVariables()) {

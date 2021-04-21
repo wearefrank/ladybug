@@ -153,7 +153,7 @@ public class Report implements Serializable {
 	public Long getStorageSize() {
 		return storageSize;
 	}
-
+	
 	public void setStartTime(long startTime) {
 		this.startTime = startTime;
 	}
@@ -173,7 +173,7 @@ public class Report implements Serializable {
 	public void setCorrelationId(String correlationId) {
 		this.correlationId = correlationId;
 	}
-
+	
 	public String getCorrelationId() {
 		return correlationId;
 	}
@@ -205,7 +205,7 @@ public class Report implements Serializable {
 	public String getFullPath() {
 		return (StringUtils.isNotEmpty(getPath()) ? getPath() : "/") + getName();
 	}
-
+	
 	public void setStubStrategy(String stubStrategy) {
 		this.stubStrategy = stubStrategy;
 	}
@@ -342,33 +342,42 @@ public class Report implements Serializable {
 				}
 			}
 			if (index == null) {
-				log.warn("Unknown thread, ignored checkpoint " + getCheckpointLogDescription(name, checkpointType, level));
+				log.warn("Unknown thread, ignored checkpoint " + getCheckpointLogDescription(name, checkpointType,
+						level));
 			} else {
-				message = addCheckpoint(threadName, sourceClassName, name, message, stubableCode,
-						stubableCodeThrowsException, matchingStubStrategies, checkpointType, index, level,
-						levelChangeNextCheckpoint);
-				if (checkpointType == Checkpoint.TYPE_ABORTPOINT && checkpoints.size() < testTool.getMaxCheckpoints()) {
-					int firstLevel = ((Integer)threadFirstLevel.get(threadName)).intValue();
-					List<Checkpoint> checkpoints = getCheckpoints();
-					for (int i = index.intValue() - 1; i > -1; i--) {
-						Checkpoint checkpoint = (Checkpoint)checkpoints.get(i);
-						if (level.intValue() <= firstLevel + 1) {
-							i = -1;
-						} else {
-							if (checkpoint.getType() == Checkpoint.TYPE_STARTPOINT
-									&& checkpoint.getLevel() < level.intValue()) {
-								if (checkpoint.getName().equals(name)) {
-									i = -1;
-								} else {
-									index = (Integer)threadCheckpointIndex.get(threadName);
-									level = (Integer)threadLevel.get(threadName);
-									message = addCheckpoint(threadName, sourceClassName, name, message, stubableCode,
-											stubableCodeThrowsException, matchingStubStrategies, checkpointType, index,
-											level, levelChangeNextCheckpoint);
-								}
-							}
-						}
+				if (!isReportFilterMatching()) {
+					message = TestTool.execute(stubableCode, stubableCodeThrowsException, message);
+					if (logReportFilterMatching) {
+						log.debug("Report name doesn't match report filter regex, ignored checkpoint "
+								+ getCheckpointLogDescription(name, checkpointType, level) + " "
+								+ getOtherCheckpointsLogDescription());
+						logReportFilterMatching = false;
 					}
+				} else if (checkpoints.size() >= testTool.getMaxCheckpoints()) {
+					message = TestTool.execute(stubableCode, stubableCodeThrowsException, message);
+					if (logMaxCheckpoints) {
+						log.warn("Maximum number of checkpoints exceeded, ignored checkpoint "
+								+ getCheckpointLogDescription(name, checkpointType, level) + " "
+								+ getOtherCheckpointsLogDescription());
+						logMaxCheckpoints = false;
+					}
+				} else if (getEstimatedMemoryUsage() >= testTool.getMaxMemoryUsage()) {
+					message = TestTool.execute(stubableCode, stubableCodeThrowsException, message);
+					if (logMaxMemoryUsage) {
+						log.warn("Maximum memory usage reached for this report, ignored checkpoint "
+								+ getCheckpointLogDescription(name, checkpointType, level) + " "
+								+ getOtherCheckpointsLogDescription());
+						logMaxMemoryUsage = false;
+					}
+				} else {
+					message = addCheckpoint(threadName, sourceClassName, name, message, stubableCode,
+							stubableCodeThrowsException, matchingStubStrategies, checkpointType, index, level
+							);
+				}
+				Integer newLevel = new Integer(level.intValue() + levelChangeNextCheckpoint);
+				threadLevel.put(threadName, newLevel);
+				if (newLevel.equals(threadFirstLevel.get(threadName))) {
+					close(threadName);
 				}
 			}
 		}
@@ -378,93 +387,64 @@ public class Report implements Serializable {
 	@SneakyThrows
 	private  <T> T addCheckpoint(String threadName, String sourceClassName, String name, T message,
 			StubableCode stubableCode, StubableCodeThrowsException stubableCodeThrowsException,
-			Set<String> matchingStubStrategies, int checkpointType, Integer index, Integer level,
-			int levelChangeNextCheckpoint) {
-		if (!isReportFilterMatching()) {
-			if (logReportFilterMatching) {
-				log.debug("Report name doesn't match report filter regex, ignored checkpoint "
-						+ getCheckpointLogDescription(name, checkpointType, level) + " "
-						+ getOtherCheckpointsLogDescription());
-				logReportFilterMatching = false;
-			}
-		} else if (checkpoints.size() >= testTool.getMaxCheckpoints()) {
-			if (logMaxCheckpoints) {
-				log.warn("Maximum number of checkpoints exceeded, ignored checkpoint "
-						+ getCheckpointLogDescription(name, checkpointType, level) + " "
-						+ getOtherCheckpointsLogDescription());
-				logMaxCheckpoints = false;
-			}
-		} else if (getEstimatedMemoryUsage() >= testTool.getMaxMemoryUsage()) {
-			if (logMaxMemoryUsage) {
-				log.warn("Maximum memory usage reached for this report, ignored checkpoint "
-						+ getCheckpointLogDescription(name, checkpointType, level) + " "
-						+ getOtherCheckpointsLogDescription());
-				logMaxMemoryUsage = false;
-			}
-		} else {
-			Checkpoint checkpoint = new Checkpoint(this, threadName, sourceClassName, name, checkpointType, level.intValue());
-			checkpoints.add(index.intValue(), checkpoint);
-			boolean stub = false;
-			if (originalReport != null) {
-				Path lastCheckpointPath = checkpoint.getPath();
-				Checkpoint originalCheckpoint = (Checkpoint)originalReport.getCheckpoint(lastCheckpointPath);
-				if (originalCheckpoint == null) {
+			Set<String> matchingStubStrategies, int checkpointType, Integer index, Integer level) {
+		Checkpoint checkpoint = new Checkpoint(this, threadName, sourceClassName, name, checkpointType, level.intValue());
+		checkpoints.add(index.intValue(), checkpoint);
+		boolean stub = false;
+		if (originalReport != null) {
+			Path lastCheckpointPath = checkpoint.getPath();
+			Checkpoint originalCheckpoint = (Checkpoint)originalReport.getCheckpoint(lastCheckpointPath);
+			if (originalCheckpoint == null) {
+				if (matchingStubStrategies != null) {
+					if (matchingStubStrategies.contains(originalReport.getStubStrategy())) {
+						stub = true;
+					}
+				} else if (testTool.getDebugger() != null) {
+					stub = testTool.stub(checkpoint, originalReport.getStubStrategy());
+				}
+			} else {
+				checkpoint.setStub(originalCheckpoint.getStub());
+				if (originalCheckpoint.getStub() == Checkpoint.STUB_FOLLOW_REPORT_STRATEGY) {
 					if (matchingStubStrategies != null) {
 						if (matchingStubStrategies.contains(originalReport.getStubStrategy())) {
 							stub = true;
 						}
 					} else if (testTool.getDebugger() != null) {
-					stub = testTool.stub(checkpoint, originalReport.getStubStrategy());
+						stub = testTool.stub(originalCheckpoint, originalReport.getStubStrategy());
 					}
-				} else {
-					checkpoint.setStub(originalCheckpoint.getStub());
-					if (originalCheckpoint.getStub() == Checkpoint.STUB_FOLLOW_REPORT_STRATEGY) {
-						if (matchingStubStrategies != null) {
-							if (matchingStubStrategies.contains(originalReport.getStubStrategy())) {
-								stub = true;
-							}
-						} else if (testTool.getDebugger() != null) {
-							stub = testTool.stub(originalCheckpoint, originalReport.getStubStrategy());
-						}
-					} else if (originalCheckpoint.getStub() == Checkpoint.STUB_NO) {
-						stub = false;
-					} else if (originalCheckpoint.getStub() == Checkpoint.STUB_YES) {
-						stub = true;
-					}
-				}
-				if (stub) {
-					checkpoint.setStubbed(true);
-					if (originalCheckpoint == null) {
-						checkpoint.setStubNotFound(lastCheckpointPath.toString());
-					}
-					message = getMessageEncoder().toObject(originalCheckpoint, message);
-					message = checkpoint.setMessage(message);
+				} else if (originalCheckpoint.getStub() == Checkpoint.STUB_NO) {
+					stub = false;
+				} else if (originalCheckpoint.getStub() == Checkpoint.STUB_YES) {
+					stub = true;
 				}
 			}
-			if (!stub) {
-				try {
-					message = TestTool.execute(stubableCode, stubableCodeThrowsException, message);
-				} catch(Throwable t) {
-					checkpoints.remove(index.intValue());
-					testTool.abortpoint(correlationId, sourceClassName, name, t.getMessage());
-					throw t;
+			if (stub) {
+				checkpoint.setStubbed(true);
+				if (originalCheckpoint == null) {
+					checkpoint.setStubNotFound(lastCheckpointPath.toString());
 				}
+				message = getMessageEncoder().toObject(originalCheckpoint, message);
 				message = checkpoint.setMessage(message);
 			}
-			estimatedMemoryUsage += checkpoint.getEstimatedMemoryUsage();
-			if (log.isDebugEnabled()) {
-				log.debug("Added checkpoint " + getCheckpointLogDescription(name, checkpointType, level));
-			}
 		}
+		if (!stub) {
+			try {
+				message = TestTool.execute(stubableCode, stubableCodeThrowsException, message);
+			} catch(Throwable t) {
+				checkpoints.remove(index.intValue());
+				testTool.abortpoint(correlationId, sourceClassName, name, t.getMessage());
+				throw t;
+			}
+			message = checkpoint.setMessage(message);
+		}
+		estimatedMemoryUsage += checkpoint.getEstimatedMemoryUsage();
 		for (int i = threads.indexOf(threadName); i < threads.size(); i++) {
 			String key = threads.get(i);
 			Integer value = (Integer)threadCheckpointIndex.get(key);
 			threadCheckpointIndex.put(key, new Integer(value.intValue() + 1));
 		}
-		level = new Integer(level.intValue() + levelChangeNextCheckpoint);
-		threadLevel.put(threadName, level);
-		if (level.equals(threadFirstLevel.get(threadName))) {
-			threadsActiveCount--;
+		if (log.isDebugEnabled()) {
+			log.debug("Added checkpoint " + getCheckpointLogDescription(name, checkpointType, level));
 		}
 		return message;
 	}
@@ -472,18 +452,18 @@ public class Report implements Serializable {
 	protected String truncateMessage(Checkpoint checkpoint, String message) {
 		if (testTool.getMaxMessageLength() > -1 && message != null
 				&& message.toString().length() > testTool.getMaxMessageLength()) {
-		// For a message that is referenced by multiple checkpoints, have one truncated message that is
-		// referenced by those checkpoints, to prevent creating multiple String objects representing the
-		// same string and occupying unnecessary memory.
-		checkpoint.setPreTruncatedMessageLength(message.length());
-		if(truncatedMessageMap.containsKey(message)) {
-			return truncatedMessageMap.get(message);
-		} else {
+			// For a message that is referenced by multiple checkpoints, have one truncated message that is
+			// referenced by those checkpoints, to prevent creating multiple String objects representing the
+			// same string and occupying unnecessary memory.
+			checkpoint.setPreTruncatedMessageLength(message.length());
+			if(truncatedMessageMap.containsKey(message)) {
+				return truncatedMessageMap.get(message);
+			} else {
 				String truncatedMessage = message.substring(0, testTool.getMaxMessageLength());
-			truncatedMessageMap.put(message, truncatedMessage);
-			return truncatedMessage;
+				truncatedMessageMap.put(message, truncatedMessage);
+				return truncatedMessage;
+			}
 		}
-	}
 		return message;
 	}
 
@@ -507,6 +487,22 @@ public class Report implements Serializable {
 			}
 		}
 		return result;
+	}
+
+	protected void close() {
+		while (threads.size() > 0) {
+			close(threads.get(0));
+		}
+	}
+
+	protected void close(String threadName) {
+		if (threads.remove(threadName)) {
+			threadCheckpointIndex.remove(threadName);
+			threadFirstLevel.remove(threadName);
+			threadLevel.remove(threadName);
+			threadParent.remove(threadName);
+			threadsActiveCount--;
+		}
 	}
 
 	protected boolean threadsFinished() {
@@ -535,7 +531,7 @@ public class Report implements Serializable {
 	}
 
 	protected void closeStreamingMessage(String messageClassName, Object streamingMessage, String streamingType,
-			String charset, Object message, int preTruncatedMessageLength) {
+			String charset, Object message, int preTruncatedMessageLength, Throwable exception) {
 		synchronized(streamingMessageListeners) {
 			StreamingMessageResult streamingMessageResult = new StreamingMessageResult();
 			streamingMessageResult.setMessageClassName(messageClassName);
@@ -543,6 +539,7 @@ public class Report implements Serializable {
 			streamingMessageResult.setCharset(charset);
 			streamingMessageResult.setMessage(message);
 			streamingMessageResult.setPreTruncatedMessageLength(preTruncatedMessageLength);
+			streamingMessageResult.setException(exception);
 			streamingMessageResults.put(streamingMessage, streamingMessageResult);
 			closeStreamingMessageListeners();
 		}
@@ -562,14 +559,18 @@ public class Report implements Serializable {
 					for (Checkpoint checkpoint : streamingMessageListeners.get(streamingMessage)) {
 						estimatedMemoryUsage -= checkpoint.getEstimatedMemoryUsage();
 						checkpoint.setStreaming(streamingMessageResult.getStreamingType());
-						String charset = streamingMessageResult.getCharset();
-						Object message = streamingMessageResult.getMessage();
-						if (message instanceof String) {
-							checkpoint.setMessage((String)message);
+						if (streamingMessageResult.getException() != null) {
+							checkpoint.setMessage(streamingMessageResult.getException());
 						} else {
-							ToStringResult toStringResult = getMessageEncoder().toString(message, charset);
-							checkpoint.setMessage(toStringResult.getString());
-							checkpoint.setEncoding(toStringResult.getEncoding());
+							Object message = streamingMessageResult.getMessage();
+							if (message instanceof String) {
+								checkpoint.setMessage((String)message);
+							} else {
+								String charset = streamingMessageResult.getCharset();
+								ToStringResult toStringResult = getMessageEncoder().toString(message, charset);
+								checkpoint.setMessage(toStringResult.getString());
+								checkpoint.setEncoding(toStringResult.getEncoding());
+							}
 						}
 						checkpoint.setMessageClassName(streamingMessageResult.getMessageClassName());
 						checkpoint.setPreTruncatedMessageLength(streamingMessageResult.getPreTruncatedMessageLength());
@@ -602,7 +603,7 @@ public class Report implements Serializable {
 	public List<Checkpoint> getCheckpoints() {
 		return checkpoints;
 	}
-
+	
 	public Checkpoint getInputCheckpoint() {
 		return checkpoints.get(0);
 	}
@@ -739,10 +740,10 @@ public class Report implements Serializable {
 				}
 				if (checkpoint.getStubNotFound() != null) {
 					stringBuffer.append(" StubNotFound=\"" + checkpoint.getStubNotFound() + "\"");
-					}
+				}
 				if (message == null) {
 					stringBuffer.append(" Null=\"true\"/>");
-					} else {
+				} else {
 					if (XmlUtil.isXml(message)) {
 						String textDecl = null;
 						if (message.startsWith("<?")) {
@@ -784,9 +785,10 @@ public class Report implements Serializable {
 	}
 
 	private String getCheckpointLogDescription(String name, int type, Integer level) {
-		return "(name: " + name + ", type: " + Checkpoint.getTypeAsString(type) + ", level: " + level + ", correlationId: " + correlationId + ")";
+		return "(name: " + name + ", type: " + Checkpoint.getTypeAsString(type) + ", level: " + level
+				+ ", correlationId: " + correlationId + ")";
 	}
-	
+
 	private String getOtherCheckpointsLogDescription() {
 		return "(next checkpoints for this report will be ignored without any logging)";
 	}
@@ -927,6 +929,7 @@ class RefCompareMap<K, V> implements Map<K, V> {
 		throw new NotImplementedException();
 	}
 }
+
 @Data
 class StreamingMessageResult {
 	String messageClassName;
@@ -934,4 +937,5 @@ class StreamingMessageResult {
 	String charset;
 	Object message;
 	int preTruncatedMessageLength;
+	Throwable exception;
 }
