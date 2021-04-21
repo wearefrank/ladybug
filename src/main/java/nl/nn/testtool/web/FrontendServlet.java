@@ -26,7 +26,6 @@ public class FrontendServlet extends HttpServlet {
 	@Override
 	public void init() throws ServletException {
 		super.init();
-		System.err.println("INITIALIZING FRONTEND SERVER!!!!!!");
 		try {
 			populateMediaTypeMap();
 		} catch (IOException e) {
@@ -52,7 +51,6 @@ public class FrontendServlet extends HttpServlet {
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		String path = req.getPathInfo();
-		System.err.println("DO GET WITH PATH : " + path);
 		if(path == null) {
 			path = "/";
 		}

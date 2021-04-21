@@ -120,6 +120,7 @@ public class Export {
 						if (report == null)
 							continue;
 					} catch (Exception e) {
+						exportResult.setErrorMessage(e.toString());
 						continue;
 					}
 					// TODO bij storage al afvangen dat er geen dubbele namen voor kunnen komen?
