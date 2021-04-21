@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2018 Nationale-Nederlanden, 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -42,7 +42,7 @@ public class TestTool {
 	private String configName;
 	private String configVersion;
 	private int maxCheckpoints = 2500;
-	private int maxMessageLength = -1;
+	private int maxMessageLength = 10000000;
 	private long maxMemoryUsage = 100000000L;
 	private Debugger debugger;
 	private Rerunner rerunner;
@@ -50,11 +50,10 @@ public class TestTool {
 	private List<Report> reportsInProgress = new ArrayList<Report>();
 	private Map<String, Report> reportsInProgressByCorrelationId = new HashMap<String, Report>();
 	private long numberOfReportsInProgress = 0;
-	private long reportsInProgressEstimatedMemoryUsage = 0;
 	private Map<String, Report> originalReports = new HashMap<String, Report>();
-	private List<StartpointProvider> startpointProviders = new ArrayList<StartpointProvider>();
-	private List<String> startpointProviderNames = new ArrayList<String>();
 	private LogStorage debugStorage;
+	private MessageEncoder messageEncoder = new MessageEncoderImpl();
+	private MessageCapturer messageCapturer = new MessageCapturerImpl();
 	private MessageTransformer messageTransformer;
 	private String regexFilter;
 	private String defaultStubStrategy = "Stub all external connection code";
@@ -151,12 +150,28 @@ public class TestTool {
 		return debugStorage;
 	}
 
+	public void setMessageEncoder(MessageEncoder messageEncoder) {
+		this.messageEncoder = messageEncoder;
+	}
+
+	public MessageEncoder getMessageEncoder() {
+		return messageEncoder;
+	}
+
 	public void setMessageTransformer(MessageTransformer messageTransformer) {
 		this.messageTransformer = messageTransformer;
 	}
 
 	public MessageTransformer getMessageTransformer() {
 		return messageTransformer;
+	}
+
+	public void setMessageCapturer(MessageCapturer messageCapturer) {
+		this.messageCapturer = messageCapturer;
+	}
+
+	public MessageCapturer getMessageCapturer() {
+		return messageCapturer;
 	}
 
 	public void setRegexFilter(String regexFilter) {
@@ -199,14 +214,14 @@ public class TestTool {
 		return matchingStubStrategiesForExternalConnectionCode;
 	}
 
-	@SneakyThrows
-	private Object checkpoint(String correlationId, String childThreadId, String sourceClassName, String name,
-			Object message, StubableCode stubableCode, StubableCodeThrowsException stubableCodeThrowsException,
+	private <T> T checkpoint(String correlationId, String childThreadId, String sourceClassName, String name,
+			T message, StubableCode stubableCode, StubableCodeThrowsException stubableCodeThrowsException,
 			Set<String> matchingStubStrategies, int checkpointType, int levelChangeNextCheckpoint) {
 		boolean executeStubableCode = true;
 		if (reportGeneratorEnabled) {
+			Report report;
 			synchronized(reportsInProgress) {
-				Report report = (Report)reportsInProgressByCorrelationId.get(correlationId);
+				report = (Report)reportsInProgressByCorrelationId.get(correlationId);
 				if (report == null) {
 					if (checkpointType == Checkpoint.TYPE_STARTPOINT) {
 						log.debug("Create new report for '" + correlationId + "'");
@@ -235,49 +250,95 @@ public class TestTool {
 						log.warn("Report for '" + correlationId + "' is null, could not add checkpoint '" + name + "'");
 					}
 				}
-				if (report != null) {
+			}
+			if (report != null) {
+				synchronized(report) {
 					executeStubableCode = false;
-					reportsInProgressEstimatedMemoryUsage = reportsInProgressEstimatedMemoryUsage - report.getEstimatedMemoryUsage();
 					message = report.checkpoint(childThreadId, sourceClassName, name, message, stubableCode,
 							stubableCodeThrowsException, matchingStubStrategies, checkpointType, levelChangeNextCheckpoint);
-					reportsInProgressEstimatedMemoryUsage = reportsInProgressEstimatedMemoryUsage + report.getEstimatedMemoryUsage();
-					if (report.finished()) {
-						report.setEndTime(System.currentTimeMillis());
-						log.debug("Report is finished for '" + correlationId + "'");
-						reportsInProgress.remove(report);
-						reportsInProgressByCorrelationId.remove(correlationId);
-						numberOfReportsInProgress--;
-						reportsInProgressEstimatedMemoryUsage = reportsInProgressEstimatedMemoryUsage - report.getEstimatedMemoryUsage();
-						if (report.isReportFilterMatching()) {
-							debugStorage.storeWithoutException(report);
-						}
-					}
+					closeReport(report);
 				}
 			}
 		}
 		if (executeStubableCode) {
-			if (stubableCode != null) {
-				message = stubableCode.execute();
-			}
-			if (stubableCodeThrowsException != null) {
-				message = stubableCodeThrowsException.execute();
-			}
+			message = execute(stubableCode, stubableCodeThrowsException, message);
 		}
 		return message;
 	}
 
-	public Object startpoint(String correlationId, String sourceClassName, String name, Object message) {
+	@SuppressWarnings("unchecked")
+	@SneakyThrows
+	protected static <T> T execute(StubableCode stubableCode, StubableCodeThrowsException stubableCodeThrowsException,
+			T message) {
+		if (stubableCode != null) {
+			message = (T)stubableCode.execute();
+		}
+		if (stubableCodeThrowsException != null) {
+			message = (T)stubableCodeThrowsException.execute();
+		}
+		return message;
+	}
+
+	protected void closeReport(Report report) {
+		synchronized(report) {
+			if (!report.isClosed() && report.threadsFinished() && report.streamingMessageListenersFinished()) {
+				report.setEndTime(System.currentTimeMillis());
+				report.setClosed(true);
+				log.debug("Report is finished for '" + report.getCorrelationId() + "'");
+				synchronized(reportsInProgress) {
+					reportsInProgress.remove(report);
+					reportsInProgressByCorrelationId.remove(report.getCorrelationId());
+					numberOfReportsInProgress--;
+				}
+				if (report.isReportFilterMatching()) {
+					debugStorage.storeWithoutException(report);
+				}
+			}
+		}
+	}
+
+	public boolean warnReportsInProgress() {
+		synchronized(reportsInProgress) {
+			for (Report report : reportsInProgress) {
+				if (!messageCapturerWaitingForClose(report)
+						&& report.getEndTime() + (5 * 60 * 1000) < System.currentTimeMillis()) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	public boolean warnMessageCapturerWaitingForClose() {
+		synchronized(reportsInProgress) {
+			for (Report report : reportsInProgress) {
+				if (messageCapturerWaitingForClose(report)
+						&& report.getEndTime() + (30 * 1000) < System.currentTimeMillis()) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	private boolean messageCapturerWaitingForClose(Report report) {
+		synchronized(reportsInProgress) {
+			return report.threadsFinished() && !report.streamingMessageListenersFinished();
+		}
+	}
+
+	public <T> T startpoint(String correlationId, String sourceClassName, String name, T message) {
 		return checkpoint(correlationId, null, sourceClassName, name, message, null, null, null,
 				Checkpoint.TYPE_STARTPOINT, 1);
 	}
 
-	public Object startpoint(String correlationId, String sourceClassName, String name, Object message,
+	public <T> T startpoint(String correlationId, String sourceClassName, String name, T message,
 			Set<String> matchingStubStrategies) {
 		return checkpoint(correlationId, null, sourceClassName, name, message, null, null, matchingStubStrategies,
 				Checkpoint.TYPE_STARTPOINT, 1);
 	}
 
-	public Object startpoint(String correlationId, String sourceClassName, String name, StubableCode stubableCode,
+	public <T> T startpoint(String correlationId, String sourceClassName, String name, StubableCode stubableCode,
 			Set<String> matchingStubStrategies) {
 		return checkpoint(correlationId, null, sourceClassName, name, null, stubableCode, null, matchingStubStrategies,
 				Checkpoint.TYPE_STARTPOINT, 1);
@@ -305,19 +366,19 @@ public class TestTool {
 				matchingStubStrategies, Checkpoint.TYPE_STARTPOINT, 1);
 	}
 
-	public Object endpoint(String correlationId, String sourceClassName, String name, Object message) {
+	public <T> T endpoint(String correlationId, String sourceClassName, String name, T message) {
 		return checkpoint(correlationId, null, sourceClassName, name, message, null, null, null,
 				Checkpoint.TYPE_ENDPOINT, -1);
 	}
 
-	public Object endpoint(String correlationId, String sourceClassName, String name, Object message,
+	public <T> T endpoint(String correlationId, String sourceClassName, String name, T message,
 			Set<String> matchingStubStrategies) {
 		return checkpoint(correlationId, null, sourceClassName, name, message, null, null, matchingStubStrategies,
 				Checkpoint.TYPE_ENDPOINT, -1);
 	}
 
-	public Object endpoint(String correlationId, String sourceClassName, String name, StubableCode stubableCode,
-			Set<String> matchingStubStrategies) {
+	public <T> T endpoint(String correlationId, String sourceClassName, String name,
+			StubableCode stubableCode, Set<String> matchingStubStrategies) {
 		return checkpoint(correlationId, null, sourceClassName, name, null, stubableCode, null, matchingStubStrategies,
 				Checkpoint.TYPE_ENDPOINT, -1);
 	}
@@ -325,6 +386,7 @@ public class TestTool {
 	/**
 	 * See description of parameter throwsException at startpoint method.
 	 * 
+	 * @param <T> ...
 	 * @param <E> ...
 	 * @param correlationId ...
 	 * @param sourceClassName ...
@@ -335,7 +397,7 @@ public class TestTool {
 	 * @return ...
 	 * @throws E ...
 	 */
-	public <E extends Exception> Object endpoint(String correlationId, String sourceClassName, String name,
+	public <T, E extends Exception> T endpoint(String correlationId, String sourceClassName, String name,
 			StubableCodeThrowsException stubableCodeThrowsException, Set<String> matchingStubStrategies,
 			E throwsException) throws E {
 		return checkpoint(correlationId, null, sourceClassName, name, null, null, stubableCodeThrowsException,
@@ -346,14 +408,17 @@ public class TestTool {
 	 * Convenient method for the most common use case for stubable code, stubbing all external connections related code.
 	 * The default stubbing strategy (Stub all external connection code) will be used as matching stub strategies.
 	 * 
+	 * @param <T> ...
 	 * @param correlationId ...
 	 * @param sourceClassName ...
 	 * @param name ...
 	 * @param externalConnectionCode ...
 	 * @return ...
 	 */
-	public Object endpoint(String correlationId, String sourceClassName, String name, ExternalConnectionCode externalConnectionCode) {
-		return checkpoint(correlationId, null, sourceClassName, name, null, externalConnectionCode, null, matchingStubStrategiesForExternalConnectionCode, Checkpoint.TYPE_ENDPOINT, -1);
+	public <T> T endpoint(String correlationId, String sourceClassName, String name,
+			ExternalConnectionCode externalConnectionCode) {
+		return checkpoint(correlationId, null, sourceClassName, name, null, externalConnectionCode, null,
+				matchingStubStrategiesForExternalConnectionCode, Checkpoint.TYPE_ENDPOINT, -1);
 	}
 
 	/**
@@ -362,6 +427,7 @@ public class TestTool {
 	 * The default stubbing strategy (Stub all external connection code) will be used as matching stub strategies.
 	 * See description of parameter throwsException at startpoint method.
 	 * 
+	 * @param <T> ...
 	 * @param <E> ...
 	 * @param correlationId ...
 	 * @param sourceClassName ...
@@ -371,25 +437,25 @@ public class TestTool {
 	 * @return ...
 	 * @throws E ...
 	 */
-	public <E extends Exception> Object endpoint(String correlationId, String sourceClassName, String name,
+	public <T, E extends Exception> T endpoint(String correlationId, String sourceClassName, String name,
 			ExternalConnectionCodeThrowsException externalConnectionCodeThrowsException, E throwsException) throws E {
 		return checkpoint(correlationId, null, sourceClassName, name, null, null, externalConnectionCodeThrowsException,
 				matchingStubStrategiesForExternalConnectionCode, Checkpoint.TYPE_ENDPOINT, -1);
 	}
 
-	public Object inputpoint(String correlationId, String sourceClassName, String name, Object message) {
+	public <T> T inputpoint(String correlationId, String sourceClassName, String name, T message) {
 		return checkpoint(correlationId, null, sourceClassName, name, message, null, null, null,
 				Checkpoint.TYPE_INPUTPOINT, 0);
 	}
 
-	public Object inputpoint(String correlationId, String sourceClassName, String name, Object message,
+	public <T> T inputpoint(String correlationId, String sourceClassName, String name, T message,
 			Set<String> matchingStubStrategies) {
 		return checkpoint(correlationId, null, sourceClassName, name, message, null, null, matchingStubStrategies,
 				Checkpoint.TYPE_INPUTPOINT, 0);
 	}
 
-	public Object inputpoint(String correlationId, String sourceClassName, String name, StubableCode stubableCode,
-			Set<String> matchingStubStrategies) {
+	public <T> T inputpoint(String correlationId, String sourceClassName, String name,
+			StubableCode stubableCode, Set<String> matchingStubStrategies) {
 		return checkpoint(correlationId, null, sourceClassName, name, null, stubableCode, null, matchingStubStrategies,
 				Checkpoint.TYPE_INPUTPOINT, 0);
 	}
@@ -397,6 +463,7 @@ public class TestTool {
 	/**
 	 * See description of parameter throwsException at startpoint method.
 	 * 
+	 * @param <T> ...
 	 * @param <E> ...
 	 * @param correlationId ...
 	 * @param sourceClassName ...
@@ -407,26 +474,26 @@ public class TestTool {
 	 * @return ...
 	 * @throws E ...
 	 */
-	public <E extends Exception> Object inputpoint(String correlationId, String sourceClassName, String name,
-			StubableCodeThrowsException stubableCodeThrowsException, Set<String> matchingStubStrategies,
+	public <T, E extends Exception> T inputpoint(String correlationId, String sourceClassName,
+			String name, StubableCodeThrowsException stubableCodeThrowsException, Set<String> matchingStubStrategies,
 			E throwsException) throws E {
 		return checkpoint(correlationId, null, sourceClassName, name, null, null, stubableCodeThrowsException,
 				matchingStubStrategies, Checkpoint.TYPE_INPUTPOINT, 0);
 	}
 
-	public Object outputpoint(String correlationId, String sourceClassName, String name, Object message) {
+	public <T> T outputpoint(String correlationId, String sourceClassName, String name, T message) {
 		return checkpoint(correlationId, null, sourceClassName, name, message, null, null, null,
 				Checkpoint.TYPE_OUTPUTPOINT, 0);
 	}
 
-	public Object outputpoint(String correlationId, String sourceClassName, String name, Object message,
+	public <T> T outputpoint(String correlationId, String sourceClassName, String name, T message,
 			Set<String> matchingStubStrategies) {
 		return checkpoint(correlationId, null, sourceClassName, name, message, null, null, matchingStubStrategies,
 				Checkpoint.TYPE_OUTPUTPOINT, 0);
 	}
 
-	public Object outputpoint(String correlationId, String sourceClassName, String name, StubableCode stubableCode,
-			Set<String> matchingStubStrategies) {
+	public <T> T outputpoint(String correlationId, String sourceClassName, String name,
+			StubableCode stubableCode, Set<String> matchingStubStrategies) {
 		return checkpoint(correlationId, null, sourceClassName, name, null, stubableCode, null, matchingStubStrategies,
 				Checkpoint.TYPE_OUTPUTPOINT, 0);
 	}
@@ -434,6 +501,7 @@ public class TestTool {
 	/**
 	 * See description of parameter throwsException at startpoint method.
 	 * 
+	 * @param <T> ...
 	 * @param <E> ...
 	 * @param correlationId ...
 	 * @param sourceClassName ...
@@ -444,8 +512,8 @@ public class TestTool {
 	 * @return ...
 	 * @throws E ...
 	 */
-	public <E extends Exception> Object outputpoint(String correlationId, String sourceClassName, String name,
-			StubableCodeThrowsException stubableCodeThrowsException, Set<String> matchingStubStrategies,
+	public <T, E extends Exception> T outputpoint(String correlationId, String sourceClassName,
+			String name, StubableCodeThrowsException stubableCodeThrowsException, Set<String> matchingStubStrategies,
 			E throwsException) throws E {
 		return checkpoint(correlationId, null, sourceClassName, name, null, null, stubableCodeThrowsException,
 				matchingStubStrategies, Checkpoint.TYPE_OUTPUTPOINT, 0);
@@ -455,13 +523,14 @@ public class TestTool {
 	 * Convenient method for the most common use case for stubable code, stubbing all external connections related code.
 	 * The default stubbing strategy (Stub all external connection code) will be used as matching stub strategies.
 	 * 
+	 * @param <T> ...
 	 * @param correlationId ...
 	 * @param sourceClassName ...
 	 * @param name ...
 	 * @param externalConnectionCode ...
 	 * @return ...
 	 */
-	public Object outputpoint(String correlationId, String sourceClassName, String name,
+	public <T> T outputpoint(String correlationId, String sourceClassName, String name,
 			ExternalConnectionCode externalConnectionCode) {
 		return checkpoint(correlationId, null, sourceClassName, name, null, externalConnectionCode, null,
 				matchingStubStrategiesForExternalConnectionCode, Checkpoint.TYPE_OUTPUTPOINT, 0);
@@ -473,6 +542,7 @@ public class TestTool {
 	 * The default stubbing strategy (Stub all external connection code) will be used as matching stub strategies.
 	 * See description of parameter throwsException at startpoint method.
 	 * 
+	 * @param <T> ...
 	 * @param <E> ...
 	 * @param correlationId ...
 	 * @param sourceClassName ...
@@ -482,48 +552,53 @@ public class TestTool {
 	 * @return ...
 	 * @throws E ...
 	 */
-	public <E extends Exception> Object outputpoint(String correlationId, String sourceClassName, String name,
-			ExternalConnectionCodeThrowsException externalConnectionCodeThrowsException, E throwsException) throws E {
+	public <T, E extends Exception> T outputpoint(String correlationId, String sourceClassName,
+			String name, ExternalConnectionCodeThrowsException externalConnectionCodeThrowsException, E throwsException
+			) throws E {
 		return checkpoint(correlationId, null, sourceClassName, name, null, null, externalConnectionCodeThrowsException,
 				matchingStubStrategiesForExternalConnectionCode, Checkpoint.TYPE_OUTPUTPOINT, 0);
 	}
 
-	public Object infopoint(String correlationId, String sourceClassName, String name, Object message) {
+	public <T> T infopoint(String correlationId, String sourceClassName, String name, T message) {
 		return checkpoint(correlationId, null, sourceClassName, name, message, null, null, null,
 				Checkpoint.TYPE_INFOPOINT, 0);
 	}
 
 	/**
-	 * Specify the name of a previous startpoint to abort to or a unique name
-	 * to finish the report or thread.
+	 * Use abortpoint instead of endpoint in case an exception is thrown after a startpoint. The exception object can
+	 * be passed as the message parameter.
 	 * 
+	 * @param <T> ...
 	 * @param correlationId ...
 	 * @param sourceClassName ...
 	 * @param name ...
 	 * @param message ...
 	 * @return ...
 	 */
-	public Object abortpoint(String correlationId, String sourceClassName, String name, Object message) {
-		return checkpoint(correlationId, null, sourceClassName, name, message, null, null, null, Checkpoint.TYPE_ABORTPOINT, -1);
+	public <T> T abortpoint(String correlationId, String sourceClassName, String name, T message) {
+		return checkpoint(correlationId, null, sourceClassName, name, message, null, null, null,
+				Checkpoint.TYPE_ABORTPOINT, -1);
 	}
 
 	/**
 	 * Set a marker in the report for a child thread to appear. This method
 	 * should be called by the parent thread. Specify a childThreadId that will also
 	 * be used by the child thread when calling threadStartpoint. The name of the
-	 * child thread can be used as childThreadId (when known at this point).
+	 * child thread can be used as childThreadId (when unique and known at this point).
 	 * 
 	 * @param correlationId ...
 	 * @param childThreadId ...
 	 */
 	public void threadCreatepoint(String correlationId, String childThreadId) {
-		checkpoint(correlationId, childThreadId, null, null, null, null, null, null, Checkpoint.TYPE_THREADCREATEPOINT, 0);
+		checkpoint(correlationId, childThreadId, null, null, null, null, null, null,
+				Checkpoint.TYPE_THREADCREATEPOINT, 0);
 	}
 
 	/**
 	 * Startpoint for a child thread. Specify a childThreadId that was also used when
 	 * calling threadStartpoint.
 	 * 
+	 * @param <T> ...
 	 * @param correlationId ...
 	 * @param childThreadId ...
 	 * @param sourceClassName ...
@@ -531,26 +606,88 @@ public class TestTool {
 	 * @param message ...
 	 * @return ...
 	 */
-	public Object threadStartpoint(String correlationId, String childThreadId, String sourceClassName, String name, Object message) {
-		return checkpoint(correlationId, childThreadId, sourceClassName, name, message, null, null, null, Checkpoint.TYPE_THREADSTARTPOINT, 1);
+	public <T> T threadStartpoint(String correlationId, String childThreadId, String sourceClassName,
+			String name, T message) {
+		return checkpoint(correlationId, childThreadId, sourceClassName, name, message, null, null, null,
+				Checkpoint.TYPE_THREADSTARTPOINT, 1);
 	}
 
 	/**
 	 * Startpoint for a child thread. This method can be used when the name of
 	 * the child thread was used as childThreadId when calling threadCreatepoint.
 	 * 
+	 * @param <T> ...
 	 * @param correlationId ...
 	 * @param sourceClassName ...
 	 * @param name ...
 	 * @param message ...
 	 * @return ...
 	 */
-	public Object threadStartpoint(String correlationId, String sourceClassName, String name, Object message) {
+	public <T> T threadStartpoint(String correlationId, String sourceClassName, String name, T message) {
 		return threadStartpoint(correlationId, Thread.currentThread().getName(), sourceClassName, name, message);
 	}
 
-	public Object threadEndpoint(String correlationId, String sourceClassName, String name, Object message) {
-		return checkpoint(correlationId, null, sourceClassName, name, message, null, null, null, Checkpoint.TYPE_THREADENDPOINT, -1);
+	public <T> T threadEndpoint(String correlationId, String sourceClassName, String name, T message) {
+		return checkpoint(correlationId, null, sourceClassName, name, message, null, null, null,
+				Checkpoint.TYPE_THREADENDPOINT, -1);
+	}
+
+	/**
+	 * Mark a thread as finished. When all threads are finished the report will be closed and written to storage. When
+	 * all checkpoints are properly surrounded with a try/catch it should not be necessary to call this method. On the
+	 * other hand, to be on the safe side it is wise to call this method in the finally of the root startpoint of the
+	 * thread to prevent reports staying in progress and consuming memory. See code example at {@link #close(String)}
+	 * also.
+	 * 
+	 * When a threadCreatepoint is called but it is not certain whether this thread will execute his method can be used
+	 * to mark this thread as finished at a point where it is clear that this thread will not start.
+	 * 
+	 * @param correlationId ...
+	 * @param threadName    name of the thread to close or null to close all threads (name of a thread cannot be null as
+	 *                      Thread.setName(null) will result in: java.lang.NullPointerException: name cannot be null)
+	 */
+	public void close(String correlationId, String threadName) {
+		Report report;
+		synchronized(reportsInProgress) {
+			report = (Report)reportsInProgressByCorrelationId.get(correlationId);
+		}
+		if (report != null) {
+			synchronized(report) {
+				if (threadName == null) {
+					report.close();
+				} else {
+					report.close(threadName);
+				}
+				closeReport(report);
+			}
+		}
+	}
+
+	/**
+	 * Mark all threads as finished and close the report, hence write the report to storage. When all checkpoints are
+	 * properly surrounded with a try/catch it should not be necessary to call this method. On the other hand, to be on
+	 * the safe side it is wise to call this method in the finally of the root startpoint of the report to prevent
+	 * reports staying in progress and consuming memory. Hence for the top level startpoint use:
+	 * 
+	 * <code>
+	 * try {
+	 *     startpoint();
+	 *     inputpoint();
+	 *     infopoint();
+	 *     outputpoint();
+	 *     endpoint();
+	 * } catch(Throwable t) {
+	 *     abortpoint();
+	 *     throw t;
+	 * } finally {
+	 *     close();
+	 * }
+	 *</code>
+	 * 
+	 * @param correlationId ...
+	 */
+	public void close(String correlationId) {
+		close(correlationId, null);
 	}
 
 	public static String getCorrelationId() {
@@ -559,10 +696,26 @@ public class TestTool {
 				+ "-" + new UID().toString();
 	}
 
+	/**
+	 * See {@link Rerunner#rerun(String, Report, SecurityContext, ReportRunner)}
+	 * 
+	 * @param report ...
+	 * @param securityContext ...
+	 * @return ...
+	 */
 	public String rerun(Report report, SecurityContext securityContext) {
 		return rerun(null, report, securityContext, null);
 	}
 
+	/**
+	 * See {@link Rerunner#rerun(String, Report, SecurityContext, ReportRunner)}
+	 * 
+	 * @param correlationId ...
+	 * @param report ...
+	 * @param securityContext ...
+	 * @param reportRunner ...
+	 * @return ...
+	 */
 	public String rerun(String correlationId, Report report, SecurityContext securityContext, ReportRunner reportRunner) {
 		String errorMessage = null;
 		if (rerunner == null && debugger == null) {
@@ -587,6 +740,7 @@ public class TestTool {
 				}
 			} finally {
 				if (reportGeneratorEnabled) {
+					// Verify that originalReport has been removed from originalReports by checkpoint()
 					Report originalReport;
 					synchronized(originalReports) {
 						originalReport = (Report)originalReports.remove(correlationId);
@@ -660,31 +814,13 @@ public class TestTool {
 	}
 
 	public long getReportsInProgressEstimatedMemoryUsage() {
-		return reportsInProgressEstimatedMemoryUsage;
-	}
-	
-	public void register(StartpointProvider startpointProvider) {
-		synchronized(startpointProviders) {
-			startpointProviders.add(startpointProvider);
-			startpointProviderNames.add(startpointProvider.getName());
-		}
-	}
-	
-	public List<String> getStartpointProviderNames() {
-		synchronized(startpointProviders) {
-			return startpointProviderNames;
-		}
-	}
-	
-	public StartpointProvider getStartpointProvider(String name) {
-		synchronized(startpointProviders) {
-			int i = startpointProviderNames.indexOf(name);
-			if (i == -1) {
-				return null;
-			} else {
-				return (StartpointProvider)startpointProviders.get(i);
+		long reportsInProgressEstimatedMemoryUsage = 0;
+		synchronized(reportsInProgress) {
+			for (Report report : reportsInProgress) {
+				reportsInProgressEstimatedMemoryUsage += report.getEstimatedMemoryUsage();
 			}
 		}
+		return reportsInProgressEstimatedMemoryUsage;
 	}
 
 	public static String getName() {

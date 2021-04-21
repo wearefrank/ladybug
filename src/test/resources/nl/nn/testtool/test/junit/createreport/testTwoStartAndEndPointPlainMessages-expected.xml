@@ -1,0 +1,17 @@
+<Report Name="testTwoStartAndEndPointPlainMessages"
+        Description=""
+        Path=""
+        CorrelationId="Original length: 36"
+        StartTime="Original length: 13"
+        EndTime="Original length: 13"
+        NumberOfCheckpoints="4"
+        EstimatedMemoryUsage="96">
+   <Checkpoint Name="testTwoStartAndEndPointPlainMessages"
+               Type="Startpoint"
+               Level="0">startmessage1</Checkpoint>
+   <Checkpoint Name="name2" Type="Startpoint" Level="1">startmessage2</Checkpoint>
+   <Checkpoint Name="name2" Type="Endpoint" Level="2">endmessage2</Checkpoint>
+   <Checkpoint Name="testTwoStartAndEndPointPlainMessages"
+               Type="Endpoint"
+               Level="1">endmessage1</Checkpoint>
+</Report>

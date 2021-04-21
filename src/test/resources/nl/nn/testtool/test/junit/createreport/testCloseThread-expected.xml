@@ -1,0 +1,14 @@
+<Report Name="testCloseThread"
+        Description=""
+        Path=""
+        CorrelationId="Original length: 36"
+        StartTime="Original length: 13"
+        EndTime="Original length: 13"
+        NumberOfCheckpoints="5"
+        EstimatedMemoryUsage="122">
+   <Checkpoint Name="testCloseThread" Type="Startpoint" Level="0">startmessage1</Checkpoint>
+   <Checkpoint Name="name2" Type="ThreadStartpoint" Level="1">startmessage2</Checkpoint>
+   <Checkpoint Name="name3" Type="Startpoint" Level="2">startmessage3</Checkpoint>
+   <Checkpoint Name="name2" Type="ThreadEndpoint" Level="3">endmessage2</Checkpoint>
+   <Checkpoint Name="testCloseThread" Type="Endpoint" Level="1">endmessage1</Checkpoint>
+</Report>

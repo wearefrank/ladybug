@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2018 Nationale-Nederlanden, 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,10 +15,12 @@
 */
 package nl.nn.testtool.util;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
 
+import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParserFactory;
 import javax.xml.transform.ErrorListener;
@@ -101,6 +103,14 @@ public class XmlUtil {
 		return new net.sf.saxon.TransformerFactoryImpl();
 	}
 
+	public static DocumentBuilderFactory getDocumentBuilderFactory() {
+		// Deprecated
+		// return new net.sf.saxon.dom.DocumentBuilderFactoryImpl();
+		// Xerces
+		// return new org.apache.xerces.jaxp.DocumentBuilderFactoryImpl();
+		return DocumentBuilderFactory.newInstance();
+	}
+
 	@SneakyThrows
 	public static String nodeToString(Node node) {
 		Transformer transformer = getTransformerFactory().newTransformer();
@@ -108,6 +118,11 @@ public class XmlUtil {
 		StringWriter stringWriter = new StringWriter();
 		transformer.transform(new DOMSource(node), new StreamResult(stringWriter));
 		return stringWriter.toString();
+	}
+
+	public static Node stringToNode(String string) throws SAXException, IOException, ParserConfigurationException {
+		return getDocumentBuilderFactory().newDocumentBuilder()
+				.parse(new ByteArrayInputStream(string.getBytes())).getDocumentElement();
 	}
 }
 

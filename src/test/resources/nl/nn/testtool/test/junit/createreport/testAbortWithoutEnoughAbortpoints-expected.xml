@@ -1,0 +1,14 @@
+<Report Name="testAbortWithoutEnoughAbortpoints"
+        Description=""
+        Path=""
+        CorrelationId="Original length: 36"
+        StartTime="Original length: 13"
+        EndTime="Original length: 13"
+        NumberOfCheckpoints="3"
+        EstimatedMemoryUsage="74">
+   <Checkpoint Name="testAbortWithoutEnoughAbortpoints"
+               Type="Startpoint"
+               Level="0">startmessage1</Checkpoint>
+   <Checkpoint Name="name2" Type="Startpoint" Level="1">startmessage2</Checkpoint>
+   <Checkpoint Name="name2" Type="Abortpoint" Level="2">endmessage2</Checkpoint>
+</Report>

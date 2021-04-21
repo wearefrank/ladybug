@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2018 Nationale-Nederlanden, 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ import nextapp.echo2.app.Extent;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.ResourceImageReference;
 import nl.nn.testtool.Checkpoint;
+import nl.nn.testtool.MessageEncoderImpl;
 import nl.nn.testtool.Report;
 import nl.nn.testtool.echo2.Echo2Application;
 
@@ -54,8 +55,8 @@ public class ReportsTreeCellRenderer extends DefaultTreeCellRenderer {
 				if(showReportAndCheckpointIds) {
 					label.setText("["+report.getStorageId()+"] "+report.getName());
 				}
-				if (report.getDifferenceChecked()) {
-					if (report.getDifferenceFound()) {
+				if (report.isDifferenceChecked()) {
+					if (report.isDifferenceFound()) {
 						label.setForeground(Echo2Application.getDifferenceFoundLabelColor());
 						specialForeground = true;
 					} else {
@@ -73,53 +74,58 @@ public class ReportsTreeCellRenderer extends DefaultTreeCellRenderer {
 				} else {
 					label.setText(checkpoint.getName());
 				}
+				String path = "/nl/nn/testtool/echo2/reports/";
+				String error = "";
+				if (MessageEncoderImpl.THROWABLE_ENCODER.equals(checkpoint.getEncoding())) {
+					error = "-error";
+				}
 				if (checkpoint.getType() == Checkpoint.TYPE_STARTPOINT) {
 					if (defaultMutableTreeNode.getLevel() % 2 == 0) {
-						label.setIcon(new ResourceImageReference("/nl/nn/testtool/echo2/reports/startpoint-even.gif"));
+						label.setIcon(new ResourceImageReference(path + "startpoint" + error + "-even.gif"));
 					} else {
-						label.setIcon(new ResourceImageReference("/nl/nn/testtool/echo2/reports/startpoint-odd.gif"));
+						label.setIcon(new ResourceImageReference(path + "startpoint" + error + "-odd.gif"));
 					}
 				} else if (checkpoint.getType() == Checkpoint.TYPE_ENDPOINT) {
 					if (defaultMutableTreeNode.getLevel() % 2 == 0) {
-						label.setIcon(new ResourceImageReference("/nl/nn/testtool/echo2/reports/endpoint-odd.gif"));
+						label.setIcon(new ResourceImageReference(path + "endpoint" + error + "-odd.gif"));
 					} else {
-						label.setIcon(new ResourceImageReference("/nl/nn/testtool/echo2/reports/endpoint-even.gif"));
+						label.setIcon(new ResourceImageReference(path + "endpoint" + error + "-even.gif"));
 					}
 				} else if (checkpoint.getType() == Checkpoint.TYPE_ABORTPOINT) {
 					if (defaultMutableTreeNode.getLevel() % 2 == 0) {
-						label.setIcon(new ResourceImageReference("/nl/nn/testtool/echo2/reports/abortpoint-odd.gif"));
+						label.setIcon(new ResourceImageReference(path + "abortpoint-odd.gif"));
 					} else {
-						label.setIcon(new ResourceImageReference("/nl/nn/testtool/echo2/reports/abortpoint-even.gif"));
+						label.setIcon(new ResourceImageReference(path + "abortpoint-even.gif"));
 					}
 				} else if (checkpoint.getType() == Checkpoint.TYPE_INPUTPOINT) {
 					if (defaultMutableTreeNode.getLevel() % 2 == 0) {
-						label.setIcon(new ResourceImageReference("/nl/nn/testtool/echo2/reports/inputpoint-even.gif"));
+						label.setIcon(new ResourceImageReference(path + "inputpoint" + error + "-even.gif"));
 					} else {
-						label.setIcon(new ResourceImageReference("/nl/nn/testtool/echo2/reports/inputpoint-odd.gif"));
+						label.setIcon(new ResourceImageReference(path + "inputpoint" + error + "-odd.gif"));
 					}
 				} else if (checkpoint.getType() == Checkpoint.TYPE_OUTPUTPOINT) {
 					if (defaultMutableTreeNode.getLevel() % 2 == 0) {
-						label.setIcon(new ResourceImageReference("/nl/nn/testtool/echo2/reports/outputpoint-even.gif"));
+						label.setIcon(new ResourceImageReference(path + "outputpoint" + error + "-even.gif"));
 					} else {
-						label.setIcon(new ResourceImageReference("/nl/nn/testtool/echo2/reports/outputpoint-odd.gif"));
+						label.setIcon(new ResourceImageReference(path + "outputpoint" + error + "-odd.gif"));
 					}
 				} else if (checkpoint.getType() == Checkpoint.TYPE_INFOPOINT) {
 					if (defaultMutableTreeNode.getLevel() % 2 == 0) {
-						label.setIcon(new ResourceImageReference("/nl/nn/testtool/echo2/reports/infopoint-even.gif"));
+						label.setIcon(new ResourceImageReference(path + "infopoint" + error + "-even.gif"));
 					} else {
-						label.setIcon(new ResourceImageReference("/nl/nn/testtool/echo2/reports/infopoint-odd.gif"));
+						label.setIcon(new ResourceImageReference(path + "infopoint" + error + "-odd.gif"));
 					}
 				} else if (checkpoint.getType() == Checkpoint.TYPE_THREADSTARTPOINT) {
 					if (defaultMutableTreeNode.getLevel() % 2 == 0) {
-						label.setIcon(new ResourceImageReference("/nl/nn/testtool/echo2/reports/threadStartpoint-even.gif"));
+						label.setIcon(new ResourceImageReference(path + "threadStartpoint" + error + "-even.gif"));
 					} else {
-						label.setIcon(new ResourceImageReference("/nl/nn/testtool/echo2/reports/threadStartpoint-odd.gif"));
+						label.setIcon(new ResourceImageReference(path + "threadStartpoint" + error + "-odd.gif"));
 					}
 				} else if (checkpoint.getType() == Checkpoint.TYPE_THREADENDPOINT) {
 					if (defaultMutableTreeNode.getLevel() % 2 == 0) {
-						label.setIcon(new ResourceImageReference("/nl/nn/testtool/echo2/reports/threadEndpoint-odd.gif"));
+						label.setIcon(new ResourceImageReference(path + "threadEndpoint" + error + "-odd.gif"));
 					} else {
-						label.setIcon(new ResourceImageReference("/nl/nn/testtool/echo2/reports/threadEndpoint-even.gif"));
+						label.setIcon(new ResourceImageReference(path + "threadEndpoint" + error + "-even.gif"));
 					}
 				}
 			}

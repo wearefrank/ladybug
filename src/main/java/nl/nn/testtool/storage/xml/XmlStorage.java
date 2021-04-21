@@ -274,6 +274,7 @@ public class XmlStorage implements CrudStorage {
 	 * Reads the report from the given file.
 	 *
 	 * @param file File to be read from.
+	 * @throws StorageException ...
 	 * @return Report generated from the given file.
 	 */
 	protected Report readReportFromFile(File file) throws StorageException {

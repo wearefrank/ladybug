@@ -9,7 +9,9 @@
 	"
 	>
 
-	<bean name="testTool" class="nl.nn.testtool.TestTool" scope="singleton">
+	<!-- Use prototype for JUnit tests to reset settings between tests and when run in parallel prevent one test -->
+	<!-- that alters a setting to influence another test -->
+	<bean name="testTool" class="nl.nn.testtool.TestTool" scope="prototype">
 		<property name="debugStorage">
 			<ref bean="debugStorage"/>
 		</property>

@@ -1,0 +1,19 @@
+<Report Name="Import test"
+        Description="Import test description"
+        Path="Import test path"
+        CorrelationId="Original length: 3"
+        StartTime="Original length: 1"
+        EndTime="Original length: 1"
+        NumberOfCheckpoints="2"
+        EstimatedMemoryUsage="0">
+   <Checkpoint Name="name1"
+               Type="Startpoint"
+               Level="2"
+               SourceClassName="sourceClassName1"
+               Null="true"/>
+   <Checkpoint Name="name1"
+               Type="Abortpoint"
+               Level="4"
+               SourceClassName="sourceClassName2"
+               Null="true"/>
+</Report>

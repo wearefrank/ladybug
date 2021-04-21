@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2018 Nationale-Nederlanden, 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -281,11 +281,11 @@ public class TreePane extends ContentPane implements TreeSelectionListener {
 
 	public DefaultMutableTreeNode addCheckpoint(DefaultMutableTreeNode parentNode, Checkpoint checkpoint) {
 		if (parentNode.getChildCount() > 0) {
-			int lastChildType = ((Checkpoint)((DefaultMutableTreeNode)parentNode.getLastChild()).getUserObject()).getType();
-			if (isStartpoint(lastChildType)) {
+			int lastChildLevel = ((Checkpoint)((DefaultMutableTreeNode)parentNode.getLastChild()).getUserObject()).getLevel();
+			if (checkpoint.getLevel() > lastChildLevel) {
 				// Increase level
 				parentNode = (DefaultMutableTreeNode)parentNode.getLastChild();
-			} else if (isEndpoint(lastChildType)) {
+			} else if (checkpoint.getLevel() < lastChildLevel) {
 				// Decrease level
 				parentNode = (DefaultMutableTreeNode)parentNode.getParent();
 			}
@@ -400,16 +400,6 @@ public class TreePane extends ContentPane implements TreeSelectionListener {
 	private boolean isStartpoint(int type) {
 		if (type == Checkpoint.TYPE_STARTPOINT
 				|| type == Checkpoint.TYPE_THREADSTARTPOINT) {
-			return true;
-		} else {
-			return false;
-		}
-	}
-
-	private boolean isEndpoint(int type) {
-		if (type == Checkpoint.TYPE_ENDPOINT
-				|| type == Checkpoint.TYPE_THREADENDPOINT
-				|| type == Checkpoint.TYPE_ABORTPOINT) {
 			return true;
 		} else {
 			return false;

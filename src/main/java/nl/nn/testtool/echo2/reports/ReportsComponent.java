@@ -1,5 +1,5 @@
 /*
-   Copyright 2018-2019 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2018-2019 Nationale-Nederlanden, 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -100,7 +100,7 @@ public class ReportsComponent extends BaseComponent implements BeanParent, Actio
 	private Label estimatedMemoryUsageReportsInProgressLabel;
 	private ReportXmlTransformer reportXmlTransformer = null;
 	private SelectField reportGeneratorEnabledSelectField;
-	private Label reportGeneratorEnabledErrorLabel;
+	private Label reportGeneratorEnabledErrorLabel; // Part of options window (different location than generic errorLabel)
 	private Label filterValuesLabel;
 	private ListBox filterValuesListBox;
 	private CheckBox checkBoxTransformReportXml;
@@ -610,7 +610,7 @@ public class ReportsComponent extends BaseComponent implements BeanParent, Actio
 			optionsWindow.setVisible(true);
 		} else if (e.getActionCommand().equals("UpdateGeneratorEnabled")) {
 			if (echo2Application.isUserInRoles(changeReportGeneratorEnabledRoles)) {
-				String msg = "Report generator has been ";
+				String msg = "Report generator ";
 				if ("Yes".equals(reportGeneratorEnabledSelectField.getSelectedItem())) {
 					testTool.setReportGeneratorEnabled(true);
 					testTool.sendReportGeneratorStatusUpdate();
@@ -636,6 +636,7 @@ public class ReportsComponent extends BaseComponent implements BeanParent, Actio
 				}
 			else {
 				reportGeneratorEnabledErrorLabel.setText("Not allowed");
+				reportGeneratorEnabledErrorLabel.setVisible(true);
 			}
 		} else if (e.getActionCommand().equals("OpenTransformationWindow")) {
 			transformationWindow.setVisible(true);
@@ -802,6 +803,12 @@ public class ReportsComponent extends BaseComponent implements BeanParent, Actio
 	}
 
 	public void displayReports(boolean metadataNamesChanged) {
+		if (testTool.warnReportsInProgress()) {
+			displayError("One or more reports are in progress for more than 5 minuts");
+		}
+		if (testTool.warnMessageCapturerWaitingForClose()) {
+			displayError("One or more reports are finished but waiting for more than 30 seconds for one or more message capturers to close");
+		}
 		Storage storage = getSelectedView().getStorage();
 		if (storage instanceof LogStorage) {
 			displayError(((LogStorage)storage).getWarningsAndErrors());

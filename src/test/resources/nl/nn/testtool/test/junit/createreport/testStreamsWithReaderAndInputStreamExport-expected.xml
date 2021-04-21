@@ -1,0 +1,247 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<java version="IGNORE-JAVA-VERSION" class="java.beans.XMLDecoder">
+ <null/>
+ <object class="nl.nn.testtool.Report" id="Report0">
+  <void property="checkpoints">
+   <void method="add">
+    <object class="nl.nn.testtool.Checkpoint">
+     <void property="message">
+      <string>startmessage</string>
+     </void>
+     <void property="name">
+      <string>testStreamsWithReaderAndInputStream</string>
+     </void>
+     <void property="report">
+      <object idref="Report0"/>
+     </void>
+     <void property="threadName">
+      <string>main</string>
+     </void>
+     <void property="type">
+      <int>1</int>
+     </void>
+    </object>
+   </void>
+   <void method="add">
+    <object class="nl.nn.testtool.Checkpoint">
+     <void property="level">
+      <int>1</int>
+     </void>
+     <void property="message">
+      <string>Random string 1</string>
+     </void>
+     <void property="messageClassName">
+      <string>java.io.StringReader</string>
+     </void>
+     <void property="name">
+      <string>reader</string>
+     </void>
+     <void property="report">
+      <object idref="Report0"/>
+     </void>
+     <void property="streaming">
+      <string>Character</string>
+     </void>
+     <void property="threadName">
+      <string>main</string>
+     </void>
+     <void property="type">
+      <int>4</int>
+     </void>
+    </object>
+   </void>
+   <void method="add">
+    <object class="nl.nn.testtool.Checkpoint">
+     <void property="level">
+      <int>1</int>
+     </void>
+     <void property="message">
+      <string>Random string 2</string>
+     </void>
+     <void property="messageClassName">
+      <string>java.io.StringReader</string>
+     </void>
+     <void property="name">
+      <string>reader</string>
+     </void>
+     <void property="report">
+      <object idref="Report0"/>
+     </void>
+     <void property="streaming">
+      <string>Character</string>
+     </void>
+     <void property="threadName">
+      <string>main</string>
+     </void>
+     <void property="type">
+      <int>4</int>
+     </void>
+    </object>
+   </void>
+   <void method="add">
+    <object class="nl.nn.testtool.Checkpoint">
+     <void property="level">
+      <int>1</int>
+     </void>
+     <void property="message">
+      <string>Random string 2</string>
+     </void>
+     <void property="messageClassName">
+      <string>java.io.StringReader</string>
+     </void>
+     <void property="name">
+      <string>reader</string>
+     </void>
+     <void property="report">
+      <object idref="Report0"/>
+     </void>
+     <void property="streaming">
+      <string>Character</string>
+     </void>
+     <void property="threadName">
+      <string>main</string>
+     </void>
+     <void property="type">
+      <int>4</int>
+     </void>
+    </object>
+   </void>
+   <void method="add">
+    <object class="nl.nn.testtool.Checkpoint">
+     <void property="encoding">
+      <string>UTF-8</string>
+     </void>
+     <void property="level">
+      <int>1</int>
+     </void>
+     <void property="message">
+      <string>Random string 3</string>
+     </void>
+     <void property="messageClassName">
+      <string>java.io.ByteArrayInputStream</string>
+     </void>
+     <void property="name">
+      <string>inputstream</string>
+     </void>
+     <void property="report">
+      <object idref="Report0"/>
+     </void>
+     <void property="streaming">
+      <string>Byte</string>
+     </void>
+     <void property="threadName">
+      <string>main</string>
+     </void>
+     <void property="type">
+      <int>4</int>
+     </void>
+    </object>
+   </void>
+   <void method="add">
+    <object class="nl.nn.testtool.Checkpoint">
+     <void property="encoding">
+      <string>UTF-8</string>
+     </void>
+     <void property="level">
+      <int>1</int>
+     </void>
+     <void property="message">
+      <string>Random string 4</string>
+     </void>
+     <void property="messageClassName">
+      <string>java.io.ByteArrayInputStream</string>
+     </void>
+     <void property="name">
+      <string>inputstream</string>
+     </void>
+     <void property="report">
+      <object idref="Report0"/>
+     </void>
+     <void property="streaming">
+      <string>Byte</string>
+     </void>
+     <void property="threadName">
+      <string>main</string>
+     </void>
+     <void property="type">
+      <int>4</int>
+     </void>
+    </object>
+   </void>
+   <void method="add">
+    <object class="nl.nn.testtool.Checkpoint">
+     <void property="encoding">
+      <string>UTF-8</string>
+     </void>
+     <void property="level">
+      <int>1</int>
+     </void>
+     <void property="message">
+      <string>Random string 4</string>
+     </void>
+     <void property="messageClassName">
+      <string>java.io.ByteArrayInputStream</string>
+     </void>
+     <void property="name">
+      <string>inputstream</string>
+     </void>
+     <void property="report">
+      <object idref="Report0"/>
+     </void>
+     <void property="streaming">
+      <string>Byte</string>
+     </void>
+     <void property="threadName">
+      <string>main</string>
+     </void>
+     <void property="type">
+      <int>4</int>
+     </void>
+    </object>
+   </void>
+   <void method="add">
+    <object class="nl.nn.testtool.Checkpoint">
+     <void property="level">
+      <int>1</int>
+     </void>
+     <void property="message">
+      <string>endmessage</string>
+     </void>
+     <void property="name">
+      <string>testStreamsWithReaderAndInputStream</string>
+     </void>
+     <void property="report">
+      <object idref="Report0"/>
+     </void>
+     <void property="threadName">
+      <string>main</string>
+     </void>
+     <void property="type">
+      <int>2</int>
+     </void>
+    </object>
+   </void>
+  </void>
+  <void property="correlationId">
+   <string>IGNORE-CORRELATIONID</string>
+  </void>
+  <void property="endTime">
+   <long>IGNORE-END-TIME</long>
+  </void>
+  <void property="estimatedMemoryUsage">
+   <long>224</long>
+  </void>
+  <void property="name">
+   <string>testStreamsWithReaderAndInputStream</string>
+  </void>
+  <void property="startTime">
+   <long>IGNORE-START-TIME</long>
+  </void>
+  <void property="storageId">
+   <int>IGNORE-STORAGE-ID</int>
+  </void>
+  <void property="stubStrategy">
+   <string>Stub all external connection code</string>
+  </void>
+ </object>
+</java>

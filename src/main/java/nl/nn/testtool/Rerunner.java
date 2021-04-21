@@ -1,5 +1,5 @@
 /*
-   Copyright 2020 WeAreFrank!
+   Copyright 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@ public interface Rerunner {
 	 * was created.
 	 *  
 	 * @param correlationId   the correlationId to be used so the report of the rerun will have this correlationId and
-	 *                        and can be linked to the original report, stub strategy can be copied and stubbing can be
+	 *                        can be linked to the original report so stub strategy can be copied and stubbing can be
 	 *                        applied
 	 * @param originalReport  the original report that should be rerun
 	 * @param securityContext ...
