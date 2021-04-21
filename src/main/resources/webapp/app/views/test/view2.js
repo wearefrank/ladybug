@@ -19,8 +19,7 @@ angular.module('myApp.view2', ['ngRoute'])
         $scope.cloneInputs = {csv: "", message: "", storageId: "", force: false};
 
         $scope.addNode = function (rootNode, path, data) {
-            console.log("INSIDE ADDNODE");
-            console.log({path: path, data: data, rootnode: rootNode});
+            console.debug("Adding node with data", {path: path, data: data, rootnode: rootNode});
             if (path === undefined || path.length === 0 || (path.length === 1 && path[0] === "")) {
                 rootNode["ladybug"].push(data);
                 return;
@@ -39,8 +38,6 @@ angular.module('myApp.view2', ['ngRoute'])
         };
 
         $scope.openNode = function (node, checked) {
-            console.log(node);
-            console.log(checked)
             let reports = node["ladybug"];
             for (let i = 0; i < reports.length; i++) {
                 reports[i]["checked"] = checked;
@@ -64,7 +61,6 @@ angular.module('myApp.view2', ['ngRoute'])
 
         $scope.openReport = function (reports) {
             let s = "http://localhost:8000/#!/report?storage=" + $scope.storage + "&storageId=" + reports[0]["storageId"];
-            console.log(s);
             window.location = s;
         };
 
@@ -75,10 +71,10 @@ angular.module('myApp.view2', ['ngRoute'])
             for (let i = 0; i < reports.length; i++) {
                 data[$scope.storage].push(reports[i]["storageId"]);
             }
+            console.info("Running reports", data);
             $http.post($scope.apiUrl + "/runner/run/logStorage", data)
                 .then(function (response) {
-                    console.log("RUN RETURN");
-                    console.log(response);
+                    console.debug("Run report response:", response);
                 }, function (response) {
                     let storageIds = "";
                     for (let i = 0; i < reports.length; i++) {
@@ -101,11 +97,11 @@ angular.module('myApp.view2', ['ngRoute'])
         };
 
         $scope.updateTree = function () {
+            console.info("Updating tree on test tab.");
             $http.get($scope.apiUrl + "/metadata/" + $scope.storage + "?path=&storageId=&status=")
                 .then(function (response) {
                     let fields = response.data["fields"];
                     let values = response.data["values"];
-                    console.log(response.data);
                     let rootNode = {
                         path: "/",
                         text: "Reports",
@@ -125,8 +121,7 @@ angular.module('myApp.view2', ['ngRoute'])
                             path = path.slice(1);
                         if (path.endsWith("/"))
                             path = path.slice(0, -1);
-                        console.log(path);
-                        console.log(path.split("/"));
+
                         $scope.addNode(rootNode, path.split("/"), data);
                     }
 
@@ -138,11 +133,12 @@ angular.module('myApp.view2', ['ngRoute'])
                     $scope.treeSelect();
                 }, function (response) {
                     createToast("Error!", "Error while getting tree metadata.", $scope, $compile);
-                    console.error(response);
+                    console.error("Error while getting tree metadata.", response);
                 });
         };
 
         $scope.updateReports = function () {
+            // TODO ?
         };
 
         $scope.uploadReport = function () {
@@ -150,6 +146,8 @@ angular.module('myApp.view2', ['ngRoute'])
             if (files.length === 0)
                 return;
             for (let i = 0; i < files.length; i++) {
+                console.debug("Uploading report from file with name [%s]", files[i].name);
+
                 let formdata = new FormData();
                 formdata.append("file", files[i]);
                 $http.post($scope.apiUrl + "/report/upload/" + $scope.storage, formdata, {headers: {"Content-Type": undefined}});
@@ -159,6 +157,7 @@ angular.module('myApp.view2', ['ngRoute'])
         $scope.deleteReports = function () {
             let reports = $scope.getSelectedReports();
             for (let i = 0; i < reports.length; i++) {
+                console.debug("Deleting report with storage id [" + reports["storageId"] + "]");
                 $http.delete($scope.apiUrl + "/report/" + $scope.storage + "/" + reports["storageId"]);
             }
         }
@@ -169,14 +168,15 @@ angular.module('myApp.view2', ['ngRoute'])
                 queryString += "id=" + reports[i]["storageId"] + "&";
             }
 
+            console.info("Downloading reports with query", queryString);
             window.open($scope.apiUrl + "/report/download/" + $scope.storage +
                 "/" + exportReport + "/" + exportReportXml + queryString.slice(0, -1));
         }
 
         $scope.moveReports = function (reports, action) {
             let path = $('#moveToInput').val();
-            console.log(action + " to " + path);
             for (let i = 0; i < reports.length; i++) {
+                console.info("Running action [%s] on report with storage id [%d] with path [%s]", action, reports[i]["storageId"], path);
                 $http.put($scope.apiUrl + "/report/move/" + $scope.storage + "/" + reports[i]["storageId"],
                     {path: path, action: action}).then(function (response) {
                     $scope.refresh();
@@ -194,7 +194,7 @@ angular.module('myApp.view2', ['ngRoute'])
                 }, function (response) {
                     createToast("Error while getting Report!",
                         "Could not get the report with storage id [" + storageId + "]", $scope, $compile);
-                    console.log(response);
+                    console.error(response);
                 })
         }
 
@@ -204,18 +204,20 @@ angular.module('myApp.view2', ['ngRoute'])
         }
 
         $scope.cloneReport = function () {
-            $http.post($scope.apiUrl + "/report/clone/" + $scope.storage + "/" + $scope.cloneInputs.storageId,
-                {
-                    csv: $scope.cloneInputs.csv,
-                    message: $scope.cloneInputs.message,
-                    force: $scope.cloneInputs.force
-                }).then($scope.closeCloneModal, function (response) {
-                $scope.cloneInputs.force = true;
-                createToast("Could not clone!",
-                    "Could not clone the report with storage id [" + $scope.cloneInputs.storageId + "]",
-                    $scope, $compile);
-                console.log("Could not clone!", response);
-            })
+            let data = {
+                csv: $scope.cloneInputs.csv,
+                message: $scope.cloneInputs.message,
+                force: $scope.cloneInputs.force
+            };
+            console.info("Cloning report with storage id [" + $scope.cloneInputs.storageId + "] with data", data);
+            $http.post($scope.apiUrl + "/report/clone/" + $scope.storage + "/" + $scope.cloneInputs.storageId, data)
+                .then($scope.closeCloneModal, function (response) {
+                    $scope.cloneInputs.force = true;
+                    createToast("Could not clone!",
+                        "Could not clone the report with storage id [" + $scope.cloneInputs.storageId + "]",
+                        $scope, $compile);
+                    console.error("Could not clone!", response);
+                });
         }
 
         $scope.csv2text = function (csv) {

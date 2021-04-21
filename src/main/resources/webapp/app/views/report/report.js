@@ -44,6 +44,7 @@ angular.module('myApp.report', ['ngRoute'])
 
         $http.get($scope.apiUrl + "/report/" + searchObject.storage + "/" + searchObject.storageId)
             .then(function (response) {
+                // TODO: get updated info from rootscope
                 console.log("Open Report oninit");
                 console.log(response.data);
                 $scope.add_tab(response.data.name, response.data.storageId, searchObject.storage);

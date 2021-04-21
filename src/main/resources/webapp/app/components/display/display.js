@@ -5,7 +5,7 @@ function displayController($rootScope, $scope, $compile, $http) {
     ctrl.apiUrl = "http://localhost:8080/ibis_adapterframework_test_war_exploded/ladybug";
     ctrl.reportDetails = {text: "", values: {}, notifications: {}};
     ctrl.stubStrategySelect = "";
-    ctrl.availableStorages = {'runStorage': 'Test'};
+    ctrl.availableStorages = {'testStorage': 'Test'};
     ctrl.displayingReport = false;
     ctrl.id = Math.random().toString(36).substring(7);
     ctrl.editing = false;

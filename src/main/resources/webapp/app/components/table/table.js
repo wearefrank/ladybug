@@ -150,7 +150,7 @@ function metadataTableController($scope, $compile, $http) {
             .then(function (response) {
                 ctrl.options = Object.assign(ctrl.options, response.data);
                 ctrl.options['transformationEnabled'] = ctrl.options['transformation'] !== "";
-                console.debug("Updated transformation", ctrl.options['transformation']);
+                console.debug("Updated transformation", {transformation: ctrl.options['transformation']});
             });
     }
 
