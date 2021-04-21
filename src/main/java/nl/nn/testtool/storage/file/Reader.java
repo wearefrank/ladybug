@@ -133,7 +133,7 @@ public class Reader {
 			metadataReadOnly = metadataCacheReadOnly;
 		}
 		List result = new ArrayList();
-		for (int i = 0; i < metadataReadOnly.size() &&  (numberOfRecords == -1 || result.size() < numberOfRecords); i++) {
+		for (int i = 0; i < metadataReadOnly.size() &&  (numberOfRecords == -1 || i < numberOfRecords); i++) {
 			Map metadataRecord = (Map)metadataReadOnly.get(i);
 			// Check whether it's already possible to exclude this record from
 			// the result (based on the search values and the already available
