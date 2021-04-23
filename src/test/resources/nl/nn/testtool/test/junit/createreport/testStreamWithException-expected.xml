@@ -18,5 +18,5 @@
    <Checkpoint Name="testStreamWithException"
                Type="Endpoint"
                Level="1"
-               SourceClassName="sourceClassName">message</Checkpoint>
+               SourceClassName="sourceClassName">endmessage</Checkpoint>
 </Report>

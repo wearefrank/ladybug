@@ -62,15 +62,14 @@ public class Report implements Serializable {
 	private transient TestTool testTool;
 	// Please note that the set method should return void for XmlEncoder to
 	// store the property (hence the setVariableCsvWithoutException method)
-	private long startTime;
-	private long endTime;
+	private Long startTime;
+	private Long endTime;
 	private String correlationId;
 	private String name;
 	private String description;
 	private String path;
 	private String stubStrategy;
 	private List<Checkpoint> checkpoints = new ArrayList<Checkpoint>();
-	private long estimatedMemoryUsage = 0L;
 	private String transformation;
 	private String variableCsv;
 	// Please note that the get and set methods need @Transient annotation for
@@ -156,19 +155,19 @@ public class Report implements Serializable {
 		return storageSize;
 	}
 	
-	public void setStartTime(long startTime) {
+	public void setStartTime(Long startTime) {
 		this.startTime = startTime;
 	}
 
-	public long getStartTime() {
+	public Long getStartTime() {
 		return startTime;
 	}
 
-	public void setEndTime(long endTime) {
+	public void setEndTime(Long endTime) {
 		this.endTime = endTime;
 	}
 
-	public long getEndTime() {
+	public Long getEndTime() {
 		return endTime;
 	}
 
@@ -434,7 +433,6 @@ public class Report implements Serializable {
 			}
 			message = checkpoint.setMessage(message);
 		}
-		estimatedMemoryUsage += checkpoint.getEstimatedMemoryUsage();
 		for (int i = threads.indexOf(threadName); i < threads.size(); i++) {
 			String key = threads.get(i);
 			Integer value = (Integer)threadCheckpointIndex.get(key);
@@ -521,6 +519,18 @@ public class Report implements Serializable {
 		}
 	}
 
+	protected void removeStreamingMessageListener(Object streamingMessage, Checkpoint checkpoint) {
+		synchronized(streamingMessageListeners) {
+			Set<Checkpoint> checkpoints = streamingMessageListeners.remove(streamingMessage);
+			if (checkpoints != null) {
+				checkpoints.remove(checkpoint);
+				if (checkpoints.size() > 0) {
+					streamingMessageListeners.put(streamingMessage, checkpoints);
+				}
+			}
+		}
+	}
+
 	protected boolean isKnownStreamingMessage(Object streamingMessage) {
 		synchronized(streamingMessageListeners) {
 			return streamingMessageListeners.get(streamingMessage) != null;
@@ -554,7 +564,6 @@ public class Report implements Serializable {
 				if (streamingMessageResult != null) {
 					finishedStreamingMessage.add(streamingMessage);
 					for (Checkpoint checkpoint : streamingMessageListeners.get(streamingMessage)) {
-						estimatedMemoryUsage -= checkpoint.getEstimatedMemoryUsage();
 						checkpoint.setStreaming(streamingMessageResult.getStreamingType());
 						if (streamingMessageResult.getException() != null) {
 							checkpoint.setMessage(streamingMessageResult.getException());
@@ -571,7 +580,6 @@ public class Report implements Serializable {
 						}
 						checkpoint.setMessageClassName(streamingMessageResult.getMessageClassName());
 						checkpoint.setPreTruncatedMessageLength(streamingMessageResult.getPreTruncatedMessageLength());
-						estimatedMemoryUsage += checkpoint.getEstimatedMemoryUsage();
 					}
 				}
 			}
@@ -609,11 +617,11 @@ public class Report implements Serializable {
 		return checkpoints.size();
 	}
 
-	public void setEstimatedMemoryUsage(long estimatedMemoryUsage) {
-		this.estimatedMemoryUsage = estimatedMemoryUsage;
-	}
-
 	public long getEstimatedMemoryUsage() {
+		long estimatedMemoryUsage = 0L;
+		for (Checkpoint checkpoint : checkpoints) {
+			estimatedMemoryUsage += checkpoint.getEstimatedMemoryUsage();
+		}
 		return estimatedMemoryUsage;
 	}
 
@@ -659,7 +667,6 @@ public class Report implements Serializable {
 		report.setDescription(description);
 		report.setPath(path);
 		report.setStubStrategy(stubStrategy);
-		report.setEstimatedMemoryUsage(estimatedMemoryUsage);
 		report.setTransformation(transformation);
 		report.setVariableCsv(variableCsv);
 		List<Checkpoint> checkpoints = new ArrayList<Checkpoint>();
@@ -691,7 +698,7 @@ public class Report implements Serializable {
 			stringBuffer.append(" StartTime=\"" + startTime + "\"");
 			stringBuffer.append(" EndTime=\"" + endTime + "\"");
 			stringBuffer.append(" NumberOfCheckpoints=\"" + getNumberOfCheckpoints() + "\"");
-			stringBuffer.append(" EstimatedMemoryUsage=\"" + estimatedMemoryUsage + "\"");
+			stringBuffer.append(" EstimatedMemoryUsage=\"" + getEstimatedMemoryUsage() + "\"");
 			stringBuffer.append(">");
 			for (Checkpoint checkpoint : checkpoints) {
 				String message;

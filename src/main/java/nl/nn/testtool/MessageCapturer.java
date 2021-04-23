@@ -70,9 +70,10 @@ public interface MessageCapturer {
 	 * @param writer             write the data of the checkpoint message object to this writer
 	 * @param exceptionNotifier  enables application to notify Ladybug of an exception being thrown during processing of
 	 *                           the stream
-	 * @return                   the message itself, or a wrapper around it that will be passed back to the caller. When
-	 *                           later the caller reads characters from the wrapper or writes characters to the wrapper
-	 *                           these characters can be captured by the wrapper and copied to writer
+	 * @return                   the message itself, or a wrapper around it that will be passed back to the caller of
+	 *                           the checkpoint method. When later the caller reads characters from the wrapper or
+	 *                           writes characters to the wrapper these characters can be captured by the wrapper and
+	 *                           copied to writer
 	 */
 	public <T> T toWriter(T message, Writer writer, Consumer<Throwable> exceptionNotifier);
 
@@ -91,9 +92,10 @@ public interface MessageCapturer {
 	 *                           to render the outputStream to characters
 	 * @param exceptionNotifier  enables application to notify Ladybug of an exception being thrown during processing of
 	 *                           the stream
-	 * @return                   the message itself, or a wrapper around it that will be passed back to the caller. When
-	 *                           later the caller read bytes from the wrapper or writes bytes to the wrapper these bytes
-	 *                           can be captured by the wrapper and copied to outputStream
+	 * @return                   the message itself, or a wrapper around it that will be passed back to the caller of
+	 *                           the checkpoint method. When later the caller reads bytes from the wrapper or
+	 *                           writes bytes to the wrapper these bytes can be captured by the wrapper and
+	 *                           copied to outputStream
 	 */
 	public <T> T toOutputStream(T message, OutputStream outputStream, Consumer<String> charsetNotifier,
 			Consumer<Throwable> exceptionNotifier);

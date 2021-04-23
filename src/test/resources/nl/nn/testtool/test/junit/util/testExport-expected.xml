@@ -59,9 +59,6 @@
   <void property="endTime">
    <long>7</long>
   </void>
-  <void property="estimatedMemoryUsage">
-   <long>IGNORE</long>
-  </void>
   <void property="name">
    <string>name</string>
   </void>

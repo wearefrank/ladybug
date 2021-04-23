@@ -6,6 +6,9 @@ Ladybug Test Tool release notes
 Upcoming
 --------
 
+- Fix report not closed for synchronous stream (a stream that is closed immediately)
+- Fix reports in progress and Waiting for message capturers message shown too early
+- Fix estimated memory usage incorrect for stream
 - Enable application to notify Ladybug of an exception being thrown during processing of a stream
 - Highlight in tree when message is an exception
 - Stream Reader and InputStream
