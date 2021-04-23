@@ -10,7 +10,7 @@
                Type="Startpoint"
                Level="0"
                SourceClassName="sourceClassName"
-               MessageClassName="java.io.ByteArrayOutputStream"
+               MessageClassName="java.io.IOException"
                Encoding="printStackTrace()"
                Streaming="Byte">java.io.IOException: Notify exception
 	at nl.nn.testtool.test.junit.IGNORE)

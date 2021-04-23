@@ -569,17 +569,13 @@ public class Report implements Serializable {
 							checkpoint.setMessage(streamingMessageResult.getException());
 						} else {
 							Object message = streamingMessageResult.getMessage();
-							if (message instanceof String) {
-								checkpoint.setMessage((String)message);
-							} else {
-								String charset = streamingMessageResult.getCharset();
-								ToStringResult toStringResult = getMessageEncoder().toString(message, charset);
-								checkpoint.setMessage(toStringResult.getString());
-								checkpoint.setEncoding(toStringResult.getEncoding());
-							}
+							String charset = streamingMessageResult.getCharset();
+							ToStringResult toStringResult = getMessageEncoder().toString(message, charset);
+							checkpoint.setMessage(toStringResult.getString());
+							checkpoint.setEncoding(toStringResult.getEncoding());
+							checkpoint.setMessageClassName(streamingMessageResult.getMessageClassName());
+							checkpoint.setPreTruncatedMessageLength(streamingMessageResult.getPreTruncatedMessageLength());
 						}
-						checkpoint.setMessageClassName(streamingMessageResult.getMessageClassName());
-						checkpoint.setPreTruncatedMessageLength(streamingMessageResult.getPreTruncatedMessageLength());
 					}
 				}
 			}
