@@ -95,7 +95,6 @@ public class Import {
 
 	// TODO closeXMLEncoder methode (en anderen?) gebruiken?
 	public static ImportResult importTtr(InputStream inputStream, CrudStorage storage, Logger log) {
-		String errorMessage = null;
 		GZIPInputStream gzipInputStream = null;
 		XMLDecoder xmlDecoder = null;
 		String version = null;
@@ -121,8 +120,9 @@ public class Import {
 			// XML Object Decoder
 			if (log != null) log.debug("Last report in file read");
 		} catch (Throwable t) {
-			importResult.errorMessage = "Caught unexpected throwable during import: " + t.getMessage();
-			if (log != null) log.error(errorMessage, t);
+			importResult.errorMessage = "Caught unexpected throwable during import: " + t.getClass().getTypeName()
+					+ ": " + t.getMessage();
+			if (log != null) log.error(importResult.errorMessage, t);
 		} finally {
 			if (report != null) {
 				importResult.newStorageId = report.getStorageId();

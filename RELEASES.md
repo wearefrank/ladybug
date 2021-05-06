@@ -6,7 +6,9 @@ Ladybug Test Tool release notes
 Upcoming
 --------
 
+- Fix error message on unexpected throwable during import
 - Use exception class name for message class name in case of stream with exception
+- Fix NPE on report upload
 - Fix report not closed for synchronous stream (a stream that is closed immediately)
 - Fix reports in progress and Waiting for message capturers message shown too early
 - Fix estimated memory usage incorrect for stream
