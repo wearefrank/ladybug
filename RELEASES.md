@@ -6,6 +6,7 @@ Ladybug Test Tool release notes
 Upcoming
 --------
 
+- Change log level of xml storage from info to debug
 - Fix typo in "in progress for more than 5 minutes" message
 - Fix Echo2 session reset on unexpected throwable during import
 - Fix error message on unexpected throwable during import

@@ -64,7 +64,7 @@ public class MetadataHandler {
 		metadataMap = new HashMap<>();
 		metadataFile = new File(filePath);
 		if (metadataFile.exists() && !forceDiscover) {
-			logger.info("Metadata for ladybug already exists. Reading from file [" + metadataFile.getName() + "] ...");
+			logger.debug("Metadata for ladybug already exists. Reading from file [" + metadataFile.getName() + "] ...");
 			readFromFile();
 		} else {
 			buildFromDirectory(storage.getReportsFolder(), true);
@@ -82,7 +82,7 @@ public class MetadataHandler {
 		if (dir == null || !dir.isDirectory())
 			return;
 
-		logger.info("Building from directory " + dir.getPath());
+		logger.debug("Building from directory " + dir.getPath());
 		// Discover reports and group them according to their original storage id.
 		HashMap<Integer, HashMap<File, Report>> reports = new HashMap<>();
 		for (File file : dir.listFiles()) {
@@ -141,7 +141,7 @@ public class MetadataHandler {
 		if (!metadataFile.exists())
 			return;
 
-		logger.info("Reading from file " + metadataFile.getPath());
+		logger.debug("Reading from file " + metadataFile.getPath());
 		Scanner scanner = new Scanner(metadataFile);
 		StringBuilder stringBuilder = new StringBuilder();
 		String line;
@@ -274,7 +274,7 @@ public class MetadataHandler {
 			return;
 		}
 		if (!metadataFile.exists()) {
-			logger.info("Creating metadata file at location [" + metadataFile.getPath() + "]");
+			logger.debug("Creating metadata file at location [" + metadataFile.getPath() + "]");
 			metadataFile.getParentFile().mkdirs();
 			metadataFile.createNewFile();
 		}
@@ -328,7 +328,7 @@ public class MetadataHandler {
 		for (String p : pathMap.keySet()) {
 			Metadata m = pathMap.get(p);
 			if (!updatedIds.contains(m.storageId)) {
-				logger.info("Deleting metadata with storage id [" + m.storageId + "] correlation id [" + m.correlationId + "] and path [" + m.path + m.name + "]");
+				logger.debug("Deleting metadata with storage id [" + m.storageId + "] correlation id [" + m.correlationId + "] and path [" + m.path + m.name + "]");
 				metadataMap.remove(m.storageId);
 			}
 		}
