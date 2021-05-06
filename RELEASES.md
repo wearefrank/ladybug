@@ -6,6 +6,7 @@ Ladybug Test Tool release notes
 Upcoming
 --------
 
+- Fix Echo2 session reset on unexpected throwable during import
 - Fix error message on unexpected throwable during import
 - Use exception class name for message class name in case of stream with exception
 - Fix NPE on report upload

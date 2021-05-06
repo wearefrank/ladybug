@@ -71,13 +71,15 @@ public class Import {
 				errorMessage = "No ttr files found in zip";
 			}
 			for(ImportResult importResult : importResults) {
-				Report report = storage.getReport(importResult.newStorageId);
-				if(report.getInputCheckpoint().containsVariables()) {
-					if(report.getInputCheckpoint().updateVariables(importResults)) {
-						storage.update(report);
-						log.debug("Updated report ["+report.getFullPath()+"]'s input variable(s) with target report's updated storageId(s)");
-					} else {
-						log.warn("Could not update report ["+report.getFullPath()+"]'s input variables on uploading - please review manually");
+				if (importResult.newStorageId != null) {
+					Report report = storage.getReport(importResult.newStorageId);
+					if(report.getInputCheckpoint().containsVariables()) {
+						if(report.getInputCheckpoint().updateVariables(importResults)) {
+							storage.update(report);
+							log.debug("Updated report ["+report.getFullPath()+"]'s input variable(s) with target report's updated storageId(s)");
+						} else {
+							log.warn("Could not update report ["+report.getFullPath()+"]'s input variables on uploading - please review manually");
+						}
 					}
 				}
 			}
