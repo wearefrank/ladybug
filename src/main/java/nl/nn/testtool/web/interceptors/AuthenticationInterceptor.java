@@ -16,11 +16,14 @@
 package nl.nn.testtool.web.interceptors;
 
 import lombok.Getter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
+import java.lang.invoke.MethodHandles;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -30,15 +33,12 @@ import java.util.Set;
 
 public class AuthenticationInterceptor implements ContainerRequestFilter {
 	private static Map<String, RequestProperties> rolesMap = new HashMap<>();
+	private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
 	@Override
 	public void filter(ContainerRequestContext requestContext) throws IOException {
 		String path = requestContext.getUriInfo().getPath().toLowerCase();
-		System.err.println("Filtering for path " + path);
-		if (requestContext.getSecurityContext() != null) {
-			if (requestContext.getSecurityContext().getUserPrincipal() != null)
-				System.err.println("Principal " + requestContext.getSecurityContext().getUserPrincipal().toString());
-		}
+
 		if (rolesMap == null) return;
 		String mostSpecificPath = null;
 
@@ -56,10 +56,9 @@ public class AuthenticationInterceptor implements ContainerRequestFilter {
 
 		// No specific security configuration is given for the path
 		if (mostSpecificPath == null) return;
-		System.err.println("Most Specific Path " + mostSpecificPath);
+
 		RequestProperties properties = rolesMap.get(mostSpecificPath);
 		for (String role : properties.getRoles()) {
-			System.err.println("Checking Role " + role);
 			// If user is in one of the roles, continue with the chain.
 			if (requestContext.getSecurityContext().isUserInRole(role)) return;
 		}
@@ -69,12 +68,13 @@ public class AuthenticationInterceptor implements ContainerRequestFilter {
 	}
 
 	public static void setRolesMap(Map<String, List<String>> rolesMap) {
-		System.err.println("Setting Roles Map");
+		logger.info("Setting the roles map.");
 		AuthenticationInterceptor.rolesMap = new HashMap<>(rolesMap.size());
 
 		for (String config : rolesMap.keySet()) {
 			RequestProperties properties = new RequestProperties(config, rolesMap.get(config));
 			AuthenticationInterceptor.rolesMap.put(properties.getPath(), properties);
+			logger.debug("Setting the role [" + properties.toString() + "]");
 		}
 	}
 
@@ -98,6 +98,11 @@ public class AuthenticationInterceptor implements ContainerRequestFilter {
 
 		public boolean containsMethod(String method) {
 			return methods == null || methods.contains(method.toLowerCase());
+		}
+
+		@Override
+		public String toString() {
+			return "Path: \"" + path + "\", Roles: " + roles.toString();
 		}
 	}
 }
