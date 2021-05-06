@@ -16,28 +16,41 @@
 package nl.nn.testtool.web;
 
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.servlet.ServletRegistration;
 import javax.servlet.annotation.WebListener;
+import java.lang.invoke.MethodHandles;
 
 @WebListener
 public class ServletListener implements ServletContextListener {
+	private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+
 	@Override
 	public void contextInitialized(ServletContextEvent servletContextEvent) {
+		logger.info("Initialized servlet context is found.");
 		ServletContext context = servletContextEvent.getServletContext();
 
 		// Add ladybug backend
-		ServletRegistration.Dynamic serv = context.addServlet("ladybug", ApiServlet.class);
+		String name = "ladybug";
+		String mapping = "/ladybug/*";
+		logger.info("Registering servlet with name [" + name + "] with mapping [" + mapping + "].");
+		ServletRegistration.Dynamic serv = context.addServlet(name, ApiServlet.class);
 		serv.setLoadOnStartup(0);
-		serv.addMapping("/ladybug/*");
+		serv.addMapping(mapping);
 		serv.setInitParameters(ApiServlet.getInitParameters());
 
 		// Add ladybug frontend server
-		serv = context.addServlet("ladybug-frontend", FrontendServlet.class);
+		name = "ladybug-frontend";
+		mapping = "/ladybug/frontend/*";
+		logger.info("Registering servlet with name [" + name + "] with mapping [" + mapping + "].");
+		serv = context.addServlet(name, FrontendServlet.class);
 		serv.setLoadOnStartup(0);
-		serv.addMapping("/ladybug/frontend/*");
+		serv.addMapping(mapping);
 	}
 
 	@Override

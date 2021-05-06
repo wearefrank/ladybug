@@ -25,7 +25,6 @@ public class CorsFilter implements ContainerResponseFilter {
 	@Override
 	public void filter(ContainerRequestContext requestContext,
 					   ContainerResponseContext responseContext) throws IOException {
-		System.err.println("FILTER IS RUNNING FROM LADYBUG!!!!");
 		responseContext.getHeaders().add(
 				"Access-Control-Allow-Origin", "*");
 		responseContext.getHeaders().add(

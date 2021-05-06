@@ -415,7 +415,7 @@ public class ReportApi extends ApiBase {
 				return Response.status(Response.Status.BAD_REQUEST).entity("No variables found in input message; press again to confirm").build();
 			}
 		} catch (StorageException e) {
-			e.printStackTrace();
+			logger.error("Exception while cloning the report", e);
 			return Response.status(Response.Status.BAD_REQUEST).entity("Report could not be found.").build();
 		}
 
