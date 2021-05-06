@@ -228,9 +228,6 @@
   <void property="endTime">
    <long>IGNORE-END-TIME</long>
   </void>
-  <void property="estimatedMemoryUsage">
-   <long>224</long>
-  </void>
   <void property="name">
    <string>testStreamsWithReaderAndInputStream</string>
   </void>

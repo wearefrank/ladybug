@@ -232,19 +232,16 @@ public class CheckpointComponent extends MessageComponent {
 		} else {
 			messageIsTruncatedLabel.setVisible(false);
 		}
-		String type = null;
 		if (checkpoint.getStreaming() != null) {
-			type = checkpoint.getStreaming().toLowerCase() + " stream";
-			messageStreamingLabel.setText("Message is captured asynchronously from a " + type);
+			messageStreamingLabel.setText("Message is captured asynchronously from a "
+					+ checkpoint.getStreaming().toLowerCase() + " stream");
 			messageStreamingLabel.setVisible(true);
 		} else {
 			messageStreamingLabel.setVisible(false);
 		}
 		if (checkpoint.getEncoding() != null) {
-			if (type == null) {
-				type = checkpoint.getMessageClassName();
-			}
-			messageEncodingLabel.setText("Message of type " + type + " is encoded to string using " + checkpoint.getEncoding());
+			messageEncodingLabel.setText("Message of type " + checkpoint.getMessageClassName()
+					+ " is encoded to string using " + checkpoint.getEncoding());
 			messageEncodingLabel.setVisible(true);
 		} else {
 			messageEncodingLabel.setVisible(false);

@@ -204,9 +204,6 @@
   <void property="endTime">
    <long>IGNORE-END-TIME</long>
   </void>
-  <void property="estimatedMemoryUsage">
-   <long>IGNORE</long>
-  </void>
   <void property="name">
    <string>testSpecialValues</string>
   </void>

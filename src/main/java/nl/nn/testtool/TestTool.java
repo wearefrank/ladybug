@@ -281,17 +281,21 @@ public class TestTool {
 
 	protected void closeReport(Report report) {
 		synchronized(report) {
-			if (!report.isClosed() && report.threadsFinished() && report.streamingMessageListenersFinished()) {
-				report.setEndTime(System.currentTimeMillis());
-				report.setClosed(true);
-				log.debug("Report is finished for '" + report.getCorrelationId() + "'");
-				synchronized(reportsInProgress) {
-					reportsInProgress.remove(report);
-					reportsInProgressByCorrelationId.remove(report.getCorrelationId());
-					numberOfReportsInProgress--;
+			if (!report.isClosed() && report.threadsFinished()) {
+				if (report.getEndTime() == null) {
+					report.setEndTime(System.currentTimeMillis());
 				}
-				if (report.isReportFilterMatching()) {
-					debugStorage.storeWithoutException(report);
+				if (report.streamingMessageListenersFinished()) {
+					report.setClosed(true);
+					log.debug("Report is finished for '" + report.getCorrelationId() + "'");
+					synchronized(reportsInProgress) {
+						reportsInProgress.remove(report);
+						reportsInProgressByCorrelationId.remove(report.getCorrelationId());
+						numberOfReportsInProgress--;
+					}
+					if (report.isReportFilterMatching()) {
+						debugStorage.storeWithoutException(report);
+					}
 				}
 			}
 		}
@@ -301,7 +305,7 @@ public class TestTool {
 		synchronized(reportsInProgress) {
 			for (Report report : reportsInProgress) {
 				if (!messageCapturerWaitingForClose(report)
-						&& report.getEndTime() + (5 * 60 * 1000) < System.currentTimeMillis()) {
+						&& report.getStartTime() + (5 * 60 * 1000) < System.currentTimeMillis()) {
 					return true;
 				}
 			}
