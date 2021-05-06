@@ -462,7 +462,7 @@ public class TestCreateReport extends ReportRelatedTestCase {
 		ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
 		OutputStream outputStream =
 				testTool.startpoint(correlationId, "sourceClassName", getName(), byteArrayOutputStream);
-		testTool.endpoint(correlationId, "sourceClassName", getName(), "message");
+		testTool.endpoint(correlationId, "sourceClassName", getName(), "endmessage");
 		outputStream.write(bytes);
 		outputStream.close();
 		Report report = assertReport(correlationId);
@@ -480,7 +480,6 @@ public class TestCreateReport extends ReportRelatedTestCase {
 	public void testStreamWithException() throws IOException, StorageException {
 		testTool.setMessageCapturer(new MessageCapturerImpl() {
 			@Override
-			@SneakyThrows
 			public <T> T toOutputStream(T message, OutputStream outputStream, Consumer<String> charsetNotifier,
 					Consumer<Throwable> exceptionNotifier) {
 				exceptionNotifier.accept(new IOException("Notify exception"));
@@ -491,10 +490,31 @@ public class TestCreateReport extends ReportRelatedTestCase {
 		ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
 		OutputStream outputStream =
 				testTool.startpoint(correlationId, "sourceClassName", getName(), byteArrayOutputStream);
-		outputStream.write("Message".getBytes());
+		outputStream.write("startmessage".getBytes());
 		outputStream.close();
-		testTool.endpoint(correlationId, "sourceClassName", getName(), "message");
+		testTool.endpoint(correlationId, "sourceClassName", getName(), "endmessage");
 		assertReport(correlationId, false, false, true, false);
+	}
+
+	public void testStreamSynchronous() throws IOException, StorageException {
+		testTool.setMessageCapturer(new MessageCapturerImpl() {
+			@Override
+			public <T> T toWriter(T message, Writer writer, Consumer<Throwable> exceptionNotifier) {
+				try {
+					// Immediately write and close message/stream instead of asynchronously writing data to writer after
+					// toWriter() has returned
+					writer.write("startmessage");
+					writer.close();
+				} catch (IOException e) {
+					exceptionNotifier.accept(e);
+				}
+				return message;
+			}
+		});
+		String correlationId = getCorrelationId();
+		testTool.startpoint(correlationId, "sourceClassName", getName(), new StringWriter());
+		testTool.endpoint(correlationId, "sourceClassName", getName(), "endmessage");
+		assertReport(correlationId);
 	}
 
 	private void testReaderMessage(Reader readerMessage) throws IOException {

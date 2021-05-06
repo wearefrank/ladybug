@@ -1,21 +1,18 @@
-<Report Name="testStreamWithException"
+<Report Name="testStreamSynchronous"
         Description=""
         Path=""
         CorrelationId="Original length: 36"
         StartTime="Original length: 13"
         EndTime="Original length: 13"
         NumberOfCheckpoints="2"
-        EstimatedMemoryUsage="IGNORE">
-   <Checkpoint Name="testStreamWithException"
+        EstimatedMemoryUsage="44">
+   <Checkpoint Name="testStreamSynchronous"
                Type="Startpoint"
                Level="0"
                SourceClassName="sourceClassName"
-               MessageClassName="java.io.IOException"
-               Encoding="printStackTrace()"
-               Streaming="Byte">java.io.IOException: Notify exception
-	at nl.nn.testtool.test.junit.IGNORE)
-</Checkpoint>
-   <Checkpoint Name="testStreamWithException"
+               MessageClassName="java.io.StringWriter"
+               Streaming="Character">startmessage</Checkpoint>
+   <Checkpoint Name="testStreamSynchronous"
                Type="Endpoint"
                Level="1"
                SourceClassName="sourceClassName">endmessage</Checkpoint>

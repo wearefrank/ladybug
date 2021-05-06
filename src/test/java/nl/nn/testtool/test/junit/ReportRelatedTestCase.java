@@ -40,6 +40,7 @@ import nl.nn.testtool.TestTool;
 import nl.nn.testtool.storage.Storage;
 import nl.nn.testtool.storage.StorageException;
 import nl.nn.testtool.test.junit.util.TestExport;
+import nl.nn.testtool.test.junit.util.TestImport;
 import nl.nn.testtool.transform.ReportXmlTransformer;
 
 /**
@@ -52,6 +53,7 @@ public class ReportRelatedTestCase extends TestCase {
 	public static final String ACTUAL_SUFFIX = "-actual.xml";
 	public static final String LOG_SUFFIX = "-FAILED.txt";
 	public static final String ASSERT_REPORT_XSLT = "transformReport.xslt";
+	public static final String DEFAULT_CHARSET = "UTF-8";
 	// Use this context at least in all tests that use debug storage otherwise when more then one context is creating
 	// storage beans the storageId's are likely to not be unique anymore which will give unexpected results
 	public static final ApplicationContext CONTEXT = new ClassPathXmlApplicationContext("springTestToolTestJUnit.xml");
@@ -100,10 +102,23 @@ public class ReportRelatedTestCase extends TestCase {
 
 	protected Report assertReport(String correlationId, boolean applyXmlEncoderIgnores,
 			boolean applyEpochTimestampIgnore, boolean applyStackTraceIgnores, boolean assertExport)
-			throws StorageException, IOException {
+					throws StorageException, IOException {
 		assertEquals("Found report(s) in progress,", 0, testTool.getNumberOfReportsInProgress());
 		Storage storage = testTool.getDebugStorage();
 		Report report = findAndGetReport(testTool, storage, correlationId);
+		return assertReport(report, resourcePath, getName(), applyXmlEncoderIgnores, applyEpochTimestampIgnore,
+				applyStackTraceIgnores, assertExport);
+	}
+
+	public static Report assertReport(Report report, String resourcePath, String name)
+			throws StorageException, IOException {
+		return assertReport(report, resourcePath, name, false, false, false, false);
+	}
+
+	public static Report assertReport(Report report, String resourcePath, String name, boolean applyXmlEncoderIgnores,
+			boolean applyEpochTimestampIgnore, boolean applyStackTraceIgnores, boolean assertExport)
+					throws StorageException, IOException {
+		assertNotNull("Report is null", report);
 		ReportXmlTransformer reportXmlTransformer = new ReportXmlTransformer();
 		reportXmlTransformer.setXslt(getResource(RESOURCE_PATH, ASSERT_REPORT_XSLT));
 		report.setReportXmlTransformer(reportXmlTransformer);
@@ -117,10 +132,11 @@ public class ReportRelatedTestCase extends TestCase {
 		if (applyStackTraceIgnores) {
 			actual = applyStackTraceIgnores(actual);
 		}
-		assertXml(resourcePath, getName(), actual);
+		assertXml(resourcePath, name, actual);
 		if (assertExport) {
-			TestExport.assertExport(resourcePath, getName() + "Export", correlationId, report, true
-					, applyEpochTimestampIgnore, applyStackTraceIgnores);
+			TestExport.assertExport(resourcePath, name, report, true, applyEpochTimestampIgnore,
+					applyStackTraceIgnores);
+			TestImport.assertImport(resourcePath, name);
 		}
 		return report;
 	}
@@ -225,12 +241,10 @@ public class ReportRelatedTestCase extends TestCase {
 			return string.replaceFirst("EstimatedMemoryUsage=\".*\">",
 									   "EstimatedMemoryUsage=\"IGNORE\">")
 					.replaceAll("(?s)at nl.nn.testtool.test.junit..[^<]*\\)\n</Checkpoint>",
-									  "at nl.nn.testtool.test.junit.IGNORE)\n</Checkpoint>");
+									"at nl.nn.testtool.test.junit.IGNORE)\n</Checkpoint>");
 		} else {
-			return string.replaceFirst("estimatedMemoryUsage\">\n   <long>.*</long>",
-									   "estimatedMemoryUsage\">\n   <long>IGNORE</long>")
-					.replaceAll("(?s)java.io.IOException: Test with strange object.[^<]*\\)(&#13;)?\n</string>",
-									  "java.io.IOException: Test with strange objectIGNORE)\n</string>");
+			return string.replaceAll("(?s)java.io.IOException: Test with strange object.[^<]*\\)(&#13;)?\n</string>",
+										 "java.io.IOException: Test with strange objectIGNORE)\n</string>");
 		}
 	}
 
@@ -258,7 +272,7 @@ public class ReportRelatedTestCase extends TestCase {
 		try {
 			i = stream.read(bytes);
 			while (i != -1) {
-				result.append(new String(bytes, 0, i, "UTF-8"));
+				result.append(new String(bytes, 0, i, DEFAULT_CHARSET));
 				i = stream.read(bytes);
 			}
 		} catch (UnsupportedEncodingException e1) {

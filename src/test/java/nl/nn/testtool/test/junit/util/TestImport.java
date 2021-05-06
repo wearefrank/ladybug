@@ -16,20 +16,15 @@
 package nl.nn.testtool.test.junit.util;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.zip.GZIPOutputStream;
 
 import junit.framework.TestCase;
-import nl.nn.testtool.Checkpoint;
 import nl.nn.testtool.Report;
 import nl.nn.testtool.storage.StorageException;
 import nl.nn.testtool.storage.memory.Storage;
 import nl.nn.testtool.test.junit.ReportRelatedTestCase;
-import nl.nn.testtool.transform.ReportXmlTransformer;
-import nl.nn.testtool.util.Export;
 import nl.nn.testtool.util.Import;
 import nl.nn.testtool.util.ImportResult;
 
@@ -38,32 +33,26 @@ import nl.nn.testtool.util.ImportResult;
  */
 public class TestImport extends TestCase {
 
-	public void testImport() throws IllegalAccessException, IllegalArgumentException, InvocationTargetException, IOException, StorageException {
-		Report report = new Report();
-		report.setStorageId(123);
-		report.setCorrelationId("456");
-		report.setName("Import test");
-		report.setDescription("Import test description");
-		report.setPath("Import test path");
-		List<Checkpoint> checkpoints = new ArrayList<Checkpoint>();
-		checkpoints.add(new Checkpoint(report, "threadName1", "sourceClassName1", "name1", 1, 2));
-		checkpoints.add(new Checkpoint(report, "threadName2", "sourceClassName2", "name1", 3, 4));
-		report.setCheckpoints(checkpoints);
-		assertImport(TestExport.RESOURCE_PATH, getName(), report);
+	public void testImport() throws StorageException, IOException {
+		assertImport(TestExport.RESOURCE_PATH, "test");
 	}
 
-	public static void assertImport(String path, String testCaseName, Report report) throws IOException, StorageException {
-		byte[] bytes = Export.getReportBytes(report);
-		InputStream inputStream = new ByteArrayInputStream(bytes);
+	public static void assertImport(String resourcePath, String testCaseName) throws StorageException, IOException {
+		String string = ReportRelatedTestCase.getResource(resourcePath, testCaseName + "Export-expected.xml", false);
+		string = string
+				.replace("IGNORE-STORAGE-ID", "0")
+				.replace("IGNORE-START-TIME", "1")
+				.replace("IGNORE-END-TIME", "2");
+		ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+		GZIPOutputStream gzipOutputStream = new GZIPOutputStream(byteArrayOutputStream);
+		gzipOutputStream.write(string.getBytes(ReportRelatedTestCase.DEFAULT_CHARSET));
+		gzipOutputStream.close();
+		ByteArrayInputStream inputStream = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
 		Storage storage = new Storage();
 		ImportResult result = Import.importTtr(inputStream, storage, null);
 		assertNull(result.getErrorMessage());
-		report = storage.getReport(result.getNewStorageId());
-		ReportXmlTransformer reportXmlTransformer = new ReportXmlTransformer();
-		reportXmlTransformer.setXslt(ReportRelatedTestCase.getResource(ReportRelatedTestCase.RESOURCE_PATH, ReportRelatedTestCase.ASSERT_REPORT_XSLT));
-		report.setReportXmlTransformer(reportXmlTransformer);
-		String actual = report.toXml();
-		ReportRelatedTestCase.assertXml(path, testCaseName, actual);
+		Report report = storage.getReport(result.getNewStorageId());
+		ReportRelatedTestCase.assertReport(report, resourcePath, testCaseName + "Import");
 	}
 
 }

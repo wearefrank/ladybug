@@ -164,12 +164,16 @@ public class Checkpoint implements Serializable, Cloneable {
 				StreamingType streamingType = report.getMessageCapturer().getStreamingType(message);
 				if (streamingType == StreamingType.CHARACTER_STREAM || streamingType == StreamingType.BYTE_STREAM) {
 					TestTool testTool = report.getTestTool();
+					// Listener must be added before calling toWriter() and toOutputStream() as while calling those
+					// methods the close() method on the stream can already be called
+					report.addStreamingMessageListener(message, this);
 					// Use array to work around final scope limitation for anonymous inner class
 					Object[] possiblyWrappedMessage = new Object[1];
+					possiblyWrappedMessage[0] = message;
 					String[] charset = new String[1];
 					Throwable[] exception = new Throwable[1];
 					if (streamingType == StreamingType.CHARACTER_STREAM) {
-						StringWriter stringWriter = new StringWriter() {
+						StringWriter messageCapturerWriter = new StringWriter() {
 								int length = 0;
 								boolean truncated = false;
 
@@ -224,10 +228,10 @@ public class Checkpoint implements Serializable, Cloneable {
 								}
 						};
 						// Message possibly wrapped by toWriter()
-						message = report.getMessageCapturer().toWriter(message, stringWriter,
+						message = report.getMessageCapturer().toWriter(message, messageCapturerWriter,
 								exceptionNotifier -> exception[0] = exceptionNotifier);
 					} else {
-						ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream() {
+						ByteArrayOutputStream messageCapturerOutputStream = new ByteArrayOutputStream() {
 								int length = 0;
 								boolean truncated = false;
 
@@ -272,12 +276,18 @@ public class Checkpoint implements Serializable, Cloneable {
 								}
 						};
 						// Message possibly wrapped by toOutputStream()
-						message = report.getMessageCapturer().toOutputStream(message, byteArrayOutputStream,
+						message = report.getMessageCapturer().toOutputStream(message, messageCapturerOutputStream,
 								charsetNotifier -> charset[0] = charsetNotifier,
 								exceptionNotifier -> exception[0] = exceptionNotifier);
 					}
-					report.addStreamingMessageListener(message, this);
-					possiblyWrappedMessage[0] = message;
+					if (message != possiblyWrappedMessage[0]) {
+						// First add listener and then remove listener as close() on messageCapturerWriter or
+						// messageCapturerOutputStream may be called in the mean time in a separate thread
+						report.addStreamingMessageListener(message, this);
+						Object origMessage = possiblyWrappedMessage[0];
+						possiblyWrappedMessage[0] = message;
+						report.removeStreamingMessageListener(origMessage, this);
+					}
 				}
 			}
 		}

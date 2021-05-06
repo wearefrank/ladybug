@@ -25,9 +25,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.zip.GZIPInputStream;
 
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
-
 import junit.framework.TestCase;
 import nl.nn.testtool.Checkpoint;
 import nl.nn.testtool.Report;
@@ -59,6 +56,13 @@ public class TestExport extends TestCase {
 				if (method.getParameters()[0].getType() == long.class) {
 					Long defaultValue = (Long)getMethods.get(name).invoke(report, new Object[0]);
 					method.invoke(report, defaultValue + name.length());
+				} else if (method.getParameters()[0].getType() == Long.class) {
+					Long defaultValue = (Long)getMethods.get(name).invoke(report, new Object[0]);
+					if (defaultValue == null) {
+						method.invoke(report, (long)name.length());
+					} else {
+						method.invoke(report, defaultValue + name.length());
+					}
 				} else if (method.getParameters()[0].getType() == Integer.class) {
 					Integer defaultValue = (Integer)getMethods.get(name).invoke(report, new Object[0]);
 					if (defaultValue == null) {
@@ -131,7 +135,7 @@ public class TestExport extends TestCase {
 		List<Checkpoint> checkpoints = new ArrayList<Checkpoint>();
 		checkpoints.add(checkpoint);
 		report.setCheckpoints(checkpoints);
-		assertExport(RESOURCE_PATH, getName(), report.getCorrelationId(), report, false, false, true);
+		assertExport(RESOURCE_PATH, "test", report, false, false, false);
 	}
 
 	private static void getBeanProperties(Class<?> clazz, String verb, Map<String, Method> beanProperties) {
@@ -154,7 +158,7 @@ public class TestExport extends TestCase {
 		}
 	}
 
-	public static void assertExport(String path, String testCaseName, String correlationId, Report report,
+	public static void assertExport(String resourcePath, String testCaseName, Report report,
 			boolean applyToXmlIgnores, boolean applyEpochTimestampIgnores, boolean applyStackTraceIgnores)
 			throws IOException, StorageException {
 		// When storageId is a very low number (like when being build by the pipeline) the replace will potentially
@@ -180,7 +184,7 @@ public class TestExport extends TestCase {
 		if (applyStackTraceIgnores) {
 			actual = ReportRelatedTestCase.applyStackTraceIgnores(actual);
 		}
-		ReportRelatedTestCase.assertXml(path, testCaseName, actual);
+		ReportRelatedTestCase.assertXml(resourcePath, testCaseName + "Export", actual);
 	}
 
 }

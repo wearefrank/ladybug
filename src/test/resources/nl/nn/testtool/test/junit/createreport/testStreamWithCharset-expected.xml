@@ -5,7 +5,7 @@
         StartTime="Original length: 13"
         EndTime="Original length: 13"
         NumberOfCheckpoints="2"
-        EstimatedMemoryUsage="18">
+        EstimatedMemoryUsage="24">
    <Checkpoint Name="testStreamWithCharset"
                Type="Startpoint"
                Level="0"
@@ -16,5 +16,5 @@
    <Checkpoint Name="testStreamWithCharset"
                Type="Endpoint"
                Level="1"
-               SourceClassName="sourceClassName">message</Checkpoint>
+               SourceClassName="sourceClassName">endmessage</Checkpoint>
 </Report>
