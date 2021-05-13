@@ -45,12 +45,14 @@ public class ServletListener implements ServletContextListener {
 		serv.setInitParameters(ApiServlet.getInitParameters());
 
 		// Add ladybug frontend server
+		/* TODO: Uncomment this, after frontend is ready.
 		name = "ladybug-frontend";
 		mapping = "/ladybug/frontend/*";
 		logger.info("Registering servlet with name [" + name + "] with mapping [" + mapping + "].");
 		serv = context.addServlet(name, FrontendServlet.class);
 		serv.setLoadOnStartup(0);
 		serv.addMapping(mapping);
+		 */
 	}
 
 	@Override
