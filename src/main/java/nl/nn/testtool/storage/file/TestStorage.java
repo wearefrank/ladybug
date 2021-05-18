@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2018 Nationale-Nederlanden, 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -117,10 +117,15 @@ public class TestStorage implements nl.nn.testtool.storage.CrudStorage {
 	public void init() throws StorageException {
 		reader[0].init();
 		reader[1].init();
-		writer[0].init(reader[0].getStorageIds(writer[0].getMetadataFileLastModified()));
-		writer[1].init(reader[1].getStorageIds(writer[1].getMetadataFileLastModified()));
-		if (reader[1].getStorageIds(writer[1].getMetadataFileLastModified()).size()
-				> reader[0].getStorageIds(writer[0].getMetadataFileLastModified()).size()) {
+		writer[0].init(reader[0].getStorageIds(writer[0].getMetadataFileLastModified(),
+				writer[0].getSynchronizeRotate()));
+		writer[1].init(reader[1].getStorageIds(writer[1].getMetadataFileLastModified(),
+				writer[1].getSynchronizeRotate()));
+		int size0 = reader[0].getStorageIds(writer[0].getMetadataFileLastModified(), writer[0].getSynchronizeRotate())
+				.size();
+		int size1 = reader[1].getStorageIds(writer[1].getMetadataFileLastModified(), writer[1].getSynchronizeRotate())
+				.size();
+		if (size1 > size0) {
 			active = 1;
 		} else {
 			active = 0;
@@ -142,7 +147,8 @@ public class TestStorage implements nl.nn.testtool.storage.CrudStorage {
 	}
 
 	public List getStorageIds() throws StorageException {
-		return reader[active].getStorageIds(writer[active].getMetadataFileLastModified());
+		return reader[active].getStorageIds(writer[active].getMetadataFileLastModified(),
+				writer[active].getSynchronizeRotate());
 	}
 
 	public void update(Report report) throws StorageException {
@@ -154,7 +160,6 @@ public class TestStorage implements nl.nn.testtool.storage.CrudStorage {
 	}
 
 	private void update(Report report, boolean delete) throws StorageException {
-		// TODO synchronized maken een bean property updatesEnabled maken en alleen in dat geval synchronized doen? als updatesEnabled dan geen logrotatie toestaan? documenteren dat file storage niet zo snel is met updates en deletes?
 		short source = active;
 		short destination;
 		if (source == 0) {
@@ -162,7 +167,8 @@ public class TestStorage implements nl.nn.testtool.storage.CrudStorage {
 		} else {
 			destination = 0;
 		}
-		List storageIds = reader[source].getStorageIds(writer[source].getMetadataFileLastModified());
+		List storageIds = reader[source].getStorageIds(writer[source].getMetadataFileLastModified(),
+				writer[source].getSynchronizeRotate());
 		Collections.sort(storageIds);
 		Iterator iterator = storageIds.iterator();
 		while (iterator.hasNext()) {
@@ -172,7 +178,7 @@ public class TestStorage implements nl.nn.testtool.storage.CrudStorage {
 					writer[destination].store(report, true);
 				}
 			} else {
-				byte[] reportBytes = reader[source].getReportBytes(storageId);
+				byte[] reportBytes = reader[source].getReportBytes(storageId, writer[source].getSynchronizeRotate());
 				List persistentMetadata = writer[destination].getPersistentMetadata();
 				List searchValues = new ArrayList();
 				searchValues.add("(" + storageId + ")"); // TODO een getMetadata maken die op exacte waarden kan zoeken zodat je er geen reg. expr. van hoeft te maken?
@@ -183,7 +189,8 @@ public class TestStorage implements nl.nn.testtool.storage.CrudStorage {
 				List metadata = reader[source].getMetadata(-1,
 						persistentMetadata, searchValues ,
 						MetadataExtractor.VALUE_TYPE_STRING,
-						writer[source].getMetadataFileLastModified());
+						writer[source].getMetadataFileLastModified(),
+						writer[source].getSynchronizeRotate());
 				writer[destination].store(report.getName(), reportBytes, (List)metadata.get(0));
 			}
 		}
@@ -215,7 +222,7 @@ public class TestStorage implements nl.nn.testtool.storage.CrudStorage {
 	public List getMetadata(int numberOfRecords, List metadataNames,
 			List searchValues, int metadataValueType) throws StorageException {
 		return reader[active].getMetadata(numberOfRecords, metadataNames, searchValues,
-				metadataValueType, writer[active].getMetadataFileLastModified());
+				metadataValueType, writer[active].getMetadataFileLastModified(), writer[active].getSynchronizeRotate());
 	}
 
 	// TODO moet dit niet een StorageByMetadata worden? dus deze methode weg?
@@ -248,7 +255,7 @@ public class TestStorage implements nl.nn.testtool.storage.CrudStorage {
 	}
 
 	public Report getReport(Integer storageId) throws StorageException {
-		Report report = reader[active].getReport(storageId);
+		Report report = reader[active].getReport(storageId, writer[active].getSynchronizeRotate());
 		if (report != null) {
 			report.setStorage(this);
 		}

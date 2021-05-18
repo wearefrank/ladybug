@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2018 Nationale-Nederlanden, 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -110,7 +110,7 @@ public class Storage implements nl.nn.testtool.storage.LogStorage {
 
 	public void init() throws StorageException {
 		reader.init();
-		writer.init(reader.getStorageIds(writer.getMetadataFileLastModified()));
+		writer.init(reader.getStorageIds(writer.getMetadataFileLastModified(), writer.getSynchronizeRotate()));
 	}
 
 	public void store(Report report) throws StorageException {
@@ -132,7 +132,7 @@ public class Storage implements nl.nn.testtool.storage.LogStorage {
 	}
 
 	public List getStorageIds() throws StorageException {
-		return reader.getStorageIds(writer.getMetadataFileLastModified());
+		return reader.getStorageIds(writer.getMetadataFileLastModified(), writer.getSynchronizeRotate());
 	}
 
 //	// TODO naar report verplaatsen (report heeft nu ref naar storage)?
@@ -211,7 +211,7 @@ public class Storage implements nl.nn.testtool.storage.LogStorage {
 	public List getMetadata(int numberOfRecords, List metadataNames,
 			List searchValues, int metadataValueType) throws StorageException {
 		return reader.getMetadata(numberOfRecords, metadataNames, searchValues,
-				metadataValueType, writer.getMetadataFileLastModified());
+				metadataValueType, writer.getMetadataFileLastModified(), writer.getSynchronizeRotate());
 	}
 
 	// TODO moet dit niet een StorageByMetadata worden? dus deze methode weg?
@@ -244,7 +244,7 @@ public class Storage implements nl.nn.testtool.storage.LogStorage {
 	}
 
 	public Report getReport(Integer storageId) throws StorageException {
-		Report report = reader.getReport(storageId);
+		Report report = reader.getReport(storageId, writer.getSynchronizeRotate());
 		report.setStorage(this);
 		return report;
 	}

@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2018 Nationale-Nederlanden, 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -23,13 +23,15 @@ import java.util.Map;
 
 import nl.nn.testtool.MetadataExtractor;
 import nl.nn.testtool.Report;
+import nl.nn.testtool.storage.CrudStorage;
+import nl.nn.testtool.storage.LogStorage;
 import nl.nn.testtool.storage.StorageException;
 import nl.nn.testtool.util.SearchUtil;
 
 /**
  * @author Jaco de Groot
  */
-public class Storage implements nl.nn.testtool.storage.CrudStorage {
+public class Storage implements CrudStorage, LogStorage {
 	protected String name;
 	protected Map reports;
 	protected List storageIds;
@@ -148,5 +150,10 @@ public class Storage implements nl.nn.testtool.storage.CrudStorage {
 
 	public String getUserHelp(String column) {
 		return SearchUtil.getUserHelp();
+	}
+
+	@Override
+	public String getWarningsAndErrors() {
+		return null;
 	}
 }
