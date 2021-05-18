@@ -15,24 +15,14 @@
 */
 package nl.nn.testtool.storage.file;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
-import org.slf4j.Logger;
-
 import nl.nn.testtool.MetadataExtractor;
 import nl.nn.testtool.Report;
 import nl.nn.testtool.storage.StorageException;
-import nl.nn.testtool.util.CSVReader;
 import nl.nn.testtool.util.SearchUtil;
 
 /**
@@ -79,15 +69,6 @@ public class TestStorage implements nl.nn.testtool.storage.CrudStorage {
 		writer[1].setMetadataFilename(metadataFilename + ".b");
 	}
 
-//	public void setMaximumFileSize(long maximumFileSize) {
-//		writer.setMaximumFileSize(maximumFileSize);
-//	}
-//
-//	public void setMaximumBackupIndex(int maximumBackupIndex) {
-//		reader.setMaximumBackupIndex(maximumBackupIndex);
-//		writer.setMaximumBackupIndex(maximumBackupIndex);
-//	}
-//
 	public void setMetadataExtractor(MetadataExtractor metadataExtractor) {
 		reader[0].setMetadataExtractor(metadataExtractor);
 		reader[1].setMetadataExtractor(metadataExtractor);
@@ -185,7 +166,7 @@ public class TestStorage implements nl.nn.testtool.storage.CrudStorage {
 				for (int i = 1; i < persistentMetadata.size(); i++) {
 					searchValues.add(null); // TODO is dit nodig?
 				}
-// TODO als je numberOfRecords op 1 zet krijg je geen resultaat, klopt dat wel?
+// TODO als je maxNumberOfRecords op 1 zet krijg je geen resultaat, klopt dat wel?
 				List metadata = reader[source].getMetadata(-1,
 						persistentMetadata, searchValues ,
 						MetadataExtractor.VALUE_TYPE_STRING,
@@ -195,63 +176,15 @@ public class TestStorage implements nl.nn.testtool.storage.CrudStorage {
 			}
 		}
 		writer[destination].latestStorageId = writer[source].latestStorageId;
-		// TODO nog checken of desitnation storage goed gevuld is?
 		writer[source].clear();
 		reader[source].clear();
 		active = destination;
 	}
 
-	public void readFile(File file) {//TODO remove
-		try {
-			FileReader fileReader = new FileReader(file);
-			char[] cbuf = new char[(int)file.length()];
-			try {
-				fileReader.read(cbuf);
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
-	}
-	// TODO ook een methode die met arrays werkt zodat je niet allemaal lists aan hoeft te maken? of een arrayToList methode gebruiken? een standaard methode van Collections o.i.d.?
-	// TODO metadataValueType zou eigenlijk ook een list moeten zijn?!
-	public List getMetadata(int numberOfRecords, List metadataNames,
+	public List getMetadata(int maxNumberOfRecords, List metadataNames,
 			List searchValues, int metadataValueType) throws StorageException {
-		return reader[active].getMetadata(numberOfRecords, metadataNames, searchValues,
+		return reader[active].getMetadata(maxNumberOfRecords, metadataNames, searchValues,
 				metadataValueType, writer[active].getMetadataFileLastModified(), writer[active].getSynchronizeRotate());
-	}
-
-	// TODO moet dit niet een StorageByMetadata worden? dus deze methode weg?
-	// TODO getPathComponents noemen?
-	// TODO met (eigen) tree node objecten werken?
-	public List getTreeChildren(String path) {
-		List folders = new ArrayList();
-		if ("/".equals(path)) {
-			folders.add("testje1");
-			folders.add("testje2");
-			folders.add("testje3");
-		}
-		return folders;
-	}
-	// TODO getMetadata(String path) noemen?
-	public List getStorageIds(String path) throws StorageException {
-		return getStorageIds();
-
-		// Bij ieder report van resultaat /test/* bij path /test/ prefix
-		// verwijderen. Als je dan nog / in path hebt dan eerste gedeelte tot
-		// die / gebruiken als folder naam om weer te geven en anders het
-		// report weergeven
-//		try {
-//			metadata = storage.getMetadata(numberOfRecords, metadataNames,
-//					searchValues, MetadataExtractor.VALUE_TYPE_GUI);
-//		} catch(StorageException storageException) {
-//			displayAndLogError(storageException);
-//		}
-
 	}
 
 	public Report getReport(Integer storageId) throws StorageException {
@@ -267,58 +200,7 @@ public class TestStorage implements nl.nn.testtool.storage.CrudStorage {
 		writer[1].close();
 	}
 
-	protected static void closeCSVReader(CSVReader csvReader, String action, Logger log) {
-		try {
-			csvReader.close();
-		} catch(IOException e) {
-			log.warn("IOException " + action, e);
-		}
-	}
-	
-	protected static void closeReader(java.io.Reader reader, String action, Logger log) {
-		try {
-			reader.close();
-		} catch(IOException e) {
-			log.warn("IOException " + action, e);
-		}
-	}
-	
-	protected static void closeInputStream(InputStream inputStream, String action, Logger log) {
-		try {
-			inputStream.close();
-		} catch(IOException e) {
-			log.warn("IOException " + action, e);
-		}
-	}
-	
-	protected static void closeOutputStream(OutputStream outputStream, String action, Logger log) {
-		try {
-			outputStream.close();
-		} catch(IOException e) {
-			log.warn("IOException " + action, e);
-		}
-	}
-	
-	protected static void closeOutputStreamWriter(OutputStreamWriter outputStreamWriter, String action, Logger log) {
-		try {
-			outputStreamWriter.close();
-		} catch(IOException e) {
-			log.warn("IOException " + action, e);
-		}
-	}
-
-	protected static void logAndThrow(Logger log, String message) throws StorageException {
-		log.error(message);
-		throw new StorageException(message);
-	}
-
-	protected static void logAndThrow(Logger log, Exception e, String message) throws StorageException {
-		message = message + ": " + e.getMessage();
-		log.error(message, e);
-		throw new StorageException(message, e);
-	}
-
-	public int getFilterType(String column) {
+ 	public int getFilterType(String column) {
 		return FILTER_RESET;
 	}
 

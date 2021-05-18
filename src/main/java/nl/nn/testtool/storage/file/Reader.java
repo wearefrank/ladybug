@@ -94,7 +94,7 @@ public class Reader {
 		return result;
 	}
 
-	protected List getMetadata(int numberOfRecords, List metadataNames,
+	protected List getMetadata(int maxNumberOfRecords, List metadataNames,
 			List searchValues, int metadataValueType,
 			long metadataFileLastModifiedByWriter, String synchronizeRotate) throws StorageException {
 		List metadataReadOnly;
@@ -135,7 +135,7 @@ public class Reader {
 			metadataReadOnly = metadataCacheReadOnly;
 		}
 		List result = new ArrayList();
-		for (int i = 0; i < metadataReadOnly.size() &&  (numberOfRecords == -1 || i < numberOfRecords); i++) {
+		for (int i = 0; i < metadataReadOnly.size() &&  (maxNumberOfRecords == -1 || i < maxNumberOfRecords); i++) {
 			Map metadataRecord = (Map)metadataReadOnly.get(i);
 			// Check whether it's already possible to exclude this record from
 			// the result (based on the search values and the already available

@@ -6,6 +6,7 @@ Ladybug Test Tool release notes
 Upcoming
 --------
 
+- Clean storage java files
 - Fix concurrency issues in file storage when running load test with both reads and writes
 - Change log level of xml storage from info to debug
 - Fix typo in "in progress for more than 5 minutes" message
