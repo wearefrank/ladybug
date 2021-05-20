@@ -31,6 +31,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * AuthenticationInterceptor filters the requests based on their permission requirements.
+ * Permission requirements can be set with setRolesMap, where keys are strings explaining possible requests (such as
+ * "POST,PUT/path/to/endpoint"). Method part can be left empty in order to apply it for all methods (such as
+ * "/path/to/endpoint").
+ */
 public class AuthenticationInterceptor implements ContainerRequestFilter {
 	private static Map<String, RequestProperties> rolesMap = new HashMap<>();
 	private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
@@ -78,11 +84,19 @@ public class AuthenticationInterceptor implements ContainerRequestFilter {
 		}
 	}
 
+	/**
+	 * This class is used to represent authentication configurations for the interceptor.
+	 */
 	private static class RequestProperties {
 		private @Getter String path;
 		private @Getter List<String> roles;
 		private Set<String>  methods;
 
+		/**
+		 * Sets the path, roles and methods from the given config and list of roles.
+		 * @param config A string explaining the possible requests, such as: "POST,PUT/path/to/endpoint"
+		 * @param roles List of roles accepted for the given config.
+		 */
 		RequestProperties(String config, List<String> roles) {
 			int firstSlash = config.indexOf('/');
 			String[] methods = config.substring(0, firstSlash).split(",");
