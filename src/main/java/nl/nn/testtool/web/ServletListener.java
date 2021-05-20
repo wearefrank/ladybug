@@ -43,6 +43,7 @@ public class ServletListener implements ServletContextListener {
 		serv.setLoadOnStartup(0);
 		serv.addMapping(mapping);
 		serv.setInitParameters(ApiServlet.getInitParameters());
+		context.log("Finished registering servlet with name [" + name + "] with mapping [" + mapping + "].");
 
 		// Add ladybug frontend server
 		name = "ladybug-frontend";
@@ -51,6 +52,7 @@ public class ServletListener implements ServletContextListener {
 		serv = context.addServlet(name, FrontendServlet.class);
 		serv.setLoadOnStartup(0);
 		serv.addMapping(mapping);
+		context.log("Finished registering servlet with name [" + name + "] with mapping [" + mapping + "].");
 	}
 
 	@Override
