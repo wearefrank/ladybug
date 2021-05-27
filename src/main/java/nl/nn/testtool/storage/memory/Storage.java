@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2018 Nationale-Nederlanden, 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -23,13 +23,15 @@ import java.util.Map;
 
 import nl.nn.testtool.MetadataExtractor;
 import nl.nn.testtool.Report;
+import nl.nn.testtool.storage.CrudStorage;
+import nl.nn.testtool.storage.LogStorage;
 import nl.nn.testtool.storage.StorageException;
 import nl.nn.testtool.util.SearchUtil;
 
 /**
  * @author Jaco de Groot
  */
-public class Storage implements nl.nn.testtool.storage.CrudStorage {
+public class Storage implements CrudStorage, LogStorage {
 	protected String name;
 	protected Map reports;
 	protected List storageIds;
@@ -89,10 +91,10 @@ public class Storage implements nl.nn.testtool.storage.CrudStorage {
 		return new ArrayList(storageIds);
 	}
 
-	public synchronized List getMetadata(int numberOfRecords, List metadataNames,
+	public synchronized List getMetadata(int maxNumberOfRecords, List metadataNames,
 			List searchValues, int metadataValueType) {
 		List result = new ArrayList();
-		for (int i = 0; i < metadata.size() && (numberOfRecords == -1 || i < numberOfRecords); i++) {
+		for (int i = 0; i < metadata.size() && (maxNumberOfRecords == -1 || i < maxNumberOfRecords); i++) {
 			Map metadataRecord = (Map)metadata.get(i);
 			List resultRecord = new ArrayList();
 			Iterator metadataNamesIterator = metadataNames.iterator();
@@ -117,16 +119,6 @@ public class Storage implements nl.nn.testtool.storage.CrudStorage {
 		return result;
 	}
 
-	public List getTreeChildren(String path) {
-		// TODO implementeren?
-		return new ArrayList();
-	}
-
-	public List getStorageIds(String path) throws StorageException {
-		// TODO implementeren?
-		return new ArrayList();
-	}
-
 	public synchronized Report getReport(Integer storageId) {
 		return (Report)reports.get(storageId);
 	}
@@ -148,5 +140,10 @@ public class Storage implements nl.nn.testtool.storage.CrudStorage {
 
 	public String getUserHelp(String column) {
 		return SearchUtil.getUserHelp();
+	}
+
+	@Override
+	public String getWarningsAndErrors() {
+		return null;
 	}
 }

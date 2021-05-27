@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden
+   Copyright 2018 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package nl.nn.testtool.storage;
 import java.util.List;
 
 import nl.nn.testtool.Report;
+import nl.nn.testtool.util.SearchUtil;
 
 /**
  * @author Jaco de Groot
@@ -40,19 +41,13 @@ public interface Storage {
 	 * 
 	 * @param maxNumberOfRecords  the maximum number of records to return
 	 * @param metadataNames ...
-	 * @param searchValues ...
+	 * @param searchValues see {@link SearchUtil}
 	 * @param metadataValueType ...
 	 * @throws StorageException ...
 	 * @return ...
 	 */
-	// TODO bij de implementaties ook numberOfRecords -> maxNumberOfRecords
-	// TODO andere params ook documenteren (voor searchValues verwijzen naar SearchUtil.matches(resultRecord, searchValues)?)
 	public List<List<Object>> getMetadata(int maxNumberOfRecords, List<String> metadataNames,
 			List<String> searchValues, int metadataValueType) throws StorageException;
-
-	// TODO een StorageByMetadata en StorageByFolders maken?
-	public List getTreeChildren(String path);
-	public List getStorageIds(String path) throws StorageException;
 
 	/**
 	 * Get a report with the specified id. Returns null when the report could
