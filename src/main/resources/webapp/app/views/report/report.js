@@ -27,14 +27,18 @@ angular.module('myApp.report', ['ngRoute'])
     }
 
     $scope.add_tab = function (tabName, storageId, storage) {
-        $rootScope.tabs[storageId] = tabName;
-        let close = "<i class=\"fa fa-times\" aria-hidden=\"true\" " +
-            "onclick=\"$('#" + storageId + "').remove();window.location = '#!/view1';\"></i>";
+        if (!$('#' + storageId).length) {
+            $rootScope.tabs[storageId] = tabName;
+            let close = "<i class=\"fa fa-times\" aria-hidden=\"true\" " +
+                "onclick=\"$('#" + storageId + "').remove();window.location = '#!/view1';\"></i>";
 
-        $('#ladybug-tabs').append(
-            "<li class=\"nav-item active\" id=\"" + storageId + "\">" +
-            "<a href=\"#!/report?storage=" + storage +  "&storageId=" + storageId + "\" " +  "class=\"nav-link active\">" +
-            tabName + "</a>" + close + "</li>");
+            $('#ladybug-tabs').append(
+                "<li class=\"nav-item\" id=\"" + storageId + "\">" +
+                "<a href=\"#!/report?storage=" + storage +  "&storageId=" + storageId + "\" " +  "data-toggle=\"tab\" class=\"nav-link\">" +
+                tabName + "</a></li>");
+
+            $('#' + storageId + " .nav-link")[0].click()
+        }
     }
 
     $scope.addRelay.postInit = function() {
@@ -45,7 +49,7 @@ angular.module('myApp.report', ['ngRoute'])
         $http.get($scope.apiUrl + "/report/" + searchObject.storage + "/" + searchObject.storageId)
             .then(function (response) {
                 // TODO: get updated info from rootscope
-                console.log("Open Report oninit");
+                console.log("Open Report on init");
                 console.log(response.data);
                 $scope.add_tab(response.data.name, response.data.storageId, searchObject.storage);
                 $scope.addRelay.add(response.data);

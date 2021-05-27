@@ -1,38 +1,43 @@
 <div class="row">
-    <div class="col-4">
-        <div id="tree"></div>
+    <div class="resizable-horizontal w-25 pr-2 border-right">
+        <div class="m-2" id="tree"></div>
     </div>
-    <div class="col-8">
+    <div class="col">
         <div class="row">
-            <button type="button" class="btn btn-outline-primary col" ng-click="refresh()">Refresh</button>
-            <button type="button" class="btn btn-outline-primary col" ng-click="runReport(getSelectedReports())">Run
+            <button type="button" class="btn btn-info my-2 mr-1 px-3" ng-click="refresh()" title="Refresh">
+                <i class="fas fa-sync-alt"></i>
             </button>
-            <button type="button" class="btn btn-outline-primary col" ng-click="resetRunner()">Reset</button>
-            <button type="button" class="btn btn-outline-primary col" data-toggle="modal" data-target="#optionsModal">
-                Options
+            <button type="button" class="btn btn-info my-2 mx-1 px-3" ng-click="runReport(getSelectedReports())" title="Run">
+                <i class="fa fa-play" aria-hidden="true"></i>
             </button>
-            <button type="button" class="btn btn-outline-primary col" ng-click="changeSelectedAll(true)">Select All
+            <button type="button" class="btn btn-info my-2 mx-1 px-3" ng-click="resetRunner()" title="Reset"><i class="fas fa-redo"></i></button>
+            <button type="button" class="btn btn-info my-2 mx-1 px-3" data-toggle="modal" data-target="#optionsModal">
+                <i class="fa fa-cog" aria-hidden="true"></i>
             </button>
-            <button type="button" class="btn btn-outline-primary col" ng-click="changeSelectedAll(false)">Deselect All
+            <button type="button" class="btn btn-info my-2 mx-1 px-3" ng-click="changeSelectedAll(true)">Select All
             </button>
-            <button type="button" class="btn btn-outline-primary col" ng-click="deleteReports(getSelectedReports())">
-                Delete
+            <button type="button" class="btn btn-info my-2 mx-1 px-3" ng-click="changeSelectedAll(false)">Deselect All
             </button>
-            <div class="input-group col-md-2">
-                <div class="input-group-btn">
-                    <button type="button" class="btn btn-outline-primary dropdown-toggle" data-toggle="dropdown"
-                            aria-haspopup="true" aria-expanded="false">Download Selected <span class="caret"></span>
-                    </button>
-                    <ul class="dropdown-menu">
-                        <li><a href="#" ng-click="downloadReports(getSelectedReports(), true, true)">Reports & Messages</a></li>
-                        <li><a href="#" ng-click="downloadReports(getSelectedReports(), false, true)">Reports</a></li>
-                        <li><a href="#" ng-click="downloadReports(getSelectedReports(), true, false)">Messages</a></li>
-                    </ul>
+            <button type="button" class="btn btn-info my-2 mx-1 px-3" ng-click="deleteReports(getSelectedReports())" title="Delete All">
+                <i class="fa fa-trash" aria-hidden="true"></i>
+            </button>
+            <div class="row">
+                <div class="input-group col-xl-1 px-0">
+                    <div class="input-group-btn">
+                        <button type="button" class="btn btn-info my-2 mx-1 dropdown-toggle" data-toggle="dropdown"
+                                aria-haspopup="true" aria-expanded="false"><i class="fas fa-download px-2"></i><span class="caret"></span>
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="p-1" href="#" ng-click="downloadReports(getSelectedReports(), true, true)">Reports & Messages</a></li>
+                            <li><a href="#" ng-click="downloadReports(getSelectedReports(), false, true)">Reports</a></li>
+                            <li><a href="#" ng-click="downloadReports(getSelectedReports(), true, false)">Messages</a></li>
+                        </ul>
+                    </div>
                 </div>
             </div>
-            <div class="col">
+            <div class="col pl-1">
                 <input type="file" id="upload-file" style="display: none" ng-click="uploadReport()">
-                <button type="button" class="btn btn-outline-primary" onclick="$('#upload-file').click()">Upload
+                <button type="button" class="btn btn-info my-2 px-3" onclick="$('#upload-file').click()"><i class="fas fa-upload"></i>
                 </button>
             </div>
         </div>
@@ -40,36 +45,32 @@
         <div class="form-group mt-2">
             <label for="moveToInput">Move/Copy to:</label>
             <div class="input-group">
-                <input type="text" class="form-control" placeholder="1" id="moveToInput"/>
-                <div class="input-group-append">
-                    <button class="btn btn-outline-primary" type="button"
-                            ng-click="moveReports(getSelectedReports(), 'copy')">Copy
-                    </button>
-                </div>
-                <div class="input-group-append">
-                    <button class="btn btn-outline-primary" type="button"
-                            ng-click="moveReports(getSelectedReports(), 'move')">Move
-                    </button>
-                </div>
+                <input type="text" class="form-control mr-1" placeholder="1" id="moveToInput"/>
+                <button class="btn btn-info mx-1 mb-2" type="button"
+                        ng-click="moveReports(getSelectedReports(), 'copy')"><i class="fas fa-copy"></i>
+                </button>
+                <button class="btn btn-info mx-1 mb-2" type="button"
+                        ng-click="moveReports(getSelectedReports(), 'move')">Move
+                </button>
             </div>
         </div>
         <div class="row">
             <table>
                 <tbody>
-                <tr ng-repeat="report in reports">
+                <tr ng-repeat="report in reports" class="form-inline">
                     <td>
                         <input class="form-check-input" type="checkbox" ng-model="report.checked">
                     </td>
                     <td>
-                        <button type="button" class="btn btn-outline-primary col" ng-click="runReport([report])">Run
+                        <button type="button" class="btn btn-info m-2 col" title="Run" ng-click="runReport([report])"><i class="fa fa-play" aria-hidden="true"></i>
                         </button>
                     </td>
                     <td>
-                        <button type="button" class="btn btn-outline-primary col" ng-click="openReport([report])">Open
+                        <button type="button" class="btn btn-info m-2 col" title="Open" ng-click="openReport([report])"><i class="fas fa-folder-open"></i>
                         </button>
                     </td>
                     <td>
-                        <button type="button" class="btn btn-outline-primary col" ng-click="openCloneModal([report])">Clone
+                        <button type="button" class="btn btn-info m-2 col" title="Clone" ng-click="openCloneModal([report])">Clone
                         </button>
                     </td>
                     <td ng-show="showOptions.ids">
@@ -98,16 +99,16 @@
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
-            <div class="modal-body container">
-                <form>
-                    <div class="form-group form-check">
+            <div class="modal-body">
+                <form style="text-align: center">
+                    <div class="form-group form-check-inline">
                         <input class="form-check-input" type="checkbox" value="" id="reportTransformationCheck"
                                ng-model="showOptions.ids">
                         <label class="form-check-label transform-label" for="reportTransformationCheck">
                             Show report storage IDs
                         </label>
                     </div>
-                    <div class="form-group form-check">
+                    <div class="form-group form-check-inline">
                         <input class="form-check-input" type="checkbox" value="" id="showCheckpointIds"
                                ng-model="showOptions.checkpoints">
                         <label class="form-check-label transform-label" for="showCheckpointIds">
@@ -117,8 +118,7 @@
                 </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary" ng-click="showOptions = {ids: false, checkpoints: false}">
+                <button type="button" class="btn btn-info" ng-click="showOptions = {ids: false, checkpoints: false}">
                     Restore to defaults
                 </button>
             </div>
@@ -151,8 +151,7 @@
                 </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary" ng-click="cloneReport()">Generate</button>
+                <button type="button" class="btn btn-info" ng-click="cloneReport()">Generate</button>
             </div>
         </div>
     </div>
