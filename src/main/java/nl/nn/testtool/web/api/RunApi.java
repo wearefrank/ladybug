@@ -15,9 +15,11 @@
 */
 package nl.nn.testtool.web.api;
 
+import nl.nn.testtool.Checkpoint;
 import nl.nn.testtool.Report;
 import nl.nn.testtool.run.ReportRunner;
 import nl.nn.testtool.run.RunResult;
+import nl.nn.testtool.storage.CrudStorage;
 import nl.nn.testtool.storage.Storage;
 import nl.nn.testtool.storage.StorageException;
 import org.slf4j.Logger;
@@ -26,6 +28,7 @@ import org.slf4j.LoggerFactory;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -40,7 +43,6 @@ import java.util.Map;
 @Path("/runner")
 public class RunApi extends ApiBase {
 	private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-
 	/**
 	 * Rerun the given reports, and save the output the target storage.
 	 *
@@ -55,15 +57,27 @@ public class RunApi extends ApiBase {
 		Storage debugStorage = getBean(debugStorageParam);
 		List<Report> reports = new ArrayList<>();
 		List<String> exceptions = new ArrayList<>();
+
+		// Reran reports will allow us to keep track of old reran reports.
+		// This will later be used in replace and result.
+		HashMap<Integer, Report> reranReports = getSessionAttr("reranReports", false);
+		if (reranReports == null) {
+			reranReports = new HashMap<>();
+			setSessionAttr("reranReports", reranReports);
+		}
+
 		for (String storageParam : sources.keySet()) {
 			Storage storage = getBean(storageParam);
 			for (int storageId : sources.get(storageParam)) {
 				try {
-					reports.add(storage.getReport(storageId));
+					Report report = storage.getReport(storageId);
+					reports.add(report);
+					reranReports.put(storageId, report);
 				} catch (StorageException e) {
 					String message = "Exception for report in [" + storageParam + "] with storage id [" + storageId + "]: " + e.getMessage();
 					exceptions.add(message);
 					logger.error(message, e);
+					e.printStackTrace();
 				}
 			}
 		}
@@ -77,7 +91,7 @@ public class RunApi extends ApiBase {
 		} else if (exception != null) {
 			return Response.status(Response.Status.SERVICE_UNAVAILABLE).entity(exception).build();
 		}
-		return Response.ok(runner.getResults()).build();
+		return Response.ok().build();
 	}
 
 	/**
@@ -88,16 +102,94 @@ public class RunApi extends ApiBase {
 	@Path("/result/{debugStorage}")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getResults(@PathParam("debugStorage") String debugStorageParam) {
-		Storage debugStorage = getBean(debugStorageParam);
-		ReportRunner runner = getRunner(debugStorage);
+		try {
+			HashMap<Integer, Report> reranReports = getSessionAttr("reranReports", true);
+			Storage debugStorage = getBean(debugStorageParam);
+			ReportRunner runner = getRunner(debugStorage);
 
-		Map<Integer, RunResult> results = runner.getResults();
-		if (results == null || results.size() == 0)
-			return Response.noContent().build();
+			Map<Integer, RunResult> results = runner.getResults();
+			Map<String, Object> data = new HashMap<>(3);
+			Map<Integer, Object> returningResults = new HashMap<>(results.size());
 
-		return Response.ok(results).build();
+			for (Map.Entry<Integer, RunResult> entry : results.entrySet()) {
+				RunResult runResult = entry.getValue();
+				HashMap<String, Object> res = new HashMap<>(2);
+				try {
+					Report runResultReport = runner.getRunResultReport(runResult.correlationId);
+
+					// Calculate number of stubbed checkpoints.
+					int stubbed = 0;
+					boolean first = true;
+					for (Checkpoint checkpoint : runResultReport.getCheckpoints()) {
+						if (first) {
+							first = false;
+						} else if (checkpoint.isStubbed()) {
+							stubbed++;
+						}
+					}
+
+					res.put("report", runResultReport);
+					res.put("stubbed", stubbed);
+					res.put("total", runResultReport.getCheckpoints().size() - 1);
+
+					Report report = reranReports.get(entry.getKey());
+					res.put("previous-time", report.getEndTime() - report.getStartTime());
+					res.put("current-time", runResultReport.getEndTime() - runResultReport.getStartTime());
+				} catch (StorageException exception) {
+					res.put("exception", exception);
+					exception.printStackTrace();
+				}
+				returningResults.put(entry.getKey(), res);
+			}
+			data.put("results", returningResults);
+			data.put("progress", runner.getProgressValue());
+			data.put("max-progress", runner.getMaximum());
+			return Response.ok(data).build();
+		} catch (Throwable t) {
+			t.printStackTrace();
+			throw t;
+		}
 	}
 
+	@PUT
+	@Path("/replace/{debugStorage}/{storageId}")
+	@Produces(MediaType.APPLICATION_JSON)
+	@Consumes(MediaType.APPLICATION_JSON)
+	public Response runReport(@PathParam("debugStorage") String debugStorageStorageParam, @PathParam("storageId") int storageId) {
+		try {
+			// Get run result report.
+			Storage debugStorage = getBean(debugStorageStorageParam);
+			ReportRunner reportRunner = getRunner(debugStorage);
+			Report runResultReport = reportRunner.getRunResultReport(reportRunner.getResults().get(storageId).correlationId);
+
+			// Get original report.
+			HashMap<Integer, Report> reranReports = getSessionAttr("reranReports", true);
+			Report report = reranReports.get(storageId);
+
+			// Apply transformations, etc
+			logger.debug("Replacing report [" + report.getStorage().getName() + ":" + report.getStorageId() + "] " +
+					"with [" + debugStorage.getName() + ":" + runResultReport.getStorageId() + "]");
+			runResultReport.setTestTool(report.getTestTool());
+			runResultReport.setName(report.getName());
+			runResultReport.setDescription(report.getDescription());
+			if (report.getCheckpoints().get(0).containsVariables()) {
+				runResultReport.getCheckpoints().get(0).setMessage(report.getCheckpoints().get(0).getMessage());
+			}
+			runResultReport.setPath(report.getPath());
+			runResultReport.setTransformation(report.getTransformation());
+			runResultReport.setReportXmlTransformer(report.getReportXmlTransformer());
+			runResultReport.setVariableCsvWithoutException(report.getVariableCsv());
+			runResultReport.setStorageId(report.getStorageId());
+
+			((CrudStorage) report.getStorage()).update(runResultReport);
+			reportRunner.getResults().remove(storageId);
+			reranReports.remove(storageId);
+			return Response.ok(runResultReport).build();
+		} catch (StorageException storageException) {
+			storageException.printStackTrace();
+			throw new ApiException("Exception while replacing report with storage id [" + storageId + "]", storageException);
+		}
+	}
 	/**
 	 * Resets all the report runners.
 	 */
