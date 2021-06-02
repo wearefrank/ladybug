@@ -9,8 +9,10 @@
 }
 
 body {
+    font-family: "open sans", "Helvetica Neue", Helvetica, Arial, sans-serif !important;
     font-size: 0.7rem !important;
     line-height: 1 !important;
+    background-color: #f3f3f4 !important;
 }
 
 table .form-control {
@@ -51,4 +53,86 @@ table .form-control {
 }
 .diff_deleted {
     background: orangered;
+}
+
+.btn-info:hover, .btn-info:focus, .btn-info:active, .btn-info.active, .open .dropdown-toggle.btn-info, .btn-info:active:focus, .btn-info:active:hover, .btn-info.active:hover, .btn-info.active:focus {
+    background-color: #21b9bb;
+    border-color: #21b9bb;
+    outline: none; !important;
+}
+
+.row {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    background-color: white;
+}
+
+.nav-item:hover {
+    color: #676a6c;
+    background-color: #e6e6e6;
+    border: transparent;
+}
+
+
+.btn-info {
+    border: 1px;
+    background-color: #1ab394 !important;
+    border-color: #1ab394 !important;
+
+}
+
+.btn-info:focus {
+    outline: none !important;
+    box-shadow: none !important;
+    background-color: #23c6c8 !important;
+}
+
+.btn-info:hover {
+    background-color: #23c6c8 !important;
+    border-color: #23c6c8 !important;
+}
+
+.nav-tabs .nav-item .nav-link {
+    background-color: #f3f3f4;
+    color: #a7b1c2;
+}
+
+.nav-tabs .nav-item .nav-link.active {
+    color: #555;
+    border-left: transparent;
+}
+
+#ladybug-tabs {
+    background-color: #f3f3f4;
+}
+
+.dropdown-menu > li > a {
+    padding-inline: .5rem;
+    text-decoration: none;
+    color: black;
+    width: 100%;
+}
+
+.dropdown-menu {
+    width: 200px !important;
+    position: absolute !important;
+    background-color: #CCC;
+    overflow: visible;
+    display: none;
+}
+
+.dropdown-menu > li {
+    padding: .5rem;
+    width: 100%;
+}
+.dropdown-menu > li:hover {
+    background-color: #f8f9fa;
+}
+
+.pre {
+    display: grid;
+}
+
+.monaco-editor {
+    position: absolute !important;
 }

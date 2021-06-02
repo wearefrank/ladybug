@@ -15,14 +15,6 @@
 */
 package nl.nn.testtool.storage.xml;
 
-import nl.nn.testtool.Report;
-import nl.nn.testtool.storage.CrudStorage;
-import nl.nn.testtool.storage.StorageException;
-import nl.nn.testtool.util.SearchUtil;
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.beans.XMLDecoder;
 import java.beans.XMLEncoder;
 import java.io.BufferedInputStream;
@@ -33,6 +25,15 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.util.List;
+
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import nl.nn.testtool.Report;
+import nl.nn.testtool.storage.CrudStorage;
+import nl.nn.testtool.storage.StorageException;
+import nl.nn.testtool.util.SearchUtil;
 
 /**
  * Handles report storage for ladybug.
@@ -229,22 +230,6 @@ public class XmlStorage implements CrudStorage {
 	public List<List<Object>> getMetadata(int maxNumberOfRecords, List<String> metadataNames, List<String> searchValues, int metadataValueType) throws StorageException {
 		updateMetadata();
 		return metadataHandler.getAsListofObjects(maxNumberOfRecords, metadataNames, searchValues, metadataValueType);
-	}
-
-	@Override
-	public List getTreeChildren(String path) {
-		return null;
-	}
-
-	@Override
-	public List getStorageIds(String path) throws StorageException {
-		try {
-			MetadataHandler handler = new MetadataHandler(path, this, false);
-			return handler.getStorageIds();
-		} catch (IOException e) {
-			logger.error("Exception while trying to create metadatahandler.", e);
-			throw new StorageException("Exception while trying to create metadatahandler.", e);
-		}
 	}
 
 	@Override

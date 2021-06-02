@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2018 Nationale-Nederlanden, 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.lang.invoke.MethodHandles;
+import java.nio.file.Files;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -46,6 +47,7 @@ import nl.nn.testtool.util.EscapeUtil;
 public class Writer {
 	private static Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 	private final String synchronizeStore = "";
+	private final String synchronizeRotate = "";
 	private String reportsFilename;
 	private String metadataFilename;
 	private File reportsFile;
@@ -118,19 +120,22 @@ public class Writer {
 	}
 
 	protected void store(Report report, boolean preserveStorageId) throws StorageException {
-		if (!preserveStorageId) {
-			Integer storageId = new Integer(latestStorageId++);
-			report.setStorageId(storageId);
-		}
 		byte[] reportBytes = getReportBytes(report);
-		report.setStorageSize(new Long(reportBytes.length));
-		List metadataValues = new ArrayList();
-		for (int i = 0; i < persistentMetadata.size(); i++) {
-			String metadataName = (String)persistentMetadata.get(i);
-			metadataValues.add(metadataExtractor.getMetadata(report,
-					metadataName, MetadataExtractor.VALUE_TYPE_STRING));
+		// Synchronize to keep order of storage id's in storage in incremental order
+		synchronized(synchronizeStore) {
+			if (!preserveStorageId) {
+				Integer storageId = new Integer(latestStorageId++);
+				report.setStorageId(storageId);
+			}
+			report.setStorageSize(new Long(reportBytes.length));
+			List metadataValues = new ArrayList();
+			for (int i = 0; i < persistentMetadata.size(); i++) {
+				String metadataName = (String)persistentMetadata.get(i);
+				metadataValues.add(metadataExtractor.getMetadata(report,
+						metadataName, MetadataExtractor.VALUE_TYPE_STRING));
+			}
+			store(report.getName(), reportBytes, metadataValues);
 		}
-		store(report.getName(), reportBytes, metadataValues);
 	}
 
 	protected void store(String reportName, byte[] reportBytes, List metadataValues) throws StorageException {
@@ -213,6 +218,10 @@ public class Writer {
 		return metadataFileLastModified;
 	}
 
+	protected String getSynchronizeRotate() {
+		return synchronizeRotate;
+	}
+
 	protected void clear() throws StorageException {
 		closeFiles();
 		
@@ -273,7 +282,7 @@ public class Writer {
 			Storage.logAndThrow(log, e, "UnsupportedEncodingException opening metadata output stream");
 		}
 	}
-	
+
 	private void writeMetadataHeader() throws StorageException {
 		try {
 			metadataOutputStreamWriter.write(metadataHeader);
@@ -318,34 +327,41 @@ public class Writer {
 	}
 
 	private void rotateFiles() throws StorageException {
-		rotateFile(reportsFilename);
-		rotateFile(metadataFilename);
-	}
-
-	private void rotateFile(String filename) throws StorageException {
-		for (int i = maximumBackupIndex; i > 0; i--) {
-			File oldFile = new File(filename + "." + i);
-			if (i == maximumBackupIndex && oldFile.exists()) {
-				deleteFile(oldFile);
-			} else if (oldFile.exists()) {
-				File newFile = new File(filename + "." + (i + 1));
-				renameFile(oldFile, newFile);
+		synchronized(synchronizeRotate) {
+			for (int i = maximumBackupIndex; i >= 0; i--) {
+				rotateFile(reportsFilename, i);
+				rotateFile(metadataFilename, i);
 			}
 		}
-		File oldFile = new File(filename);
-		File newFile = new File(filename + ".1");
-		renameFile(oldFile, newFile);
 	}
-	
+
+	private void rotateFile(String filename, int i) throws StorageException {
+		File oldFile;
+		if (i == 0) {
+			oldFile = new File(filename);
+		} else {
+			oldFile = new File(filename + "." + i);
+		}
+		if (i == maximumBackupIndex && oldFile.exists()) {
+			deleteFile(oldFile);
+		} else if (oldFile.exists()) {
+			File newFile = new File(filename + "." + (i + 1));
+			renameFile(oldFile, newFile);
+		}
+	}
+
 	private static void deleteFile(File file) throws StorageException {
 		if (!file.delete()) {
 			Storage.logAndThrow(log, "Could not delete file '" + file.getAbsolutePath() + "'");
 		}
 	}
-	
+
 	private static void renameFile(File oldFile, File newFile) throws StorageException {
-		if (!oldFile.renameTo(newFile)) {
-			Storage.logAndThrow(log, "Could not rename file '" + oldFile.getAbsolutePath() + "' to '" + newFile + "'");
+		try {
+			Files.move(oldFile.toPath(), newFile.toPath());
+		} catch (Exception e) {
+			Storage.logAndThrow(log, e,
+					"Could not rename file '" + oldFile.getAbsolutePath() + "' to '" + newFile.getAbsolutePath() + "'");
 		}
 	}
 

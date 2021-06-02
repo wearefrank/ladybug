@@ -164,7 +164,7 @@ function displayController($rootScope, $scope, $compile, $http) {
                         if ("xml" in response.data) ladybugData.message = response.data.xml;
                         $rootScope.overwritten_checkpoints["report"][ladybugData.storageId] = ladybugData;
 
-                        $('#details-edit' + ctrl.id).text("Edit");
+                        $('#details-edit' + ctrl.id).text("").append("<i class=\"fas fa-edit\"></i>")
                         ctrl.editing = false;
                         $('#modal' + ctrl.id).modal('hide');
                         ctrl.display_node(ctrl.selectedNode, null, null);
@@ -180,7 +180,7 @@ function displayController($rootScope, $scope, $compile, $http) {
             $rootScope.overwritten_checkpoints["checkpoint"][ctrl.reportDetails.data.uid] = ctrl.reportDetails.text;
             ctrl.reportDetails.data["message"] = ctrl.reportDetails.text;
 
-            $('#details-edit' + ctrl.id).text("Edit");
+            $('#details-edit' + ctrl.id).text("").append("<i class=\"fas fa-edit\"></i>")
             ctrl.editing = false;
             $('#modal' + ctrl.id).modal('hide');
             ctrl.display_node(ctrl.selectedNode, null, null);

@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2018 Nationale-Nederlanden, 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,14 +15,10 @@
 */
 package nl.nn.testtool.storage.file;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -110,7 +106,7 @@ public class Storage implements nl.nn.testtool.storage.LogStorage {
 
 	public void init() throws StorageException {
 		reader.init();
-		writer.init(reader.getStorageIds(writer.getMetadataFileLastModified()));
+		writer.init(reader.getStorageIds(writer.getMetadataFileLastModified(), writer.getSynchronizeRotate()));
 	}
 
 	public void store(Report report) throws StorageException {
@@ -132,119 +128,17 @@ public class Storage implements nl.nn.testtool.storage.LogStorage {
 	}
 
 	public List getStorageIds() throws StorageException {
-		return reader.getStorageIds(writer.getMetadataFileLastModified());
+		return reader.getStorageIds(writer.getMetadataFileLastModified(), writer.getSynchronizeRotate());
 	}
 
-//	// TODO naar report verplaatsen (report heeft nu ref naar storage)?
-//	public void update(Report report) throws StorageException {
-//		//TODO (not supported) exception gooien? Aparte LogStorage maken (zie todo in Storage interface)
-//	}
-//	public void delete(Report report) throws StorageException {
-//		//TODO (not supported) exception gooien? Aparte LogStorage maken (zie todo in Storage interface)
-//	}
-/*
-	public void update(Report report) throws StorageException {
-		update(report, false);
-	}
-
-	public void delete(Report report) throws StorageException {
-		update(report, true);
-	}
-
-	private void update(Report report, boolean delete) throws StorageException {
-		// TODO synchronized maken een bean property updatesEnabled maken en alleen in dat geval synchronized doen? als updatesEnabled dan geen logrotatie toestaan? documenteren dat file storage niet zo snel is met updates en deletes?
-		List storageIds = reader.getStorageIds(writer.getMetadataFileLastModified());
-		//writer.rotateFiles(); blijft lastig om ervoor te zorgen dat writer files niet open heeft
-		File reportsFile = new File(reportsFilename);
-		File metadataFile = new File(metadataFilename);
-		String tempReportsFilename = reportsFilename + ".1";
-		String tempMetadataFilename = metadataFilename + ".1";
-		File tempReportsFile = new File(tempReportsFilename);
-		File tempMetadataFile = new File(tempMetadataFilename);
-		boolean success;
-//		success = reportsFile.renameTo(tempReportsFile);
-//		success = metadataFile.renameTo(tempMetadataFile);
-		reader.setReportsFilename(tempReportsFilename);
-		reader.setMetadataFilename(tempMetadataFilename);
-		reader.init();
-		writer.init(null);
-//		readFile(metadataFile);//TODO remove
-		readFile(tempMetadataFile);//TODO remove
-		Iterator iterator = storageIds.iterator();
-		while (iterator.hasNext()) {
-			Integer storageId = (Integer)iterator.next();
-			if (storageId.equals(report.getStorageId())) {
-				if (!delete) {
-					writer.store(report);
-				}
-			} else {
-				writer.store(reader.getReport(storageId));
-			}
-		}
-		reader.setReportsFilename(reportsFilename);
-		reader.setMetadataFilename(metadataFilename);
-		reader.init();
-		readFile(metadataFile);//TODO remove
-		readFile(tempMetadataFile);//TODO remove
-		success = tempReportsFile.delete();
-		success = tempMetadataFile.delete();
-	}
-*/
-	public void readFile(File file) {//TODO remove
-		try {
-			FileReader fileReader = new FileReader(file);
-			char[] cbuf = new char[(int)file.length()];
-			try {
-				fileReader.read(cbuf);
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
-	}
-	// TODO ook een methode die met arrays werkt zodat je niet allemaal lists aan hoeft te maken? of een arrayToList methode gebruiken? een standaard methode van Collections o.i.d.?
-	// TODO metadataValueType zou eigenlijk ook een list moeten zijn?!
-	public List getMetadata(int numberOfRecords, List metadataNames,
+	public List getMetadata(int maxNumberOfRecords, List metadataNames,
 			List searchValues, int metadataValueType) throws StorageException {
-		return reader.getMetadata(numberOfRecords, metadataNames, searchValues,
-				metadataValueType, writer.getMetadataFileLastModified());
-	}
-
-	// TODO moet dit niet een StorageByMetadata worden? dus deze methode weg?
-	// TODO getPathComponents noemen?
-	// TODO met (eigen) tree node objecten werken?
-	public List getTreeChildren(String path) {
-		List folders = new ArrayList();
-		if ("/".equals(path)) {
-			folders.add("testje1");
-			folders.add("testje2");
-			folders.add("testje3");
-		}
-		return folders;
-	}
-	// TODO getMetadata(String path) noemen?
-	public List getStorageIds(String path) throws StorageException {
-		return getStorageIds();
-
-		// Bij ieder report van resultaat /test/* bij path /test/ prefix
-		// verwijderen. Als je dan nog / in path hebt dan eerste gedeelte tot
-		// die / gebruiken als folder naam om weer te geven en anders het
-		// report weergeven
-//		try {
-//			metadata = storage.getMetadata(numberOfRecords, metadataNames,
-//					searchValues, MetadataExtractor.VALUE_TYPE_GUI);
-//		} catch(StorageException storageException) {
-//			displayAndLogError(storageException);
-//		}
-
+		return reader.getMetadata(maxNumberOfRecords, metadataNames, searchValues,
+				metadataValueType, writer.getMetadataFileLastModified(), writer.getSynchronizeRotate());
 	}
 
 	public Report getReport(Integer storageId) throws StorageException {
-		Report report = reader.getReport(storageId);
+		Report report = reader.getReport(storageId, writer.getSynchronizeRotate());
 		report.setStorage(this);
 		return report;
 	}
