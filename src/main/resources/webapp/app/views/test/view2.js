@@ -12,11 +12,14 @@ angular.module('myApp.view2', ['ngRoute'])
     .controller('View2Ctrl', ['$scope', '$http', '$compile', function ($scope, $http, $compile) {
         $scope.apiUrl = "http://localhost:8080/ibis_adapterframework_test_war_exploded/ladybug";
         $scope.storage = 'testStorage';
+        $scope.debugStorage = 'debugStorage';
         $scope.moveTo = "/";
         $scope.showOptions = {ids: false, checkpoints: false};
         $scope.reports = [];
         $scope.treeData = [{}];
         $scope.cloneInputs = {csv: "", message: "", storageId: "", force: false};
+        $scope.reranReports = {};
+        $scope.progressBar = {max: -1, progress: -1};
 
         $scope.addNode = function (rootNode, path, data) {
             console.debug("Adding node with data", {path: path, data: data, rootnode: rootNode});
@@ -72,9 +75,10 @@ angular.module('myApp.view2', ['ngRoute'])
                 data[$scope.storage].push(reports[i]["storageId"]);
             }
             console.info("Running reports", data);
-            $http.post($scope.apiUrl + "/runner/run/logStorage", data)
+            $http.post($scope.apiUrl + "/runner/run/" + $scope.debugStorage, data)
                 .then(function (response) {
                     console.debug("Run report response:", response);
+                    setTimeout($scope.queryResults, 100); //wait 0.1 seconds
                 }, function (response) {
                     let storageIds = "";
                     for (let i = 0; i < reports.length; i++) {
@@ -86,6 +90,25 @@ angular.module('myApp.view2', ['ngRoute'])
                     console.error("Error while running!", response);
                 })
         };
+
+        $scope.queryResults = function () {
+            $http.get($scope.apiUrl + "/runner/result/" + $scope.debugStorage).then(function (response) {
+                for (const [key, value] of Object.entries(response.data.results)) {
+                    $scope.reranReports[key] = {
+                        text: "(" + value["current-time"] + " >> " + value["current-time"] + " ms) " +
+                            "(" + value["stubbed"] + "/" + value["total"] + " stubbed)",
+                        report: value["report"]
+                    };
+                }
+                $scope.progressBar = {max: 100, progress: response.data['progress'] * 100 / response.data['max-progress']};
+                if (response.data['progress'] !== response.data['max-progress']) {
+                    setTimeout($scope.queryResults, 100); //wait 0.1 seconds
+                }
+            }, function (response) {
+                createToast("Error in polling!", "Could not query the results. Check logs for more information.", $scope, $compile);
+                console.error("Error in polling!", response);
+            });
+        }
 
         $scope.treeSelect = function () {
             let nodes = $('#tree').treeview('getSelected');
@@ -137,8 +160,14 @@ angular.module('myApp.view2', ['ngRoute'])
                 });
         };
 
-        $scope.updateReports = function () {
-            // TODO ?
+        $scope.replaceReport = function (report) {
+            $http.put($scope.apiUrl + "/runner/replace/" + $scope.debugStorage + "/" + report.storageId)
+                .then(function (response) {
+                    delete $scope.reranReports[report.storageId];
+                }, function (response) {
+                    createToast("Replace Error!", "Error while replacing report with id [" + report.storageId + "]. Check logs for more information.", $scope, $compile);
+                    console.error("Replace Error!", response);
+                });
         };
 
         $scope.uploadReport = function () {
@@ -251,7 +280,6 @@ angular.module('myApp.view2', ['ngRoute'])
 
         $scope.refresh = function () {
             $scope.updateTree();
-            $scope.updateReports();
         }
 
         $('#cloneModal').on('hidden.bs.modal', $scope.closeCloneModal)

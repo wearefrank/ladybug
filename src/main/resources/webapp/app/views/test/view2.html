@@ -53,6 +53,11 @@
                 </div>
             </div>
         </div>
+        <div class="row progress" ng-show="progressBar.max > 0">
+            <div class="progress-bar" role="progressbar" style="width: {{progressBar.progress}}%;"
+                 aria-valuenow="{{progressBar.progress}}" aria-valuemin="0"
+                 aria-valuemax="{{progressBar.max}}">{{progressBar.progress}}%</div>
+        </div>
         <div class="row">
             <table>
                 <tbody>
@@ -72,12 +77,23 @@
                         <button type="button" class="btn btn-outline-primary col" ng-click="openCloneModal([report])">Clone
                         </button>
                     </td>
+                    <td ng-show="reranReports.hasOwnProperty(report.storageId)">
+                        <button type="button" class="btn btn-outline-primary col" ng-click="openReport([report])">Compare TODO
+                        </button>
+                    </td>
+                    <td ng-show="reranReports.hasOwnProperty(report.storageId)">
+                        <button type="button" class="btn btn-outline-primary col" ng-click="replaceReport(report)">Replace
+                        </button>
+                    </td>
                     <td ng-show="showOptions.ids">
                         {{report["storageId"]}}
                     </td>
                     <td>
                         <div class="report-path">{{report["path"] + report["name"]}}</div>
                         <div class="mb-3 ml-2" ng-show="showOptions.checkpoints && report['csvText'] !== ''">{{report["csvText"]}}</div>
+                    </td>
+                    <td ng-show="reranReports.hasOwnProperty(report.storageId)">
+                        {{reranReports[report.storageId].text}}
                     </td>
                 </tr>
                 </tbody>
