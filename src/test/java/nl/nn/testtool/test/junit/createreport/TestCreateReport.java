@@ -16,6 +16,7 @@
 package nl.nn.testtool.test.junit.createreport;
 
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertThrows;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -201,6 +202,22 @@ public class TestCreateReport extends ReportRelatedTestCase {
 		assertEquals("Report should be in progress (number of endpoints + abortpoints doesn't match number of startpoints),", 1, testTool.getNumberOfReportsInProgress());
 		testTool.close(correlationId);
 		assertReport(correlationId);
+	}
+
+	public void testAbortLambda() throws StorageException, IOException {
+		String correlationId = getCorrelationId();
+		testTool.startpoint(correlationId, null, getName(), "startmessage1");
+		testTool.startpoint(correlationId, null, "name2", () -> {return "startmessage2";}, new HashSet<String>());
+		assertThrows(RuntimeException.class, () -> {
+			testTool.endpoint(correlationId, null, "name2", () -> {if (isTrue()) throw new RuntimeException("abortmessage2"); return "dummy";}, new HashSet<String>());
+		});
+		testTool.abortpoint(correlationId, null, getName(), "abortmessage1");
+
+		assertReport(correlationId);
+	}
+
+	private boolean isTrue() {
+		return true;
 	}
 
 	public void testAbortThread() throws StorageException, IOException {

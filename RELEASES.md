@@ -6,7 +6,15 @@ Ladybug Test Tool release notes
 Upcoming
 --------
 
+- Add checkpoint after stubable code has been executed
+- Clean storage java files
+- Fix concurrency issues in file storage when running load test with both reads and writes
+- Change log level of xml storage from info to debug
+- Fix typo in "in progress for more than 5 minutes" message
+- Fix Echo2 session reset on unexpected throwable during import
+- Fix error message on unexpected throwable during import
 - Use exception class name for message class name in case of stream with exception
+- Fix NPE on report upload
 - Fix report not closed for synchronous stream (a stream that is closed immediately)
 - Fix reports in progress and Waiting for message capturers message shown too early
 - Fix estimated memory usage incorrect for stream

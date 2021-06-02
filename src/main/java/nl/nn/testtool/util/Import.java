@@ -71,13 +71,15 @@ public class Import {
 				errorMessage = "No ttr files found in zip";
 			}
 			for(ImportResult importResult : importResults) {
-				Report report = storage.getReport(importResult.newStorageId);
-				if(report.getInputCheckpoint().containsVariables()) {
-					if(report.getInputCheckpoint().updateVariables(importResults)) {
-						storage.update(report);
-						log.debug("Updated report ["+report.getFullPath()+"]'s input variable(s) with target report's updated storageId(s)");
-					} else {
-						log.warn("Could not update report ["+report.getFullPath()+"]'s input variables on uploading - please review manually");
+				if (importResult.newStorageId != null) {
+					Report report = storage.getReport(importResult.newStorageId);
+					if(report.getInputCheckpoint().containsVariables()) {
+						if(report.getInputCheckpoint().updateVariables(importResults)) {
+							storage.update(report);
+							log.debug("Updated report ["+report.getFullPath()+"]'s input variable(s) with target report's updated storageId(s)");
+						} else {
+							log.warn("Could not update report ["+report.getFullPath()+"]'s input variables on uploading - please review manually");
+						}
 					}
 				}
 			}
@@ -95,7 +97,6 @@ public class Import {
 
 	// TODO closeXMLEncoder methode (en anderen?) gebruiken?
 	public static ImportResult importTtr(InputStream inputStream, CrudStorage storage, Logger log) {
-		String errorMessage = null;
 		GZIPInputStream gzipInputStream = null;
 		XMLDecoder xmlDecoder = null;
 		String version = null;
@@ -121,8 +122,9 @@ public class Import {
 			// XML Object Decoder
 			if (log != null) log.debug("Last report in file read");
 		} catch (Throwable t) {
-			importResult.errorMessage = "Caught unexpected throwable during import: " + t.getMessage();
-			if (log != null) log.error(errorMessage, t);
+			importResult.errorMessage = "Caught unexpected throwable during import: " + t.getClass().getTypeName()
+					+ ": " + t.getMessage();
+			if (log != null) log.error(importResult.errorMessage, t);
 		} finally {
 			if (report != null) {
 				importResult.newStorageId = report.getStorageId();

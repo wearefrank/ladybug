@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2018 Nationale-Nederlanden, 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -113,10 +113,10 @@ public class Storage implements nl.nn.testtool.storage.Storage {
 		return new ArrayList(storageIds);
 	}
 
-	public synchronized List getMetadata(int numberOfRecords, List metadataNames,
+	public synchronized List getMetadata(int maxNumberOfRecords, List metadataNames,
 			List searchValues, int metadataValueType) {
 		List result = new ArrayList();
-		for (int i = 0; i < metadata.size() && (numberOfRecords == -1 || i < numberOfRecords); i++) {
+		for (int i = 0; i < metadata.size() && (maxNumberOfRecords == -1 || i < maxNumberOfRecords); i++) {
 			Map metadataRecord = (Map)metadata.get(i);
 			List resultRecord = new ArrayList();
 			Iterator metadataNamesIterator = metadataNames.iterator();
@@ -138,16 +138,6 @@ public class Storage implements nl.nn.testtool.storage.Storage {
 			}
 		}
 		return result;
-	}
-
-	public List getTreeChildren(String path) {
-		// TODO implementeren?
-		return new ArrayList();
-	}
-
-	public List getStorageIds(String path) throws StorageException {
-		// TODO implementeren?
-		return new ArrayList();
 	}
 
 	public synchronized Report getReport(Integer storageId) {

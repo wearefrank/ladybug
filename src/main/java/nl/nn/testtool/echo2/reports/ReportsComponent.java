@@ -804,7 +804,7 @@ public class ReportsComponent extends BaseComponent implements BeanParent, Actio
 
 	public void displayReports(boolean metadataNamesChanged) {
 		if (testTool.warnReportsInProgress()) {
-			displayError("One or more reports are in progress for more than 5 minuts");
+			displayError("One or more reports are in progress for more than 5 minutes");
 		}
 		if (testTool.warnMessageCapturerWaitingForClose()) {
 			displayError("One or more reports are finished but waiting for more than 30 seconds for one or more message capturers to close");

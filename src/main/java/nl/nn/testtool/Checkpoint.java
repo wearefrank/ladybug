@@ -383,11 +383,21 @@ public class Checkpoint implements Serializable, Cloneable {
 
 	@JsonIgnore
 	public Path getPath() {
+		return getPath(false);
+	}
+
+	protected Path getPath(boolean checkpointInProgress) {
 		Path path = new Path(level + 1);
 		path.setName(level, name);
 		int currentLevel = level;
 		String currentName = name;
-		for (int i = report.getCheckpoints().indexOf(this) - 1; i >= 0; i--) {
+		int i = report.getCheckpoints().indexOf(this);
+		if (i == -1 && checkpointInProgress) {
+			// Checkpoint constructed but not added to list of checkpoints yet
+			i = report.getCheckpoints().size();
+		}
+		i--;
+		for ( ; i >= 0; i--) {
 			Checkpoint currentCheckpoint = (Checkpoint)report.getCheckpoints().get(i);
 			if (currentCheckpoint.getLevel() == currentLevel && currentCheckpoint.getName().equals(currentName)) {
 				path.incrementCount(currentLevel);

@@ -79,11 +79,12 @@ public class Reader {
 		metadataFile = new File(metadataFilename);
 	}
 
-	protected List getStorageIds(long metadataFileLastModifiedByWriter) throws StorageException {
+	protected List getStorageIds(long metadataFileLastModifiedByWriter, String synchronizeRotate)
+			throws StorageException {
 		List result = new ArrayList();
 		List metadata = getMetadata(-1, METADATA_NAMES_STORAGE_ID, null,
 				MetadataExtractor.VALUE_TYPE_OBJECT,
-				metadataFileLastModifiedByWriter);
+				metadataFileLastModifiedByWriter, synchronizeRotate);
 		Iterator iterator = metadata.iterator();
 		while (iterator.hasNext()) {
 			List record = (List)iterator.next();
@@ -92,47 +93,48 @@ public class Reader {
 		return result;
 	}
 
-	protected List getMetadata(int numberOfRecords, List metadataNames,
+	protected List getMetadata(int maxNumberOfRecords, List metadataNames,
 			List searchValues, int metadataValueType,
-			long metadataFileLastModifiedByWriter) throws StorageException {
+			long metadataFileLastModifiedByWriter, String synchronizeRotate) throws StorageException {
 		List metadataReadOnly;
 		synchronized(metadataCacheReadOnly) {
-			// The last modified time of a file isn't updated until the file
-			// output stream is closed (at least with WSAD on Windows XP). As
-			// the writer class doesn't close the file the writer class must
-			// pass this info to this class. In case the metadata file was
-			// edited by hand it should also be detected.
-			if (metadataFileLastModifiedByWriter != this.metadataFileLastModifiedByWriter
-					|| metadataFile.lastModified() != this.metadataFileLastModifiedByOthers) {
-				this.metadataFileLastModifiedByWriter = metadataFileLastModifiedByWriter;
-				metadataFileLastModifiedByOthers = metadataFile.lastModified();
-				List newMetadataCacheReadOnly = new ArrayList();
-				for (int i = maximumBackupIndex; i >= 0; i--) {
-					File file;
-					if (i == 0) {
-						file = metadataFile;
-					} else {
-						file = new File(metadataFilename + "." + i);
-					}
-					if (file.exists()) {
-						while (metadataCacheReadOnlyPerFile.size() <= i) {
-							metadataCacheReadOnlyPerFile.add(0, new ArrayList());
+			synchronized(synchronizeRotate) {
+				// The last modified time of a file isn't updated until the file
+				// output stream is closed (at least with WSAD on Windows XP). As
+				// the writer class doesn't close the file the writer class must
+				// pass this info to this class. In case the metadata file was
+				// edited by hand it should also be detected.
+				if (metadataFileLastModifiedByWriter != this.metadataFileLastModifiedByWriter
+						|| metadataFile.lastModified() != this.metadataFileLastModifiedByOthers) {
+					this.metadataFileLastModifiedByWriter = metadataFileLastModifiedByWriter;
+					metadataFileLastModifiedByOthers = metadataFile.lastModified();
+					List newMetadataCacheReadOnly = new ArrayList();
+					for (int i = maximumBackupIndex; i >= 0; i--) {
+						File file;
+						if (i == 0) {
+							file = metadataFile;
+						} else {
+							file = new File(metadataFilename + "." + i);
 						}
-						List oldMetadataCurrentFile = (List)metadataCacheReadOnlyPerFile.get(i);
-						List metadataCurrentFile = new ArrayList();
-						getMetadataOrReportLocationFromFile(metadataExtractor,
-								file, oldMetadataCurrentFile,
-								metadataCurrentFile, null);
-						newMetadataCacheReadOnly.addAll(0, metadataCurrentFile);
-						metadataCacheReadOnlyPerFile.set(i, metadataCurrentFile);
+						if (file.exists()) {
+							while (metadataCacheReadOnlyPerFile.size() <= i) {
+								metadataCacheReadOnlyPerFile.add(0, new ArrayList());
+							}
+							List oldMetadataCurrentFile = (List)metadataCacheReadOnlyPerFile.get(i);
+							List metadataCurrentFile = new ArrayList();
+							getMetadataOrReportLocationFromFile(metadataExtractor, file, oldMetadataCurrentFile,
+										metadataCurrentFile, null);
+							newMetadataCacheReadOnly.addAll(0, metadataCurrentFile);
+							metadataCacheReadOnlyPerFile.set(i, metadataCurrentFile);
+						}
 					}
+					metadataCacheReadOnly = newMetadataCacheReadOnly;
 				}
-				metadataCacheReadOnly = newMetadataCacheReadOnly;
 			}
 			metadataReadOnly = metadataCacheReadOnly;
 		}
 		List result = new ArrayList();
-		for (int i = 0; i < metadataReadOnly.size() &&  (numberOfRecords == -1 || i < numberOfRecords); i++) {
+		for (int i = 0; i < metadataReadOnly.size() &&  (maxNumberOfRecords == -1 || i < maxNumberOfRecords); i++) {
 			Map metadataRecord = (Map)metadataReadOnly.get(i);
 			// Check whether it's already possible to exclude this record from
 			// the result (based on the search values and the already available
@@ -181,7 +183,7 @@ public class Reader {
 							storageId = (Integer)metadataRecord.get("storageId");
 						}
 						if (report == null) {
-							report = getReportWithoutException(storageId);
+							report = getReportWithoutException(storageId, synchronizeRotate);
 						}
 						if (report == null) {
 							resultRecord = null;
@@ -212,10 +214,10 @@ public class Reader {
 		return result;
 	}
 
-	private Report getReportWithoutException(Integer storageId) {
+	private Report getReportWithoutException(Integer storageId, String synchronizeRotate) {
 		Report report = null;
 		try {
-			report = getReport(storageId);
+			report = getReport(storageId, synchronizeRotate);
 		} catch(Throwable throwable) {
 			if (!(throwable instanceof StorageException)) {
 				log.error("Caught unexpected throwable reading report from file", throwable);
@@ -224,52 +226,54 @@ public class Reader {
 		return report;
 	}
 
-	protected byte[] getReportBytes(Integer storageId) throws StorageException {
+	protected byte[] getReportBytes(Integer storageId, String synchronizeRotate) throws StorageException {
 		byte[] reportBytes = null;
 		ReportLocation reportLocation = null;
 		int foundInIndex = -1;
-		for (int i = maximumBackupIndex; i >= 0 && foundInIndex == -1; i--) {
-			File file;
-			if (i == 0) {
-				file = metadataFile;
-			} else {
-				file = new File(metadataFilename + "." + i);
-			}
-			if (file.exists()) {
-				reportLocation = getMetadataOrReportLocationFromFile(null, file, null, null, storageId);
-				if (reportLocation != null) {
-					foundInIndex = i;
-					i = -1;
+		synchronized(synchronizeRotate) {
+			for (int i = maximumBackupIndex; i >= 0 && foundInIndex == -1; i--) {
+				File file;
+				if (i == 0) {
+					file = metadataFile;
+				} else {
+					file = new File(metadataFilename + "." + i);
+				}
+				if (file.exists()) {
+					reportLocation = getMetadataOrReportLocationFromFile(null, file, null, null, storageId);
+					if (reportLocation != null) {
+						foundInIndex = i;
+						i = -1;
+					}
 				}
 			}
-		}
-		if (foundInIndex != -1 ) {
-			FileInputStream fileInputStream = null;
-			try {
+			if (foundInIndex != -1 ) {
 				File file;
 				if (foundInIndex == 0) {
 					file = reportsFile;
 				} else {
 					file = new File(reportsFilename + "." + foundInIndex);
 				}
-				fileInputStream = new FileInputStream(file);
-				fileInputStream.skip(reportLocation.offset);
-				reportBytes = new byte[reportLocation.size.intValue()];
-				fileInputStream.read(reportBytes, 0, reportBytes.length);
-			} catch(IOException e) {
-				Storage.logAndThrow(log, e, "IOException reading report from file");
-			} finally {
-				if (fileInputStream != null) {
-					Storage.closeInputStream(fileInputStream, "closing file input stream after reading report from file", log);
+				FileInputStream fileInputStream = null;
+				try {
+					fileInputStream = new FileInputStream(file);
+					fileInputStream.skip(reportLocation.offset);
+					reportBytes = new byte[reportLocation.size.intValue()];
+					fileInputStream.read(reportBytes, 0, reportBytes.length);
+				} catch(IOException e) {
+					Storage.logAndThrow(log, e, "IOException reading report " + storageId + " from file " + file.getAbsolutePath());
+				} finally {
+					if (fileInputStream != null) {
+						Storage.closeInputStream(fileInputStream, "closing file input stream after reading report " + storageId + " from file " + file.getAbsolutePath(), log);
+					}
 				}
 			}
 		}
 		return reportBytes;	
 	}
 
-	protected Report getReport(Integer storageId) throws StorageException {
+	protected Report getReport(Integer storageId, String synchronizeRotate) throws StorageException {
 		Report report = null;
-		byte[] reportBytes = getReportBytes(storageId);
+		byte[] reportBytes = getReportBytes(storageId, synchronizeRotate);
 		if (reportBytes != null) {
 			ByteArrayInputStream byteArrayInputStream = null;
 			GZIPInputStream gzipInputStream = null;
@@ -282,18 +286,18 @@ public class Reader {
 				report.setStorageId(storageId);
 				report.setStorageSize(new Long(reportBytes.length));
 			} catch(IOException e) {
-				Storage.logAndThrow(log, e, "IOException reading report from bytes");
+				Storage.logAndThrow(log, e, "IOException reading report " + storageId + " from bytes");
 			} catch(ClassNotFoundException e) {
-				Storage.logAndThrow(log, e, "ClassNotFoundException reading report from file");
+				Storage.logAndThrow(log, e, "ClassNotFoundException reading report " + storageId + " from file");
 			} finally {
 				if (objectInputStream != null) {
-					Storage.closeInputStream(objectInputStream, "closing object input stream after reading report from file", log);
+					Storage.closeInputStream(objectInputStream, "closing object input stream after reading report " + storageId + " from file", log);
 				}
 				if (gzipInputStream != null) {
-					Storage.closeInputStream(gzipInputStream, "closing gzip input stream after reading report from file", log);
+					Storage.closeInputStream(gzipInputStream, "closing gzip input stream after reading report " + storageId + " from file", log);
 				}
 				if (byteArrayInputStream != null) {
-					Storage.closeInputStream(byteArrayInputStream, "closing byte array input stream after reading report from file", log);
+					Storage.closeInputStream(byteArrayInputStream, "closing byte array input stream after reading report " + storageId + " from file", log);
 				}
 			}
 		}

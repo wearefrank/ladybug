@@ -397,11 +397,10 @@ public class Report implements Serializable {
 			StubableCode stubableCode, StubableCodeThrowsException stubableCodeThrowsException,
 			Set<String> matchingStubStrategies, int checkpointType, Integer index, Integer level) {
 		Checkpoint checkpoint = new Checkpoint(this, threadName, sourceClassName, name, checkpointType, level.intValue());
-		checkpoints.add(index.intValue(), checkpoint);
 		boolean stub = false;
 		if (originalReport != null) {
-			Path lastCheckpointPath = checkpoint.getPath();
-			Checkpoint originalCheckpoint = (Checkpoint)originalReport.getCheckpoint(lastCheckpointPath);
+			Path path = checkpoint.getPath(true);
+			Checkpoint originalCheckpoint = (Checkpoint)originalReport.getCheckpoint(path);
 			if (originalCheckpoint == null) {
 				if (matchingStubStrategies != null) {
 					if (matchingStubStrategies.contains(originalReport.getStubStrategy())) {
@@ -429,7 +428,7 @@ public class Report implements Serializable {
 			if (stub) {
 				checkpoint.setStubbed(true);
 				if (originalCheckpoint == null) {
-					checkpoint.setStubNotFound(lastCheckpointPath.toString());
+					checkpoint.setStubNotFound(path.toString());
 				}
 				message = getMessageEncoder().toObject(originalCheckpoint, message);
 				message = checkpoint.setMessage(message);
@@ -439,7 +438,6 @@ public class Report implements Serializable {
 			try {
 				message = TestTool.execute(stubableCode, stubableCodeThrowsException, message);
 			} catch(Throwable t) {
-				checkpoints.remove(index.intValue());
 				testTool.abortpoint(correlationId, sourceClassName, name, t.getMessage());
 				throw t;
 			}
@@ -450,6 +448,9 @@ public class Report implements Serializable {
 			Integer value = (Integer)threadCheckpointIndex.get(key);
 			threadCheckpointIndex.put(key, new Integer(value.intValue() + 1));
 		}
+		// Add checkpoint to the list after stubable code has been executed. Otherwise when a report in progress is
+		// opened is might give the impression that the stubable code is already executed
+		checkpoints.add(index.intValue(), checkpoint);
 		if (log.isDebugEnabled()) {
 			log.debug("Added checkpoint " + getCheckpointLogDescription(name, checkpointType, level));
 		}
