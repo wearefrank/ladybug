@@ -15,6 +15,17 @@
 */
 package nl.nn.testtool;
 
+import net.sf.saxon.trans.XPathException;
+import nl.nn.testtool.run.ReportRunner;
+import nl.nn.testtool.run.RunResult;
+import nl.nn.testtool.storage.StorageException;
+import nl.nn.testtool.util.ImportResult;
+import nl.nn.testtool.util.XmlUtil;
+import org.apache.commons.lang.StringUtils;
+import org.codehaus.jackson.annotate.JsonIgnore;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.beans.ExceptionListener;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -30,18 +41,8 @@ import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import net.sf.saxon.trans.XPathException;
 import nl.nn.testtool.MessageCapturer.StreamingType;
 import nl.nn.testtool.MessageEncoder.ToStringResult;
-import nl.nn.testtool.run.ReportRunner;
-import nl.nn.testtool.run.RunResult;
-import nl.nn.testtool.storage.StorageException;
-import nl.nn.testtool.util.ImportResult;
-import nl.nn.testtool.util.XmlUtil;
 
 /**
  * @author Jaco de Groot
@@ -93,10 +94,14 @@ public class Checkpoint implements Serializable, Cloneable {
 		this.level = level;
 	}
 
+	// JsonIgnore is used so that Jackson will not get into an infinite loop trying to reference report,
+	// which already contains checkpoint.
+	@JsonIgnore
 	public void setReport(Report report) {
 		this.report = report;
 	}
 	
+	@JsonIgnore
 	public Report getReport() {
 		return report;
 	}
@@ -376,6 +381,7 @@ public class Checkpoint implements Serializable, Cloneable {
 		return stubNotFound;
 	}
 
+	@JsonIgnore
 	public Path getPath() {
 		return getPath(false);
 	}

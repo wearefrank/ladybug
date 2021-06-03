@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2018 Nationale-Nederlanden, 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -14,6 +14,13 @@
    limitations under the License.
 */
 package nl.nn.testtool.util;
+
+import nl.nn.testtool.Checkpoint;
+import nl.nn.testtool.Report;
+import nl.nn.testtool.TestTool;
+import nl.nn.testtool.storage.Storage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.beans.XMLEncoder;
 import java.io.ByteArrayOutputStream;
@@ -33,19 +40,16 @@ import java.util.zip.GZIPOutputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import nl.nn.testtool.Checkpoint;
-import nl.nn.testtool.Report;
-import nl.nn.testtool.TestTool;
-import nl.nn.testtool.storage.Storage;
-
 public class Export {
 	private static Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
 	public static ExportResult export(Storage storage) {
 		return export(storage, null);
+	}
+
+	public static ExportResult export(Storage storage, List storageIds, boolean exportReport,
+											boolean exportReportXml) {
+		return export(storage, storageIds, null, exportReport, exportReportXml, null, null);
 	}
 
 	public static ExportResult export(Storage storage,
@@ -81,12 +85,18 @@ public class Export {
 	private static ExportResult export(Storage storage, Report report,
 			boolean exportReport, boolean exportReportXml,
 			Checkpoint checkpoint, String suggestedFilenameWithoutExtension) {
+		return export(storage, null, report, exportReport, exportReportXml, checkpoint, suggestedFilenameWithoutExtension);
+	}
+	private static ExportResult export(Storage storage, List storageIds, Report report,
+			boolean exportReport, boolean exportReportXml,
+			Checkpoint checkpoint, String suggestedFilenameWithoutExtension) {
 		ExportResult exportResult = new ExportResult();
 		FileOutputStream fileOutputStream = null;
 		ZipOutputStream zipOutputStream = null;
 		try {
 			if (storage != null) {
-				List storageIds = storage.getStorageIds();
+				if (storageIds == null || storageIds.isEmpty())
+					storageIds = storage.getStorageIds();
 				if (suggestedFilenameWithoutExtension == null) {
 					suggestedFilenameWithoutExtension = "Ladybug "+storage.getName();
 					suggestedFilenameWithoutExtension += " "+new SimpleDateFormat("yyyyMMdd-HHmm").format(new Date());
@@ -105,7 +115,14 @@ public class Export {
 				Set duplicateCheck = new HashSet();
 				Iterator iterator = storageIds.iterator();
 				while (iterator.hasNext()) {
+					try {
 					report = storage.getReport((Integer)iterator.next());
+						if (report == null)
+							continue;
+					} catch (Exception e) {
+						exportResult.setErrorMessage(e.toString());
+						continue;
+					}
 					// TODO bij storage al afvangen dat er geen dubbele namen voor kunnen komen?
 					int duplicateNumber = 1;
 					String zipEntryName = getZipEntryName(report, duplicateNumber);
