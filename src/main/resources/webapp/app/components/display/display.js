@@ -254,7 +254,7 @@ function displayController($rootScope, $scope, $compile, $http) {
                 "Number of characters:": message.length,
                 "EstimatedMemoryUsage:": ladybugData["estimatedMemoryUsage"]
             },
-            notifications: {0: {level: "error", text: "I see you are displaying a checkpoint!"}}
+            notifications: {}
         };
         ctrl.stubStrategies = ["Follow report strategy", "No", "Yes"];
         ctrl.stubStrategySelect = ctrl.stubStrategies[ladybugData["stub"] + 1];
@@ -295,7 +295,7 @@ function displayController($rootScope, $scope, $compile, $http) {
                 "Storage:": ctrl.storage,
                 "EstimatedMemoryUsage:": ladybugData["estimatedMemoryUsage"]
             },
-            notifications: {0: {level: "ok", text: "I see you are displaying a report!"}}
+            notifications: {}
         };
         let stubStrategySelect = ladybugData["stubStrategy"];
         ctrl.stubStrategies = $scope.testtoolStubStrategies;
