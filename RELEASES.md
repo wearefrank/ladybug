@@ -6,6 +6,7 @@ Ladybug Test Tool release notes
 Upcoming
 --------
 
+- Add REST API for new frontend
 - Add checkpoint after stubable code has been executed
 - Clean storage java files
 - Fix concurrency issues in file storage when running load test with both reads and writes
