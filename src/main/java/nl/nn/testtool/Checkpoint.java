@@ -16,8 +16,6 @@
 package nl.nn.testtool;
 
 import net.sf.saxon.trans.XPathException;
-import nl.nn.testtool.MessageCapturer.StreamingType;
-import nl.nn.testtool.MessageEncoder.ToStringResult;
 import nl.nn.testtool.run.ReportRunner;
 import nl.nn.testtool.run.RunResult;
 import nl.nn.testtool.storage.StorageException;
@@ -43,6 +41,8 @@ import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import nl.nn.testtool.MessageCapturer.StreamingType;
+import nl.nn.testtool.MessageEncoder.ToStringResult;
 
 /**
  * @author Jaco de Groot
