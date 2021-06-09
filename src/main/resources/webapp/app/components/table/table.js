@@ -38,8 +38,10 @@ function metadataTableController($scope, $compile, $http) {
                 ctrl.metadatas.push(row);
             });
         }, function (response) {
-            createToast("Could not update table!", "Error while getting metadata.", $scope, $compile)
-            console.error("Could not update table!", response);
+            let title = "Could not update table!";
+            if (response.status === 401) title = "Method not allowed!";
+            createToast(title, "Error while getting metadata.", $scope, $compile)
+            console.error(title, response);
         });
     };
 
@@ -68,8 +70,10 @@ function metadataTableController($scope, $compile, $http) {
             });
             ctrl.updateTable();
         }, function (response) {
-            createToast("Error on refresh!", "Error while getting metadata columns.", $scope, $compile);
-            console.error("Error on refresh!", response);
+            let title = "Error on refresh!";
+            if (response.status === 401) title = "Method not allowed!";
+            createToast(title, "Error while getting metadata columns.", $scope, $compile);
+            console.error(title, response);
         });
     };
 
@@ -88,9 +92,11 @@ function metadataTableController($scope, $compile, $http) {
                         ctrl.onSelectRelay.add(response.data[i]);
                     }
                 }, function (response) {
-                    createToast("Error on upload!", "Error while uploading the report [" + files[i].name + "]",
+                    let title = "Error on upload!";
+                    if (response.status === 401) title = "Method not allowed!";
+                    createToast(title, "Error while uploading the report [" + files[i].name + "]",
                         $scope, $compile);
-                    console.error("Error on upload!", response);
+                    console.error(title, response);
                 });
         }
     }
@@ -118,10 +124,11 @@ function metadataTableController($scope, $compile, $http) {
                 console.debug("Opening report", response.data);
                 ctrl.onSelectRelay.add(response.data);
             }, function (response) {
-                createToast("Error on report!",
-                    "Could not get the report with storage id [" + metadata["storageId"] + "]",
+                let title = "Error on report!";
+                if (response.status === 401) title = "Method not allowed!";
+                createToast(title, "Could not get the report with storage id [" + metadata["storageId"] + "]",
                     $scope, $compile);
-                console.error("Error on report!", response);
+                console.error(title, response);
             });
     };
 
@@ -140,9 +147,10 @@ function metadataTableController($scope, $compile, $http) {
                 ctrl.stubStrategies = ctrl.testtoolStubStrategies;
                 console.debug("Updated options", ctrl.options);
             }, function (response) {
-                createToast("Could not access Ladybug Api",
-                    "Can not retrieve testtool information.", $scope, $compile);
-                console.error("Could not access Ladybug Api", response);
+                let title = "Could not access Ladybug Api!";
+                if (response.status === 401) title = "Method not allowed!";
+                createToast(title, "Can not retrieve testtool information.", $scope, $compile);
+                console.error(title, response);
             });
         console.info("Updating transformations");
         $http.get("../testtool/transformation")

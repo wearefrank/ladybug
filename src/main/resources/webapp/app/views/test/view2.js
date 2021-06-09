@@ -78,14 +78,16 @@ angular.module('myApp.view2', ['ngRoute'])
                     console.debug("Run report response:", response);
                     setTimeout($scope.queryResults, 100); //wait 0.1 seconds
                 }, function (response) {
+                    let title = "Error while running!";
+                    if (response.status === 401) title = "Method not allowed!";
                     let storageIds = "";
                     for (let i = 0; i < reports.length; i++) {
                         storageIds = storageIds + reports[i]["storageId"] + ", ";
                     }
-                    createToast("Error while running!",
+                    createToast(title,
                         "Error while running the reports [" + storageIds.slice(0, storageIds.length - 2) + "]",
                         $scope, $compile);
-                    console.error("Error while running!", response);
+                    console.error(title, response);
                 })
         };
 
@@ -103,8 +105,10 @@ angular.module('myApp.view2', ['ngRoute'])
                     setTimeout($scope.queryResults, 100); //wait 0.1 seconds
                 }
             }, function (response) {
-                createToast("Error in polling!", "Could not query the results. Check logs for more information.", $scope, $compile);
-                console.error("Error in polling!", response);
+                let title = "Error in polling!";
+                if (response.status === 401) title = "Method not allowed!";
+                createToast(title, "Could not query the results. Check logs for more information.", $scope, $compile);
+                console.error(title, response);
             });
         }
 
@@ -153,8 +157,10 @@ angular.module('myApp.view2', ['ngRoute'])
                     });
                     $scope.treeSelect();
                 }, function (response) {
-                    createToast("Error!", "Error while getting tree metadata.", $scope, $compile);
-                    console.error("Error while getting tree metadata.", response);
+                    let title = "Error!";
+                    if (response.status === 401) title = "Method not allowed!";
+                    createToast(title, "Error while getting tree metadata.", $scope, $compile);
+                    console.error(title, response);
                 });
         };
 
@@ -163,8 +169,10 @@ angular.module('myApp.view2', ['ngRoute'])
                 .then(function (response) {
                     delete $scope.reranReports[report.storageId];
                 }, function (response) {
-                    createToast("Replace Error!", "Error while replacing report with id [" + report.storageId + "]. Check logs for more information.", $scope, $compile);
-                    console.error("Replace Error!", response);
+                    let title = "Replace Error!";
+                    if (response.status === 401) title = "Method not allowed!";
+                    createToast(title, "Error while replacing report with id [" + report.storageId + "]. Check logs for more information.", $scope, $compile);
+                    console.error(title, response);
                 });
         };
 
@@ -219,9 +227,10 @@ angular.module('myApp.view2', ['ngRoute'])
                     $scope.cloneInputs.storageId = storageId;
                     $('#cloneModal').modal('show');
                 }, function (response) {
-                    createToast("Error while getting Report!",
-                        "Could not get the report with storage id [" + storageId + "]", $scope, $compile);
-                    console.error(response);
+                    let title = "Error while getting Report!";
+                    if (response.status === 401) title = "Method not allowed!";
+                    createToast(title, "Could not get the report with storage id [" + storageId + "]", $scope, $compile);
+                    console.error(title, response);
                 })
         }
 
@@ -240,10 +249,12 @@ angular.module('myApp.view2', ['ngRoute'])
             $http.post("../report/clone/" + $scope.storage + "/" + $scope.cloneInputs.storageId, data)
                 .then($scope.closeCloneModal, function (response) {
                     $scope.cloneInputs.force = true;
-                    createToast("Could not clone!",
+                    let title = "Could not clone!";
+                    if (response.status === 401) title = "Method not allowed!";
+                    createToast(title,
                         "Could not clone the report with storage id [" + $scope.cloneInputs.storageId + "]",
                         $scope, $compile);
-                    console.error("Could not clone!", response);
+                    console.error(title, response);
                 });
         }
 

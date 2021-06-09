@@ -19,9 +19,11 @@ function displayController($rootScope, $scope, $compile, $http) {
             .then(function (response) {
                 console.debug("Rerun is successful", response);
             }, function (response) {
-                createToast("Rerun failed!", "Rerun of the report with storage id [" + storageId + "] failed.",
-                $scope, $compile);
-                console.error("Rerun failed!", response);
+                let title = "Rerun failed!";
+                if (response.status === 401) title = "Method not allowed!";
+                createToast(title, "Rerun of the report with storage id [" + storageId + "] failed.",
+                    $scope, $compile);
+                console.error(title, response);
             });
     };
 
@@ -168,8 +170,11 @@ function displayController($rootScope, $scope, $compile, $http) {
                         $('#modal' + ctrl.id).modal('hide');
                         ctrl.display_node(ctrl.selectedNode, null, null);
                     }, function (response) {
-                        // TODO: Introduce alerts!
-                        console.log(response);
+                        let title = "Update failed!";
+                        if (response.status === 401) title = "Method not allowed!";
+                        createToast(title, "Update of the report with storage id [" +
+                            ctrl.selectedNode["ladybug"]["storageId"] + "] failed.", $scope, $compile);
+                        console.error(title, response);
                     });
             }
         } else {
@@ -282,6 +287,12 @@ function displayController($rootScope, $scope, $compile, $http) {
                     ladybugData.message = reportXml;
                     $('#code' + ctrl.id).text(reportXml);
                     ctrl.highlight_code();
+                }, function (response) {
+                    let title = "Could not get Message!";
+                    if (response.status === 401) title = "Method not allowed!";
+                    createToast(title, "Could not get the message from the report with storage id [" +
+                        ctrl.selectedNode["ladybug"]["storageId"] + "].", $scope, $compile);
+                    console.error(title, response);
                 });
         }
         ctrl.reportDetails = {
