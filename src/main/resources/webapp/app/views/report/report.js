@@ -29,15 +29,16 @@ angular.module('myApp.report', ['ngRoute'])
     $scope.add_tab = function (tabName, storageId, storage) {
         if (!$('#' + storageId).length) {
             $rootScope.tabs[storageId] = tabName;
-            let close = "<i class=\"fa fa-times\" aria-hidden=\"true\" " +
-                "onclick=\"$('#" + storageId + "').remove();window.location = '#!/view1';\"></i>";
+            let close = "<button class=\"fa fa-times border-0\"  style='background-color: transparent' aria-hidden=\"true\" " +
+                "onclick=\"$('#" + storageId + "').remove();" +
+                "$('#view1 .nav-link')[0].click();\"></button>";
 
             $('#ladybug-tabs').append(
-                "<li class=\"nav-item\" id=\"" + storageId + "\">" +
-                "<a href=\"#!/report?storage=" + storage +  "&storageId=" + storageId + "\" " +  "data-toggle=\"tab\" class=\"nav-link\">" +
-                tabName + "</a></li>");
+                '<li class="nav-item" id="' + storageId + '">' +
+                '<a href="" data-toggle="tab" class="nav-link border-0"> <span href="#!/report?storage=' + storage + '&storageId=' + storageId + '" style="text-decoration: none; ">' + tabName + '</span>' +
+                close + '</a></li>');
 
-            $('#' + storageId + " .nav-link")[0].click()
+            $('#' + storageId + ' .nav-link')[0].click()
         }
     }
 
