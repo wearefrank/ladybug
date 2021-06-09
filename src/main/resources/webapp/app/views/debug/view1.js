@@ -10,7 +10,6 @@ angular.module('myApp.view1', ['ngRoute'])
     }])
 
     .controller('View1Ctrl', ['$scope', function ($scope) {
-        $scope.apiUrl = "http://localhost:8080/ibis_adapterframework_test_war_exploded/ladybug";
         $scope.storage = "debugStorage";
         $scope.table2tree = {};
         $scope.tree2display = {};

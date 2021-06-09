@@ -2,7 +2,6 @@
 
 function displayController($rootScope, $scope, $compile, $http) {
     let ctrl = this;
-    ctrl.apiUrl = "http://localhost:8080/ibis_adapterframework_test_war_exploded/ladybug";
     ctrl.reportDetails = {text: "", values: {}, notifications: {}};
     ctrl.stubStrategySelect = "";
     ctrl.availableStorages = {'testStorage': 'Test'};
@@ -16,7 +15,7 @@ function displayController($rootScope, $scope, $compile, $http) {
         let storageId = ctrl.selectedNode["ladybug"]["storageId"];
         data[$scope.storage] = [];
         console.info("Rerunning the report with storage id", storageId);
-        $http.post(ctrl.apiUrl + "/runner/run/" + ctrl.storage, data)
+        $http.post("../runner/run/" + ctrl.storage, data)
             .then(function (response) {
                 console.debug("Rerun is successful", response);
             }, function (response) {
@@ -158,13 +157,13 @@ function displayController($rootScope, $scope, $compile, $http) {
             }
             if (Object.keys(updated).length !== 0) {
                 console.debug("Updating the report data with values", updated);
-                $http.post(ctrl.apiUrl + "/report/" + ctrl.storage + "/" + ctrl.selectedNode["ladybug"]["storageId"], updated)
+                $http.post("../report/" + ctrl.storage + "/" + ctrl.selectedNode["ladybug"]["storageId"], updated)
                     .then(function (response) {
                         let ladybugData = response.data.report;
                         if ("xml" in response.data) ladybugData.message = response.data.xml;
                         $rootScope.overwritten_checkpoints["report"][ladybugData.storageId] = ladybugData;
 
-                        $('#details-edit' + ctrl.id).text("").append("<i class=\"fas fa-edit\"></i>")
+                        $('#details-edit' + ctrl.id).text("").append("<i class=\"fa fa-edit\"></i>")
                         ctrl.editing = false;
                         $('#modal' + ctrl.id).modal('hide');
                         ctrl.display_node(ctrl.selectedNode, null, null);
@@ -180,7 +179,7 @@ function displayController($rootScope, $scope, $compile, $http) {
             $rootScope.overwritten_checkpoints["checkpoint"][ctrl.reportDetails.data.uid] = ctrl.reportDetails.text;
             ctrl.reportDetails.data["message"] = ctrl.reportDetails.text;
 
-            $('#details-edit' + ctrl.id).text("").append("<i class=\"fas fa-edit\"></i>")
+            $('#details-edit' + ctrl.id).text("").append("<i class=\"fa fa-edit\"></i>")
             ctrl.editing = false;
             $('#modal' + ctrl.id).modal('hide');
             ctrl.display_node(ctrl.selectedNode, null, null);
@@ -192,12 +191,12 @@ function displayController($rootScope, $scope, $compile, $http) {
         let storageId = ctrl.selectedNode["ladybug"]["storageId"]
         data[ctrl.storage] = [storageId];
         console.info("Copying report with storage id [" + storageId + "] to [" + to + "]");
-        $http.put(ctrl.apiUrl + "/report/store/" + to, data);
+        $http.put("../report/store/" + to, data);
     }
 
     ctrl.downloadReports = function (exportReport, exportReportXml) {
         let queryString = "?id=" + ctrl.selectedNode["ladybug"]["storageId"] + "";
-        window.open(ctrl.apiUrl + "/report/download/" + ctrl.storage + "/" + exportReport + "/" +
+        window.open("../report/download/" + ctrl.storage + "/" + exportReport + "/" +
             exportReportXml + queryString);
     }
 
@@ -272,9 +271,9 @@ function displayController($rootScope, $scope, $compile, $http) {
             $('#code' + ctrl.id).text(ladybugData["message"]);
         } else {
             let transformer = "applyTransformer" in ctrl && ctrl["applyTransformer"];
-            console.info("Getting message with URL: " + ctrl.apiUrl + "/report/" + ctrl.storage + "/" + ladybugData.storageId +
+            console.info("Getting message with URL: ../report/" + ctrl.storage + "/" + ladybugData.storageId +
                 "?xml=true&globalTransformer=" + transformer);
-            $http.get(ctrl.apiUrl + "/report/" + ctrl.storage + "/" + ladybugData.storageId + "?xml=true&globalTransformer=" + transformer)
+            $http.get("../report/" + ctrl.storage + "/" + ladybugData.storageId + "?xml=true&globalTransformer=" + transformer)
                 .then(function (response) {
                     console.debug("Returned message", response.data);
 

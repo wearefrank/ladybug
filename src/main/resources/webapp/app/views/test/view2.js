@@ -10,7 +10,6 @@ angular.module('myApp.view2', ['ngRoute'])
     }])
 
     .controller('View2Ctrl', ['$scope', '$http', '$compile', function ($scope, $http, $compile) {
-        $scope.apiUrl = "http://localhost:8080/ibis_adapterframework_test_war_exploded/ladybug";
         $scope.storage = 'testStorage';
         $scope.debugStorage = 'debugStorage';
         $scope.moveTo = "/";
@@ -63,8 +62,7 @@ angular.module('myApp.view2', ['ngRoute'])
         }
 
         $scope.openReport = function (reports) {
-            let s = "http://localhost:8000/#!/report?storage=" + $scope.storage + "&storageId=" + reports[0]["storageId"];
-            window.location = s;
+            window.location = "#!/report?storage=" + $scope.storage + "&storageId=" + reports[0]["storageId"];
         };
 
         $scope.runReport = function () {
@@ -75,7 +73,7 @@ angular.module('myApp.view2', ['ngRoute'])
                 data[$scope.storage].push(reports[i]["storageId"]);
             }
             console.info("Running reports", data);
-            $http.post($scope.apiUrl + "/runner/run/" + $scope.debugStorage, data)
+            $http.post("../runner/run/" + $scope.debugStorage, data)
                 .then(function (response) {
                     console.debug("Run report response:", response);
                     setTimeout($scope.queryResults, 100); //wait 0.1 seconds
@@ -92,7 +90,7 @@ angular.module('myApp.view2', ['ngRoute'])
         };
 
         $scope.queryResults = function () {
-            $http.get($scope.apiUrl + "/runner/result/" + $scope.debugStorage).then(function (response) {
+            $http.get("../runner/result/" + $scope.debugStorage).then(function (response) {
                 for (const [key, value] of Object.entries(response.data.results)) {
                     $scope.reranReports[key] = {
                         text: "(" + value["current-time"] + " >> " + value["current-time"] + " ms) " +
@@ -121,7 +119,7 @@ angular.module('myApp.view2', ['ngRoute'])
 
         $scope.updateTree = function () {
             console.info("Updating tree on test tab.");
-            $http.get($scope.apiUrl + "/metadata/" + $scope.storage + "?path=&storageId=&status=")
+            $http.get("../metadata/" + $scope.storage + "?path=&storageId=&status=")
                 .then(function (response) {
                     let fields = response.data["fields"];
                     let values = response.data["values"];
@@ -161,7 +159,7 @@ angular.module('myApp.view2', ['ngRoute'])
         };
 
         $scope.replaceReport = function (report) {
-            $http.put($scope.apiUrl + "/runner/replace/" + $scope.debugStorage + "/" + report.storageId)
+            $http.put("../runner/replace/" + $scope.debugStorage + "/" + report.storageId)
                 .then(function (response) {
                     delete $scope.reranReports[report.storageId];
                 }, function (response) {
@@ -179,7 +177,7 @@ angular.module('myApp.view2', ['ngRoute'])
 
                 let formdata = new FormData();
                 formdata.append("file", files[i]);
-                $http.post($scope.apiUrl + "/report/upload/" + $scope.storage, formdata, {headers: {"Content-Type": undefined}});
+                $http.post("../report/upload/" + $scope.storage, formdata, {headers: {"Content-Type": undefined}});
             }
         }
 
@@ -187,7 +185,7 @@ angular.module('myApp.view2', ['ngRoute'])
             let reports = $scope.getSelectedReports();
             for (let i = 0; i < reports.length; i++) {
                 console.debug("Deleting report with storage id [" + reports["storageId"] + "]");
-                $http.delete($scope.apiUrl + "/report/" + $scope.storage + "/" + reports["storageId"]);
+                $http.delete("../report/" + $scope.storage + "/" + reports["storageId"]);
             }
         }
 
@@ -198,7 +196,7 @@ angular.module('myApp.view2', ['ngRoute'])
             }
 
             console.info("Downloading reports with query", queryString);
-            window.open($scope.apiUrl + "/report/download/" + $scope.storage +
+            window.open("../report/download/" + $scope.storage +
                 "/" + exportReport + "/" + exportReportXml + queryString.slice(0, -1));
         }
 
@@ -206,7 +204,7 @@ angular.module('myApp.view2', ['ngRoute'])
             let path = $('#moveToInput').val();
             for (let i = 0; i < reports.length; i++) {
                 console.info("Running action [%s] on report with storage id [%d] with path [%s]", action, reports[i]["storageId"], path);
-                $http.put($scope.apiUrl + "/report/move/" + $scope.storage + "/" + reports[i]["storageId"],
+                $http.put("../report/move/" + $scope.storage + "/" + reports[i]["storageId"],
                     {path: path, action: action}).then(function (response) {
                     $scope.refresh();
                 });
@@ -215,7 +213,7 @@ angular.module('myApp.view2', ['ngRoute'])
 
         $scope.openCloneModal = function (reports) {
             let storageId = reports[0]["storageId"]
-            $http.get($scope.apiUrl + "/report/" + $scope.storage + "/" + storageId)
+            $http.get("../report/" + $scope.storage + "/" + storageId)
                 .then(function (response) {
                     $scope.cloneInputs.message = response.data["inputCheckpoint"]["message"];
                     $scope.cloneInputs.storageId = storageId;
@@ -239,7 +237,7 @@ angular.module('myApp.view2', ['ngRoute'])
                 force: $scope.cloneInputs.force
             };
             console.info("Cloning report with storage id [" + $scope.cloneInputs.storageId + "] with data", data);
-            $http.post($scope.apiUrl + "/report/clone/" + $scope.storage + "/" + $scope.cloneInputs.storageId, data)
+            $http.post("../report/clone/" + $scope.storage + "/" + $scope.cloneInputs.storageId, data)
                 .then($scope.closeCloneModal, function (response) {
                     $scope.cloneInputs.force = true;
                     createToast("Could not clone!",
@@ -269,7 +267,7 @@ angular.module('myApp.view2', ['ngRoute'])
         }
 
         $scope.resetRunner = function () {
-            $http.post($scope.apiUrl + "/runner/reset");
+            $http.post("../runner/reset");
         }
 
         $scope.changeSelectedAll = function (value) {

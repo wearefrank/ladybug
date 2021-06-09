@@ -2,7 +2,6 @@
 
 function treeController() {
     let ctrl = this;
-    ctrl.apiUrl = "http://localhost:8080/ibis_adapterframework_test_war_exploded/ladybug";
     ctrl.treeData = [];
     ctrl.reports = [];
     ctrl.treeId = Math.random().toString(36).substring(7);
@@ -48,7 +47,7 @@ function treeController() {
             queryString += "id=" + ctrl.treeData[i]["ladybug"]["storageId"] + "&";
         }
         console.info("Downloading reports with query", queryString);
-        window.open(ctrl.apiUrl + "/report/download/" + ctrl.storage +
+        window.open("../report/download/" + ctrl.storage +
             "/" + exportReport + "/" + exportReportXml + queryString.slice(0, -1));
     }
 

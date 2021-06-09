@@ -2,7 +2,6 @@
 
 function metadataTableController($scope, $compile, $http) {
     var ctrl = this;
-    ctrl.apiUrl = "http://localhost:8080/ibis_adapterframework_test_war_exploded/ladybug";
     ctrl.columns = ['storageId', 'endTime', 'duration', 'name', 'correlationId', 'status', 'nrChpts', 'estMemUsage', 'storageSize'];
     ctrl.storage = "debugStorage";
     ctrl.limit = 5;
@@ -24,7 +23,7 @@ function metadataTableController($scope, $compile, $http) {
     */
     ctrl.updateTable = function () {
         console.info("Updating metadata table with filters", ctrl.filters);
-        $http.get(ctrl.apiUrl + "/metadata/" + ctrl.storage, {params: ctrl.filters}).then(function (response) {
+        $http.get("../metadata/" + ctrl.storage, {params: ctrl.filters}).then(function (response) {
             let fields = response.data["fields"];
             let values = response.data["values"];
             ctrl.metadatas = [];
@@ -51,7 +50,7 @@ function metadataTableController($scope, $compile, $http) {
         }
 
         console.info("Downloading reports with query [" + queryString + "]");
-        window.open(ctrl.apiUrl + "/report/download/" + ctrl.storage +
+        window.open("../report/download/" + ctrl.storage +
             "/" + exportReport + "/" + exportReportXml + queryString.slice(0, -1));
     }
 
@@ -60,7 +59,7 @@ function metadataTableController($scope, $compile, $http) {
      */
     ctrl.refresh = function () {
         console.info("Refreshing metadata.");
-        $http.get(ctrl.apiUrl + '/metadata').then(function (response) {
+        $http.get('../metadata').then(function (response) {
             ctrl.columns = response.data;
             ctrl.columns.forEach(function (element) {
                 if (ctrl.filters[element] === undefined) {
@@ -83,7 +82,7 @@ function metadataTableController($scope, $compile, $http) {
 
             let formdata = new FormData();
             formdata.append("file", files[i]);
-            $http.post(ctrl.apiUrl + "/report/upload/", formdata, {headers: {"Content-Type": undefined}})
+            $http.post("../report/upload/", formdata, {headers: {"Content-Type": undefined}})
                 .then(function (response) {
                     for (let i = 0; i < response.data.length; i++) {
                         ctrl.onSelectRelay.add(response.data[i]);
@@ -114,7 +113,7 @@ function metadataTableController($scope, $compile, $http) {
 
     ctrl.selectReport = function (metadata) {
         console.info("Report selected", metadata);
-        $http.get(ctrl.apiUrl + "/report/" + ctrl.storage + "/" + metadata["storageId"])
+        $http.get("../report/" + ctrl.storage + "/" + metadata["storageId"])
             .then(function (response) {
                 console.debug("Opening report", response.data);
                 ctrl.onSelectRelay.add(response.data);
@@ -134,7 +133,7 @@ function metadataTableController($scope, $compile, $http) {
 
     ctrl.updateOptions = function() {
         console.info("Updating options");
-        $http.get(ctrl.apiUrl + "/testtool")
+        $http.get("../testtool")
             .then(function (response) {
                 ctrl.options = Object.assign(ctrl.options, response.data);
                 ctrl.testtoolStubStrategies = response.data["stubStrategies"];
@@ -146,7 +145,7 @@ function metadataTableController($scope, $compile, $http) {
                 console.error("Could not access Ladybug Api", response);
             });
         console.info("Updating transformations");
-        $http.get(ctrl.apiUrl + "/testtool/transformation")
+        $http.get("../testtool/transformation")
             .then(function (response) {
                 ctrl.options = Object.assign(ctrl.options, response.data);
                 ctrl.options['transformationEnabled'] = ctrl.options['transformation'] !== "";
@@ -156,15 +155,15 @@ function metadataTableController($scope, $compile, $http) {
 
     ctrl.saveOptions = function() {
         console.info("Saving Options", ctrl.options);
-        $http.post(ctrl.apiUrl + "/testtool", {
+        $http.post("../testtool", {
             "generatorEnabled": ctrl.options['generatorEnabled'],
             "regexFilter": ctrl.options["regexFilter"]});
-        $http.post(ctrl.apiUrl + "/testtool/transformation", {"transformation": ctrl.options['transformation']});
+        $http.post("../testtool/transformation", {"transformation": ctrl.options['transformation']});
     }
 
     ctrl.openLatestReports = function (number) {
         console.info("Opening latest" + number + "reports");
-        $http.get(ctrl.apiUrl + "/report/latest/" + ctrl.storage + "/" + number)
+        $http.get("../report/latest/" + ctrl.storage + "/" + number)
             .then(function (response) {
                 response.data.forEach(function (report) {
                     ctrl.onSelectRelay.add(report);
