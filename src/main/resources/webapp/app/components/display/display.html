@@ -55,7 +55,6 @@
 <!-- Display highlighted code -->
 <div ng-show="!$ctrl.editing">
     <div ng-show="$ctrl.reportDetails.hasOwnProperty('diff')" id="{{'diff-wrapper' + $ctrl.id}}">
-        <span>Diff</span>
         <table class="table table-striped">
             <tbody>
                 <tr ng-repeat="line in $ctrl.reportDetails.diff" class="xml"
