@@ -21,7 +21,7 @@
         </div>
         <div class="dropdown">
             <button type="button" class="btn btn-info my-2 mx-1 dropdown-toggle" data-toggle="dropdown" title="Download"
-                    aria-haspopup="true" aria-expanded="false"><i class="fas fa-download px-2"></i><span class="caret"></span>
+                    aria-haspopup="true" aria-expanded="false"><i class="fa fa-download px-2"></i><span class="caret"></span>
             </button>
             <ul class="dropdown-menu">
                 <li><a href="#" ng-click="$ctrl.downloadReports(true, true)">Reports & Messages</a></li>
@@ -63,7 +63,7 @@
             <thead>
             <tr>
                 <th ng-repeat="column in $ctrl.columns" ng-click="$ctrl.updateOrder(column)">
-                    <i class="fas" ng-class="{'fa-sort-up': $ctrl.filters['order'] === 'ascending', 'fa-sort-down': $ctrl.filters['order'] === 'descending'}" ng-show="column === $ctrl.filters['sort']"></i>
+                    <i class="fa" ng-class="{'fa-sort-up': $ctrl.filters['order'] === 'ascending', 'fa-sort-down': $ctrl.filters['order'] === 'descending'}" ng-show="column === $ctrl.filters['sort']"></i>
                     {{column}}
                 </th>
             </tr>
@@ -153,8 +153,8 @@
                 </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-info" ng-click="$ctrl.updateOptions()"><i class="fas fa-undo"></i></button>
-                <button type="button" class="btn btn-info" ng-click="$ctrl.saveOptions()"><i class="fas fa-save"></i></button>
+                <button type="button" class="btn btn-info" ng-click="$ctrl.updateOptions()"><i class="fa fa-undo"></i></button>
+                <button type="button" class="btn btn-info" ng-click="$ctrl.saveOptions()"><i class="fa fa-save"></i></button>
             </div>
         </div>
     </div>

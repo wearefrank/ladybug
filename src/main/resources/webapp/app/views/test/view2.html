@@ -5,12 +5,12 @@
     <div class="col">
         <div class="row">
             <button type="button" class="btn btn-info my-2 mr-1 px-3" ng-click="refresh()" title="Refresh">
-                <i class="fas fa-sync-alt"></i>
+                <i class="fa fa-refresh"></i>
             </button>
             <button type="button" class="btn btn-info my-2 mx-1 px-3" ng-click="runReport(getSelectedReports())" title="Run">
                 <i class="fa fa-play" aria-hidden="true"></i>
             </button>
-            <button type="button" class="btn btn-info my-2 mx-1 px-3" ng-click="resetRunner()" title="Reset"><i class="fas fa-redo"></i></button>
+            <button type="button" class="btn btn-info my-2 mx-1 px-3" ng-click="resetRunner()" title="Reset"><i class="fa fa-repeat"></i></button>
             <button type="button" class="btn btn-info my-2 mx-1 px-3" data-toggle="modal" data-target="#optionsModal">
                 <i class="fa fa-cog" aria-hidden="true"></i>
             </button>
@@ -25,7 +25,7 @@
                 <div class="input-group col-xl-1 px-0">
                     <div class="input-group-btn">
                         <button type="button" class="btn btn-info my-2 mx-1 dropdown-toggle" data-toggle="dropdown"
-                                aria-haspopup="true" aria-expanded="false"><i class="fas fa-download px-2"></i><span class="caret"></span>
+                                aria-haspopup="true" aria-expanded="false"><i class="fa fa-download px-2"></i><span class="caret"></span>
                         </button>
                         <ul class="dropdown-menu">
                             <li><a class="p-1" href="#" ng-click="downloadReports(getSelectedReports(), true, true)">Reports & Messages</a></li>
@@ -37,7 +37,7 @@
             </div>
             <div class="col pl-1">
                 <input type="file" id="upload-file" style="display: none" ng-click="uploadReport()">
-                <button type="button" class="btn btn-info my-2 px-3" onclick="$('#upload-file').click()"><i class="fas fa-upload"></i>
+                <button type="button" class="btn btn-info my-2 px-3" onclick="$('#upload-file').click()"><i class="fa fa-upload"></i>
                 </button>
             </div>
         </div>
@@ -47,7 +47,7 @@
             <div class="input-group">
                 <input type="text" class="form-control mr-1" placeholder="1" id="moveToInput"/>
                 <button class="btn btn-info mx-1 mb-2" type="button"
-                        ng-click="moveReports(getSelectedReports(), 'copy')"><i class="fas fa-copy"></i>
+                        ng-click="moveReports(getSelectedReports(), 'copy')"><i class="fa fa-copy"></i>
                 </button>
                 <button class="btn btn-info mx-1 mb-2" type="button"
                         ng-click="moveReports(getSelectedReports(), 'move')">Move
@@ -73,7 +73,7 @@
                     </td>
                     <td>
                         <button type="button" class="btn btn-info m-2 col" title="Open" ng-click="openReport([report])">
-                            <i class="fas fa-folder-open"></i>
+                            <i class="fa fa-folder-open"></i>
                         </button>
                     </td>
                     <td>
