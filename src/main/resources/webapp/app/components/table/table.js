@@ -187,7 +187,7 @@ function metadataTableController($scope, $compile, $http) {
     }
 }
 
-angular.module('myApp').component('metadataTable', {
+angular.module('ladybugApp').component('metadataTable', {
     templateUrl: 'components/table/table.html',
     controller: ['$scope', '$compile', '$http', metadataTableController],
     bindings: {

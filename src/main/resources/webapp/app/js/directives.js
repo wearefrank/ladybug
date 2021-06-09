@@ -1,4 +1,4 @@
-angular.module('myApp')
+angular.module('ladybugApp')
 
 .directive('customOnChange', function() {
     return {

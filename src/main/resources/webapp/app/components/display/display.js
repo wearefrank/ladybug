@@ -370,7 +370,7 @@ function displayController($rootScope, $scope, $compile, $http) {
     }
 }
 
-angular.module('myApp').component('reportDisplay', {
+angular.module('ladybugApp').component('reportDisplay', {
     templateUrl: 'components/display/display.html',
     controller: ['$rootScope', '$scope', '$compile', '$http', displayController],
     bindings: {

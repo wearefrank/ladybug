@@ -271,7 +271,7 @@ function treeController() {
     }
 }
 
-angular.module('myApp').component('reportTree', {
+angular.module('ladybugApp').component('reportTree', {
     templateUrl: 'components/tree/tree.html',
     controller: treeController,
     bindings: {
