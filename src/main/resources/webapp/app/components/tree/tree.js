@@ -2,10 +2,20 @@
 
 function treeController() {
     let ctrl = this;
-    ctrl.apiUrl = "http://localhost:8080/ibis_adapterframework_test_war_exploded/ladybug";
     ctrl.treeData = [];
     ctrl.reports = [];
     ctrl.treeId = Math.random().toString(36).substring(7);
+    ctrl.ICONS = {
+        1: "fa fa-arrow-right",
+        2: "fa fa-arrow-left",
+        3: "fa fa-times",
+        4: "fa fa-angle-right",
+        5: "fa fa-angle-left",
+        6: "fa fa-info",
+        7: "fa fa-plus",
+        8: "fa fa-angle-double-right",
+        9: "fa fa-angle-double-left"
+    };
 
     ctrl.$onInit = function () {
         ctrl.onAddRelay.add = ctrl.addTree;
@@ -37,7 +47,7 @@ function treeController() {
             queryString += "id=" + ctrl.treeData[i]["ladybug"]["storageId"] + "&";
         }
         console.info("Downloading reports with query", queryString);
-        window.open(ctrl.apiUrl + "/report/download/" + ctrl.storage +
+        window.open("../report/download/" + ctrl.storage +
             "/" + exportReport + "/" + exportReportXml + queryString.slice(0, -1));
     }
 
@@ -106,7 +116,13 @@ function treeController() {
         let previous_node = null;
         for (let i = 0; i < checkpoints.length; i++) {
             let chkpt = checkpoints[i];
-            let node = {text: chkpt["name"], ladybug: chkpt, level: chkpt["level"]};
+            let node = {text: chkpt["name"], ladybug: chkpt, level: chkpt["level"], icon: "fa fa-exclamation-triangle"};
+
+            if ("encoding" in chkpt && chkpt["encoding"] === "printStackTrace()")
+                node["color"] = "#ff0000";
+
+            if (chkpt["type"] in ctrl.ICONS)
+                node.icon = ctrl.ICONS[chkpt["type"]];
 
             if (previous_node === null) {
                 nodes.push(node);
@@ -255,7 +271,7 @@ function treeController() {
     }
 }
 
-angular.module('myApp').component('reportTree', {
+angular.module('ladybugApp').component('reportTree', {
     templateUrl: 'components/tree/tree.html',
     controller: treeController,
     bindings: {

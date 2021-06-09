@@ -2,7 +2,6 @@
 
 function displayController($rootScope, $scope, $compile, $http) {
     let ctrl = this;
-    ctrl.apiUrl = "http://localhost:8080/ibis_adapterframework_test_war_exploded/ladybug";
     ctrl.reportDetails = {text: "", values: {}, notifications: {}};
     ctrl.stubStrategySelect = "";
     ctrl.availableStorages = {'testStorage': 'Test'};
@@ -16,13 +15,15 @@ function displayController($rootScope, $scope, $compile, $http) {
         let storageId = ctrl.selectedNode["ladybug"]["storageId"];
         data[$scope.storage] = [];
         console.info("Rerunning the report with storage id", storageId);
-        $http.post(ctrl.apiUrl + "/runner/run/" + ctrl.storage, data)
+        $http.post("../runner/run/" + ctrl.storage, data)
             .then(function (response) {
                 console.debug("Rerun is successful", response);
             }, function (response) {
-                createToast("Rerun failed!", "Rerun of the report with storage id [" + storageId + "] failed.",
-                $scope, $compile);
-                console.error("Rerun failed!", response);
+                let title = "Rerun failed!";
+                if (response.status === 401) title = "Method not allowed!";
+                createToast(title, "Rerun of the report with storage id [" + storageId + "] failed.",
+                    $scope, $compile);
+                console.error(title, response);
             });
     };
 
@@ -158,19 +159,22 @@ function displayController($rootScope, $scope, $compile, $http) {
             }
             if (Object.keys(updated).length !== 0) {
                 console.debug("Updating the report data with values", updated);
-                $http.post(ctrl.apiUrl + "/report/" + ctrl.storage + "/" + ctrl.selectedNode["ladybug"]["storageId"], updated)
+                $http.post("../report/" + ctrl.storage + "/" + ctrl.selectedNode["ladybug"]["storageId"], updated)
                     .then(function (response) {
                         let ladybugData = response.data.report;
                         if ("xml" in response.data) ladybugData.message = response.data.xml;
                         $rootScope.overwritten_checkpoints["report"][ladybugData.storageId] = ladybugData;
 
-                        $('#details-edit' + ctrl.id).text("").append("<i class=\"fas fa-edit\"></i>")
+                        $('#details-edit' + ctrl.id).text("").append("<i class=\"fa fa-edit\"></i>")
                         ctrl.editing = false;
                         $('#modal' + ctrl.id).modal('hide');
                         ctrl.display_node(ctrl.selectedNode, null, null);
                     }, function (response) {
-                        // TODO: Introduce alerts!
-                        console.log(response);
+                        let title = "Update failed!";
+                        if (response.status === 401) title = "Method not allowed!";
+                        createToast(title, "Update of the report with storage id [" +
+                            ctrl.selectedNode["ladybug"]["storageId"] + "] failed.", $scope, $compile);
+                        console.error(title, response);
                     });
             }
         } else {
@@ -180,7 +184,7 @@ function displayController($rootScope, $scope, $compile, $http) {
             $rootScope.overwritten_checkpoints["checkpoint"][ctrl.reportDetails.data.uid] = ctrl.reportDetails.text;
             ctrl.reportDetails.data["message"] = ctrl.reportDetails.text;
 
-            $('#details-edit' + ctrl.id).text("").append("<i class=\"fas fa-edit\"></i>")
+            $('#details-edit' + ctrl.id).text("").append("<i class=\"fa fa-edit\"></i>")
             ctrl.editing = false;
             $('#modal' + ctrl.id).modal('hide');
             ctrl.display_node(ctrl.selectedNode, null, null);
@@ -192,12 +196,12 @@ function displayController($rootScope, $scope, $compile, $http) {
         let storageId = ctrl.selectedNode["ladybug"]["storageId"]
         data[ctrl.storage] = [storageId];
         console.info("Copying report with storage id [" + storageId + "] to [" + to + "]");
-        $http.put(ctrl.apiUrl + "/report/store/" + to, data);
+        $http.put("../report/store/" + to, data);
     }
 
     ctrl.downloadReports = function (exportReport, exportReportXml) {
         let queryString = "?id=" + ctrl.selectedNode["ladybug"]["storageId"] + "";
-        window.open(ctrl.apiUrl + "/report/download/" + ctrl.storage + "/" + exportReport + "/" +
+        window.open("../report/download/" + ctrl.storage + "/" + exportReport + "/" +
             exportReportXml + queryString);
     }
 
@@ -254,7 +258,7 @@ function displayController($rootScope, $scope, $compile, $http) {
                 "Number of characters:": message.length,
                 "EstimatedMemoryUsage:": ladybugData["estimatedMemoryUsage"]
             },
-            notifications: {0: {level: "error", text: "I see you are displaying a checkpoint!"}}
+            notifications: {}
         };
         ctrl.stubStrategies = ["Follow report strategy", "No", "Yes"];
         ctrl.stubStrategySelect = ctrl.stubStrategies[ladybugData["stub"] + 1];
@@ -272,9 +276,9 @@ function displayController($rootScope, $scope, $compile, $http) {
             $('#code' + ctrl.id).text(ladybugData["message"]);
         } else {
             let transformer = "applyTransformer" in ctrl && ctrl["applyTransformer"];
-            console.info("Getting message with URL: " + ctrl.apiUrl + "/report/" + ctrl.storage + "/" + ladybugData.storageId +
+            console.info("Getting message with URL: ../report/" + ctrl.storage + "/" + ladybugData.storageId +
                 "?xml=true&globalTransformer=" + transformer);
-            $http.get(ctrl.apiUrl + "/report/" + ctrl.storage + "/" + ladybugData.storageId + "?xml=true&globalTransformer=" + transformer)
+            $http.get("../report/" + ctrl.storage + "/" + ladybugData.storageId + "?xml=true&globalTransformer=" + transformer)
                 .then(function (response) {
                     console.debug("Returned message", response.data);
 
@@ -283,6 +287,12 @@ function displayController($rootScope, $scope, $compile, $http) {
                     ladybugData.message = reportXml;
                     $('#code' + ctrl.id).text(reportXml);
                     ctrl.highlight_code();
+                }, function (response) {
+                    let title = "Could not get Message!";
+                    if (response.status === 401) title = "Method not allowed!";
+                    createToast(title, "Could not get the message from the report with storage id [" +
+                        ctrl.selectedNode["ladybug"]["storageId"] + "].", $scope, $compile);
+                    console.error(title, response);
                 });
         }
         ctrl.reportDetails = {
@@ -295,7 +305,7 @@ function displayController($rootScope, $scope, $compile, $http) {
                 "Storage:": ctrl.storage,
                 "EstimatedMemoryUsage:": ladybugData["estimatedMemoryUsage"]
             },
-            notifications: {0: {level: "ok", text: "I see you are displaying a report!"}}
+            notifications: {}
         };
         let stubStrategySelect = ladybugData["stubStrategy"];
         ctrl.stubStrategies = $scope.testtoolStubStrategies;
@@ -360,7 +370,7 @@ function displayController($rootScope, $scope, $compile, $http) {
     }
 }
 
-angular.module('myApp').component('reportDisplay', {
+angular.module('ladybugApp').component('reportDisplay', {
     templateUrl: 'components/display/display.html',
     controller: ['$rootScope', '$scope', '$compile', '$http', displayController],
     bindings: {

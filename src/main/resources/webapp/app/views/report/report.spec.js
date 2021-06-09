@@ -1,8 +1,8 @@
 'use strict';
 
-describe('myApp.report module', function() {
+describe('ladybugApp.report module', function() {
 
-  beforeEach(module('myApp.report'));
+  beforeEach(module('ladybugApp.report'));
 
   describe('report controller', function(){
 

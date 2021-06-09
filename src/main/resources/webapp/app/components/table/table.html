@@ -21,7 +21,7 @@
         </div>
         <div class="dropdown">
             <button type="button" class="btn btn-info my-2 mx-1 dropdown-toggle" data-toggle="dropdown" title="Download"
-                    aria-haspopup="true" aria-expanded="false"><i class="fas fa-download px-2"></i><span class="caret"></span>
+                    aria-haspopup="true" aria-expanded="false"><i class="fa fa-download px-2"></i><span class="caret"></span>
             </button>
             <ul class="dropdown-menu">
                 <li><a href="#" ng-click="$ctrl.downloadReports(true, true)">Reports & Messages</a></li>
@@ -32,20 +32,21 @@
         <div class="col-md-0 p-0 mx-1">
             <button type="button" class="btn btn-info m-2" ng-click="$ctrl.openAll()">Open All</button>
         </div>
-        <div class="dropdown">
-            <span class="align-middle pr-0">View:</span>
-            <button class="btn btn-info m-2 dropdown-toggle" type="button" id="dropdownMenu1"
-                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
-                Dropdown
-                <span class="caret"></span>
-            </button>
-            <ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
-                <li><a href="#">Action</a></li>
-                <li><a href="#">Another action</a></li>
-                <li><a href="#">Something else here</a></li>
-                <li><a href="#">Separated link</a></li>
-            </ul>
-        </div>
+<!--        TODO: Implement Views.-->
+<!--        <div class="dropdown">-->
+<!--            <span class="align-middle pr-0">View:</span>-->
+<!--            <button class="btn btn-info m-2 dropdown-toggle" type="button" id="dropdownMenu1"-->
+<!--                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">-->
+<!--                Dropdown-->
+<!--                <span class="caret"></span>-->
+<!--            </button>-->
+<!--            <ul class="dropdown-menu" aria-labelledby="dropdownMenu1">-->
+<!--                <li><a href="#">Action</a></li>-->
+<!--                <li><a href="#">Another action</a></li>-->
+<!--                <li><a href="#">Something else here</a></li>-->
+<!--                <li><a href="#">Separated link</a></li>-->
+<!--            </ul>-->
+<!--        </div>-->
         <div class="col-md-2 float-md-right">
             <form class="form-horizontal pt-2">
                 <label for="tableLimit" class="sr-only">Table Limit</label>
@@ -62,7 +63,7 @@
             <thead>
             <tr>
                 <th ng-repeat="column in $ctrl.columns" ng-click="$ctrl.updateOrder(column)">
-                    <i class="fas" ng-class="{'fa-sort-up': $ctrl.filters['order'] === 'ascending', 'fa-sort-down': $ctrl.filters['order'] === 'descending'}" ng-show="column === $ctrl.filters['sort']"></i>
+                    <i class="fa" ng-class="{'fa-sort-up': $ctrl.filters['order'] === 'ascending', 'fa-sort-down': $ctrl.filters['order'] === 'descending'}" ng-show="column === $ctrl.filters['sort']"></i>
                     {{column}}
                 </th>
             </tr>
@@ -152,8 +153,8 @@
                 </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-info" ng-click="$ctrl.updateOptions()"><i class="fas fa-undo"></i></button>
-                <button type="button" class="btn btn-info" ng-click="$ctrl.saveOptions()"><i class="fas fa-save"></i></button>
+                <button type="button" class="btn btn-info" ng-click="$ctrl.updateOptions()"><i class="fa fa-undo"></i></button>
+                <button type="button" class="btn btn-info" ng-click="$ctrl.saveOptions()"><i class="fa fa-save"></i></button>
             </div>
         </div>
     </div>

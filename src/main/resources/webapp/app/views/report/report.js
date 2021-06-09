@@ -1,6 +1,6 @@
 'use strict';
 
-angular.module('myApp.report', ['ngRoute'])
+angular.module('ladybugApp.report', ['ngRoute'])
 
 .config(['$routeProvider', function ($routeProvider) {
     $routeProvider.when('/report', {
@@ -10,7 +10,6 @@ angular.module('myApp.report', ['ngRoute'])
 }])
 
 .controller('ReportCtrl', ['$scope', '$rootScope', '$location', '$http', function ($scope, $rootScope, $location, $http) {
-    $scope.apiUrl = "http://localhost:8080/ibis_adapterframework_test_war_exploded/ladybug";
     $rootScope.openedReports = [];
     $rootScope.tabs = ($rootScope.hasOwnProperty("tabs")) ? $rootScope.tabs : {};
     $scope.addRelay = {};
@@ -47,7 +46,7 @@ angular.module('myApp.report', ['ngRoute'])
         let searchObject = $location.search();
         console.log("openreport", searchObject);
 
-        $http.get($scope.apiUrl + "/report/" + searchObject.storage + "/" + searchObject.storageId)
+        $http.get("../report/" + searchObject.storage + "/" + searchObject.storageId)
             .then(function (response) {
                 // TODO: get updated info from rootscope
                 console.log("Open Report on init");

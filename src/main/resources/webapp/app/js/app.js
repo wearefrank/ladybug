@@ -1,13 +1,12 @@
 'use strict';
 
 // Declare app level module which depends on views, and core components
-angular.module('myApp', [
+angular.module('ladybugApp', [
   'ngRoute',
-  'myApp.view1',
-  'myApp.view2',
-  'myApp.view3',
-  'myApp.report',
-  'myApp.version'
+  'ladybugApp.view1',
+  'ladybugApp.view2',
+  'ladybugApp.view3',
+  'ladybugApp.report'
 ]).
 config(['$locationProvider', '$routeProvider', function($locationProvider, $routeProvider) {
   $locationProvider.hashPrefix('!');

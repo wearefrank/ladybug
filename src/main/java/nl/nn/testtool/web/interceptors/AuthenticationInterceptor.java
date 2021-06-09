@@ -24,15 +24,31 @@ import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
 
+/**
+ * AuthenticationInterceptor filters the requests based on their permission requirements.
+ *
+ * Permission requirements can be set with setRolesMap,
+ * where keys are strings explaining possible requests, such as "POST,PUT/path/to/\w+/endpoint".
+ *
+ * The first part of the string is a list of methods as CSV (Comma Separated Values),
+ * and the latter part (starting with '/') is a regex string used to match requested paths.
+ *
+ * If multiple regex strings match a path, the one with the most '/' (forward slashes) will be considered the most
+ * specific string, and therefore be applied for filtering.
+ *
+ * Method part can be left empty in order to apply it for all methods, such as "/path/to/endpoint".
+ */
 public class AuthenticationInterceptor implements ContainerRequestFilter {
-	private static Map<String, RequestProperties> rolesMap = new HashMap<>();
+	private static Map<Pattern, RequestProperties> rolesMap = new HashMap<>();
 	private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
 	@Override
@@ -40,24 +56,21 @@ public class AuthenticationInterceptor implements ContainerRequestFilter {
 		String path = requestContext.getUriInfo().getPath().toLowerCase();
 
 		if (rolesMap == null) return;
-		String mostSpecificPath = null;
+		RequestProperties properties = null;
 
 		// Find the matching path security configuration with the biggest length.
-		// TODO: Optimize with trees? Overengineering?
-		// TODO: Maybe regex instead? for paths like /path/to/{param}/action?....
-		for (String securePath : rolesMap.keySet()) {
-			boolean a = path.startsWith(securePath.toLowerCase());
-			boolean b = mostSpecificPath == null;
-			boolean c = b || mostSpecificPath.length() < securePath.length();
-			boolean d = rolesMap.get(securePath).containsMethod(requestContext.getMethod());
-			if (a && (b || c) && d)
-				mostSpecificPath = securePath;
+		for (Pattern securePath : rolesMap.keySet()) {
+			RequestProperties requestProperties = rolesMap.get(securePath);
+			boolean pathMatches = securePath.matcher(path).matches();
+			boolean isPropertiesNull = properties == null;
+			boolean isReqPropMoreSpecific = isPropertiesNull || properties.getSpecificity() < requestProperties.getSpecificity();
+			boolean requestPropertiesContainsMethod = rolesMap.get(securePath).containsMethod(requestContext.getMethod());
+			if (pathMatches && (isPropertiesNull || isReqPropMoreSpecific) && requestPropertiesContainsMethod)
+				properties = requestProperties;
 		}
 
 		// No specific security configuration is given for the path
-		if (mostSpecificPath == null) return;
-
-		RequestProperties properties = rolesMap.get(mostSpecificPath);
+		if (properties == null) return;
 		for (String role : properties.getRoles()) {
 			// If user is in one of the roles, continue with the chain.
 			if (requestContext.getSecurityContext().isUserInRole(role)) return;
@@ -78,11 +91,20 @@ public class AuthenticationInterceptor implements ContainerRequestFilter {
 		}
 	}
 
+	/**
+	 * This class is used to represent authentication configurations for the interceptor.
+	 */
 	private static class RequestProperties {
-		private @Getter String path;
+		private @Getter Pattern path;
+		private @Getter int specificity;
 		private @Getter List<String> roles;
 		private Set<String>  methods;
 
+		/**
+		 * Sets the path, roles and methods from the given config and list of roles.
+		 * @param config A string explaining the possible requests, such as: "POST,PUT/path/to/endpoint"
+		 * @param roles List of roles accepted for the given config.
+		 */
 		RequestProperties(String config, List<String> roles) {
 			int firstSlash = config.indexOf('/');
 			String[] methods = config.substring(0, firstSlash).split(",");
@@ -92,8 +114,10 @@ public class AuthenticationInterceptor implements ContainerRequestFilter {
 				this.methods = new HashSet<String>(Arrays.asList(methods));
 			}
 
-			this.path = config.substring(firstSlash + 1);
-			this.roles = roles;
+			String regex = config.substring(firstSlash + 1);
+			this.specificity = (int) regex.chars().filter(ch -> ch == '/').count();
+			this.path = Pattern.compile(regex);
+			this.roles = roles == null ? new ArrayList<>(0) : roles;
 		}
 
 		public boolean containsMethod(String method) {

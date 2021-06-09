@@ -1,7 +1,7 @@
 'use strict';
 // TODO: Create a list of features for documentation.
 
-angular.module('myApp.view3', ['ngRoute'])
+angular.module('ladybugApp.view3', ['ngRoute'])
 
 .config(['$routeProvider', function($routeProvider) {
   $routeProvider.when('/view3', {

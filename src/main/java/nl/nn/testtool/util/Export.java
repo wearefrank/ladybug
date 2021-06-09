@@ -19,6 +19,8 @@ import nl.nn.testtool.Checkpoint;
 import nl.nn.testtool.Report;
 import nl.nn.testtool.TestTool;
 import nl.nn.testtool.storage.Storage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.beans.XMLEncoder;
 import java.io.ByteArrayOutputStream;
@@ -37,9 +39,6 @@ import java.util.Set;
 import java.util.zip.GZIPOutputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class Export {
 	private static Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());

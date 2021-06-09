@@ -2,7 +2,6 @@
 
 function metadataTableController($scope, $compile, $http) {
     var ctrl = this;
-    ctrl.apiUrl = "http://localhost:8080/ibis_adapterframework_test_war_exploded/ladybug";
     ctrl.columns = ['storageId', 'endTime', 'duration', 'name', 'correlationId', 'status', 'nrChpts', 'estMemUsage', 'storageSize'];
     ctrl.storage = "debugStorage";
     ctrl.limit = 5;
@@ -24,7 +23,7 @@ function metadataTableController($scope, $compile, $http) {
     */
     ctrl.updateTable = function () {
         console.info("Updating metadata table with filters", ctrl.filters);
-        $http.get(ctrl.apiUrl + "/metadata/" + ctrl.storage, {params: ctrl.filters}).then(function (response) {
+        $http.get("../metadata/" + ctrl.storage, {params: ctrl.filters}).then(function (response) {
             let fields = response.data["fields"];
             let values = response.data["values"];
             ctrl.metadatas = [];
@@ -39,8 +38,10 @@ function metadataTableController($scope, $compile, $http) {
                 ctrl.metadatas.push(row);
             });
         }, function (response) {
-            createToast("Could not update table!", "Error while getting metadata.", $scope, $compile)
-            console.error("Could not update table!", response);
+            let title = "Could not update table!";
+            if (response.status === 401) title = "Method not allowed!";
+            createToast(title, "Error while getting metadata.", $scope, $compile)
+            console.error(title, response);
         });
     };
 
@@ -51,7 +52,7 @@ function metadataTableController($scope, $compile, $http) {
         }
 
         console.info("Downloading reports with query [" + queryString + "]");
-        window.open(ctrl.apiUrl + "/report/download/" + ctrl.storage +
+        window.open("../report/download/" + ctrl.storage +
             "/" + exportReport + "/" + exportReportXml + queryString.slice(0, -1));
     }
 
@@ -60,7 +61,7 @@ function metadataTableController($scope, $compile, $http) {
      */
     ctrl.refresh = function () {
         console.info("Refreshing metadata.");
-        $http.get(ctrl.apiUrl + '/metadata').then(function (response) {
+        $http.get('../metadata').then(function (response) {
             ctrl.columns = response.data;
             ctrl.columns.forEach(function (element) {
                 if (ctrl.filters[element] === undefined) {
@@ -69,8 +70,10 @@ function metadataTableController($scope, $compile, $http) {
             });
             ctrl.updateTable();
         }, function (response) {
-            createToast("Error on refresh!", "Error while getting metadata columns.", $scope, $compile);
-            console.error("Error on refresh!", response);
+            let title = "Error on refresh!";
+            if (response.status === 401) title = "Method not allowed!";
+            createToast(title, "Error while getting metadata columns.", $scope, $compile);
+            console.error(title, response);
         });
     };
 
@@ -83,15 +86,17 @@ function metadataTableController($scope, $compile, $http) {
 
             let formdata = new FormData();
             formdata.append("file", files[i]);
-            $http.post(ctrl.apiUrl + "/report/upload/", formdata, {headers: {"Content-Type": undefined}})
+            $http.post("../report/upload/", formdata, {headers: {"Content-Type": undefined}})
                 .then(function (response) {
                     for (let i = 0; i < response.data.length; i++) {
                         ctrl.onSelectRelay.add(response.data[i]);
                     }
                 }, function (response) {
-                    createToast("Error on upload!", "Error while uploading the report [" + files[i].name + "]",
+                    let title = "Error on upload!";
+                    if (response.status === 401) title = "Method not allowed!";
+                    createToast(title, "Error while uploading the report [" + files[i].name + "]",
                         $scope, $compile);
-                    console.error("Error on upload!", response);
+                    console.error(title, response);
                 });
         }
     }
@@ -114,15 +119,16 @@ function metadataTableController($scope, $compile, $http) {
 
     ctrl.selectReport = function (metadata) {
         console.info("Report selected", metadata);
-        $http.get(ctrl.apiUrl + "/report/" + ctrl.storage + "/" + metadata["storageId"])
+        $http.get("../report/" + ctrl.storage + "/" + metadata["storageId"])
             .then(function (response) {
                 console.debug("Opening report", response.data);
                 ctrl.onSelectRelay.add(response.data);
             }, function (response) {
-                createToast("Error on report!",
-                    "Could not get the report with storage id [" + metadata["storageId"] + "]",
+                let title = "Error on report!";
+                if (response.status === 401) title = "Method not allowed!";
+                createToast(title, "Could not get the report with storage id [" + metadata["storageId"] + "]",
                     $scope, $compile);
-                console.error("Error on report!", response);
+                console.error(title, response);
             });
     };
 
@@ -134,19 +140,20 @@ function metadataTableController($scope, $compile, $http) {
 
     ctrl.updateOptions = function() {
         console.info("Updating options");
-        $http.get(ctrl.apiUrl + "/testtool")
+        $http.get("../testtool")
             .then(function (response) {
                 ctrl.options = Object.assign(ctrl.options, response.data);
                 ctrl.testtoolStubStrategies = response.data["stubStrategies"];
                 ctrl.stubStrategies = ctrl.testtoolStubStrategies;
                 console.debug("Updated options", ctrl.options);
             }, function (response) {
-                createToast("Could not access Ladybug Api",
-                    "Can not retrieve testtool information.", $scope, $compile);
-                console.error("Could not access Ladybug Api", response);
+                let title = "Could not access Ladybug Api!";
+                if (response.status === 401) title = "Method not allowed!";
+                createToast(title, "Can not retrieve testtool information.", $scope, $compile);
+                console.error(title, response);
             });
         console.info("Updating transformations");
-        $http.get(ctrl.apiUrl + "/testtool/transformation")
+        $http.get("../testtool/transformation")
             .then(function (response) {
                 ctrl.options = Object.assign(ctrl.options, response.data);
                 ctrl.options['transformationEnabled'] = ctrl.options['transformation'] !== "";
@@ -156,15 +163,15 @@ function metadataTableController($scope, $compile, $http) {
 
     ctrl.saveOptions = function() {
         console.info("Saving Options", ctrl.options);
-        $http.post(ctrl.apiUrl + "/testtool", {
+        $http.post("../testtool", {
             "generatorEnabled": ctrl.options['generatorEnabled'],
             "regexFilter": ctrl.options["regexFilter"]});
-        $http.post(ctrl.apiUrl + "/testtool/transformation", {"transformation": ctrl.options['transformation']});
+        $http.post("../testtool/transformation", {"transformation": ctrl.options['transformation']});
     }
 
     ctrl.openLatestReports = function (number) {
         console.info("Opening latest" + number + "reports");
-        $http.get(ctrl.apiUrl + "/report/latest/" + ctrl.storage + "/" + number)
+        $http.get("../report/latest/" + ctrl.storage + "/" + number)
             .then(function (response) {
                 response.data.forEach(function (report) {
                     ctrl.onSelectRelay.add(report);
@@ -180,7 +187,7 @@ function metadataTableController($scope, $compile, $http) {
     }
 }
 
-angular.module('myApp').component('metadataTable', {
+angular.module('ladybugApp').component('metadataTable', {
     templateUrl: 'components/table/table.html',
     controller: ['$scope', '$compile', '$http', metadataTableController],
     bindings: {

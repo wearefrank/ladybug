@@ -16,8 +16,6 @@
 package nl.nn.testtool;
 
 import net.sf.saxon.trans.XPathException;
-import nl.nn.testtool.MessageCapturer.StreamingType;
-import nl.nn.testtool.MessageEncoder.ToStringResult;
 import nl.nn.testtool.run.ReportRunner;
 import nl.nn.testtool.run.RunResult;
 import nl.nn.testtool.storage.StorageException;
@@ -43,6 +41,8 @@ import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import nl.nn.testtool.MessageCapturer.StreamingType;
+import nl.nn.testtool.MessageEncoder.ToStringResult;
 
 /**
  * @author Jaco de Groot
@@ -143,7 +143,7 @@ public class Checkpoint implements Serializable, Cloneable {
 		if (report != null) {
 			message = report.truncateMessage(this, message);
 			if (report.getMessageTransformer() != null) {
-			message = report.getMessageTransformer().transform(message);
+				message = report.getMessageTransformer().transform(message);
 			}
 		}
 		this.message = message;
@@ -283,9 +283,9 @@ public class Checkpoint implements Serializable, Cloneable {
 					if (message != possiblyWrappedMessage[0]) {
 						// First add listener and then remove listener as close() on messageCapturerWriter or
 						// messageCapturerOutputStream may be called in the mean time in a separate thread
-					report.addStreamingMessageListener(message, this);
+						report.addStreamingMessageListener(message, this);
 						Object origMessage = possiblyWrappedMessage[0];
-					possiblyWrappedMessage[0] = message;
+						possiblyWrappedMessage[0] = message;
 						report.removeStreamingMessageListener(origMessage, this);
 					}
 				}
@@ -385,11 +385,21 @@ public class Checkpoint implements Serializable, Cloneable {
 
 	@JsonIgnore
 	public Path getPath() {
+		return getPath(false);
+	}
+
+	protected Path getPath(boolean checkpointInProgress) {
 		Path path = new Path(level + 1);
 		path.setName(level, name);
 		int currentLevel = level;
 		String currentName = name;
-		for (int i = report.getCheckpoints().indexOf(this) - 1; i >= 0; i--) {
+		int i = report.getCheckpoints().indexOf(this);
+		if (i == -1 && checkpointInProgress) {
+			// Checkpoint constructed but not added to list of checkpoints yet
+			i = report.getCheckpoints().size();
+		}
+		i--;
+		for ( ; i >= 0; i--) {
 			Checkpoint currentCheckpoint = (Checkpoint)report.getCheckpoints().get(i);
 			if (currentCheckpoint.getLevel() == currentLevel && currentCheckpoint.getName().equals(currentName)) {
 				path.incrementCount(currentLevel);

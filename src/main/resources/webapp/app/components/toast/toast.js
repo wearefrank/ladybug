@@ -23,7 +23,7 @@ function toastController() {
     }
 }
 
-angular.module('myApp').component('toast', {
+angular.module('ladybugApp').component('toast', {
     templateUrl: 'components/toast/toast.html',
     controller: [toastController],
     bindings: {

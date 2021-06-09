@@ -1,16 +1,16 @@
 <div class="row" id="{{'details-row' + $ctrl.id}}">
-    <button type="button" class="btn btn-info my-2 mx-1 px-3" ng-click="$ctrl.rerun()" title="Rerun"><i class="fas fa-redo"></i></button>
+    <button type="button" class="btn btn-info my-2 mx-1 px-3" ng-click="$ctrl.rerun()" title="Rerun"><i class="fa fa-repeat"></i></button>
     <button type="button" class="btn btn-info my-2 mx-1 px-3" ng-click="$ctrl.toggleEdit()" title="Edit"
             id="{{'details-edit' + $ctrl.id}}">
-        <i class="fas fa-edit"></i>
+        <i class="fa fa-edit"></i>
     </button>
     <button type="button" class="btn btn-info my-2 mx-1 px-3" ng-click="$ctrl.saveEditField(true)" title="Save"
             id="{{'save' + $ctrl.id}}" ng-show="$ctrl.editing">
-        <i class="fas fa-save"></i>
+        <i class="fa fa-save"></i>
     </button>
     <div class="dropdown">
         <button type="button" class="btn btn-info my-2 mx-1 dropdown-toggle" data-toggle="dropdown" title="Download"
-                aria-haspopup="true" aria-expanded="false"><i class="fas fa-download px-2"></i><span class="caret"></span>
+                aria-haspopup="true" aria-expanded="false"><i class="fa fa-download px-2"></i><span class="caret"></span>
         </button>
         <ul class="dropdown-menu">
             <li><a href="#" ng-click="$ctrl.downloadReports(true, true)">Reports & Messages</a></li>
@@ -20,7 +20,7 @@
     </div>
     <div class="dropdown">
         <button type="button" class="btn btn-info my-2 mx-1 dropdown-toggle" data-toggle="dropdown" title="Copy"
-                aria-haspopup="true" aria-expanded="false"><i class="fas fa-copy px-2"></i><span class="caret"></span>
+                aria-haspopup="true" aria-expanded="false"><i class="fa fa-copy px-2"></i><span class="caret"></span>
         </button>
         <ul class="dropdown-menu">
             <li ng-repeat="(key, value) in $ctrl.availableStorages">
@@ -30,9 +30,9 @@
             </li>
         </ul>
     </div>
-    <button type="button" class="btn btn-info my-2 mx-1 px-3" ng-click="$ctrl.onSelectRelay.expand()" title="Collapse all"><i class="fas fa-compress-alt"></i></button>
-    <button type="button" class="btn btn-info my-2 mx-1 px-3" ng-click="$ctrl.onSelectRelay.collapse()" title="Expand all"><i class="fas fa-expand-alt"></i></button>
-    <button type="button" class="btn btn-info my-2 mx-1 px-3" ng-click="$ctrl.onSelectRelay.close()" title="Close"><i class="fas fa-times"></i></button>
+    <button type="button" class="btn btn-info my-2 mx-1 px-3" ng-click="$ctrl.onSelectRelay.expand()" title="Collapse all"><i class="fa fa-compress"></i></button>
+    <button type="button" class="btn btn-info my-2 mx-1 px-3" ng-click="$ctrl.onSelectRelay.collapse()" title="Expand all"><i class="fa fa-expand"></i></button>
+    <button type="button" class="btn btn-info my-2 mx-1 px-3" ng-click="$ctrl.onSelectRelay.close()" title="Close"><i class="fa fa-times"></i></button>
 </div>
 <div class="form-row m-2">
                 <span class="col-md-2">
@@ -55,7 +55,6 @@
 <!-- Display highlighted code -->
 <div ng-show="!$ctrl.editing">
     <div ng-show="$ctrl.reportDetails.hasOwnProperty('diff')" id="{{'diff-wrapper' + $ctrl.id}}">
-        <span>Diff</span>
         <table class="table table-striped">
             <tbody>
                 <tr ng-repeat="line in $ctrl.reportDetails.diff" class="xml"
@@ -66,7 +65,6 @@
         </table>
     </div>
     <pre style="display: grid" ng-if="!$ctrl.reportDetails.hasOwnProperty('diff')" id="{{'code-wrapper' + $ctrl.id}}">
-        <span>Highlighted code</span>
         <code style="display: grid" id="{{'code' + $ctrl.id}}" class="xml">
             {{$ctrl.reportDetails.text}}
         </code>
