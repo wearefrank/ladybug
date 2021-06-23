@@ -32,6 +32,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.CoreConstants;
 import ch.qos.logback.core.read.ListAppender;
 import junit.framework.TestCase;
 import nl.nn.testtool.MetadataExtractor;
@@ -97,27 +98,27 @@ public class ReportRelatedTestCase extends TestCase {
 	}
 
 	protected Report assertReport(String correlationId) throws StorageException, IOException {
-		return assertReport(correlationId, false, false, false, false);
+		return assertReport(correlationId, false, false, false, false, false);
 	}
 
 	protected Report assertReport(String correlationId, boolean applyXmlEncoderIgnores,
-			boolean applyEpochTimestampIgnore, boolean applyStackTraceIgnores, boolean assertExport)
-					throws StorageException, IOException {
+			boolean applyEpochTimestampIgnore, boolean applyStackTraceIgnores, boolean applyCorrelationIdIgnores,
+			boolean assertExport) throws StorageException, IOException {
 		assertEquals("Found report(s) in progress,", 0, testTool.getNumberOfReportsInProgress());
 		Storage storage = testTool.getDebugStorage();
 		Report report = findAndGetReport(testTool, storage, correlationId);
 		return assertReport(report, resourcePath, getName(), applyXmlEncoderIgnores, applyEpochTimestampIgnore,
-				applyStackTraceIgnores, assertExport);
+				applyStackTraceIgnores, applyCorrelationIdIgnores, assertExport);
 	}
 
 	public static Report assertReport(Report report, String resourcePath, String name)
 			throws StorageException, IOException {
-		return assertReport(report, resourcePath, name, false, false, false, false);
+		return assertReport(report, resourcePath, name, false, false, false, false, false);
 	}
 
 	public static Report assertReport(Report report, String resourcePath, String name, boolean applyXmlEncoderIgnores,
-			boolean applyEpochTimestampIgnore, boolean applyStackTraceIgnores, boolean assertExport)
-					throws StorageException, IOException {
+			boolean applyEpochTimestampIgnore, boolean applyStackTraceIgnores, boolean applyCorrelationIdIgnores,
+			boolean assertExport) throws StorageException, IOException {
 		assertNotNull("Report is null", report);
 		ReportXmlTransformer reportXmlTransformer = new ReportXmlTransformer();
 		reportXmlTransformer.setXslt(getResource(RESOURCE_PATH, ASSERT_REPORT_XSLT));
@@ -131,6 +132,9 @@ public class ReportRelatedTestCase extends TestCase {
 		}
 		if (applyStackTraceIgnores) {
 			actual = applyStackTraceIgnores(actual);
+		}
+		if (applyCorrelationIdIgnores) {
+			actual = applyCorrelationIdIgnores(actual, report.getCorrelationId());
 		}
 		assertXml(resourcePath, name, actual);
 		if (assertExport) {
@@ -246,6 +250,10 @@ public class ReportRelatedTestCase extends TestCase {
 			return string.replaceAll("(?s)java.io.IOException: Test with strange object.[^<]*\\)(&#13;)?\n</string>",
 										 "java.io.IOException: Test with strange objectIGNORE)\n</string>");
 		}
+	}
+
+	public static String applyCorrelationIdIgnores(String xml, String correlationId) {
+		return xml.replaceAll(correlationId, "IGNORE-CORRELATIONID");
 	}
 
 	public static String getResource(String path, String name) throws IOException {

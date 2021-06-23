@@ -14,6 +14,7 @@
                PreTruncatedMessageLength="24"
                Encoding="encoding"
                Streaming="streaming"
+               WaitingForStream="true"
                Stub="3"
                Stubbed="true"
                StubNotFound="stubNotFound">message</Checkpoint>

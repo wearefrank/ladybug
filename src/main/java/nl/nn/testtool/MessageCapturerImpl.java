@@ -64,9 +64,11 @@ public class MessageCapturerImpl implements MessageCapturer {
 
 				@Override
 				public int read(char[] cbuf, int off, int len) throws IOException {
-					int n = super.read(cbuf, off, len);
-					writer.write(cbuf, off, len);
-					return n;
+					int read = super.read(cbuf, off, len);
+					if (read > 0) {
+						writer.write(cbuf, off, read);
+					}
+					return read;
 				}
 
 				@Override
@@ -128,9 +130,11 @@ public class MessageCapturerImpl implements MessageCapturer {
 
 				@Override
 				public synchronized int read(byte[] buf, int off, int len) throws IOException {
-					int b = super.read(buf, off, len);
-					outputStream.write(buf, off, len);
-					return b;
+					int read = super.read(buf, off, len);
+					if (read > 0) {
+						outputStream.write(buf, off, read);
+					}
+					return read;
 				}
 
 				@Override

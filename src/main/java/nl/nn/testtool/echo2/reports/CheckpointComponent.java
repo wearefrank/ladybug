@@ -233,7 +233,11 @@ public class CheckpointComponent extends MessageComponent {
 			messageIsTruncatedLabel.setVisible(false);
 		}
 		if (checkpoint.getStreaming() != null) {
-			messageStreamingLabel.setText("Message is captured asynchronously from a "
+			String waiting = "Message is";
+			if (checkpoint.isWaitingForStream()) {
+				waiting = "Waiting for message to be";
+			}
+			messageStreamingLabel.setText(waiting  + " captured asynchronously from a "
 					+ checkpoint.getStreaming().toLowerCase() + " stream");
 			messageStreamingLabel.setVisible(true);
 		} else {

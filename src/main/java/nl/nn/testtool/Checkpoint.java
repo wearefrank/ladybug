@@ -15,17 +15,6 @@
 */
 package nl.nn.testtool;
 
-import net.sf.saxon.trans.XPathException;
-import nl.nn.testtool.run.ReportRunner;
-import nl.nn.testtool.run.RunResult;
-import nl.nn.testtool.storage.StorageException;
-import nl.nn.testtool.util.ImportResult;
-import nl.nn.testtool.util.XmlUtil;
-import org.apache.commons.lang.StringUtils;
-import org.codehaus.jackson.annotate.JsonIgnore;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.beans.ExceptionListener;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -41,8 +30,19 @@ import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang.StringUtils;
+import org.codehaus.jackson.annotate.JsonIgnore;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import net.sf.saxon.trans.XPathException;
 import nl.nn.testtool.MessageCapturer.StreamingType;
 import nl.nn.testtool.MessageEncoder.ToStringResult;
+import nl.nn.testtool.run.ReportRunner;
+import nl.nn.testtool.run.RunResult;
+import nl.nn.testtool.storage.StorageException;
+import nl.nn.testtool.util.ImportResult;
+import nl.nn.testtool.util.XmlUtil;
 
 /**
  * @author Jaco de Groot
@@ -51,23 +51,9 @@ public class Checkpoint implements Serializable, Cloneable {
 	// See comment above field serialVersionUID on class Report
 	private transient static final long serialVersionUID = 4;
 	private transient static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-	private Report report;
-	private String threadName;
-	private String sourceClassName;
-	private String messageClassName;
-	private String name;
-	private String message;
-	private String encoding;
-	private String streaming;
-	private int type;
-	private int level = 0;
-	private int stub = STUB_FOLLOW_REPORT_STRATEGY;
-	private boolean stubbed = false;
-	private String stubNotFound;
-	private int preTruncatedMessageLength = -1;
-	private transient Map<String, Pattern> variablePatternMap;
 	private transient static final Pattern GENERIC_VARIABLE_PATTERN = Pattern.compile("\\$\\{.*?\\}");
 	private transient static final Pattern EXTERNAL_VARIABLE_PATTERN = Pattern.compile("\\$\\{checkpoint\\(([0-9]+#[0-9]+)\\)(\\.xpath\\((.*?)\\)|)\\}");
+
 	public transient static final int TYPE_STARTPOINT = 1;
 	public transient static final int TYPE_ENDPOINT = 2;
 	public transient static final int TYPE_ABORTPOINT = 3;
@@ -80,6 +66,24 @@ public class Checkpoint implements Serializable, Cloneable {
 	public transient static final int STUB_FOLLOW_REPORT_STRATEGY = -1;
 	public transient static final int STUB_NO = 0;
 	public transient static final int STUB_YES = 1;
+
+	private Report report;
+	private String threadName;
+	private String sourceClassName;
+	private String messageClassName;
+	private String name;
+	private String message;
+	private String encoding;
+	private String streaming;
+	private boolean waitingForStream = false;
+	private int type;
+	private int level = 0;
+	private int stub = STUB_FOLLOW_REPORT_STRATEGY;
+	private boolean stubbed = false;
+	private String stubNotFound;
+	private int preTruncatedMessageLength = -1;
+
+	private transient Map<String, Pattern> variablePatternMap;
 
 	public Checkpoint() {
 		// Only for Java XML encoding/decoding! Use other constructor instead.
@@ -152,24 +156,28 @@ public class Checkpoint implements Serializable, Cloneable {
 	public  <T> T setMessage(T message) {
 		// For streams message encoder and setMessage() with param type String will be called a second time in
 		// Report.closeStreamingMessageListeners(). The first call here will allow the message encoder to set the
-		// message to a value that shows that Ladybug is waiting for the stream to be read, captured and closed
+		// message to a value that shows that Ladybug is waiting for the stream to be read, captured and closed or any
+		// other message
 		ToStringResult toStringResult = report.getMessageEncoder().toString(message, null);
 		setMessage(toStringResult.getString());
 		setEncoding(toStringResult.getEncoding());
 		setMessageClassName(toStringResult.getMessageClassName());
 		if (message != null && report.getMessageCapturer() != null) {
+			// Use message capturer only once for the same message
 			if (report.isKnownStreamingMessage(message)) {
 				report.addStreamingMessageListener(message, this);
 			} else {
 				StreamingType streamingType = report.getMessageCapturer().getStreamingType(message);
 				if (streamingType == StreamingType.CHARACTER_STREAM || streamingType == StreamingType.BYTE_STREAM) {
+					setWaitingForStream(true);
+					setStreaming(streamingType.toString());
 					TestTool testTool = report.getTestTool();
 					// Listener must be added before calling toWriter() and toOutputStream() as while calling those
 					// methods the close() method on the stream can already be called
 					report.addStreamingMessageListener(message, this);
 					// Use array to work around final scope limitation for anonymous inner class
-					Object[] possiblyWrappedMessage = new Object[1];
-					possiblyWrappedMessage[0] = message;
+					Object[] messageToClose = new Object[1];
+					messageToClose[0] = message;
 					String[] charset = new String[1];
 					Throwable[] exception = new Throwable[1];
 					if (streamingType == StreamingType.CHARACTER_STREAM) {
@@ -223,11 +231,10 @@ public class Checkpoint implements Serializable, Cloneable {
 										preTruncatedMessageLength = length;
 									}
 									report.closeStreamingMessage(toStringResult.getMessageClassName(),
-											possiblyWrappedMessage[0], streamingType.toString(), charset[0],
+											messageToClose[0], streamingType.toString(), charset[0],
 											toString(), preTruncatedMessageLength, exception[0]);
 								}
 						};
-						// Message possibly wrapped by toWriter()
 						message = report.getMessageCapturer().toWriter(message, messageCapturerWriter,
 								exceptionNotifier -> exception[0] = exceptionNotifier);
 					} else {
@@ -271,21 +278,26 @@ public class Checkpoint implements Serializable, Cloneable {
 										preTruncatedMessageLength = length;
 									}
 									report.closeStreamingMessage(toStringResult.getMessageClassName(),
-											possiblyWrappedMessage[0], streamingType.toString(), charset[0],
+											messageToClose[0], streamingType.toString(), charset[0],
 											toByteArray(), preTruncatedMessageLength, exception[0]);
 								}
 						};
-						// Message possibly wrapped by toOutputStream()
 						message = report.getMessageCapturer().toOutputStream(message, messageCapturerOutputStream,
 								charsetNotifier -> charset[0] = charsetNotifier,
 								exceptionNotifier -> exception[0] = exceptionNotifier);
 					}
-					if (message != possiblyWrappedMessage[0]) {
+					// When message is wrapped by toWriter() or toOutputStream() start listening to the wrapped message
+					// instead of the original message message for which addStreamingMessageListener() was called
+					// earlier. Also use the wrapped message on close instead of the original message.
+					// Ladybug's default MessageCapturerImpl will always wrap the message but for example the
+					// Frank!Framework has a Message object that will wrap the request object internally and the
+					// implementation of MessageCapturer by the Frank!Framework doesn't wrap the Message object.
+					if (message != messageToClose[0]) {
 						// First add listener and then remove listener as close() on messageCapturerWriter or
 						// messageCapturerOutputStream may be called in the mean time in a separate thread
 						report.addStreamingMessageListener(message, this);
-						Object origMessage = possiblyWrappedMessage[0];
-						possiblyWrappedMessage[0] = message;
+						Object origMessage = messageToClose[0];
+						messageToClose[0] = message;
 						report.removeStreamingMessageListener(origMessage, this);
 					}
 				}
@@ -314,12 +326,26 @@ public class Checkpoint implements Serializable, Cloneable {
 		return encoding;
 	}
 
+	/**
+	 * Indicates whether the message is (being) captured from a stream and when this is the case the
+	 * {@link StreamingType} being used
+	 * 
+	 * @param streaming ...
+	 */
 	public void setStreaming(String streaming) {
 		this.streaming = streaming;
 	}
 
 	public String getStreaming() {
 		return streaming;
+	}
+
+	public void setWaitingForStream(boolean waitingForStream) {
+		this.waitingForStream = waitingForStream;
+	}
+
+	public boolean isWaitingForStream() {
+		return waitingForStream;
 	}
 
 	public void setType(int type) {
@@ -343,6 +369,7 @@ public class Checkpoint implements Serializable, Cloneable {
 			case TYPE_INPUTPOINT : typeAsString = "Inputpoint"; break;
 			case TYPE_OUTPUTPOINT : typeAsString = "Outputpoint"; break;
 			case TYPE_INFOPOINT : typeAsString = "Infopoint"; break;
+			case TYPE_THREADCREATEPOINT : typeAsString = "ThreadCreatepoint"; break;
 			case TYPE_THREADSTARTPOINT : typeAsString = "ThreadStartpoint"; break;
 			case TYPE_THREADENDPOINT : typeAsString = "ThreadEndpoint"; break;
 		}
