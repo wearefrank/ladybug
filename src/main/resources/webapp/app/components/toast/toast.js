@@ -35,6 +35,6 @@ angular.module('ladybugApp').component('toast', {
 
 var createToast = function (title, text, $scope, $compile) {
     let toastid = Math.random().toString(36).substring(7);
-    $('body').append($compile("<toast title='" + title + "' text='" + text + "' " +
+    $('body').append($compile("<toast style='position: absolute; left: 40%; top: 50%; min-width: 20%; min-height: 15%; opacity: 1' title='" + title + "' text='" + text + "' " +
         "component-id='" + toastid + "' id='" + toastid + "'></toast>")($scope));
 };

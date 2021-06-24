@@ -13,6 +13,7 @@ body {
     font-size: 0.7rem !important;
     line-height: 1 !important;
     background-color: #f3f3f4 !important;
+    position: relative;
 }
 
 table .form-control {
