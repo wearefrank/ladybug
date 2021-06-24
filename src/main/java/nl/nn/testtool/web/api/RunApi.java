@@ -48,6 +48,7 @@ public class RunApi extends ApiBase {
 	 *
 	 * @param debugStorageParam Target storage to use as debug storage for re-runner.
 	 * @param sources Map containing storage names and storage ids for reports that will re-run.
+	 * @return The response of running the report.
 	 */
 	@POST
 	@Path("/run/{debugStorage}")
@@ -98,6 +99,7 @@ public class RunApi extends ApiBase {
 	/**
 	 * Get the results from the re-runner for the given debug storage.
 	 * @param debugStorageParam Name of the debug storage that runner uses.
+	 * @return The response for the result retreival.
 	 */
 	@GET
 	@Path("/result/{debugStorage}")
@@ -193,6 +195,7 @@ public class RunApi extends ApiBase {
 	}
 	/**
 	 * Resets all the report runners.
+	 * @return The response after resetting the reports.
 	 */
 	@POST
 	@Path("/reset")
@@ -219,6 +222,7 @@ public class RunApi extends ApiBase {
 	/**
 	 * Resets the re-runner with the given debug storage.
 	 * @param storageParam Name of the debug storage.
+	 * @return The response after resetting.
 	 */
 	@POST
 	@Path("/reset/{debugStorage}")

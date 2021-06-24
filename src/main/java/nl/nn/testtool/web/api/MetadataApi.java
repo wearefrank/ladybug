@@ -48,6 +48,8 @@ public class MetadataApi extends ApiBase {
 	 * @param storageParam Name of the storage to search.
 	 * @param limit Maximum number of results to return.
 	 * @param uriInfo Query parameters for search.
+	 * @param sortParam Name of the sort to apply.
+	 * @param order The order, either ascending or descending.
 	 * @return Response containing fields [List[String]] and values [List[List[Object]]].
 	 * @throws ApiException If an exception occurs during metadata search in storage.
 	 */

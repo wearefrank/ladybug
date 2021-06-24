@@ -148,6 +148,7 @@ public class ReportApi extends ApiBase {
 	 * @param storageParam Name of the storage.
 	 * @param storageId Storage id of the report.
 	 * @param map Map containing ["name" or "path" or "variables" or "description" or "transformation"]
+	 * @return The updated report.
 	 */
 	@POST
 	@Path("/report/{storage}/{storageId}")
@@ -230,6 +231,7 @@ public class ReportApi extends ApiBase {
 	 *
 	 * @param storageParam Name of the target storage.
 	 * @param sources Map [String, Integer] where keys are storage names and integers are storage ids for the reports to be copied.
+	 * @return The copied report.
 	 */
 	@PUT
 	@Path("/report/store/{storage}")
@@ -265,6 +267,7 @@ public class ReportApi extends ApiBase {
 	 *
 	 * @param storageParam Name of the target storage.
 	 * @param attachment Attachment containing report.
+	 * @return The response of uploading a file.
 	 */
 	@POST
 	@Path("/report/upload/{storage}")
@@ -323,6 +326,7 @@ public class ReportApi extends ApiBase {
 	 * @param exportReportParam "true" or "1" to save the serialized version of report.
 	 * @param exportReportXmlParam "true" or "1" to save Xml version of report.
 	 * @param storageIds List of storage ids to download.
+	 * @return The response when downloading a file.
 	 */
 	@GET
 	@Path("/report/download/{storage}/{exportReport}/{exportReportXml}")
@@ -357,6 +361,7 @@ public class ReportApi extends ApiBase {
 	 * @param storageParam Name of the storage.
 	 * @param storageId Storage id of the report to be moved.
 	 * @param map Map containing "path" and "action". Actions could be "copy" or "move".
+	 * @return The response of updating the Path.
 	 */
 	@PUT
 	@Path("/report/move/{storage}/{storageId}")
@@ -396,6 +401,7 @@ public class ReportApi extends ApiBase {
 	 * @param storageParam Name of the storage.
 	 * @param storageId Storage id of the report to be cloned.
 	 * @param map Map containing csv for cloning.
+	 * @return The response of cloning the report.
 	 */
 	@POST
 	@Path("/report/move/{storage}/{storageId}")
