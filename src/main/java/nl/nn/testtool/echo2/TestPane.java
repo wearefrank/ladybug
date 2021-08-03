@@ -31,24 +31,16 @@ public class TestPane extends Tab implements BeanParent {
 		super();
 	}
 
-	public void setTitle(String title) {
-		this.title = title;
-	}
-
-	public String getTitle() {
-		return title;
-	}
-
 	public void setTreePane(TreePane treePane) {
 		this.treePane = treePane;
 	}
 
-	public TreePane getTreePane() {
-		return treePane;
-	}
-
 	public void setInfoPane(InfoPane infoPane) {
 		this.infoPane = infoPane;
+	}
+
+	public TreePane getTreePane() {
+		return treePane;
 	}
 
 	public InfoPane getInfoPane() {
