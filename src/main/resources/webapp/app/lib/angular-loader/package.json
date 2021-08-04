@@ -2,7 +2,7 @@
   "_args": [
     [
       "angular-loader@1.7.5",
-      "C:\\Users\\murat\\Documents\\WeAreFrank\\ibis-ladybug\\src\\main\\resources\\webapp"
+      "C:\\Users\\chakir\\Documents\\ibis-ladybug\\src\\main\\resources\\webapp"
     ]
   ],
   "_from": "angular-loader@1.7.5",
@@ -26,7 +26,7 @@
   ],
   "_resolved": "https://registry.npmjs.org/angular-loader/-/angular-loader-1.7.5.tgz",
   "_spec": "1.7.5",
-  "_where": "C:\\Users\\murat\\Documents\\WeAreFrank\\ibis-ladybug\\src\\main\\resources\\webapp",
+  "_where": "C:\\Users\\chakir\\Documents\\ibis-ladybug\\src\\main\\resources\\webapp",
   "author": {
     "name": "Angular Core Team",
     "email": "angular-core+npm@google.com"
