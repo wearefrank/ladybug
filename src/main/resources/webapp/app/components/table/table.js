@@ -63,6 +63,11 @@ function metadataTableController($scope, $compile, $http) {
         console.info("Refreshing metadata.");
         $http.get('../metadata').then(function (response) {
             ctrl.columns = response.data;
+
+            // Make sure it starts with storageId
+            ctrl.columns.splice(ctrl.columns.indexOf("storageId"), 1)
+            ctrl.columns.splice(0, 0, "storageId")
+
             ctrl.columns.forEach(function (element) {
                 if (ctrl.filters[element] === undefined) {
                     ctrl.filters[element] = "";
