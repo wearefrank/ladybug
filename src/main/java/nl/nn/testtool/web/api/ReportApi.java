@@ -69,7 +69,7 @@ public class ReportApi extends ApiBase {
 							  @QueryParam("globalTransformer") @DefaultValue("false") boolean globalTransformer) throws ApiException {
 		try {
 			Storage storage = getBean(storageParam);
-			Report report = storage.getReport(storageId);
+			Report report = getReport(storage, storageId);
 			if (report == null)
 				return Response.status(Response.Status.NOT_FOUND).build();
 			if (xml) {
@@ -106,7 +106,7 @@ public class ReportApi extends ApiBase {
 			return Response.status(Response.Status.NOT_IMPLEMENTED).entity(msg).build();
 		}
 		try {
-			Report report = storage.getReport(storageId);
+			Report report = getReport(storage, storageId);
 			if (report == null)
 				return Response.status(Response.Status.NOT_FOUND).build();
 			((CrudStorage) storage).delete(report);
@@ -134,7 +134,7 @@ public class ReportApi extends ApiBase {
 			});
 			ArrayList<Report> reports = new ArrayList<>(number);
 			for (int i = 1; i <= number; i++) {
-				reports.add(storage.getReport((Integer) metadata.get(metadata.size() - i).get(0)));
+				reports.add(getReport(storage, (Integer) metadata.get(metadata.size() - i).get(0)));
 			}
 			return Response.ok(reports).build();
 		} catch (StorageException e) {
@@ -148,6 +148,7 @@ public class ReportApi extends ApiBase {
 	 * @param storageParam Name of the storage.
 	 * @param storageId Storage id of the report.
 	 * @param map Map containing ["name" or "path" or "variables" or "description" or "transformation"]
+	 * @return The updated report.
 	 */
 	@POST
 	@Path("/report/{storage}/{storageId}")
@@ -160,7 +161,7 @@ public class ReportApi extends ApiBase {
 
 		try {
 			Storage storage = getBean(storageParam);
-			Report report = storage.getReport(storageId);
+			Report report = getReport(storage, storageId);
 			if (report == null)
 				return Response.status(Response.Status.NOT_FOUND).build();
 
@@ -216,7 +217,7 @@ public class ReportApi extends ApiBase {
 	public Response getReportTransformation(@PathParam("storage") String storageParam, @PathParam("storageId") int storageId) {
 		try {
 			Storage storage = getBean(storageParam);
-			String transformation = storage.getReport(storageId).getTransformation();
+			String transformation = getReport(storage, storageId).getTransformation();
 			Map<String, String> map = new HashMap<>(1);
 			map.put("transformation", transformation);
 			return Response.ok(map).build();
@@ -230,6 +231,7 @@ public class ReportApi extends ApiBase {
 	 *
 	 * @param storageParam Name of the target storage.
 	 * @param sources Map [String, Integer] where keys are storage names and integers are storage ids for the reports to be copied.
+	 * @return The copied report.
 	 */
 	@PUT
 	@Path("/report/store/{storage}")
@@ -244,7 +246,7 @@ public class ReportApi extends ApiBase {
 
 				for (int storageId : sources.get(src)) {
 					try {
-						((CrudStorage) target).store(srcStorage.getReport(storageId));
+						((CrudStorage) target).store(getReport(srcStorage, storageId));
 					} catch (StorageException storageException) {
 						exceptions.put(src + "_" + storageId, storageException.getMessage());
 						logger.error("Could not copy the report. #Exceptions for request: " + exceptions, storageException);
@@ -265,6 +267,7 @@ public class ReportApi extends ApiBase {
 	 *
 	 * @param storageParam Name of the target storage.
 	 * @param attachment Attachment containing report.
+	 * @return The response of uploading a file.
 	 */
 	@POST
 	@Path("/report/upload/{storage}")
@@ -307,7 +310,7 @@ public class ReportApi extends ApiBase {
 			Iterator storageIdsIterator = storage.getStorageIds().iterator();
 			ArrayList<Report> reports = new ArrayList<>(storage.getStorageIds().size());
 			while (storageIdsIterator.hasNext()) {
-				Report report = storage.getReport((Integer) storageIdsIterator.next());
+				Report report = getReport(storage, ((Integer) storageIdsIterator.next()));
 				reports.add(report);
 			}
 			return Response.ok(reports).build();
@@ -323,6 +326,7 @@ public class ReportApi extends ApiBase {
 	 * @param exportReportParam "true" or "1" to save the serialized version of report.
 	 * @param exportReportXmlParam "true" or "1" to save Xml version of report.
 	 * @param storageIds List of storage ids to download.
+	 * @return The response when downloading a file.
 	 */
 	@GET
 	@Path("/report/download/{storage}/{exportReport}/{exportReportXml}")
@@ -338,7 +342,7 @@ public class ReportApi extends ApiBase {
 		try {
 			ExportResult export;
 			if (storageIds.size() == 1) {
-				Report report = storage.getReport(storageIds.get(0));
+				Report report = getReport(storage, storageIds.get(0));
 				export = Export.export(report, exportReport, exportReportXml);
 			} else {
 				export = Export.export(storage, storageIds, exportReport, exportReportXml);
@@ -357,6 +361,7 @@ public class ReportApi extends ApiBase {
 	 * @param storageParam Name of the storage.
 	 * @param storageId Storage id of the report to be moved.
 	 * @param map Map containing "path" and "action". Actions could be "copy" or "move".
+	 * @return The response of updating the Path.
 	 */
 	@PUT
 	@Path("/report/move/{storage}/{storageId}")
@@ -369,7 +374,7 @@ public class ReportApi extends ApiBase {
 			return Response.status(Response.Status.BAD_REQUEST).entity("[action] and [path] is required as request body.").build();
 
 		try {
-			Report original = storage.getReport(storageId);
+			Report original = getReport(storage, storageId);
 			if ("copy".equalsIgnoreCase(action)) {
 				Report clone = (Report) original.clone();
 				clone.setPath(path);
@@ -396,6 +401,7 @@ public class ReportApi extends ApiBase {
 	 * @param storageParam Name of the storage.
 	 * @param storageId Storage id of the report to be cloned.
 	 * @param map Map containing csv for cloning.
+	 * @return The response of cloning the report.
 	 */
 	@POST
 	@Path("/report/move/{storage}/{storageId}")
@@ -405,7 +411,7 @@ public class ReportApi extends ApiBase {
 		CrudStorage storage = getBean(storageParam);
 		Report original = null;
 		try {
-			original = storage.getReport(storageId);
+			original = getReport(storage, storageId);
 			String previousMessage = original.getInputCheckpoint().getMessage();
 			boolean force = "true".equalsIgnoreCase(map.getOrDefault("force", "false"))
 					|| "1".equalsIgnoreCase(map.getOrDefault("force", "false"));
@@ -447,5 +453,18 @@ public class ReportApi extends ApiBase {
 		}
 		scanner.close();
 		return Response.ok().entity(exceptions).build();
+	}
+
+	/**
+	 * Returns the report and sets the testtool with the bean named "testTool".
+	 * @param storage Storage to get the report from.
+	 * @param storageId Storage id of the report.
+	 * @return Report.
+	 * @throws StorageException ...
+	 */
+	public Report getReport(Storage storage, Integer storageId) throws StorageException {
+		Report report = storage.getReport(storageId);
+		if (report != null)  report.setTestTool(getBean("testTool"));
+		return report;
 	}
 }

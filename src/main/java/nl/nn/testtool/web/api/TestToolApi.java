@@ -57,6 +57,7 @@ public class TestToolApi extends ApiBase {
 	 * Change settings of the testtool.
 	 *
 	 * @param map New settings that can contain (generatorEnabled, regexFilter)
+	 * @return The response after changing the settings.
 	 */
 	@POST
 	@Path("/")
@@ -105,6 +106,7 @@ public class TestToolApi extends ApiBase {
 	 * Change the default transformation.
 	 *
 	 * @param map Map containing key "transformation"
+	 * @return The response after changing the transformation.
 	 */
 	@POST
 	@Path("/transformation/")

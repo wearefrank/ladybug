@@ -31,7 +31,7 @@ public class ApiConfigurationProvider implements ApplicationContextAware {
 	 * This method is crucial to connect the ApplicationContext from framework, with the context from Servlets of the
 	 * api.
 	 * @param applicationContext Application context from the framework.
-	 * @throws BeansException
+	 * @throws BeansException Thrown when an error occurs with a Bean.
 	 */
 	@Override
 	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
