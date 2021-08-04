@@ -9,14 +9,18 @@
     "angular": "^1.8.0",
     "angular-loader": "^1.7.5",
     "angular-route": "^1.7.5",
-    "html5-boilerplate": "0.0.1"
+    "glob-parent": "^6.0.1",
+    "html5-boilerplate": "0.0.1",
+    "monaco": "^1.201704190613.0",
+    "monaco-editor": "^0.25.2",
+    "tar": "^6.1.6"
   },
   "devDependencies": {
     "angular-mocks": "^1.7.5",
     "cpx": "^1.5.0",
     "http-server": "^0.12.3",
     "jasmine-core": "^3.3.0",
-    "karma": "^3.1.1",
+    "karma": "^6.3.4",
     "karma-chrome-launcher": "^2.2.0",
     "karma-firefox-launcher": "^1.1.0",
     "karma-jasmine": "^1.1.2",
