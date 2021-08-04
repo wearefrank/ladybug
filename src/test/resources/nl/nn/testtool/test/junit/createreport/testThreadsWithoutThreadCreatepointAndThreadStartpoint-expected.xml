@@ -1,0 +1,19 @@
+<Report Name="testThreadsWithoutThreadCreatepointAndThreadStartpoint"
+        Description=""
+        Path=""
+        CorrelationId="Original length: 36"
+        StartTime="Original length: 13"
+        EndTime="Original length: 13"
+        NumberOfCheckpoints="6"
+        EstimatedMemoryUsage="144">
+   <Checkpoint Name="testThreadsWithoutThreadCreatepointAndThreadStartpoint"
+               Type="Startpoint"
+               Level="0">startmessage1</Checkpoint>
+   <Checkpoint Name="name3a" Type="ThreadStartpoint" Level="1">startmessage3</Checkpoint>
+   <Checkpoint Name="name3a" Type="Endpoint" Level="2">endmessage3</Checkpoint>
+   <Checkpoint Name="name3b" Type="ThreadStartpoint" Level="1">startmessage3</Checkpoint>
+   <Checkpoint Name="name3b" Type="Endpoint" Level="2">endmessage3</Checkpoint>
+   <Checkpoint Name="testThreadsWithoutThreadCreatepointAndThreadStartpoint"
+               Type="Endpoint"
+               Level="1">endmessage1</Checkpoint>
+</Report>

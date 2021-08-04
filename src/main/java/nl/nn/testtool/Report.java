@@ -65,6 +65,7 @@ public class Report implements Serializable {
 	// Please note that the get and set methods need @Transient annotation for
 	// XmlEncoder to not store the property.
 	private transient Report originalReport;
+	private transient String mainThread;
 	private transient List<String> threads = new ArrayList<String>();
 	private transient Map<String, Integer> threadCheckpointIndex = new HashMap<String, Integer>();
 	private transient Map<String, Integer> threadFirstLevel = new HashMap<String, Integer>();
@@ -89,11 +90,11 @@ public class Report implements Serializable {
 	private transient Map<Object, StreamingMessageResult> streamingMessageResults = new HashMap<Object, StreamingMessageResult>();
 
 	public Report() {
-		String threadName = Thread.currentThread().getName();
-		threads.add(threadName);
-		threadCheckpointIndex.put(threadName, new Integer(0));
-		threadFirstLevel.put(threadName, new Integer(0));
-		threadLevel.put(threadName, new Integer(0));
+		mainThread = Thread.currentThread().getName();
+		threads.add(mainThread);
+		threadCheckpointIndex.put(mainThread, new Integer(0));
+		threadFirstLevel.put(mainThread, new Integer(0));
+		threadLevel.put(mainThread, new Integer(0));
 		threadsActiveCount++;
 	}
 
@@ -275,6 +276,7 @@ public class Report implements Serializable {
 				log.warn("Unknown parent thread '" + parentThreadName + "' for child thread '" + childThreadId
 						+ "' , ignored checkpoint " + getCheckpointLogDescription(name, checkpointType, null));
 			} else {
+				name = "Waiting for thread '" + childThreadId + "' to start...";
 				threadCreatepoint(parentThreadName, childThreadId);
 			}
 		} else {
@@ -293,51 +295,75 @@ public class Report implements Serializable {
 						+ "' detected, use threadCreatepoint() and threadStartpoint() instead of startpoint() for checkpoint "
 						+ getCheckpointLogDescription(name, checkpointType, null));
 			}
-			message = addCheckpoint(childThreadId, sourceClassName, name, message, stubableCode, stubableCodeThrowsException,
-					matchingStubStrategies, checkpointType, levelChangeNextCheckpoint);
 		}
+		message = addCheckpoint(childThreadId, sourceClassName, name, message, stubableCode, stubableCodeThrowsException,
+				matchingStubStrategies, checkpointType, levelChangeNextCheckpoint);
 		return message;
 	}
 
 	private void threadCreatepoint(String parentThreadName, String childThreadId) {
 		threads.add(threads.indexOf(parentThreadName), childThreadId);
 		threadCheckpointIndex.put(childThreadId, threadCheckpointIndex.get(parentThreadName));
-		threadFirstLevel.put(childThreadId, (Integer)threadLevel.get(parentThreadName));
-		threadLevel.put(childThreadId, (Integer)threadLevel.get(parentThreadName));
+		threadFirstLevel.put(childThreadId, threadLevel.get(parentThreadName));
+		threadLevel.put(childThreadId, threadLevel.get(parentThreadName));
 		threadParent.put(childThreadId, parentThreadName);
 		threadsActiveCount++;
+	}
+
+	/**
+	 * For threadCreatepoints a checkpoint is added to the report and removed when a threadStartpoint is added to
+	 * visualize the status of waiting for a thread to start. A threadCreatepoint should be visualized as an error as a
+	 * thread was expected to start but didn't start.
+	 * 
+	 * @param ...
+	 * @param ...
+	 */
+	private void removeThreadCreatepoint(int index, String threadName) {
+		if (index < checkpoints.size() && checkpoints.get(index).getType() == Checkpoint.TYPE_THREADCREATEPOINT) {
+			checkpoints.remove(index);
+			for (int i = threads.indexOf(threadName) + 1; i < threads.size(); i++) {
+				String key = threads.get(i);
+				Integer value = threadCheckpointIndex.get(key);
+				threadCheckpointIndex.put(key, new Integer(value.intValue() - 1));
+			}
+		}
 	}
 
 	private  <T> T addCheckpoint(String childThreadId, String sourceClassName, String name, T message,
 			StubableCode stubableCode, StubableCodeThrowsException stubableCodeThrowsException,
 			Set<String> matchingStubStrategies, int checkpointType, int levelChangeNextCheckpoint) {
 		String threadName = Thread.currentThread().getName();
-		Integer index = (Integer)threadCheckpointIndex.get(threadName);
-		Integer level = (Integer)threadLevel.get(threadName);
+		Integer index = threadCheckpointIndex.get(threadName);
+		Integer level = threadLevel.get(threadName);
 		if (name == null) {
 			log.warn("Ignored checkpoint with null name " + getCheckpointLogDescription(name, checkpointType, level));
 		} else {
-			// At this point index will already be != null when name of the child thread was used as childThreadId when
-			// calling threadCreatepoint()
-			if (index == null && checkpointType == Checkpoint.TYPE_THREADSTARTPOINT) {
-				index = (Integer)threadCheckpointIndex.remove(childThreadId);
+			if (checkpointType == Checkpoint.TYPE_THREADSTARTPOINT) {
+				// At this point index will already be != null when name of the child thread was used as childThreadId
+				// when calling threadCreatepoint()
+				if (index == null) {
+					index = threadCheckpointIndex.remove(childThreadId);
+					if (index != null) {
+						// Rename child thread id in the relevant maps to the actual thread name of the child thread (which
+						// at this point is the current thread (calling it's first checkpoint (threadStartpoint())) for as
+						// far as they are not already the same (in which case index will be initialized with a non null
+						// value at the beginning of this method
+						threads.add(threads.indexOf(childThreadId), threadName);
+						threads.remove(childThreadId);
+						threadCheckpointIndex.put(threadName, index);
+						level = threadFirstLevel.remove(childThreadId);
+						threadFirstLevel.put(threadName, level);
+						level = threadLevel.remove(childThreadId);
+						threadLevel.put(threadName, level);
+						String parent = (String)threadParent.remove(childThreadId);
+						threadParent.put(threadName, parent);
+					} else {
+						log.warn("Unknown childThreadId '" + childThreadId
+								+ "', use the same childThreadId when calling threadCreatepoint() and threadStartpoint()");
+					}
+				}
 				if (index != null) {
-					// Rename child thread id in the relevant maps to the actual thread name of the child thread (which
-					// at this point is the current thread (calling it's first checkpoint (threadStartpoint())) for as
-					// far as they are not already the same (in which case index will be initialized with a non null
-					// value at the beginning of this method
-					threads.add(threads.indexOf(childThreadId), threadName);
-					threads.remove(childThreadId);
-					threadCheckpointIndex.put(threadName, index);
-					level = (Integer)threadFirstLevel.remove(childThreadId);
-					threadFirstLevel.put(threadName, level);
-					level = (Integer)threadLevel.remove(childThreadId);
-					threadLevel.put(threadName, level);
-					String parent = (String)threadParent.remove(childThreadId);
-					threadParent.put(threadName, parent);
-				} else {
-					log.warn("Unknown childThreadId '" + childThreadId
-							+ "', use the same childThreadId when calling threadCreatepoint() and threadStartpoint()");
+					removeThreadCreatepoint(index, threadName);
 				}
 			}
 			if (index == null) {
@@ -376,7 +402,8 @@ public class Report implements Serializable {
 				Integer newLevel = new Integer(level.intValue() + levelChangeNextCheckpoint);
 				threadLevel.put(threadName, newLevel);
 				if (newLevel.equals(threadFirstLevel.get(threadName))) {
-					close(threadName);
+					// threadCreatepoint has already been removed on first checkpoint for thread, hence use false
+					close(threadName, false);
 				}
 			}
 		}
@@ -436,7 +463,7 @@ public class Report implements Serializable {
 		}
 		for (int i = threads.indexOf(threadName); i < threads.size(); i++) {
 			String key = threads.get(i);
-			Integer value = (Integer)threadCheckpointIndex.get(key);
+			Integer value = threadCheckpointIndex.get(key);
 			threadCheckpointIndex.put(key, new Integer(value.intValue() + 1));
 		}
 		// Add checkpoint to the list after stubable code has been executed. Otherwise when a report in progress is
@@ -490,22 +517,31 @@ public class Report implements Serializable {
 
 	protected void close() {
 		while (threads.size() > 0) {
-			close(threads.get(0));
+			close(threads.get(0), false);
 		}
 	}
 
-	protected void close(String threadName) {
+	protected void close(String threadName, boolean removeThreadCreatepoint) {
 		if (threads.remove(threadName)) {
-			threadCheckpointIndex.remove(threadName);
+			Integer index = threadCheckpointIndex.remove(threadName);
 			threadFirstLevel.remove(threadName);
 			threadLevel.remove(threadName);
 			threadParent.remove(threadName);
-			threadsActiveCount--; 
+			threadsActiveCount--;
+			if (removeThreadCreatepoint) {
+				removeThreadCreatepoint(index, threadName);
+			}
+		} else {
+			log.warn("Thread '" + threadName + "' to close for report with correlationId '" + correlationId + "' not found");
 		}
 	}
 
 	protected boolean threadsFinished() {
 		return threadsActiveCount < 1;
+	}
+
+	protected boolean mainThreadFinished() {
+		return !threads.contains(mainThread);
 	}
 
 	protected boolean streamingMessageListenersFinished() {
@@ -535,6 +571,12 @@ public class Report implements Serializable {
 		}
 	}
 
+	protected void removeStreamingMessageListeners() {
+		synchronized(streamingMessageListeners) {
+			streamingMessageListeners.clear();
+		}
+	}
+
 	protected boolean isKnownStreamingMessage(Object streamingMessage) {
 		synchronized(streamingMessageListeners) {
 			return streamingMessageListeners.get(streamingMessage) != null;
@@ -543,18 +585,21 @@ public class Report implements Serializable {
 
 	protected void closeStreamingMessage(String messageClassName, Object streamingMessage, String streamingType,
 			String charset, Object message, int preTruncatedMessageLength, Throwable exception) {
+		StreamingMessageResult streamingMessageResult = new StreamingMessageResult();
+		streamingMessageResult.setMessageClassName(messageClassName);
+		streamingMessageResult.setStreamingType(streamingType);
+		streamingMessageResult.setCharset(charset);
+		streamingMessageResult.setMessage(message);
+		streamingMessageResult.setPreTruncatedMessageLength(preTruncatedMessageLength);
+		streamingMessageResult.setException(exception);
 		synchronized(streamingMessageListeners) {
-			StreamingMessageResult streamingMessageResult = new StreamingMessageResult();
-			streamingMessageResult.setMessageClassName(messageClassName);
-			streamingMessageResult.setStreamingType(streamingType);
-			streamingMessageResult.setCharset(charset);
-			streamingMessageResult.setMessage(message);
-			streamingMessageResult.setPreTruncatedMessageLength(preTruncatedMessageLength);
-			streamingMessageResult.setException(exception);
-			streamingMessageResults.put(streamingMessage, streamingMessageResult);
+			// Check whether TestTool.close() already closed the message capturer
+			if (streamingMessageListeners.containsKey(streamingMessage)) {
+				streamingMessageResults.put(streamingMessage, streamingMessageResult);
+			}
 			closeStreamingMessageListeners();
 		}
-		getTestTool().closeReport(this);
+		getTestTool().closeReportIfFinished(this);
 	}
 
 	/**
@@ -568,6 +613,7 @@ public class Report implements Serializable {
 				if (streamingMessageResult != null) {
 					finishedStreamingMessage.add(streamingMessage);
 					for (Checkpoint checkpoint : streamingMessageListeners.get(streamingMessage)) {
+						checkpoint.setWaitingForStream(false);
 						checkpoint.setStreaming(streamingMessageResult.getStreamingType());
 						if (streamingMessageResult.getException() != null) {
 							checkpoint.setMessage(streamingMessageResult.getException());
@@ -735,6 +781,9 @@ public class Report implements Serializable {
 				}
 				if (checkpoint.getStreaming() != null) {
 					stringBuffer.append(" Streaming=\"" + EscapeUtil.escapeXml(checkpoint.getStreaming()) + "\"");
+				}
+				if (checkpoint.isWaitingForStream()) {
+					stringBuffer.append(" WaitingForStream=\"" + checkpoint.isWaitingForStream() + "\"");
 				}
 				if (checkpoint.getStub() != Checkpoint.STUB_FOLLOW_REPORT_STRATEGY) {
 					stringBuffer.append(" Stub=\"" + checkpoint.getStub() + "\"");

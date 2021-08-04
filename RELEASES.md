@@ -6,6 +6,7 @@ Ladybug Test Tool release notes
 Upcoming
 --------
 
+- Visualize waiting for threads and streams and add closeThreads and closeMessageCapturers
 - Add REST API for new frontend
 - Add checkpoint after stubable code has been executed
 - Clean storage java files

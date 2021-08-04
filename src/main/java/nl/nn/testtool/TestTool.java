@@ -59,6 +59,8 @@ public class TestTool {
 	private String defaultStubStrategy = "Stub all external connection code";
 	private List<String> stubStrategies = new ArrayList<String>(); { stubStrategies.add(defaultStubStrategy); }
 	private Set<String> matchingStubStrategiesForExternalConnectionCode = new HashSet<>(stubStrategies);
+	boolean closeThreads = false;
+	boolean closeMessageCapturers = false;
 
 	public void setSecurityLoggerName(String securityLoggerName) {
 		securityLog = LoggerFactory.getLogger(securityLoggerName);
@@ -214,6 +216,36 @@ public class TestTool {
 		return matchingStubStrategiesForExternalConnectionCode;
 	}
 
+	/**
+	 * Close child threads when main thread is finished to prevent threads that didn't start and aren't cancelled to
+	 * keep reports in progress. Setting this to true will risk checkpoint not being added for child threads that are
+	 * still running after the main thread is finished
+	 * 
+	 * @param closeThreads ...
+	 */
+	public void setCloseThreads(boolean closeThreads) {
+		this.closeThreads = closeThreads;
+	}
+
+	public boolean isCloseThreads() {
+		return closeThreads;
+	}
+
+	/**
+	 * Remove streaming message listeners when main thread is finished to prevent streams for which the close method
+	 * isn't called to keep reports in progress. Setting this to true will risk streams not being captured when they are
+	 * still active after the main thread is finished
+	 * 
+	 * @param closeMessageCapturers ...
+	 */
+	public void setCloseMessageCapturers(boolean closeMessageCapturers) {
+		this.closeMessageCapturers = closeMessageCapturers;
+	}
+
+	public boolean isCloseMessageCapturers() {
+		return closeMessageCapturers;
+	}
+
 	private <T> T checkpoint(String correlationId, String childThreadId, String sourceClassName, String name,
 			T message, StubableCode stubableCode, StubableCodeThrowsException stubableCodeThrowsException,
 			Set<String> matchingStubStrategies, int checkpointType, int levelChangeNextCheckpoint) {
@@ -256,7 +288,7 @@ public class TestTool {
 					executeStubableCode = false;
 					message = report.checkpoint(childThreadId, sourceClassName, name, message, stubableCode,
 							stubableCodeThrowsException, matchingStubStrategies, checkpointType, levelChangeNextCheckpoint);
-					closeReport(report);
+					closeReportIfFinished(report);
 				}
 			}
 		}
@@ -279,22 +311,32 @@ public class TestTool {
 		return message;
 	}
 
-	protected void closeReport(Report report) {
+	protected void closeReportIfFinished(Report report) {
 		synchronized(report) {
-			if (!report.isClosed() && report.threadsFinished()) {
-				if (report.getEndTime() == null) {
-					report.setEndTime(System.currentTimeMillis());
+			if (!report.isClosed()) {
+				if (!report.threadsFinished() && closeThreads
+						&& report.mainThreadFinished()) {
+					report.close();
 				}
-				if (report.streamingMessageListenersFinished()) {
-					report.setClosed(true);
-					log.debug("Report is finished for '" + report.getCorrelationId() + "'");
-					synchronized(reportsInProgress) {
-						reportsInProgress.remove(report);
-						reportsInProgressByCorrelationId.remove(report.getCorrelationId());
-						numberOfReportsInProgress--;
+				if (report.threadsFinished()) {
+					if (report.getEndTime() == null) {
+						report.setEndTime(System.currentTimeMillis());
 					}
-					if (report.isReportFilterMatching()) {
-						debugStorage.storeWithoutException(report);
+					if (!report.streamingMessageListenersFinished()
+							&& closeMessageCapturers) {
+						report.removeStreamingMessageListeners();
+					}
+					if (report.streamingMessageListenersFinished()) {
+						report.setClosed(true);
+						log.debug("Report is finished for '" + report.getCorrelationId() + "'");
+						synchronized(reportsInProgress) {
+							reportsInProgress.remove(report);
+							reportsInProgressByCorrelationId.remove(report.getCorrelationId());
+							numberOfReportsInProgress--;
+						}
+						if (report.isReportFilterMatching()) {
+							debugStorage.storeWithoutException(report);
+						}
 					}
 				}
 			}
@@ -639,16 +681,19 @@ public class TestTool {
 	/**
 	 * Mark a thread as finished. When all threads are finished the report will be closed and written to storage. When
 	 * all checkpoints are properly surrounded with a try/catch it should not be necessary to call this method. On the
-	 * other hand, to be on the safe side it is wise to call this method in the finally of the root startpoint of the
-	 * thread to prevent reports staying in progress and consuming memory. See code example at {@link #close(String)}
-	 * also.
+	 * other hand, to be on the safe side call this method in the finally of the root startpoint of the thread to
+	 * prevent reports from staying in progress and consuming memory. See code example at {@link #close(String)} also.
 	 * 
-	 * When a threadCreatepoint is called but it is not certain whether this thread will execute his method can be used
-	 * to mark this thread as finished at a point where it is clear that this thread will not start.
+	 * When a threadCreatepoint is called but it is not certain whether this thread will execute this method can be used
+	 * to mark this thread as finished / cancel it at a point where it is clear that this thread will not start.
 	 * 
 	 * @param correlationId ...
 	 * @param threadName    name of the thread to close or null to close all threads (name of a thread cannot be null as
-	 *                      Thread.setName(null) will result in: java.lang.NullPointerException: name cannot be null)
+	 *                      Thread.setName(null) will result in: java.lang.NullPointerException: name cannot be null).
+	 *                      When closing all threads the threadCreatepoints are left behind for the user to see where
+	 *                      threads were supposed to start. This will warn the user that the thread didn't start and
+	 *                      that the thread wasn't cancelled either (by explicitly calling this method with the specific
+	 *                      thread name)
 	 */
 	public void close(String correlationId, String threadName) {
 		Report report;
@@ -660,9 +705,9 @@ public class TestTool {
 				if (threadName == null) {
 					report.close();
 				} else {
-					report.close(threadName);
+					report.close(threadName, true);
 				}
-				closeReport(report);
+				closeReportIfFinished(report);
 			}
 		}
 	}
@@ -670,8 +715,8 @@ public class TestTool {
 	/**
 	 * Mark all threads as finished and close the report, hence write the report to storage. When all checkpoints are
 	 * properly surrounded with a try/catch it should not be necessary to call this method. On the other hand, to be on
-	 * the safe side it is wise to call this method in the finally of the root startpoint of the report to prevent
-	 * reports staying in progress and consuming memory. Hence for the top level startpoint use:
+	 * the safe side call this method in the finally of the root startpoint of the report to prevent reports from
+	 * staying in progress and consuming memory. Hence for the top level startpoint use:
 	 * 
 	 * <code>
 	 * try {
@@ -692,6 +737,28 @@ public class TestTool {
 	 */
 	public void close(String correlationId) {
 		close(correlationId, null);
+	}
+	
+	public void close(String correlationId, boolean closeMessageCapturers) {
+		close(correlationId, true, closeMessageCapturers);
+	}
+
+	public void close(String correlationId, boolean closeThreads, boolean closeMessageCapturers) {
+		if (closeThreads) {
+			close(correlationId);
+		}
+		if (closeMessageCapturers) {
+			Report report;
+			synchronized(reportsInProgress) {
+				report = (Report)reportsInProgressByCorrelationId.get(correlationId);
+			}
+			if (report != null) {
+				synchronized(report) {
+					report.removeStreamingMessageListeners();
+					closeReportIfFinished(report);
+				}
+			}
+		}
 	}
 
 	public static String getCorrelationId() {

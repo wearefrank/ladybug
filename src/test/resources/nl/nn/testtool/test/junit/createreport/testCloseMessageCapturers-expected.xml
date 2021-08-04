@@ -1,0 +1,17 @@
+<Report Name="testCloseMessageCapturers"
+        Description=""
+        Path=""
+        CorrelationId="Original length: 36"
+        StartTime="Original length: 13"
+        EndTime="Original length: 13"
+        NumberOfCheckpoints="3"
+        EstimatedMemoryUsage="150">
+   <Checkpoint Name="testCloseMessageCapturers" Type="Startpoint" Level="0">startmessage</Checkpoint>
+   <Checkpoint Name="writer"
+               Type="Inputpoint"
+               Level="1"
+               MessageClassName="java.io.StringWriter"
+               Streaming="Character"
+               WaitingForStream="true">Waiting for stream to be read, captured and closed...</Checkpoint>
+   <Checkpoint Name="testCloseMessageCapturers" Type="Endpoint" Level="1">endmessage</Checkpoint>
+</Report>

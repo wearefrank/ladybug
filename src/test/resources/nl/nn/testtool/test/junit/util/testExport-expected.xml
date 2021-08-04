@@ -47,6 +47,9 @@
      <void property="type">
       <int>4</int>
      </void>
+     <void property="waitingForStream">
+      <boolean>true</boolean>
+     </void>
     </object>
    </void>
   </void>

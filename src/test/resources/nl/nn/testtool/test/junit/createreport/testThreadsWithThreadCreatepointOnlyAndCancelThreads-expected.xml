@@ -1,4 +1,4 @@
-<Report Name="testThreadWithThreadCreatepointOnly"
+<Report Name="testThreadsWithThreadCreatepointOnlyAndCancelThreads"
         Description=""
         Path=""
         CorrelationId="Original length: 36"
@@ -6,10 +6,10 @@
         EndTime="Original length: 13"
         NumberOfCheckpoints="2"
         EstimatedMemoryUsage="48">
-   <Checkpoint Name="testThreadWithThreadCreatepointOnly"
+   <Checkpoint Name="testThreadsWithThreadCreatepointOnlyAndCancelThreads"
                Type="Startpoint"
                Level="0">startmessage1</Checkpoint>
-   <Checkpoint Name="testThreadWithThreadCreatepointOnly"
+   <Checkpoint Name="testThreadsWithThreadCreatepointOnlyAndCancelThreads"
                Type="Endpoint"
                Level="1">endmessage1</Checkpoint>
 </Report>

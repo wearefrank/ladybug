@@ -76,7 +76,8 @@ public class ReportsTreeCellRenderer extends DefaultTreeCellRenderer {
 				}
 				String path = "/nl/nn/testtool/echo2/reports/";
 				String error = "";
-				if (MessageEncoderImpl.THROWABLE_ENCODER.equals(checkpoint.getEncoding())) {
+				if (MessageEncoderImpl.THROWABLE_ENCODER.equals(checkpoint.getEncoding())
+						|| checkpoint.isWaitingForStream()) {
 					error = "-error";
 				}
 				if (checkpoint.getType() == Checkpoint.TYPE_STARTPOINT) {
@@ -114,6 +115,13 @@ public class ReportsTreeCellRenderer extends DefaultTreeCellRenderer {
 						label.setIcon(new ResourceImageReference(path + "infopoint" + error + "-even.gif"));
 					} else {
 						label.setIcon(new ResourceImageReference(path + "infopoint" + error + "-odd.gif"));
+					}
+				} else if (checkpoint.getType() == Checkpoint.TYPE_THREADCREATEPOINT) {
+					// Visualize as an error, see Report.removeThreadCreatepoint()
+					if (defaultMutableTreeNode.getLevel() % 2 == 0) {
+						label.setIcon(new ResourceImageReference(path + "threadStartpoint-error-even.gif"));
+					} else {
+						label.setIcon(new ResourceImageReference(path + "threadStartpoint-error-odd.gif"));
 					}
 				} else if (checkpoint.getType() == Checkpoint.TYPE_THREADSTARTPOINT) {
 					if (defaultMutableTreeNode.getLevel() % 2 == 0) {
