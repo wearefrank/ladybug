@@ -1,1 +1,137 @@
-<p>display works!</p>
+<div class="row">
+  <button type="button" class="btn btn-info my-2 mx-1 px-3" ng-click="$ctrl.rerun()" title="Rerun"><i class="fa fa-repeat"></i></button>
+  <button type="button" class="btn btn-info my-2 mx-1 px-3" ng-click="$ctrl.toggleEdit()" title="Edit"
+          >
+    <i class="fa fa-edit"></i>
+  </button>
+  <button type="button" class="btn btn-info my-2 mx-1 px-3" ng-click="$ctrl.saveEditField(true)" title="Save"
+           ng-show="$ctrl.editing">
+    <i class="fa fa-save"></i>
+  </button>
+  <div class="dropdown">
+    <button type="button" class="btn btn-info my-2 mx-1 dropdown-toggle" data-toggle="dropdown" title="Download"
+            aria-haspopup="true" aria-expanded="false"><i class="fa fa-download px-2"></i><span class="caret"></span>
+    </button>
+    <ul class="dropdown-menu">
+      <li><a href="#" ng-click="$ctrl.downloadReports(true, true)">Reports & Messages</a></li>
+      <li><a href="#" ng-click="$ctrl.downloadReports(false, true)">Report</a></li>
+      <li><a href="#" ng-click="$ctrl.downloadReports(true, false)">Message</a></li>
+    </ul>
+  </div>
+  <div class="dropdown">
+    <button type="button" class="btn btn-info my-2 mx-1 dropdown-toggle" data-toggle="dropdown" title="Copy"
+            aria-haspopup="true" aria-expanded="false"><i class="fa fa-copy px-2"></i><span class="caret"></span>
+    </button>
+    <ul class="dropdown-menu">
+      <li ng-repeat="(key, value) in $ctrl.availableStorages">
+        <a href="#" ng-click="$ctrl.copyReport(key)">
+
+        </a>
+      </li>
+    </ul>
+  </div>
+  <button type="button" class="btn btn-info my-2 mx-1 px-3" ng-click="$ctrl.onSelectRelay.expand()" title="Collapse all"><i class="fa fa-compress"></i></button>
+  <button type="button" class="btn btn-info my-2 mx-1 px-3" ng-click="$ctrl.onSelectRelay.collapse()" title="Expand all"><i class="fa fa-expand"></i></button>
+  <button type="button" class="btn btn-info my-2 mx-1 px-3" ng-click="$ctrl.onSelectRelay.close()" title="Close"><i class="fa fa-times"></i></button>
+</div>
+<div class="form-row m-2">
+                <span class="col-md-2">
+                    Stub Strategy:
+                </span>
+  <div class="form-group col-md-4">
+    <select class="form-control" ng-options="strategy for strategy in $ctrl.stubStrategies"
+            ng-model="$ctrl.stubStrategySelect">
+    </select>
+  </div>
+</div>
+<div >
+  <div class="alert" ng-repeat="(key, notification) in $ctrl.reportDetails.notifications"
+       ng-class="{'alert-secondary': notification.level === 'ok', 'alert-danger': notification.level === 'error'}">
+
+    <i class="fa fa-times" style="float: right" ng-click="$ctrl.close_notification(key)"></i>
+  </div>
+</div>
+
+<!-- Display highlighted code -->
+<div ng-show="!$ctrl.editing">
+  <div ng-show="$ctrl.reportDetails.hasOwnProperty('diff')" >
+    <table class="table table-striped">
+      <tbody>
+      <tr ng-repeat="line in $ctrl.reportDetails.diff" class="xml"
+          ng-class="{diff_added: line[0] == $ctrl.reportDetails.diffIdentifier, diff_deleted: line[0] == -1 * $ctrl.reportDetails.diffIdentifier}">
+        <td></td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+  <pre style="display: grid" ng-if="!$ctrl.reportDetails.hasOwnProperty('diff')" >
+        <code style="display: grid"  class="xml">
+
+        </code>
+    </pre>
+</div>
+
+<!-- Display Monaco for Checkpoint Editing -->
+<div ng-show="$ctrl.editing && !$ctrl.displayingReport"  class="form-group-inline"
+     style="height: 300px; min-width: 300px;"></div>
+
+<!-- Display report edit -->
+<div ng-show="$ctrl.editing && $ctrl.displayingReport">
+  <div class="form-group">
+    <label >Name</label>
+    <input type="text" class="form-control"  placeholder="Name">
+  </div>
+  <div class="form-group">
+    <label >Description</label>
+    <textarea class="form-control"  placeholder="Description"></textarea>
+  </div>
+  <div class="form-group">
+    <label >Path</label>
+    <input type="text" class="form-control"  placeholder="/path/to/report/">
+  </div>
+  <div class="form-group">
+    <label >Transformation</label>
+    <div  class="form-group"
+         style="height: 400px; width: 600px; border: 1px solid #ced4da; border-radius: .25rem;"></div>
+  </div>
+  <div class="form-group">
+    <label >Variables</label>
+    <div  class="form-group"
+         style="height: 100px; width: 600px; border: 1px solid #ced4da; border-radius: .25rem;"></div>
+  </div>
+</div>
+<table>
+  <tbody>
+  <tr ng-repeat="(key, value) in $ctrl.reportDetails.values">
+    <td></td>
+    <td></td>
+  </tr>
+  </tbody>
+</table>
+
+<div class="modal" tabindex="-1" role="dialog" >
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Would you like to discard changes?</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div ng-repeat="group in $ctrl.diff">
+          <h5></h5>
+          <pre>
+                        <span ng-repeat="word in group.diff"
+                              ng-class="{diff_added: word[0] == 1, diff_deleted: word[0] == -1}"></span>
+                    </pre>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-info" ng-click="$ctrl.saveEditField(false)">Discard Changes
+        </button>
+        <button type="button" class="btn btn-info" ng-click="$ctrl.saveEditField(true)">Save changes</button>
+      </div>
+    </div>
+  </div>
+</div>

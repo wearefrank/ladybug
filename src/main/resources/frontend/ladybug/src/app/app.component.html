@@ -1,3 +1,22 @@
-<p>Hello world</p>
+<ul ngbNav #nav="ngbNav"  class="nav-tabs">
+  <li [ngbNavItem]="1">
+    <a ngbNavLink>Debug</a>
+    <ng-template ngbNavContent>
+      <app-debug></app-debug>
+    </ng-template>
+  </li>
+  <li [ngbNavItem]="2">
+    <a ngbNavLink>Test</a>
+    <ng-template ngbNavContent>
+      <app-test></app-test>
+    </ng-template>
+  </li>
+  <li [ngbNavItem]="3">
+    <a ngbNavLink>Compare</a>
+    <ng-template ngbNavContent>
+      <app-compare></app-compare>
+    </ng-template>
+  </li>
+</ul>
 
-<app-button></app-button>
+<div [ngbNavOutlet]="nav" class="mt-2"></div>
