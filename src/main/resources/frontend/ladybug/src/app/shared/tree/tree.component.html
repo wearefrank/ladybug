@@ -2,15 +2,6 @@
   <app-button [icon]="'fa fa-expand'" [title]="'Expand All'"></app-button>
   <app-button [icon]="'fa fa-compress'" [title]="'Collapse all'"></app-button>
   <app-button [icon]="'fa fa-times'" [title]="'Close All'"></app-button>
-  <div class="dropdown">
-    <button type="button" class="btn btn-info my-2 mx-1 dropdown-toggle" data-toggle="dropdown" title="Download"
-            aria-haspopup="true" aria-expanded="false"><i class="fa fa-download px-2"></i><span class="caret"></span>
-    </button>
-    <ul class="dropdown-menu">
-      <li><a href="#" ng-click="$ctrl.downloadReports(true, true)">Reports & Messages</a></li>
-      <li><a href="#" ng-click="$ctrl.downloadReports(false, true)">Reports</a></li>
-      <li><a href="#" ng-click="$ctrl.downloadReports(true, false)">Messages</a></li>
-    </ul>
-  </div>
+  <app-dropdown [icon]="'fa fa-download'" [title]="'Download'" [items]="['Reports & Messages', 'Reports', 'Messages']"></app-dropdown>
 </div>
 <div id=""></div>

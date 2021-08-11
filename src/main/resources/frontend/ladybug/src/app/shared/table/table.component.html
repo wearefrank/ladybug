@@ -4,16 +4,7 @@
     <app-button [icon]="'fa fa-undo'" [title]="'Refresh'"></app-button>
     <app-button [icon]="'fa fa-cog'" [title]="'Settings'" (click)="open(content)"></app-button>
     <app-button [icon]="'fa fa-upload'" [title]="'Upload'"></app-button>
-    <div class="dropdown">
-      <button type="button" class="btn btn-info my-2 mx-1 dropdown-toggle" data-toggle="dropdown" title="Download"
-              aria-haspopup="true" aria-expanded="false"><i class="fa fa-download px-2"></i><span class="caret"></span>
-      </button>
-      <ul class="dropdown-menu">
-        <li><a href="#" ng-click="$ctrl.downloadReports(true, true)">Reports & Messages</a></li>
-        <li><a href="#" ng-click="$ctrl.downloadReports(false, true)">Reports</a></li>
-        <li><a href="#" ng-click="$ctrl.downloadReports(true, false)">Messages</a></li>
-      </ul>
-    </div>
+    <app-dropdown [icon]="'fa fa-download'" [title]="'Download'" [items]="['Reports & Messages', 'Reports', 'Messages']"></app-dropdown>
     <app-button [title]="'Open All'" [text]="'Open All'"></app-button>
     <div class="col-md-2 float-md-right">
       <form class="form-horizontal pt-2">

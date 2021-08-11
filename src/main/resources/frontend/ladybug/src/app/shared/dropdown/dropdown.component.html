@@ -1,1 +1,8 @@
-<p>dropdown works!</p>
+<div ngbDropdown title="{{title}}">
+  <button class="btn btn-info my-2 mx-1" id="dropdownDownload" ngbDropdownToggle>
+    <i class="{{icon}} px-2"></i><span class="caret"></span>
+  </button>
+  <div ngbDropdownMenu aria-labelledby="dropdownDownload">
+    <button *ngFor="let item of items" ngbDropdownItem>{{item}}</button>
+  </div>
+</div>

@@ -11,23 +11,8 @@
       <app-button [title]="'Select All'" [text]="'Select All'"></app-button>
       <app-button [title]="'Deselect All'" [text]="'Deselect All'"></app-button>
       <app-button [icon]="'fa fa-trash'" [title]="'Delete All'"></app-button>
-      <div class="row">
-        <div class="input-group col-xl-1 px-0">
-          <div class="input-group-btn">
-            <button type="button" class="btn btn-info my-2 mx-1 dropdown-toggle" data-toggle="dropdown"
-                    aria-haspopup="true" aria-expanded="false"><i class="fa fa-download px-2"></i><span class="caret"></span>
-            </button>
-            <ul class="dropdown-menu">
-              <li><a class="p-1" href="#" ng-click="downloadReports(getSelectedReports(), true, true)">Reports & Messages</a></li>
-              <li><a href="#" ng-click="downloadReports(getSelectedReports(), false, true)">Reports</a></li>
-              <li><a href="#" ng-click="downloadReports(getSelectedReports(), true, false)">Messages</a></li>
-            </ul>
-          </div>
-        </div>
-      </div>
-      <div class="col pl-1">
-        <app-button [icon]="'fa fa-upload'" [title]="'Upload'"></app-button>
-      </div>
+      <app-dropdown [icon]="'fa fa-download'" [title]="'Download'" [items]="['Reports & Messages', 'Reports', 'Messages']"></app-dropdown>
+      <app-button [icon]="'fa fa-upload'" [title]="'Upload'"></app-button>
     </div>
 
     <div class="form-group mt-2">
