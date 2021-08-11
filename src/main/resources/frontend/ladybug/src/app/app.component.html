@@ -1,22 +1,11 @@
-<ul ngbNav #nav="ngbNav"  class="nav-tabs">
-  <li [ngbNavItem]="1">
-    <a ngbNavLink>Debug</a>
-    <ng-template ngbNavContent>
-      <app-debug></app-debug>
-    </ng-template>
-  </li>
-  <li [ngbNavItem]="2">
-    <a ngbNavLink>Test</a>
-    <ng-template ngbNavContent>
-      <app-test></app-test>
-    </ng-template>
-  </li>
-  <li [ngbNavItem]="3">
-    <a ngbNavLink>Compare</a>
-    <ng-template ngbNavContent>
-      <app-compare></app-compare>
-    </ng-template>
-  </li>
-</ul>
-
-<div [ngbNavOutlet]="nav" class="mt-2"></div>
+<div class="p-3">
+  <ul ngbNav #nav="ngbNav" [(activeId)]="active" class="nav-tabs">
+    <li *ngFor="let tab of tabs; let i = index" [ngbNavItem]="i + 1">
+      <a ngbNavLink>{{tab.key}}</a>
+      <ng-template ngbNavContent>
+        <ng-container *ngComponentOutlet="tab.value"></ng-container>
+      </ng-template>
+    </li>
+  </ul>
+  <div [ngbNavOutlet]="nav" class=""></div>
+</div>
