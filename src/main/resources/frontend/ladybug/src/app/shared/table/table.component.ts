@@ -10,7 +10,7 @@ export class TableComponent implements OnInit {
   constructor(private modalService: NgbModal) {}
 
   open(content: any) {
-    this.modalService.open(content, {ariaLabelledBy: 'modal-basic-title'});
+    this.modalService.open(content);
   }
 
   ngOnInit(): void {

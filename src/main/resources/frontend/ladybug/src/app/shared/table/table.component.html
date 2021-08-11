@@ -2,7 +2,7 @@
 <div class="row">
   <div class="row">
     <app-button [icon]="'fa fa-undo'" [title]="'Refresh'"></app-button>
-    <app-button [icon]="'fa fa-cog'" [title]="'Settings'" (click)="open(content)"></app-button>
+    <app-button [icon]="'fa fa-cog'" [title]="'Settings'" (click)="open(settings)"></app-button>
     <app-button [icon]="'fa fa-upload'" [title]="'Upload'"></app-button>
     <app-dropdown [icon]="'fa fa-download'" [title]="'Download'" [items]="['Reports & Messages', 'Reports', 'Messages']"></app-dropdown>
     <app-button [title]="'Open All'" [text]="'Open All'"></app-button>
@@ -44,9 +44,9 @@
   </div>
 </div>
 
-<ng-template #content let-modal>
+<ng-template #settings let-modal>
   <div class="modal-header">
-    <h5 class="modal-title" id="modal-basic-title">Options</h5>
+    <h5 class="modal-title" id="settingsModal">Options</h5>
     <button type="button" class="close" (click)="modal.dismiss()" aria-label="Close">
       <span aria-hidden="true">&times;</span>
     </button>
