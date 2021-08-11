@@ -1,4 +1,5 @@
-import { Component, OnInit } from '@angular/core';
+import {Component, OnInit, ViewChild} from '@angular/core';
+import { NgbModal } from "@ng-bootstrap/ng-bootstrap";
 
 @Component({
   selector: 'app-table',
@@ -6,8 +7,11 @@ import { Component, OnInit } from '@angular/core';
   styleUrls: ['./table.component.css']
 })
 export class TableComponent implements OnInit {
+  constructor(private modalService: NgbModal) {}
 
-  constructor() { }
+  open(content: any) {
+    this.modalService.open(content, {ariaLabelledBy: 'modal-basic-title'});
+  }
 
   ngOnInit(): void {
   }

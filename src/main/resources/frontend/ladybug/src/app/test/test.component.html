@@ -4,23 +4,13 @@
   </div>
   <div class="col">
     <div class="row">
-      <button type="button" class="btn btn-info my-2 mr-1 px-3" ng-click="refresh()" title="Refresh">
-        <i class="fa fa-refresh"></i>
-      </button>
-      <button type="button" class="btn btn-info my-2 mx-1 px-3" ng-click="runReport(getSelectedReports())" title="Run">
-        <i class="fa fa-play" aria-hidden="true"></i>
-      </button>
-      <button type="button" class="btn btn-info my-2 mx-1 px-3" ng-click="resetRunner()" title="Reset"><i class="fa fa-repeat"></i></button>
-      <button type="button" class="btn btn-info my-2 mx-1 px-3" data-toggle="modal" data-target="#optionsModal">
-        <i class="fa fa-cog" aria-hidden="true"></i>
-      </button>
-      <button type="button" class="btn btn-info my-2 mx-1 px-3" ng-click="changeSelectedAll(true)">Select All
-      </button>
-      <button type="button" class="btn btn-info my-2 mx-1 px-3" ng-click="changeSelectedAll(false)">Deselect All
-      </button>
-      <button type="button" class="btn btn-info my-2 mx-1 px-3" ng-click="deleteReports(getSelectedReports())" title="Delete All">
-        <i class="fa fa-trash" aria-hidden="true"></i>
-      </button>
+      <app-button [icon]="'fa fa-refresh'" [title]="'Refresh'"></app-button>
+      <app-button [icon]="'fa fa-play'" [title]="'Run'"></app-button>
+      <app-button [icon]="'fa fa-repeat'" [title]="'Reset'"></app-button>
+      <app-button [icon]="'fa fa-cog'" [title]="'Options'"></app-button>
+      <app-button [title]="'Select All'" [text]="'Select All'"></app-button>
+      <app-button [title]="'Deselect All'" [text]="'Deselect All'"></app-button>
+      <app-button [icon]="'fa fa-trash'" [title]="'Delete All'"></app-button>
       <div class="row">
         <div class="input-group col-xl-1 px-0">
           <div class="input-group-btn">
@@ -36,9 +26,7 @@
         </div>
       </div>
       <div class="col pl-1">
-        <input type="file" id="upload-file" style="display: none" ng-click="uploadReport()">
-        <button type="button" class="btn btn-info my-2 px-3" onclick="$('#upload-file').click()"><i class="fa fa-upload"></i>
-        </button>
+        <app-button [icon]="'fa fa-upload'" [title]="'Upload'"></app-button>
       </div>
     </div>
 
@@ -46,12 +34,8 @@
       <label for="moveToInput">Move/Copy to:</label>
       <div class="input-group">
         <input type="text" class="form-control mr-1" placeholder="1" id="moveToInput"/>
-        <button class="btn btn-info mx-1 mb-2" type="button"
-                ng-click="moveReports(getSelectedReports(), 'copy')"><i class="fa fa-copy"></i>
-        </button>
-        <button class="btn btn-info mx-1 mb-2" type="button"
-                ng-click="moveReports(getSelectedReports(), 'move')">Move
-        </button>
+          <app-button class="mt-0" [icon]="'fa fa-copy'" [title]="'Copy'"></app-button>
+          <app-button class="mt-0" [title]="'Move'" [text]="'Move'"></app-button>
       </div>
     </div>
     <div class="row progress" ng-show="progressBar.max > 0">
@@ -67,29 +51,19 @@
             <input class="form-check-input" type="checkbox" ng-model="report.checked">
           </td>
           <td>
-            <button type="button" class="btn btn-info m-2 col" title="Run" ng-click="runReport([report])">
-              <i class="fa fa-play" aria-hidden="true" ></i>
-            </button>
+            <app-button [icon]="'fa fa-play'" [title]="'Run'"></app-button>
           </td>
           <td>
-            <button type="button" class="btn btn-info m-2 col" title="Open" ng-click="openReport([report])">
-              <i class="fa fa-folder-open"></i>
-            </button>
+            <app-button [icon]="'fa fa-folder-open'" [title]="'Open'"></app-button>
           </td>
           <td>
-            <button type="button" class="btn btn-info m-2 col" title="Clone" ng-click="openCloneModal([report])">
-              <i class="fa fa-clone"></i>
-            </button>
+            <app-button [icon]="'fa fa-clone'" [title]="'Clone'"></app-button>
           </td>
           <td ng-show="reranReports.hasOwnProperty(report.storageId)">
-            <button type="button" class="btn btn-info m-2 col disabled" title="Compare (Not Implemented)" disabled>
-              <i class="fa fa-not-equal"></i>
-            </button>
+<!--            <app-button [icon]="'fa fa-not-equal'" [title]="'Compare (Not Implemented)'"></app-button>-->
           </td>
           <td ng-show="reranReports.hasOwnProperty(report.storageId)">
-            <button type="button" class="btn btn-info m-2 col" title="Replace" ng-click="replaceReport(report)">
-              <i class="fa fa-exchange-alt"></i>
-            </button>
+<!--            <app-button [icon]="'fa fa-exchange-alt'" [title]="'Replace'"></app-button>-->
           </td>
           <td ng-show="showOptions.ids">
           </td>

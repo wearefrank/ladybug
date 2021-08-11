@@ -1,13 +1,7 @@
 <div class="row">
-  <button type="button" class="btn btn-info my-2 mx-1 px-3" ng-click="$ctrl.rerun()" title="Rerun"><i class="fa fa-repeat"></i></button>
-  <button type="button" class="btn btn-info my-2 mx-1 px-3" ng-click="$ctrl.toggleEdit()" title="Edit"
-          >
-    <i class="fa fa-edit"></i>
-  </button>
-  <button type="button" class="btn btn-info my-2 mx-1 px-3" ng-click="$ctrl.saveEditField(true)" title="Save"
-           ng-show="$ctrl.editing">
-    <i class="fa fa-save"></i>
-  </button>
+  <app-button [icon]="'fa fa-repeat'" [title]="'Rerun'"></app-button>
+  <app-button [icon]="'fa fa-edit'" [title]="'Edit'"></app-button>
+  <app-button [icon]="'fa fa-save'" [title]="'Save'"></app-button>
   <div class="dropdown">
     <button type="button" class="btn btn-info my-2 mx-1 dropdown-toggle" data-toggle="dropdown" title="Download"
             aria-haspopup="true" aria-expanded="false"><i class="fa fa-download px-2"></i><span class="caret"></span>
@@ -30,9 +24,9 @@
       </li>
     </ul>
   </div>
-  <button type="button" class="btn btn-info my-2 mx-1 px-3" ng-click="$ctrl.onSelectRelay.expand()" title="Collapse all"><i class="fa fa-compress"></i></button>
-  <button type="button" class="btn btn-info my-2 mx-1 px-3" ng-click="$ctrl.onSelectRelay.collapse()" title="Expand all"><i class="fa fa-expand"></i></button>
-  <button type="button" class="btn btn-info my-2 mx-1 px-3" ng-click="$ctrl.onSelectRelay.close()" title="Close"><i class="fa fa-times"></i></button>
+  <app-button [icon]="'fa fa-compress'" [title]="'Collapse all'"></app-button>
+  <app-button [icon]="'fa fa-expand'" [title]="'Expand all'"></app-button>
+  <app-button [icon]="'fa fa-times'" [title]="'Close'"></app-button>
 </div>
 <div class="form-row m-2">
                 <span class="col-md-2">
