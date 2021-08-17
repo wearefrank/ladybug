@@ -1,0 +1,7 @@
+{
+  "/ladybug/metadata/debugStorage": {
+    "target": "http://localhost",
+    "secure": false,
+    "logLevel":  "debug"
+  }
+}

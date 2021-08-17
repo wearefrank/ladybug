@@ -74,7 +74,8 @@
               "browserTarget": "ladybug:build:production"
             },
             "development": {
-              "browserTarget": "ladybug:build:development"
+              "browserTarget": "ladybug:build:development",
+              "proxyConfig": "src/proxy.conf.json"
             }
           },
           "defaultConfiguration": "development"
