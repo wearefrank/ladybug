@@ -27,7 +27,7 @@
 </div>
 
 <!-- Display highlighted code -->
-<div ng-show="!$ctrl.editing">
+<div [hidden]="!editing">
   <div ng-show="$ctrl.reportDetails.hasOwnProperty('diff')" >
     <table class="table table-striped">
       <tbody>
@@ -46,11 +46,11 @@
 </div>
 
 <!-- Display Monaco for Checkpoint Editing -->
-<div ng-show="$ctrl.editing && !$ctrl.displayingReport"  class="form-group-inline"
+<div [hidden]="!displayReport"  class="form-group-inline"
      style="height: 300px; min-width: 300px;"></div>
 
 <!-- Display report edit -->
-<div ng-show="$ctrl.editing && $ctrl.displayingReport">
+<div [hidden]="!displayReport">
   <div class="form-group">
     <label >Name</label>
     <input type="text" class="form-control"  placeholder="Name">
