@@ -4,6 +4,7 @@
     <app-button [icon]="'fa fa-undo'" [title]="'Refresh'"></app-button>
     <app-button [icon]="'fa fa-cog'" [title]="'Settings'" (click)="openModal(settings)"></app-button>
     <app-button [icon]="'fa fa-upload'" [title]="'Upload'"></app-button>
+    <app-button [icon]="'fa fa-filter'" [title]="'Filter'" (click)="toggleFilter()"></app-button>
     <app-dropdown [icon]="'fa fa-download'" [title]="'Download'" [items]="['Reports & Messages', 'Reports', 'Messages']"></app-dropdown>
     <app-button [title]="'Open All'" [text]="'Open All'"></app-button>
     <div class="col-md-2 float-md-right">
@@ -25,7 +26,7 @@
           {{header}}
         </th>
       </tr>
-      <tr>
+      <tr *ngIf="filter">
         <th *ngFor="let header of metadata.fields">
           <div class="input-group">
             <input type="text" class="form-control" placeholder="Filter">

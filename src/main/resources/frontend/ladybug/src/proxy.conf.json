@@ -2,9 +2,5 @@
   "/ladybug": {
     "target": "http://localhost",
     "secure": false
-  },
-  "/ladybug": {
-    "target": "http://localhost",
-    "secure": false
   }
 }

@@ -1,5 +1,4 @@
-import {Component, Input, OnInit} from '@angular/core';
-
+import {Component, Input} from '@angular/core';
 declare var $: any;
 
 @Component({
@@ -11,13 +10,19 @@ declare var $: any;
 export class TreeComponent {
   @Input()
   reports: any[] = [];
-  reportTree: any[] = [];
+  treeId: string = Math.random().toString(36).substring(7);
 
   constructor() {
   }
 
+  /*
+    Add tree node
+   */
   handleChange() {
-    this.reportTree = [];
+    // Reset the items in the tree
+    let tree = [];
+
+    // For each item that has been selected show the node and its children
     for (let report of this.reports) {
       let item = {
         text: report.name,
@@ -36,11 +41,13 @@ export class TreeComponent {
         // @ts-ignore
         item.nodes.push(node)
       }
-      this.reportTree.push(item)
+      tree.push(item)
     }
 
-    $('#treeView').treeview({
-      data: this.reportTree
+    // Update the treeview
+    $('#' + this.treeId).treeview({
+      data: tree,
+      selectedBackColor: "#1ab394"
     });
   }
 }

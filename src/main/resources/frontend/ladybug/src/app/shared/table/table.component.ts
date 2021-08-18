@@ -17,6 +17,7 @@ const httpOptions = {
 })
 export class TableComponent implements OnInit {
   metadata: any = {};
+  filter: boolean = false;
 
   @Output()
   emitEvent = new EventEmitter<any>();
@@ -28,8 +29,14 @@ export class TableComponent implements OnInit {
     this.modalService.open(content);
   }
 
+  toggleFilter() {
+    this.filter = !this.filter;
+  }
+
+  /*
+    Request the data based on storageId and send this data along to the tree (via parent)
+   */
   openReport(storageId: string) {
-    console.log("Opening " + storageId)
     this.http.get<any>('/ladybug/report/debugStorage/' + storageId).subscribe(data => {
       this.emitEvent.next(data);
     })
