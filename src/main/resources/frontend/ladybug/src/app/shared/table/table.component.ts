@@ -1,4 +1,4 @@
-import {Component, OnInit} from '@angular/core';
+import {Component, OnInit, Output, EventEmitter} from '@angular/core';
 import {NgbModal} from "@ng-bootstrap/ng-bootstrap";
 import {HttpClient, HttpHeaders} from '@angular/common/http';
 
@@ -16,16 +16,28 @@ const httpOptions = {
   styleUrls: ['./table.component.css']
 })
 export class TableComponent implements OnInit {
+  metadata: any = {};
+
+  @Output()
+  emitEvent = new EventEmitter<any>();
+
   constructor(private modalService: NgbModal, private http: HttpClient) {
   }
 
-  open(content: any) {
+  openModal(content: any) {
     this.modalService.open(content);
   }
 
-  ngOnInit(): void {
-    this.http.get<string>('/ladybug/metadata/debugStorage', httpOptions).subscribe(data => {
-      console.log(data);
+  openReport(storageId: string) {
+    console.log("Opening " + storageId)
+    this.http.get<any>('/ladybug/report/debugStorage/' + storageId).subscribe(data => {
+      this.emitEvent.next(data);
     })
+  }
+
+  ngOnInit(): void {
+    this.http.get<any>('/ladybug/metadata/debugStorage', httpOptions).subscribe(data => {
+      this.metadata = data;
+    });
   }
 }

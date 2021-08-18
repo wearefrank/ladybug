@@ -1,7 +1,10 @@
 {
-  "/ladybug/metadata/debugStorage": {
+  "/ladybug": {
     "target": "http://localhost",
-    "secure": false,
-    "logLevel":  "debug"
+    "secure": false
+  },
+  "/ladybug": {
+    "target": "http://localhost",
+    "secure": false
   }
 }

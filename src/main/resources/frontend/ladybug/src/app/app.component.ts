@@ -1,4 +1,4 @@
-import {Component} from '@angular/core';
+import {Component, OnInit} from '@angular/core';
 import {DebugComponent} from "./debug/debug.component";
 import {TestComponent} from "./test/test.component";
 import {CompareComponent} from "./compare/compare.component";
@@ -8,6 +8,7 @@ import {CompareComponent} from "./compare/compare.component";
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css']
 })
+
 export class AppComponent {
   title = 'ladybug';
   active = 1;
@@ -16,5 +17,4 @@ export class AppComponent {
     {key: 'Test', value: TestComponent},
     {key: 'Compare', value: CompareComponent}
   ]
-
 }

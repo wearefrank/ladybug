@@ -23,7 +23,10 @@
     "@angular/router": "~12.1.0-",
     "@ng-bootstrap/ng-bootstrap": "^10.0.0",
     "bootstrap": "^4.5.0",
+    "bootstrap-treeview": "^1.2.0",
+    "bower": "^1.8.12",
     "font-awesome": "^4.7.0",
+    "jquery": "^3.6.0",
     "rxjs": "~6.6.0",
     "tslib": "^2.2.0",
     "zone.js": "~0.11.4"

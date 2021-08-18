@@ -1,8 +1,8 @@
 <!--    Report list panel-->
-<div class="row">
+<div class="row" >
   <div class="row">
     <app-button [icon]="'fa fa-undo'" [title]="'Refresh'"></app-button>
-    <app-button [icon]="'fa fa-cog'" [title]="'Settings'" (click)="open(settings)"></app-button>
+    <app-button [icon]="'fa fa-cog'" [title]="'Settings'" (click)="openModal(settings)"></app-button>
     <app-button [icon]="'fa fa-upload'" [title]="'Upload'"></app-button>
     <app-dropdown [icon]="'fa fa-download'" [title]="'Download'" [items]="['Reports & Messages', 'Reports', 'Messages']"></app-dropdown>
     <app-button [title]="'Open All'" [text]="'Open All'"></app-button>
@@ -17,27 +17,26 @@
       </form>
     </div>
   </div>
-  <div class="table-responsive">
+  <div class="table-responsive" style="height: 300px; resize: vertical; overflow: auto">
     <table class="table table-hover">
       <thead>
       <tr>
-        <th ng-repeat="column in $ctrl.columns" ng-click="$ctrl.updateOrder(column)">
-          <i class="fa" ng-class="{'fa-sort-up': $ctrl.filters['order'] === 'ascending', 'fa-sort-down': $ctrl.filters['order'] === 'descending'}" ng-show="column === $ctrl.filters['sort']"></i>
-
+        <th *ngFor="let header of metadata.fields">
+          {{header}}
         </th>
       </tr>
       <tr>
-        <th ng-repeat="column in $ctrl.columns">
+        <th *ngFor="let header of metadata.fields">
           <div class="input-group">
-            <input type="text" class="form-control" placeholder="Filter" ng-model="meta.filter"
-                   ng-change="$ctrl.updateFilter(column, meta.filter);">
+            <input type="text" class="form-control" placeholder="Filter">
           </div>
         </th>
       </tr>
       </thead>
       <tbody>
-      <tr ng-repeat="metadata in $ctrl.metadatas" ng-click="$ctrl.selectReport(metadata)">
-        <td ng-repeat="column in $ctrl.columns"></td>
+<!--        5 is the index of the storageId-->
+      <tr *ngFor="let row of metadata.values" (click)="openReport(row[5])">
+        <td *ngFor="let value of row">{{value}}</td>
       </tr>
       </tbody>
     </table>
