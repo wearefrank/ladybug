@@ -16,11 +16,11 @@ const httpOptions = {
   styleUrls: ['./table.component.css']
 })
 export class TableComponent implements OnInit {
-  metadata: any = {};
+  @Output() emitEvent = new EventEmitter<any>();
   filter: boolean = false;
-
-  @Output()
-  emitEvent = new EventEmitter<any>();
+  metadata: any = {}; // The data that is displayed
+  isLoaded: boolean = false; // Wait for the page to be loaded
+  displayAmount: number = 10; // The amount of data that is displayed
 
   constructor(private modalService: NgbModal, private http: HttpClient) {
   }
@@ -42,9 +42,20 @@ export class TableComponent implements OnInit {
     })
   }
 
-  ngOnInit(): void {
+  loadTable() {
     this.http.get<any>('/ladybug/metadata/debugStorage', httpOptions).subscribe(data => {
       this.metadata = data;
+      this.isLoaded = true;
     });
+  }
+
+  openAll() {
+    for (let row of this.metadata.values) {
+      this.openReport(row[5]);
+    }
+  }
+
+  ngOnInit(): void {
+    this.loadTable();
   }
 }

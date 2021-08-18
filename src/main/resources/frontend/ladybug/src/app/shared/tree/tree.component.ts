@@ -15,6 +15,19 @@ export class TreeComponent {
   constructor() {
   }
 
+  collapseAll() {
+    $('#' + this.treeId).treeview('collapseAll', { silent: true})
+  }
+
+  expandAll() {
+    $('#' + this.treeId).treeview('expandAll', { levels: 2, silent: true})
+  }
+
+  closeAll() {
+    this.reports.length = 0;
+    $('#' + this.treeId).treeview( { data: [] });
+  }
+
   /*
     Add tree node
    */
