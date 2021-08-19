@@ -1,9 +1,11 @@
 <!--    Report list panel-->
 <div class="row" *ngIf="isLoaded">
   <div class="row">
-    <app-button [icon]="'fa fa-undo'" [title]="'Refresh'" (click)="loadTable()"></app-button>
+    <app-button [icon]="'fa fa-undo'" [title]="'Refresh'" (click)="refresh()"></app-button>
     <app-button [icon]="'fa fa-cog'" [title]="'Settings'" (click)="openModal(settings)"></app-button>
-    <app-button [icon]="'fa fa-upload'" [title]="'Upload'"></app-button>
+    <app-button [icon]="'fa fa-upload'" [title]="'Upload'" (click)="uploadFile.click()">
+      <input #uploadFile type="file" style="display: none">
+    </app-button>
     <app-button [icon]="'fa fa-filter'" [title]="'Filter'" (click)="toggleFilter()"></app-button>
     <app-dropdown [icon]="'fa fa-download'" [title]="'Download'"
                   [items]="['Reports & Messages', 'Reports', 'Messages']"></app-dropdown>
@@ -27,17 +29,17 @@
           {{header}}
         </th>
       </tr>
-      <tr *ngIf="filter">
+      <tr *ngIf="showFilter">
         <th *ngFor="let header of metadata.fields">
           <div class="input-group">
-            <input type="text" class="form-control" placeholder="Filter">
+            <input type="text" class="form-control" placeholder="Filter" (keyup.enter)="changeFilter($event)">
           </div>
         </th>
       </tr>
       </thead>
       <tbody>
       <!--        5 is the index of the storageId-->
-      <tr #item *ngFor="let row of metadata.values.slice(0, displayAmount)" (click)="openReport(row[5])">
+      <tr *ngFor="let row of metadata.values.slice(0, displayAmount) | filter:filterValue" (click)="openReport(row[5])">
         <td *ngFor="let value of row">{{value}}</td>
       </tr>
       </tbody>

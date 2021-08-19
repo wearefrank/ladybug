@@ -14,6 +14,8 @@ import { DropdownComponent } from './shared/dropdown/dropdown.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { HttpClientModule } from '@angular/common/http';
+import { FilterPipe } from './shared/pipes/filter.pipe';
+import { SortPipe } from './shared/pipes/sort.pipe';
 
 
 @NgModule({
@@ -26,7 +28,9 @@ import { HttpClientModule } from '@angular/common/http';
     DisplayComponent,
     TreeComponent,
     ButtonComponent,
-    DropdownComponent
+    DropdownComponent,
+    FilterPipe,
+    SortPipe
   ],
   imports: [
     BrowserModule,

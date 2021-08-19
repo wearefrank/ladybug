@@ -96,29 +96,6 @@ table .form-control {
   background-color: #f3f3f4;
 }
 
-.dropdown-menu > li > a {
-  padding-inline: .5rem;
-  text-decoration: none;
-  color: black;
-  width: 100%;
-}
-
-.dropdown-menu {
-  width: 200px !important;
-  position: absolute !important;
-  background-color: #CCC;
-  overflow: visible;
-  display: none;
-}
-
-.dropdown-menu > li {
-  padding: .5rem;
-  width: 100%;
-}
-.dropdown-menu > li:hover {
-  background-color: #f8f9fa;
-}
-
 .pre {
   display: grid;
 }

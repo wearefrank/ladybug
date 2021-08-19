@@ -17,23 +17,46 @@ const httpOptions = {
 })
 export class TableComponent implements OnInit {
   @Output() emitEvent = new EventEmitter<any>();
-  filter: boolean = false;
+  showFilter: boolean = false;
   metadata: any = {}; // The data that is displayed
   isLoaded: boolean = false; // Wait for the page to be loaded
   displayAmount: number = 10; // The amount of data that is displayed
+  filterValue: string = "";
 
   constructor(private modalService: NgbModal, private http: HttpClient) {
   }
 
+  /**
+   * Open a modal
+   * @param content - the specific modal to be opened
+   */
   openModal(content: any) {
     this.modalService.open(content);
   }
 
-  toggleFilter() {
-    this.filter = !this.filter;
+  changeFilter(event: any) {
+    this.filterValue = event.target.value;
   }
 
-  /*
+  /**
+   * Refresh the table
+   */
+  refresh() {
+    this.showFilter = false;
+    this.metadata = {};
+    this.isLoaded = false;
+    this.displayAmount = 10;
+    this.ngOnInit();
+  }
+
+  /**
+   * Toggle the filter option
+   */
+  toggleFilter() {
+    this.showFilter = !this.showFilter;
+  }
+
+  /**
     Request the data based on storageId and send this data along to the tree (via parent)
    */
   openReport(storageId: string) {
@@ -42,13 +65,9 @@ export class TableComponent implements OnInit {
     })
   }
 
-  loadTable() {
-    this.http.get<any>('/ladybug/metadata/debugStorage', httpOptions).subscribe(data => {
-      this.metadata = data;
-      this.isLoaded = true;
-    });
-  }
-
+  /**
+   * Open all reports
+   */
   openAll() {
     for (let row of this.metadata.values) {
       this.openReport(row[5]);
@@ -56,6 +75,10 @@ export class TableComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.loadTable();
+    // Load in data needed for the table
+    this.http.get<any>('/ladybug/metadata/debugStorage', httpOptions).subscribe(data => {
+      this.metadata = data;
+      this.isLoaded = true;
+    });
   }
 }

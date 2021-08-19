@@ -15,21 +15,30 @@ export class TreeComponent {
   constructor() {
   }
 
+  /**
+   * Collapse the entire tree
+   */
   collapseAll() {
     $('#' + this.treeId).treeview('collapseAll', { silent: true})
   }
 
+  /**
+   * Expand the entire tree (up to 2 levels)
+   */
   expandAll() {
     $('#' + this.treeId).treeview('expandAll', { levels: 2, silent: true})
   }
 
+  /**
+   * Close all nodes in the tree
+   */
   closeAll() {
     this.reports.length = 0;
     $('#' + this.treeId).treeview( { data: [] });
   }
 
-  /*
-    Add tree node
+  /**
+    Add a tree node and re-render the tree
    */
   handleChange() {
     // Reset the items in the tree
@@ -44,7 +53,9 @@ export class TreeComponent {
         nodes: []
       }
 
+      // For each of the child nodes add it to the parent
       for (let checkpoint of report.checkpoints) {
+        console.log(checkpoint.level)
         let node = {
           text: checkpoint.name,
           ladybug: checkpoint,
