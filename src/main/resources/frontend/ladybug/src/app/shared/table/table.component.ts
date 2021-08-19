@@ -20,8 +20,8 @@ export class TableComponent implements OnInit {
   showFilter: boolean = false;
   metadata: any = {}; // The data that is displayed
   isLoaded: boolean = false; // Wait for the page to be loaded
-  displayAmount: number = 10; // The amount of data that is displayed
-  filterValue: string = "";
+  displayAmount: number = 26; // The amount of data that is displayed
+  filterValue: string = ""; // Value on what table should filter
 
   constructor(private modalService: NgbModal, private http: HttpClient) {
   }

@@ -8,17 +8,61 @@
   <app-button [icon]="'fa fa-expand'" [title]="'Expand all'"></app-button>
   <app-button [icon]="'fa fa-times'" [title]="'Close'"></app-button>
 </div>
+
 <div class="form-row m-2">
                 <span class="col-md-2">
                     Stub Strategy:
                 </span>
   <div class="form-group col-md-4">
-    <select class="form-control" ng-options="strategy for strategy in $ctrl.stubStrategies"
-            ng-model="$ctrl.stubStrategySelect">
+    <select class="form-control">
+      <option *ngFor="let strategy of stubStrategies" value="{{strategy}}">{{strategy}}</option>
     </select>
   </div>
 </div>
-<div >
+<div *ngIf="displayReport">
+  <table class="table col-md-4 border">
+    <tr>
+      <td>Name</td>
+      <td>{{report.ladybug.name}}</td>
+    </tr>
+    <tr>
+      <td>Thread name</td>
+      <td>{{ report.ladybug.threadName}}</td>
+    </tr>
+    <tr>
+      <td>Source class name</td>
+      <td>{{ report.ladybug.sourceClassName}}</td>
+    </tr>
+    <tr>
+      <td>Message class name</td>
+      <td>{{ report.ladybug.messageClassName}}</td>
+    </tr>
+    <tr>
+      <td>Path</td>
+      <td>{{ report.ladybug.path}}</td>
+    </tr>
+    <tr>
+      <td>CheckpointUID</td>
+      <td>{{ report.ladybug.uid}}</td>
+    </tr>
+    <tr>
+      <td>Encoding</td>
+      <td>{{ report.ladybug.encoding}}</td>
+    </tr>
+    <tr>
+      <td>Number of characters</td>
+      <td>{{ report.ladybug.message.length}}</td>
+    </tr>
+    <tr>
+      <td>Estimated memory usage</td>
+      <td>{{ report.ladybug.estimatedMemoryUsage}}</td>
+    </tr>
+  </table>
+</div>
+
+
+
+<div>
   <div class="alert" ng-repeat="(key, notification) in $ctrl.reportDetails.notifications"
        ng-class="{'alert-secondary': notification.level === 'ok', 'alert-danger': notification.level === 'error'}">
 
@@ -31,8 +75,7 @@
   <div ng-show="$ctrl.reportDetails.hasOwnProperty('diff')" >
     <table class="table table-striped">
       <tbody>
-      <tr ng-repeat="line in $ctrl.reportDetails.diff" class="xml"
-          ng-class="{diff_added: line[0] == $ctrl.reportDetails.diffIdentifier, diff_deleted: line[0] == -1 * $ctrl.reportDetails.diffIdentifier}">
+      <tr ng-repeat="line in $ctrl.reportDetails.diff" class="xml">
         <td></td>
       </tr>
       </tbody>
@@ -50,7 +93,7 @@
      style="height: 300px; min-width: 300px;"></div>
 
 <!-- Display report edit -->
-<div [hidden]="!displayReport">
+<div [hidden]="!editing">
   <div class="form-group">
     <label >Name</label>
     <input type="text" class="form-control"  placeholder="Name">

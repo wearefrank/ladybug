@@ -6,10 +6,10 @@
 </div>
 <div class="row pl-3" style="min-height: 200px">
   <div class="resizable-horizontal pr-3 border-right">
-    <app-tree [reports]="reports"></app-tree>
+    <app-tree [reports]="reports" (emitEvent)="selectReport($event)"></app-tree>
   </div>
   <!-- Content panel-->
   <div class="col" >
-    <app-display></app-display>
+    <app-display [report]="currentReport"></app-display>
   </div>
 </div>

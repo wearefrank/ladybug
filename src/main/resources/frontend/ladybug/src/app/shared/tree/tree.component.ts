@@ -1,4 +1,4 @@
-import {Component, Input} from '@angular/core';
+import {Component, EventEmitter, Input, Output} from '@angular/core';
 declare var $: any;
 
 @Component({
@@ -8,8 +8,8 @@ declare var $: any;
 })
 
 export class TreeComponent {
-  @Input()
-  reports: any[] = [];
+  @Output() emitEvent = new EventEmitter<any>();
+  @Input() reports: any[] = [];
   treeId: string = Math.random().toString(36).substring(7);
 
   constructor() {
@@ -89,7 +89,14 @@ export class TreeComponent {
       expandIcon: "fa fa-plus",
       collapseIcon: "fa fa-minus",
       emptyIcon: "fa fa-arrow-left",
-      selectedBackColor: "#1ab394"
+      selectedBackColor: "#1ab394",
+    });
+
+    // When a node is selected, we send forward the data to the display
+    $('#' + this.treeId).on('nodeSelected', (event: any, data: any) => {
+      this.emitEvent.next(data)
+      console.log(data)
     });
   }
+
 }
