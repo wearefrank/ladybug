@@ -194,6 +194,10 @@
         <configuration>
           <tagNameFormat>v@{project.version}</tagNameFormat>
           <autoVersionSubmodules>true</autoVersionSubmodules>
+          <checkModificationExcludes>
+            <!-- Work around Jenkins build failure for now (until we reorganize the frontend files) -->
+            <checkModificationExclude>src/main/resources/webapp/app/**</checkModificationExclude>
+          </checkModificationExcludes>
         </configuration>
       </plugin>
     </plugins>
