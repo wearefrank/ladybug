@@ -34,6 +34,10 @@ export class TableComponent implements OnInit {
     this.modalService.open(content);
   }
 
+  /**
+   * Change the value on what the table should filter
+   * @param event - the keyword
+   */
   changeFilter(event: any) {
     this.filterValue = event.target.value;
   }

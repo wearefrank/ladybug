@@ -34,7 +34,7 @@ export class TreeComponent {
    */
   closeAll() {
     this.reports.length = 0;
-    $('#' + this.treeId).treeview( { data: [] });
+    $('#' + this.treeId).treeview( 'remove');
   }
 
   /**
@@ -43,34 +43,52 @@ export class TreeComponent {
   handleChange() {
     // Reset the items in the tree
     let tree = [];
+    console.log(this.reports)
 
     // For each item that has been selected show the node and its children
     for (let report of this.reports) {
-      let item = {
+      let rootNode = {
         text: report.name,
         ladybug: report,
-        icon: "fa fa-plus",
         nodes: []
       }
 
+      // Keep track of the previous node (which could be the parent)
+      let previousNode: any = {};
+
       // For each of the child nodes add it to the parent
       for (let checkpoint of report.checkpoints) {
-        console.log(checkpoint.level)
         let node = {
           text: checkpoint.name,
           ladybug: checkpoint,
-          level: checkpoint.level,
-          icon: "fa fa-arrow-right"
+          level: checkpoint.level
         }
-        // @ts-ignore
-        item.nodes.push(node)
+
+        // If the previous node is its parent, push to the parent
+        if (checkpoint.index > 0 && report.checkpoints[checkpoint.index - 1].level < checkpoint.level) {
+          // If it doesnt have children yet, make sure it can have
+          if (previousNode.nodes === undefined) {
+            previousNode.nodes = [];
+          }
+          previousNode.nodes.push(node);
+        } else {
+          // Push it to the root
+          // @ts-ignore
+          rootNode.nodes.push(node)
+          previousNode = node;
+        }
+
       }
-      tree.push(item)
+      tree.push(rootNode)
     }
 
-    // Update the treeview
+    // Update the tree view
     $('#' + this.treeId).treeview({
       data: tree,
+      levels: 5,
+      expandIcon: "fa fa-plus",
+      collapseIcon: "fa fa-minus",
+      emptyIcon: "fa fa-arrow-left",
       selectedBackColor: "#1ab394"
     });
   }
