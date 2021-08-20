@@ -15,19 +15,40 @@
 */
 package nl.nn.testtool.web;
 
-import org.apache.cxf.transport.servlet.CXFServlet;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.context.event.ContextRefreshedEvent;
-
-import java.lang.invoke.MethodHandles;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ApiServlet extends CXFServlet {
-	Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+import org.apache.cxf.transport.servlet.CXFServlet;
+import org.springframework.context.event.ContextRefreshedEvent;
 
-	public static Map<String, String> getInitParameters() {
+public class ApiServlet extends CXFServlet {
+	private static final long serialVersionUID = 1L;
+
+	/**
+	 * Static method that can be used to set the default mapping when creating this servlet programmatically instead of
+	 * defining it in web.xml. The javadoc of {@link ApiServlet#getDefaultInitParameters()} shows an example usage for a
+	 * Spring Boot application.
+	 * 
+	 * @return ...
+	 */
+	public static String getDefaultMapping() {
+		return "/ladybug/*";
+	}
+
+	/**
+	 * Static method that can be used to set the init parameters with the default values when creating this servlet
+	 * programmatically instead of defining it in web.xml. This can for example be used in a Spring Boot application as
+	 * follows:
+	 * 
+	 * <code>
+	 * 	ServletRegistrationBean&lt;ApiServlet&gt; servletRegistrationBean =
+	 * 			new ServletRegistrationBean&lt;ApiServlet&gt;(new ApiServlet(), ApiServlet.getDefaultMapping());
+	 * 	servletRegistrationBean.setInitParameters(ApiServlet.getDefaultInitParameters());
+	 * </code>
+	 * 
+	 * @return ...
+	 */
+	public static Map<String, String> getDefaultInitParameters() {
 		Map<String, String> parameters = new HashMap<>();
 		parameters.put("config-location", "LadybugWebContext.xml");
 		parameters.put("bus", "ladybug-api-bus");

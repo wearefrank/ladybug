@@ -15,13 +15,6 @@
 */
 package nl.nn.testtool.web.interceptors;
 
-import lombok.Getter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.ws.rs.container.ContainerRequestContext;
-import javax.ws.rs.container.ContainerRequestFilter;
-import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
@@ -33,10 +26,19 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.container.ContainerRequestFilter;
+import javax.ws.rs.core.Response;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import lombok.Getter;
+
 /**
  * AuthenticationInterceptor filters the requests based on their permission requirements.
  *
- * Permission requirements can be set with setRolesMap,
+ * Permission requirements can be set with set*Roles() methods,
  * where keys are strings explaining possible requests, such as "POST,PUT/path/to/\w+/endpoint".
  *
  * The first part of the string is a list of methods as CSV (Comma Separated Values),
@@ -48,47 +50,64 @@ import java.util.regex.Pattern;
  * Method part can be left empty in order to apply it for all methods, such as "/path/to/endpoint".
  */
 public class AuthenticationInterceptor implements ContainerRequestFilter {
-	private static Map<Pattern, RequestProperties> rolesMap = new HashMap<>();
 	private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+	private Map<Pattern, RequestProperties> rolesMap = new HashMap<>();
+
+	public void setChangeReportGeneratorEnabledRoles(List<String> changeReportGeneratorEnabledRoles) {
+		logger.info("Setting change report generator enabled roles");
+		setRoles("POST/testtool$", changeReportGeneratorEnabledRoles);
+	}
+
+	public void setRerunRoles(List<String> rerunRoles) {
+		logger.info("Setting rerun roles");
+		setRoles("POST/runner/run/.*", rerunRoles);
+	}
+
+	public void setLadybugApiRoles(Map<String, List<String>> ladybugApiRoles) {
+		logger.info("Setting Ladybug api roles");
+		for (String path : ladybugApiRoles.keySet()) {
+			setRoles(path, ladybugApiRoles.get(path));
+		}
+	}
+
+	private void setRoles(String path, List<String> roles) {
+		RequestProperties requestProperties = new RequestProperties(path, roles);
+		logger.debug("Setting roles [" + requestProperties.toString() + "]");
+		rolesMap.put(requestProperties.getPath(), requestProperties);
+	}
 
 	@Override
 	public void filter(ContainerRequestContext requestContext) throws IOException {
-		String path = requestContext.getUriInfo().getPath().toLowerCase();
-
-		if (rolesMap == null) return;
-		RequestProperties properties = null;
-
-		// Find the matching path security configuration with the biggest length.
-		for (Pattern securePath : rolesMap.keySet()) {
-			RequestProperties requestProperties = rolesMap.get(securePath);
-			boolean pathMatches = securePath.matcher(path).matches();
-			boolean isPropertiesNull = properties == null;
-			boolean isReqPropMoreSpecific = isPropertiesNull || properties.getSpecificity() < requestProperties.getSpecificity();
-			boolean requestPropertiesContainsMethod = rolesMap.get(securePath).containsMethod(requestContext.getMethod());
-			if (pathMatches && (isPropertiesNull || isReqPropMoreSpecific) && requestPropertiesContainsMethod)
-				properties = requestProperties;
+		if (requestContext.getSecurityContext().getUserPrincipal() == null) {
+			// The servlet container didn't authenticate the user (e.g. when running and developing locally). In this
+			// case allow everything
+			return;
+		} else if (rolesMap.size() == 0) {
+			// When user is authenticated and rolesMap is empty deny everything by default to prevent security issues
+			// because of misconfiguration (e.g. no set methods of this bean not being (auto)wired while the developer
+			// expected them to be (auto)wired)
+		} else {
+			// Find the matching path security configuration with the biggest length.
+			String path = requestContext.getUriInfo().getPath().toLowerCase();
+			RequestProperties properties = null;
+			for (Pattern securePath : rolesMap.keySet()) {
+				RequestProperties requestProperties = rolesMap.get(securePath);
+				boolean pathMatches = securePath.matcher(path).matches();
+				boolean isPropertiesNull = properties == null;
+				boolean isReqPropMoreSpecific = isPropertiesNull || properties.getSpecificity() < requestProperties.getSpecificity();
+				boolean requestPropertiesContainsMethod = rolesMap.get(securePath).containsMethod(requestContext.getMethod());
+				if (pathMatches && (isPropertiesNull || isReqPropMoreSpecific) && requestPropertiesContainsMethod)
+					properties = requestProperties;
+			}
+			// No specific security configuration is given for the path
+			if (properties == null) return;
+			for (String role : properties.getRoles()) {
+				// If user is in one of the roles, continue with the chain.
+				if (requestContext.getSecurityContext().isUserInRole(role)) return;
+			}
 		}
-
-		// No specific security configuration is given for the path
-		if (properties == null) return;
-		for (String role : properties.getRoles()) {
-			// If user is in one of the roles, continue with the chain.
-			if (requestContext.getSecurityContext().isUserInRole(role)) return;
-		}
-
 		// If security configuration is defined but the user is not in any of the roles, return unauthorized.
 		requestContext.abortWith(Response.status(Response.Status.UNAUTHORIZED).build());
-	}
-
-	public static void setRolesMap(Map<String, List<String>> rolesMap) {
-		logger.info("Setting the roles map.");
-		AuthenticationInterceptor.rolesMap = new HashMap<>(rolesMap.size());
-
-		for (String config : rolesMap.keySet()) {
-			RequestProperties properties = new RequestProperties(config, rolesMap.get(config));
-			AuthenticationInterceptor.rolesMap.put(properties.getPath(), properties);
-			logger.debug("Setting the role [" + properties.toString() + "]");
-		}
 	}
 
 	/**
