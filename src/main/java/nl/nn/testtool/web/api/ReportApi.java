@@ -48,7 +48,7 @@ import java.util.Scanner;
 
 @Path("/")
 public class ReportApi extends ApiBase {
-	private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
 	/**
 	 * Returns the report details for the given storage and id.
@@ -102,7 +102,7 @@ public class ReportApi extends ApiBase {
 		Storage storage = getBean(storageParam);
 		if (!(storage instanceof CrudStorage)) {
 			String msg = "Given storage [" + storageParam + "] does not implement delete function.";
-			logger.warn(msg);
+			log.warn(msg);
 			return Response.status(Response.Status.NOT_IMPLEMENTED).entity(msg).build();
 		}
 		try {
@@ -249,7 +249,7 @@ public class ReportApi extends ApiBase {
 						((CrudStorage) target).store(getReport(srcStorage, storageId));
 					} catch (StorageException storageException) {
 						exceptions.put(src + "_" + storageId, storageException.getMessage());
-						logger.error("Could not copy the report. #Exceptions for request: " + exceptions, storageException);
+						log.error("Could not copy the report. #Exceptions for request: " + exceptions, storageException);
 					}
 				}
 			} catch (ApiException e) {
@@ -282,7 +282,7 @@ public class ReportApi extends ApiBase {
 
 		String filename = attachment.getContentDisposition().getParameter("filename");
 		InputStream in = attachment.getObject(InputStream.class);
-		String errorMessage = Upload.upload(filename, in, crudStorage, logger);
+		String errorMessage = Upload.upload(filename, in, crudStorage, log);
 		if (StringUtils.isEmpty(errorMessage)) {
 			return Response.ok().build();
 		}
@@ -303,7 +303,7 @@ public class ReportApi extends ApiBase {
 		CrudStorage storage = new nl.nn.testtool.storage.memory.Storage();
 		String filename = attachment.getContentDisposition().getParameter("filename");
 		InputStream in = attachment.getObject(InputStream.class);
-		String errorMessage = Upload.upload(filename, in, storage, logger);
+		String errorMessage = Upload.upload(filename, in, storage, log);
 		if (StringUtils.isNotEmpty(errorMessage))
 			return Response.status(Response.Status.BAD_REQUEST).entity(errorMessage).build();
 		try {
@@ -421,7 +421,7 @@ public class ReportApi extends ApiBase {
 				return Response.status(Response.Status.BAD_REQUEST).entity("No variables found in input message; press again to confirm").build();
 			}
 		} catch (StorageException e) {
-			logger.error("Exception while cloning the report", e);
+			log.error("Exception while cloning the report", e);
 			return Response.status(Response.Status.BAD_REQUEST).entity("Report could not be found.").build();
 		}
 

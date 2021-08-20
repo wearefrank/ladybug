@@ -44,7 +44,7 @@ public class XmlStorage implements CrudStorage {
 	private String name, metadataFile, reportsFolderPath;
 	private MetadataHandler metadataHandler;
 	private File reportsFolder;
-	Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+	Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
 	/**
 	 * Initializes the storage. Creating necessary folders and metadata file.
@@ -59,7 +59,7 @@ public class XmlStorage implements CrudStorage {
 
 		if (StringUtils.isEmpty(metadataFile)) {
 			metadataFile = new File(reportsFolder, "metadata.xml").getAbsolutePath();
-			logger.warn("Metadatafile was not set. Using " + metadataFile);
+			log.warn("Metadatafile was not set. Using " + metadataFile);
 		}
 		metadataHandler = new MetadataHandler(metadataFile, this, false);
 		updateMetadata();
@@ -155,13 +155,13 @@ public class XmlStorage implements CrudStorage {
 		Metadata m = metadataHandler.getMetadata(storageId);
 		String path = resolvePath(m.storageId);
 		if (StringUtils.isEmpty(path)) {
-			logger.warn("Given report path is empty.");
+			log.warn("Given report path is empty.");
 			return null;
 		}
 
 		File reportFile = new File(path);
 		if (!reportFile.isFile()) {
-			logger.warn("Given report path does not resolve to a file.");
+			log.warn("Given report path does not resolve to a file.");
 			return null;
 		}
 		Report report = readReportFromFile(reportFile);
@@ -188,7 +188,7 @@ public class XmlStorage implements CrudStorage {
 		try {
 			String path = resolvePath(report.getStorageId());
 			if (path == null) {
-				logger.warn("Could not find report file for report with storage id [" + report.getStorageId() + "] correlation id [" + report.getCorrelationId() + "]");
+				log.warn("Could not find report file for report with storage id [" + report.getStorageId() + "] correlation id [" + report.getCorrelationId() + "]");
 				return;
 			}
 			// Delete file
@@ -266,7 +266,7 @@ public class XmlStorage implements CrudStorage {
 		if (file == null || !file.isFile() || !file.getName().endsWith(XmlStorage.FILE_EXTENSION))
 			return null;
 
-		logger.debug("Reading from a new file: " + file.getPath());
+		log.debug("Reading from a new file: " + file.getPath());
 		FileInputStream inputStream = null;
 		XMLDecoder decoder = null;
 		try {
@@ -286,7 +286,7 @@ public class XmlStorage implements CrudStorage {
 				try {
 					inputStream.close();
 				} catch (Exception ignored) {
-					logger.error("Could not close the xml file.", ignored);
+					log.error("Could not close the xml file.", ignored);
 				}
 			}
 			throw new StorageException("Exception while deserializing data from report file.", e);
@@ -326,7 +326,7 @@ public class XmlStorage implements CrudStorage {
 		try {
 			metadataHandler.updateMetadata();
 		} catch (IOException ignored) {
-			logger.error("Exception while updating the metadata from filesystem.", ignored);
+			log.error("Exception while updating the metadata from filesystem.", ignored);
 		}
 	}
 }
