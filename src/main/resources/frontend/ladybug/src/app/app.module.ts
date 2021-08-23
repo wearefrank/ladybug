@@ -16,6 +16,7 @@ import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { HttpClientModule } from '@angular/common/http';
 import { FilterPipe } from './shared/pipes/filter.pipe';
 import { SortPipe } from './shared/pipes/sort.pipe';
+import { MonacoEditorComponent } from './shared/monaco-editor/monaco-editor.component';
 
 
 @NgModule({
@@ -30,7 +31,8 @@ import { SortPipe } from './shared/pipes/sort.pipe';
     ButtonComponent,
     DropdownComponent,
     FilterPipe,
-    SortPipe
+    SortPipe,
+    MonacoEditorComponent
   ],
   imports: [
     BrowserModule,
