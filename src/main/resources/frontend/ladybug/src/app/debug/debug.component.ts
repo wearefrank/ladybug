@@ -10,8 +10,8 @@ import {DisplayComponent} from "../shared/display/display.component";
 export class DebugComponent implements OnInit {
   reports: any[] = [];
   currentReport: any = {};
-  @ViewChild(TreeComponent) treeComponent: TreeComponent | undefined;
-  @ViewChild(DisplayComponent) displayComponent: DisplayComponent | undefined;
+  @ViewChild(TreeComponent) treeComponent!: TreeComponent;
+  @ViewChild(DisplayComponent) displayComponent!: DisplayComponent;
 
   constructor() {
   }
@@ -24,11 +24,11 @@ export class DebugComponent implements OnInit {
    */
   addReport(newReport: string) {
     this.reports.push(newReport);
-    this.treeComponent?.handleChange();
+    this.treeComponent.handleChange();
   }
 
   selectReport(currentReport: any) {
     this.currentReport = currentReport;
-    this.displayComponent?.showReport();
+    this.displayComponent.showReport();
   }
 }

@@ -9,7 +9,7 @@
     <app-tree [reports]="reports" (emitEvent)="selectReport($event)"></app-tree>
   </div>
   <!-- Content panel-->
-  <div class="col" >
+  <div class="col overflow-auto" >
     <app-display [report]="currentReport"></app-display>
   </div>
 </div>

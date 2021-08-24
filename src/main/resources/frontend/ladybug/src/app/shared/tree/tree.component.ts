@@ -50,6 +50,7 @@ export class TreeComponent {
       let rootNode = {
         text: report.name,
         ladybug: report,
+        root: true,
         nodes: []
       }
 
@@ -61,6 +62,7 @@ export class TreeComponent {
         let node = {
           text: checkpoint.name,
           ladybug: checkpoint,
+          root: false,
           level: checkpoint.level
         }
 

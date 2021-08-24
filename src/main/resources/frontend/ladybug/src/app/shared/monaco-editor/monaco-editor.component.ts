@@ -1,10 +1,6 @@
 /// <reference path="../../../../node_modules/monaco-editor/monaco.d.ts" />
-import {
-  AfterViewInit,
-  Component,
-  ElementRef,
-  ViewChild,
-} from '@angular/core';
+import {AfterViewInit, Component, ElementRef, Input, ViewChild,} from '@angular/core';
+import EditorOption = monaco.editor.EditorOption;
 
 let loadedMonaco = false;
 let loadPromise: Promise<void>;
@@ -17,6 +13,11 @@ let loadPromise: Promise<void>;
 export class MonacoEditorComponent implements AfterViewInit {
   @ViewChild('container') editorContainer!: ElementRef;
   codeEditorInstance!: monaco.editor.IStandaloneCodeEditor;
+  readonly: boolean = true
+  @Input()
+  get value(): string {return this._value}
+  set value(value: string){ this._value = value; }
+  private _value = "";
 
   constructor() {
   }
@@ -65,10 +66,18 @@ export class MonacoEditorComponent implements AfterViewInit {
     this.codeEditorInstance = monaco.editor.create(
       this.editorContainer.nativeElement,
       {
-        value: "// Prints a value \n let printSomething = function(value: string) { \n \t console.log(value); \n }",
+        value: this._value,
+        readOnly: this.readonly,
         language: 'typescript',
         theme: 'vs-light',
       }
     );
+  }
+
+  toggleEdit() {
+    this.readonly = !this.readonly
+    this.codeEditorInstance.updateOptions( {
+      readOnly: this.readonly
+    })
   }
 }
