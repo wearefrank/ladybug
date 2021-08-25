@@ -1,6 +1,5 @@
 /// <reference path="../../../../node_modules/monaco-editor/monaco.d.ts" />
 import {AfterViewInit, Component, ElementRef, Input, ViewChild,} from '@angular/core';
-import EditorOption = monaco.editor.EditorOption;
 
 let loadedMonaco = false;
 let loadPromise: Promise<void>;
@@ -15,21 +14,21 @@ export class MonacoEditorComponent implements AfterViewInit {
   codeEditorInstance!: monaco.editor.IStandaloneCodeEditor;
   readonly: boolean = true
   @Input()
-  get value(): string {return this._value}
-  set value(value: string){ this._value = value; }
-  private _value = "";
+  get value() {return this._value}
+  set value(value: string) {this._value = value}
+  private _value: string = ""
 
   constructor() {
   }
 
   ngAfterViewInit(): void {
-    this.loadMonaco();
+    this.loadMonaco(this.value);
   }
 
-  loadMonaco(): void {
+  loadMonaco(message: string): void {
     if (loadedMonaco) {
       loadPromise.then(() => {
-        this.initializeEditor();
+        this.initializeEditor(message);
       });
     } else {
       loadedMonaco = true;
@@ -42,7 +41,7 @@ export class MonacoEditorComponent implements AfterViewInit {
         const onAmdLoader: any = () => {
           (window as any).require.config({paths: {vs: 'assets/monaco/vs'}});
           (window as any).require(['vs/editor/editor.main'], () => {
-            this.initializeEditor();
+            this.initializeEditor(message);
             resolve();
           });
         };
@@ -62,13 +61,13 @@ export class MonacoEditorComponent implements AfterViewInit {
     }
   }
 
-  initializeEditor(): void {
+  initializeEditor(message: string): void {
     this.codeEditorInstance = monaco.editor.create(
       this.editorContainer.nativeElement,
       {
-        value: this._value,
+        value: message,
         readOnly: this.readonly,
-        language: 'typescript',
+        language: 'xml',
         theme: 'vs-light',
       }
     );
@@ -77,7 +76,11 @@ export class MonacoEditorComponent implements AfterViewInit {
   toggleEdit() {
     this.readonly = !this.readonly
     this.codeEditorInstance.updateOptions( {
-      readOnly: this.readonly
+      readOnly: this.readonly,
+      theme: this.readonly ? 'vs-light' : 'vs-light', // TODO: Create custom theme
+      minimap: {
+        enabled: !this.readonly
+      }
     })
   }
 }

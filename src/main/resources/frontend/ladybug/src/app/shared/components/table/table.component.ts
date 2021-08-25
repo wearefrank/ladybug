@@ -1,14 +1,6 @@
 import {Component, OnInit, Output, EventEmitter} from '@angular/core';
 import {NgbModal} from "@ng-bootstrap/ng-bootstrap";
-import {HttpClient, HttpHeaders} from '@angular/common/http';
-
-const httpOptions = {
-  headers: new HttpHeaders({
-    'Access-Control-Allow-Origin': '*',
-    'Authorization': 'authkey',
-    'userid': '1'
-  })
-};
+import {HttpClient} from '@angular/common/http';
 
 @Component({
   selector: 'app-table',
@@ -79,9 +71,8 @@ export class TableComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    // Load in data needed for the table
-    this.http.get<any>('/ladybug/metadata/debugStorage', httpOptions).subscribe(data => {
-      this.metadata = data;
+    this.http.get<any>('/ladybug/metadata/debugStorage').subscribe(data => {
+      this.metadata = data
       this.isLoaded = true;
     });
   }

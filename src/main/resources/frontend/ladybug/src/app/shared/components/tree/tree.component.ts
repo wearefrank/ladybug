@@ -37,13 +37,16 @@ export class TreeComponent {
     $('#' + this.treeId).treeview( 'remove');
   }
 
+  removeReport(report: any) {
+    // TODO:  Add functionality to remove a single specific report
+  }
+
   /**
     Add a tree node and re-render the tree
    */
   handleChange() {
     // Reset the items in the tree
     let tree = [];
-    console.log(this.reports)
 
     // For each item that has been selected show the node and its children
     for (let report of this.reports) {
@@ -97,7 +100,6 @@ export class TreeComponent {
     // When a node is selected, we send forward the data to the display
     $('#' + this.treeId).on('nodeSelected', (event: any, data: any) => {
       this.emitEvent.next(data)
-      console.log(data)
     });
   }
 

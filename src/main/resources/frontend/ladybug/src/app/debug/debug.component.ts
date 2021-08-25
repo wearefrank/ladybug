@@ -1,6 +1,6 @@
 import {Component, OnInit, ViewChild} from '@angular/core';
-import {TreeComponent} from "../shared/tree/tree.component";
-import {DisplayComponent} from "../shared/display/display.component";
+import {TreeComponent} from "../shared/components/tree/tree.component";
+import {DisplayComponent} from "../shared/components/display/display.component";
 
 @Component({
   selector: 'app-debug',
@@ -29,6 +29,11 @@ export class DebugComponent implements OnInit {
 
   selectReport(currentReport: any) {
     this.currentReport = currentReport;
-    this.displayComponent.showReport();
+    this.displayComponent.showReport(this.currentReport);
+  }
+
+  closeReport(currentReport: any) {
+    this.currentReport = {}
+    this.treeComponent.removeReport(currentReport);
   }
 }

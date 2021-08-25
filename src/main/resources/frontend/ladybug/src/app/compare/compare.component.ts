@@ -1,5 +1,5 @@
 import {Component, OnInit, ViewChild} from '@angular/core';
-import {TreeComponent} from "../shared/tree/tree.component";
+import {TreeComponent} from "../shared/components/tree/tree.component";
 
 @Component({
   selector: 'app-compare',

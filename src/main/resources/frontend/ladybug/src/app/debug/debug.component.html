@@ -10,6 +10,6 @@
   </div>
   <!-- Content panel-->
   <div class="col overflow-auto" >
-    <app-display [report]="currentReport"></app-display>
+    <app-display (emitEvent)="closeReport($event)"></app-display>
   </div>
 </div>

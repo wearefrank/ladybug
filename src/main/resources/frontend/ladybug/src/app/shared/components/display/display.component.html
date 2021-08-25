@@ -1,0 +1,147 @@
+<div *ngIf="displayReport">
+
+  <div class="row" >
+    <app-button [icon]="'fa fa-repeat'" [title]="'Rerun'"></app-button>
+    <app-button [icon]="'fa fa-edit'" [title]="'Edit'" *ngIf="!editing"
+                (click)="editReport()"></app-button>
+    <app-button [icon]="'fa fa-trash'" [title]="'Discard Changes'" *ngIf="editing"
+                (click)="openModal(discard)"></app-button>
+    <app-button [icon]="'fa fa-save'" [title]="'Save'" *ngIf="editing"
+                (click)="openModal(save)"></app-button>
+    <app-dropdown [icon]="'fa fa-download'" [title]="'Download'"
+                  [items]="['Reports & Messages', 'Reports', 'Messages']"></app-dropdown>
+    <app-dropdown [icon]="'fa fa-copy'" [title]="'Copy'"
+                  [items]="['Copy One', 'Copy Selected', 'Copy All']"></app-dropdown>
+    <app-button [icon]="'fa fa-times'" [title]="'Close'" (click)="closeReport()"></app-button>
+  </div>
+
+  <div class="form-row m-2">
+    <span class="col-md-2">Stub Strategy:</span>
+    <div class="form-group col-md-4">
+      <select class="form-control">
+        <option *ngFor="let strategy of stubStrategies" value="{{strategy}}">{{strategy}}</option>
+      </select>
+    </div>
+  </div>
+
+  <div style="height: 200px; border: grey">
+    <app-monaco-editor [value]="report.root ? 'hi' : report.ladybug.message"></app-monaco-editor>
+  </div>
+
+  <div *ngIf="!editing || !report.root" class="pt-4">
+    <table class="table col-md-4 border">
+      <tr>
+        <td>Name</td>
+        <td>{{report.ladybug.name}}</td>
+      </tr>
+      <tr *ngIf="report.root">
+        <td>Description</td>
+        <td>{{report.ladybug.description}}</td>
+      </tr>
+      <tr *ngIf="!report.root">
+        <td>Thread name</td>
+        <td>{{ report.ladybug.threadName}}</td>
+      </tr>
+      <tr *ngIf="!report.root">
+        <td>Source class name</td>
+        <td>{{ report.ladybug.sourceClassName}}</td>
+      </tr>
+      <tr *ngIf="!report.root">
+        <td>Message class name</td>
+        <td>{{ report.ladybug.messageClassName}}</td>
+      </tr>
+      <tr>
+        <td>Path</td>
+        <td>{{ report.ladybug.path}}</td>
+      </tr>
+      <tr *ngIf="!report.root">
+        <td>CheckpointUID</td>
+        <td>{{ report.ladybug.uid}}</td>
+      </tr>
+      <tr *ngIf="!report.root">
+        <td>Encoding</td>
+        <td>{{ report.ladybug.encoding}}</td>
+      </tr>
+      <tr *ngIf="!report.root">
+        <td>Number of characters</td>
+        <td>{{ report.ladybug.message.length}}</td>
+      </tr>
+      <tr *ngIf="report.root">
+        <td>Transformation</td>
+        <td>{{ report.ladybug.transformation}}</td>
+      </tr>
+      <tr *ngIf="report.root">
+        <td>StorageId</td>
+        <td>{{ report.ladybug.storageId}}</td>
+      </tr>
+      <tr *ngIf="report.root">
+        <td>Storage</td>
+        <td>{{ report.ladybug.storage}}</td>
+      </tr>
+      <tr>
+        <td>Estimated memory usage</td>
+        <td>{{ report.ladybug.estimatedMemoryUsage}}</td>
+      </tr>
+      <tr *ngIf="report.root">
+        <td>CorrelationId</td>
+        <td>{{ report.ladybug.correlationId}}</td>
+      </tr>
+    </table>
+  </div>
+
+<!-- Display report edit -->
+  <div *ngIf="editing && report.root">
+    <div class="form-group">
+      <label>Name</label>
+      <input type="text" class="form-control" placeholder="Name" value="{{report.ladybug.name}}">
+    </div>
+    <div class="form-group">
+      <label>Description</label>
+      <textarea class="form-control" placeholder="Description"> {{ report.ladybug.description }} </textarea>
+    </div>
+    <div class="form-group">
+      <label>Path</label>
+      <input type="text" class="form-control" placeholder="/path/to/report/" value="{{report.ladybug.path}}">
+    </div>
+    <div class="form-group">
+      <label>Transformation</label>
+      <div class="form-group"
+           style="height: 400px; width: 600px; border: 1px solid #ced4da; border-radius: .25rem;"></div>
+    </div>
+    <div class="form-group">
+      <label>Variables</label>
+      <div class="form-group"
+           style="height: 100px; width: 600px; border: 1px solid #ced4da; border-radius: .25rem;"></div>
+    </div>
+  </div>
+
+  <ng-template #save let-modal>
+    <div class="modal-header">
+      <h3 class="modal-title">Are you sure you want to save changes?</h3>
+      <button type="button" class="close" (click)="modal.dismiss()" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    <div class="modal-footer">
+      <div class="col-md-12 text-center">
+        <button type="button" class="btn btn-info mr-2" (click)="saveChanges()">Yes</button>
+        <button type="button" class="btn btn-info ml-2" (click)="modal.dismiss()">No</button>
+      </div>
+    </div>
+  </ng-template>
+
+  <ng-template #discard let-modal>
+    <div class="modal-header">
+      <h3 class="modal-title">Are you sure you want to discard changes?</h3>
+      <button type="button" class="close" (click)="modal.dismiss()" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    <div class="modal-footer">
+      <div class="col-md-12 text-center">
+        <button type="button" class="btn btn-info mr-2" (click)="discardChanges()">Yes</button>
+        <button type="button" class="btn btn-info ml-2" (click)="modal.dismiss()">No</button>
+      </div>
+    </div>
+  </ng-template>
+</div>
