@@ -10,12 +10,10 @@
     <app-dropdown [icon]="'fa fa-download'" [title]="'Download'"
                   [items]="['Reports & Messages', 'Reports', 'Messages']"></app-dropdown>
     <app-button [title]="'Open All'" [text]="'Open All'" (click)="openAll()"></app-button>
-    <div class=" w-auto">
+    <div class="col-md-3">
       <form class="form-horizontal pt-2">
         <div class="input-group-append">
-          <input type="number" class="form-control px-1" placeholder="{{displayAmount}}" id="tableLimit"
-                 aria-describedby="table-limit" ng-model="$ctrl.limit"
-                 ng-change="$ctrl.updateFilter('limit', $ctrl.limit);">
+          <input type="number"  class="form-control px-1" placeholder="{{displayAmount}}"  (keyup)="changeTableLimit($event)">
           <div class="input-group-text">/{{ metadata.values.length }}</div>
         </div>
       </form>

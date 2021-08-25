@@ -8,7 +8,7 @@ declare var $: any;
 })
 
 export class TreeComponent {
-  @Output() emitEvent = new EventEmitter<any>();
+  @Output() selectReportEvent = new EventEmitter<any>();
   @Input() reports: any[] = [];
   treeId: string = Math.random().toString(36).substring(7);
 
@@ -104,7 +104,7 @@ export class TreeComponent {
 
     // When a node is selected, we send forward the data to the display
     $('#' + this.treeId).on('nodeSelected', (event: any, data: any) => {
-      this.emitEvent.next(data)
+      this.selectReportEvent.next(data)
     });
   }
 

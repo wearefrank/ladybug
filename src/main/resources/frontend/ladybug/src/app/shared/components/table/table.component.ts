@@ -12,7 +12,7 @@ export class TableComponent implements OnInit {
   showFilter: boolean = false;
   metadata: any = {}; // The data that is displayed
   isLoaded: boolean = false; // Wait for the page to be loaded
-  displayAmount: number = 26; // The amount of data that is displayed
+  displayAmount: number = 10; // The amount of data that is displayed
   filterValue: string = ""; // Value on what table should filter
   @Input() // Needed to make a distinction between the two halves in compare component
   get id() { return this._id}
@@ -36,6 +36,15 @@ export class TableComponent implements OnInit {
    */
   changeFilter(event: any) {
     this.filterValue = event.target.value;
+  }
+
+  /**
+   * Change the limit of items shown in table
+   * @param event - the new table limit
+   */
+  changeTableLimit(event: any) {
+    console.log("hi")
+    this.displayAmount = event.target.value;
   }
 
   /**
