@@ -3,7 +3,7 @@ import {NgbModal} from "@ng-bootstrap/ng-bootstrap";
 import {MonacoEditorComponent} from "../../monaco-editor/monaco-editor.component";
 import {HttpClient} from "@angular/common/http";
 // @ts-ignore
-import beautify from "xml-beautifier";
+import beautify from "xml-beautifier"; // TODO: Check if there is a nicer way to do this
 
 @Component({
   selector: 'app-display',
@@ -14,7 +14,7 @@ export class DisplayComponent {
   @Input() editing: boolean = false
   @Input() displayReport: boolean = false
   @Input() report: any = {};
-  @Output() emitEvent = new EventEmitter<any>();
+  @Output() closeReportEvent = new EventEmitter<any>();
   @ViewChild(MonacoEditorComponent) monacoEditorComponent!: MonacoEditorComponent;
   stubStrategies: string[] = ["Follow report strategy", "No", "Yes"];
 
@@ -29,31 +29,45 @@ export class DisplayComponent {
     this.modalService.open(content);
   }
 
+  /**
+   * Show a report in the display
+   * @param report - the report to be sown
+   */
   showReport(report: any) {
     this.report = report;
 
-    // This is for the root which has a specific location for the xml message
-    if (report.ladybug.storageId) {
+    // This is for the root report which has a specific location for the xml message
+    if (this.report.ladybug.storageId) {
       this.http.get<any>('/ladybug/report/debugStorage/' + this.report.ladybug.storageId + "/?xml=true&globalTransformer=true").subscribe(data => {
-        this.monacoEditorComponent?.loadMonaco(beautify(data.xml));
+        this.monacoEditorComponent?.loadMonaco(beautify(data.xml)); // TODO: Maybe create a service for this
       })
     } else {
-      this.monacoEditorComponent?.loadMonaco(beautify(report.ladybug.message));
+      // All other reports have the message stored normally
+      this.monacoEditorComponent?.loadMonaco(beautify(this.report.ladybug.message));
     }
     this.displayReport = true;
   }
 
+  /**
+   * Close a report
+   */
   closeReport() {
-    this.emitEvent.next(this.report)
+    this.closeReportEvent.next(this.report)
     this.displayReport = false;
     this.report = {};
   }
 
+  /**
+   * Start editing a report
+   */
   editReport() {
     this.editing = true;
     this.monacoEditorComponent.toggleEdit();
   }
 
+  /**
+   * Save the changes made during edit
+   */
   saveChanges() {
     this.editing = false;
     this.modalService.dismissAll();
@@ -61,6 +75,9 @@ export class DisplayComponent {
     console.log("Successfully saved changes!")
   }
 
+  /**
+   * Discard the changes made during edit
+   */
   discardChanges() {
     this.editing = false;
     this.modalService.dismissAll();

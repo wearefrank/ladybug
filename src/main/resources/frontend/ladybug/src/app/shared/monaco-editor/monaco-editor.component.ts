@@ -14,17 +14,20 @@ export class MonacoEditorComponent implements AfterViewInit {
   codeEditorInstance!: monaco.editor.IStandaloneCodeEditor;
   readonly: boolean = true
   @Input()
-  get value() {return this._value}
-  set value(value: string) {this._value = value}
-  private _value: string = ""
+  get value() { return this._value}
+  set value(value: string) { this._value = value}
+  private _value: string = "";
 
-  constructor() {
-  }
+  constructor() {}
 
   ngAfterViewInit(): void {
     this.loadMonaco(this.value);
   }
 
+  /**
+   * Load monaco editor
+   * @param message - the initial xml cod to be shown
+   */
   loadMonaco(message: string): void {
     if (loadedMonaco) {
       loadPromise.then(() => {
@@ -61,6 +64,10 @@ export class MonacoEditorComponent implements AfterViewInit {
     }
   }
 
+  /**
+   * Initialize editor
+   * @param message - the initial xml cod to be shown
+   */
   initializeEditor(message: string): void {
     this.codeEditorInstance = monaco.editor.create(
       this.editorContainer.nativeElement,
@@ -69,10 +76,17 @@ export class MonacoEditorComponent implements AfterViewInit {
         readOnly: this.readonly,
         language: 'xml',
         theme: 'vs-light',
+        fontSize: 10,
+        minimap: {
+          enabled: false
+        }
       }
     );
   }
 
+  /**
+   * Toggle edit mode for the monaco-editor
+   */
   toggleEdit() {
     this.readonly = !this.readonly
     this.codeEditorInstance.updateOptions( {

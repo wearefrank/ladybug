@@ -1,18 +1,18 @@
 <div class="row">
   <div class="col-6">
-    <app-table (emitEvent)="addReport($event)"></app-table>
+    <app-table [id]="leftId" (emitEvent)="addReport($event)"></app-table>
 <!--    <app-display></app-display>-->
   </div>
   <div class="col-6">
-    <app-table (emitEvent)="addReport($event)"></app-table>
+    <app-table [id]="rightId" (emitEvent)="addReport($event)"></app-table>
 <!--    <app-display></app-display>-->
   </div>
 </div>
 <div class="row resizable-vertical" style="min-height: 200px">
   <div class="col-6">
-    <app-tree [reports]="reports"></app-tree>
+    <app-tree #leftTree></app-tree>
   </div>
   <div class="col-6">
-    <app-tree [reports]="reports"></app-tree>
+    <app-tree #rightTree></app-tree>
   </div>
 </div>

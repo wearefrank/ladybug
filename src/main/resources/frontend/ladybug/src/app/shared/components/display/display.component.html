@@ -24,8 +24,8 @@
     </div>
   </div>
 
-  <div style="height: 200px; border: grey">
-    <app-monaco-editor [value]="report.root ? 'hi' : report.ladybug.message"></app-monaco-editor>
+  <div style="height: 100px">
+    <app-monaco-editor [value]="report.ladybug.message"></app-monaco-editor>
   </div>
 
   <div *ngIf="!editing || !report.root" class="pt-4">

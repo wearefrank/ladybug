@@ -12,8 +12,7 @@ export class TreeComponent {
   @Input() reports: any[] = [];
   treeId: string = Math.random().toString(36).substring(7);
 
-  constructor() {
-  }
+  constructor() {}
 
   /**
    * Collapse the entire tree
@@ -37,17 +36,23 @@ export class TreeComponent {
     $('#' + this.treeId).treeview( 'remove');
   }
 
+  /**
+   * Remove a report from the tree
+   * @param report - the report in the tree to be removed
+   */
   removeReport(report: any) {
     // TODO:  Add functionality to remove a single specific report
   }
 
   /**
-    Add a tree node and re-render the tree
+   * Handle change in the tree for the tree view
+   * @param reports - the reports to be displayed
    */
-  handleChange() {
+  handleChange(reports: any[]) {
+    this.reports = reports;
+
     // Reset the items in the tree
     let tree = [];
-
     // For each item that has been selected show the node and its children
     for (let report of this.reports) {
       let rootNode = {

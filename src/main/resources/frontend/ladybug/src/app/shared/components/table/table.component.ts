@@ -1,4 +1,4 @@
-import {Component, OnInit, Output, EventEmitter} from '@angular/core';
+import {Component, OnInit, Output, EventEmitter, Input} from '@angular/core';
 import {NgbModal} from "@ng-bootstrap/ng-bootstrap";
 import {HttpClient} from '@angular/common/http';
 
@@ -14,9 +14,13 @@ export class TableComponent implements OnInit {
   isLoaded: boolean = false; // Wait for the page to be loaded
   displayAmount: number = 26; // The amount of data that is displayed
   filterValue: string = ""; // Value on what table should filter
+  @Input() // Needed to make a distinction between the two halves in compare component
+  get id() { return this._id}
+  set id(id: string) {this._id = id}
+  private _id: string = "";
 
-  constructor(private modalService: NgbModal, private http: HttpClient) {
-  }
+
+  constructor(private modalService: NgbModal, private http: HttpClient) {}
 
   /**
    * Open a modal
@@ -57,6 +61,7 @@ export class TableComponent implements OnInit {
    */
   openReport(storageId: string) {
     this.http.get<any>('/ladybug/report/debugStorage/' + storageId).subscribe(data => {
+      data.id = this.id
       this.emitEvent.next(data);
     })
   }
@@ -70,6 +75,9 @@ export class TableComponent implements OnInit {
     }
   }
 
+  /**
+   * Load in data for the table
+   */
   ngOnInit(): void {
     this.http.get<any>('/ladybug/metadata/debugStorage').subscribe(data => {
       this.metadata = data
