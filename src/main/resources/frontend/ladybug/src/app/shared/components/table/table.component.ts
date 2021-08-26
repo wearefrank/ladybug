@@ -60,25 +60,22 @@ export class TableComponent implements OnInit {
 
       const isAsc = sort.direction === 'asc';
       switch (sort.active) {
-        case '0': return this.compare(a[0], b[0], isAsc);
-        case '1': return this.compare(a[1], b[1], isAsc);
-        case '2': return this.compare(a[2], b[2], isAsc);
-        case '3': return this.compare(a[3], b[3], isAsc);
-        case '4': return this.compare(a[4], b[4], isAsc);
-        case '5': return this.compare(a[5], b[5], isAsc);
-        case '6': return this.compare(a[6], b[6], isAsc);
-        case '7': return this.compare(a[7], b[7], isAsc);
-        case '8': return this.compare(a[8], b[8], isAsc);
+        case '0': return this.compare(Number(a[0]), Number(b[0]), isAsc); // Duration
+        case '1': return this.compare(Number(a[1]), Number(b[1]), isAsc); // StorageSize
+        case '2': return this.compare(a[2], b[2], isAsc);                 // Name
+        case '3': return this.compare(a[3], b[3], isAsc);                 // CorrelationId
+        case '4': return this.compare(a[4], b[4], isAsc);                 // EndTime
+        case '5': return this.compare(Number(a[5]), Number(b[5]), isAsc); // StorageId
+        case '6': return this.compare(a[6], b[6], isAsc);                 // Status
+        case '7': return this.compare(Number(a[7]), Number(b[7]), isAsc); // NumberOfCheckpoints
+        case '8': return this.compare(Number(a[8]), Number(b[8]), isAsc); // EstimatedMemoryUsage
         default: return 0;
       }
     });
-
   }
 
   compare(a: number | string, b: number | string, isAsc: boolean) {
-    let result = (a < b ? -1 : 1) * (isAsc ? 1 : -1);
-    console.log(a + ":" + b + "=" + result)
-    return result;
+    return (a < b ? -1 : 1) * (isAsc ? 1 : -1);
   }
 
   /**
