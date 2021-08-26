@@ -20,10 +20,10 @@
     </div>
   </div>
   <div class="table-responsive" style="height: 300px; resize: vertical; overflow: auto">
-    <table class="table table-hover">
+    <table class="table table-hover" matSort (matSortChange)="sortData($event)">
       <thead>
       <tr>
-        <th *ngFor="let header of metadata.fields">
+        <th *ngFor="let header of metadata.fields; let i = index" mat-sort-header="{{i}}">
           {{header}}
         </th>
       </tr>

@@ -17,6 +17,7 @@ import { HttpClientModule } from '@angular/common/http';
 import { FilterPipe } from './shared/pipes/filter.pipe';
 import { SortPipe } from './shared/pipes/sort.pipe';
 import { MonacoEditorComponent } from './shared/monaco-editor/monaco-editor.component';
+import {MatSortModule} from "@angular/material/sort";
 
 
 @NgModule({
@@ -34,13 +35,14 @@ import { MonacoEditorComponent } from './shared/monaco-editor/monaco-editor.comp
     SortPipe,
     MonacoEditorComponent
   ],
-  imports: [
-    BrowserModule,
-    AppRoutingModule,
-    BrowserAnimationsModule,
-    NgbModule,
-    HttpClientModule
-  ],
+    imports: [
+        BrowserModule,
+        AppRoutingModule,
+        BrowserAnimationsModule,
+        NgbModule,
+        HttpClientModule,
+        MatSortModule
+    ],
   providers: [],
   bootstrap: [AppComponent]
 })
