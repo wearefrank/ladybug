@@ -1,18 +1,18 @@
 <div class="row">
   <div class="col-6">
-    <app-table *ngIf="!leftReportSelected" [id]="leftId" (emitEvent)="addReport($event)"></app-table>
-    <app-display #leftDisplay *ngIf="leftReportSelected" ></app-display>
+    <app-table [hidden]="leftReportSelected" [id]="leftId" (emitEvent)="addReportLeft($event)"></app-table>
+    <app-display #leftDisplay [hidden]="!leftReportSelected" ></app-display>
   </div>
   <div class="col-6">
-    <app-table *ngIf="!rightReportSelected" [id]="rightId" (emitEvent)="addReport($event)"></app-table>
-    <app-display #rightDisplay *ngIf="rightReportSelected"></app-display>
+    <app-table [hidden]="rightReportSelected" [id]="rightId" (emitEvent)="addReportRight($event)"></app-table>
+    <app-display #rightDisplay [hidden]="!rightReportSelected"></app-display>
   </div>
 </div>
 <div class="row resizable-vertical" style="min-height: 200px">
   <div class="col-6">
-    <app-tree #leftTree (selectReportEvent)="selectReport($event)"></app-tree>
+    <app-tree #leftTree (selectReportEvent)="selectReportLeft($event)"></app-tree>
   </div>
   <div class="col-6">
-    <app-tree #rightTree (selectReportEvent)="selectReport($event)"></app-tree>
+    <app-tree #rightTree (selectReportEvent)="selectReportRight($event)"></app-tree>
   </div>
 </div>
