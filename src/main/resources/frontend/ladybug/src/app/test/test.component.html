@@ -12,7 +12,9 @@
       <app-button [title]="'Deselect All'" [text]="'Deselect All'"></app-button>
       <app-button [icon]="'fa fa-trash'" [title]="'Delete All'"></app-button>
       <app-dropdown [icon]="'fa fa-download'" [title]="'Download'" [items]="['Reports & Messages', 'Reports', 'Messages']"></app-dropdown>
-      <app-button [icon]="'fa fa-upload'" [title]="'Upload'"></app-button>
+      <app-button [icon]="'fa fa-upload'" [title]="'Upload'" (click)="uploadFile.click()">
+        <input #uploadFile type="file" style="display: none">
+      </app-button>
     </div>
 
     <div class="form-group mt-2">

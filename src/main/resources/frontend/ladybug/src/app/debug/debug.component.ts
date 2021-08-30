@@ -38,6 +38,6 @@ export class DebugComponent {
    */
   closeReport(currentReport: any) {
     this.currentReport = {}
-    this.treeComponent.removeReport(currentReport);
+    this.treeComponent.removeNode(currentReport);
   }
 }

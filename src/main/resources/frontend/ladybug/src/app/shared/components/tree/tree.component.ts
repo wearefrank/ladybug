@@ -10,6 +10,7 @@ declare var $: any;
 export class TreeComponent {
   @Output() selectReportEvent = new EventEmitter<any>();
   @Input() reports: any[] = [];
+  tree: any[] = []
   treeId: string = Math.random().toString(36).substring(7);
 
   constructor() {}
@@ -37,11 +38,22 @@ export class TreeComponent {
   }
 
   /**
-   * Remove a report from the tree
-   * @param report - the report in the tree to be removed
+   * Removes the entire node from the tree. If it is not the parent it recursively tries to find the parent
+   * and eventually removes the parent when found
+   * @param node - the node to be removed
    */
-  removeReport(report: any) {
-    // TODO:  Add functionality to remove a single specific report
+  removeNode(node: any) {
+    console.log(node)
+    if (node.root) {
+      let result = this.tree.filter(report => {
+        return report.id === node.nodeId;
+      })
+      let index = this.tree.indexOf(result[0]);
+      this.tree.splice(index, 1);
+      this.updateTreeView();
+    } else {
+      this.removeNode($('#' + this.treeId).treeview('getParent', node))
+    }
   }
 
   /**
@@ -52,15 +64,18 @@ export class TreeComponent {
     this.reports = reports;
 
     // Reset the items in the tree
-    let tree = [];
+    this.tree = [];
+    let id = 0;
     // For each item that has been selected show the node and its children
     for (let report of this.reports) {
       let rootNode = {
         text: report.name,
         ladybug: report,
         root: true,
+        id: id++,
         nodes: []
       }
+
 
       // Keep track of the previous node (which could be the parent)
       let previousNode: any = {};
@@ -71,6 +86,7 @@ export class TreeComponent {
           text: checkpoint.name,
           ladybug: checkpoint,
           root: false,
+          id: id++,
           level: checkpoint.level
         }
 
@@ -89,12 +105,16 @@ export class TreeComponent {
         }
 
       }
-      tree.push(rootNode)
+      this.tree.push(rootNode)
     }
 
+    this.updateTreeView();
+  }
+
+  updateTreeView() {
     // Update the tree view
     $('#' + this.treeId).treeview({
-      data: tree,
+      data: this.tree,
       levels: 5,
       expandIcon: "fa fa-plus",
       collapseIcon: "fa fa-minus",

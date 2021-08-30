@@ -1,4 +1,4 @@
-<div class="row">
+<div class="row" [hidden]="reports.length === 0">
   <app-button [icon]="'fa fa-expand'" [title]="'Expand All'" (click)="expandAll()"></app-button>
   <app-button [icon]="'fa fa-compress'" [title]="'Collapse all'" (click)="collapseAll()"></app-button>
   <app-button [icon]="'fa fa-times'" [title]="'Close All'" (click)="closeAll()"></app-button>
