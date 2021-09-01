@@ -50,6 +50,10 @@ export class TableComponent implements OnInit {
     this.displayAmount = event.target.value;
   }
 
+  /**
+   * Sort the data accordingly
+   * @param sort - sort object to handle sorting
+   */
   sortData(sort: Sort) {
     const data = this.metadata.values
     if (!sort.active || sort.direction === '') {
@@ -74,6 +78,12 @@ export class TableComponent implements OnInit {
     });
   }
 
+  /**
+   * Compare two strings or numbers
+   * @param a - first string/number
+   * @param b - second string/number
+   * @param isAsc - whether it is ascending or not
+   */
   compare(a: number | string, b: number | string, isAsc: boolean) {
     return (a < b ? -1 : 1) * (isAsc ? 1 : -1);
   }
