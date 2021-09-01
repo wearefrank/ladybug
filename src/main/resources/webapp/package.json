@@ -16,7 +16,7 @@
     "minimist": "^1.2.5",
     "monaco": "^1.201704190613.0",
     "monaco-editor": "^0.25.2",
-    "tar": "^6.1.6"
+    "tar": "^6.1.9"
   },
   "devDependencies": {
     "angular-mocks": "^1.8.2",
