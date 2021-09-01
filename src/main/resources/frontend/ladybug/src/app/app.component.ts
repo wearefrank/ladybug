@@ -1,5 +1,5 @@
-import {Component} from '@angular/core';
-import {ReportComponent} from "./report/report.component";
+import {Component, Injector} from '@angular/core';
+import {ReportComponent, ReportData} from "./report/report.component";
 
 @Component({
   selector: 'app-root',
@@ -8,14 +8,16 @@ import {ReportComponent} from "./report/report.component";
 })
 
 export class AppComponent {
+  injector!: Injector;
 
-  constructor() {}
+  constructor(private inj: Injector) {}
+
   title = 'ladybug';
   active = 1;
   tabs: {key: string, value: any}[] = []
 
   openTestReport(data: any) {
-    console.log(data.data)
+    this.injector = Injector.create({providers: [{provide: ReportData, useValue: data.data}], parent: this.inj})
     this.tabs.push( {key: data.name, value: ReportComponent})
     this.active = this.tabs.length + 3; // Active the tab immediately
   }

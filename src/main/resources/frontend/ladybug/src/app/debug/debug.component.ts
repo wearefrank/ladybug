@@ -18,7 +18,7 @@ export class DebugComponent {
   /**
     Add a new report and notify the tree of the change
    */
-  addReport(newReport: string) {
+  addReport(newReport: any) {
     this.reports.push(newReport);
     this.treeComponent.handleChange(this.reports);
   }

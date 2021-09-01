@@ -1,6 +1,6 @@
 <div class="row">
   <div class="resizable-horizontal w-25 pr-2 border-right">
-    <app-tree></app-tree>
+    <app-tree (selectReportEvent)="selectReport($event)" ></app-tree>
   </div>
   <div class="col">
     <app-display></app-display>

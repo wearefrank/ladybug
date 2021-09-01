@@ -18,8 +18,7 @@ export class DisplayComponent {
   @ViewChild(MonacoEditorComponent) monacoEditorComponent!: MonacoEditorComponent;
   stubStrategies: string[] = ["Follow report strategy", "No", "Yes"];
 
-  constructor(private modalService: NgbModal, private http: HttpClient) {
-  }
+  constructor(private modalService: NgbModal, private http: HttpClient) {}
 
   /**
    * Open a modal

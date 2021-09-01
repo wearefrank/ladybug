@@ -23,7 +23,7 @@
         <span (click)="closeTestReport($event, i)">×</span>
       </a>
       <ng-template ngbNavContent>
-        <ng-container *ngComponentOutlet="tab.value"></ng-container>
+        <ng-container *ngComponentOutlet="tab.value; injector: injector"></ng-container>
       </ng-template>
     </li>
   </ul>
