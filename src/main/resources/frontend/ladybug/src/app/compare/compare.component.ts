@@ -39,7 +39,7 @@ export class CompareComponent {
    */
   addReportNodeRight(newReport: any) {
     if (this.rightId === newReport.id) {
-      this.rightReports.push(newReport)
+      this.rightReports.push(newReport);
       this.rightTreeComponent?.handleChange(this.rightReports);
     }
   }
@@ -64,13 +64,15 @@ export class CompareComponent {
     this.rightDisplayComponent?.showReport(this.rightCurrentReport);
   }
 
-  closeReportLeft() {
+  closeReportLeft(currentNode: any) {
     this.leftReportSelected = false
-    this.leftCurrentReport = {}
+    this.leftCurrentReport = {};
+    this.leftTreeComponent?.removeNode(currentNode);
   }
 
-  closeReportRight() {
+  closeReportRight(currentNode: any) {
     this.rightReportSelected = false;
-    this.rightCurrentReport = {}
+    this.rightCurrentReport = {};
+    this.rightTreeComponent?.removeNode(currentNode);
   }
 }

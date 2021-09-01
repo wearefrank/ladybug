@@ -19,7 +19,7 @@
     <app-display
       #leftDisplay
       [hidden]="!leftReportSelected"
-      (closeReportEvent)="closeReportLeft()"></app-display>
+      (closeReportEvent)="closeReportLeft($event)"></app-display>
   </div>
   <div class="col-6">
     <app-table
@@ -29,6 +29,6 @@
     <app-display
       #rightDisplay
       [hidden]="!rightReportSelected"
-      (closeReportEvent)="closeReportRight()"></app-display>
+      (closeReportEvent)="closeReportRight($event)"></app-display>
   </div>
 </div>
