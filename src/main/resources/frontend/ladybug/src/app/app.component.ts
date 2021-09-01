@@ -1,7 +1,5 @@
-import {Component, OnInit} from '@angular/core';
-import {DebugComponent} from "./debug/debug.component";
-import {TestComponent} from "./test/test.component";
-import {CompareComponent} from "./compare/compare.component";
+import {Component} from '@angular/core';
+import {ReportComponent} from "./report/report.component";
 
 @Component({
   selector: 'app-root',
@@ -10,11 +8,22 @@ import {CompareComponent} from "./compare/compare.component";
 })
 
 export class AppComponent {
+
+  constructor() {}
   title = 'ladybug';
   active = 1;
-  tabs: {key: string, value: any}[] = [
-    {key: 'Debug', value: DebugComponent},
-    {key: 'Test', value: TestComponent},
-    {key: 'Compare', value: CompareComponent}
-  ]
+  tabs: {key: string, value: any}[] = []
+
+  openTestReport(data: any) {
+    console.log(data.data)
+    this.tabs.push( {key: data.name, value: ReportComponent})
+    this.active = this.tabs.length + 3; // Active the tab immediately
+  }
+
+  closeTestReport(event: MouseEvent, toRemove: number) {
+    this.tabs.splice(toRemove, 1);
+    this.active--;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+  }
 }

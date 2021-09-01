@@ -18,6 +18,7 @@ import { FilterPipe } from './shared/pipes/filter.pipe';
 import { SortPipe } from './shared/pipes/sort.pipe';
 import { MonacoEditorComponent } from './shared/monaco-editor/monaco-editor.component';
 import {MatSortModule} from "@angular/material/sort";
+import { ReportComponent } from './report/report.component';
 
 
 @NgModule({
@@ -33,7 +34,8 @@ import {MatSortModule} from "@angular/material/sort";
     DropdownComponent,
     FilterPipe,
     SortPipe,
-    MonacoEditorComponent
+    MonacoEditorComponent,
+    ReportComponent
   ],
     imports: [
         BrowserModule,

@@ -33,32 +33,21 @@
     <div class="row">
       <table>
         <tbody>
-        <tr ng-repeat="report in reports" class="form-inline">
+        <tr *ngFor="let report of reports" class="form-inline">
           <td>
-            <input class="form-check-input" type="checkbox" ng-model="report.checked">
+            <input class="form-check-input" type="checkbox" [checked]="true">
           </td>
           <td>
             <app-button [icon]="'fa fa-play'" [title]="'Run'"></app-button>
           </td>
           <td>
-            <app-button [icon]="'fa fa-folder-open'" [title]="'Open'"></app-button>
+            <app-button [icon]="'fa fa-folder-open'" [title]="'Open'" (click)="selectReport(report[5], report[2])"></app-button>
           </td>
           <td>
             <app-button [icon]="'fa fa-clone'" [title]="'Clone'" (click)="open(clone)"></app-button>
           </td>
-          <td ng-show="reranReports.hasOwnProperty(report.storageId)">
-<!--            <app-button [icon]="'fa fa-not-equal'" [title]="'Compare (Not Implemented)'"></app-button>-->
-          </td>
-          <td ng-show="reranReports.hasOwnProperty(report.storageId)">
-<!--            <app-button [icon]="'fa fa-exchange-alt'" [title]="'Replace'"></app-button>-->
-          </td>
-          <td ng-show="showOptions.ids">
-          </td>
           <td>
-            <div class="report-path"></div>
-            <div class="mb-3 ml-2" ng-show="showOptions.checkpoints && report['csvText'] !== ''"></div>
-          </td>
-          <td ng-show="reranReports.hasOwnProperty(report.storageId)">
+            /{{ report[2]}}
           </td>
         </tr>
         </tbody>
@@ -97,48 +86,11 @@
     <app-button [text]="'Restore to defaults'"></app-button>
   </div>
 </ng-template>
-<!-- Options Modal -->
-<div class="modal fade" id="optionsModal" tabindex="-1" role="dialog" aria-labelledby="optionsModalLabel"
-     aria-hidden="true">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-<!--      <div class="modal-header">-->
-<!--        <h5 class="modal-title" id="optionsModalLabel">Options</h5>-->
-<!--        <button type="button" class="close" data-dismiss="modal" aria-label="Close">-->
-<!--          <span aria-hidden="true">&times;</span>-->
-<!--        </button>-->
-<!--      </div>-->
-<!--      <div class="modal-body">-->
-<!--        <form style="text-align: center">-->
-<!--          <div class="form-group form-check-inline">-->
-<!--            <input class="form-check-input" type="checkbox" value="" id="reportTransformationCheck"-->
-<!--                   ng-model="showOptions.ids">-->
-<!--            <label class="form-check-label transform-label" for="reportTransformationCheck">-->
-<!--              Show report storage IDs-->
-<!--            </label>-->
-<!--          </div>-->
-<!--          <div class="form-group form-check-inline">-->
-<!--            <input class="form-check-input" type="checkbox" value="" id="showCheckpointIds"-->
-<!--                   ng-model="showOptions.checkpoints">-->
-<!--            <label class="form-check-label transform-label" for="showCheckpointIds">-->
-<!--              Show checkpoint IDs-->
-<!--            </label>-->
-<!--          </div>-->
-<!--        </form>-->
-<!--      </div>-->
-<!--      <div class="modal-footer">-->
-<!--        <button type="button" class="btn btn-info" ng-click="showOptions = {ids: false, checkpoints: false}">-->
-<!--          Restore to defaults-->
-<!--        </button>-->
-<!--      </div>-->
-    </div>
-  </div>
-</div>
 
 <ng-template #clone let-modal>
   <div class="modal-header">
     <h5 class="modal-title" id="cloneModal">Clone Report</h5>
-    <button type="button" class="close"  aria-label="Close">
+    <button type="button" class="close" (click)="modal.dismiss()" aria-label="Close">
       <span aria-hidden="true">&times;</span>
     </button>
   </div>
