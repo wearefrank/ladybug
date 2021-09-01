@@ -66,6 +66,7 @@ export class TreeComponent {
     // Reset the items in the tree
     this.tree = [];
     let id = 0;
+
     // For each item that has been selected show the node and its children
     for (let report of this.reports) {
       let rootNode = {
@@ -75,7 +76,6 @@ export class TreeComponent {
         id: id++,
         nodes: []
       }
-
 
       // Keep track of the previous node (which could be the parent)
       let previousNode: any = {};
@@ -109,6 +109,7 @@ export class TreeComponent {
     }
 
     this.updateTreeView();
+    $('#' + this.treeId).treeview('toggleNodeSelected', [ this.tree[this.tree.length - 1].nodes[0].id, { silent: false } ]);
   }
 
   updateTreeView() {
