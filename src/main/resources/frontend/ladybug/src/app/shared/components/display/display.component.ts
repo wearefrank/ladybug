@@ -3,7 +3,8 @@ import {NgbModal} from "@ng-bootstrap/ng-bootstrap";
 import {MonacoEditorComponent} from "../../monaco-editor/monaco-editor.component";
 import {HttpClient} from "@angular/common/http";
 // @ts-ignore
-import beautify from "xml-beautifier"; // TODO: Check if there is a nicer way to do this
+import beautify from "xml-beautifier";
+import {ToastComponent} from "../toast/toast.component"; // TODO: Check if there is a nicer way to do this
 
 @Component({
   selector: 'app-display',
@@ -16,6 +17,7 @@ export class DisplayComponent {
   @Input() report: any = {};
   @Output() closeReportEvent = new EventEmitter<any>();
   @ViewChild(MonacoEditorComponent) monacoEditorComponent!: MonacoEditorComponent;
+  @ViewChild(ToastComponent) toastComponent!: ToastComponent;
   stubStrategies: string[] = ["Follow report strategy", "No", "Yes"];
 
   constructor(private modalService: NgbModal, private http: HttpClient) {}
@@ -39,6 +41,8 @@ export class DisplayComponent {
     if (this.report.ladybug.storageId) {
       this.http.get<any>('/ladybug/report/debugStorage/' + this.report.ladybug.storageId + "/?xml=true&globalTransformer=true").subscribe(data => {
         this.monacoEditorComponent?.loadMonaco(beautify(data.xml)); // TODO: Maybe create a service for this
+      }, () => {
+        this.toastComponent.addAlert({type: 'warning', message: 'Could not retrieve data for report!'})
       })
     } else {
       // All other reports have the message stored normally

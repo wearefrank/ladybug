@@ -1,16 +1,13 @@
 <div class="row">
-  <div class="resizable-horizontal w-25 pr-2 border-right">
-    <div class="m-2" id="tree"></div>
-  </div>
   <div class="col">
     <div class="row">
-      <app-button [icon]="'fa fa-refresh'" [title]="'Refresh'"></app-button>
+      <app-button [icon]="'fa fa-refresh'" [title]="'Refresh'" (click)="loadData()"></app-button>
       <app-button [icon]="'fa fa-play'" [title]="'Run'"></app-button>
-      <app-button [icon]="'fa fa-repeat'" [title]="'Reset'"></app-button>
+      <app-button [icon]="'fa fa-repeat'" [title]="'Reset'" (click)="loadData()"></app-button>
       <app-button [icon]="'fa fa-cog'" [title]="'Options'" (click)="open(settings)"></app-button>
-      <app-button [title]="'Select All'" [text]="'Select All'"></app-button>
-      <app-button [title]="'Deselect All'" [text]="'Deselect All'"></app-button>
-      <app-button [icon]="'fa fa-trash'" [title]="'Delete All'"></app-button>
+      <app-button [title]="'Select All'" [text]="'Select All'" (click)="checkAll()"></app-button>
+      <app-button [title]="'Deselect All'" [text]="'Deselect All'" (click)="uncheckAll()"></app-button>
+      <app-button [icon]="'fa fa-trash'" [title]="'Delete Selected'" (click)="deleteSelected()"></app-button>
       <app-dropdown [icon]="'fa fa-download'" [title]="'Download'" [items]="['Reports & Messages', 'Reports', 'Messages']"></app-dropdown>
       <app-button [icon]="'fa fa-upload'" [title]="'Upload'" (click)="uploadFile.click()">
         <input #uploadFile type="file" style="display: none">
@@ -20,22 +17,17 @@
     <div class="form-group mt-2">
       <label for="moveToInput">Move/Copy to:</label>
       <div class="input-group">
-        <input type="text" class="form-control mr-1" placeholder="1" id="moveToInput"/>
-          <app-button class="mt-0" [icon]="'fa fa-copy'" [title]="'Copy'"></app-button>
-          <app-button class="mt-0" [title]="'Move'" [text]="'Move'"></app-button>
+        <input type="text" class="form-control mr-1 my-2 py-0" placeholder="1" id="moveToInput"/>
+        <app-button class="mt-0" [icon]="'fa fa-copy'" [title]="'Copy'"></app-button>
+        <app-button class="mt-0" [title]="'Move'" [text]="'Move'"></app-button>
       </div>
-    </div>
-    <div class="row progress" ng-show="progressBar.max > 0">
-      <div class="progress-bar" role="progressbar"
-           aria-valuenow="0" aria-valuemin="0"
-           aria-valuemax="100"></div>
     </div>
     <div class="row">
       <table>
         <tbody>
         <tr *ngFor="let report of reports" class="form-inline">
           <td>
-            <input class="form-check-input" type="checkbox" [checked]="true">
+            <input class="form-check-input" type="checkbox" [checked]="report.checked" (click)="toggleCheck(report)">
           </td>
           <td>
             <app-button [icon]="'fa fa-play'" [title]="'Run'"></app-button>
@@ -54,14 +46,14 @@
       </table>
     </div>
   </div>
+  <app-toast></app-toast>
 </div>
-
 
 <ng-template #settings let-modal>
   <div class="modal-header">
     <h5 class="modal-title" id="settingsModal">Options</h5>
-    <button type="button" class="close" (click)="modal.dismiss()" aria-label="Close">
-      <span aria-hidden="true">&times;</span>
+    <button type="button" class="close" (click)="modal.dismiss()">
+      <span>&times;</span>
     </button>
   </div>
   <div class="modal-body">
@@ -90,8 +82,8 @@
 <ng-template #clone let-modal>
   <div class="modal-header">
     <h5 class="modal-title" id="cloneModal">Clone Report</h5>
-    <button type="button" class="close" (click)="modal.dismiss()" aria-label="Close">
-      <span aria-hidden="true">&times;</span>
+    <button type="button" class="close" (click)="modal.dismiss()">
+      <span>&times;</span>
     </button>
   </div>
   <div class="modal-body container">
@@ -110,34 +102,3 @@
     <button type="button" class="btn btn-info" ng-click="cloneReport()">Generate</button>
   </div>
 </ng-template>
-
-
-<!-- Clone Report Modal -->
-<!--<div class="modal fade" id="cloneModal" tabindex="-1" role="dialog" aria-labelledby="optionsModalLabel"-->
-<!--     aria-hidden="true">-->
-<!--  <div class="modal-dialog" role="document">-->
-<!--    <div class="modal-content">-->
-<!--      <div class="modal-header">-->
-<!--        <h5 class="modal-title" id="cloneModalLabel">Clone Report</h5>-->
-<!--        <button type="button" class="close"  aria-label="Close">-->
-<!--          <span aria-hidden="true">&times;</span>-->
-<!--        </button>-->
-<!--      </div>-->
-<!--      <div class="modal-body container">-->
-<!--        <form>-->
-<!--          <div class="form-group">-->
-<!--            <label for="variableCsvInput">Variable CSV</label>-->
-<!--            <textarea class="form-control" id="variableCsvInput" rows="5"></textarea>-->
-<!--          </div>-->
-<!--          <div class="form-group">-->
-<!--            <label for="reportInputMessage">Variable CSV</label>-->
-<!--            <textarea class="form-control" id="reportInputMessage" rows="5"></textarea>-->
-<!--          </div>-->
-<!--        </form>-->
-<!--      </div>-->
-<!--      <div class="modal-footer">-->
-<!--        <button type="button" class="btn btn-info" ng-click="cloneReport()">Generate</button>-->
-<!--      </div>-->
-<!--    </div>-->
-<!--  </div>-->
-<!--</div>-->

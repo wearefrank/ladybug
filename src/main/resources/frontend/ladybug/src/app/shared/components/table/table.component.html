@@ -9,7 +9,7 @@
     <app-button [icon]="'fa fa-filter'" [title]="'Filter'" (click)="toggleFilter()"></app-button>
     <app-dropdown [icon]="'fa fa-download'" [title]="'Download'"
                   [items]="['Reports & Messages', 'Reports', 'Messages']"></app-dropdown>
-    <app-button [title]="'Open All'" [text]="'Open All'" (click)="openAll()"></app-button>
+    <app-button [title]="'Open All'" [text]="'Open All'" (click)="openReports(-1)"></app-button>
     <div class="col-md-3">
       <form class="form-horizontal pt-2">
         <div class="input-group-append">
@@ -45,11 +45,13 @@
   </div>
 </div>
 
+<app-toast></app-toast>
+
 <ng-template #settings let-modal>
   <div class="modal-header">
     <h5 class="modal-title" id="settingsModal">Options</h5>
-    <button type="button" class="close" (click)="modal.dismiss()" aria-label="Close">
-      <span aria-hidden="true">&times;</span>
+    <button type="button" class="close" (click)="modal.dismiss()">
+      <span>&times;</span>
     </button>
   </div>
   <div class="modal-body container">
@@ -68,10 +70,9 @@
       <div class="form-group">
         <label for="openLatestReports">Open latest reports</label>
         <div class="input-group">
-          <input type="number" class="form-control" placeholder="10" id="openLatestReports"/>
+          <input #inputnumber type="number" value="10" class="form-control" placeholder="10" id="openLatestReports"/>
           <div class="input-group-append">
-            <button class="btn btn-info" type="button">Open
-            </button>
+            <button class="btn btn-info" type="button" (click)="openReports(+inputnumber.value); modal.dismiss()" >Open</button>
           </div>
         </div>
         <div class="form-check-inline ml-1 mt-2">
@@ -81,7 +82,7 @@
           </label>
         </div>
       </div>
-      <div class="form-group ">
+      <div class="form-group">
         <label for="openInProgressNo">Open report in progress number</label>
         <div class="input-group">
           <input type="number" class="form-control" placeholder="1" id="openInProgressNo"/>

@@ -19,6 +19,8 @@ import { SortPipe } from './shared/pipes/sort.pipe';
 import { MonacoEditorComponent } from './shared/monaco-editor/monaco-editor.component';
 import {MatSortModule} from "@angular/material/sort";
 import { ReportComponent } from './report/report.component';
+import { ToastComponent } from './shared/components/toast/toast.component';
+import { TableSettingsComponent } from './shared/components/table-settings/table-settings.component';
 
 
 @NgModule({
@@ -35,7 +37,9 @@ import { ReportComponent } from './report/report.component';
     FilterPipe,
     SortPipe,
     MonacoEditorComponent,
-    ReportComponent
+    ReportComponent,
+    ToastComponent,
+    TableSettingsComponent
   ],
     imports: [
         BrowserModule,

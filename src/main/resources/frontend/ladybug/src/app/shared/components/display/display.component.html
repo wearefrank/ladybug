@@ -118,8 +118,8 @@
   <ng-template #save let-modal>
     <div class="modal-header">
       <h3 class="modal-title">Are you sure you want to save changes?</h3>
-      <button type="button" class="close" (click)="modal.dismiss()" aria-label="Close">
-        <span aria-hidden="true">&times;</span>
+      <button type="button" class="close" (click)="modal.dismiss()">
+        <span>&times;</span>
       </button>
     </div>
     <div class="modal-footer">
@@ -133,8 +133,8 @@
   <ng-template #discard let-modal>
     <div class="modal-header">
       <h3 class="modal-title">Are you sure you want to discard changes?</h3>
-      <button type="button" class="close" (click)="modal.dismiss()" aria-label="Close">
-        <span aria-hidden="true">&times;</span>
+      <button type="button" class="close" (click)="modal.dismiss()">
+        <span>&times;</span>
       </button>
     </div>
     <div class="modal-footer">
@@ -144,4 +144,6 @@
       </div>
     </div>
   </ng-template>
+
+  <app-toast></app-toast>
 </div>

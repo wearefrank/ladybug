@@ -1,7 +1,8 @@
-import {Component, OnInit, Output, EventEmitter, Input} from '@angular/core';
+import {Component, OnInit, Output, EventEmitter, Input, ViewChild} from '@angular/core';
 import {NgbModal} from "@ng-bootstrap/ng-bootstrap";
 import {HttpClient} from '@angular/common/http';
 import {Sort} from "@angular/material/sort";
+import {ToastComponent} from "../toast/toast.component";
 
 @Component({
   selector: 'app-table',
@@ -17,14 +18,13 @@ export class TableComponent implements OnInit {
   filterValue: string = ""; // Value on what table should filter
   sortAscending: boolean = true;
   sortedData: any = {};
+  @ViewChild(ToastComponent) toastComponent!: ToastComponent;
   @Input() // Needed to make a distinction between the two halves in compare component
   get id() { return this._id}
   set id(id: string) {this._id = id}
   private _id: string = "";
 
-
-  constructor(private modalService: NgbModal, private http: HttpClient) {
-  }
+  constructor(private modalService: NgbModal, private http: HttpClient) {}
 
   /**
    * Open a modal
@@ -113,14 +113,20 @@ export class TableComponent implements OnInit {
     this.http.get<any>('/ladybug/report/debugStorage/' + storageId).subscribe(data => {
       data.id = this.id
       this.emitEvent.next(data);
+    }, () => {
+      this.toastComponent.addAlert({type: 'warning', message: 'Could not retrieve data for report!'})
     })
   }
 
   /**
    * Open all reports
    */
-  openAll() {
-    for (let row of this.metadata.values) {
+  openReports(amount: number) {
+    if (amount === -1) {
+      amount = this.metadata.values.length;
+    }
+
+    for (let row of this.metadata.values.slice(0, amount)) {
       this.openReport(row[5]);
     }
   }
@@ -132,6 +138,8 @@ export class TableComponent implements OnInit {
     this.http.get<any>('/ladybug/metadata/debugStorage').subscribe(data => {
       this.metadata = data
       this.isLoaded = true;
+    }, () => {
+      this.toastComponent.addAlert({type: 'danger', message: 'Could not retrieve data for table!'})
     });
   }
 }

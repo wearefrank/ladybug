@@ -43,7 +43,8 @@ export class TreeComponent {
    * @param node - the node to be removed
    */
   removeNode(node: any) {
-    console.log(node)
+    console.log("tree")
+    console.log(this.tree)
     if (node.root) {
       let result = this.tree.filter(report => {
         return report.id === node.nodeId;

@@ -52,6 +52,10 @@ table .form-control {
   outline: none !important;
 }
 
+.close {
+  outline: none !important;
+}
+
 .row {
   margin-left: 0 !important;
   margin-right: 0 !important;
