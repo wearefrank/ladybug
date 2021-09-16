@@ -1,0 +1,8 @@
+<div style="bottom: 0; left: 5px; position: fixed">
+  <p *ngFor="let alert of alerts">
+    <ngb-alert style="padding-bottom: 18px" #staticAlert [type]="alert.type" (click)="close(alert)" class="fade animate-show animate-hide">
+      <i class="fa fa-warning"></i>
+      <strong> Warning! </strong>{{ alert.message }}
+    </ngb-alert>
+  </p>
+</div>
