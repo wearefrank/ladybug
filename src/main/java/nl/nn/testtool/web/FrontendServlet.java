@@ -15,15 +15,6 @@
 */
 package nl.nn.testtool.web;
 
-import org.apache.commons.io.IOUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.ws.rs.core.MediaType;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.invoke.MethodHandles;
@@ -32,11 +23,29 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
-public class FrontendServlet extends HttpServlet {
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.core.MediaType;
 
-	private static final long serialVersionUID = 123L;
+import org.apache.commons.io.IOUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+public class FrontendServlet extends HttpServlet {
+	private static final long serialVersionUID = 1L;
+	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 	private Map<String, MediaType> mediaTypeMap;
-	private final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+
+	/**
+	 * See documentation at {@link ApiServlet#getDefaultMapping()}
+	 * 
+	 * @return ...
+	 */
+	public static String getDefaultMapping() {
+		return "/ladybug/frontend/*";
+	}
 
 	@Override
 	public void init() throws ServletException {

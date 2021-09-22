@@ -6,6 +6,7 @@ Ladybug Test Tool release notes
 Upcoming
 --------
 
+- Change integration method of new GUI with Frank!Framework
 - Visualize waiting for threads and streams and add closeThreads and closeMessageCapturers
 - Add REST API for new frontend
 - Add checkpoint after stubable code has been executed

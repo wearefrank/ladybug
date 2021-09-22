@@ -42,7 +42,7 @@ import java.util.Map;
 
 @Path("/runner")
 public class RunApi extends ApiBase {
-	private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 	/**
 	 * Rerun the given reports, and save the output the target storage.
 	 *
@@ -78,7 +78,7 @@ public class RunApi extends ApiBase {
 				} catch (StorageException e) {
 					String message = "Exception for report in [" + storageParam + "] with storage id [" + storageId + "]: " + e.getMessage();
 					exceptions.add(message);
-					logger.error(message, e);
+					log.error(message, e);
 					e.printStackTrace();
 				}
 			}
@@ -170,7 +170,7 @@ public class RunApi extends ApiBase {
 			Report report = reranReports.get(storageId);
 
 			// Apply transformations, etc
-			logger.debug("Replacing report [" + report.getStorage().getName() + ":" + report.getStorageId() + "] " +
+			log.debug("Replacing report [" + report.getStorage().getName() + ":" + report.getStorageId() + "] " +
 					"with [" + debugStorage.getName() + ":" + runResultReport.getStorageId() + "]");
 			runResultReport.setTestTool(report.getTestTool());
 			runResultReport.setName(report.getName());

@@ -44,7 +44,7 @@ public class MetadataHandler {
 	private HashMap<Integer, Metadata> metadataMap;
 	protected File metadataFile;
 	private int lastStorageId = 1;
-	private final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+	private final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
 	/**
 	 * Creates a new file with the given path.
@@ -58,13 +58,13 @@ public class MetadataHandler {
 	public MetadataHandler(String filePath, XmlStorage storage, boolean forceDiscover) throws IOException {
 		this.storage = storage;
 		if (StringUtils.isEmpty(filePath)) {
-			logger.warn("No filepath was given for Ladybug MetadataHandler. Continuing with default [" + DEFAULT_PATH + "]");
+			log.warn("No filepath was given for Ladybug MetadataHandler. Continuing with default [" + DEFAULT_PATH + "]");
 			filePath = DEFAULT_PATH;
 		}
 		metadataMap = new HashMap<>();
 		metadataFile = new File(filePath);
 		if (metadataFile.exists() && !forceDiscover) {
-			logger.debug("Metadata for ladybug already exists. Reading from file [" + metadataFile.getName() + "] ...");
+			log.debug("Metadata for ladybug already exists. Reading from file [" + metadataFile.getName() + "] ...");
 			readFromFile();
 		} else {
 			buildFromDirectory(storage.getReportsFolder(), true);
@@ -82,7 +82,7 @@ public class MetadataHandler {
 		if (dir == null || !dir.isDirectory())
 			return;
 
-		logger.debug("Building from directory " + dir.getPath());
+		log.debug("Building from directory " + dir.getPath());
 		// Discover reports and group them according to their original storage id.
 		HashMap<Integer, HashMap<File, Report>> reports = new HashMap<>();
 		for (File file : dir.listFiles()) {
@@ -95,7 +95,7 @@ public class MetadataHandler {
 					HashMap<File, Report> reportsForStorageId = reports.computeIfAbsent(report.getStorageId(), k -> new HashMap<>());
 					reportsForStorageId.put(file, report);
 				} catch (StorageException exception) {
-					logger.warn("Exception while reading report [" + file.getPath() + "] during build from directory.");
+					log.warn("Exception while reading report [" + file.getPath() + "] during build from directory.");
 				}
 			}
 		}
@@ -113,7 +113,7 @@ public class MetadataHandler {
 					while (reports.containsKey(targetStorageId) || metadataMap.containsKey(targetStorageId)) {
 						targetStorageId  = getNextStorageId();
 					}
-					logger.warn("Storage Id conflict on update! Changing storage id from [" + storageId + "] to [" +
+					log.warn("Storage Id conflict on update! Changing storage id from [" + storageId + "] to [" +
 							targetStorageId + "] for report with correlation id [" + report.getCorrelationId() + "]");
 				}
 				report.setStorageId(targetStorageId);
@@ -123,7 +123,7 @@ public class MetadataHandler {
 					Metadata metadata = Metadata.fromReport(report, file, storage.getReportsFolder());
 					add(metadata, false);
 				} catch (StorageException | IOException e) {
-					logger.error("Error while updating metadata from file [" + file.getPath() + "]", e);
+					log.error("Error while updating metadata from file [" + file.getPath() + "]", e);
 				}
 				originalStorageIdTaken = true;
 			}
@@ -141,7 +141,7 @@ public class MetadataHandler {
 		if (!metadataFile.exists())
 			return;
 
-		logger.debug("Reading from file " + metadataFile.getPath());
+		log.debug("Reading from file " + metadataFile.getPath());
 		Scanner scanner = new Scanner(metadataFile);
 		StringBuilder stringBuilder = new StringBuilder();
 		String line;
@@ -274,11 +274,11 @@ public class MetadataHandler {
 			return;
 		}
 		if (!metadataFile.exists()) {
-			logger.debug("Creating metadata file at location [" + metadataFile.getPath() + "]");
+			log.debug("Creating metadata file at location [" + metadataFile.getPath() + "]");
 			metadataFile.getParentFile().mkdirs();
 			metadataFile.createNewFile();
 		}
-		logger.debug("Saving the metadata to file [" + metadataFile.getName() + "]...");
+		log.debug("Saving the metadata to file [" + metadataFile.getName() + "]...");
 		FileWriter writer = new FileWriter(metadataFile, false);
 		writer.append("<MetadataList>\n");
 		for (Integer storageId : metadataMap.keySet()) {
@@ -328,7 +328,7 @@ public class MetadataHandler {
 		for (String p : pathMap.keySet()) {
 			Metadata m = pathMap.get(p);
 			if (!updatedIds.contains(m.storageId)) {
-				logger.debug("Deleting metadata with storage id [" + m.storageId + "] correlation id [" + m.correlationId + "] and path [" + m.path + m.name + "]");
+				log.debug("Deleting metadata with storage id [" + m.storageId + "] correlation id [" + m.correlationId + "] and path [" + m.path + m.name + "]");
 				metadataMap.remove(m.storageId);
 			}
 		}
@@ -387,7 +387,7 @@ public class MetadataHandler {
 					add(metadata, false);
 					updatedIds.add(report.getStorageId());
 				} catch (StorageException | IOException e) {
-					logger.error("Error while updating metadata from file [" + file.getPath() + "]", e);
+					log.error("Error while updating metadata from file [" + file.getPath() + "]", e);
 				}
 			}
 		}

@@ -58,6 +58,7 @@ import java.util.TooManyListenersException;
 public class ReportsComponent extends BaseComponent implements BeanParent, ActionListener {
 	private static final long serialVersionUID = 1L;
 	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+	// Custom View implementations may return other values on isOpenReportAllowed() (see TibetView in Frank!Framework)
 	public static final String OPEN_REPORT_ALLOWED = "Allowed";
 	private List<String> changeReportGeneratorEnabledRoles;
 	// TODO testTool overbodig maken nu we storage van view halen?
