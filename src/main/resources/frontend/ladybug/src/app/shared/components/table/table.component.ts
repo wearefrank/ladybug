@@ -126,6 +126,7 @@ export class TableComponent implements OnInit {
       amount = this.metadata.values.length;
     }
 
+    // The index 5 is the storageId
     for (let row of this.metadata.values.slice(0, amount)) {
       this.openReport(row[5]);
     }

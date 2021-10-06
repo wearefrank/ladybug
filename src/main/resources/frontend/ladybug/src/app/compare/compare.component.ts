@@ -64,12 +64,20 @@ export class CompareComponent {
     this.rightDisplayComponent?.showReport(this.rightCurrentReport);
   }
 
+  /**
+   * Close the left report
+   * @param currentNode - the left node to be removed
+   */
   closeReportLeft(currentNode: any) {
     this.leftReportSelected = false
     this.leftCurrentReport = {};
     this.leftTreeComponent?.removeNode(currentNode);
   }
 
+  /**
+   * Close the right report
+   * @param currentNode - the right node to be removed
+   */
   closeReportRight(currentNode: any) {
     this.rightReportSelected = false;
     this.rightCurrentReport = {};

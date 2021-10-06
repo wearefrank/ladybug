@@ -38,6 +38,9 @@ export class TestComponent implements OnInit{
     });
   }
 
+  /**
+   * Run a test
+   */
   run() {
     let data: string = "Hello World";
     this.http.post<any>('ladybug/runner/run/debugStorage', data).pipe(catchError(error => {
@@ -51,6 +54,9 @@ export class TestComponent implements OnInit{
       })
   }
 
+  /**
+   * Rerun a test
+   */
   rerun() {
     this.loadData();
     this.run();

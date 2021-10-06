@@ -113,6 +113,9 @@ export class TreeComponent {
     $('#' + this.treeId).treeview('toggleNodeSelected', [ this.tree[this.tree.length - 1].nodes[0].id, { silent: false } ]);
   }
 
+  /**
+   * Update the tree view with the new data
+   */
   updateTreeView() {
     // Update the tree view
     $('#' + this.treeId).treeview({

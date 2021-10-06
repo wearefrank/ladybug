@@ -18,6 +18,7 @@ export class ToastComponent implements OnInit {
   constructor() { }
 
   ngOnInit(): void {
+    // Show the alert for 5 seconds
     setTimeout(() => {
       if (this.staticAlert) {
         this.staticAlert.close();
@@ -26,11 +27,19 @@ export class ToastComponent implements OnInit {
     }, 5000)
   }
 
+  /**
+   * Closes the alert
+   * @param alert - alert that will be closed
+   */
   close(alert: any) {
     this.alerts.splice(this.alerts.indexOf(alert), 1)
     this.ngOnInit();
   }
 
+  /**
+   * Adds an alert
+   * @param alert - alert that will be added
+   */
   addAlert(alert: any) {
     this.alerts.push(alert)
     this.ngOnInit();

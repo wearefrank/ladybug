@@ -40,14 +40,16 @@ export class DisplayComponent {
    * @param type
    */
   openModal(content: any, type: string) {
-    console.log(type)
     this.type = type;
     let dmp = new DiffMatchPatch();
+
+    // If it is not the root, find the difference in the code
     if (!this.report.root) {
       this.monacoBefore = this.report.ladybug.message;
       let monacoAfter = this.monacoEditorComponent?.getValue();
       this.difference.code = dmp.diff_main(this.monacoBefore, monacoAfter);
     } else {
+      // If it is the root, find the difference in meta-data
       let beforeName = this.report.ladybug.name === null ? '' : this.report.ladybug.name;
       let beforeDescription = this.report.ladybug.description === null ? '' : this.report.ladybug.description;
       let beforePath = this.report.ladybug.path === null ? '' : this.report.ladybug.path;
@@ -117,6 +119,9 @@ export class DisplayComponent {
     console.log("Successfully " + type + " changes!")
   }
 
+  /**
+   * Toggle editing the monaco editor
+   */
   toggleMonacoEditor() {
     if (!this.report.root) {
       this.monacoEditorComponent.toggleEdit();
