@@ -1,7 +1,9 @@
 import {Component, OnInit, EventEmitter, Output, Input, ViewChild} from '@angular/core';
 import {NgbModal} from "@ng-bootstrap/ng-bootstrap";
-import {HttpClient} from "@angular/common/http";
+import {HttpClient, HttpErrorResponse} from "@angular/common/http";
 import {ToastComponent} from "../shared/components/toast/toast.component";
+import {catchError} from "rxjs/operators";
+import {throwError} from "rxjs";
 
 @Component({
   selector: 'app-test',
@@ -37,7 +39,16 @@ export class TestComponent implements OnInit{
   }
 
   run() {
-    // TODO: Create this
+    let data: string = "Hello World";
+    this.http.post<any>('ladybug/runner/run/debugStorage', data).pipe(catchError(error => {
+      this.toastComponent.addAlert({type: 'danger', message: 'Url could not be found!'});
+      console.log(error)
+      return throwError(error);
+    }))
+      .subscribe(response => {
+        console.log('response')
+        console.log(response)
+      })
   }
 
   rerun() {

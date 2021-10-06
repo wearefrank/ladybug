@@ -24,6 +24,10 @@ export class MonacoEditorComponent implements AfterViewInit {
     this.loadMonaco(this.value);
   }
 
+  getValue(): string {
+    return this.codeEditorInstance.getValue();
+  }
+
   /**
    * Load monaco editor
    * @param message - the initial xml cod to be shown

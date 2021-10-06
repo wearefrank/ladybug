@@ -30,7 +30,7 @@
             <input class="form-check-input" type="checkbox" [checked]="report.checked" (click)="toggleCheck(report)">
           </td>
           <td>
-            <app-button [icon]="'fa fa-play'" [title]="'Run'"></app-button>
+            <app-button [icon]="'fa fa-play'" [title]="'Run'" (click)="run()"></app-button>
           </td>
           <td>
             <app-button [icon]="'fa fa-folder-open'" [title]="'Open'" (click)="selectReport(report[5], report[2])"></app-button>

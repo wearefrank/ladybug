@@ -5,9 +5,9 @@
     <app-button [icon]="'fa fa-edit'" [title]="'Edit'" *ngIf="!editing"
                 (click)="editReport()"></app-button>
     <app-button [icon]="'fa fa-trash'" [title]="'Discard Changes'" *ngIf="editing"
-                (click)="openModal(discard)"></app-button>
+                (click)="openModal(saveOrDiscardChanges, 'discard')"></app-button>
     <app-button [icon]="'fa fa-save'" [title]="'Save'" *ngIf="editing"
-                (click)="openModal(save)"></app-button>
+                (click)="openModal(saveOrDiscardChanges, 'save')"></app-button>
     <app-dropdown [icon]="'fa fa-download'" [title]="'Download'"
                   [items]="['Reports & Messages', 'Reports', 'Messages']"></app-dropdown>
     <app-dropdown [icon]="'fa fa-copy'" [title]="'Copy'"
@@ -28,7 +28,7 @@
     <app-monaco-editor [value]="report.ladybug.message"></app-monaco-editor>
   </div>
 
-  <div *ngIf="!editing || !report.root" class="pt-4">
+  <div *ngIf="!editingRoot" class="pt-4">
     <table class="table col-md-4 border">
       <tr>
         <td>Name</td>
@@ -36,7 +36,7 @@
       </tr>
       <tr *ngIf="report.root">
         <td>Description</td>
-        <td>{{report.ladybug.description}}</td>
+        <td>{{report.ladybug.description}}</td>2
       </tr>
       <tr *ngIf="!report.root">
         <td>Thread name</td>
@@ -90,56 +90,153 @@
   </div>
 
 <!-- Display report edit -->
-  <div *ngIf="editing && report.root">
+  <div *ngIf="editingRoot">
     <div class="form-group">
       <label>Name</label>
-      <input type="text" class="form-control" placeholder="Name" value="{{report.ladybug.name}}">
+      <input #name type="text" class="form-control" placeholder="Name" value="{{report.ladybug.name}}">
     </div>
     <div class="form-group">
       <label>Description</label>
-      <textarea class="form-control" placeholder="Description"> {{ report.ladybug.description }} </textarea>
+      <input #description class="form-control" placeholder="Description" value="{{report.ladybug.description}}">
     </div>
     <div class="form-group">
       <label>Path</label>
-      <input type="text" class="form-control" placeholder="/path/to/report/" value="{{report.ladybug.path}}">
+      <input #path type="text" class="form-control" placeholder="/path/to/report/" value="{{report.ladybug.path}}">
     </div>
     <div class="form-group">
       <label>Transformation</label>
-      <div class="form-group"
-           style="height: 400px; width: 600px; border: 1px solid #ced4da; border-radius: .25rem;"></div>
+      <div>
+        <textarea #transformation class="form-control" style="height: 100px">{{report.ladybug.transformation}}</textarea>
+      </div>
     </div>
     <div class="form-group">
       <label>Variables</label>
+<!--      <textarea #variables class="form-control"></textarea>-->
       <div class="form-group"
            style="height: 100px; width: 600px; border: 1px solid #ced4da; border-radius: .25rem;"></div>
     </div>
   </div>
 
-  <ng-template #save let-modal>
+  <ng-template #saveOrDiscardChanges let-modal>
     <div class="modal-header">
-      <h3 class="modal-title">Are you sure you want to save changes?</h3>
+      <h3 class="modal-title">Are you sure you want to {{ type }} changes?</h3>
       <button type="button" class="close" (click)="modal.dismiss()">
         <span>&times;</span>
       </button>
     </div>
-    <div class="modal-footer">
-      <div class="col-md-12 text-center">
-        <button type="button" class="btn btn-info mr-2" (click)="saveChanges()">Yes</button>
-        <button type="button" class="btn btn-info ml-2" (click)="modal.dismiss()">No</button>
+    <div *ngIf="!report.root" class="modal-content">
+      <div class="row">
+        <div class="col">
+          <div class="text-center pt-2">Before</div>
+          <div class="dropdown-divider"></div>
+          <div class="text-left pb-2 overflow-auto">{{monacoBefore}}</div>
+        </div>
+        <div class="col text-right">
+          <div class="text-center pt-2">After</div>
+          <div class="dropdown-divider"></div>
+          <div class="text-left pb-2 overflow-auto">
+            <span *ngFor="let chunk of difference.code">
+              <span *ngIf="+chunk[0] === -1" style="background: #ff7f7f">{{chunk[1]}}</span>
+              <span *ngIf="+chunk[0] === 0">{{chunk[1]}}</span>
+              <span *ngIf="+chunk[0] === 1" style="background: #7cfc00">{{chunk[1]}}</span>
+            </span>
+           </div>
+        </div>
       </div>
     </div>
-  </ng-template>
-
-  <ng-template #discard let-modal>
-    <div class="modal-header">
-      <h3 class="modal-title">Are you sure you want to discard changes?</h3>
-      <button type="button" class="close" (click)="modal.dismiss()">
-        <span>&times;</span>
-      </button>
+    <div *ngIf="report.root" class="modal-content">
+      <div>
+        <div class="text-center">Name</div>
+        <div class="dropdown-divider"></div>
+        <div class="row">
+          <div class="col">
+            <div class="text-center pt-2">Before</div>
+            <div class="dropdown-divider"></div>
+            <div class="text-center pb-2 overflow-auto">{{ this.report.ladybug.name }}</div>
+          </div>
+          <div class="col text-right">
+            <div class="text-center pt-2">After</div>
+            <div class="dropdown-divider"></div>
+            <div class="text-center pb-2 overflow-auto">
+              <span *ngFor="let chunk of difference.name">
+                <span *ngIf="+chunk[0] === -1" style="background: #ff7f7f">{{chunk[1]}}</span>
+                <span *ngIf="+chunk[0] === 0">{{chunk[1]}}</span>
+                <span *ngIf="+chunk[0] === 1" style="background: #7cfc00">{{chunk[1]}}</span>
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="text-center">Description</div>
+        <div class="dropdown-divider"></div>
+        <div class="row">
+          <div class="col">
+            <div class="text-center pt-2">Before</div>
+            <div class="dropdown-divider"></div>
+            <div class="text-center pb-2 overflow-auto">{{ this.report.ladybug.description }}</div>
+          </div>
+          <div class="col text-right">
+            <div class="text-center pt-2">After</div>
+            <div class="dropdown-divider"></div>
+            <div class="text-center pb-2 overflow-auto">
+              <span *ngFor="let chunk of difference.description">
+                <span *ngIf="+chunk[0] === -1" style="background: #ff7f7f">{{chunk[1]}}</span>
+                <span *ngIf="+chunk[0] === 0">{{chunk[1]}}</span>
+                <span *ngIf="+chunk[0] === 1" style="background: #7cfc00">{{chunk[1]}}</span>
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="text-center">Path</div>
+        <div class="dropdown-divider"></div>
+        <div class="row">
+          <div class="col">
+            <div class="text-center pt-2">Before</div>
+            <div class="dropdown-divider"></div>
+            <div class="text-center pb-2 overflow-auto">{{ this.report.ladybug.path }}</div>
+          </div>
+          <div class="col text-right">
+            <div class="text-center pt-2">After</div>
+            <div class="dropdown-divider"></div>
+            <div class="text-center pb-2 overflow-auto">
+              <span *ngFor="let chunk of difference.path">
+                <span *ngIf="+chunk[0] === -1" style="background: #ff7f7f">{{chunk[1]}}</span>
+                <span *ngIf="+chunk[0] === 0">{{chunk[1]}}</span>
+                <span *ngIf="+chunk[0] === 1" style="background: #7cfc00">{{chunk[1]}}</span>
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="text-center">Transformation</div>
+        <div class="dropdown-divider"></div>
+        <div class="row">
+          <div class="col">
+            <div class="text-center pt-2">Before</div>
+            <div class="dropdown-divider"></div>
+            <div class="text-center pb-2 overflow-auto">{{ this.report.ladybug.transformation }}</div>
+          </div>
+          <div class="col text-right">
+            <div class="text-center pt-2">After</div>
+            <div class="dropdown-divider"></div>
+            <div class="text-center pb-2 overflow-auto">
+              <span *ngFor="let chunk of difference.transformation">
+                <span *ngIf="+chunk[0] === -1" style="background: #ff7f7f">{{chunk[1]}}</span>
+                <span *ngIf="+chunk[0] === 0">{{chunk[1]}}</span>
+                <span *ngIf="+chunk[0] === 1" style="background: #7cfc00">{{chunk[1]}}</span>
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
     <div class="modal-footer">
       <div class="col-md-12 text-center">
-        <button type="button" class="btn btn-info mr-2" (click)="discardChanges()">Yes</button>
+        <button type="button" class="btn btn-info mr-2" (click)="saveOrDiscard(type)">Yes</button>
         <button type="button" class="btn btn-info ml-2" (click)="modal.dismiss()">No</button>
       </div>
     </div>
