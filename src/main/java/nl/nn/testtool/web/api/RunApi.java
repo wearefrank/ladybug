@@ -55,6 +55,7 @@ public class RunApi extends ApiBase {
 	@Produces(MediaType.APPLICATION_JSON)
 	@Consumes(MediaType.APPLICATION_JSON)
 	public Response runReport(@PathParam("debugStorage") String debugStorageParam, Map<String, List<Integer>> sources) {
+		System.out.println("Rerunning...");
 		Storage debugStorage = getBean(debugStorageParam);
 		List<Report> reports = new ArrayList<>();
 		List<String> exceptions = new ArrayList<>();
@@ -105,6 +106,7 @@ public class RunApi extends ApiBase {
 	@Path("/result/{debugStorage}")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getResults(@PathParam("debugStorage") String debugStorageParam) {
+		System.out.println("Querying...");
 		try {
 			HashMap<Integer, Report> reranReports = getSessionAttr("reranReports", true);
 			Storage debugStorage = getBean(debugStorageParam);
@@ -118,11 +120,17 @@ public class RunApi extends ApiBase {
 				RunResult runResult = entry.getValue();
 				HashMap<String, Object> res = new HashMap<>(2);
 				try {
+					System.out.println("Key: " + entry.getKey());
+					System.out.println("Value: " + runResult.errorMessage);
+					System.out.println("Value: " + runResult.correlationId);
+					System.out.println("NullPointer: " + runner.getRunResultReport(runResult.correlationId));
 					Report runResultReport = runner.getRunResultReport(runResult.correlationId);
 
 					// Calculate number of stubbed checkpoints.
 					int stubbed = 0;
 					boolean first = true;
+					System.out.println(runResultReport);
+					System.out.println(runResultReport.getCheckpoints());
 					for (Checkpoint checkpoint : runResultReport.getCheckpoints()) {
 						if (first) {
 							first = false;
@@ -138,7 +146,7 @@ public class RunApi extends ApiBase {
 					Report report = reranReports.get(entry.getKey());
 					res.put("previous-time", report.getEndTime() - report.getStartTime());
 					res.put("current-time", runResultReport.getEndTime() - runResultReport.getStartTime());
-				} catch (StorageException exception) {
+				} catch (Exception exception) {
 					res.put("exception", exception);
 					exception.printStackTrace();
 				}
@@ -147,6 +155,7 @@ public class RunApi extends ApiBase {
 			data.put("results", returningResults);
 			data.put("progress", runner.getProgressValue());
 			data.put("max-progress", runner.getMaximum());
+			System.out.println("data: " + data);
 			return Response.ok(data).build();
 		} catch (Throwable t) {
 			t.printStackTrace();
@@ -253,6 +262,7 @@ public class RunApi extends ApiBase {
 
 		ReportRunner runner = (ReportRunner) runners.get(debugStorage);
 		if (runner == null) {
+			System.out.println("Runner does not yet exist, creating new one");
 			runner = new ReportRunner();
 			runner.setTestTool(getBean("testTool"));
 			runner.setDebugStorage(debugStorage);
