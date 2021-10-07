@@ -1,10 +1,13 @@
 import {Component, OnInit, EventEmitter, Output, Input, ViewChild} from '@angular/core';
 import {NgbModal} from "@ng-bootstrap/ng-bootstrap";
-import {HttpClient, HttpErrorResponse} from "@angular/common/http";
+import {HttpClient, HttpErrorResponse, HttpHeaders} from "@angular/common/http";
 import {ToastComponent} from "../shared/components/toast/toast.component";
-import {catchError} from "rxjs/operators";
+import {map, catchError, timeInterval} from "rxjs/operators";
 import {throwError} from "rxjs";
 
+const headers = new HttpHeaders().set(
+  'Content-Type', 'application/json'
+)
 @Component({
   selector: 'app-test',
   templateUrl: './test.component.html',
@@ -41,26 +44,49 @@ export class TestComponent implements OnInit{
   /**
    * Run a test
    */
-  run() {
-    let data: string = "Hello World";
-    this.http.post<any>('ladybug/runner/run/debugStorage', data).pipe(catchError(error => {
-      this.toastComponent.addAlert({type: 'danger', message: 'Url could not be found!'});
-      console.log(error)
-      return throwError(error);
-    }))
-      .subscribe(response => {
-        console.log('response')
+  run(reportId: string) {
+    // Rerun a report -> POST ladybug/runner/run/debugStorage, Map<String, List<Int>>
+    // Query the results of the new report -> GET ladybug/runner/result/debugStorage
+    // Show a progress bar
+    // Show the difference in ms and how many have been stubbed
+    // Either replace -> PUT Call ladybug/runner/replace/debugStorage/reportId
+    // Or Compare
+    // Go to compare tab and show the two reports
+    console.log("Rerunning report")
+    let data: any = {}
+    data['testStorage'] = [reportId]
+    this.http.post<any>('ladybug/runner/run/debugStorage', data, {headers: headers, observe: "response"}).subscribe(
+      response => {
         console.log(response)
+        this.queryResults()
+      },
+        error => {
+        console.log(error)
+        this.toastComponent.addAlert({ type: 'danger', message: error})
+      })
+  }
+
+  queryResults() {
+    console.log("Querying results...")
+    this.http.get<any>('ladybug/runner/result/debugStorage', {headers: headers}).subscribe(
+      response => {
+        console.log(response)
+      },
+        error => {
+        console.log(error)
+        this.toastComponent.addAlert({type: 'danger', message: error})
       })
   }
 
   /**
    * Rerun a test
    */
-  rerun() {
-    this.loadData();
-    this.run();
-  }
+  rerunAll() {}
+
+  /**
+   * Runs all tests
+   */
+  runAll() {}
 
   /**
    * Selects the report to be displayed

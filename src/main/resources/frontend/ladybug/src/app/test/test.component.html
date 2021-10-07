@@ -2,8 +2,8 @@
   <div class="col">
     <div class="row">
       <app-button [icon]="'fa fa-refresh'" [title]="'Refresh'" (click)="loadData()"></app-button>
-      <app-button [icon]="'fa fa-play'" [title]="'Run'"></app-button>
-      <app-button [icon]="'fa fa-repeat'" [title]="'Reset'" (click)="loadData()"></app-button>
+      <app-button [icon]="'fa fa-play'" [title]="'Run All'" (click)="runAll()"></app-button>
+      <app-button [icon]="'fa fa-repeat'" [title]="'Rerun All'" (click)="rerunAll()"></app-button>
       <app-button [icon]="'fa fa-cog'" [title]="'Options'" (click)="open(settings)"></app-button>
       <app-button [title]="'Select All'" [text]="'Select All'" (click)="checkAll()"></app-button>
       <app-button [title]="'Deselect All'" [text]="'Deselect All'" (click)="uncheckAll()"></app-button>
@@ -30,13 +30,13 @@
             <input class="form-check-input" type="checkbox" [checked]="report.checked" (click)="toggleCheck(report)">
           </td>
           <td>
-            <app-button [icon]="'fa fa-play'" [title]="'Run'" (click)="run()"></app-button>
+            <app-button [icon]="'fa fa-play'" [title]="'Run report'" (click)="run(report[5])"></app-button>
           </td>
           <td>
-            <app-button [icon]="'fa fa-folder-open'" [title]="'Open'" (click)="selectReport(report[5], report[2])"></app-button>
+            <app-button [icon]="'fa fa-folder-open'" [title]="'Open report'" (click)="selectReport(report[5], report[2])"></app-button>
           </td>
           <td>
-            <app-button [icon]="'fa fa-clone'" [title]="'Clone'" (click)="open(clone)"></app-button>
+            <app-button [icon]="'fa fa-clone'" [title]="'Clone report'" (click)="open(clone)"></app-button>
           </td>
           <td>
             /{{ report[2]}}
