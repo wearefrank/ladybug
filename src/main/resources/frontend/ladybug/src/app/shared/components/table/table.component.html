@@ -13,7 +13,7 @@
     <div class="col-md-3">
       <form class="form-horizontal pt-2">
         <div class="input-group-append">
-          <input type="number"  class="form-control px-1" placeholder="{{displayAmount}}"  (keyup)="changeTableLimit($event)">
+          <input type="number" id="displayAmount" class="form-control px-1" placeholder="{{displayAmount}}"  (keyup)="changeTableLimit($event)">
           <div class="input-group-text">/{{ metadata.values.length }}</div>
         </div>
       </form>
@@ -30,7 +30,7 @@
       <tr *ngIf="showFilter">
         <th *ngFor="let header of metadata.fields">
           <div class="input-group">
-            <input type="text" class="form-control" placeholder="Filter" (keyup.enter)="changeFilter($event)">
+            <input type="text" id="filter" class="form-control" placeholder="Filter" (keyup.enter)="changeFilter($event)">
           </div>
         </th>
       </tr>
