@@ -33,7 +33,8 @@ import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class FrontendServlet extends HttpServlet {
+//public class FrontendServlet extends HttpServlet {
+public class FrontendServlet extends AngularServlet {
 	private static final long serialVersionUID = 1L;
 	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 	private Map<String, MediaType> mediaTypeMap;
@@ -46,7 +47,7 @@ public class FrontendServlet extends HttpServlet {
 	public static String getDefaultMapping() {
 		return "/ladybug/frontend/*";
 	}
-
+/*
 	@Override
 	public void init() throws ServletException {
 		super.init();
@@ -129,4 +130,5 @@ public class FrontendServlet extends HttpServlet {
 		}
 		return type;
 	}
+*/
 }
