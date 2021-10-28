@@ -45,19 +45,20 @@ public class FrontendServlet extends AngularServlet {
 	 * @return ...
 	 */
 	public static String getDefaultMapping() {
-		return "/ladybug/frontend/*";
-	}
-/*
-	@Override
-	public void init() throws ServletException {
-		super.init();
-		try {
-			populateMediaTypeMap();
-		} catch (IOException e) {
-			throw new ServletException("unable to parse MediaType mapping file", e);
-		}
+		return "/ladybug/*";
 	}
 
+	@Override
+	public void init() throws ServletException {
+		setArtifactId("wearefrank__ladybug");
+		super.init();
+//		try {
+//			populateMediaTypeMap();
+//		} catch (IOException e) {
+//			throw new ServletException("unable to parse MediaType mapping file", e);
+//		}
+	}
+/*
 	private void populateMediaTypeMap() throws IOException {
 		mediaTypeMap = new HashMap<>();
 		Properties properties = new Properties();

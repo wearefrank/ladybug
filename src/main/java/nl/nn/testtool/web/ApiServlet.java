@@ -32,7 +32,7 @@ public class ApiServlet extends CXFServlet {
 	 * @return ...
 	 */
 	public static String getDefaultMapping() {
-		return "/ladybug/*";
+		return "/ladybug/api/*";
 	}
 
 	/**

@@ -29,6 +29,11 @@ import javax.servlet.http.HttpServletResponseWrapper;
 
 public class AngularServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
+	private String artifactId;
+
+	public void setArtifactId(String artifactId) {
+		this.artifactId = artifactId;
+	}
 
 	@Override
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -55,31 +60,42 @@ public class AngularServlet extends HttpServlet {
 	private void includeWebJarAsset(HttpServletRequest request, HttpServletResponse response, boolean forceIndexHtml)
 			throws ServletException, IOException {
 		String pathInfo = request.getPathInfo();
-		if ("/".equals(pathInfo) || forceIndexHtml) {
+		// Use endsWith("/") instead of equals("/") because the WebjarsServlet returns HttpServletResponse.SC_FORBIDDEN
+		// for directory requests
+		if (pathInfo == null || pathInfo.endsWith("/") || forceIndexHtml) {
 			pathInfo = "/index.html";
 		}
 		if ("/index.html".equals(pathInfo)) {
+			// Replace the value of <base href="/"> in index.html with servlet path
+			String servletPath = request.getServletPath();
+			final String base;
+			if (servletPath.equals("")) {
+				base = "/";
+			} else if (!servletPath.endsWith("/")) {
+				base = servletPath + "/";
+			} else {
+				base = servletPath;
+			}
 			response = new HttpServletResponseWrapper(response) {
 				@Override
 				public ServletOutputStream getOutputStream() throws IOException {
-					String base = request.getServletPath();
-					if (base.equals("")) {
-						base = "/";
-					} else if (!base.endsWith("/")) {
-						base = base + "/";
-					}
 					BaseRewritingServletOutputStream baseRewritingServletOutputStream =
 							new BaseRewritingServletOutputStream(super.getOutputStream(), base);
 					return baseRewritingServletOutputStream;
 				}
 			};
 		}
-		final String webJarsServletPath = "/webjars/";
-		final String webJarsRequestURI = webJarsServletPath + "wearefrank__ladybug" + pathInfo;
+		final String webJarsBase = "/webjars/";
+		final String webJarsRequestURI;
+		if (pathInfo.startsWith(webJarsBase)) {
+			webJarsRequestURI = pathInfo;
+		} else {
+			webJarsRequestURI = webJarsBase + artifactId + pathInfo;
+		}
 		HttpServletRequestWrapper wrapper = new HttpServletRequestWrapper(request) {
 			@Override
 			public String getServletPath() {
-				return webJarsServletPath;
+				return webJarsBase;
 			}
 			@Override
 			public String getRequestURI() {
