@@ -251,40 +251,25 @@ public class TestTool {
 			Set<String> matchingStubStrategies, int checkpointType, int levelChangeNextCheckpoint) {
 		boolean executeStubableCode = true;
 		if (reportGeneratorEnabled) {
-			Report report;
-			synchronized(reportsInProgress) {
-				report = (Report)reportsInProgressByCorrelationId.get(correlationId);
-				if (report == null) {
-					if (checkpointType == Checkpoint.TYPE_STARTPOINT) {
-						log.debug("Create new report for '" + correlationId + "'");
-						report = new Report();
-						report.setStartTime(System.currentTimeMillis());
-						report.setTestTool(this);
-						report.setCorrelationId(correlationId);
-						report.setName(name);
-						if (StringUtils.isNotEmpty(regexFilter) && !name.matches(regexFilter)) {
-							report.setReportFilterMatching(false);
-						}
-						Report originalReport;
-						synchronized(originalReports) {
-							originalReport = (Report)originalReports.remove(correlationId);
-						}
-						if (originalReport == null) {
-							report.setStubStrategy(getDefaultStubStrategy());
-						} else {
-							report.setStubStrategy(originalReport.getStubStrategy());
-							report.setOriginalReport(originalReport);
-						}
-						reportsInProgress.add(0, report);
-						reportsInProgressByCorrelationId.put(correlationId, report);
-						numberOfReportsInProgress++;
-					} else {
-						log.warn("Report for '" + correlationId + "' is null, could not add checkpoint '" + name + "'");
-					}
-				}
-			}
+			// Method getReportInProgress() will synchronize on reportsInProgress which is blocking for all threads for
+			// all reports
+			Report report = getReportInProgress(correlationId, name, checkpointType);
 			if (report != null) {
+				// "synchronized(report)" is only blocking for threads writing to the same report (which is only the
+				// case when multiple threads use the same correlationId)
 				synchronized(report) {
+					// "synchronized(report)" is used instead of "synchronized(reportsInProgress)" and separate from the
+					// "synchronized(reportsInProgress)" in getReportInProgress() to prevent threads from being blocked
+					// as much as possible. But in the very rare/unusual case that one thread calls the last endpoint of
+					// a report (which will close the report) and another thread in parallel calls a startpoint for the
+					// same correlationId this last thread can receive the report object from getReportInProgress() and
+					// start waiting for a lock on the report object while the first thread is executing
+					// report.checkpoint() below and closing the report. Hence double check that the report isn't
+					// closed.
+					if (report.isClosed()) {
+						// Create a new report
+						report = getReportInProgress(correlationId, name, checkpointType);
+					}
 					executeStubableCode = false;
 					message = report.checkpoint(childThreadId, sourceClassName, name, message, stubableCode,
 							stubableCodeThrowsException, matchingStubStrategies, checkpointType, levelChangeNextCheckpoint);
@@ -296,6 +281,42 @@ public class TestTool {
 			message = execute(stubableCode, stubableCodeThrowsException, message);
 		}
 		return message;
+	}
+
+	private Report getReportInProgress(String correlationId, String name, int checkpointType) {
+		Report report;
+		synchronized(reportsInProgress) {
+			report = (Report)reportsInProgressByCorrelationId.get(correlationId);
+			if (report == null) {
+				if (checkpointType == Checkpoint.TYPE_STARTPOINT) {
+					log.debug("Create new report for '" + correlationId + "'");
+					report = new Report();
+					report.setStartTime(System.currentTimeMillis());
+					report.setTestTool(this);
+					report.setCorrelationId(correlationId);
+					report.setName(name);
+					if (StringUtils.isNotEmpty(regexFilter) && !name.matches(regexFilter)) {
+						report.setReportFilterMatching(false);
+					}
+					Report originalReport;
+					synchronized(originalReports) {
+						originalReport = (Report)originalReports.remove(correlationId);
+					}
+					if (originalReport == null) {
+						report.setStubStrategy(getDefaultStubStrategy());
+					} else {
+						report.setStubStrategy(originalReport.getStubStrategy());
+						report.setOriginalReport(originalReport);
+					}
+					reportsInProgress.add(0, report);
+					reportsInProgressByCorrelationId.put(correlationId, report);
+					numberOfReportsInProgress++;
+				} else {
+					log.warn("Report for '" + correlationId + "' is null, could not add checkpoint '" + name + "'");
+				}
+			}
+		}
+		return report;
 	}
 
 	@SuppressWarnings("unchecked")
