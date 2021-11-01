@@ -6,6 +6,7 @@ Ladybug Test Tool release notes
 Upcoming
 --------
 
+- Fix ArrayIndexOutOfBoundsException on concurrent last endpoint for report and a startpoint
 - Change integration method of new GUI with Frank!Framework
 - Visualize waiting for threads and streams and add closeThreads and closeMessageCapturers
 - Add REST API for new frontend

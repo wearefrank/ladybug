@@ -270,10 +270,15 @@ public class TestTool {
 						// Create a new report
 						report = getReportInProgress(correlationId, name, checkpointType);
 					}
-					executeStubableCode = false;
-					message = report.checkpoint(childThreadId, sourceClassName, name, message, stubableCode,
-							stubableCodeThrowsException, matchingStubStrategies, checkpointType, levelChangeNextCheckpoint);
-					closeReportIfFinished(report);
+					if (report != null) {
+						synchronized(report) {
+							executeStubableCode = false;
+							message = report.checkpoint(childThreadId, sourceClassName, name, message, stubableCode,
+									stubableCodeThrowsException, matchingStubStrategies, checkpointType,
+									levelChangeNextCheckpoint);
+							closeReportIfFinished(report);
+						}
+					}
 				}
 			}
 		}
