@@ -3,7 +3,7 @@
         Path="path"
         CorrelationId="Original length: 13"
         StartTime="Original length: 1"
-        EndTime="Original length: 1"
+        EndTime="Original length: 20"
         NumberOfCheckpoints="1"
         EstimatedMemoryUsage="14">
    <Checkpoint Name="name"

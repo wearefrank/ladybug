@@ -56,13 +56,6 @@ public class TestExport extends TestCase {
 				if (method.getParameters()[0].getType() == long.class) {
 					Long defaultValue = (Long)getMethods.get(name).invoke(report, new Object[0]);
 					method.invoke(report, defaultValue + name.length());
-				} else if (method.getParameters()[0].getType() == Long.class) {
-					Long defaultValue = (Long)getMethods.get(name).invoke(report, new Object[0]);
-					if (defaultValue == null) {
-						method.invoke(report, (long)name.length());
-					} else {
-						method.invoke(report, defaultValue + name.length());
-					}
 				} else if (method.getParameters()[0].getType() == Integer.class) {
 					Integer defaultValue = (Integer)getMethods.get(name).invoke(report, new Object[0]);
 					if (defaultValue == null) {
