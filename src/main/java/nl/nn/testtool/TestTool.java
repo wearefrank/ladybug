@@ -345,7 +345,7 @@ public class TestTool {
 					report.close();
 				}
 				if (report.threadsFinished()) {
-					if (report.getEndTime() == null) {
+					if (report.getEndTime() == Report.TIME_NOT_SET_VALUE) {
 						report.setEndTime(System.currentTimeMillis());
 					}
 					if (!report.streamingMessageListenersFinished()

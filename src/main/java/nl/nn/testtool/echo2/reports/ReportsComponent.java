@@ -761,7 +761,7 @@ public class ReportsComponent extends BaseComponent implements BeanParent, Actio
 			if (report != null) {
 				openReport(report, isOpenReportAllowed);
 			} else {
-				displayError("Could not find report with storate id '" + storageId + "'");
+				displayError("Could not find report with storage id '" + storageId + "'");
 			}
 		} else {
 			displayError(isOpenReportAllowed);

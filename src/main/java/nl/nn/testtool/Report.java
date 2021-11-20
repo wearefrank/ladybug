@@ -49,22 +49,26 @@ public class Report implements Serializable {
 	// ObjectInputStream, it doesn't effect reading objects through XMLDecoder.
 	private transient static final long serialVersionUID = 5;
 	private transient static Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-	private transient TestTool testTool;
+	protected transient static final long TIME_NOT_SET_VALUE = Long.MIN_VALUE;
 	// Please note that the set method should return void for XmlEncoder to
 	// store the property (hence the setVariableCsvWithoutException method)
-	private Long startTime;
-	private Long endTime;
+	private long startTime;
+	private long endTime = TIME_NOT_SET_VALUE;
 	private String correlationId;
 	private String name;
 	private String description;
 	private String path;
 	private String stubStrategy;
+	// See Checkpoint also for properties that will be stored by XmlEncoder and
+	// serialization / ObjectOutputStream
 	private List<Checkpoint> checkpoints = new ArrayList<Checkpoint>();
 	private String transformation;
 	private String variableCsv;
 	// Please note that the get and set methods need @Transient annotation for
-	// XmlEncoder to not store the property.
-	private transient Report originalReport;
+	// XmlEncoder to not store the property. This is in contrast to
+	// serialization / ObjectOutputStream that is using variables (and doesn't
+	// look at get and set methods) and needs a variable to be declared
+	// transient to not store the field.
 	private transient String mainThread;
 	private transient List<String> threads = new ArrayList<String>();
 	private transient Map<String, Integer> threadCheckpointIndex = new HashMap<String, Integer>();
@@ -72,6 +76,7 @@ public class Report implements Serializable {
 	private transient Map<String, Integer> threadLevel = new HashMap<String, Integer>();
 	private transient Map<String, String> threadParent = new HashMap<String, String>();
 	private transient int threadsActiveCount = 0;
+	private transient TestTool testTool;
 	private transient boolean closed;
 	private transient Storage storage;
 	private transient Integer storageId;
@@ -79,6 +84,7 @@ public class Report implements Serializable {
 	private transient ReportXmlTransformer reportXmlTransformer;
 	private transient ReportXmlTransformer globalReportXmlTransformer;
 	private transient String xml;
+	private transient Report originalReport;
 	private transient boolean differenceChecked = false;
 	private transient boolean differenceFound = false;
 	private transient Map<String, String> truncatedMessageMap = new RefCompareMap<String, String>();
@@ -154,19 +160,19 @@ public class Report implements Serializable {
 		return storageSize;
 	}
 	
-	public void setStartTime(Long startTime) {
+	public void setStartTime(long startTime) {
 		this.startTime = startTime;
 	}
 
-	public Long getStartTime() {
+	public long getStartTime() {
 		return startTime;
 	}
 
-	public void setEndTime(Long endTime) {
+	public void setEndTime(long endTime) {
 		this.endTime = endTime;
 	}
 
-	public Long getEndTime() {
+	public long getEndTime() {
 		return endTime;
 	}
 
