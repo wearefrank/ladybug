@@ -98,16 +98,26 @@ public class ReportRelatedTestCase extends TestCase {
 	}
 
 	protected Report assertReport(String correlationId) throws StorageException, IOException {
-		return assertReport(correlationId, false, false, false, false, false);
+		return assertReport(correlationId, getName(), false, false, false, false, false);
 	}
 
+	protected Report assertReport(String correlationId, String name) throws StorageException, IOException {
+		return assertReport(correlationId, name, false, false, false, false, false);
+	}
 	protected Report assertReport(String correlationId, boolean applyXmlEncoderIgnores,
+			boolean applyEpochTimestampIgnore, boolean applyStackTraceIgnores, boolean applyCorrelationIdIgnores,
+			boolean assertExport) throws StorageException, IOException {
+		return assertReport(correlationId, getName(), applyXmlEncoderIgnores, applyEpochTimestampIgnore,
+				applyStackTraceIgnores, applyCorrelationIdIgnores, assertExport);
+	}
+
+	protected Report assertReport(String correlationId, String name, boolean applyXmlEncoderIgnores,
 			boolean applyEpochTimestampIgnore, boolean applyStackTraceIgnores, boolean applyCorrelationIdIgnores,
 			boolean assertExport) throws StorageException, IOException {
 		assertEquals("Found report(s) in progress,", 0, testTool.getNumberOfReportsInProgress());
 		Storage storage = testTool.getDebugStorage();
 		Report report = findAndGetReport(testTool, storage, correlationId);
-		return assertReport(report, resourcePath, getName(), applyXmlEncoderIgnores, applyEpochTimestampIgnore,
+		return assertReport(report, resourcePath, name, applyXmlEncoderIgnores, applyEpochTimestampIgnore,
 				applyStackTraceIgnores, applyCorrelationIdIgnores, assertExport);
 	}
 
@@ -145,12 +155,24 @@ public class ReportRelatedTestCase extends TestCase {
 		return report;
 	}
 
-	public static Report findAndGetReport(TestTool testTool, Storage storage, String correlationId) throws StorageException {
+	public static Report findAndGetReport(TestTool testTool, Storage storage, String correlationId)
+			throws StorageException {
 		return findAndGetReport(testTool, storage, correlationId, true);
 	}
 
-	public static Report findAndGetReport(TestTool testTool, Storage storage, String correlationId, boolean assertFound)
-			throws StorageException {
+	public static Report findAndGetReport(TestTool testTool, Storage storage, String correlationId,
+			boolean assertFound) throws StorageException {
+		List<Report> reports = findAndGetReports(testTool, storage, correlationId, assertFound);
+		Report report = null;
+		if (reports.size() > 0) {
+			report = reports.get(0);
+			assertEquals(correlationId, report.getCorrelationId());
+		}
+		return report;
+	}
+
+	public static List<Report> findAndGetReports(TestTool testTool, Storage storage, String correlationId,
+			boolean assertExactlyOne) throws StorageException {
 		// In the Spring config for the JUnit tests bean testTool has scope prototype (see comment in config), hence use
 		// the same instance here instead of using getBean()
 		assertNull("Report should not be in progress", testTool.getReportInProgress(correlationId));
@@ -162,15 +184,15 @@ public class ReportRelatedTestCase extends TestCase {
 		searchValues.add(correlationId);
 		List<List<Object>> metadata = storage.getMetadata(2, metadataNames, searchValues,
 				MetadataExtractor.VALUE_TYPE_OBJECT);
-		if (assertFound) {
+		if (assertExactlyOne) {
 			assertEquals("Didn't find exactly 1 report with correlationId " + correlationId + ",", 1, metadata.size());
 		}
-		Report report = null;
-		if (metadata.size() > 0) {
-			report = storage.getReport((Integer)metadata.get(0).get(0));
-			assertEquals(correlationId, report.getCorrelationId());
+		List<Report> reports = new ArrayList<Report>();
+		for (int i = 0; i < metadata.size(); i++) {
+			Report report = storage.getReport((Integer)metadata.get(i).get(0));
+			reports.add(report);
 		}
-		return report;
+		return reports;
 	}
 
 	public static void assertXml(String path, String testCaseName, String actual) throws StorageException, IOException {
