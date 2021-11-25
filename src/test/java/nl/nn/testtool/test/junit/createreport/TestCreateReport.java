@@ -308,13 +308,17 @@ public class TestCreateReport extends ReportRelatedTestCase {
 			assertTrue("Report name incorrect: " + report.getName(),
 					report.getName().equals("Thread-0") || report.getName().equals("Thread-1"));
 			String nameSuffix = "11";
+			String childThreadName = "Thread-1";
+			String parentThreadName = "Thread-0";
 			if (report.getName().equals("Thread-1")) {
 				// This time second thread was faster, hence use different expected xml
 				nameSuffix = "12";
+				childThreadName = "Thread-0";
+				parentThreadName = "Thread-1";
 			}
 			assertReport(report, resourcePath, getName() + nameSuffix, false, false, false, false, false);
-			assertWarningUseThreadCreatepointAndThreadStartpoint(listAppender, correlationId, "Thread-1", "Thread-0" ,
-					"Thread-1");
+			assertWarningUseThreadCreatepointAndThreadStartpoint(listAppender, correlationId, childThreadName,
+					parentThreadName, childThreadName);
 		} else if (reports.size() == 2) {
 			Report report1 = reports.get(0);
 			Report report2 = reports.get(1);
