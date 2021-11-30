@@ -49,6 +49,11 @@
 
   <dependencies>
     <dependency>
+      <groupId>org.webjars.npm</groupId>
+      <artifactId>wearefrank__ladybug</artifactId>
+      <version>0.0.11</version>
+    </dependency>
+    <dependency>
       <groupId>org.apache.cxf</groupId>
       <artifactId>cxf-rt-rs-client</artifactId>
       <version>${cxf.version}</version>
