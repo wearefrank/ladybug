@@ -37,7 +37,7 @@ point to the following projects for examples on how to integrate Ladybug into yo
 
 Direct integration of the Ladybug has been done in the Ladybug test webapp:
 
-https://github.com/ibissource/ibis-ladybug-test-webapp
+- https://github.com/ibissource/ibis-ladybug-test-webapp
 
 And the Open ZaakBrug:
 
@@ -70,7 +70,7 @@ How to change and test Ladybug
 
 Clone the following projects to your Git folder or any other folder of your choice:
 
-- https://github.com/ibissource/ibis-ladybug (backend code)
+- https://github.com/ibissource/ibis-ladybug (backend code) (the project you are currently looking at)
 - https://github.com/ibissource/ladybug-frontend (frontend code, not needed when making backend changes)
 - https://github.com/ibissource/ibis-ladybug-test-webapp (webapp to test Ladybug)
 - https://github.com/ibissource/frank-runner (building and running the test webapp with Ladybug)
@@ -80,9 +80,7 @@ Read the Frank!Runner [README.md](https://github.com/ibissource/frank-runner#fra
 with your IDE but you can also just start the restart.bat in the frank-runner/specials/ibis-ladybug folder. This should
 build and run the test webapp with Ladybug. When Tomcat has been started by the Frank!Runner browse to:
 
-```
-http://localhost
-```
+- http://localhost
 
 This should display a page with links to the various resources available like the Ladybug frontend and API.
 
@@ -134,9 +132,7 @@ proxy.conf.json (this will circumvent CORS related problems as the frontend serv
 the api on port 80). It is now possible to use both the WebJars packaged Ladybug frontend and the Ladybug frontend
 served by Node.js. The page on the following url (also mentioned above) contains links to both frontends:
 
-```
-http://localhost
-```
+- http://localhost
 
 Testing is done using [Cypress](https://www.cypress.io/). If you are running Cypress for the first time run the
 following command in the root folder of the Ladybug frontend project:
