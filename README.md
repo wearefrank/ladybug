@@ -28,12 +28,62 @@ To see Ladybug in action as part of the Frank!Framework go to:
 
 - https://ibis4example.ibissource.org/iaf/gui/#!/testing/ladybug
 
+And in Open ZaakBrug as part of http://demodam.nl:
+
+- https://open-zaakbrug.demodam.nl/debug
+
 
 How to use Ladybug
 ==================
 
-There isn't much documentation available yet so don't hesitate to [contact us](#feedback) to help you. For now we will
-point to the following projects for examples on how to integrate Ladybug into your project.
+Ladybug is incorporated into the Frank!Framework and as such documented as part of the Frank!Manual. For the debugging
+functionality of the Ladybug please read:
+
+- https://frank-manual.readthedocs.io/en/latest/operator/ladybug.html
+
+To use the Ladybug as test tool please read:
+
+- https://frank-manual.readthedocs.io/en/latest/testing/ladybug/ladybug.html
+
+
+How to incorporate Ladybug into your application or framework
+=============================================================
+
+There are two main area's to consider, the actual logging/debugging of business logic and the configuration/integration
+of Ladybug into your project.
+
+The first and most interesting area is the actual logging/debugging of business logic. This is similar to code that you
+write for logging. When we look at the following code in the ZGWClient.java of the Open ZaakBrug we can see that the
+Debugger (a wrapper around the Ladybug TestTool class) is initialized in the same way as a normal Logger. Logging the
+json for the POST is also similar except that the debugger will return an object (which a logger doesn't). This is
+because the user of the Ladybug GUI can decide to stub a checkpoint in which case the Ladybug will return a different
+json than it got as a parameter value. Every startpoint (which will make the tree indent one level) must have a
+corresponding endpoint (to make the indent go back one level). In this case the endpoint is using a Lambda function so
+that in case of stubbing not only the Ladybug will return a different value but it will also skip the actual code of
+doing a post to another system (which at the time of running a test might not be connected and would give an error).
+Other than using Lambda's adding checkpoint statements are pretty straight forward an similar to using a traditional
+logger.
+
+```
+	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+	private static final Debugger debug = Debugger.getDebugger(MethodHandles.lookup().lookupClass());
+	...
+	json = debug.startpoint(debugName, json);
+	url = debug.inputpoint("url", url);
+	log.debug("POST: " + url + ", json: " + json);
+	...
+	String zgwResponse = (String) debug.endpoint(debugName, () -> {
+			...
+			String response = this.restTemplateService.getRestTemplate().postForObject(finalUrl, entity, String.class);
+			...
+			return response;
+		});
+```
+
+The second area to consider while integrating Ladybug into your project is the Spring configuration and enabling of the
+servlets needed to serve the Ladybug frontend. This can basically be done in two ways (direct and using AOP). We hope
+that the following examples for both methods are enough to get you running. If not, don't hesitate to
+[contact us](#feedback) for help.
 
 Direct integration of the Ladybug has been done in the Ladybug test webapp:
 
