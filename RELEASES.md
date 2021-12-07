@@ -6,6 +6,8 @@ Ladybug Test Tool release notes
 Upcoming
 --------
 
+- Upgrade jackson from 1.1.1 to 2.13.0
+- Fix incompatible types for field endTime
 - Fix ArrayIndexOutOfBoundsException on concurrent last endpoint for report and a startpoint
 - Change integration method of new GUI with Frank!Framework
 - Visualize waiting for threads and streams and add closeThreads and closeMessageCapturers
