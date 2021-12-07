@@ -34,16 +34,17 @@ import javax.servlet.http.HttpServletResponseWrapper;
  * </p>
  * 
  * <p>
- * Information about WebJars can be found at: https://www.webjars.org/
+ * This servlets relies on WebJars being configured for the webapp it is running in als it will dispatch requests to
+ * /webjars/ for WebJars resources. Information about WebJars and how to configure them for your webapp can be found at:
+ * <ul>
+ *   <li>https://www.webjars.org/</li>
+ * </ul>
  * </p>
  * 
  * <p>
- * The Angural website states: Routed apps must fallback to index.html. ... If the application uses the Angular router,
+ * The Angural website states: "Routed apps must fallback to index.html. ... If the application uses the Angular router,
  * you must configure the server to return the application's host page (index.html) when asked for a file that it does
- * not have.
- * <br/>
- * <br/>
- * For more information read:
+ * not have.". For more information read:
  * <ul>
  *   <li>https://angular.io/guide/deployment#server-configuration</li>
  *   <li>https://angular.io/guide/router#locationstrategy-and-browser-url-styles</li>
