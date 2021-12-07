@@ -27,16 +27,59 @@ import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpServletResponseWrapper;
 
+/**
+ * <p>
+ * Serve an Angular app from a WebJars jar using the version agnostic approach, serving index.html when a resource is
+ * not found and changing the base href in the index.html when needed.
+ * </p>
+ * 
+ * <p>
+ * Information about WebJars can be found at: https://www.webjars.org/
+ * </p>
+ * 
+ * <p>
+ * The Angural website states: Routed apps must fallback to index.html. ... If the application uses the Angular router,
+ * you must configure the server to return the application's host page (index.html) when asked for a file that it does
+ * not have.
+ * <br/>
+ * <br/>
+ * For more information read:
+ * <ul>
+ *   <li>https://angular.io/guide/deployment#server-configuration</li>
+ *   <li>https://angular.io/guide/router#locationstrategy-and-browser-url-styles</li>
+ *   <li>https://angular.io/guide/router#choosing-a-routing-strategy</li>
+ *   <li>https://angular.io/guide/router#base-href-1</li>
+ * </ul>
+ * </p>
+ * 
+ * <p>
+ * Depending on how servlets are configurated the Angular app might be served from the root context
+ * (http://&lt;hostname>/) or a different context (e.g. http://&lt;hostname>/my-app/) in which case the index.html of
+ * the Angular app should contain &lt;base href="/my-app/"> instead of &lt;base href="/">. To make it possible to use
+ * the same WebJars jar for servlet configurations with different servlet mappings this Angular servlet will adjust
+ * the value of the href attribute of the base element to correspond with the serverside configured servlet path when
+ * serving the index.html.
+ * </p>
+ * 
+ * @author Jaco de Groot
+ */
 public class AngularServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 	private String artifactId;
 
+	/**
+	 * Set artifactId of WebJars jar that contains the Angular app to be served. In case of a Maven project the pom.xml
+	 * of the project should also contain the artifactId.
+	 * 
+	 * @param artifactId  artifactId of WebJars jar that contains the Angular app to be served
+	 */
 	public void setArtifactId(String artifactId) {
 		this.artifactId = artifactId;
 	}
 
 	@Override
-	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+	protected void doGet(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
 		HttpServletResponseWrapper responseWrapper = new HttpServletResponseWrapper(response) {
 			@Override
 			public void sendError(int sc) throws IOException {
@@ -45,8 +88,8 @@ public class AngularServlet extends HttpServlet {
 						// Write index.html when resource not found
 						includeWebJarAsset(request, response, true);
 					} catch (ServletException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
+						super.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
+								"Got exception reading index.html for " + artifactId + ": " + e.getMessage());
 					}
 				} else {
 					super.sendError(sc);
