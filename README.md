@@ -36,12 +36,12 @@ And in Open ZaakBrug as part of http://demodam.nl:
 How to use Ladybug
 ==================
 
-Ladybug is incorporated into the Frank!Framework and as such documented as part of the Frank!Manual. For the debugging
-functionality of the Ladybug please read:
+Ladybug is incorporated into the Frank!Framework and as such documented as part of the Frank!Manual. For a quick
+introduction to Ladybug, read:
 
 - https://frank-manual.readthedocs.io/en/latest/operator/ladybug.html
 
-To use the Ladybug as test tool please read:
+For a detailed explanation please read (which will also explain the use of Ladybug as a test tool):
 
 - https://frank-manual.readthedocs.io/en/latest/testing/ladybug/ladybug.html
 
@@ -81,9 +81,10 @@ logger.
 ```
 
 The second area to consider while integrating Ladybug into your project is the Spring configuration and enabling of the
-servlets needed to serve the Ladybug frontend. This can basically be done in two ways (direct and using AOP). We hope
-that the following examples for both methods are enough to get you running. If not, don't hesitate to
-[contact us](#feedback) for help.
+servlets needed to serve the Ladybug frontend. This can basically be done in two ways (direct and using 
+[AOP](https://docs.spring.io/spring-framework/docs/5.3.x/reference/html/core.html#spring-core)). We hope that the
+following examples for both methods are enough to get you running. If not, don't hesitate to [contact us](#feedback) for
+help.
 
 Direct integration of the Ladybug has been done in the Ladybug test webapp:
 
