@@ -34,7 +34,7 @@ import javax.servlet.http.HttpServletResponseWrapper;
  * </p>
  * 
  * <p>
- * This servlets relies on WebJars being configured for the webapp it is running in als it will dispatch requests to
+ * This servlets relies on WebJars being configured for the webapp it is running in as it will dispatch requests to
  * /webjars/ for WebJars resources. Information about WebJars and how to configure them for your webapp can be found at:
  * <ul>
  *   <li>https://www.webjars.org/</li>
