@@ -188,20 +188,7 @@ class BaseRewritingServletOutputStream extends ServletOutputStream {
 				if (phase == 2 && (char)b == '"') {
 					i = -1;
 				} else {
-					if (stringBuffer.length() > 11
-							&& stringBuffer.charAt(stringBuffer.length() - 12) == '<'
-							&& stringBuffer.charAt(stringBuffer.length() - 11) == 'b'
-							&& stringBuffer.charAt(stringBuffer.length() - 10) == 'a'
-							&& stringBuffer.charAt(stringBuffer.length() - 9) == 's'
-							&& stringBuffer.charAt(stringBuffer.length() - 8) == 'e'
-							&& stringBuffer.charAt(stringBuffer.length() - 7) == ' '
-							&& stringBuffer.charAt(stringBuffer.length() - 6) == 'h'
-							&& stringBuffer.charAt(stringBuffer.length() - 5) == 'r'
-							&& stringBuffer.charAt(stringBuffer.length() - 4) == 'e'
-							&& stringBuffer.charAt(stringBuffer.length() - 3) == 'f'
-							&& stringBuffer.charAt(stringBuffer.length() - 2) == '='
-							&& stringBuffer.charAt(stringBuffer.length() - 1) == '"'
-							) {
+					if (endsWith(stringBuffer, "<base href=\"")) {
 						for (int i = 0; i < newBase.length(); i++) {
 							servletOutputStream.write(newBase.charAt(i));
 						}
@@ -212,6 +199,18 @@ class BaseRewritingServletOutputStream extends ServletOutputStream {
 		} else {
 			servletOutputStream.write(b);
 		}
+	}
+
+	private boolean endsWith(StringBuffer stringBuffer, String string) {
+		if (stringBuffer.length() >= string.length()) {
+			for (int i = 0; i < string.length(); i++) {
+				if (!(string.charAt(i) == stringBuffer.charAt(stringBuffer.length() - string.length() + i))) {
+					return false;
+				}
+			}
+			return true;
+		}
+		return false;
 	}
 
 }
