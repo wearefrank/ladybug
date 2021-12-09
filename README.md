@@ -185,7 +185,7 @@ served by Node.js. The page on the following url (also mentioned above) contains
 
 - http://localhost
 
-To run the unit tests of the frontend, please do:
+To run the unit tests of the frontend, run the following command:
 
 ```
 npm test
@@ -193,20 +193,21 @@ npm test
 
 At the time of writing, there are no unit tests but there are end-to-end tests.
 
-End-to-end testing is done using [Cypress](https://www.cypress.io/). If you are running Cypress for the first time run the
-following command in the root folder of the Ladybug frontend project:
+End-to-end testing is done using [Cypress](https://www.cypress.io/). If you are running Cypress for the first time run
+the following command in the root folder of the Ladybug frontend project:
 
 ```
 npm install cypress
 ```
 
-To run the Cypress tests using a graphical user interface, run the following commnad:
+To run the Cypress tests using a graphical user interface, run the following command:
 
 ```
 npm run e2e-interactive
 ```
 
-This opens a window with a link that allows you to start the tests. You will see the ibis-ladybug GUI while the tests run. The GUI will show the effects of the commands that are applied by the tests.
+This opens a window with a link that allows you to start the tests. You will see the ibis-ladybug GUI while the tests
+run. The GUI will show the effects of the commands that are applied by the tests.
 
 If you want to run the tests automatically without a GUI, then use the following command:
 
@@ -222,7 +223,7 @@ The frontend is released as a NPM package and WebJar using the following steps:
 - Commit changes to the frontend project
 - npm login (one time action)
 - ng build (in any folder of the project)
-- Copy package.json and LICENSE in the root folder to the dist/ladybug folder
+- Copy package.json, LICENSE and README.md in the root folder to the dist/ladybug folder
 - Remove dependencies and devDependencies from dist/ladybug/package.json
 - cd dist/ladybug
 - npm publish
