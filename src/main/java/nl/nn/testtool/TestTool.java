@@ -271,6 +271,7 @@ public class TestTool {
 						report = getReportInProgress(correlationId, name, checkpointType);
 					}
 					if (report != null) {
+						// synchronize on report again as it can now point to a different report
 						synchronized(report) {
 							executeStubableCode = false;
 							message = report.checkpoint(childThreadId, sourceClassName, name, message, stubableCode,
