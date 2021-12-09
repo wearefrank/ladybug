@@ -185,19 +185,34 @@ served by Node.js. The page on the following url (also mentioned above) contains
 
 - http://localhost
 
-Testing is done using [Cypress](https://www.cypress.io/). If you are running Cypress for the first time run the
+To run the unit tests of the frontend, please do:
+
+```
+npm test
+```
+
+At the time of writing, there are no unit tests but there are end-to-end tests.
+
+End-to-end testing is done using [Cypress](https://www.cypress.io/). If you are running Cypress for the first time run the
 following command in the root folder of the Ladybug frontend project:
 
 ```
 npm install cypress
 ```
 
-To run the Cypress tests, run the following commnad:
+To run the Cypress tests using a graphical user interface, run the following commnad:
 
 ```
-npm test
+npm run e2e-interactive
 ```
 
+This opens a window with a link that allows you to start the tests. You will see the ibis-ladybug GUI while the tests run. The GUI will show the effects of the commands that are applied by the tests.
+
+If you want to run the tests automatically without a GUI, then use the following command:
+
+```
+npm run e2e
+```
 
 Create NPM package and WebJar
 =============================
