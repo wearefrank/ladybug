@@ -194,13 +194,16 @@ npm test
 At the time of writing, there are no unit tests but there are end-to-end tests.
 
 End-to-end testing is done using [Cypress](https://www.cypress.io/). If you are running Cypress for the first time run
-the following command in the root folder of the Ladybug frontend project:
+the following command in the root folder of the Ladybug frontend project (in case you don't have a direct internet
+connection you might need to set HTTPS_PROXY, see https://docs.cypress.io/guides/references/proxy-configuration):
 
 ```
 npm install cypress
 ```
 
-To run the Cypress tests using a graphical user interface, run the following command:
+To run the Cypress tests using a graphical user interface, run the following command (in case nothing happens after
+"Compiled successfully" you might need to run set HTTP_PROXY= to prevent Cypress from connecting to locahost using your
+proxy):
 
 ```
 npm run e2e-interactive
