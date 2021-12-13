@@ -333,8 +333,8 @@ public class Report implements Serializable {
 	 * visualize the status of waiting for a thread to start. A threadCreatepoint should be visualized as an error as a
 	 * thread was expected to start but didn't start.
 	 * 
-	 * @param ...
-	 * @param ...
+	 * @param index
+	 * @param threadName
 	 */
 	private void removeThreadCreatepoint(int index, String threadName) {
 		if (index < checkpoints.size() && checkpoints.get(index).getType() == Checkpoint.TYPE_THREADCREATEPOINT) {

@@ -55,10 +55,7 @@ public class ReportRelatedTestCase extends TestCase {
 	public static final String LOG_SUFFIX = "-FAILED.txt";
 	public static final String ASSERT_REPORT_XSLT = "transformReport.xslt";
 	public static final String DEFAULT_CHARSET = "UTF-8";
-	// Use this context at least in all tests that use debug storage otherwise when more then one context is creating
-	// storage beans the storageId's are likely to not be unique anymore which will give unexpected results
-	public static final ApplicationContext CONTEXT = new ClassPathXmlApplicationContext("springTestToolTestJUnit.xml");
-	private static final TestTool testTestTool = (TestTool)CONTEXT.getBean("testTool");
+	private static final TestTool testTestTool = (TestTool)Common.CONTEXT.getBean("testTool");
 	protected TestTool testTool;
 	protected ListAppender<ILoggingEvent> listAppender;
 	public String resourcePath = "Override this value!";
@@ -74,7 +71,7 @@ public class ReportRelatedTestCase extends TestCase {
 		listAppender = new ListAppender<>();
 		listAppender.start();
 		log.addAppender(listAppender);
-		testTool = (TestTool)CONTEXT.getBean("testTool");
+		testTool = (TestTool)Common.CONTEXT.getBean("testTool");
 	}
 
 	@Override

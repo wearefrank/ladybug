@@ -39,7 +39,8 @@ public class ParseSpeedTester {
      * The DOM version always seems to have a huge up-front parsing overhead, and
      * most of the times SAX wins.
      * 
-     * @param args
+     * @param allReports
+     * @param nrOfTimes
      */
 //	TODO [junit] weer aanzetten en repareren
 /*

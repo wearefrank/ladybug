@@ -29,6 +29,7 @@ import nl.nn.testtool.TestTool;
 import nl.nn.testtool.run.ReportRunner;
 import nl.nn.testtool.storage.Storage;
 import nl.nn.testtool.storage.StorageException;
+import nl.nn.testtool.test.junit.Common;
 import nl.nn.testtool.test.junit.ReportRelatedTestCase;
 
 /**
@@ -39,7 +40,7 @@ public class TestRerun extends TestCase {
 	private static Integer i = 0;
 
 	public void testRerun() throws StorageException, IOException {
-		TestTool testTool = (TestTool)ReportRelatedTestCase.CONTEXT.getBean("testTool");
+		TestTool testTool = (TestTool)Common.CONTEXT.getBean("testTool");
 		testTool.setRerunner(new Rerunner() {
 			@SneakyThrows
 			@Override

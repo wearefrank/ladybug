@@ -31,16 +31,12 @@ import javax.servlet.http.HttpServletResponseWrapper;
  * <p>
  * Serve an Angular app from a WebJars jar using the version agnostic approach, serving index.html when a resource is
  * not found and changing the base href in the index.html when needed.
- * </p>
- * 
  * <p>
  * This servlets relies on WebJars being configured for the webapp it is running in as it will dispatch requests to
  * /webjars/ for WebJars resources. Information about WebJars and how to configure them for your webapp can be found at:
  * <ul>
  *   <li>https://www.webjars.org/</li>
  * </ul>
- * </p>
- * 
  * <p>
  * The Angural website states: "Routed apps must fallback to index.html. ... If the application uses the Angular router,
  * you must configure the server to return the application's host page (index.html) when asked for a file that it does
@@ -51,16 +47,13 @@ import javax.servlet.http.HttpServletResponseWrapper;
  *   <li>https://angular.io/guide/router#choosing-a-routing-strategy</li>
  *   <li>https://angular.io/guide/router#base-href-1</li>
  * </ul>
- * </p>
- * 
  * <p>
  * Depending on how servlets are configurated the Angular app might be served from the root context
- * (http://&lt;hostname>/) or a different context (e.g. http://&lt;hostname>/my-app/) in which case the index.html of
- * the Angular app should contain &lt;base href="/my-app/"> instead of &lt;base href="/">. To make it possible to use
+ * (http://&lt;hostname&gt;/) or a different context (e.g. http://&lt;hostname&gt;/my-app/) in which case the index.html of
+ * the Angular app should contain &lt;base href="/my-app/"&gt; instead of &lt;base href="/"&gt;. To make it possible to use
  * the same WebJars jar for servlet configurations with different servlet mappings this Angular servlet will adjust
  * the value of the href attribute of the base element to correspond with the serverside configured servlet path when
  * serving the index.html.
- * </p>
  * 
  * @author Jaco de Groot
  */
