@@ -30,6 +30,7 @@ import nl.nn.testtool.Checkpoint;
 import nl.nn.testtool.Report;
 import nl.nn.testtool.storage.StorageException;
 import nl.nn.testtool.storage.memory.Storage;
+import nl.nn.testtool.test.junit.Common;
 import nl.nn.testtool.test.junit.ReportRelatedTestCase;
 import nl.nn.testtool.transform.ReportXmlTransformer;
 import nl.nn.testtool.util.Export;
@@ -85,7 +86,7 @@ public class TestExport extends TestCase {
 				} else if (name.equals("globalReportXmlTransformer")) {
 					report.setGlobalReportXmlTransformer(new ReportXmlTransformer());
 				} else if (!name.equals("storageId") && !name.equals("checkpoints")) {
-					method.invoke(report, ReportRelatedTestCase.CONTEXT.getBean(name));
+					method.invoke(report, Common.CONTEXT.getBean(name));
 				} else if (name.equals("checkpoints")) {
 					// Ignore, done manually
 				} else {
