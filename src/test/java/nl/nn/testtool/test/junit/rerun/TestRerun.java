@@ -50,7 +50,7 @@ public class TestRerun {
 
 	@Test
 	public void testRerun() throws StorageException, IOException {
-		TestTool testTool = (TestTool)Common.CONTEXT.getBean("testTool");
+		TestTool testTool = (TestTool)Common.CONTEXT_FILE_STORAGE.getBean("testTool");
 		testTool.setRerunner(new Rerunner() {
 			@SneakyThrows
 			@Override
