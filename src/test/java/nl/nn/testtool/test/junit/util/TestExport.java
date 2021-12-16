@@ -15,6 +15,8 @@
 */
 package nl.nn.testtool.test.junit.util;
 
+import static org.junit.Assert.assertNull;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -25,7 +27,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.zip.GZIPInputStream;
 
-import junit.framework.TestCase;
+import org.junit.Test;
+
 import nl.nn.testtool.Checkpoint;
 import nl.nn.testtool.Report;
 import nl.nn.testtool.storage.StorageException;
@@ -38,9 +41,10 @@ import nl.nn.testtool.util.Export;
 /**
  * @author Jaco de Groot
  */
-public class TestExport extends TestCase {
+public class TestExport {
 	public static final String RESOURCE_PATH = "nl/nn/testtool/test/junit/util/";
 
+	@Test
 	public void testExport() throws IllegalAccessException, IllegalArgumentException, InvocationTargetException, IOException, StorageException {
 		Report report = new Report();
 		// Find all bean properties and change default values to test that transient properties are not added to the
