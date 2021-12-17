@@ -32,11 +32,16 @@ import nl.nn.testtool.util.SearchUtil;
  * @author Jaco de Groot
  */
 public class Storage implements CrudStorage, LogStorage {
+	// The initial storage id. We choose a large value to distinguish the
+	// storage id from numbers with another meaning. This makes it easier
+	// to write unit tests.
+	private static final int INITIAL_STORAGE_ID = 2514;
+
 	protected String name;
 	protected Map reports;
 	protected List storageIds;
 	protected List metadata;
-	protected int storageId = 0;
+	protected int storageId = INITIAL_STORAGE_ID;
 	protected MetadataExtractor metadataExtractor;
 	
 	public Storage() {
