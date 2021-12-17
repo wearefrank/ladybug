@@ -25,7 +25,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
 
-import junit.framework.TestCase;
 import lombok.SneakyThrows;
 import nl.nn.testtool.Checkpoint;
 import nl.nn.testtool.Report;
