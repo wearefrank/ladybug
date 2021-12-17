@@ -90,6 +90,7 @@ public class TestExport {
 				} else if (name.equals("globalReportXmlTransformer")) {
 					report.setGlobalReportXmlTransformer(new ReportXmlTransformer());
 				} else if (!name.equals("storageId") && !name.equals("checkpoints")) {
+					// No need to test thsi for a memory storage.
 					method.invoke(report, Common.CONTEXT_FILE_STORAGE.getBean(name));
 				} else if (name.equals("checkpoints")) {
 					// Ignore, done manually
