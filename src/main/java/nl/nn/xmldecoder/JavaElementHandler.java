@@ -24,8 +24,6 @@
  */
 package nl.nn.xmldecoder;
 
-import nl.nn.xmldecoder.ElementHandler;
-
 /**
  * This class is intended to handle &lt;java&gt; element.
  * Each element that appears in the body of this element

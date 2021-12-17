@@ -17,7 +17,6 @@ package nl.nn.testtool.metadata;
 
 import nl.nn.testtool.Checkpoint;
 import nl.nn.testtool.Report;
-import nl.nn.testtool.metadata.DefaultValueMetadataFieldExtractor;
 
 /**
  * @author Jaco de Groot
