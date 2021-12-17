@@ -103,9 +103,10 @@ public class TestRerun {
 		actual = ReportRelatedTestCase.applyToXmlIgnores(actual, report);
 		actual = ReportRelatedTestCase.applyXmlEncoderIgnores(actual);
 		ReportRelatedTestCase.assertXml(RESOURCE_PATH, reportName, actual);
-		Integer storageId = (Integer)storage.getStorageIds().get(0);
+		int numReportsBeforeRerun = storage.getSize();
 		assertNull(testTool.rerun(ReportRelatedTestCase.getCorrelationId(), report, null, null));
-		assertNotEquals(storageId, (Integer)storage.getStorageIds().get(0));
+		int numReportsAfterRerun = storage.getSize();
+		assertEquals(numReportsAfterRerun, numReportsBeforeRerun + 1);
 		assertEquals((Integer)10, i);
 	}
 
