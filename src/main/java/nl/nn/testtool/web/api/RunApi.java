@@ -136,8 +136,8 @@ public class RunApi extends ApiBase {
 					res.put("total", runResultReport.getCheckpoints().size() - 1);
 
 					Report report = reranReports.get(entry.getKey());
-					res.put("previous-time", report.getEndTime() - report.getStartTime());
-					res.put("current-time", runResultReport.getEndTime() - runResultReport.getStartTime());
+					res.put("previousTime", report.getEndTime() - report.getStartTime());
+					res.put("currentTime", runResultReport.getEndTime() - runResultReport.getStartTime());
 				} catch (StorageException exception) {
 					res.put("exception", exception);
 					exception.printStackTrace();
