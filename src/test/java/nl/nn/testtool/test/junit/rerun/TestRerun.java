@@ -15,11 +15,16 @@
 */
 package nl.nn.testtool.test.junit.rerun;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNull;
 
 import java.io.IOException;
 
-import junit.framework.TestCase;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TestName;
+
 import lombok.SneakyThrows;
 import nl.nn.testtool.Checkpoint;
 import nl.nn.testtool.Report;
@@ -35,10 +40,14 @@ import nl.nn.testtool.test.junit.ReportRelatedTestCase;
 /**
  * @author Jaco de Groot
  */
-public class TestRerun extends TestCase {
+public class TestRerun {
 	public static final String RESOURCE_PATH = "nl/nn/testtool/test/junit/rerun/";
 	private static Integer i = 0;
 
+	@Rule
+	public TestName name = new TestName();
+
+	@Test
 	public void testRerun() throws StorageException, IOException {
 		TestTool testTool = (TestTool)Common.CONTEXT.getBean("testTool");
 		testTool.setRerunner(new Rerunner() {
@@ -50,12 +59,12 @@ public class TestRerun extends TestCase {
 				Integer firstMessage = (Integer)originalReport.getCheckpoints().get(0).getMessageAsObject();
 				assertEquals((Integer)10, firstMessage);
 				firstMessage = 100;
-				addSomething(testTool, correlationId, getName(), firstMessage);
+				addSomething(testTool, correlationId, name.getMethodName(), firstMessage);
 				return null;
 			}
 		});
 		String correlationId = ReportRelatedTestCase.getCorrelationId();
-		addSomething(testTool, correlationId, getName(), 10);
+		addSomething(testTool, correlationId, name.getMethodName(), 10);
 		assertEquals((Integer)10, i);
 		Storage storage = testTool.getDebugStorage();
 		Report report = ReportRelatedTestCase.findAndGetReport(testTool, storage, correlationId);
@@ -64,7 +73,7 @@ public class TestRerun extends TestCase {
 		String actual = report.toXml();
 		actual = ReportRelatedTestCase.applyToXmlIgnores(actual, report);
 		actual = ReportRelatedTestCase.applyXmlEncoderIgnores(actual);
-		ReportRelatedTestCase.assertXml(RESOURCE_PATH, getName(), actual);
+		ReportRelatedTestCase.assertXml(RESOURCE_PATH, name.getMethodName(), actual);
 		Integer storageId = (Integer)storage.getStorageIds().get(0);
 		assertNull(testTool.rerun(ReportRelatedTestCase.getCorrelationId(), report, null, null));
 		assertNotEquals(storageId, (Integer)storage.getStorageIds().get(0));

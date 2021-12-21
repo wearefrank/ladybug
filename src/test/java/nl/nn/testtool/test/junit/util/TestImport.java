@@ -15,12 +15,15 @@
 */
 package nl.nn.testtool.test.junit.util;
 
+import static org.junit.Assert.assertNull;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.zip.GZIPOutputStream;
 
-import junit.framework.TestCase;
+import org.junit.Test;
+
 import nl.nn.testtool.Report;
 import nl.nn.testtool.storage.StorageException;
 import nl.nn.testtool.storage.memory.Storage;
@@ -31,8 +34,9 @@ import nl.nn.testtool.util.ImportResult;
 /**
  * @author Jaco de Groot
  */
-public class TestImport extends TestCase {
+public class TestImport {
 
+	@Test
 	public void testImport() throws StorageException, IOException {
 		assertImport(TestExport.RESOURCE_PATH, "test");
 	}

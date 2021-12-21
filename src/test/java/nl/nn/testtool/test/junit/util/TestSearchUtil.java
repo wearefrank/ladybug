@@ -15,47 +15,52 @@
 */
 package nl.nn.testtool.test.junit.util;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import java.util.Arrays;
 
-import junit.framework.TestCase;
+import org.junit.Test;
+
 import nl.nn.testtool.util.SearchUtil;
 
 /**
  * @author Jaco de Groot
  */
-public class TestSearchUtil extends TestCase {
+public class TestSearchUtil {
 
+	@Test
 	public void testSearchUtil() {
 		String[] values;
 		String[] search;
 		
 		values = new String[]{"a"};
 		search = new String[]{"a"};
-		assertTrue(values, search);
+		assertAllMatch(values, search);
 
 		values = new String[]{"a"};
 		search = new String[]{"*"};
-		assertTrue(values, search);
+		assertAllMatch(values, search);
 
 		values = new String[]{"abc"};
 
 		search = new String[]{"(abc)"};
-		assertTrue(values, search);
+		assertAllMatch(values, search);
 
 		search = new String[]{"b"};
-		assertTrue(values, search);
+		assertAllMatch(values, search);
 
 		search = new String[]{"a*"};
-		assertTrue(values, search);
+		assertAllMatch(values, search);
 
 		search = new String[]{"*bc"};
-		assertTrue(values, search);
+		assertAllMatch(values, search);
 
 		search = new String[]{"b*"};
-		assertFalse(values, search);
+		assertAnyDoesNotMatch(values, search);
 
 		search = new String[]{"*b"};
-		assertFalse(values, search);
+		assertAnyDoesNotMatch(values, search);
 
 		assertTrue(SearchUtil.matches(null, "null"));
 		assertTrue(SearchUtil.matches("", "\"\""));
@@ -70,11 +75,11 @@ public class TestSearchUtil extends TestCase {
 
 	}
 
-	private void assertTrue(String[] values, String[] searchValues) {
+	private void assertAllMatch(String[] values, String[] searchValues) {
 		assertTrue(SearchUtil.matches(Arrays.asList(values), Arrays.asList(searchValues)));
 	}
 
-	private void assertFalse(String[] values, String[] searchValues) {
+	private void assertAnyDoesNotMatch(String[] values, String[] searchValues) {
 		assertFalse(SearchUtil.matches(Arrays.asList(values), Arrays.asList(searchValues)));
 	}
 
