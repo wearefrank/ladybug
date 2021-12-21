@@ -203,25 +203,38 @@ If you want to run the tests automatically without a GUI, then use the following
 npm run e2e
 ```
 
-Create NPM package and WebJar
-=============================
+Create and publish NPM package and WebJar
+========================================
 
-The frontend is released as a NPM package and WebJar using the following steps:
+### Prerequisites
+- Make sure the latest changes are committed (and preferably pushed) to the project
+- Open your terminal and navigate to your project folder (so `PATH/TO/ladybug`)
+- If this is the first time, you need to log into NPM
+    - Create an account on [NPM](https://www.npmjs.com/signup) if you don't have one yet
+    - In the terminal run the following command `npm login`, which prompts you to log into NPM
 
-- Commit changes to the frontend project
-- npm login (one time action)
-- ng build (in any folder of the project)
-- Copy package.json, LICENSE and README.md in the root folder to the dist/ladybug folder
-- Remove dependencies and devDependencies from dist/ladybug/package.json
-- cd dist/ladybug
-- npm publish
-- git tag vX.Y.Z
-- git push tag to origin
-- Increment version number in package.json in the root folder
-- Commit and push with message: Set version for next development cycle
-- Goto https://webjars.org
-- Push button Add a WebJar
-- WebJar Type: NPM
-- Package Name: @wearefrank/ladybug
-- Select version
-- Push button Deploy!
+### Creating and publishing an NPM package
+- Run the command `ng build`, to build the current project
+- Copy the following files into the generated `libs/ladybug` folder
+    - README.md
+    - LICENSE
+    - package.json
+- Remove the `dependencies` and `devDependencies` from the copied `package.json` (`dist/ladybug/package.json`). Make sure you do not remove them from the original `package.json`.
+- Navigate to `dist/ladybug` in your terminal
+- Run `npm publish`
+- Run `git tag vX.Y.Z`, with X.Y.Z being the latest version of the package, which you can find in your `package.json` (for example `0.0.12`)
+- Run `git push origin vX.Y.Z`, with X.Y.Z being the version you just specified.
+- You have now published the NPM package
+
+### Creating and publishing WebJar
+- Navigate to [WebJars](https://webjars.org)
+- Click on the `Add a WebJar` button
+- Select the type `NPM`
+- As package name, type in: `@wearefrank/ladybug`
+- Select the correct version
+- Click on the `Deploy` button to deploy the WebJar. Wait for the Deploy Log to finish (there should be a `Deployed!` somewhere).
+- You have now published the WebJar
+
+### Prepare for next cycle
+- Go into the file `ladybug-frontend/package.json` and increment the version number (for example `0.0.12` -> `0.0.13`)
+- Commit and push the changes in `ladybug-frontend/package.json`, with the commit message `Set version to X.Y.Z for the next development cycle`
