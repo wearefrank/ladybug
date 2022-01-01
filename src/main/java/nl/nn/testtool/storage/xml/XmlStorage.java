@@ -1,5 +1,5 @@
 /*
-   Copyright 2020-2021 WeAreFrank!
+   Copyright 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -230,6 +230,14 @@ public class XmlStorage implements CrudStorage {
 	public List<List<Object>> getMetadata(int maxNumberOfRecords, List<String> metadataNames, List<String> searchValues, int metadataValueType) throws StorageException {
 		updateMetadata();
 		return metadataHandler.getAsListofObjects(maxNumberOfRecords, metadataNames, searchValues, metadataValueType);
+	}
+
+	@Override
+	public void clear() throws StorageException {
+		List<Integer> storageIds = getStorageIds();
+		for (Integer storageId : storageIds) {
+			delete(getReport(storageId));
+		}
 	}
 
 	@Override

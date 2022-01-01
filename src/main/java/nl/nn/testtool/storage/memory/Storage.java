@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden, 2020-2021 WeAreFrank!
+   Copyright 2018 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -44,11 +44,13 @@ public class Storage implements CrudStorage, LogStorage {
 		storageIds = new ArrayList();
 		metadata = new ArrayList();
 	}
-	
+
+	@Override
 	public void setName(String name) {
 		this.name = name;
 	}
 	
+	@Override
 	public String getName() {
 		return name;
 	}
@@ -57,6 +59,7 @@ public class Storage implements CrudStorage, LogStorage {
 		this.metadataExtractor = metadataExtractor;
 	}
 
+	@Override
 	public synchronized void store(Report report) {
 		report.setStorage(this);
 		report.setStorageId(new Integer(storageId++));
@@ -65,6 +68,7 @@ public class Storage implements CrudStorage, LogStorage {
 		metadata.add(new HashMap());
 	}
 
+	@Override
 	public void update(Report report) throws StorageException {
 		reports.put(report.getStorageId(), report);
 		int i = storageIds.indexOf(report.getStorageId());
@@ -72,6 +76,7 @@ public class Storage implements CrudStorage, LogStorage {
 		metadata.add(i, new HashMap());
 	}
 
+	@Override
 	public void delete(Report report) throws StorageException {
 		reports.remove(report);
 		int i = storageIds.indexOf(report.getStorageId());
@@ -79,18 +84,22 @@ public class Storage implements CrudStorage, LogStorage {
 		metadata.remove(i);
 	}
 
+	@Override
 	public void storeWithoutException(Report report) {
 		store(report);
 	}
 
+	@Override
 	public int getSize() {
 		return storageIds.size();
 	}
 
+	@Override
 	public synchronized List getStorageIds() {
 		return new ArrayList(storageIds);
 	}
 
+	@Override
 	public synchronized List getMetadata(int maxNumberOfRecords, List metadataNames,
 			List searchValues, int metadataValueType) {
 		List result = new ArrayList();
@@ -119,25 +128,31 @@ public class Storage implements CrudStorage, LogStorage {
 		return result;
 	}
 
+	@Override
 	public synchronized Report getReport(Integer storageId) {
 		return (Report)reports.get(storageId);
 	}
 
-	public String getErrorMessage() {
-		return null;
+	@Override
+	public void clear() {
+		reports.clear();
 	}
 
+	@Override
 	public void close() {
 	}
 
+	@Override
 	public int getFilterType(String column) {
 		return FILTER_RESET;
 	}
 
+	@Override
 	public List getFilterValues(String column) throws StorageException {
 		return null;
 	}
 
+	@Override
 	public String getUserHelp(String column) {
 		return SearchUtil.getUserHelp();
 	}

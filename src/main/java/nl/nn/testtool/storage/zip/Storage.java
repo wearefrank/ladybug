@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden, 2020-2021 WeAreFrank!
+   Copyright 2018 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -38,7 +38,7 @@ import nl.nn.testtool.Report;
 import nl.nn.testtool.storage.StorageException;
 import nl.nn.testtool.util.SearchUtil;
 
-public class Storage implements nl.nn.testtool.storage.Storage {
+public class Storage implements nl.nn.testtool.storage.CrudStorage {
 	private static Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 	
 	
@@ -57,11 +57,13 @@ public class Storage implements nl.nn.testtool.storage.Storage {
 		storageIds = new ArrayList();
 		metadata = new ArrayList();
 	}
-	
+
+	@Override
 	public void setName(String name) {
 		this.name = name;
 	}
-	
+
+	@Override
 	public String getName() {
 		return name;
 	}
@@ -70,6 +72,7 @@ public class Storage implements nl.nn.testtool.storage.Storage {
 		this.metadataExtractor = metadataExtractor;
 	}
 
+	@Override
 	public synchronized void store(Report report) {
 		ZipEntry zipEntry = new ZipEntry(report.getStorageId().toString());
 		ZipOutputStream zipOutputStream = null;
@@ -92,27 +95,25 @@ public class Storage implements nl.nn.testtool.storage.Storage {
 		metadata.add(new HashMap());
 	}
 
-// CrudStorage implementeren?
-//	public void update(Report report) throws StorageException {
-//		// TODO implementeren?
-//	}
-//
-//	public void delete(Report report) throws StorageException {
-//		// TODO implementeren?
-//	}
-
-	public void storeWithoutException(Report report) {
-		store(report);
+	public void update(Report report) throws StorageException {
+		throw new StorageException("Not implemented (yet)");
 	}
 
+	public void delete(Report report) throws StorageException {
+		throw new StorageException("Not implemented (yet)");
+	}
+
+	@Override
 	public int getSize() {
 		return storageIds.size();
 	}
 
+	@Override
 	public synchronized List getStorageIds() {
 		return new ArrayList(storageIds);
 	}
 
+	@Override
 	public synchronized List getMetadata(int maxNumberOfRecords, List metadataNames,
 			List searchValues, int metadataValueType) {
 		List result = new ArrayList();
@@ -140,6 +141,7 @@ public class Storage implements nl.nn.testtool.storage.Storage {
 		return result;
 	}
 
+	@Override
 	public synchronized Report getReport(Integer storageId) {
 		ZipFile zipFile = null;
 		try {
@@ -156,21 +158,26 @@ public class Storage implements nl.nn.testtool.storage.Storage {
 		return (Report)reports.get(storageId);
 	}
 
-	public String getErrorMessage() {
-		return null;
+	@Override
+	public void clear() throws StorageException {
+		throw new StorageException("Not implemented (yet)");
 	}
 
+	@Override
 	public void close() {
 	}
 
+	@Override
 	public int getFilterType(String column) {
 		return FILTER_RESET;
 	}
 
+	@Override
 	public List getFilterValues(String column) throws StorageException {
 		return null;
 	}
 
+	@Override
 	public String getUserHelp(String column) {
 		return SearchUtil.getUserHelp();
 	}

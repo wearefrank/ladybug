@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden, 2020-2021 WeAreFrank!
+   Copyright 2018 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -49,11 +49,13 @@ public class Storage implements nl.nn.testtool.storage.LogStorage {
 		writer.setMaximumFileSize(DEFAULT_MAXIMUM_FILE_SIZE);
 		writer.setMaximumBackupIndex(DEFAULT_MAXIMUM_BACKUP_INDEX);
 	}
-	
+
+	@Override
 	public void setName(String name) {
 		this.name = name;
 	}
-	
+
+	@Override
 	public String getName() {
 		return name;
 	}
@@ -109,40 +111,47 @@ public class Storage implements nl.nn.testtool.storage.LogStorage {
 		writer.init(reader.getStorageIds(writer.getMetadataFileLastModified(), writer.getSynchronizeRotate()));
 	}
 
-	public void store(Report report) throws StorageException {
-		report.setStorage(this);
-		writer.store(report, false);
-	}
-
+	@Override
 	public void storeWithoutException(Report report) {
 		writer.storeWithoutException(report, false);
 	}
 
+	@Override
 	public String getWarningsAndErrors() {
 		return writer.getWarningsAndErrors();
 	}
 
+	@Override
 	public int getSize() throws StorageException {
 		// TODO make a faster implementation?
 		return getStorageIds().size();
 	}
 
+	@Override
 	public List getStorageIds() throws StorageException {
 		return reader.getStorageIds(writer.getMetadataFileLastModified(), writer.getSynchronizeRotate());
 	}
 
+	@Override
 	public List getMetadata(int maxNumberOfRecords, List metadataNames,
 			List searchValues, int metadataValueType) throws StorageException {
 		return reader.getMetadata(maxNumberOfRecords, metadataNames, searchValues,
 				metadataValueType, writer.getMetadataFileLastModified(), writer.getSynchronizeRotate());
 	}
 
+	@Override
 	public Report getReport(Integer storageId) throws StorageException {
 		Report report = reader.getReport(storageId, writer.getSynchronizeRotate());
 		report.setStorage(this);
 		return report;
 	}
 
+	@Override
+	public void clear() throws StorageException {
+		writer.clear();
+	}
+
+	@Override
 	public void close() {
 		writer.close();
 	}
@@ -198,14 +207,17 @@ public class Storage implements nl.nn.testtool.storage.LogStorage {
 		throw new StorageException(message, e);
 	}
 
+	@Override
 	public int getFilterType(String column) {
 		return FILTER_RESET;
 	}
 
+	@Override
 	public List getFilterValues(String column) throws StorageException {
 		return null;
 	}
 
+	@Override
 	public String getUserHelp(String column) {
 		return SearchUtil.getUserHelp();
 	}
