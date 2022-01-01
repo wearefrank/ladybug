@@ -15,16 +15,21 @@
 */
 package nl.nn.testtool.test.junit;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TestName;
 import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
 
-import junit.framework.TestCase;
 import nl.nn.testtool.Checkpoint;
 import nl.nn.testtool.MessageEncoderImpl;
 import nl.nn.testtool.Report;
@@ -35,9 +40,13 @@ import nl.nn.testtool.util.XmlUtil;
 /**
  * @author Jaco de Groot
  */
-public class TestMessageEncoder extends TestCase {
+public class TestMessageEncoder {
 	public static final String RESOURCE_PATH = "nl/nn/testtool/test/junit/";
 
+	@Rule
+	public TestName name = new TestName();
+
+	@Test
 	public void testToString() throws SAXException, IOException, ParserConfigurationException, StorageException {
 		TestTool testTool = new TestTool();
 		Report report = new Report();
@@ -49,7 +58,7 @@ public class TestMessageEncoder extends TestCase {
 		// Test Integer
 		actual = testTool.getMessageEncoder().toString(10, null).getString();
 		actual = ReportRelatedTestCase.applyXmlEncoderIgnores(actual);
-		ReportRelatedTestCase.assertXml(RESOURCE_PATH, getName(), actual);
+		ReportRelatedTestCase.assertXml(RESOURCE_PATH, name.getMethodName(), actual);
 		checkpoint.setMessage(actual);
 		checkpoint.setEncoding(MessageEncoderImpl.XML_ENCODER);
 		assertEquals(10, checkpoint.getMessageAsObject());

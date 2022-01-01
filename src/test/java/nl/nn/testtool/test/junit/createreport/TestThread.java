@@ -1,5 +1,5 @@
 /*
-   Copyright 2020 WeAreFrank!
+   Copyright 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -13,28 +13,26 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.testtool.metadata;
 
-import nl.nn.testtool.Checkpoint;
-import nl.nn.testtool.Report;
+package nl.nn.testtool.test.junit.createreport;
 
-/**
- * @author Jaco de Groot
- */
-public class StatusExtractor extends DefaultValueMetadataFieldExtractor {
-	
-	public StatusExtractor() {
-		name = "status";
-		label = "Status";
-	}
+import lombok.Getter;
+import lombok.Setter;
+import nl.nn.testtool.TestTool;
 
-	public Object extractMetadata(Report report) {
-		for (Checkpoint checkpoint : report.getCheckpoints()) {
-			if (checkpoint.getType() == Checkpoint.TYPE_ABORTPOINT) {
-				return "Error";
-			}
+class TestThread extends Thread {
+	@Setter TestTool testTool;
+	@Setter String correlationId;
+	@Getter Throwable throwable;
+
+	@Override
+	public void run() {
+		try {
+			testTool.startpoint(correlationId, null, getName(), "startmessage1");
+			testTool.endpoint(correlationId, null, getName(), "endmessage1");
+		} catch (Throwable t) {
+			throwable = t;
 		}
-		return "Success";
 	}
 
 }

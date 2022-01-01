@@ -24,7 +24,6 @@ import nextapp.echo2.app.Table;
 import nextapp.echo2.app.layout.TableLayoutData;
 import nextapp.echo2.app.table.DefaultTableCellRenderer;
 import nl.nn.testtool.MetadataExtractor;
-import nl.nn.testtool.echo2.Echo2Application;
 
 public class MetadataTableCellRenderer extends DefaultTableCellRenderer {
 	private static final long serialVersionUID = 1L;

@@ -15,7 +15,11 @@
 */
 package nl.nn.testtool.test.junit;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -26,15 +30,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TestName;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.spi.ILoggingEvent;
-import ch.qos.logback.core.CoreConstants;
 import ch.qos.logback.core.read.ListAppender;
-import junit.framework.TestCase;
 import nl.nn.testtool.MetadataExtractor;
 import nl.nn.testtool.Report;
 import nl.nn.testtool.TestTool;
@@ -47,7 +52,7 @@ import nl.nn.testtool.transform.ReportXmlTransformer;
 /**
  * @author Jaco de Groot
  */
-public class ReportRelatedTestCase extends TestCase {
+public class ReportRelatedTestCase {
 	public static final String FILESYSTEM_PATH = "src/test/resources/";
 	public static final String RESOURCE_PATH = "nl/nn/testtool/test/junit/";
 	public static final String EXPECTED_SUFFIX = "-expected.xml";
@@ -60,7 +65,10 @@ public class ReportRelatedTestCase extends TestCase {
 	protected ListAppender<ILoggingEvent> listAppender;
 	public String resourcePath = "Override this value!";
 
-	@Override
+	@Rule
+	public TestName name = new TestName();
+
+	@Before
 	public void setUp() {
 		File logsDir = new File("logs");
 		if (!logsDir.isDirectory()) {
@@ -74,7 +82,7 @@ public class ReportRelatedTestCase extends TestCase {
 		testTool = (TestTool)Common.CONTEXT.getBean("testTool");
 	}
 
-	@Override
+	@After
 	public void tearDown() {
 		List<ILoggingEvent> loggingEvents = listAppender.list;
 		String logMessage = null;
@@ -85,6 +93,7 @@ public class ReportRelatedTestCase extends TestCase {
 		assertEquals(0, loggingEvents.size());
 	}
 
+	@Test
 	public void testTestTool() {
 		// Assert prototype is used for bean so settings are reset between tests
 		assertNotEquals(testTestTool, testTool);
@@ -95,7 +104,7 @@ public class ReportRelatedTestCase extends TestCase {
 	}
 
 	protected Report assertReport(String correlationId) throws StorageException, IOException {
-		return assertReport(correlationId, getName(), false, false, false, false, false);
+		return assertReport(correlationId, name.getMethodName(), false, false, false, false, false);
 	}
 
 	protected Report assertReport(String correlationId, String name) throws StorageException, IOException {
@@ -104,7 +113,7 @@ public class ReportRelatedTestCase extends TestCase {
 	protected Report assertReport(String correlationId, boolean applyXmlEncoderIgnores,
 			boolean applyEpochTimestampIgnore, boolean applyStackTraceIgnores, boolean applyCorrelationIdIgnores,
 			boolean assertExport) throws StorageException, IOException {
-		return assertReport(correlationId, getName(), applyXmlEncoderIgnores, applyEpochTimestampIgnore,
+		return assertReport(correlationId, name.getMethodName(), applyXmlEncoderIgnores, applyEpochTimestampIgnore,
 				applyStackTraceIgnores, applyCorrelationIdIgnores, assertExport);
 	}
 
