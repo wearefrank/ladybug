@@ -136,6 +136,8 @@ public class Storage implements CrudStorage, LogStorage {
 	@Override
 	public void clear() {
 		reports.clear();
+		storageIds.clear();
+		metadata.clear();
 	}
 
 	@Override
