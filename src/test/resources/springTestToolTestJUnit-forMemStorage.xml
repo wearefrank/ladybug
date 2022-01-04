@@ -18,6 +18,9 @@
 	</bean>
 
 	<bean name="debugStorage" class="nl.nn.testtool.storage.memory.Storage" autowire="byName">
+		<property name="initialStorageId">
+			<value>2514</value>
+		</property>
 		<property name="metadataExtractor">
 			<bean class="nl.nn.testtool.MetadataExtractor"/>
 		</property>

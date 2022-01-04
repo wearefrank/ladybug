@@ -21,6 +21,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.PostConstruct;
+
 import nl.nn.testtool.MetadataExtractor;
 import nl.nn.testtool.Report;
 import nl.nn.testtool.storage.CrudStorage;
@@ -32,16 +34,13 @@ import nl.nn.testtool.util.SearchUtil;
  * @author Jaco de Groot
  */
 public class Storage implements CrudStorage, LogStorage {
-	// The initial storage id. We choose a large value to distinguish the
-	// storage id from numbers with another meaning. This makes it easier
-	// to write unit tests.
-	private static final int INITIAL_STORAGE_ID = 2514;
-
 	protected String name;
 	protected Map reports;
 	protected List storageIds;
 	protected List metadata;
-	protected int storageId = INITIAL_STORAGE_ID;
+	// Allows test code to use large storage ids, distinguishing storage ids from values with another meaning.
+	private int initialStorageId = 0;
+	protected int storageId;
 	protected MetadataExtractor metadataExtractor;
 	
 	public Storage() {
@@ -49,7 +48,16 @@ public class Storage implements CrudStorage, LogStorage {
 		storageIds = new ArrayList();
 		metadata = new ArrayList();
 	}
-	
+
+	@PostConstruct
+	private void setInitialStorageId() {
+		storageId = initialStorageId;
+	}
+
+	public void setInitialStorageId(int value) {
+		this.initialStorageId = value;
+	}
+
 	public void setName(String name) {
 		this.name = name;
 	}
