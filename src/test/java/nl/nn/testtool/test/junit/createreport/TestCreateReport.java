@@ -21,6 +21,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeTrue;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -69,19 +70,19 @@ public class TestCreateReport extends ReportRelatedTestCase {
 	@Test
 	public void testSingleStartAndEndPointPlainMessage() throws StorageException, IOException {
 		String correlationId = getCorrelationId();
-		testTool.startpoint(correlationId, this.getClass().getTypeName(), name.getMethodName(), "startmessage");
-		testTool.endpoint(correlationId, this.getClass().getTypeName(), name.getMethodName(), "endmessage");
+		testTool.startpoint(correlationId, this.getClass().getTypeName(), reportName, "startmessage");
+		testTool.endpoint(correlationId, this.getClass().getTypeName(), reportName, "endmessage");
 		assertReport(correlationId);
 		// Same but with StubableCode
 		correlationId = getCorrelationId();
-		testTool.startpoint(correlationId, this.getClass().getTypeName(), name.getMethodName(), () -> {return "startmessage";}, new HashSet<String>());
-		testTool.endpoint(correlationId, this.getClass().getTypeName(), name.getMethodName(), () -> {return "endmessage";}, new HashSet<String>());
+		testTool.startpoint(correlationId, this.getClass().getTypeName(), reportName, () -> {return "startmessage";}, new HashSet<String>());
+		testTool.endpoint(correlationId, this.getClass().getTypeName(), reportName, () -> {return "endmessage";}, new HashSet<String>());
 		assertReport(correlationId);
 	}
 
 	@Test
 	public void testTwoStartAndEndPointPlainMessages() throws StorageException, IOException {
-		testTwoStartAndEndPointPlainMessages(name.getMethodName());
+		testTwoStartAndEndPointPlainMessages(reportName);
 	}
 
 	private void testTwoStartAndEndPointPlainMessages(String name) throws StorageException, IOException {
@@ -96,7 +97,7 @@ public class TestCreateReport extends ReportRelatedTestCase {
 	@Test
 	public void testSpecialValues() throws StorageException, IOException {
 		String correlationId = getCorrelationId();
-		testTool.startpoint(correlationId, null, name.getMethodName(), null);
+		testTool.startpoint(correlationId, null, reportName, null);
 		testTool.infopoint(correlationId, null, "infoname1", new Date(0));
 		Set<String> set = new HashSet<String>();
 		set.add("Test with strange object");
@@ -104,7 +105,7 @@ public class TestCreateReport extends ReportRelatedTestCase {
 		testTool.infopoint(correlationId, null, "infoname3", 123);
 		testTool.infopoint(correlationId, null, "infoname4", new Integer(456));
 		testTool.infopoint(correlationId, null, "infoname5", new DocumentImpl().createElement("NodeTest"));
-		testTool.endpoint(correlationId, null, name.getMethodName(), "");
+		testTool.endpoint(correlationId, null, reportName, "");
 		assertReport(correlationId, true, true, true, false, true);
 	}
 
@@ -114,7 +115,7 @@ public class TestCreateReport extends ReportRelatedTestCase {
 		Exception exception = new Exception("My Exception");
 		// Checkpoints are added on odd and even level to make it possible to visually check the colors in the tree
 		// at http://localhost/testtool using ibis-ladybug-test-webapp
-		testTool.startpoint(correlationId, null, name.getMethodName(), exception);
+		testTool.startpoint(correlationId, null, reportName, exception);
 		testTool.inputpoint(correlationId, null, "input", exception);
 		testTool.outputpoint(correlationId, null, "output", exception);
 		testTool.infopoint(correlationId, null, "info", exception);
@@ -127,7 +128,7 @@ public class TestCreateReport extends ReportRelatedTestCase {
 		testTool.threadStartpoint(correlationId, null, "thread start", exception);
 		testTool.threadEndpoint(correlationId, null, "thread end", exception);
 		testTool.endpoint(correlationId, null, "end", exception);
-		testTool.endpoint(correlationId, null, name.getMethodName(), exception);
+		testTool.endpoint(correlationId, null, reportName, exception);
 		assertReport(correlationId, false, false, true, false, false);
 	}
 
@@ -236,13 +237,13 @@ public class TestCreateReport extends ReportRelatedTestCase {
 		String childThreadIdB = correlationId + "-ChildThreadIdB";
 		String threadNameA = correlationId + "-ThreadNameA";
 		String threadNameB = correlationId + "-ThreadNameB";
-		testTool.startpoint(correlationId, null, name.getMethodName(), "startmessage1");
+		testTool.startpoint(correlationId, null, reportName, "startmessage1");
 		if (useThreadCreatepoint) {
 			testTool.threadCreatepoint(correlationId, childThreadIdA);
 			testTool.threadCreatepoint(correlationId, childThreadIdB);
 		}
 		if (!waitForChildThread) {
-			testTool.endpoint(correlationId, null, name.getMethodName(), "endmessage1");
+			testTool.endpoint(correlationId, null, reportName, "endmessage1");
 		}
 		String originalThreadName = Thread.currentThread().getName();
 		if (useThreadStartpoint) {
@@ -271,7 +272,7 @@ public class TestCreateReport extends ReportRelatedTestCase {
 		}
 		Thread.currentThread().setName(originalThreadName);
 		if (waitForChildThread) {
-			testTool.endpoint(correlationId, null, name.getMethodName(), "endmessage1");
+			testTool.endpoint(correlationId, null, reportName, "endmessage1");
 		}
 		if (assertReport) {
 			assertReport(correlationId);
@@ -329,7 +330,7 @@ public class TestCreateReport extends ReportRelatedTestCase {
 				childThreadName = "Thread-0";
 				parentThreadName = "Thread-1";
 			}
-			assertReport(report, resourcePath, name.getMethodName() + nameSuffix, false, false, false, false, false);
+			assertReport(report, resourcePath, reportName + nameSuffix, false, false, false, false, false);
 			assertWarningUseThreadCreatepointAndThreadStartpoint(listAppender, correlationId, childThreadName,
 					parentThreadName, childThreadName);
 		} else if (reports.size() == 2) {
@@ -345,8 +346,8 @@ public class TestCreateReport extends ReportRelatedTestCase {
 				report1 = report2;
 				report2 = report3;
 			}
-			assertReport(report1, resourcePath, name.getMethodName() + "21", false, false, false, false, false);
-			assertReport(report2, resourcePath, name.getMethodName() + "22", false, false, false, false, false);
+			assertReport(report1, resourcePath, reportName + "21", false, false, false, false, false);
+			assertReport(report2, resourcePath, reportName + "22", false, false, false, false, false);
 		} else {
 			fail("Didn't find 1 or 2 reports, found " + reports.size());
 		}
@@ -356,17 +357,17 @@ public class TestCreateReport extends ReportRelatedTestCase {
 	@Test
 	public void testAbort() throws StorageException, IOException {
 		String correlationId = getCorrelationId();
-		testTool.startpoint(correlationId, null, name.getMethodName(), "startmessage1");
+		testTool.startpoint(correlationId, null, reportName, "startmessage1");
 		testTool.startpoint(correlationId, null, "name2", "startmessage2");
 		testTool.abortpoint(correlationId, null, "name2", "abortmessage2");
-		testTool.abortpoint(correlationId, null, name.getMethodName(), "abortmessage1");
+		testTool.abortpoint(correlationId, null, reportName, "abortmessage1");
 		assertReport(correlationId);
 	}
 
 	@Test
 	public void testAbortWithoutEnoughAbortpoints() throws StorageException, IOException {
 		String correlationId = getCorrelationId();
-		testTool.startpoint(correlationId, null, name.getMethodName(), "startmessage1");
+		testTool.startpoint(correlationId, null, reportName, "startmessage1");
 		testTool.startpoint(correlationId, null, "name2", "startmessage2");
 		testTool.abortpoint(correlationId, null, "name2", "endmessage2");
 		assertEquals("Report should be in progress (number of endpoints + abortpoints doesn't match number of startpoints),", 1, testTool.getNumberOfReportsInProgress());
@@ -377,12 +378,12 @@ public class TestCreateReport extends ReportRelatedTestCase {
 	@Test
 	public void testAbortLambda() throws StorageException, IOException {
 		String correlationId = getCorrelationId();
-		testTool.startpoint(correlationId, null, name.getMethodName(), "startmessage1");
+		testTool.startpoint(correlationId, null, reportName, "startmessage1");
 		testTool.startpoint(correlationId, null, "name2", () -> {return "startmessage2";}, new HashSet<String>());
 		assertThrows(RuntimeException.class, () -> {
 			testTool.endpoint(correlationId, null, "name2", () -> {if (isTrue()) throw new RuntimeException("abortmessage2"); return "dummy";}, new HashSet<String>());
 		});
-		testTool.abortpoint(correlationId, null, name.getMethodName(), "abortmessage1");
+		testTool.abortpoint(correlationId, null, reportName, "abortmessage1");
 
 		assertReport(correlationId);
 	}
@@ -395,7 +396,7 @@ public class TestCreateReport extends ReportRelatedTestCase {
 	public void testAbortThread() throws StorageException, IOException {
 		String correlationId = getCorrelationId();
 		String threadName = correlationId + "-ThreadName";
-		testTool.startpoint(correlationId, null, name.getMethodName(), "startmessage1");
+		testTool.startpoint(correlationId, null, reportName, "startmessage1");
 		testTool.threadCreatepoint(correlationId, threadName);
 		String originalThreadName = Thread.currentThread().getName();
 		Thread.currentThread().setName(threadName);
@@ -404,14 +405,14 @@ public class TestCreateReport extends ReportRelatedTestCase {
 		testTool.abortpoint(correlationId, null, "name3", "abortmessage3");
 		testTool.abortpoint(correlationId, null, "name2", "abortmessage2");
 		Thread.currentThread().setName(originalThreadName);
-		testTool.endpoint(correlationId, null, name.getMethodName(), "endmessage1");
+		testTool.endpoint(correlationId, null, reportName, "endmessage1");
 		assertReport(correlationId);
 	}
 
 	@Test
 	public void testCloseReport() throws StorageException, IOException {
 		String correlationId = getCorrelationId();
-		testTool.startpoint(correlationId, null, name.getMethodName(), "startmessage1");
+		testTool.startpoint(correlationId, null, reportName, "startmessage1");
 		testTool.startpoint(correlationId, null, "name2", "startmessage2");
 		testTool.close(correlationId);
 		assertReport(correlationId);
@@ -447,13 +448,13 @@ public class TestCreateReport extends ReportRelatedTestCase {
 		}
 
 		String correlationId = getCorrelationId();
-		testTool.startpoint(correlationId, null, name.getMethodName(), "startmessage");
+		testTool.startpoint(correlationId, null, reportName, "startmessage");
 
 		Writer writerOriginalMessage = new StringWriter();
 		Writer writerMessage = testTool.inputpoint(correlationId, null, "writer", writerOriginalMessage);
 		assertNotEquals(writerOriginalMessage, writerMessage);
 
-		testTool.endpoint(correlationId, null, name.getMethodName(), "endmessage");
+		testTool.endpoint(correlationId, null, reportName, "endmessage");
 		if (withCloseMethod) {
 			testTool.close(correlationId, false, true);
 		}
@@ -465,12 +466,12 @@ public class TestCreateReport extends ReportRelatedTestCase {
 	@Test
 	public void testIgnoreReport() throws StorageException {
 		Storage storage = testTool.getDebugStorage();
-		testTool.setRegexFilter("^(?!" + name.getMethodName() + ").*");
+		testTool.setRegexFilter("^(?!" + reportName + ").*");
 		String correlationId = getCorrelationId();
-		testTool.startpoint(correlationId, null, name.getMethodName(), "startmessage1");
+		testTool.startpoint(correlationId, null, reportName, "startmessage1");
 		String startmessage2 = testTool.startpoint(correlationId, null, "level2", () -> {return "startmessage2";}, new HashSet<String>());
 		String endmessage2 = testTool.endpoint(correlationId, null, "level2", () -> {return "endmessage2";}, new HashSet<String>());
-		testTool.endpoint(correlationId, null, name.getMethodName(), "endmessage1");
+		testTool.endpoint(correlationId, null, reportName, "endmessage1");
 		Report report = findAndGetReport(testTool, storage, correlationId, false);
 		assertNull("Report should have been ignored", report);
 		assertEquals("startmessage2", startmessage2);
@@ -480,10 +481,10 @@ public class TestCreateReport extends ReportRelatedTestCase {
 	@Test
 	public void testIgnoreReportAndAbort() throws StorageException {
 		Storage storage = testTool.getDebugStorage();
-		testTool.setRegexFilter("^(?!" + name.getMethodName() + ").*");
+		testTool.setRegexFilter("^(?!" + reportName + ").*");
 
 		String correlationId = getCorrelationId();
-		testTool.startpoint(correlationId, null, name.getMethodName(), "startmessage1");
+		testTool.startpoint(correlationId, null, reportName, "startmessage1");
 		testTool.startpoint(correlationId, null, "level2", "startmessage2");
 		testTool.abortpoint(correlationId, null, "level2", "abortmessage2");
 		testTool.abortpoint(correlationId, null, "testIgnoreReport", "abortmessage1");
@@ -491,7 +492,7 @@ public class TestCreateReport extends ReportRelatedTestCase {
 		assertNull("Report should have been ignored", report);
 
 		correlationId = getCorrelationId();
-		testTool.startpoint(correlationId, null, name.getMethodName(), "startmessage1");
+		testTool.startpoint(correlationId, null, reportName, "startmessage1");
 		testTool.startpoint(correlationId, null, "level2", "startmessage2");
 		testTool.abortpoint(correlationId, null, "level2", "abortmessage2");
 		testTool.close(correlationId);
@@ -510,10 +511,10 @@ public class TestCreateReport extends ReportRelatedTestCase {
 	public void testMaxCheckpoints() throws StorageException, IOException {
 		testTool.setMaxCheckpoints(2);
 		String correlationId = getCorrelationId();
-		testTool.startpoint(correlationId, null, name.getMethodName(), "startmessage1");
+		testTool.startpoint(correlationId, null, reportName, "startmessage1");
 		String startmessage2 = testTool.startpoint(correlationId, null, "name2", () -> {return "startmessage2";}, new HashSet<String>());
 		String endmessage2 = testTool.endpoint(correlationId, null, "name2", () -> {return "endmessage2";}, new HashSet<String>());
-		testTool.endpoint(correlationId, null, name.getMethodName(), "endmessage1");
+		testTool.endpoint(correlationId, null, reportName, "endmessage1");
 		assertReport(correlationId);
 		assertWarningInLog(listAppender, correlationId,
 				"Maximum number of checkpoints exceeded, ignored checkpoint (name: name2, type: Endpoint, level: 2, correlationId: "
@@ -525,10 +526,12 @@ public class TestCreateReport extends ReportRelatedTestCase {
 
 	@Test
 	public void testStreamsWithReaderAndInputStream() throws IOException, StorageException {
+		// TODO: Improve TestImport to be independent of the applied storage. Then enable this test for all storage types.
+		assumeTrue("Difficult to apply for memory storage, because TestImport.assertImport is applied. That method explicitly uses logic of a file storage", "File storage".contentEquals(storageDescription));
 		String correlationId = getCorrelationId();
 		int maxMessageLength = 15;
 		testTool.setMaxMessageLength(maxMessageLength);
-		testTool.startpoint(correlationId, null, name.getMethodName(), "startmessage");
+		testTool.startpoint(correlationId, null, reportName, "startmessage");
 
 		Reader readerOriginalMessage = new StringReader("Random string 11");
 		Reader readerMessage = testTool.inputpoint(correlationId, null, "reader", readerOriginalMessage);
@@ -554,7 +557,7 @@ public class TestCreateReport extends ReportRelatedTestCase {
 		// Assert no wrapping of message when used again
 		assertEquals(inputStreamMessage, testTool.inputpoint(correlationId, null, "inputstream", inputStreamMessage));
 
-		testTool.endpoint(correlationId, null, name.getMethodName(), "endmessage");
+		testTool.endpoint(correlationId, null, reportName, "endmessage");
 
 		testReaderMessage(readerMessage); // After report is closed
 
@@ -572,6 +575,8 @@ public class TestCreateReport extends ReportRelatedTestCase {
 
 	@Test
 	public void testStreamsWithWriterAndOutputStream() throws IOException, StorageException {
+		// TODO: Improve TestImport to be independent of the applied storage. Then enable this test for all storage types.
+		assumeTrue("Difficult to apply for memory storage, because TestImport.assertImport is applied. That method explicitly uses logic of a file storage", "File storage".contentEquals(storageDescription));
 		String correlationId = getCorrelationId();
 		int maxMessageLength = 50;
 		testTool.setMaxMessageLength(maxMessageLength);
@@ -595,7 +600,7 @@ public class TestCreateReport extends ReportRelatedTestCase {
 					}
 				}
 		);
-		testTool.startpoint(correlationId, null, name.getMethodName(), "startmessage");
+		testTool.startpoint(correlationId, null, reportName, "startmessage");
 
 		Writer writerOriginalMessage = new StringWriter();
 		Writer writerMessage = testTool.inputpoint(correlationId, null, "writer", writerOriginalMessage);
@@ -621,7 +626,7 @@ public class TestCreateReport extends ReportRelatedTestCase {
 		// Assert no wrapping of message when used again
 		assertEquals(outputStreamMessage, testTool.inputpoint(correlationId, null, "outputstream", outputStreamMessage));
 
-		testTool.endpoint(correlationId, null, name.getMethodName(), "endmessage");
+		testTool.endpoint(correlationId, null, reportName, "endmessage");
 		testWriterMessage(writerMessage); // After report is closed
 		testOutputStreamMessage(outputStreamMessage); // After report is closed
 		assertReport(correlationId, false, false, false, false, true);
@@ -638,11 +643,11 @@ public class TestCreateReport extends ReportRelatedTestCase {
 		testTool.setMessageEncoder(defaultMessageEncoder);
 		correlationId = getCorrelationId();
 		outputStreamOriginalMessage = new ByteArrayOutputStream();
-		outputStreamMessage = testTool.startpoint(correlationId, null, name.getMethodName() + "2", outputStreamOriginalMessage);
+		outputStreamMessage = testTool.startpoint(correlationId, null, reportName + "2", outputStreamOriginalMessage);
 		outputStreamMessage.write("Hello World!".getBytes("UTF-8"));
 		outputStreamMessage.close();
 		outputStreamOriginalMessage = new ByteArrayOutputStream();
-		outputStreamMessage = testTool.endpoint(correlationId, null, name.getMethodName() + "2", outputStreamOriginalMessage);
+		outputStreamMessage = testTool.endpoint(correlationId, null, reportName + "2", outputStreamOriginalMessage);
 		outputStreamMessage.close();
 		report = findAndGetReport(testTool, storage, correlationId);
 		checkpoint = report.getCheckpoints().get(0);
@@ -655,14 +660,14 @@ public class TestCreateReport extends ReportRelatedTestCase {
 	@Test
 	public void testStreamsAllClosedBeforeReportIsClosed() throws IOException, StorageException {
 		String correlationId = getCorrelationId();
-		testTool.startpoint(correlationId, null, name.getMethodName(), "startmessage");
+		testTool.startpoint(correlationId, null, reportName, "startmessage");
 
 		Writer writerOriginalMessage = new StringWriter();
 		Writer writerMessage = testTool.inputpoint(correlationId, null, "writer", writerOriginalMessage);
 		assertNotEquals(writerOriginalMessage, writerMessage);
 		testWriterMessage(writerMessage);
 
-		testTool.endpoint(correlationId, null, name.getMethodName(), "endmessage");
+		testTool.endpoint(correlationId, null, reportName, "endmessage");
 
 		assertReport(correlationId);
 	}
@@ -686,8 +691,8 @@ public class TestCreateReport extends ReportRelatedTestCase {
 		String correlationId = getCorrelationId();
 		ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
 		OutputStream outputStream =
-				testTool.startpoint(correlationId, "sourceClassName", name.getMethodName(), byteArrayOutputStream);
-		testTool.endpoint(correlationId, "sourceClassName", name.getMethodName(), "endmessage");
+				testTool.startpoint(correlationId, "sourceClassName", reportName, byteArrayOutputStream);
+		testTool.endpoint(correlationId, "sourceClassName", reportName, "endmessage");
 		outputStream.write(bytes);
 		outputStream.close();
 		Report report = assertReport(correlationId);
@@ -715,10 +720,10 @@ public class TestCreateReport extends ReportRelatedTestCase {
 		String correlationId = getCorrelationId();
 		ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
 		OutputStream outputStream =
-				testTool.startpoint(correlationId, "sourceClassName", name.getMethodName(), byteArrayOutputStream);
+				testTool.startpoint(correlationId, "sourceClassName", reportName, byteArrayOutputStream);
 		outputStream.write("startmessage".getBytes());
 		outputStream.close();
-		testTool.endpoint(correlationId, "sourceClassName", name.getMethodName(), "endmessage");
+		testTool.endpoint(correlationId, "sourceClassName", reportName, "endmessage");
 		assertReport(correlationId, false, false, true, false, false);
 	}
 
@@ -739,8 +744,8 @@ public class TestCreateReport extends ReportRelatedTestCase {
 			}
 		});
 		String correlationId = getCorrelationId();
-		testTool.startpoint(correlationId, "sourceClassName", name.getMethodName(), new StringWriter());
-		testTool.endpoint(correlationId, "sourceClassName", name.getMethodName(), "endmessage");
+		testTool.startpoint(correlationId, "sourceClassName", reportName, new StringWriter());
+		testTool.endpoint(correlationId, "sourceClassName", reportName, "endmessage");
 		assertReport(correlationId);
 	}
 

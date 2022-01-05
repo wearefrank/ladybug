@@ -27,6 +27,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
@@ -35,7 +37,12 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameter;
+import org.junit.runners.Parameterized.Parameters;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationContext;
 
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.spi.ILoggingEvent;
@@ -52,7 +59,24 @@ import nl.nn.testtool.transform.ReportXmlTransformer;
 /**
  * @author Jaco de Groot
  */
+@RunWith(Parameterized.class)
 public class ReportRelatedTestCase {
+	private static int MANY = 100;
+
+	@Parameters(name = "{0}")
+	public static Collection<Object[]> data() {
+		return Arrays.asList(new Object[][] {
+			{"File storage", Common.CONTEXT_FILE_STORAGE},
+			{"Memory storage", Common.CONTEXT_MEM_STORAGE}
+		});
+	}
+
+	@Parameter(0)
+	public String storageDescription;
+
+	@Parameter(1)
+	public ApplicationContext context;
+
 	public static final String FILESYSTEM_PATH = "src/test/resources/";
 	public static final String RESOURCE_PATH = "nl/nn/testtool/test/junit/";
 	public static final String EXPECTED_SUFFIX = "-expected.xml";
@@ -60,10 +84,11 @@ public class ReportRelatedTestCase {
 	public static final String LOG_SUFFIX = "-FAILED.txt";
 	public static final String ASSERT_REPORT_XSLT = "transformReport.xslt";
 	public static final String DEFAULT_CHARSET = "UTF-8";
-	private static final TestTool testTestTool = (TestTool)Common.CONTEXT.getBean("testTool");
+	private TestTool testTestTool;
 	protected TestTool testTool;
 	protected ListAppender<ILoggingEvent> listAppender;
 	public String resourcePath = "Override this value!";
+	protected String reportName;
 
 	@Rule
 	public TestName name = new TestName();
@@ -79,7 +104,9 @@ public class ReportRelatedTestCase {
 		listAppender = new ListAppender<>();
 		listAppender.start();
 		log.addAppender(listAppender);
-		testTool = (TestTool)Common.CONTEXT.getBean("testTool");
+		testTestTool = (TestTool)context.getBean("testTool");
+		testTool = (TestTool)context.getBean("testTool");
+		reportName = Common.methodNameWithoutTestParameter(name.getMethodName());
 	}
 
 	@After
@@ -104,7 +131,7 @@ public class ReportRelatedTestCase {
 	}
 
 	protected Report assertReport(String correlationId) throws StorageException, IOException {
-		return assertReport(correlationId, name.getMethodName(), false, false, false, false, false);
+		return assertReport(correlationId, reportName, false, false, false, false, false);
 	}
 
 	protected Report assertReport(String correlationId, String name) throws StorageException, IOException {
@@ -113,7 +140,7 @@ public class ReportRelatedTestCase {
 	protected Report assertReport(String correlationId, boolean applyXmlEncoderIgnores,
 			boolean applyEpochTimestampIgnore, boolean applyStackTraceIgnores, boolean applyCorrelationIdIgnores,
 			boolean assertExport) throws StorageException, IOException {
-		return assertReport(correlationId, name.getMethodName(), applyXmlEncoderIgnores, applyEpochTimestampIgnore,
+		return assertReport(correlationId, reportName, applyXmlEncoderIgnores, applyEpochTimestampIgnore,
 				applyStackTraceIgnores, applyCorrelationIdIgnores, assertExport);
 	}
 
@@ -188,7 +215,13 @@ public class ReportRelatedTestCase {
 		List<String> searchValues = new ArrayList<String>();
 		searchValues.add(null);
 		searchValues.add(correlationId);
-		List<List<Object>> metadata = storage.getMetadata(2, metadataNames, searchValues,
+		// TODO: Fix that memory storage and file storage store reports in opposite sequences.
+		// Then enable the below lines to test that you search only the first (or last) reports
+		// for the missing metadata.
+		//
+		// List<List<Object>> metadata = storage.getMetadata(2, metadataNames, searchValues,
+		// 		MetadataExtractor.VALUE_TYPE_OBJECT);
+		List<List<Object>> metadata = storage.getMetadata(MANY, metadataNames, searchValues,
 				MetadataExtractor.VALUE_TYPE_OBJECT);
 		if (assertExactlyOne) {
 			assertEquals("Didn't find exactly 1 report with correlationId " + correlationId + ",", 1, metadata.size());

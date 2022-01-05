@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans
+	xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+	"
+	>
+
+	<!-- Use prototype for JUnit tests to reset settings between tests and when run in parallel prevent one test -->
+	<!-- that alters a setting to influence another test -->
+	<bean name="testTool" class="nl.nn.testtool.TestTool" scope="prototype">
+		<property name="debugStorage">
+			<ref bean="debugStorage"/>
+		</property>
+	</bean>
+
+	<bean name="debugStorage" class="nl.nn.testtool.storage.memory.Storage" autowire="byName">
+		<property name="initialStorageId">
+			<value>2514</value>
+		</property>
+		<property name="metadataExtractor">
+			<bean class="nl.nn.testtool.MetadataExtractor"/>
+		</property>
+	</bean>
+
+</beans>
