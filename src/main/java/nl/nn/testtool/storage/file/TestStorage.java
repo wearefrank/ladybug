@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden, 2020-2021 WeAreFrank!
+   Copyright 2018 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -46,15 +46,17 @@ public class TestStorage implements nl.nn.testtool.storage.CrudStorage {
 		writer[0] = new Writer();
 		writer[1] = new Writer();
 	}
-	
+
+	@Override
 	public void setName(String name) {
 		this.name = name;
 	}
-	
+
+	@Override
 	public String getName() {
 		return name;
 	}
-		
+
 	public void setReportsFilename(String reportsFilename) {
 		reader[0].setReportsFilename(reportsFilename + ".a");
 		reader[1].setReportsFilename(reportsFilename + ".b");
@@ -113,29 +115,30 @@ public class TestStorage implements nl.nn.testtool.storage.CrudStorage {
 		}
 	}
 
+	@Override
 	public void store(Report report) throws StorageException {
 		report.setStorage(this);
 		writer[active].store(report, false);
 	}
 
-	public void storeWithoutException(Report report) {
-		writer[active].storeWithoutException(report, false);
-	}
-
+	@Override
 	public int getSize() throws StorageException {
 		// TODO make a faster implementation?
 		return getStorageIds().size();
 	}
 
+	@Override
 	public List getStorageIds() throws StorageException {
 		return reader[active].getStorageIds(writer[active].getMetadataFileLastModified(),
 				writer[active].getSynchronizeRotate());
 	}
 
+	@Override
 	public void update(Report report) throws StorageException {
 		update(report, false);
 	}
 
+	@Override
 	public void delete(Report report) throws StorageException {
 		update(report, true);
 	}
@@ -181,12 +184,14 @@ public class TestStorage implements nl.nn.testtool.storage.CrudStorage {
 		active = destination;
 	}
 
+	@Override
 	public List getMetadata(int maxNumberOfRecords, List metadataNames,
 			List searchValues, int metadataValueType) throws StorageException {
 		return reader[active].getMetadata(maxNumberOfRecords, metadataNames, searchValues,
 				metadataValueType, writer[active].getMetadataFileLastModified(), writer[active].getSynchronizeRotate());
 	}
 
+	@Override
 	public Report getReport(Integer storageId) throws StorageException {
 		Report report = reader[active].getReport(storageId, writer[active].getSynchronizeRotate());
 		if (report != null) {
@@ -195,19 +200,28 @@ public class TestStorage implements nl.nn.testtool.storage.CrudStorage {
 		return report;
 	}
 
+	@Override
+	public void clear() throws StorageException {
+		writer[active].clear();
+	}
+
+	@Override
 	public void close() {
 		writer[0].close();
 		writer[1].close();
 	}
 
- 	public int getFilterType(String column) {
+	@Override
+	public int getFilterType(String column) {
 		return FILTER_RESET;
 	}
 
+	@Override
 	public List getFilterValues(String column) throws StorageException {
 		return null;
 	}
 
+	@Override
 	public String getUserHelp(String column) {
 		return SearchUtil.getUserHelp();
 	}
