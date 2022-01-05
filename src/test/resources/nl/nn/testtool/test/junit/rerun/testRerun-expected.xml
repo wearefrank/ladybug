@@ -1,4 +1,4 @@
-<Report Name="testRerun" Description="" Path="" CorrelationId="IGNORE-CORRELATIONID" StartTime="IGNORE-START-TIME" EndTime="IGNORE-END-TIME" NumberOfCheckpoints="2" EstimatedMemoryUsage="476"><Checkpoint Name="testRerun" Type="Startpoint" Level="0" MessageClassName="java.lang.Integer" Encoding="XMLEncoder" TextDecl="&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;">
+<Report Name="testRerun" Description="" Path="" CorrelationId="IGNORE-CORRELATIONID" StartTime="IGNORE-START-TIME" EndTime="IGNORE-END-TIME" NumberOfCheckpoints="2" EstimatedMemoryUsage="IGNORE"><Checkpoint Name="testRerun" Type="Startpoint" Level="0" MessageClassName="java.lang.Integer" Encoding="XMLEncoder" TextDecl="&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;">
 <java version="IGNORE-JAVA-VERSION" class="java.beans.XMLDecoder">
  <int>10</int>
 </java>

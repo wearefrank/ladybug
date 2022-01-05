@@ -303,14 +303,18 @@ public class ReportRelatedTestCase {
 	public static String applyStackTraceIgnores(String string) {
 		// (?s) enables dotall so the expression . will also match line terminator
 		if (string.startsWith("<Report")) {
-			return string.replaceFirst("EstimatedMemoryUsage=\".*\">",
-									   "EstimatedMemoryUsage=\"IGNORE\">")
+			return applyEstimatedMemoryUsageIgnore(string)
 					.replaceAll("(?s)at nl.nn.testtool.test.junit..[^<]*\\)\n</Checkpoint>",
 									"at nl.nn.testtool.test.junit.IGNORE)\n</Checkpoint>");
 		} else {
 			return string.replaceAll("(?s)java.io.IOException: Test with strange object.[^<]*\\)(&#13;)?\n</string>",
 										 "java.io.IOException: Test with strange objectIGNORE)\n</string>");
 		}
+	}
+
+	public static String applyEstimatedMemoryUsageIgnore(String string) {
+		return string.replaceFirst("EstimatedMemoryUsage=\"\\d*\">",
+								   "EstimatedMemoryUsage=\"IGNORE\">");
 	}
 
 	public static String applyCorrelationIdIgnores(String xml, String correlationId) {

@@ -101,6 +101,7 @@ public class TestRerun {
 		String actual = report.toXml();
 		actual = ReportRelatedTestCase.applyToXmlIgnores(actual, report);
 		actual = ReportRelatedTestCase.applyXmlEncoderIgnores(actual);
+		actual = ReportRelatedTestCase.applyEstimatedMemoryUsageIgnore(actual);
 		ReportRelatedTestCase.assertXml(RESOURCE_PATH, reportName, actual);
 		int numReportsBeforeRerun = storage.getSize();
 		assertNull(testTool.rerun(ReportRelatedTestCase.getCorrelationId(), report, null, null));
