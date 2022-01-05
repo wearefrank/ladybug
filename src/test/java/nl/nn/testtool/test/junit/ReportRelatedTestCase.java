@@ -61,7 +61,6 @@ import nl.nn.testtool.transform.ReportXmlTransformer;
  */
 @RunWith(Parameterized.class)
 public class ReportRelatedTestCase {
-	private static int MANY = 100;
 
 	@Parameters(name = "{0}")
 	public static Collection<Object[]> data() {
@@ -221,7 +220,7 @@ public class ReportRelatedTestCase {
 		//
 		// List<List<Object>> metadata = storage.getMetadata(2, metadataNames, searchValues,
 		// 		MetadataExtractor.VALUE_TYPE_OBJECT);
-		List<List<Object>> metadata = storage.getMetadata(MANY, metadataNames, searchValues,
+		List<List<Object>> metadata = storage.getMetadata(-1, metadataNames, searchValues,
 				MetadataExtractor.VALUE_TYPE_OBJECT);
 		if (assertExactlyOne) {
 			assertEquals("Didn't find exactly 1 report with correlationId " + correlationId + ",", 1, metadata.size());
