@@ -160,9 +160,6 @@ public class TestExport {
 	public static void assertExport(String resourcePath, String testCaseName, Report report,
 			boolean applyToXmlIgnores, boolean applyEpochTimestampIgnores, boolean applyStackTraceIgnores)
 			throws IOException, StorageException {
-		// When storageId is a very low number (like when being build by the pipeline) the replace will potentially
-		// replace the wrong number, hence adjust the storage id to a more unique number
-		report.setStorageId(-99999);
 		byte[] bytes = Export.getReportBytes(report);
 		ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(bytes);
 		GZIPInputStream gzipInputStream = new GZIPInputStream(byteArrayInputStream);

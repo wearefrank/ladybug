@@ -526,8 +526,6 @@ public class TestCreateReport extends ReportRelatedTestCase {
 
 	@Test
 	public void testStreamsWithReaderAndInputStream() throws IOException, StorageException {
-		// TODO: Improve TestImport to be independent of the applied storage. Then enable this test for all storage types.
-		assumeTrue("Difficult to apply for memory storage, because TestImport.assertImport is applied. That method explicitly uses logic of a file storage", "File storage".contentEquals(storageDescription));
 		String correlationId = getCorrelationId();
 		int maxMessageLength = 15;
 		testTool.setMaxMessageLength(maxMessageLength);
