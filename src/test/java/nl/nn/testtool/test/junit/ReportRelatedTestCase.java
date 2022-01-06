@@ -181,7 +181,7 @@ public class ReportRelatedTestCase {
 		assertXml(resourcePath, name, actual);
 		if (assertExport) {
 			TestExport.assertExport(resourcePath, name, report, true, applyEpochTimestampIgnore,
-					applyStackTraceIgnores);
+					applyStackTraceIgnores, false);
 			TestImport.assertImport(resourcePath, name);
 		}
 		return report;
@@ -309,6 +309,11 @@ public class ReportRelatedTestCase {
 			return string.replaceAll("(?s)java.io.IOException: Test with strange object.[^<]*\\)(&#13;)?\n</string>",
 										 "java.io.IOException: Test with strange objectIGNORE)\n</string>");
 		}
+	}
+
+	public static String ignoreStorageId(String xml, Report report) {
+		xml = xml.replaceFirst("<int>" + report.getStorageId() + "</int>", "<int>" + "IGNORE-STORAGE-ID" + "</int>");
+		return xml;		
 	}
 
 	public static String applyEstimatedMemoryUsageIgnore(String string) {
