@@ -134,7 +134,7 @@ public class TestExport {
 		List<Checkpoint> checkpoints = new ArrayList<Checkpoint>();
 		checkpoints.add(checkpoint);
 		report.setCheckpoints(checkpoints);
-		assertExport(RESOURCE_PATH, "test", report, false, false, false);
+		assertExport(RESOURCE_PATH, "test", report, false, false, false, true);
 	}
 
 	private static void getBeanProperties(Class<?> clazz, String verb, Map<String, Method> beanProperties) {
@@ -157,8 +157,12 @@ public class TestExport {
 		}
 	}
 
+	// TODO: We have too many boolean arguments, not clear. We can make a new class, say XmlComparator,
+	// that has setters for all the ignores that we need. Then objects of that class can perform the
+	// comparing.
 	public static void assertExport(String resourcePath, String testCaseName, Report report,
-			boolean applyToXmlIgnores, boolean applyEpochTimestampIgnores, boolean applyStackTraceIgnores)
+			boolean applyToXmlIgnores, boolean applyEpochTimestampIgnores, boolean applyStackTraceIgnores,
+			boolean ignoreStorageId)
 			throws IOException, StorageException {
 		byte[] bytes = Export.getReportBytes(report);
 		ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(bytes);
@@ -171,6 +175,9 @@ public class TestExport {
 		}
 		String actual = stringBuffer.toString();
 		actual = ReportRelatedTestCase.applyXmlEncoderIgnores(actual);
+		if (ignoreStorageId) {
+			actual = ReportRelatedTestCase.ignoreStorageId(actual, report);
+		}
 		if (applyToXmlIgnores) {
 			actual = ReportRelatedTestCase.applyToXmlIgnores(actual, report);
 		}
