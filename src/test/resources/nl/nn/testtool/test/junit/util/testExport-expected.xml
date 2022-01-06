@@ -54,13 +54,13 @@
    </void>
   </void>
   <void property="correlationId">
-   <string>IGNORE-CORRELATIONID</string>
+   <string>correlationId</string>
   </void>
   <void property="description">
    <string>description</string>
   </void>
   <void property="endTime">
-   <long>IGNORE-END-TIME</long>
+   <long>-9223372036854775801</long>
   </void>
   <void property="name">
    <string>name</string>
@@ -69,10 +69,10 @@
    <string>path</string>
   </void>
   <void property="startTime">
-   <long>IGNORE-START-TIME</long>
+   <long>9</long>
   </void>
   <void property="storageId">
-   <int>IGNORE-STORAGE-ID</int>
+   <int>-99999</int>
   </void>
   <void property="stubStrategy">
    <string>stubStrategy</string>

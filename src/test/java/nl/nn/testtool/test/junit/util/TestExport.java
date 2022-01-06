@@ -134,7 +134,7 @@ public class TestExport {
 		List<Checkpoint> checkpoints = new ArrayList<Checkpoint>();
 		checkpoints.add(checkpoint);
 		report.setCheckpoints(checkpoints);
-		assertExport(RESOURCE_PATH, "test", report, true, false, false);
+		assertExport(RESOURCE_PATH, "test", report, false, false, false);
 	}
 
 	private static void getBeanProperties(Class<?> clazz, String verb, Map<String, Method> beanProperties) {
