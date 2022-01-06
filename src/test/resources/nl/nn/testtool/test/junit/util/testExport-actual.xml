@@ -53,8 +53,8 @@
     </object>
    </void>
   </void>
-  <void property="correlationId">
-   <string>IGNORE-CORRELATIONID</string>
+  <void property="IGNORE-CORRELATIONID">
+   <string>correlationId</string>
   </void>
   <void property="description">
    <string>description</string>
