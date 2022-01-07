@@ -285,7 +285,7 @@ public class ReportRelatedTestCase {
 			xml = xml.replaceFirst("" + report.getEndTime(), "IGNORE-END-TIME");
 			xml = xml.replaceFirst("" + report.getStartTime(), "IGNORE-START-TIME");
 		}
-		xml = xml.replaceFirst("" + report.getStorageId(), "IGNORE-STORAGE-ID");
+		xml = xml.replaceFirst("<int>" + report.getStorageId() + "</int>", "<int>" + "IGNORE-STORAGE-ID" + "</int>");
 		return xml;
 	}
 
