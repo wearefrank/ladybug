@@ -53,3 +53,10 @@ org.eclipse.
 .bin
 .xquery
 .ldif
+.ttm
+.tts
+.mapping
+src/main/java/nl/nn/xmldecoder/
+src\main\java\nl\nn\xmldecoder\
+src/main/java/nl/nn/testtool/util/CSVReader.java
+src\main\java\nl\nn\testtool\util\CSVReader.java
