@@ -16,14 +16,20 @@
 package nl.nn.testtool.test.junit.rerun;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNull;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collection;
 
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameter;
+import org.junit.runners.Parameterized.Parameters;
 
 import lombok.SneakyThrows;
 import nl.nn.testtool.Checkpoint;
@@ -40,16 +46,38 @@ import nl.nn.testtool.test.junit.ReportRelatedTestCase;
 /**
  * @author Jaco de Groot
  */
+@RunWith(Parameterized.class)
 public class TestRerun {
+	@Parameters(name = "{0}")
+	public static Collection<Object[]> data() {
+		return Arrays.asList(new Object[][] {
+			{"File storage", (TestTool) Common.CONTEXT_FILE_STORAGE.getBean("testTool")},
+			{"Memory storage", (TestTool) Common.CONTEXT_MEM_STORAGE.getBean("testTool")}
+		});
+	}
+
+	@Parameter(0)
+	public String storageDescription;
+
+	@Parameter(1)
+	public TestTool testTool;
+
+	private String reportName;
+
 	public static final String RESOURCE_PATH = "nl/nn/testtool/test/junit/rerun/";
-	private static Integer i = 0;
+	private static Integer i;
 
 	@Rule
 	public TestName name = new TestName();
 
+	@Before
+	public void setUp() {
+		reportName = Common.methodNameWithoutTestParameter(name.getMethodName());
+		i = 0;
+	}
+
 	@Test
 	public void testRerun() throws StorageException, IOException {
-		TestTool testTool = (TestTool)Common.CONTEXT.getBean("testTool");
 		testTool.setRerunner(new Rerunner() {
 			@SneakyThrows
 			@Override
@@ -59,12 +87,12 @@ public class TestRerun {
 				Integer firstMessage = (Integer)originalReport.getCheckpoints().get(0).getMessageAsObject();
 				assertEquals((Integer)10, firstMessage);
 				firstMessage = 100;
-				addSomething(testTool, correlationId, name.getMethodName(), firstMessage);
+				addSomething(testTool, correlationId, reportName, firstMessage);
 				return null;
 			}
 		});
 		String correlationId = ReportRelatedTestCase.getCorrelationId();
-		addSomething(testTool, correlationId, name.getMethodName(), 10);
+		addSomething(testTool, correlationId, reportName, 10);
 		assertEquals((Integer)10, i);
 		Storage storage = testTool.getDebugStorage();
 		Report report = ReportRelatedTestCase.findAndGetReport(testTool, storage, correlationId);
@@ -73,10 +101,12 @@ public class TestRerun {
 		String actual = report.toXml();
 		actual = ReportRelatedTestCase.applyToXmlIgnores(actual, report);
 		actual = ReportRelatedTestCase.applyXmlEncoderIgnores(actual);
-		ReportRelatedTestCase.assertXml(RESOURCE_PATH, name.getMethodName(), actual);
-		Integer storageId = (Integer)storage.getStorageIds().get(0);
+		actual = ReportRelatedTestCase.applyEstimatedMemoryUsageIgnore(actual);
+		ReportRelatedTestCase.assertXml(RESOURCE_PATH, reportName, actual);
+		int numReportsBeforeRerun = storage.getSize();
 		assertNull(testTool.rerun(ReportRelatedTestCase.getCorrelationId(), report, null, null));
-		assertNotEquals(storageId, (Integer)storage.getStorageIds().get(0));
+		int numReportsAfterRerun = storage.getSize();
+		assertEquals(numReportsAfterRerun, numReportsBeforeRerun + 1);
 		assertEquals((Integer)10, i);
 	}
 

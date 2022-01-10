@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden, 2020-2021 WeAreFrank!
+   Copyright 2018 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -28,8 +28,12 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import lombok.Getter;
+import lombok.Setter;
 import lombok.SneakyThrows;
+import nl.nn.testtool.filter.Views;
 import nl.nn.testtool.run.ReportRunner;
+import nl.nn.testtool.storage.CrudStorage;
 import nl.nn.testtool.storage.LogStorage;
 import nl.nn.testtool.transform.MessageTransformer;
 
@@ -51,7 +55,8 @@ public class TestTool {
 	private Map<String, Report> reportsInProgressByCorrelationId = new HashMap<String, Report>();
 	private long numberOfReportsInProgress = 0;
 	private Map<String, Report> originalReports = new HashMap<String, Report>();
-	private LogStorage debugStorage;
+	private @Setter @Getter LogStorage debugStorage;
+	private @Setter @Getter CrudStorage testStorage;
 	private MessageEncoder messageEncoder = new MessageEncoderImpl();
 	private MessageCapturer messageCapturer = new MessageCapturerImpl();
 	private MessageTransformer messageTransformer;
@@ -59,8 +64,9 @@ public class TestTool {
 	private String defaultStubStrategy = "Stub all external connection code";
 	private List<String> stubStrategies = new ArrayList<String>(); { stubStrategies.add(defaultStubStrategy); }
 	private Set<String> matchingStubStrategiesForExternalConnectionCode = new HashSet<>(stubStrategies);
-	boolean closeThreads = false;
-	boolean closeMessageCapturers = false;
+	private boolean closeThreads = false;
+	private boolean closeMessageCapturers = false;
+	private @Setter @Getter Views views;
 
 	public void setSecurityLoggerName(String securityLoggerName) {
 		securityLog = LoggerFactory.getLogger(securityLoggerName);
@@ -142,14 +148,6 @@ public class TestTool {
 		if (debugger != null) {
 			debugger.updateReportGeneratorStatus(isReportGeneratorEnabled());
 		}
-	}
-	
-	public void setDebugStorage(LogStorage debugStorage) {
-		this.debugStorage = debugStorage;
-	}
-
-	public LogStorage getDebugStorage() {
-		return debugStorage;
 	}
 
 	public void setMessageEncoder(MessageEncoder messageEncoder) {

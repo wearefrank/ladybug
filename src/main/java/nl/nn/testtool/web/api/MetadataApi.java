@@ -16,9 +16,13 @@
 package nl.nn.testtool.web.api;
 
 
-import nl.nn.testtool.MetadataExtractor;
-import nl.nn.testtool.storage.Storage;
-import nl.nn.testtool.storage.StorageException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
@@ -31,16 +35,16 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+
+import lombok.Setter;
+import nl.nn.testtool.MetadataExtractor;
+import nl.nn.testtool.TestTool;
+import nl.nn.testtool.storage.Storage;
+import nl.nn.testtool.storage.StorageException;
 
 @Path("/metadata")
 public class MetadataApi extends ApiBase {
+	private @Setter TestTool testTool;
 
 	/**
 	 * Searches the storage metadata.
@@ -99,7 +103,12 @@ public class MetadataApi extends ApiBase {
 		}
 		try {
 			// Get storage, search for metadata, and return the results.
-			Storage storage = getBean(storageParam);
+			Storage storage = null;
+			if ("debugStorage".equals(storageParam)) {
+				storage = testTool.getDebugStorage();
+			} else if ("testStorage".equals(storageParam)) {
+				storage = testTool.getTestStorage();
+			}
 			List<List<Object>> list;
 
 			if (sort != -1) {
@@ -158,6 +167,6 @@ public class MetadataApi extends ApiBase {
 	 * @return Set of strings for list of parameters in metadata.
 	 */
 	private Set<String> getMetadataFields() {
-		return new HashSet<String>(getBean("whiteBoxViewMetadataNames"));
+		return new HashSet<String>(testTool.getViews().getDefaultView().getMetadataNames());
 	}
 }

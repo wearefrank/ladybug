@@ -31,9 +31,9 @@ import nl.nn.testtool.storage.Storage;
 public class View implements BeanParent {
 	private String name;
 	private Storage storage;
-	private List metadataNames;
-	private Map metadataFilter;
-	private List checkpointMatchers;
+	private List<String> metadataNames;
+	private Map<String, String> metadataFilter;
+	private List<CheckpointMatcher> checkpointMatchers;
 	private BeanParent beanParent;
 	private Echo2Application echo2Application;
 
@@ -53,23 +53,23 @@ public class View implements BeanParent {
 		return storage;
 	}
 
-	public void setMetadataNames(List metadataNames) {
+	public void setMetadataNames(List<String> metadataNames) {
 		this.metadataNames = metadataNames;
 	}
 
-	public List getMetadataNames() {
+	public List<String> getMetadataNames() {
 		return metadataNames;
 	}
 
-	public void setMetadataFilter(Map metadataFilter) {
+	public void setMetadataFilter(Map<String, String> metadataFilter) {
 		this.metadataFilter = metadataFilter;
 	}
 
-	public Map getMetadataFilter() {
+	public Map<String, String> getMetadataFilter() {
 		return metadataFilter;
 	}
 
-	public void setCheckpointMatchers(List checkpointMatchers) {
+	public void setCheckpointMatchers(List<CheckpointMatcher> checkpointMatchers) {
 		this.checkpointMatchers = checkpointMatchers;
 	}
 
@@ -99,7 +99,7 @@ public class View implements BeanParent {
 			match = true;
 		}
 		for (int i = 0; !match && i < checkpointMatchers.size(); i++) {
-			CheckpointMatcher checkpointMatcher = (CheckpointMatcher)checkpointMatchers.get(i);
+			CheckpointMatcher checkpointMatcher = checkpointMatchers.get(i);
 			match = checkpointMatcher.match(report, checkpoint);
 		}
 		return match;		

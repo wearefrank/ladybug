@@ -72,7 +72,7 @@
    <long>9</long>
   </void>
   <void property="storageId">
-   <int>-99999</int>
+   <int>IGNORE-STORAGE-ID</int>
   </void>
   <void property="stubStrategy">
    <string>stubStrategy</string>

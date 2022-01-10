@@ -21,6 +21,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.PostConstruct;
+
 import nl.nn.testtool.MetadataExtractor;
 import nl.nn.testtool.Report;
 import nl.nn.testtool.storage.CrudStorage;
@@ -36,13 +38,24 @@ public class Storage implements CrudStorage, LogStorage {
 	protected Map reports;
 	protected List storageIds;
 	protected List metadata;
-	protected int storageId = 0;
+	// Allows test code to use large storage ids, distinguishing storage ids from values with another meaning.
+	private int initialStorageId = 0;
+	protected int storageId;
 	protected MetadataExtractor metadataExtractor;
 	
 	public Storage() {
 		reports = new HashMap();
 		storageIds = new ArrayList();
 		metadata = new ArrayList();
+	}
+
+	@PostConstruct
+	private void setInitialStorageId() {
+		storageId = initialStorageId;
+	}
+
+	public void setInitialStorageId(int value) {
+		this.initialStorageId = value;
 	}
 
 	@Override

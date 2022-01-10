@@ -90,7 +90,8 @@ public class TestExport {
 				} else if (name.equals("globalReportXmlTransformer")) {
 					report.setGlobalReportXmlTransformer(new ReportXmlTransformer());
 				} else if (!name.equals("storageId") && !name.equals("checkpoints")) {
-					method.invoke(report, Common.CONTEXT.getBean(name));
+					// No need to test this for a memory storage.
+					method.invoke(report, Common.CONTEXT_FILE_STORAGE.getBean(name));
 				} else if (name.equals("checkpoints")) {
 					// Ignore, done manually
 				} else {
@@ -133,7 +134,7 @@ public class TestExport {
 		List<Checkpoint> checkpoints = new ArrayList<Checkpoint>();
 		checkpoints.add(checkpoint);
 		report.setCheckpoints(checkpoints);
-		assertExport(RESOURCE_PATH, "test", report, false, false, false);
+		assertExport(RESOURCE_PATH, "test", report, false, false, false, true);
 	}
 
 	private static void getBeanProperties(Class<?> clazz, String verb, Map<String, Method> beanProperties) {
@@ -156,12 +157,13 @@ public class TestExport {
 		}
 	}
 
+	// TODO: We have too many boolean arguments, not clear. We can make a new class, say XmlComparator,
+	// that has setters for all the ignores that we need. Then objects of that class can perform the
+	// comparing.
 	public static void assertExport(String resourcePath, String testCaseName, Report report,
-			boolean applyToXmlIgnores, boolean applyEpochTimestampIgnores, boolean applyStackTraceIgnores)
+			boolean applyToXmlIgnores, boolean applyEpochTimestampIgnores, boolean applyStackTraceIgnores,
+			boolean ignoreStorageId)
 			throws IOException, StorageException {
-		// When storageId is a very low number (like when being build by the pipeline) the replace will potentially
-		// replace the wrong number, hence adjust the storage id to a more unique number
-		report.setStorageId(-99999);
 		byte[] bytes = Export.getReportBytes(report);
 		ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(bytes);
 		GZIPInputStream gzipInputStream = new GZIPInputStream(byteArrayInputStream);
@@ -173,6 +175,9 @@ public class TestExport {
 		}
 		String actual = stringBuffer.toString();
 		actual = ReportRelatedTestCase.applyXmlEncoderIgnores(actual);
+		if (ignoreStorageId) {
+			actual = ReportRelatedTestCase.ignoreStorageId(actual, report);
+		}
 		if (applyToXmlIgnores) {
 			actual = ReportRelatedTestCase.applyToXmlIgnores(actual, report);
 		}
