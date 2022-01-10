@@ -51,6 +51,7 @@ public class TestTool {
 	private Debugger debugger;
 	private Rerunner rerunner;
 	private boolean reportGeneratorEnabled = true;
+	private boolean transformationEnabled = false;
 	private List<Report> reportsInProgress = new ArrayList<Report>();
 	private Map<String, Report> reportsInProgressByCorrelationId = new HashMap<String, Report>();
 	private long numberOfReportsInProgress = 0;
@@ -139,7 +140,15 @@ public class TestTool {
 	public boolean isReportGeneratorEnabled() {
 		return reportGeneratorEnabled;
 	}
-	
+
+	public void setTransformationEnabled(boolean transformationEnabled) {
+		this.transformationEnabled = transformationEnabled;
+	}
+
+	public boolean isTransformationEnabled() {
+		return transformationEnabled;
+	}
+
 	/**
 	 * Sends the result of <code>isReportGeneratorEnabled()</code> to the Debugger
 	 * implementation of the application using the Ladybug.

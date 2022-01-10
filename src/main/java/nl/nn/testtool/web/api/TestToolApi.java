@@ -46,6 +46,7 @@ public class TestToolApi extends ApiBase {
 		TestTool testTool = getBean("testTool");
 		HashMap<String, Object> map = new HashMap<>(4);
 		map.put("generatorEnabled", testTool.isReportGeneratorEnabled());
+		map.put("transformationEnabled", testTool.isTransformationEnabled());
 		map.put("estMemory", testTool.getReportsInProgressEstimatedMemoryUsage());
 		map.put("regexFilter", testTool.getRegexFilter());
 		map.put("reportsInProgress", testTool.getNumberOfReportsInProgress());
@@ -67,6 +68,7 @@ public class TestToolApi extends ApiBase {
 		// TODO: Check user roles.
 		String generatorEnabled = map.remove("generatorEnabled");
 		String regexFilter = map.remove("regexFilter");
+		String transformationEnabled = map.remove("transformationEnabled");
 		if (map.size() > 0 || (StringUtils.isEmpty(generatorEnabled) && StringUtils.isEmpty(regexFilter)))
 			return Response.status(Response.Status.BAD_REQUEST).build();
 
@@ -76,6 +78,10 @@ public class TestToolApi extends ApiBase {
 		}
 		if (StringUtils.isNotEmpty(regexFilter))
 			testTool.setRegexFilter(regexFilter);
+
+		if (StringUtils.isNotEmpty(transformationEnabled)) {
+			testTool.setTransformationEnabled("true".equalsIgnoreCase(transformationEnabled));
+		}
 
 		return Response.ok().build();
 	}

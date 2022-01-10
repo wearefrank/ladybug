@@ -17,6 +17,7 @@ package nl.nn.testtool.web.api;
 
 import nl.nn.testtool.MetadataExtractor;
 import nl.nn.testtool.Report;
+import nl.nn.testtool.TestTool;
 import nl.nn.testtool.echo2.test.TestComponent;
 import nl.nn.testtool.echo2.util.Upload;
 import nl.nn.testtool.storage.CrudStorage;
@@ -73,7 +74,8 @@ public class ReportApi extends ApiBase {
 			if (report == null)
 				return Response.status(Response.Status.NOT_FOUND).build();
 			if (xml) {
-				if (globalTransformer) {
+				TestTool testTool = getBean("testTool");
+				if (testTool.isTransformationEnabled()) {
 					ReportXmlTransformer reportXmlTransformer = getBean("reportXmlTransformer");
 					if (reportXmlTransformer != null)
 						report.setGlobalReportXmlTransformer(reportXmlTransformer);
