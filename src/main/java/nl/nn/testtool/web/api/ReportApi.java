@@ -126,12 +126,8 @@ public class ReportApi extends ApiBase {
 			number = Math.min(metadata.size(), number);
 			if (number < 1)
 				return Response.noContent().build();
-			metadata.sort(new Comparator<List<Object>>() {
-				@Override
-				public int compare(List<Object> o1, List<Object> o2) {
-					return (int) ((Long) o1.get(1) - (Long) o2.get(1));
-				}
-			});
+
+			metadata.sort(Comparator.comparingLong(o -> (Long) o.get(1)));
 			ArrayList<Report> reports = new ArrayList<>(number);
 			for (int i = 1; i <= number; i++) {
 				reports.add(getReport(storage, (Integer) metadata.get(metadata.size() - i).get(0)));
