@@ -199,6 +199,11 @@
             </goals>
           </execution>
         </executions>
+        <configuration>
+          <additionalJOptions>
+            <additionalJOption>-Xwerror</additionalJOption>
+          </additionalJOptions>
+        </configuration>        
       </plugin>
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
@@ -223,6 +228,51 @@
             <!-- Work around Jenkins build failure for now (until we reorganize the frontend files) -->
             <checkModificationExclude>src/main/resources/webapp/app/**</checkModificationExclude>
           </checkModificationExcludes>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.commonjava.maven.plugins</groupId>
+        <artifactId>directory-maven-plugin</artifactId>
+        <version>1.0</version>
+        <executions>
+          <execution>
+            <?m2e ignore?>
+            <id>find-project-root-directory</id>
+            <goals>
+              <goal>directory-of</goal>
+            </goals>
+            <phase>initialize</phase>
+            <configuration>
+              <property>ibis.ladybug.rootdir</property>
+              <project>
+                <groupId>org.ibissource</groupId>
+                <artifactId>ibis-ladybug</artifactId>
+              </project>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.glassfish.copyright</groupId>
+        <artifactId>glassfish-copyright-maven-plugin</artifactId>
+        <version>2.4</version>
+        <executions>
+          <execution>
+            <?m2e ignore?> <!-- Eclipse doesn't seem to like this plugin, it doesn't need to be executed 
+                    by Eclipse so ignore it -->
+            <id>Check-CopyRight-Notice</id>
+            <goals>
+              <goal>copyright</goal><!-- Checks for Copyright notices -->
+              <goal>check</goal><!-- Fails the build -->
+            </goals>
+            <phase>process-sources</phase>
+          </execution>
+        </executions>
+        <configuration>
+          <excludeFile>${ibis.ladybug.rootdir}\copyrightExcludeFile.txt</excludeFile>
+          <ignoreYear>true</ignoreYear>
+          <useDash>true</useDash>
+          <templateFile>${ibis.ladybug.rootdir}\copyrightTemplateFile.txt</templateFile>
         </configuration>
       </plugin>
     </plugins>
