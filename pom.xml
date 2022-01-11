@@ -199,6 +199,11 @@
             </goals>
           </execution>
         </executions>
+        <configuration>
+          <additionalJOptions>
+            <additionalJOption>-Xwerror</additionalJOption>
+          </additionalJOptions>
+        </configuration>        
       </plugin>
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
