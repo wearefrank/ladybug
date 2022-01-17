@@ -269,10 +269,10 @@
           </execution>
         </executions>
         <configuration>
-          <excludeFile>${ibis.ladybug.rootdir}\copyrightExcludeFile.txt</excludeFile>
+          <excludeFile>${ibis.ladybug.rootdir}/copyrightExcludeFile.txt</excludeFile>
           <ignoreYear>true</ignoreYear>
           <useDash>true</useDash>
-          <templateFile>${ibis.ladybug.rootdir}\copyrightTemplateFile.txt</templateFile>
+          <templateFile>${ibis.ladybug.rootdir}/copyrightTemplateFile.txt</templateFile>
         </configuration>
       </plugin>
     </plugins>
