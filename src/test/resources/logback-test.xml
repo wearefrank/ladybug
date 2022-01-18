@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-	Copied from https://logback.qos.ch/manual/configuration.html and changed log level to info
+	Copied from https://logback.qos.ch/manual/configuration.html and changed log level to info and added
+	<logger name="nl.nn.testtool.test.junit" level="DEBUG"/>
 -->
 <configuration>
 
@@ -11,6 +12,8 @@
       <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
     </encoder>
   </appender>
+
+  <logger name="nl.nn.testtool.test.junit" level="DEBUG"/>
 
   <root level="info">
     <appender-ref ref="STDOUT" />
