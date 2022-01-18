@@ -8,6 +8,8 @@ docker/
 docker\
 /apt_generated
 \apt_generated
+/wip
+\wip
 MANIFEST.MF
 README
 LICENSE
