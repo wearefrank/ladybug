@@ -29,8 +29,8 @@ import javax.servlet.http.HttpServletResponseWrapper;
 
 /**
  * <p>
- * Serve an Angular app from a WebJars jar using the version agnostic approach, serving index.html when a resource is
- * not found and changing the base href in the index.html when needed.
+ * Serve an Angular app from a WebJars jar using the version agnostic approach (when version is not specified), serving
+ * index.html when a resource is not found and changing the base href in the index.html when needed.
  * <p>
  * This servlets relies on WebJars being configured for the webapp it is running in as it will dispatch requests to
  * /webjars/ for WebJars resources. Information about WebJars and how to configure them for your webapp can be found at:
@@ -60,15 +60,26 @@ import javax.servlet.http.HttpServletResponseWrapper;
 public class AngularServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 	private String artifactId;
+	private String version = "";
 
 	/**
 	 * Set artifactId of WebJars jar that contains the Angular app to be served. In case of a Maven project the pom.xml
-	 * of the project should also contain the artifactId.
+	 * of the project should also contain this artifactId.
 	 * 
 	 * @param artifactId  artifactId of WebJars jar that contains the Angular app to be served
 	 */
 	public void setArtifactId(String artifactId) {
 		this.artifactId = artifactId;
+	}
+
+	/**
+	 * Set version of WebJars jar that contains the Angular app to be served. In case of a Maven project the pom.xml
+	 * of the project should also contain this version. The version agnostic approach is used when version is not set.
+	 * 
+	 * @param version  version of WebJars jar that contains the Angular app to be served
+	 */
+	public void setVersion(String version) {
+		this.version = "/" + version;
 	}
 
 	@Override
@@ -127,7 +138,7 @@ public class AngularServlet extends HttpServlet {
 		if (pathInfo.startsWith(webJarsBase)) {
 			webJarsRequestURI = pathInfo;
 		} else {
-			webJarsRequestURI = webJarsBase + artifactId + pathInfo;
+			webJarsRequestURI = webJarsBase + artifactId + version + pathInfo;
 		}
 		HttpServletRequestWrapper wrapper = new HttpServletRequestWrapper(request) {
 			@Override
