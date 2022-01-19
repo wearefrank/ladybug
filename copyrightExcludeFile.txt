@@ -57,6 +57,7 @@ org.eclipse.
 .ldif
 .ttm
 .tts
+.iml
 .mapping
 src/main/java/nl/nn/xmldecoder/
 src\main\java\nl\nn\xmldecoder\
