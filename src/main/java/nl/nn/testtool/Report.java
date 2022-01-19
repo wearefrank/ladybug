@@ -856,6 +856,10 @@ public class Report implements Serializable {
 	}
 
 	private String getCheckpointLogDescription(String name, int type, Integer level) {
+		return getCheckpointLogDescription(name, type, level, correlationId);
+	}
+
+	protected static String getCheckpointLogDescription(String name, int type, Integer level, String correlationId) {
 		return "(name: " + name + ", type: " + Checkpoint.getTypeAsString(type) + ", level: " + level
 				+ ", correlationId: " + correlationId + ")";
 	}

@@ -15,10 +15,20 @@
 */
 package nl.nn.testtool.web;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.lang.invoke.MethodHandles;
+import java.util.Properties;
+
 import javax.servlet.ServletException;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class FrontendServlet extends AngularServlet {
 	private static final long serialVersionUID = 1L;
+	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+	private static final String FALLBACK_MESSAGE = ", will fall back to version agnostic approach";
 
 	/**
 	 * See documentation at {@link ApiServlet#getDefaultMapping()}
@@ -31,7 +41,23 @@ public class FrontendServlet extends AngularServlet {
 
 	@Override
 	public void init() throws ServletException {
-		setArtifactId("wearefrank__ladybug");
+		String artifactId = "wearefrank__ladybug";
+		setArtifactId(artifactId);
+		try {
+			String resource = "/META-INF/maven/org.webjars.npm/" + artifactId + "/pom.properties";
+			InputStream inputStream = this.getClass().getResourceAsStream(resource);
+			if (inputStream != null) {
+				Properties properties = new Properties();
+				properties.load(inputStream);
+				String version = properties.getProperty("version");
+				log.debug("Resolved " + artifactId + " version to: " + version);
+				setVersion(version);
+			} else {
+				log.debug("Could not find " + resource + FALLBACK_MESSAGE);
+			}
+		} catch (IOException e) {
+			log.debug("Could not read " + artifactId + " version from pom.properties" + FALLBACK_MESSAGE, e);
+		}
 		super.init();
 	}
 

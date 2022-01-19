@@ -111,12 +111,15 @@ public class ReportRelatedTestCase {
 	@After
 	public void tearDown() {
 		List<ILoggingEvent> loggingEvents = listAppender.list;
-		String logMessage = null;
-		if (loggingEvents.size() > 0) {
-			logMessage = loggingEvents.get(0).getMessage();
-			assertNull(logMessage); // Shows log message when it fails
+		int count = 0;
+		for (ILoggingEvent loggingEvent : loggingEvents) {
+			if (loggingEvent.getLoggerName().startsWith("nl.nn.testtool.test.junit")) {
+				count++;
+			} else {
+				assertNull(loggingEvent.getMessage()); // Shows log message when it fails
+			}
 		}
-		assertEquals(0, loggingEvents.size());
+		assertEquals(count, loggingEvents.size());
 	}
 
 	@Test

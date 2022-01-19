@@ -316,7 +316,8 @@ public class TestTool {
 					reportsInProgressByCorrelationId.put(correlationId, report);
 					numberOfReportsInProgress++;
 				} else {
-					log.warn("Report for '" + correlationId + "' is null, could not add checkpoint '" + name + "'");
+					log.warn("No report in progress for correlationId and checkpoint not a startpoint, ignored checkpoint "
+							+ Report.getCheckpointLogDescription(name, checkpointType, null, correlationId));
 				}
 			}
 		}
