@@ -1,5 +1,5 @@
 /*
-   Copyright 2018-2019 Nationale-Nederlanden, 2020-2021 WeAreFrank!
+   Copyright 2018-2019 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -54,6 +54,7 @@ public class CheckpointComponent extends MessageComponent {
 	private Label messageIsTruncatedLabel;
 	private Label messageEncodingLabel;
 	private Label messageStreamingLabel;
+	private Label messageNoCloseReceivedForStream;
 
 	public CheckpointComponent() {
 		super();
@@ -155,6 +156,11 @@ public class CheckpointComponent extends MessageComponent {
 		messageStreamingLabel.setVisible(false);
 		add(messageStreamingLabel);
 
+		messageNoCloseReceivedForStream = Echo2Application.createInfoLabelWithColumnLayoutData();
+		messageNoCloseReceivedForStream.setVisible(false);
+		messageNoCloseReceivedForStream.setText("No close received for stream");
+		add(messageNoCloseReceivedForStream);
+
 		add(messageColumn);
 		add(messageTextArea);
 
@@ -242,6 +248,11 @@ public class CheckpointComponent extends MessageComponent {
 			messageStreamingLabel.setVisible(true);
 		} else {
 			messageStreamingLabel.setVisible(false);
+		}
+		if (checkpoint.isNoCloseReceivedForStream()) {
+			messageNoCloseReceivedForStream.setVisible(true);
+		} else {
+			messageNoCloseReceivedForStream.setVisible(false);
 		}
 		if (checkpoint.getEncoding() != null) {
 			messageEncodingLabel.setText("Message of type " + checkpoint.getMessageClassName()

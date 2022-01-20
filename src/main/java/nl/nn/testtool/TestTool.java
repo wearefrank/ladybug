@@ -230,9 +230,9 @@ public class TestTool {
 	}
 
 	/**
-	 * Remove streaming message listeners when main thread is finished to prevent streams for which the close method
-	 * isn't called to keep reports in progress. Setting this to true will risk streams not being captured when they are
-	 * still active after the main thread is finished
+	 * Close message capturers when main thread is finished to prevent streams for which the close method isn't called
+	 * to keep reports in progress. Setting this to true will risk streams not being captured when they are still active
+	 * after the main thread is finished
 	 * 
 	 * @param closeMessageCapturers ...
 	 */
@@ -350,9 +350,9 @@ public class TestTool {
 					}
 					if (!report.streamingMessageListenersFinished()
 							&& closeMessageCapturers) {
-						report.removeStreamingMessageListeners();
+						report.closeMessageCapturers();
 					}
-					if (report.streamingMessageListenersFinished()) {
+					if (!report.isClosed() && report.streamingMessageListenersFinished()) {
 						report.setClosed(true);
 						log.debug("Report is finished for '" + report.getCorrelationId() + "'");
 						synchronized(reportsInProgress) {
@@ -780,7 +780,7 @@ public class TestTool {
 			}
 			if (report != null) {
 				synchronized(report) {
-					report.removeStreamingMessageListeners();
+					report.closeMessageCapturers();
 					closeReportIfFinished(report);
 				}
 			}

@@ -1,5 +1,5 @@
 /*
-   Copyright 2018-2021 WeAreFrank!
+   Copyright 2018-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -589,9 +589,9 @@ public class Report implements Serializable {
 		}
 	}
 
-	protected void removeStreamingMessageListeners() {
-		synchronized(streamingMessageListeners) {
-			streamingMessageListeners.clear();
+	protected void closeMessageCapturers() {
+		for (Checkpoint checkpoint : checkpoints) {
+			checkpoint.closeMessageCapturer();
 		}
 	}
 

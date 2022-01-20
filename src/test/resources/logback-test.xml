@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
 	Copied from https://logback.qos.ch/manual/configuration.html and changed log level to info and added
-	<logger name="nl.nn.testtool.test.junit" level="DEBUG"/>
+	<logger name="nl.nn.testtool.test.junit" level="debug"/>
 -->
 <configuration>
 
@@ -13,7 +13,7 @@
     </encoder>
   </appender>
 
-  <logger name="nl.nn.testtool.test.junit" level="DEBUG"/>
+  <logger name="nl.nn.testtool.test.junit" level="debug"/>
 
   <root level="info">
     <appender-ref ref="STDOUT" />

@@ -20,6 +20,9 @@
      <void property="name">
       <string>name</string>
      </void>
+     <void property="noCloseReceivedForStream">
+      <boolean>true</boolean>
+     </void>
      <void property="preTruncatedMessageLength">
       <int>24</int>
      </void>

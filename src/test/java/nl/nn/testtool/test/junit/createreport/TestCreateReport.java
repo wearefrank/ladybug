@@ -476,6 +476,8 @@ public class TestCreateReport extends ReportRelatedTestCase {
 		Writer writerMessage = testTool.inputpoint(correlationId, null, "writer", writerOriginalMessage);
 		assertNotEquals(writerOriginalMessage, writerMessage);
 
+		writerMessage.write("Hello World!");
+
 		testTool.endpoint(correlationId, null, reportName, "endmessage");
 		if (withCloseMethod) {
 			testTool.close(correlationId, false, true);

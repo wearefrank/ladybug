@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden, 2020-2021 WeAreFrank!
+   Copyright 2018 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -77,13 +77,15 @@ public class Checkpoint implements Serializable, Cloneable {
 	private String encoding;
 	private String streaming;
 	private boolean waitingForStream = false;
+	private transient StringWriter messageCapturerWriter;
+	private transient ByteArrayOutputStream messageCapturerOutputStream;
+	private boolean noCloseReceivedForStream = false;
 	private int type;
 	private int level = 0;
 	private int stub = STUB_FOLLOW_REPORT_STRATEGY;
 	private boolean stubbed = false;
 	private String stubNotFound;
 	private int preTruncatedMessageLength = -1;
-
 	private transient Map<String, Pattern> variablePatternMap;
 
 	public Checkpoint() {
@@ -182,7 +184,7 @@ public class Checkpoint implements Serializable, Cloneable {
 					String[] charset = new String[1];
 					Throwable[] exception = new Throwable[1];
 					if (streamingType == StreamingType.CHARACTER_STREAM) {
-						StringWriter messageCapturerWriter = new StringWriter() {
+						messageCapturerWriter = new StringWriter() {
 								int length = 0;
 								boolean truncated = false;
 
@@ -234,12 +236,13 @@ public class Checkpoint implements Serializable, Cloneable {
 									report.closeStreamingMessage(toStringResult.getMessageClassName(),
 											messageToClose[0], streamingType.toString(), charset[0],
 											toString(), preTruncatedMessageLength, exception[0]);
+									messageCapturerWriter = null;
 								}
 						};
 						message = report.getMessageCapturer().toWriter(message, messageCapturerWriter,
 								exceptionNotifier -> exception[0] = exceptionNotifier);
 					} else {
-						ByteArrayOutputStream messageCapturerOutputStream = new ByteArrayOutputStream() {
+						messageCapturerOutputStream = new ByteArrayOutputStream() {
 								int length = 0;
 								boolean truncated = false;
 
@@ -281,6 +284,7 @@ public class Checkpoint implements Serializable, Cloneable {
 									report.closeStreamingMessage(toStringResult.getMessageClassName(),
 											messageToClose[0], streamingType.toString(), charset[0],
 											toByteArray(), preTruncatedMessageLength, exception[0]);
+									messageCapturerOutputStream = null;
 								}
 						};
 						message = report.getMessageCapturer().toOutputStream(message, messageCapturerOutputStream,
@@ -309,6 +313,25 @@ public class Checkpoint implements Serializable, Cloneable {
 
 	public String getMessage() {
 		return message;
+	}
+
+	public void closeMessageCapturer() {
+		try {
+			if (messageCapturerWriter != null) {
+				noCloseReceivedForStream = true;
+				messageCapturerWriter.close();
+			}
+		} catch (IOException e) {
+			log.warn("Could not close messageCapturerWriter", e);
+		}
+		try {
+			if (messageCapturerOutputStream != null) {
+				noCloseReceivedForStream = true;
+				messageCapturerOutputStream.close();
+			}
+		} catch (IOException e) {
+			log.warn("Could not close messageCapturerOutputStream", e);
+		}
 	}
 
 	@JsonIgnore
@@ -349,6 +372,14 @@ public class Checkpoint implements Serializable, Cloneable {
 
 	public boolean isWaitingForStream() {
 		return waitingForStream;
+	}
+
+	public void setNoCloseReceivedForStream(boolean noCloseReceivedForStream) {
+		this.noCloseReceivedForStream = noCloseReceivedForStream;
+	}
+
+	public boolean isNoCloseReceivedForStream() {
+		return noCloseReceivedForStream;
 	}
 
 	public void setType(int type) {
