@@ -236,13 +236,16 @@ public class ReportApi extends ApiBase {
 	public Response copyReport(@PathParam("storage") String storageParam, Map<String, List<Integer>> sources) {
 		Storage target = getBean(storageParam);
 		Map<String, String> exceptions = new HashMap<>();
+		ArrayList<Report> reports = new ArrayList<>();
 		for (String src : sources.keySet()) {
 			try {
 				Storage srcStorage = getBean(src);
 
 				for (int storageId : sources.get(src)) {
 					try {
-						((CrudStorage) target).store(getReport(srcStorage, storageId));
+						Report report = getReport(srcStorage, storageId);
+						((CrudStorage) target).store(report);
+						reports.add(report);
 					} catch (StorageException storageException) {
 						exceptions.put(src + "_" + storageId, storageException.getMessage());
 						log.error("Could not copy the report. #Exceptions for request: " + exceptions, storageException);
@@ -255,7 +258,7 @@ public class ReportApi extends ApiBase {
 		// TODO: Find a better error response code.
 		if (exceptions.size() > 0)
 			return Response.status(Response.Status.BAD_REQUEST).entity(exceptions).build();
-		return Response.ok().build();
+		return Response.ok(reports).build();
 	}
 
 	/**
