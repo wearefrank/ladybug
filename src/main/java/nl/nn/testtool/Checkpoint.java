@@ -233,10 +233,10 @@ public class Checkpoint implements Serializable, Cloneable {
 									if (truncated) {
 										preTruncatedMessageLength = length;
 									}
+									messageCapturerWriter = null;
 									report.closeStreamingMessage(toStringResult.getMessageClassName(),
 											messageToClose[0], streamingType.toString(), charset[0],
 											toString(), preTruncatedMessageLength, exception[0]);
-									messageCapturerWriter = null;
 								}
 						};
 						message = report.getMessageCapturer().toWriter(message, messageCapturerWriter,
@@ -281,10 +281,10 @@ public class Checkpoint implements Serializable, Cloneable {
 									if (truncated) {
 										preTruncatedMessageLength = length;
 									}
+									messageCapturerOutputStream = null;
 									report.closeStreamingMessage(toStringResult.getMessageClassName(),
 											messageToClose[0], streamingType.toString(), charset[0],
 											toByteArray(), preTruncatedMessageLength, exception[0]);
-									messageCapturerOutputStream = null;
 								}
 						};
 						message = report.getMessageCapturer().toOutputStream(message, messageCapturerOutputStream,
