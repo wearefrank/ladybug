@@ -474,15 +474,35 @@ public class TestCreateReport extends ReportRelatedTestCase {
 
 		Writer writerOriginalMessage = new StringWriter();
 		Writer writerMessage = testTool.inputpoint(correlationId, null, "writer", writerOriginalMessage);
+		writerMessage.write("Hello Writer World!");
 		assertNotEquals(writerOriginalMessage, writerMessage);
 
-		writerMessage.write("Hello World!");
+		String readerString = "Hello Reader World!";
+		Reader readerOriginalMessage = new StringReader(readerString);
+		Reader readerMessage = testTool.inputpoint(correlationId, null, "reader", readerOriginalMessage);
+		readerMessage.read(new char[readerString.length()]);
+		assertNotEquals(readerOriginalMessage, readerMessage);
+
+		OutputStream outputStreamOriginalMessage = new ByteArrayOutputStream();
+		OutputStream outputStreamMessage = testTool.inputpoint(correlationId, null, "outputstream", outputStreamOriginalMessage);
+		outputStreamMessage.write("Hello OutputStream World!".getBytes());
+		assertNotEquals(outputStreamOriginalMessage, outputStreamMessage);
+
+		String inputStreamString = "Hello InputStream World!";
+		InputStream inputStreamOriginalMessage = new ByteArrayInputStream(inputStreamString.getBytes());
+		InputStream inputStreamMessage = testTool.inputpoint(correlationId, null, "inputstream", inputStreamOriginalMessage);
+		inputStreamMessage.read(new byte[inputStreamString.length()]);
+		assertNotEquals(inputStreamOriginalMessage, inputStreamMessage);
 
 		testTool.endpoint(correlationId, null, reportName, "endmessage");
 		if (withCloseMethod) {
 			testTool.close(correlationId, false, true);
 		}
+
 		testWriterMessage(writerMessage);
+		testReaderMessage(readerMessage);
+		testOutputStreamMessage(outputStreamMessage);
+		testInputStreamMessage(inputStreamMessage);
 
 		assertReport(correlationId);
 	}
@@ -567,7 +587,7 @@ public class TestCreateReport extends ReportRelatedTestCase {
 		// Assert no wrapping of message when same message is used again
 		assertEquals(readerMessage, testTool.inputpoint(correlationId, null, "reader", readerMessage));
 
-		ByteArrayInputStream inputStreamOriginalMessage = new ByteArrayInputStream("Random string 33".getBytes());
+		InputStream inputStreamOriginalMessage = new ByteArrayInputStream("Random string 33".getBytes());
 		InputStream inputStreamMessage = testTool.inputpoint(correlationId, null, "inputstream", inputStreamOriginalMessage);
 		assertNotEquals(inputStreamOriginalMessage, inputStreamMessage);
 		testInputStreamMessage(inputStreamMessage); // Before report is closed
@@ -634,7 +654,7 @@ public class TestCreateReport extends ReportRelatedTestCase {
 		// Assert no wrapping of message when same message is used again
 		assertEquals(writerMessage, testTool.inputpoint(correlationId, null, "writer", writerMessage));
 
-		ByteArrayOutputStream outputStreamOriginalMessage = new ByteArrayOutputStream();
+		OutputStream outputStreamOriginalMessage = new ByteArrayOutputStream();
 		OutputStream outputStreamMessage = testTool.inputpoint(correlationId, null, "outputstream", outputStreamOriginalMessage);
 		assertNotEquals(outputStreamOriginalMessage, outputStreamMessage);
 		testOutputStreamMessage(outputStreamMessage); // Before report is closed
