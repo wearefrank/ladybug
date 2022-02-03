@@ -52,6 +52,7 @@ public class MetadataApi extends ApiBase {
 	 * @param storageParam Name of the storage to search.
 	 * @param limit Maximum number of results to return.
 	 * @param uriInfo Query parameters for search.
+	 * @param filterParam The regex on which the report names will be filtered
 	 * @return Response containing fields [List[String]] and values [List[List[Object]]].
 	 * @throws ApiException If an exception occurs during metadata search in storage.
 	 */
