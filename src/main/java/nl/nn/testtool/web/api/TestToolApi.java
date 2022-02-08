@@ -64,11 +64,17 @@ public class TestToolApi extends ApiBase {
 	@Consumes(MediaType.APPLICATION_JSON)
 	public Response setInfo(Map<String, String> map) {
 		TestTool testTool = getBean("testTool");
+
+		if (map.isEmpty()) {
+			return Response.status(Response.Status.BAD_REQUEST).entity("No settings have been provided").build();
+		}
+
+		if (map.size() > 2) {
+			return Response.status(Response.Status.BAD_REQUEST).entity("Too many settings have been provided").build();
+		}
 		// TODO: Check user roles.
 		String generatorEnabled = map.remove("generatorEnabled");
 		String regexFilter = map.remove("regexFilter");
-		if (map.size() > 0 || (StringUtils.isEmpty(generatorEnabled) && StringUtils.isEmpty(regexFilter)))
-			return Response.status(Response.Status.BAD_REQUEST).build();
 
 		if (StringUtils.isNotEmpty(generatorEnabled)) {
 			testTool.setReportGeneratorEnabled("1".equalsIgnoreCase(generatorEnabled) || "true".equalsIgnoreCase(generatorEnabled));
@@ -93,7 +99,7 @@ public class TestToolApi extends ApiBase {
 		TestTool testTool = getBean("testTool");
 		count = Math.min(count, testTool.getNumberOfReportsInProgress());
 		if (count == 0)
-			return Response.noContent().build();
+			return Response.status(Response.Status.BAD_REQUEST).entity("No progresses have been queried or are available, number of reports in progress [" + testTool.getNumberOfReportsInProgress() + "]").build();
 
 		ArrayList<Report> reports = new ArrayList<>(((Number) count).intValue());
 		for (int i = 0; i < count; i++)
@@ -114,7 +120,7 @@ public class TestToolApi extends ApiBase {
 	public Response updateReportTransformation(Map<String, String> map) {
 		String transformation = map.get("transformation");
 		if (StringUtils.isEmpty(transformation))
-			return Response.status(Response.Status.BAD_REQUEST).build();
+			return Response.status(Response.Status.BAD_REQUEST).entity("No transformation has been provided").build();
 
 		getReportXmlTransformer().setXslt(transformation);
 		return Response.ok().build();

@@ -62,7 +62,7 @@ public class MetadataApi extends ApiBase {
 	public Response getMetadataList(@PathParam("storage") String storageParam,
 									@DefaultValue("-1") @QueryParam("limit") int limit ,
 									@DefaultValue(".*") @QueryParam("filter") String filterParam ,
-									@Context UriInfo uriInfo) throws ApiException {
+									@Context UriInfo uriInfo) {
 
 		List<String> searchValues = new ArrayList<>();
 		List<String> metadataNames = new ArrayList<>();
@@ -83,7 +83,7 @@ public class MetadataApi extends ApiBase {
 			} else if ("testStorage".equals(storageParam)) {
 				storage = testTool.getTestStorage();
 			} else {
-				throw new StorageException("Storage param given is invalid, should be [debugStorage] or [testStorage]");
+				return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Storage param given is invalid, should be [debugStorage] or [testStorage]").build();
 			}
 			List<List<Object>> list = storage.getMetadata(limit, metadataNames, searchValues, MetadataExtractor.VALUE_TYPE_STRING);
 			List<Map<String, String>> metadata = new ArrayList<>();
@@ -96,8 +96,8 @@ public class MetadataApi extends ApiBase {
 			}
 
 			return Response.ok().entity(metadata).build();
-		} catch (StorageException e) {
-			throw new ApiException("Exception during filtering metadata.", e);
+		} catch (Exception e) {
+			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Could not find metadata with limit [" + limit + "] and filter [" + filterParam + "] :: " + e + Arrays.toString(e.getStackTrace())).build();
 		}
 	}
 
