@@ -35,10 +35,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.lang.invoke.MethodHandles;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Path("/runner")
 public class RunApi extends ApiBase {
@@ -88,7 +85,7 @@ public class RunApi extends ApiBase {
 		String exception = runner.run(reports, true, true);
 
 		if (exceptions.size() > 0) {
-			String message = "Following exceptions were thrown, causing the related reports not to run. " + String.join(". ", exceptions);
+			String message = "Following exceptions were thrown, causing the related reports not to run. " + String.join(". \n", exceptions);
 			return Response.serverError().entity(message).build();
 		} else if (exception != null) {
 			return Response.status(Response.Status.SERVICE_UNAVAILABLE).entity(exception).build();
@@ -148,9 +145,8 @@ public class RunApi extends ApiBase {
 			data.put("progress", runner.getProgressValue());
 			data.put("max-progress", runner.getMaximum());
 			return Response.ok(data).build();
-		} catch (Throwable t) {
-			t.printStackTrace();
-			throw t;
+		} catch (Exception e) {
+			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Could not retrieve result of ran reports :: " + e + Arrays.toString(e.getStackTrace())).build();
 		}
 	}
 
@@ -188,9 +184,9 @@ public class RunApi extends ApiBase {
 			reportRunner.getResults().remove(storageId);
 			reranReports.remove(storageId);
 			return Response.ok(runResultReport).build();
-		} catch (StorageException storageException) {
-			storageException.printStackTrace();
-			throw new ApiException("Exception while replacing report with storage id [" + storageId + "]", storageException);
+		} catch (StorageException e) {
+			e.printStackTrace();
+			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Exception while replacing report with storage id [" + storageId + "] :: " + e + Arrays.toString(e.getStackTrace())).build();
 		}
 	}
 	/**

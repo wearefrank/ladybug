@@ -58,7 +58,6 @@ public class ReportApi extends ApiBase {
 	 * @param xml True if Xml of the report needs to be returned.
 	 * @param globalTransformer True if reportXmlTransformer should be set for the report.
 	 * @return A response containing serialized Report object.
-	 * @throws ApiException If exception is thrown while reading report.
 	 */
 	@GET
 	@Path("/report/{storage}/{storageId}")
@@ -66,12 +65,12 @@ public class ReportApi extends ApiBase {
 	public Response getReport(@PathParam("storage") String storageParam,
 							  @PathParam("storageId") int storageId,
 							  @QueryParam("xml") @DefaultValue("false") boolean xml,
-							  @QueryParam("globalTransformer") @DefaultValue("false") boolean globalTransformer) throws ApiException {
+							  @QueryParam("globalTransformer") @DefaultValue("false") boolean globalTransformer) {
 		try {
 			Storage storage = getBean(storageParam);
 			Report report = getReport(storage, storageId);
 			if (report == null)
-				return Response.status(Response.Status.NOT_FOUND).build();
+				return Response.status(Response.Status.NOT_FOUND).entity("Could not find report with id [" + storageId + "]").build();
 			if (xml) {
 				if (globalTransformer) {
 					ReportXmlTransformer reportXmlTransformer = getBean("reportXmlTransformer");
@@ -84,8 +83,8 @@ public class ReportApi extends ApiBase {
 			} else {
 				return Response.ok().entity(report).build();
 			}
-		} catch (StorageException e) {
-			throw new ApiException("Exception while getting report [" + storageId + "] from storage [" + storageParam + "]", e);
+		} catch (Exception e) {
+			return Response.status(Response.Status.NOT_FOUND).entity("Exception while getting report [" + storageId + "] from storage [" + storageParam + "] :: " + e + Arrays.toString(e.getStackTrace())).build();
 		}
 	}
 
@@ -108,10 +107,10 @@ public class ReportApi extends ApiBase {
 		try {
 			Report report = getReport(storage, storageId);
 			if (report == null)
-				return Response.status(Response.Status.NOT_FOUND).build();
+				return Response.status(Response.Status.NOT_FOUND).entity("Could not find report with storage id [" + storageId + "]").build();
 			((CrudStorage) storage).delete(report);
 		} catch (StorageException e) {
-			throw new ApiException("Exception while deleting a report.", e);
+			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Could not delete report with storageId [" + storageId + "] :: " + e + Arrays.toString(e.getStackTrace())).build();
 		}
 		return Response.ok().build();
 	}
@@ -123,18 +122,18 @@ public class ReportApi extends ApiBase {
 			Storage storage = getBean(storageParam);
 			List<List<Object>> metadata = storage.getMetadata(-1, Arrays.asList("storageId", "endTime"),
 					Arrays.asList(null, null), MetadataExtractor.VALUE_TYPE_OBJECT);
-			number = Math.min(metadata.size(), number);
-			if (number < 1)
-				return Response.noContent().build();
+			int amount = Math.min(metadata.size(), number);
+			if (amount < 1)
+				return Response.status(Response.Status.BAD_REQUEST).entity("Either the number of reports requested [" + number + "] or the size of reports available [" + metadata.size() + "] is 0").build();
 
 			metadata.sort(Comparator.comparingLong(o -> (Long) o.get(1)));
-			ArrayList<Report> reports = new ArrayList<>(number);
-			for (int i = 1; i <= number; i++) {
+			ArrayList<Report> reports = new ArrayList<>(amount);
+			for (int i = 1; i <= amount; i++) {
 				reports.add(getReport(storage, (Integer) metadata.get(metadata.size() - i).get(0)));
 			}
 			return Response.ok(reports).build();
 		} catch (StorageException e) {
-			throw new ApiException("Exception while getting the latest " + number + " reports.", e);
+			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Could not retrieve latest [" + number + "] reports :: " + e + Arrays.toString(e.getStackTrace())).build();
 		}
 	}
 
@@ -153,13 +152,13 @@ public class ReportApi extends ApiBase {
 	public Response updateReport(@PathParam("storage") String storageParam, @PathParam("storageId") int storageId, Map<String, String> map) {
 		String[] fields = new String[]{"name", "path", "variables", "description", "transformation"};
 		if (map.isEmpty() || !mapContainsOnly(map, null, fields))
-			return Response.status(Response.Status.BAD_REQUEST).build();
+			return Response.status(Response.Status.BAD_REQUEST).entity("No new values have been given for report with storageId [" + storageId + "]").build();
 
 		try {
 			Storage storage = getBean(storageParam);
 			Report report = getReport(storage, storageId);
 			if (report == null)
-				return Response.status(Response.Status.NOT_FOUND).build();
+				return Response.status(Response.Status.NOT_FOUND).entity("Could not find report with storageId [" + storageId + "]").build();
 
 			if (StringUtils.isNotEmpty(map.get("name")))
 				report.setName(map.get("name"));
@@ -196,7 +195,7 @@ public class ReportApi extends ApiBase {
 			result.put("report", report);
 			return Response.ok(result).build();
 		} catch (StorageException e) {
-			throw new ApiException("Exception while setting transformation for a report.", e);
+			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Could not apply transformation to report with storageId [" + storageId + "] :: " + e + Arrays.toString(e.getStackTrace())).build();
 		}
 	}
 
@@ -218,7 +217,7 @@ public class ReportApi extends ApiBase {
 			map.put("transformation", transformation);
 			return Response.ok(map).build();
 		} catch (StorageException e) {
-			throw new ApiException("Exception while setting transformation for a report.", e);
+			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Could not retrieve transformation of report with storageId [" + storageId + "] :: " + e + Arrays.toString(e.getStackTrace())).build();
 		}
 	}
 
@@ -275,7 +274,7 @@ public class ReportApi extends ApiBase {
 	public Response uploadFile(@PathParam("storage") String storageParam, @Multipart("file") Attachment attachment) {
 		Storage storage = getBean(storageParam);
 		if (!(storage instanceof CrudStorage)) {
-			throw new ApiException("Given storage is not a Crud Storage. Therefore no reports can be added externally.");
+			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Given storage is not a Crud Storage. Therefore no reports can be added externally.").build();
 		}
 		CrudStorage crudStorage = (CrudStorage) storage;
 
@@ -314,7 +313,7 @@ public class ReportApi extends ApiBase {
 			}
 			return Response.ok(reports).build();
 		} catch (StorageException e) {
-			throw new ApiException("Exception while getting the parsed reports from in-memory storage.", e);
+			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Could not retrieve parsed reports from in-memory storage :: " + e + Arrays.toString(e.getStackTrace())).build();
 		}
 	}
 
@@ -335,7 +334,7 @@ public class ReportApi extends ApiBase {
 								 @PathParam("exportReportXml") String exportReportXmlParam, @QueryParam("id") List<Integer> storageIds) {
 		Storage storage = getBean(storageParam);
 		if (storageIds == null || storageIds.isEmpty())
-			return Response.status(Response.Status.BAD_REQUEST).build();
+			return Response.status(Response.Status.BAD_REQUEST).entity("No storage ids have been provided").build();
 		boolean exportReport = exportReportParam.equalsIgnoreCase("true") || exportReportParam.equals("1");
 		boolean exportReportXml = exportReportXmlParam.equalsIgnoreCase("true") || exportReportXmlParam.equals("1");
 		try {
@@ -350,7 +349,7 @@ public class ReportApi extends ApiBase {
 			response.header("Content-Disposition", "attachment; filename=" + export.getSuggestedFilename());
 			return response.build();
 		} catch (StorageException e) {
-			throw new ApiException("Exception while requesting report from the storage.", e);
+			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Exception while requesting reports with ids [" + storageIds + "] from the storage. :: " + e + Arrays.toString(e.getStackTrace())).build();
 		}
 	}
 
@@ -382,15 +381,14 @@ public class ReportApi extends ApiBase {
 				original.setPath(path);
 				storage.update(original);
 			} else {
-				return Response.status(Response.Status.BAD_REQUEST)
-						.entity("Action parameter can only be either [copy] or [move]").build();
+				return Response.status(Response.Status.BAD_REQUEST).entity("Action parameter can only be either [copy] or [move]").build();
 			}
 
 			return Response.ok().build();
 		} catch (StorageException e) {
-			throw new ApiException("Storage exception with storage id [" + storageId + "] in storage [" + storageParam + "]", e);
+			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Storage exception with storage id [" + storageId + "] in storage [" + storageParam + "] :: " + e + Arrays.toString(e.getStackTrace())).build();
 		} catch (CloneNotSupportedException e) {
-			throw new ApiException("Cloning exception for report with storage id [" + storageId + "] in storage [" + storageParam + "]", e);
+			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Cloning exception for report with storage id [" + storageId + "] in storage [" + storageParam + "] :: " + e + Arrays.toString(e.getStackTrace())).build();
 		}
 	}
 
@@ -421,7 +419,7 @@ public class ReportApi extends ApiBase {
 			}
 		} catch (StorageException e) {
 			log.error("Exception while cloning the report", e);
-			return Response.status(Response.Status.BAD_REQUEST).entity("Report could not be found.").build();
+			return Response.status(Response.Status.BAD_REQUEST).entity("Report could not be found. :: " + e + Arrays.toString(e.getStackTrace())).build();
 		}
 
 		Scanner scanner = new Scanner(map.get("csv"));
