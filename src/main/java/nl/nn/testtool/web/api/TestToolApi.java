@@ -28,7 +28,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -87,25 +87,25 @@ public class TestToolApi extends ApiBase {
 	}
 
 	/**
-	 * Returns the reports in progress.
+	 * Returns the specified report in progress.
 	 *
-	 * @param count Maximum number of reports to return.
-	 * @return Response containing a list of reports.
+	 * @param index Index of the report to return
+	 * @return Response containing the specified report, if present.
 	 */
 	@GET
-	@Path("/in-progress/{count}")
+	@Path("/in-progress/{index}")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response getReportsInProgress(@PathParam("count") long count) {
+	public Response getReportsInProgress(@PathParam("index") int index) {
 		TestTool testTool = getBean("testTool");
-		count = Math.min(count, testTool.getNumberOfReportsInProgress());
-		if (count == 0)
-			return Response.status(Response.Status.BAD_REQUEST).entity("No progresses have been queried or are available, number of reports in progress [" + testTool.getNumberOfReportsInProgress() + "]").build();
+		if (index == 0)
+			return Response.status(Response.Status.BAD_REQUEST).entity("No progresses have been queried [" + index + "] or are available [" + testTool.getNumberOfReportsInProgress() + "]").build();
 
-		ArrayList<Report> reports = new ArrayList<>(((Number) count).intValue());
-		for (int i = 0; i < count; i++)
-			reports.add(testTool.getReportInProgress(i));
-
-		return Response.ok(reports).build();
+		try {
+			Report report = testTool.getReportInProgress(index - 1);
+			return Response.ok(report).build();
+		} catch (Exception e) {
+			return Response.status(Response.Status.BAD_REQUEST).entity("Could not find report in progress with index [" + index + "] :: " + e + Arrays.toString(e.getStackTrace())).build();
+		}
 	}
 
 	/**
