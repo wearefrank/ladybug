@@ -142,7 +142,7 @@ public class ReportApi extends ApiBase {
 	 *
 	 * @param storageParam Name of the storage.
 	 * @param storageId Storage id of the report.
-	 * @param map Map containing ["name" or "path" or "variables" or "description" or "transformation"]
+	 * @param map Map containing ["name" or "path" or "variables" or "description" or "transformation" or "checkpointId and "checkpointMessage"]
 	 * @return The updated report.
 	 */
 	@POST
@@ -150,7 +150,8 @@ public class ReportApi extends ApiBase {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response updateReport(@PathParam("storage") String storageParam, @PathParam("storageId") int storageId, Map<String, String> map) {
-		String[] fields = new String[]{"name", "path", "variables", "description", "transformation"};
+		String[] fields = new String[]{"name", "path", "variables", "description", "transformation", "checkpointId", "checkpointMessage"};
+		System.out.println(map);
 		if (map.isEmpty() || !mapContainsOnly(map, null, fields))
 			return Response.status(Response.Status.BAD_REQUEST).entity("No new values have been given for report with storageId [" + storageId + "]").build();
 
@@ -159,7 +160,6 @@ public class ReportApi extends ApiBase {
 			Report report = getReport(storage, storageId);
 			if (report == null)
 				return Response.status(Response.Status.NOT_FOUND).entity("Could not find report with storageId [" + storageId + "]").build();
-
 			if (StringUtils.isNotEmpty(map.get("name")))
 				report.setName(map.get("name"));
 
@@ -175,6 +175,10 @@ public class ReportApi extends ApiBase {
 			String variables = map.get("variables");
 			if (variables != null && !variables.equals(report.getVariableCsv())) {
 				report.setVariableCsv(variables);
+			}
+
+			if (StringUtils.isNotEmpty(map.get("checkpointId"))) {
+				report.getCheckpoints().get(Integer.parseInt(map.get("checkpointId"))).setMessage(map.get("checkpointMessage"));
 			}
 
 			HashMap<String, Serializable> result = new HashMap<>(3);
