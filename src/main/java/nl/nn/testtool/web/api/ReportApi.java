@@ -72,7 +72,7 @@ public class ReportApi extends ApiBase {
 			if (report == null)
 				return Response.status(Response.Status.NOT_FOUND).entity("Could not find report with id [" + storageId + "]").build();
 			if (xml) {
-				if (globalTransformer) {
+				if (globalTransformer || "testStorage".equals(storageParam) ) {
 					ReportXmlTransformer reportXmlTransformer = getBean("reportXmlTransformer");
 					if (reportXmlTransformer != null)
 						report.setGlobalReportXmlTransformer(reportXmlTransformer);
