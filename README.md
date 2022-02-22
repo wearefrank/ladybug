@@ -215,10 +215,14 @@ Create and publish NPM package and WebJar
 
 ### Creating and publishing an NPM package
 - Run the command `ng build`, to build the current project
-- Copy the following files into the generated `libs/ladybug` folder
+- Copy the following files into the generated `dist/ladybug` folder
     - README.md
     - LICENSE
     - package.json
+- In the `dist/ladybug/index.html` change the types of the three scripts on line 15 to `application/javascript` (so module -> application/javascript). The specific scripts are:
+  - `runtime.e3a101410a4894ca.js`
+  - `polyfills.42dedf2fcdca615b.js`
+  - `main.134a36bdfc8f0ad9.js`
 - Remove the `dependencies` and `devDependencies` from the copied `package.json` (`dist/ladybug/package.json`). Make sure you do not remove them from the original `package.json`.
 - Navigate to `dist/ladybug` in your terminal
 - Run `npm publish`
