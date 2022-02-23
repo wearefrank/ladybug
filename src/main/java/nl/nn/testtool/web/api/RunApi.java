@@ -22,6 +22,7 @@ import nl.nn.testtool.run.RunResult;
 import nl.nn.testtool.storage.CrudStorage;
 import nl.nn.testtool.storage.Storage;
 import nl.nn.testtool.storage.StorageException;
+import nl.nn.testtool.transform.ReportXmlTransformer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -128,13 +129,23 @@ public class RunApi extends ApiBase {
 						}
 					}
 
-					res.put("report", runResultReport);
 					res.put("stubbed", stubbed);
 					res.put("total", runResultReport.getCheckpoints().size() - 1);
 
 					Report report = reranReports.get(entry.getKey());
 					res.put("previousTime", report.getEndTime() - report.getStartTime());
 					res.put("currentTime", runResultReport.getEndTime() - runResultReport.getStartTime());
+
+					ReportXmlTransformer reportXmlTransformer = getBean("reportXmlTransformer");
+					report.setGlobalReportXmlTransformer(reportXmlTransformer);
+					runResultReport.setGlobalReportXmlTransformer(reportXmlTransformer);
+
+					res.put("equal", report.toXml(runner).equals(runResultReport.toXml(runner)));
+					res.put("originalReport", report);
+					res.put("editedReport", runResultReport);
+					res.put("originalXml", report.toXml(runner));
+					res.put("editedXml", runResultReport.toXml(runner));
+
 				} catch (StorageException exception) {
 					res.put("exception", exception);
 					exception.printStackTrace();
