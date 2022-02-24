@@ -29,7 +29,7 @@ import javax.servlet.http.HttpServletResponseWrapper;
 
 /**
  * <p>
- * Serve an Angular app from a WebJars jar using the version agnostic approach (when version is not specified), serving
+ * Serve an Angular app from a WebJars jar using the version agnostic approach when a version is not specified, serving
  * index.html when a resource is not found and changing the base href in the index.html when needed.
  * <p>
  * This servlets relies on WebJars being configured for the webapp it is running in as it will dispatch requests to
@@ -52,8 +52,8 @@ import javax.servlet.http.HttpServletResponseWrapper;
  * (http://&lt;hostname&gt;/) or a different context (e.g. http://&lt;hostname&gt;/my-app/) in which case the index.html of
  * the Angular app should contain &lt;base href="/my-app/"&gt; instead of &lt;base href="/"&gt;. To make it possible to use
  * the same WebJars jar for servlet configurations with different servlet mappings this Angular servlet will adjust
- * the value of the href attribute of the base element to correspond with the serverside configured servlet path when
- * serving the index.html.
+ * the value of the href attribute of the base element to correspond with the serverside configured context path and
+ * servlet path when serving the index.html.
  * 
  * @author Jaco de Groot
  */
@@ -114,15 +114,15 @@ public class AngularServlet extends HttpServlet {
 			pathInfo = "/index.html";
 		}
 		if ("/index.html".equals(pathInfo)) {
-			// Replace the value of <base href="/"> in index.html with servlet path
-			String servletPath = request.getServletPath();
+			// Replace the value of <base href="/"> in index.html with the context path and servlet path
+			String path = request.getContextPath() + request.getServletPath();
 			final String base;
-			if (servletPath.equals("")) {
+			if (path.equals("")) {
 				base = "/";
-			} else if (!servletPath.endsWith("/")) {
-				base = servletPath + "/";
+			} else if (!path.endsWith("/")) {
+				base = path + "/";
 			} else {
-				base = servletPath;
+				base = path;
 			}
 			response = new HttpServletResponseWrapper(response) {
 				@Override
@@ -165,9 +165,7 @@ class BaseRewritingServletOutputStream extends ServletOutputStream {
 	BaseRewritingServletOutputStream(ServletOutputStream servletOutputStream, String newBase) {
 		this.servletOutputStream = servletOutputStream;
 		this.newBase = newBase;
-		if (newBase != null) {
-			i = 0;
-		}
+		i = 0;
 	}
 
 	@Override
