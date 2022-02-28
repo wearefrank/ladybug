@@ -71,18 +71,19 @@ public class ReportApi extends ApiBase {
 			Report report = getReport(storage, storageId);
 			if (report == null)
 				return Response.status(Response.Status.NOT_FOUND).entity("Could not find report with id [" + storageId + "]").build();
-			if (xml) {
-				if (globalTransformer) {
-					ReportXmlTransformer reportXmlTransformer = getBean("reportXmlTransformer");
-					if (reportXmlTransformer != null)
-						report.setGlobalReportXmlTransformer(reportXmlTransformer);
-				}
-				HashMap<String, String> map = new HashMap<>(1);
-				map.put("xml", report.toXml());
-				return Response.ok(map).build();
-			} else {
-				return Response.ok().entity(report).build();
+
+			if (globalTransformer) {
+				ReportXmlTransformer reportXmlTransformer = getBean("reportXmlTransformer");
+				if (reportXmlTransformer != null)
+					report.setGlobalReportXmlTransformer(reportXmlTransformer);
 			}
+
+			HashMap<String, Object> map = new HashMap<>(1);
+			map.put("report", report);
+			map.put("xml", report.toXml());
+
+			return Response.ok(map).build();
+
 		} catch (Exception e) {
 			return Response.status(Response.Status.NOT_FOUND).entity("Exception while getting report [" + storageId + "] from storage [" + storageParam + "] :: " + e + Arrays.toString(e.getStackTrace())).build();
 		}
@@ -151,7 +152,6 @@ public class ReportApi extends ApiBase {
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response updateReport(@PathParam("storage") String storageParam, @PathParam("storageId") int storageId, Map<String, String> map) {
 		String[] fields = new String[]{"name", "path", "variables", "description", "transformation", "checkpointId", "checkpointMessage"};
-		System.out.println(map);
 		if (map.isEmpty() || !mapContainsOnly(map, null, fields))
 			return Response.status(Response.Status.BAD_REQUEST).entity("No new values have been given for report with storageId [" + storageId + "]").build();
 
