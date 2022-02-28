@@ -142,9 +142,9 @@ public class RunApi extends ApiBase {
 
 					res.put("equal", report.toXml(runner).equals(runResultReport.toXml(runner)));
 					res.put("originalReport", report);
-					res.put("editedReport", runResultReport);
+					res.put("runResultReport", runResultReport);
 					res.put("originalXml", report.toXml(runner));
-					res.put("editedXml", runResultReport.toXml(runner));
+					res.put("runResultXml", runResultReport.toXml(runner));
 
 				} catch (StorageException exception) {
 					res.put("exception", exception);
