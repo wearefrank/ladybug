@@ -151,7 +151,8 @@ Please do the following to set up your development environment:
 * Change directory to your checkout of ladybug-frontend.
 * The Node Package Manager (npm) includes another package manager, yarn. We use that one because it is more stable. Enable it by executing the command `corepack enable`.
 * Use `yarn -v` to check that you have yarn version 3.2.x.
-* Run `yarn install --frozen-lockfile` to install your dependencies. The flag ensures that you get exactly the same dependencies as the other developers have. If you want to include a new dependency, update `package.json` and do `yarn install`. File `yarn.lock` will be updated, the list of all dependencies including dependencies of other dependencies. Check in `yarn.lock` to ensure that other developers will update to the same dependencies as you.
+* Run `yarn install --frozen-lockfile` to install your dependencies. The flag ensures that you get exactly the same dependencies as the other developers have. If you want to include a new dependency, update `package.json` and do `yarn install`. File `yarn.lock` will be updated, the list of all dependencies including dependencies of other dependencies. Check in `yarn.lock` to ensure that other developers will update to the same dependencies as you. In case you don't have a direct internet
+connection you might need to set HTTPS_PROXY, see https://docs.cypress.io/guides/references/proxy-configuration.
 * Run `yarn prepare` to prepare Git hooks. If you do not do this, you will not be able to commit or push in the ladybug-frontend project.
 
 Test your environment as follows:
@@ -166,9 +167,7 @@ ng test
 
 At the time of writing, there are no unit tests but there are end-to-end tests.
 
-End-to-end testing is done using [Cypress](https://www.cypress.io/). If you are running Cypress for the first time run
-the following command in the root folder of the Ladybug frontend project (in case you don't have a direct internet
-connection you might need to set HTTPS_PROXY, see https://docs.cypress.io/guides/references/proxy-configuration). Cypress is a dependency configured in `package.json`, so it should have been installed when you did `yarn install --frozen-lockfile`. You have the following options for running the tests:
+End-to-end testing is done using [Cypress](https://www.cypress.io/). Cypress is a dependency configured in `package.json`, so it should have been installed when you did `yarn install --frozen-lockfile`. You have the following options for running the tests:
 * `yarn run e2e`. This runs the end-to-end tests headless and without user interaction.
 * `yarn run e2e-interactive`. This opens a Window from which you can choose what tests to start. You can select the webbrowser you want to test with.
 
