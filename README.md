@@ -146,7 +146,7 @@ module of the Frank!Framework. This can be changed with the iaf.module property.
 contains a folder per module that can have it's own build.properties with custom properties (see the build.xml for
 possible values).
 
-Please do the following to set up your development environment:
+Please do the following to set up your development environment for the front-end:
 * Install [Node.js](https://nodejs.org/en/), choose version 16. You should get executables `npm` version 8.x and `node` version 16.x. Check these versions using `npm -v` and `node -v`.
 * Change directory to your checkout of ladybug-frontend.
 * The Node Package Manager (npm) includes another package manager, yarn. We use that one because it is more stable. Enable it by executing the command `corepack enable`.
