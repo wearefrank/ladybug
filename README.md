@@ -151,8 +151,7 @@ Please do the following to set up your development environment:
 * Change directory to your checkout of ladybug-frontend.
 * The Node Package Manager (npm) includes another package manager, yarn. We use that one because it is more stable. Enable it by executing the command `corepack enable`.
 * Use `yarn -v` to check that you have yarn version 3.2.x.
-* Run `yarn install --frozen-lockfile` to install your dependencies. The flag ensures that you get exactly the same dependencies as the other developers have. If you want to include a new dependency, update `package.json` and do `yarn install`. File `yarn.lock` will be updated, the list of all dependencies including dependencies of other dependencies. Check in `yarn.lock` to ensure that other developers will update to the same dependencies as you. In case you don't have a direct internet
-connection you might need to set HTTPS_PROXY, see https://docs.cypress.io/guides/references/proxy-configuration.
+* Run `yarn install --frozen-lockfile` to install your dependencies. The flag ensures that you get exactly the same dependencies as the other developers have. If you want to include a new dependency, update `package.json` and do `yarn install`. File `yarn.lock` will be updated, the list of all dependencies including dependencies of other dependencies. Check in `yarn.lock` to ensure that other developers will update to the same dependencies as you. In case you don't have a direct internet connection you might need to set HTTPS_PROXY, see https://docs.cypress.io/guides/references/proxy-configuration.
 * Run `yarn prepare` to prepare Git hooks. If you do not do this, you will not be able to commit or push in the ladybug-frontend project.
 
 Test your environment as follows:
@@ -171,7 +170,7 @@ End-to-end testing is done using [Cypress](https://www.cypress.io/). Cypress is 
 * `yarn run e2e`. This runs the end-to-end tests headless and without user interaction.
 * `yarn run e2e-interactive`. This opens a Window from which you can choose what tests to start. You can select the webbrowser you want to test with.
 
-In case nothing happens after "Compiled successfully" you might need to run set HTTP_PROXY= to prevent Cypress from connecting to locahost using your
+In case nothing happens after "Compiled successfully" you might need to run `set HTTP_PROXY=` to prevent Cypress from connecting to locahost using your
 proxy.
 
 When the tests are running, you will see the ibis-ladybug GUI. The GUI will show the effects of the commands that are applied by the tests.
