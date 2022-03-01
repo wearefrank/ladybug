@@ -64,7 +64,7 @@ public class ReportApi extends ApiBase {
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getReport(@PathParam("storage") String storageParam,
 							  @PathParam("storageId") int storageId,
-							  @QueryParam("xml") @DefaultValue("false") boolean xml,
+							  @QueryParam("xml") @DefaultValue("false") boolean xml, // TODO: Remove this as its not needed
 							  @QueryParam("globalTransformer") @DefaultValue("false") boolean globalTransformer) {
 		try {
 			Storage storage = getBean(storageParam);
@@ -72,15 +72,18 @@ public class ReportApi extends ApiBase {
 			if (report == null)
 				return Response.status(Response.Status.NOT_FOUND).entity("Could not find report with id [" + storageId + "]").build();
 
+			String resultXml = report.toXml(); // Create an xml if it does not yet exist
+
+			// Old functionality: If the xml already existed, it would not carry out the transformation
 			if (globalTransformer) {
 				ReportXmlTransformer reportXmlTransformer = getBean("reportXmlTransformer");
-				if (reportXmlTransformer != null)
-					report.setGlobalReportXmlTransformer(reportXmlTransformer);
+				report.setGlobalReportXmlTransformer(reportXmlTransformer); // Set the transformer
+				resultXml = reportXmlTransformer.transform(resultXml); // If we have to transform, then transform
 			}
 
 			HashMap<String, Object> map = new HashMap<>(1);
 			map.put("report", report);
-			map.put("xml", report.toXml());
+			map.put("xml", resultXml);
 
 			return Response.ok(map).build();
 
