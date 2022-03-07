@@ -7,6 +7,17 @@ your code (either directly or using AOP) to generate tree based reports. Impleme
 reports and optionally stub certain checkpoints for regression testing.
 
 
+# Contents
+
+- [Releases](#releases)
+- [Feedback](#feedback)
+- [Ladybug online demo](#ladybug-online-demo)
+- [How to use Ladybug](#how-to-use-ladybug)
+- [How to incorporate Ladybug into your application or framework](#how-to-incorporate-ladybug-into-your-application-or-framework)
+- [How to change and test Ladybug](#how-to-change-and-test-ladybug)
+- [Create and publish NPM package and WebJar](#create-and-publish-npm-package-and-webjar)
+
+
 Releases
 ========
 
@@ -95,8 +106,8 @@ And the Open ZaakBrug:
 - https://github.com/Sudwest-Fryslan/OpenZaakBrug
 
 The Ladybug test webapp doesn't contain much files so you can easily look at all the files and get an idea of how
-Ladybug has been integrated. The next paragraph describes how to run the Ladybug test webapp. For the Open ZaakBrug
-the most important files to look at are:
+Ladybug has been integrated. The [next section](#how-to-change-and-test-ladybug) describes how to run the Ladybug test
+webapp. For the Open ZaakBrug the most important files to look at are:
 
 - https://github.com/Sudwest-Fryslan/OpenZaakBrug/blob/master/src/main/java/nl/haarlem/translations/zdstozgw/Application.java
 - https://github.com/Sudwest-Fryslan/OpenZaakBrug/blob/master/src/main/resources/spring-ladybug.xml
@@ -112,7 +123,7 @@ And the AOP related spring configuration xml:
 
 - https://github.com/ibissource/iaf/blob/master/ladybug/src/main/resources/springIbisDebuggerAdvice.xml
 
-The next paragraph also describes how to run Ladybug with the Frank!Framework.
+The [next section](#how-to-change-and-test-ladybug) also describes how to run Ladybug with the Frank!Framework.
 
 
 How to change and test Ladybug
