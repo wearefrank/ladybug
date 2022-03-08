@@ -7,6 +7,17 @@ your code (either directly or using AOP) to generate tree based reports. Impleme
 reports and optionally stub certain checkpoints for regression testing.
 
 
+# Contents
+
+- [Releases](#releases)
+- [Feedback](#feedback)
+- [Ladybug online demo](#ladybug-online-demo)
+- [How to use Ladybug](#how-to-use-ladybug)
+- [How to incorporate Ladybug into your application or framework](#how-to-incorporate-ladybug-into-your-application-or-framework)
+- [How to change and test Ladybug](#how-to-change-and-test-ladybug)
+- [Create and publish NPM package and WebJar](#create-and-publish-npm-package-and-webjar)
+
+
 Releases
 ========
 
@@ -95,8 +106,8 @@ And the Open ZaakBrug:
 - https://github.com/Sudwest-Fryslan/OpenZaakBrug
 
 The Ladybug test webapp doesn't contain much files so you can easily look at all the files and get an idea of how
-Ladybug has been integrated. The next paragraph describes how to run the Ladybug test webapp. For the Open ZaakBrug
-the most important files to look at are:
+Ladybug has been integrated. The [next section](#how-to-change-and-test-ladybug) describes how to run the Ladybug test
+webapp. For the Open ZaakBrug the most important files to look at are:
 
 - https://github.com/Sudwest-Fryslan/OpenZaakBrug/blob/master/src/main/java/nl/haarlem/translations/zdstozgw/Application.java
 - https://github.com/Sudwest-Fryslan/OpenZaakBrug/blob/master/src/main/resources/spring-ladybug.xml
@@ -112,7 +123,7 @@ And the AOP related spring configuration xml:
 
 - https://github.com/ibissource/iaf/blob/master/ladybug/src/main/resources/springIbisDebuggerAdvice.xml
 
-The next paragraph also describes how to run Ladybug with the Frank!Framework.
+The [next section](#how-to-change-and-test-ladybug) also describes how to run Ladybug with the Frank!Framework.
 
 
 How to change and test Ladybug
@@ -146,62 +157,34 @@ module of the Frank!Framework. This can be changed with the iaf.module property.
 contains a folder per module that can have it's own build.properties with custom properties (see the build.xml for
 possible values).
 
-Install [Node.js](https://nodejs.org/en/) to serv the Ladybug frontend from the frontend project and test your changes
-to the frontend code.
+Please do the following to set up your development environment for the front-end:
+* Install [Node.js](https://nodejs.org/en/), choose version 16. You should get executables `npm` version 8.x and `node` version 16.x. Check these versions using `npm -v` and `node -v`.
+* Change directory to your checkout of ladybug-frontend.
+* The Node Package Manager (npm) includes another package manager, yarn. We use that one because it is more stable. Enable it by executing the command `corepack enable`.
+* Use `yarn -v` to check that you have yarn version 3.2.x.
+* Run `yarn install --frozen-lockfile` to install your dependencies. The flag ensures that you get exactly the same dependencies as the other developers have. If you want to include a new dependency, update `package.json` and do `yarn install`. File `yarn.lock` will be updated, the list of all dependencies including dependencies of other dependencies. Check in `yarn.lock` to ensure that other developers will update to the same dependencies as you. In case you don't have a direct internet connection you might need to set HTTPS_PROXY, see https://docs.cypress.io/guides/references/proxy-configuration.
+* Run `yarn prepare` to prepare Git hooks. If you do not do this, you will not be able to commit or push in the ladybug-frontend project.
 
-If you are running the Ladybug frontend with Node.js for the first time, you need to run the following command in the
-root folder of the Ladybug frontend project, so that you have all necessary dependencies:
-
-```
-npm install
-```
-
-While having the Ladybug running with the Frank!Runner as described earlier execute the following command in the src
-folder:
-
-```
-ng serve
-```
-
-This wil make Node.js serve the Ladybug frontend files and proxy the Ladybug backend api as the src folder contains a
-proxy.conf.json (this will circumvent CORS related problems as the frontend served by Node.js on port 4200 would call
-the api on port 80). It is now possible to use both the WebJars packaged Ladybug frontend and the Ladybug frontend
-served by Node.js. The page on the following url (also mentioned above) contains links to both frontends:
-
-- http://localhost
+Test your environment as follows:
+* Start the backend using `frank-runner/specials/ibis-ladybug` as explained before. Wait until Tomcat is up and running.
+* Execute command `ng serve` from within the `ladybug-frontend` checkout. This wil make Node.js serve the Ladybug frontend files and proxy the Ladybug backend api as the src folder contains a proxy.conf.json (this will circumvent CORS related problems as the frontend served by Node.js on port 4200 would call the api on port 80). It is now possible to use both the WebJars packaged Ladybug frontend and the Ladybug frontend served by Node.js. The page on the following url (also mentioned above) contains links to both frontends: `http://localhost`.
 
 To run the unit tests of the frontend, run the following command:
 
 ```
-npm test
+ng test
 ```
 
 At the time of writing, there are no unit tests but there are end-to-end tests.
 
-End-to-end testing is done using [Cypress](https://www.cypress.io/). If you are running Cypress for the first time run
-the following command in the root folder of the Ladybug frontend project (in case you don't have a direct internet
-connection you might need to set HTTPS_PROXY, see https://docs.cypress.io/guides/references/proxy-configuration):
+End-to-end testing is done using [Cypress](https://www.cypress.io/). Cypress is a dependency configured in `package.json`, so it should have been installed when you did `yarn install --frozen-lockfile`. You have the following options for running the tests:
+* `yarn run e2e`. This runs the end-to-end tests headless and without user interaction.
+* `yarn run e2e-interactive`. This opens a Window from which you can choose what tests to start. You can select the webbrowser you want to test with.
 
-```
-npm install cypress
-```
+In case nothing happens after "Compiled successfully" you might need to run `set HTTP_PROXY=` to prevent Cypress from connecting to locahost using your
+proxy.
 
-To run the Cypress tests using a graphical user interface, run the following command (in case nothing happens after
-"Compiled successfully" you might need to run set HTTP_PROXY= to prevent Cypress from connecting to locahost using your
-proxy):
-
-```
-npm run e2e-interactive
-```
-
-This opens a window with a link that allows you to start the tests. You will see the ibis-ladybug GUI while the tests
-run. The GUI will show the effects of the commands that are applied by the tests.
-
-If you want to run the tests automatically without a GUI, then use the following command:
-
-```
-npm run e2e
-```
+When the tests are running, you will see the ibis-ladybug GUI. The GUI will show the effects of the commands that are applied by the tests.
 
 Create and publish NPM package and WebJar
 ========================================
