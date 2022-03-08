@@ -55,7 +55,6 @@ public class ReportApi extends ApiBase {
 	 *
 	 * @param storageParam Name of the storage.
 	 * @param storageId Storage id of the report.
-	 * @param xml True if Xml of the report needs to be returned.
 	 * @param globalTransformer True if reportXmlTransformer should be set for the report.
 	 * @return A response containing serialized Report object.
 	 */
@@ -64,26 +63,23 @@ public class ReportApi extends ApiBase {
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getReport(@PathParam("storage") String storageParam,
 							  @PathParam("storageId") int storageId,
-							  @QueryParam("xml") @DefaultValue("false") boolean xml, // TODO: Remove this as its not needed
 							  @QueryParam("globalTransformer") @DefaultValue("false") boolean globalTransformer) {
 		try {
+			System.out.println("Using global transformer: " + globalTransformer);
 			Storage storage = getBean(storageParam);
 			Report report = getReport(storage, storageId);
 			if (report == null)
 				return Response.status(Response.Status.NOT_FOUND).entity("Could not find report with id [" + storageId + "]").build();
 
-			String resultXml = report.toXml(); // Create an xml if it does not yet exist
-
-			// Old functionality: If the xml already existed, it would not carry out the transformation
+			report.flushCachedXml();
 			if (globalTransformer) {
 				ReportXmlTransformer reportXmlTransformer = getBean("reportXmlTransformer");
-				report.setGlobalReportXmlTransformer(reportXmlTransformer); // Set the transformer
-				resultXml = reportXmlTransformer.transform(resultXml); // If we have to transform, then transform
+				report.setReportXmlTransformer(reportXmlTransformer);
 			}
 
 			HashMap<String, Object> map = new HashMap<>(1);
 			map.put("report", report);
-			map.put("xml", resultXml);
+			map.put("xml", report.toXml());
 
 			return Response.ok(map).build();
 
