@@ -65,16 +65,16 @@ public class ReportApi extends ApiBase {
 							  @PathParam("storageId") int storageId,
 							  @QueryParam("globalTransformer") @DefaultValue("false") boolean globalTransformer) {
 		try {
-			System.out.println("Using global transformer: " + globalTransformer);
 			Storage storage = getBean(storageParam);
 			Report report = getReport(storage, storageId);
 			if (report == null)
 				return Response.status(Response.Status.NOT_FOUND).entity("Could not find report with id [" + storageId + "]").build();
 
+			report.setGlobalReportXmlTransformer(null); // Reset the globalReportXmlTransformer in case we don't want to transform
 			report.flushCachedXml();
 			if (globalTransformer) {
 				ReportXmlTransformer reportXmlTransformer = getBean("reportXmlTransformer");
-				report.setReportXmlTransformer(reportXmlTransformer);
+				report.setGlobalReportXmlTransformer(reportXmlTransformer);
 			}
 
 			HashMap<String, Object> map = new HashMap<>(1);
