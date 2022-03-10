@@ -38,7 +38,6 @@ public class Storage implements CrudStorage, LogStorage {
 	protected Map reports;
 	protected List storageIds;
 	protected List metadata;
-	// Allows test code to use large storage ids, distinguishing storage ids from values with another meaning.
 	private int initialStorageId = 0;
 	protected int storageId;
 	protected MetadataExtractor metadataExtractor;
@@ -49,6 +48,9 @@ public class Storage implements CrudStorage, LogStorage {
 		metadata = new ArrayList();
 	}
 
+	/**
+	 * Allows test code to use large storage ids, distinguishing storage ids from values with another meaning
+	 */
 	@PostConstruct
 	private void setInitialStorageId() {
 		storageId = initialStorageId;
