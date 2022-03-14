@@ -50,8 +50,10 @@ public interface Storage {
 			List<String> searchValues, int metadataValueType) throws StorageException;
 
 	/**
-	 * Get a report with the specified id. Returns null when the report could
-	 * not be found.
+	 * Get a report with the specified id. Returns null when the report could not be found. The report returned should
+	 * always be a new object so different calls for the same storageId will not get a reference to the same object* and
+	 * interfere with each other when they change the returned report. 
+	 * 
 	 * @param storageId ...
 	 * @throws StorageException ...
 	 * @return ...

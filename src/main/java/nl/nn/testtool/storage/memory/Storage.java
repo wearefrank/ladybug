@@ -116,7 +116,7 @@ public class Storage implements CrudStorage, LogStorage {
 
 	@Override
 	public synchronized List getMetadata(int maxNumberOfRecords, List metadataNames,
-			List searchValues, int metadataValueType) {
+			List searchValues, int metadataValueType) throws StorageException {
 		List result = new ArrayList();
 		for (int i = 0; i < metadata.size() && (maxNumberOfRecords == -1 || i < maxNumberOfRecords); i++) {
 			Map metadataRecord = (Map)metadata.get(i);
@@ -144,8 +144,18 @@ public class Storage implements CrudStorage, LogStorage {
 	}
 
 	@Override
-	public synchronized Report getReport(Integer storageId) {
-		return (Report)reports.get(storageId);
+	public synchronized Report getReport(Integer storageId) throws StorageException {
+		Report report = (Report)reports.get(storageId);
+		if (report != null) {
+			try {
+				report = (Report)report.clone();
+				report.setStorageId(storageId);
+				report.setStorage(this);
+			} catch (CloneNotSupportedException e) {
+				throw new StorageException("Could not clone report", e);
+			}
+		}
+		return report;
 	}
 
 	@Override
