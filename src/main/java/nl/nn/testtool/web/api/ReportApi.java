@@ -70,8 +70,10 @@ public class ReportApi extends ApiBase {
 			if (report == null)
 				return Response.status(Response.Status.NOT_FOUND).entity("Could not find report with id [" + storageId + "]").build();
 
-			report.setGlobalReportXmlTransformer(null); // Reset the globalReportXmlTransformer in case we don't want to transform
-			report.flushCachedXml();
+			// Reset the transformer and xml, so that the transformer is applied when using the "memory storage" if need be.
+			report.setGlobalReportXmlTransformer(null); // Reset the transformer
+			report.flushCachedXml(); // Reset the xml
+
 			if (globalTransformer) {
 				ReportXmlTransformer reportXmlTransformer = getBean("reportXmlTransformer");
 				report.setGlobalReportXmlTransformer(reportXmlTransformer);
