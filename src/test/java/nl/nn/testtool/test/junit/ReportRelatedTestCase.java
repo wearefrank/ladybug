@@ -83,8 +83,8 @@ public class ReportRelatedTestCase {
 	public static final String LOG_SUFFIX = "-FAILED.txt";
 	public static final String ASSERT_REPORT_XSLT = "transformReport.xslt";
 	public static final String DEFAULT_CHARSET = "UTF-8";
-	private TestTool testTestTool;
 	protected TestTool testTool;
+	private TestTool testTestTool;
 	protected ListAppender<ILoggingEvent> listAppender;
 	public String resourcePath = "Override this value!";
 	protected String reportName;
@@ -103,8 +103,8 @@ public class ReportRelatedTestCase {
 		listAppender = new ListAppender<>();
 		listAppender.start();
 		log.addAppender(listAppender);
-		testTestTool = (TestTool)context.getBean("testTool");
 		testTool = (TestTool)context.getBean("testTool");
+		testTestTool = (TestTool)context.getBean("testTool");
 		reportName = Common.methodNameWithoutTestParameter(name.getMethodName());
 	}
 
