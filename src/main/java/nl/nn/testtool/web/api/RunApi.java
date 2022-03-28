@@ -70,11 +70,13 @@ public class RunApi extends ApiBase {
 				report.setTestTool(getBean("testTool"));
 				reranReports.put(storageId, report);
 				exception = runner.run(Collections.singletonList(report), true, true);
-				Map.Entry<Integer, RunResult> entry = runner.getResults().entrySet().iterator().next();
-				RunResult runResult = entry.getValue();
+				RunResult runResult = runner.getResults().get(storageId);
+				if (runResult.errorMessage != null) {
+					exceptions.add(runResult.errorMessage);
+				}
 
 				Report runResultReport = runner.getRunResultReport(runResult.correlationId);
-				result = extractRunResult(runResultReport, entry.getKey(), reranReports, runner);
+				result = extractRunResult(runResultReport, report.getStorageId(), reranReports, runner);
 			}
 		} catch (StorageException e) {
 			exceptions.add("Exception for report in [testStorage] with storage id [" + storageId + "]: " + e.getMessage());
