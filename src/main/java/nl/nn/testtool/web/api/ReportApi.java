@@ -399,18 +399,17 @@ public class ReportApi extends ApiBase {
 	/**
 	 * Cloning the reports with the given parameters.
 	 *
-	 * @param storageParam Name of the storage.
 	 * @param storageId Storage id of the report to be cloned.
 	 * @param map Map containing csv for cloning.
 	 * @return The response of cloning the report.
 	 */
 	@POST
-	@Path("/report/move/{storage}/{storageId}")
+	@Path("/report/move/{storageId}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response cloneReport(@QueryParam("storage") String storageParam, @QueryParam("storageId") int storageId, Map<String, String> map) {
-		CrudStorage storage = getBean(storageParam);
-		Report original = null;
+	public Response cloneReport(@QueryParam("storageId") int storageId, Map<String, String> map) {
+		CrudStorage storage = getBean("testStorage");
+		Report original;
 		try {
 			original = getReport(storage, storageId);
 			String previousMessage = original.getInputCheckpoint().getMessage();
@@ -432,7 +431,7 @@ public class ReportApi extends ApiBase {
 		ArrayList<String> exceptions = new ArrayList<>();
 		while (scanner.hasNextLine()) {
 			String nextLine = scanner.nextLine();
-			if (StringUtils.isNotEmpty(nextLine) && !nextLine.startsWith("#"))
+			if (StringUtils.isEmpty(nextLine) && nextLine.startsWith("#"))
 				continue;
 			if (firstLine == null) {
 				firstLine = nextLine;
