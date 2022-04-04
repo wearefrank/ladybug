@@ -27,7 +27,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
@@ -42,48 +41,47 @@ import java.util.*;
 public class RunApi extends ApiBase {
 	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 	/**
-	 * Rerun the given reports, and save the output the target storage.
+	 * Rerun the given report, and save the output the target storage.
 	 *
-	 * @param debugStorageParam Target storage to use as debug storage for re-runner.
-	 * @param sources Map containing storage names and storage ids for reports that will re-run.
+	 * @param storageId the id of the report in the testStorage to run
 	 * @return The response of running the report.
 	 */
 	@POST
-	@Path("/run/{debugStorage}")
+	@Path("/run/{storageId}")
 	@Produces(MediaType.APPLICATION_JSON)
 	@Consumes(MediaType.APPLICATION_JSON)
-	public Response runReport(@PathParam("debugStorage") String debugStorageParam, Map<String, List<Integer>> sources) {
-		Storage debugStorage = getBean(debugStorageParam);
-		List<Report> reports = new ArrayList<>();
+	public Response runReport(@PathParam("storageId") int storageId) {
+		Storage testStorage = getBean("testStorage");
 		List<String> exceptions = new ArrayList<>();
+		ReportRunner runner = getRunner(getBean("debugStorage"));
+		HashMap<String, Object> result = new HashMap<>();
+		String exception = null;
 
-		// Reran reports will allow us to keep track of old reran reports.
-		// This will later be used in replace and result.
+		// Reran reports will allow us to keep track of old reran reports. This will later be used in replace and result.
 		HashMap<Integer, Report> reranReports = getSessionAttr("reranReports", false);
 		if (reranReports == null) {
 			reranReports = new HashMap<>();
 			setSessionAttr("reranReports", reranReports);
 		}
 
-		for (String storageParam : sources.keySet()) {
-			Storage storage = getBean(storageParam);
-			for (int storageId : sources.get(storageParam)) {
-				try {
-					Report report = storage.getReport(storageId);
-					if (report != null)  report.setTestTool(getBean("testTool"));
-					reports.add(report);
-					reranReports.put(storageId, report);
-				} catch (StorageException e) {
-					String message = "Exception for report in [" + storageParam + "] with storage id [" + storageId + "]: " + e.getMessage();
-					exceptions.add(message);
-					log.error(message, e);
-					e.printStackTrace();
+		try {
+			Report report = testStorage.getReport(storageId);
+			if (report != null) {
+				report.setTestTool(getBean("testTool"));
+				reranReports.put(storageId, report);
+				exception = runner.run(Collections.singletonList(report), true, true);
+				RunResult runResult = runner.getResults().get(storageId);
+				if (runResult.errorMessage != null) {
+					exceptions.add(runResult.errorMessage);
 				}
-			}
-		}
 
-		ReportRunner runner = getRunner(debugStorage);
-		String exception = runner.run(reports, true, true);
+				Report runResultReport = runner.getRunResultReport(runResult.correlationId);
+				result = extractRunResult(runResultReport, report.getStorageId(), reranReports, runner);
+			}
+		} catch (StorageException e) {
+			exceptions.add("Exception for report in [testStorage] with storage id [" + storageId + "]: " + e.getMessage());
+			e.printStackTrace();
+		}
 
 		if (exceptions.size() > 0) {
 			String message = "Following exceptions were thrown, causing the related reports not to run. " + String.join(". \n", exceptions);
@@ -91,74 +89,36 @@ public class RunApi extends ApiBase {
 		} else if (exception != null) {
 			return Response.status(Response.Status.SERVICE_UNAVAILABLE).entity(exception).build();
 		}
-		return Response.ok().build();
+
+		return Response.ok(result).build();
 	}
 
-	/**
-	 * Get the results from the re-runner for the given debug storage.
-	 * @param debugStorageParam Name of the debug storage that runner uses.
-	 * @return The response for the result retreival.
-	 */
-	@GET
-	@Path("/result/{debugStorage}")
-	@Produces(MediaType.APPLICATION_JSON)
-	public Response getResults(@PathParam("debugStorage") String debugStorageParam) {
-		try {
-			HashMap<Integer, Report> reranReports = getSessionAttr("reranReports", true);
-			Storage debugStorage = getBean(debugStorageParam);
-			ReportRunner runner = getRunner(debugStorage);
-
-			Map<Integer, RunResult> results = runner.getResults();
-			Map<String, Object> data = new HashMap<>(3);
-			Map<Integer, Object> returningResults = new HashMap<>(results.size());
-
-			for (Map.Entry<Integer, RunResult> entry : results.entrySet()) {
-				RunResult runResult = entry.getValue();
-				HashMap<String, Object> res = new HashMap<>(2);
-				try {
-					Report runResultReport = runner.getRunResultReport(runResult.correlationId);
-
-					// Calculate number of stubbed checkpoints.
-					int stubbed = 0;
-					boolean first = true;
-					for (Checkpoint checkpoint : runResultReport.getCheckpoints()) {
-						if (first) {
-							first = false;
-						} else if (checkpoint.isStubbed()) {
-							stubbed++;
-						}
-					}
-
-					res.put("stubbed", stubbed);
-					res.put("total", runResultReport.getCheckpoints().size() - 1);
-
-					Report report = reranReports.get(entry.getKey());
-					res.put("previousTime", report.getEndTime() - report.getStartTime());
-					res.put("currentTime", runResultReport.getEndTime() - runResultReport.getStartTime());
-
-					ReportXmlTransformer reportXmlTransformer = getBean("reportXmlTransformer");
-					report.setGlobalReportXmlTransformer(reportXmlTransformer);
-					runResultReport.setGlobalReportXmlTransformer(reportXmlTransformer);
-
-					res.put("equal", report.toXml(runner).equals(runResultReport.toXml(runner)));
-					res.put("originalReport", report);
-					res.put("runResultReport", runResultReport);
-					res.put("originalXml", report.toXml(runner));
-					res.put("runResultXml", runResultReport.toXml(runner));
-
-				} catch (StorageException exception) {
-					res.put("exception", exception);
-					exception.printStackTrace();
-				}
-				returningResults.put(entry.getKey(), res);
+	private HashMap<String, Object> extractRunResult(Report runResultReport, int storageId, HashMap<Integer, Report> reranReports, ReportRunner runner) {
+		HashMap<String, Object> res = new HashMap<>();
+		int stubbed = 0;
+		boolean first = true;
+		for (Checkpoint checkpoint : runResultReport.getCheckpoints()) {
+			if (first) {
+				first = false;
+			} else if (checkpoint.isStubbed()) {
+				stubbed++;
 			}
-			data.put("results", returningResults);
-			data.put("progress", runner.getProgressValue());
-			data.put("max-progress", runner.getMaximum());
-			return Response.ok(data).build();
-		} catch (Exception e) {
-			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Could not retrieve result of ran reports :: " + e + Arrays.toString(e.getStackTrace())).build();
 		}
+		Report report = reranReports.get(storageId);
+		ReportXmlTransformer reportXmlTransformer = getBean("reportXmlTransformer");
+		report.setGlobalReportXmlTransformer(reportXmlTransformer);
+		runResultReport.setGlobalReportXmlTransformer(reportXmlTransformer);
+
+		res.put("stubbed", stubbed);
+		res.put("total", runResultReport.getCheckpoints().size() - 1);
+		res.put("previousTime", report.getEndTime() - report.getStartTime());
+		res.put("currentTime", runResultReport.getEndTime() - runResultReport.getStartTime());
+		res.put("equal", report.toXml(runner).equals(runResultReport.toXml(runner)));
+		res.put("originalReport", report);
+		res.put("runResultReport", runResultReport);
+		res.put("originalXml", report.toXml(runner));
+		res.put("runResultXml", runResultReport.toXml(runner));
+		return res;
 	}
 
 	@PUT
