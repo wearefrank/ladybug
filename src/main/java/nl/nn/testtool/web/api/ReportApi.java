@@ -192,9 +192,9 @@ public class ReportApi extends ApiBase {
 				ReportXmlTransformer reportXmlTransformer = getBean("reportXmlTransformer");
 				if (reportXmlTransformer != null)
 					report.setGlobalReportXmlTransformer(reportXmlTransformer);
-				result.put("xml", report.toXml());
 			}
 
+			result.put("xml", report.toXml());
 			result.put("storageUpdated", storageUpdated);
 			result.put("report", report);
 			return Response.ok(result).build();
