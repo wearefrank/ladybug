@@ -484,12 +484,14 @@ public class Checkpoint implements Serializable, Cloneable {
 		}
 	}
 
-	public Object clone() throws CloneNotSupportedException {
+	@Override
+	public Checkpoint clone() throws CloneNotSupportedException {
 		Checkpoint checkpoint = (Checkpoint)super.clone();
 		checkpoint.setReport(null);
 		return checkpoint;
 	}
 
+	@Override
 	public String toString() {
 		return name;
 	}

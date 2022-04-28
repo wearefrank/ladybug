@@ -731,7 +731,8 @@ public class Report implements Serializable {
 		return testTool.getMessageCapturer();
 	}
 
-	public Object clone() throws CloneNotSupportedException {
+	@Override
+	public Report clone() throws CloneNotSupportedException {
 		Report report = new Report();
 		report.setTestTool(testTool);
 		report.setStartTime(startTime);
@@ -745,7 +746,7 @@ public class Report implements Serializable {
 		report.setVariableCsv(variableCsv);
 		List<Checkpoint> checkpoints = new ArrayList<Checkpoint>();
 		for (Checkpoint checkpoint : this.checkpoints) {
-			checkpoint = (Checkpoint)checkpoint.clone();
+			checkpoint = checkpoint.clone();
 			checkpoint.setReport(report);
 			checkpoints.add(checkpoint);
 		}
@@ -753,6 +754,7 @@ public class Report implements Serializable {
 		return report;
 	}
 
+	@Override
 	public String toString() {
 		return name;
 	}

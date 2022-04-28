@@ -148,7 +148,7 @@ public class Storage implements CrudStorage, LogStorage {
 		Report report = (Report)reports.get(storageId);
 		if (report != null) {
 			try {
-				report = (Report)report.clone();
+				report = report.clone();
 				report.setStorageId(storageId);
 				report.setStorage(this);
 			} catch (CloneNotSupportedException e) {
