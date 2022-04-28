@@ -910,7 +910,8 @@ public class TestTool {
 		Report report = null;
 		synchronized(reportsInProgress) {
 			if (index > -1 && index < reportsInProgress.size()) {
-				 report = reportsInProgress.remove(index);
+				report = reportsInProgress.remove(index);
+				numberOfReportsInProgress--;
 			}
 		}
 		return report;
