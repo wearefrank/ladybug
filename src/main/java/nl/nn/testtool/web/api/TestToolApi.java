@@ -34,7 +34,7 @@ import java.util.Map;
 
 @Path("/testtool")
 public class TestToolApi extends ApiBase {
-	private static ReportXmlTransformer reportXmlTransformer;
+	private static String transformation;
 
 	/**
 	 * @return Response containing test tool data.
@@ -122,18 +122,22 @@ public class TestToolApi extends ApiBase {
 		if (StringUtils.isEmpty(transformation))
 			return Response.status(Response.Status.BAD_REQUEST).entity("No transformation has been provided").build();
 
-		getReportXmlTransformer().setXslt(transformation);
+		setTransformation(transformation);
 		return Response.ok().build();
 	}
 
 	/**
+	 * @param defaultTransformation Boolean to check if we need to use the default transformation
 	 * @return Response containing the current default transformation of the test tool.
 	 */
 	@GET
-	@Path("/transformation")
+	@Path("/transformation/{defaultTransformation}")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response updateReportTransformation() {
-		String transformation = getReportXmlTransformer().getXslt();
+	public Response getReportTransformation(@PathParam("defaultTransformation") boolean defaultTransformation) {
+		if (defaultTransformation) {
+			transformation = ""; // Reset to default transformation
+		}
+		String transformation = getTransformation();
 		if (StringUtils.isEmpty(transformation))
 			return Response.noContent().build();
 
@@ -145,10 +149,19 @@ public class TestToolApi extends ApiBase {
 	/**
 	 * @return The bean named reportXmlTransformer
 	 */
-	public ReportXmlTransformer getReportXmlTransformer() {
-		if (reportXmlTransformer == null)
-			reportXmlTransformer = getBean("reportXmlTransformer");
+	public String getTransformation() {
+		if (transformation.isEmpty()) {
+			ReportXmlTransformer reportXmlTransformer = getBean("reportXmlTransformer");
+			transformation = reportXmlTransformer.getXslt();
+		}
 
-		return reportXmlTransformer;
+		return transformation;
+	}
+
+	/**
+	 * @param newTransformation the new transformation
+	 */
+	public void setTransformation(String newTransformation) {
+		transformation = newTransformation;
 	}
 }
