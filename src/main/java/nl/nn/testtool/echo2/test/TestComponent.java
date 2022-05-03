@@ -1,5 +1,5 @@
 /*
-   Copyright 2018-2019 Nationale-Nederlanden, 2020-2021 WeAreFrank!
+   Copyright 2018-2019 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -900,7 +900,7 @@ public class TestComponent extends BaseComponent implements BeanParent, ActionLi
 			displayAndLogError(Echo2Application.update(testStorage, reportToClone));
 			if(lines.size() > 2) {
 				for(int i = 2; i < lines.size(); i++) {
-					Report cloneReport = (Report)reportToClone.clone();
+					Report cloneReport = reportToClone.clone();
 					cloneReport.setVariableCsvWithoutException(lines.get(0)+"\n"+lines.get(i));
 					displayAndLogError(Echo2Application.store(testStorage, cloneReport));
 				}
@@ -1029,7 +1029,7 @@ public class TestComponent extends BaseComponent implements BeanParent, ActionLi
 			log.debug("Copy report " + storageId + " from '" + report.getPath() + "' to '" + newPath + "'");
 			Report clone;
 			try {
-				clone = (Report)report.clone();
+				clone = report.clone();
 				clone.setPath(newPath);
 				try {
 					testStorage.store(clone);

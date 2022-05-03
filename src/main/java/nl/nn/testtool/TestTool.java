@@ -895,15 +895,26 @@ public class TestTool {
 		Report reportClone = null;
 		synchronized(reportsInProgress) {
 			if (index > -1 && index < reportsInProgress.size()) {
-				Report report = (Report)reportsInProgress.get(index);
+				Report report = reportsInProgress.get(index);
 				try {
-					reportClone = (Report)report.clone();
+					reportClone = report.clone();
 				} catch (CloneNotSupportedException e) {
 					log.error("Unable to clone report in progress", e);
 				}
 			}
 		}
 		return reportClone;
+	}
+
+	public Report removeReportInProgress(int index) {
+		Report report = null;
+		synchronized(reportsInProgress) {
+			if (index > -1 && index < reportsInProgress.size()) {
+				report = reportsInProgress.remove(index);
+				numberOfReportsInProgress--;
+			}
+		}
+		return report;
 	}
 
 	public long getNumberOfReportsInProgress() {

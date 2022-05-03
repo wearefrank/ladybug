@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -378,7 +378,7 @@ public class ReportApi extends ApiBase {
 		try {
 			Report original = getReport(storage, storageId);
 			if ("copy".equalsIgnoreCase(action)) {
-				Report clone = (Report) original.clone();
+				Report clone = original.clone();
 				clone.setPath(path);
 				storage.store(clone);
 			} else if ("move".equalsIgnoreCase(action)) {
@@ -438,7 +438,7 @@ public class ReportApi extends ApiBase {
 			} else {
 				try {
 					if (originalSet) {
-						Report clone = (Report) original.clone();
+						Report clone = original.clone();
 						clone.setVariableCsvWithoutException(firstLine + "\n" + nextLine);
 						storage.store(clone);
 					} else {
