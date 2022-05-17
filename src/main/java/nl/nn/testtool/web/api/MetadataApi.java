@@ -97,7 +97,7 @@ public class MetadataApi extends ApiBase {
 
 			return Response.ok().entity(metadata).build();
 		} catch (Exception e) {
-			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Could not find metadata with limit [" + limit + "] and filter [" + filterParam + "] :: " + e + Arrays.toString(e.getStackTrace())).build();
+			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Could not find metadata with limit [" + limit + "] and filter [" + filterParam + "] - detailed error message - " + e + Arrays.toString(e.getStackTrace())).build();
 		}
 	}
 

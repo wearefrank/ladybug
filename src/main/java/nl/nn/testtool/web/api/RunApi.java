@@ -79,15 +79,15 @@ public class RunApi extends ApiBase {
 				result = extractRunResult(runResultReport, report.getStorageId(), reranReports, runner);
 			}
 		} catch (StorageException e) {
-			exceptions.add("Exception for report in [testStorage] with storage id [" + storageId + "]: " + e.getMessage());
+			exceptions.add("Exception for report in [testStorage] with storage id [" + storageId + "] - detailed error message -  " + e + Arrays.toString(e.getStackTrace()));
 			e.printStackTrace();
 		}
 
 		if (exceptions.size() > 0) {
-			String message = "Following exceptions were thrown, causing the related reports not to run. " + String.join(". \n", exceptions);
+			String message = "Exceptions have been thrown, causing the related reports not to run. - detailed error message - Exceptions:\n" + String.join(". \n", exceptions);
 			return Response.serverError().entity(message).build();
 		} else if (exception != null) {
-			return Response.status(Response.Status.SERVICE_UNAVAILABLE).entity(exception).build();
+			return Response.status(Response.Status.SERVICE_UNAVAILABLE).entity("Exception has been thrown, caused the related report not to run. - detailed error message - " + exception).build();
 		}
 
 		return Response.ok(result).build();
@@ -157,7 +157,7 @@ public class RunApi extends ApiBase {
 			return Response.ok(runResultReport).build();
 		} catch (StorageException e) {
 			e.printStackTrace();
-			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Exception while replacing report with storage id [" + storageId + "] :: " + e + Arrays.toString(e.getStackTrace())).build();
+			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Exception while replacing report with storage id [" + storageId + "] - detailed error message - " + e + Arrays.toString(e.getStackTrace())).build();
 		}
 	}
 	/**

@@ -66,11 +66,11 @@ public class TestToolApi extends ApiBase {
 		TestTool testTool = getBean("testTool");
 
 		if (map.isEmpty()) {
-			return Response.status(Response.Status.BAD_REQUEST).entity("No settings have been provided").build();
+			return Response.status(Response.Status.BAD_REQUEST).entity("No settings have been provided - detailed error message - The settings that have been provided are " + map).build();
 		}
 
 		if (map.size() > 2) {
-			return Response.status(Response.Status.BAD_REQUEST).entity("Too many settings have been provided").build();
+			return Response.status(Response.Status.BAD_REQUEST).entity("Too many settings have been provided - detailed error message - The settings that have been provided are " + map).build();
 		}
 		// TODO: Check user roles.
 		String generatorEnabled = map.remove("generatorEnabled");
@@ -98,13 +98,13 @@ public class TestToolApi extends ApiBase {
 	public Response getReportsInProgress(@PathParam("index") int index) {
 		TestTool testTool = getBean("testTool");
 		if (index == 0)
-			return Response.status(Response.Status.BAD_REQUEST).entity("No progresses have been queried [" + index + "] or are available [" + testTool.getNumberOfReportsInProgress() + "]").build();
+			return Response.status(Response.Status.BAD_REQUEST).entity("No progresses have been queried [" + index + "] and/or are available [" + testTool.getNumberOfReportsInProgress() + "]").build();
 
 		try {
 			Report report = testTool.getReportInProgress(index - 1);
 			return Response.ok(report).build();
 		} catch (Exception e) {
-			return Response.status(Response.Status.BAD_REQUEST).entity("Could not find report in progress with index [" + index + "] :: " + e + Arrays.toString(e.getStackTrace())).build();
+			return Response.status(Response.Status.BAD_REQUEST).entity("Could not find report in progress with index [" + index + "] - detailed error message - " + e + Arrays.toString(e.getStackTrace())).build();
 		}
 	}
 
