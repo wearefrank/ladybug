@@ -20,12 +20,7 @@ import nl.nn.testtool.TestTool;
 import nl.nn.testtool.transform.ReportXmlTransformer;
 import org.apache.commons.lang.StringUtils;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.Arrays;
@@ -103,6 +98,27 @@ public class TestToolApi extends ApiBase {
 		try {
 			Report report = testTool.getReportInProgress(index - 1);
 			return Response.ok(report).build();
+		} catch (Exception e) {
+			return Response.status(Response.Status.BAD_REQUEST).entity("Could not find report in progress with index [" + index + "] :: " + e + Arrays.toString(e.getStackTrace())).build();
+		}
+	}
+
+	/**
+	 * Removes the report in progress
+	 *
+	 * @param index Index of the report to be deleted
+	 * @return Response confirming the delete, if report is present
+	 */
+	@DELETE
+	@Path("/in-progress/{index}")
+	public Response deleteReportInProgress(@PathParam("index") int index) {
+		TestTool testTool = getBean("testTool");
+		if (index == 0)
+			return Response.status(Response.Status.BAD_REQUEST).entity("No progresses have been queried [" + index + "] or are available [" + testTool.getNumberOfReportsInProgress() + "]").build();
+
+		try {
+			testTool.removeReportInProgress(index - 1);
+			return Response.ok().build();
 		} catch (Exception e) {
 			return Response.status(Response.Status.BAD_REQUEST).entity("Could not find report in progress with index [" + index + "] :: " + e + Arrays.toString(e.getStackTrace())).build();
 		}
