@@ -29,8 +29,8 @@ import java.util.Map;
 
 @Path("/testtool")
 public class TestToolApi extends ApiBase {
-	private static String defaultTransformation;
-	private static ReportXmlTransformer reportXmlTransformer;
+	private String defaultTransformation;
+	private ReportXmlTransformer reportXmlTransformer;
 
 	/**
 	 * @return Response containing test tool data.
