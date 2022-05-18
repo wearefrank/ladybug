@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,22 +15,43 @@
 */
 package nl.nn.testtool.web.api;
 
-import nl.nn.testtool.Report;
-import nl.nn.testtool.TestTool;
-import nl.nn.testtool.transform.ReportXmlTransformer;
-import org.apache.commons.lang.StringUtils;
-
-import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.annotation.PostConstruct;
+import javax.inject.Inject;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+
+import org.apache.commons.lang.StringUtils;
+
+import lombok.Setter;
+import nl.nn.testtool.Report;
+import nl.nn.testtool.TestTool;
+import nl.nn.testtool.transform.ReportXmlTransformer;
+
 @Path("/testtool")
 public class TestToolApi extends ApiBase {
+	private @Setter @Inject TestTool testTool;
+	private @Setter @Inject ReportXmlTransformer reportXmlTransformer;
 	private String defaultTransformation;
-	private ReportXmlTransformer reportXmlTransformer;
+
+	@PostConstruct
+	public void init() {
+		defaultTransformation = reportXmlTransformer.getXslt();
+	}
+
+	public String getDefaultTransformation() {
+		return defaultTransformation;
+	}
 
 	/**
 	 * @return Response containing test tool data.
@@ -39,7 +60,6 @@ public class TestToolApi extends ApiBase {
 	@Path("/")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getInfo() {
-		TestTool testTool = getBean("testTool");
 		HashMap<String, Object> map = new HashMap<>(4);
 		map.put("generatorEnabled", testTool.isReportGeneratorEnabled());
 		map.put("estMemory", testTool.getReportsInProgressEstimatedMemoryUsage());
@@ -59,8 +79,6 @@ public class TestToolApi extends ApiBase {
 	@Path("/")
 	@Consumes(MediaType.APPLICATION_JSON)
 	public Response updateInfo(Map<String, String> map) {
-		TestTool testTool = getBean("testTool");
-
 		if (map.isEmpty()) {
 			return Response.status(Response.Status.BAD_REQUEST).entity("No settings have been provided - detailed error message - The settings that have been provided are " + map).build();
 		}
@@ -92,7 +110,6 @@ public class TestToolApi extends ApiBase {
 	@Path("/in-progress/{index}")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getReportsInProgress(@PathParam("index") int index) {
-		TestTool testTool = getBean("testTool");
 		if (index == 0)
 			return Response.status(Response.Status.BAD_REQUEST).entity("No progresses have been queried [" + index + "] and/or are available [" + testTool.getNumberOfReportsInProgress() + "]").build();
 
@@ -113,7 +130,6 @@ public class TestToolApi extends ApiBase {
 	@DELETE
 	@Path("/in-progress/{index}")
 	public Response deleteReportInProgress(@PathParam("index") int index) {
-		TestTool testTool = getBean("testTool");
 		if (index == 0)
 			return Response.status(Response.Status.BAD_REQUEST).entity("No progresses have been queried [" + index + "] or are available [" + testTool.getNumberOfReportsInProgress() + "]").build();
 
@@ -139,9 +155,7 @@ public class TestToolApi extends ApiBase {
 		if (StringUtils.isEmpty(transformation))
 			return Response.status(Response.Status.BAD_REQUEST).entity("No transformation has been provided").build();
 
-		if (reportXmlTransformer != null) {
-			reportXmlTransformer.setXslt(transformation);
-		}
+		reportXmlTransformer.setXslt(transformation);
 		return Response.ok().build();
 	}
 
@@ -158,7 +172,6 @@ public class TestToolApi extends ApiBase {
 		if (defaultTransformation) {
 			transformation = getDefaultTransformation();
 		} else {
-			reportXmlTransformer = getBean("reportXmlTransformer");
 			transformation = reportXmlTransformer.getXslt();
 		}
 
@@ -168,17 +181,5 @@ public class TestToolApi extends ApiBase {
 		Map<String, String> map = new HashMap<>(1);
 		map.put("transformation", transformation);
 		return Response.ok(map).build();
-	}
-
-	/**
-	 * @return The bean named reportXmlTransformer
-	 */
-	public String getDefaultTransformation() {
-		if (defaultTransformation == null) {
-			reportXmlTransformer = getBean("reportXmlTransformer");
-			defaultTransformation = reportXmlTransformer.getXslt();
-		}
-
-		return defaultTransformation;
 	}
 }
