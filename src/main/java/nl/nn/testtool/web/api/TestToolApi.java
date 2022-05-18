@@ -29,7 +29,8 @@ import java.util.Map;
 
 @Path("/testtool")
 public class TestToolApi extends ApiBase {
-	private static String transformation;
+	private String defaultTransformation;
+	private ReportXmlTransformer reportXmlTransformer;
 
 	/**
 	 * @return Response containing test tool data.
@@ -138,7 +139,9 @@ public class TestToolApi extends ApiBase {
 		if (StringUtils.isEmpty(transformation))
 			return Response.status(Response.Status.BAD_REQUEST).entity("No transformation has been provided").build();
 
-		setTransformation(transformation);
+		if (reportXmlTransformer != null) {
+			reportXmlTransformer.setXslt(transformation);
+		}
 		return Response.ok().build();
 	}
 
@@ -150,10 +153,15 @@ public class TestToolApi extends ApiBase {
 	@Path("/transformation/{defaultTransformation}")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getReportTransformation(@PathParam("defaultTransformation") boolean defaultTransformation) {
+		String transformation;
+
 		if (defaultTransformation) {
-			transformation = ""; // Reset to default transformation
+			transformation = getDefaultTransformation();
+		} else {
+			reportXmlTransformer = getBean("reportXmlTransformer");
+			transformation = reportXmlTransformer.getXslt();
 		}
-		String transformation = getTransformation();
+
 		if (StringUtils.isEmpty(transformation))
 			return Response.noContent().build();
 
@@ -165,19 +173,12 @@ public class TestToolApi extends ApiBase {
 	/**
 	 * @return The bean named reportXmlTransformer
 	 */
-	public String getTransformation() {
-		if (transformation.isEmpty()) {
-			ReportXmlTransformer reportXmlTransformer = getBean("reportXmlTransformer");
-			transformation = reportXmlTransformer.getXslt();
+	public String getDefaultTransformation() {
+		if (defaultTransformation == null) {
+			reportXmlTransformer = getBean("reportXmlTransformer");
+			defaultTransformation = reportXmlTransformer.getXslt();
 		}
 
-		return transformation;
-	}
-
-	/**
-	 * @param newTransformation the new transformation
-	 */
-	public void setTransformation(String newTransformation) {
-		transformation = newTransformation;
+		return defaultTransformation;
 	}
 }
