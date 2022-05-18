@@ -58,7 +58,7 @@ public class TestToolApi extends ApiBase {
 	@POST
 	@Path("/")
 	@Consumes(MediaType.APPLICATION_JSON)
-	public Response setInfo(Map<String, String> map) {
+	public Response updateInfo(Map<String, String> map) {
 		TestTool testTool = getBean("testTool");
 
 		if (map.isEmpty()) {
