@@ -20,7 +20,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.annotation.PostConstruct;
-import javax.inject.Inject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -40,8 +39,8 @@ import nl.nn.testtool.transform.ReportXmlTransformer;
 
 @Path("/testtool")
 public class TestToolApi extends ApiBase {
-	private @Setter @Inject TestTool testTool;
-	private @Setter @Inject ReportXmlTransformer reportXmlTransformer;
+	private @Setter TestTool testTool;
+	private @Setter ReportXmlTransformer reportXmlTransformer;
 	private String defaultTransformation;
 
 	@PostConstruct
