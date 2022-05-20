@@ -260,7 +260,6 @@
         </executions>
         <configuration>
           <excludeFile>${ibis.ladybug.rootdir}${file.separator}copyrightExcludeFile.txt</excludeFile>
-          <ignoreYear>true</ignoreYear>
           <useDash>true</useDash>
           <templateFile>${ibis.ladybug.rootdir}/copyrightTemplateFile.txt</templateFile>
         </configuration>
