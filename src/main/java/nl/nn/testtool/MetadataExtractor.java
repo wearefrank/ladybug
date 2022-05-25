@@ -178,6 +178,9 @@ public class MetadataExtractor {
 		if (metadataName.equals("duration")) {
 			return "" + (report.getEndTime() - report.getStartTime());
 		}
+		if (metadataName.equals("variableCsv")) {
+			return report.getVariableCsv();
+		}
 		Object metadata = null;
 		if (extraMetadataFieldExtractors != null) {
 			Iterator iterator = extraMetadataFieldExtractors.iterator();
