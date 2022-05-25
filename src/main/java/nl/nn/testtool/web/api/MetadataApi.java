@@ -60,15 +60,13 @@ public class MetadataApi extends ApiBase {
 	@Path("/{storage}/")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getMetadataList(@PathParam("storage") String storageParam,
+									@QueryParam("metadataNames") ArrayList<String> metadataNames,
 									@DefaultValue("-1") @QueryParam("limit") int limit ,
 									@DefaultValue(".*") @QueryParam("filter") String filterParam ,
 									@Context UriInfo uriInfo) {
 
 		List<String> searchValues = new ArrayList<>();
-		List<String> metadataNames = new ArrayList<>();
-		Set<String> storedMetadataFields = getMetadataFields();
-		for(String field : storedMetadataFields) {
-			metadataNames.add(field);
+		for(String field : metadataNames) {
 			if ("name".equals(field)) {
 				searchValues.add("(" + filterParam + ")");
 			} else {
