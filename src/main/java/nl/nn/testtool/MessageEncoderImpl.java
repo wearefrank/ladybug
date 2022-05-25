@@ -87,6 +87,7 @@ public class MessageEncoderImpl implements MessageEncoder {
 				}
 			} else if (message instanceof Reader || message instanceof InputStream
 					|| message instanceof Writer || message instanceof OutputStream) {
+				// See comment at the top of CHeckpoint.setMessage(T message)
 				toStringResult = new ToStringResult(WAITING_FOR_STREAM_MESSAGE, null);
 			} else if (message instanceof Throwable) {
 				StringWriter stringWriter = new StringWriter();

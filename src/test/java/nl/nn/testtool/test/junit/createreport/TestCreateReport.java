@@ -715,8 +715,8 @@ public class TestCreateReport extends ReportRelatedTestCase {
 	@Test
 	public void testStreamWithCharset() throws IOException, StorageException {
 		byte[] bytes = new byte[2];
-		bytes[0] = (byte)235; // ë
-		bytes[1] = (byte)169; // ©
+		bytes[0] = (byte)235; // ë in ISO-8859-1 (UTF-8 would need two bytes)
+		bytes[1] = (byte)169; // © in ISO-8859-1 (UTF-8 would need two bytes)
 		String actual = testTool.getMessageEncoder().toString(bytes, "ISO-8859-1").getString();
 		assertEquals("ë©" , actual);
 		testTool.setMessageCapturer(new MessageCapturerImpl() {
