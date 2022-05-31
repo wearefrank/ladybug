@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ import lombok.Setter;
 import nl.nn.testtool.storage.xml.XmlStorage;
 
 /**
- * Implement this interface to implement custom encoding/decoding methods to/from a string representations for message
+ * Implement this interface to implement custom encoding/decoding methods to/from a string representation for message
  * objects passed to checkpoints in a report. The string representation is used to display the message in a GUI and when
  * writing the message to storage making it readable in string based storages like {@link XmlStorage}. When a message in
  * rerun needs to be stubbed the message encoder can return the original object for the string representation.

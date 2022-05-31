@@ -391,7 +391,9 @@ public class MessageComponent extends BaseComponent implements ActionListener {
 			|| (c >= 0x0020 && c <= 0xD7FF)
 			|| (c >= 0xE000 && c <= 0xFFFD)
 			/* Prevent application crash 
-			|| (c >= 0x0010000 && c <= 0x0010FFFF)*/;
+			|| (c >= 0x0010000 && c <= 0x0010FFFF)*/
+			// But allow (some) emoticons (https://en.wikipedia.org/wiki/Emoticons_(Unicode_block))
+			|| (c >= 0x001F600 && c <= 0x0001F64F);
 	}
 
 	/**

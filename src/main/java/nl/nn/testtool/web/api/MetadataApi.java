@@ -50,6 +50,7 @@ public class MetadataApi extends ApiBase {
 	 * Searches the storage metadata.
 	 *
 	 * @param storageParam Name of the storage to search.
+	 * @param metadataNames The metadata names to return.
 	 * @param limit Maximum number of results to return.
 	 * @param uriInfo Query parameters for search.
 	 * @param filterParam The regex on which the report names will be filtered
@@ -60,15 +61,13 @@ public class MetadataApi extends ApiBase {
 	@Path("/{storage}/")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getMetadataList(@PathParam("storage") String storageParam,
+									@QueryParam("metadataNames") ArrayList<String> metadataNames,
 									@DefaultValue("-1") @QueryParam("limit") int limit ,
 									@DefaultValue(".*") @QueryParam("filter") String filterParam ,
 									@Context UriInfo uriInfo) {
 
 		List<String> searchValues = new ArrayList<>();
-		List<String> metadataNames = new ArrayList<>();
-		Set<String> storedMetadataFields = getMetadataFields();
-		for(String field : storedMetadataFields) {
-			metadataNames.add(field);
+		for(String field : metadataNames) {
 			if ("name".equals(field)) {
 				searchValues.add("(" + filterParam + ")");
 			} else {

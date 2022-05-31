@@ -15,6 +15,7 @@
 */
 package nl.nn.testtool.echo2.reports;
 
+import java.io.UnsupportedEncodingException;
 import echopointng.tree.DefaultMutableTreeNode;
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Insets;
@@ -24,6 +25,7 @@ import nextapp.echo2.app.Row;
 import nextapp.echo2.app.button.ButtonGroup;
 import nextapp.echo2.app.event.ActionEvent;
 import nl.nn.testtool.Checkpoint;
+import nl.nn.testtool.MessageEncoderImpl;
 import nl.nn.testtool.Report;
 import nl.nn.testtool.echo2.Echo2Application;
 import nl.nn.testtool.echo2.util.Download;
@@ -55,6 +57,7 @@ public class CheckpointComponent extends MessageComponent {
 	private Label messageEncodingLabel;
 	private Label messageStreamingLabel;
 	private Label messageNoCloseReceivedForStream;
+	protected Button toggleBase64Button;
 
 	public CheckpointComponent() {
 		super();
@@ -71,7 +74,14 @@ public class CheckpointComponent extends MessageComponent {
 		super.initBeanPre();
 
 		//TODO copy en delete hier ook toevoegen (ook copy-to select field) of alle report specifieke dingen (download) hier weghalen?
-		
+
+		toggleBase64Button = new Button("Base64");
+		toggleBase64Button.setVisible(false);
+		toggleBase64Button.setActionCommand("ToggleBase64");
+		toggleBase64Button.addActionListener(this);
+		Echo2Application.decorateButton(toggleBase64Button);
+		buttonRow.add(toggleBase64Button);
+
 		Button downloadButton = new Button("Download");
 		downloadButton.setActionCommand("Download");
 		downloadButton.addActionListener(this);
@@ -254,18 +264,33 @@ public class CheckpointComponent extends MessageComponent {
 		} else {
 			messageNoCloseReceivedForStream.setVisible(false);
 		}
+		String messageCompare = null;
+		if (compare) {
+			if (checkpointCompare != null) {
+				messageCompare = checkpointCompare.getMessage();
+			}
+		}
 		if (checkpoint.getEncoding() != null) {
 			messageEncodingLabel.setText("Message of type " + checkpoint.getMessageClassName()
 					+ " is encoded to string using " + checkpoint.getEncoding());
 			messageEncodingLabel.setVisible(true);
+			if (checkpoint.getEncoding().equals(MessageEncoderImpl.BASE64_ENCODER)) {
+				if (toggleBase64Button.getText().equals("Base64")) {
+					message = decodeBase64AndUTF8(message);
+					if (messageCompare != null) {
+						messageCompare = decodeBase64AndUTF8(messageCompare);
+					}
+					messageEncodingLabel.setText(messageEncodingLabel.getText() + " and displayed using Base64 decoded to byte array and byte array decoded to string using UTF-8 (toggle with Base64 button)");
+				}
+				toggleBase64Button.setVisible(true);
+			} else {
+				toggleBase64Button.setVisible(false);
+			}
 		} else {
 			messageEncodingLabel.setVisible(false);
+			toggleBase64Button.setVisible(false);
 		}
 		if (compare) {
-			String messageCompare = null;
-			if (checkpointCompare != null) {
-				messageCompare = checkpointCompare.getMessage();
-			}
 			setMessage(message, messageCompare);
 		} else {
 			setMessage(message);
@@ -286,6 +311,16 @@ public class CheckpointComponent extends MessageComponent {
 		hideMessages();
 	}
 
+	private String decodeBase64AndUTF8(String message) {
+		byte[] bytes = java.util.Base64.getDecoder().decode(message);
+		try {
+			message = new String(bytes, "UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			message = "Could not decode byte array (with length " + bytes.length + ") to string with UTF-8";
+		}
+		return message;
+	}
+
 	/**
 	 * @see nextapp.echo2.app.event.ActionListener#actionPerformed(nextapp.echo2.app.event.ActionEvent)
 	 */
@@ -298,6 +333,13 @@ public class CheckpointComponent extends MessageComponent {
 			checkpoint.setStub(Checkpoint.STUB_NO);
 		} else if (radioButtonStubOptionYes == e.getSource()) {
 			checkpoint.setStub(Checkpoint.STUB_YES);
+		} else if (e.getActionCommand().equals("ToggleBase64")) {
+			if (toggleBase64Button.getText().equals("Base64")) {
+				toggleBase64Button.setText("UTF-8");
+			} else {
+				toggleBase64Button.setText("Base64");
+			}
+			treePane.selectNode(node);
 		} else if (e.getActionCommand().equals("Download")) {
 			if ("Both".equals(downloadSelectField.getSelectedItem())) {
 				displayAndLogError(Download.download(report, checkpoint));

@@ -79,6 +79,9 @@ public class MessageEncoderImpl implements MessageEncoder {
 				}
 				CharsetDecoder charsetDecoder = Charset.forName(charset).newDecoder();
 				try {
+					// This will throw an exception were new String(((byte[])message), "UTF-8") would use the
+					// replacement character instead of throwing an exception. See https://en.wikipedia.org/wiki/UTF-8
+					// also (search for replacement character)
 					CharBuffer charBuffer = charsetDecoder.decode(ByteBuffer.wrap((byte[])message));
 					toStringResult = new ToStringResult(charBuffer.toString(), encoding);
 				} catch (CharacterCodingException e) {
@@ -87,6 +90,7 @@ public class MessageEncoderImpl implements MessageEncoder {
 				}
 			} else if (message instanceof Reader || message instanceof InputStream
 					|| message instanceof Writer || message instanceof OutputStream) {
+				// See comment at the top of CHeckpoint.setMessage(T message)
 				toStringResult = new ToStringResult(WAITING_FOR_STREAM_MESSAGE, null);
 			} else if (message instanceof Throwable) {
 				StringWriter stringWriter = new StringWriter();
