@@ -247,28 +247,6 @@
           </execution>
         </executions>
       </plugin>
-      <plugin>
-        <groupId>org.glassfish.copyright</groupId>
-        <artifactId>glassfish-copyright-maven-plugin</artifactId>
-        <version>2.4</version>
-        <executions>
-          <execution>
-            <?m2e ignore?> <!-- Eclipse doesn't seem to like this plugin, it doesn't need to be executed 
-                    by Eclipse so ignore it -->
-            <id>Check-CopyRight-Notice</id>
-            <goals>
-              <goal>copyright</goal><!-- Checks for Copyright notices -->
-              <goal>check</goal><!-- Fails the build -->
-            </goals>
-            <phase>process-sources</phase>
-          </execution>
-        </executions>
-        <configuration>
-          <excludeFile>${ibis.ladybug.rootdir}${file.separator}copyrightExcludeFile.txt</excludeFile>
-          <useDash>true</useDash>
-          <templateFile>${ibis.ladybug.rootdir}/copyrightTemplateFile.txt</templateFile>
-        </configuration>
-      </plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-site-plugin</artifactId>
@@ -302,6 +280,39 @@
   </scm>
 
   <profiles>
+    <profile>
+      <activation>
+        <property>
+          <name>!maven.skip.copyright</name>
+          <value>!true</value>
+        </property>
+      </activation> 
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.glassfish.copyright</groupId>
+            <artifactId>glassfish-copyright-maven-plugin</artifactId>
+            <version>2.4</version>
+            <executions>
+              <execution>
+                <?m2e ignore?> <!-- Eclipse doesn't seem to like this plugin, it doesn't need to be executed by Eclipse so ignore it -->
+                <id>Check-CopyRight-Notice</id>
+                <goals>
+                  <goal>copyright</goal><!-- Checks for Copyright notices -->
+                  <goal>check</goal><!-- Fails the build -->
+                </goals>
+                <phase>process-sources</phase>
+              </execution>
+            </executions>
+            <configuration>
+              <excludeFile>${ibis.ladybug.rootdir}${file.separator}copyrightExcludeFile.txt</excludeFile>
+              <useDash>true</useDash>
+              <templateFile>${ibis.ladybug.rootdir}/copyrightTemplateFile.txt</templateFile>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
     <profile>
       <id>ossrh</id>
       <build>
