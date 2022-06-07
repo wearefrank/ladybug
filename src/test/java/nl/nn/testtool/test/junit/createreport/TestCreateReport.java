@@ -234,6 +234,18 @@ public class TestCreateReport extends ReportRelatedTestCase {
 		loggingEvents.remove(0);
 	}
 
+	private static void ignoreWarningsInLog(ListAppender<ILoggingEvent> listAppender, String correlationId,
+			String warningsStartsWith) {
+		List<ILoggingEvent> loggingEvents = listAppender.list;
+		for (int i = 0; i < loggingEvents.size(); i++) {
+			ILoggingEvent loggingEvent = loggingEvents.get(i);
+			if (loggingEvent.getMessage().startsWith(warningsStartsWith)) {
+				loggingEvents.remove(i);
+				i--;
+			}
+		}
+	}
+
 	private void testThreads(String correlationId, boolean useThreadCreatepoint, boolean useThreadStartpoint,
 			boolean useChildCheckpoints, boolean waitForChildThread, boolean keepThreadOpen, boolean assertReport)
 			throws StorageException, IOException {
@@ -283,10 +295,55 @@ public class TestCreateReport extends ReportRelatedTestCase {
 		}
 	}
 
+	/**
+	 * ArrayIndexOutOfBoundsException will occur when synchronization isn't done properly in TestTool.checkpoint(). E.g.
+	 * disable report.isClosed() check in TestTool.checkpoint() to make this test throw an exception and fail
+	 * 
+	 * @throws Throwable
+	 */
+	@Test
+	public void testConcurrency() throws Throwable {
+		int nrOfThreads = 10;
+		int nrOfTestsPerThread = 10;
+		testTool.setMaxCheckpoints(nrOfThreads * nrOfTestsPerThread * 2);
+		String correlationId = getCorrelationId();
+		TestThread[] testThreads = new TestThread[nrOfThreads];
+		for (int i = 0; i < nrOfThreads; i++) {
+			testThreads[i] = new TestThread();
+			testThreads[i].setName("Thread-" + i);
+			testThreads[i].setTestTool(testTool);
+			testThreads[i].setCorrelationId(correlationId);
+			testThreads[i].setNrOfTests(nrOfTestsPerThread);
+		}
+		for (int i = 0; i < nrOfThreads; i++) {
+			testThreads[i].start();
+		}
+		for (int i = 0; i < nrOfThreads; i++) {
+			while (testThreads[i].isAlive()) Thread.sleep(10);
+		}
+		ignoreWarningsInLog(listAppender, correlationId, "New child thread '");
+		for (int i = 0; i < nrOfThreads; i++) {
+			if (testThreads[i].getThrowable() != null) {
+				throw new Exception(testThreads[i].getThrowable());
+			}
+		}
+	}
+
+	/**
+	 * ArrayIndexOutOfBoundsException will occur when synchronization isn't done properly in TestTool.checkpoint(). E.g.
+	 * disable report.isClosed() check in TestTool.checkpoint() to make this test throw an exception and fail. In
+	 * addition to testConcurrency() (which is a simpler way to test for ArrayIndexOutOfBoundsException) this test will
+	 * also assert the generated reports.
+	 * 
+	 * @throws Throwable
+	 */
 	@Test
 	public void testConcurrentLastEndpointAndFirstStartpointForSameCorrelationId() throws Throwable {
-		int minimumNrOfRuns = 10;
-		int maximumNrOfRuns = 100;
+		int minimumNrOfRuns = 1;
+		int maximumNrOfRuns = 10;
+		// Interesting to know/use during development of this test but as the most important thing is to test for
+		// ArrayIndexOutOfBoundsException's it can be false to prevent failure to occur every now and then
+		boolean forceBothCountersGreatherThanZero = false;
 		int count1 = 0;
 		int count2 = 0;
 		int i = 0;
@@ -295,9 +352,12 @@ public class TestCreateReport extends ReportRelatedTestCase {
 			if (outcome == 1) count1++;
 			if (outcome == 2) count2++;
 			if (count1 > maximumNrOfRuns || count2 > maximumNrOfRuns) {
-				// fail("Prevent infinite running test (count1=" + count1 + " and count2=" + count2 + ")");
-				logCounters(count1, count2);
-				assumeTrue("This sometimes happens, is it possible to fix this?", false);
+				if (forceBothCountersGreatherThanZero) {
+					logCounters(count1, count2);
+					fail("Prevent infinite running test (count1=" + count1 + " and count2=" + count2 + ")");
+				} else {
+					break;
+				}
 			}
 			i++;
 		}
@@ -309,14 +369,6 @@ public class TestCreateReport extends ReportRelatedTestCase {
 	}
 
 	private int testConcurrentLastEndpointAndFirstStartpointForSameCorrelationIdSub() throws Throwable {
-		// Test synchronized statements in TestTool.checkpoint(). More specifically: Test
-		// https://github.com/ibissource/ibis-ladybug/commit/9a8b11ad83f09ac4dba8a87f94a4a2273e949f3e
-		// To test whether this test case would still trigger the ArrayIndexOutOfBoundsException after being modified
-		// disable the following code in TestTool.java:
-		//		if (report.isClosed()) {
-		//			// Create a new report
-		//			report = getReportInProgress(correlationId, name, checkpointType);
-		//		}
 		String correlationId = getCorrelationId();
 		TestThread thread1 = new TestThread();
 		TestThread thread2 = new TestThread();

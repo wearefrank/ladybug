@@ -252,7 +252,7 @@ public class TestTool {
 			// Method getReportInProgress() will synchronize on reportsInProgress which is blocking for all threads for
 			// all reports
 			Report report = getReportInProgress(correlationId, name, checkpointType);
-			if (report != null) {
+			while (report != null) {
 				// "synchronized(report)" is only blocking for threads writing to the same report (which is only the
 				// case when multiple threads use the same correlationId)
 				synchronized(report) {
@@ -267,18 +267,16 @@ public class TestTool {
 					if (report.isClosed()) {
 						// Create a new report
 						report = getReportInProgress(correlationId, name, checkpointType);
+						// Synchronize and check isClosed() on report again as it will now point to a different report
+						continue;
 					}
-					if (report != null) {
-						// synchronize on report again as it can now point to a different report
-						synchronized(report) {
-							executeStubableCode = false;
-							message = report.checkpoint(childThreadId, sourceClassName, name, message, stubableCode,
-									stubableCodeThrowsException, matchingStubStrategies, checkpointType,
-									levelChangeNextCheckpoint);
-							closeReportIfFinished(report);
-						}
-					}
+					executeStubableCode = false;
+					message = report.checkpoint(childThreadId, sourceClassName, name, message, stubableCode,
+							stubableCodeThrowsException, matchingStubStrategies, checkpointType,
+							levelChangeNextCheckpoint);
+					closeReportIfFinished(report);
 				}
+				report = null;
 			}
 		}
 		if (executeStubableCode) {

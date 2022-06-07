@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -23,13 +23,17 @@ import nl.nn.testtool.TestTool;
 class TestThread extends Thread {
 	@Setter TestTool testTool;
 	@Setter String correlationId;
+	@Setter int nrOfTests = 1;
 	@Getter Throwable throwable;
 
 	@Override
 	public void run() {
 		try {
-			testTool.startpoint(correlationId, null, getName(), "startmessage1");
-			testTool.endpoint(correlationId, null, getName(), "endmessage1");
+			for (int i = 0; i < nrOfTests; i++) {
+				testTool.startpoint(correlationId, null, getName(), "startmessage1");
+				testTool.endpoint(correlationId, null, getName(), "endmessage1");
+			}
+
 		} catch (Throwable t) {
 			throwable = t;
 		}

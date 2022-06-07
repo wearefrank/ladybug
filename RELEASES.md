@@ -6,6 +6,7 @@ Ladybug Test Tool release notes
 Upcoming
 --------
 
+- Fix concurrency issue
 - Show byte[] as UTF-8 with toggle button for Base64
 - Upgrade jackson from 1.1.1 to 2.13.0
 - Fix incompatible types for field endTime
