@@ -151,7 +151,7 @@ public class ReportApi extends ApiBase {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response updateReport(@PathParam("storage") String storageParam, @PathParam("storageId") int storageId, Map<String, String> map) {
-		String[] fields = new String[]{"name", "path", "variables", "description", "transformation", "checkpointId", "checkpointMessage"};
+		String[] fields = new String[]{"name", "path", "variables", "description", "transformation", "checkpointId", "checkpointMessage", "stub"};
 		if (map.isEmpty() || !mapContainsOnly(map, null, fields))
 			return Response.status(Response.Status.BAD_REQUEST).entity("No new values or incorrect values have been given for report with storageId [" + storageId + "] - detailed error message - Values given are:\n" + map).build();
 
@@ -178,7 +178,11 @@ public class ReportApi extends ApiBase {
 			}
 
 			if (StringUtils.isNotEmpty(map.get("checkpointId"))) {
-				report.getCheckpoints().get(Integer.parseInt(map.get("checkpointId"))).setMessage(map.get("checkpointMessage"));
+				if (StringUtils.isNotEmpty(map.get("stub"))) {
+					report.getCheckpoints().get(Integer.parseInt(map.get("checkpointId"))).setStub(Integer.parseInt(map.get("stub")));
+				} else {
+					report.getCheckpoints().get(Integer.parseInt(map.get("checkpointId"))).setMessage(map.get("checkpointMessage"));
+				}
 			}
 
 			HashMap<String, Serializable> result = new HashMap<>(3);
