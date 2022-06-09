@@ -4,10 +4,6 @@ on:
     paths:
       - '.github/workflows/start-frontend-test.yml'
       - 'pom.xml'
-  pull_request:
-    paths:
-      - '.github/workflows/start-frontend-test.yml'
-      - 'pom.xml'
 jobs:
   dispatch:
     name: Start tests of ladybug-frontend
@@ -22,7 +18,6 @@ jobs:
       id: get_frontendVersion
       run: echo "::set-output name=frontendVersion::$(cat frontendVersion.txt)"
     - name: Push repository_dispatch event to ladybug-frontend - no PR
-      if: ${{ github.event_name == 'push' }}
       uses: actions/github-script@v6
       with:
         github-token: ${{ secrets.CI_ACCESSTOKEN }}
@@ -36,24 +31,6 @@ jobs:
               useRealFrontend: 'true',
               frontendCommitToCheckout: 'tags/v${{ steps.get_frontendVersion.outputs.frontendVersion }}',
               backendCommitToCheckout: '${{ github.ref_name }}',
-              mergeMasterToBranch: 'false'
-            }
-          })
-    - name: Push repository_dispatch event to ladybug-frontend - PR
-      if: ${{ github.event_name == 'pull_request' }}
-      uses: actions/github-script@v6
-      with:
-        github-token: ${{ secrets.CI_ACCESSTOKEN }}
-        script: |
-          await github.rest.actions.createWorkflowDispatch({
-            owner: 'ibissource',
-            repo: 'ladybug-frontend',
-            workflow_id: 'testing.js.yml',
-            ref: 'master',
-            inputs: {
-              useRealFrontend: 'true',
-              frontendCommitToCheckout: 'tags/v${{ steps.get_frontendVersion.outputs.frontendVersion }}',
-              backendCommitToCheckout: '${{ github.github.base_ref }}',
               mergeMasterToBranch: 'true'
             }
           })
