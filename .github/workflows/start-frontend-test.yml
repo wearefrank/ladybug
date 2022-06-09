@@ -27,7 +27,7 @@ jobs:
             ref: 'master',
             inputs: {
               useRealFrontend: 'true',
-              frontendCommitToCheckout: '${{ steps.get_frontendVersion.outputs.frontendVersion }}',
+              frontendCommitToCheckout: 'tags/v${{ steps.get_frontendVersion.outputs.frontendVersion }}',
               backendCommitToCheckout: '${{ github.ref_name }}'
             }
           })
