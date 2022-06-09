@@ -51,3 +51,4 @@ jobs:
               mergeMasterToBranch: 'true'
             }
           })
+
