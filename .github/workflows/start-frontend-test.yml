@@ -1,0 +1,31 @@
+name: Start tests of ladybug-frontend
+on:
+  push:
+  pull_request:
+jobs:
+  dispatch:
+    name: Start tests of ladybug-frontend
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Get referenced front-end version
+      run: ./.github/getFrontendVersion.sh pom.xml frontendVersion.txt
+    - name: Capture referenced front-end version
+      id: get_frontendVersion
+      run: echo "::set-output name=frontendVersion::$(cat frontendVersion.txt)"
+    - name: Push repository_dispatch event to ladybug-frontend
+      uses: actions/github-script@v6
+      with:
+        github-token: ${{ secrets.CI_ACCESSTOKEN }}
+        script: |
+          await github.rest.actions.createWorkflowDispatch({
+            owner: 'ibissource',
+            repo: 'ladybug-frontend',
+            workflow_id: 'testing.js.yml',
+            ref: 'master',
+            inputs: {
+              useRealFrontend: 'true',
+              frontendCommitToCheckout: '${{ steps.get_frontendVersion.outputs.frontendVersion }}',
+              backendCommitToCheckout: '${{ github.ref_name }}'
+            }
+          })
