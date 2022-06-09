@@ -9,7 +9,7 @@ jobs:
 
     steps:
     - name: Get referenced front-end version
-      run: ./.github/getFrontendVersion.sh pom.xml frontendVersion.txt
+      run: ./.github/workflows/getFrontendVersion.sh pom.xml frontendVersion.txt
     - name: Capture referenced front-end version
       id: get_frontendVersion
       run: echo "::set-output name=frontendVersion::$(cat frontendVersion.txt)"
