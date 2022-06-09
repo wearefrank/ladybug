@@ -53,7 +53,7 @@ jobs:
             inputs: {
               useRealFrontend: 'true',
               frontendCommitToCheckout: 'tags/v${{ steps.get_frontendVersion.outputs.frontendVersion }}',
-              backendCommitToCheckout: '${{ github.ref_name }}',
+              backendCommitToCheckout: '${{ github.github.sha }}',
               mergeMasterToBranch: 'true'
             }
           })
