@@ -11,7 +11,7 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v2
     - name: Get referenced front-end version
-      run: ./.github/workflows/getFrontendVersion.sh pom.xml frontendVersion.txt
+      run: /bin/bash ./.github/workflows/getFrontendVersion.sh pom.xml frontendVersion.txt
     - name: Capture referenced front-end version
       id: get_frontendVersion
       run: echo "::set-output name=frontendVersion::$(cat frontendVersion.txt)"
