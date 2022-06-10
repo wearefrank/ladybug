@@ -17,6 +17,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <spring.version>5.3.18</spring.version>
     <cxf.version>3.1.18</cxf.version>
+    <frontend.version>0.0.24</frontend.version>
   </properties>
 
   <organization>
@@ -56,7 +57,7 @@
     <dependency>
       <groupId>org.webjars.npm</groupId>
       <artifactId>wearefrank__ladybug</artifactId>
-      <version>0.0.20</version>
+      <version>${frontend.version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.cxf</groupId>
