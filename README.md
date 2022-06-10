@@ -240,7 +240,7 @@ The Cypress test is used in two ways. First, it can be triggered if ibis-ladybug
 * frontendCommitToCheckout: ladybug-frontend commit to checkout, typically a reference to a tag.
 * backendCommitToCheckout: ibis-ladybug commit to checkout, typically a branch name.
 * useRealFrontend: `true`, because we do not want to use the checkout of ladybug-frontend, but the WebJar contained in ibis-ladybug.
-* mergeMasterToBranch: `true`, directs the test to merge the master into the checkout before starting the tests; emulates a pull request.
+* mergeMasterToBranch: `true`, for the backend directs the test to merge the master into the checkout. This way, a pull request of the backend is emulated.
 
 This scenario does not work on forks of the ibis-ladybug project. A fork does not have rights to trigger tests within the `ibissource/ladybug-frontend` project. A commit on `ibissource/ibis-ladybug` triggers the front-end test if the ibis-ladybug `pom.xml` or the ibis-ladybug test script is updated. GitHub will not show the success or failure of the front-end test. Please browse to https://github.com/ibissource/ladybug-frontend and go to "Actions". Check the latest test run there.
 
