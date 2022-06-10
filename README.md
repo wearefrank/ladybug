@@ -16,7 +16,7 @@ reports and optionally stub certain checkpoints for regression testing.
 - [How to incorporate Ladybug into your application or framework](#how-to-incorporate-ladybug-into-your-application-or-framework)
 - [How to change and test Ladybug](#how-to-change-and-test-ladybug)
 - [Create and publish NPM package and WebJar](#create-and-publish-npm-package-and-webjar)
-
+- [CI/CD](#cicd)
 
 Releases
 ========
@@ -225,3 +225,37 @@ Create and publish NPM package and WebJar
 ### Prepare for next cycle
 - Go into the file `ladybug-frontend/package.json` and increment the version number (for example `0.0.12` -> `0.0.13`)
 - Commit and push the changes in `ladybug-frontend/package.json`, with the commit message `Set version to X.Y.Z for the next development cycle`
+
+CI/CD
+=====
+
+The preceeding sections explained how to change Ladybug. This section explains the CI/CD of Ladybug and it explains how we manage releases.
+
+First remember that ibis-ladybug is the main project. Project ladybug-frontend is a dependency of ibis-ladybug. The frontend version referenced by ibis-ladybug is specified by the ibis-ladybug `pom.xml` file. It is the value of property `frontend.version`. This property contains a version number that references a WebJar, see [Create and publish NPM package and WebJar](#create-and-publish-npm-package-and-webjar) about creating a WebJar from project ladybug-frontend. This way, a release of ibis-ladybug comes down to releasing the combination of ibis-ladybug and ladybug-frontend.
+
+WeAreFrank! has two automatic tests for Ladybug. First, our on-premise servers run a Jenkins test. This test checks the build of the ibis-ladybug project, in particular the master branch. Second, there is a GitHub actions test that lives in the ladybug-frontend project. This test does integration tests that exercise the Ladybug front-end. It has been implemented using [Cypress](https://www.cypress.io/). The test checks out ladybug-frontend, ibis-ladybug, the Frank!Runner and ibis-ladybug-test-webapp. Using these checkout directories, Ladybug can be started using the Frank!Runner and its script `frank-runner/specials/ibis-ladybug`, see [How to change and test Ladybug](#how-to-change-and-test-ladybug).
+
+The Cypress test is used in two ways. First, it can be triggered if ibis-ladybug is updated. Project ibis-ladybug has a GitHub action that triggers the Cypress test of the front-end. This can happens because the Cypress test can be triggered by a `workflow_dispatch` event, see [test script](.github/workflows/start-frontend-test.yml). In this scenario, the following four inputs are provided:
+
+* frontendCommitToCheckout: ladybug-frontend commit to checkout, typically a reference to a tag.
+* backendCommitToCheckout: ibis-ladybug commit to checkout, typically a branch name.
+* useRealFrontend: `true`, because we do not want to use the checkout of ladybug-frontend, but the WebJar contained in ibis-ladybug.
+* mergeMasterToBranch: `true`, directs the test to merge the master into the checkout before starting the tests; emulates a pull request.
+
+This scenario does not work on forks of the ibis-ladybug project. A fork does not have rights to trigger tests within the `ibissource/ladybug-frontend` project. A commit on `ibissource/ibis-ladybug` triggers the front-end test if the ibis-ladybug `pom.xml` or the ibis-ladybug test script is updated. GitHub will not show the success or failure of the front-end test. Please browse to https://github.com/ibissource/ladybug-frontend and go to "Actions". Check the latest test run there.
+
+The second use of the Cypress test is testing the front-end. The Cypress test is triggered by every commit and every pull request update of the ladybug-frontend project. The input arguments are not set, causing the new commit (or merge commit for a PR) to be checked out for ladybug-frontend. For ibis-ladybug the master is checked out. Input `useRealFrontend` is undefined, which is equivalent to `false`. This means that the front-end comes from the checkout of ladybug-frontend; the WebJar inside ibis-ladybug is ignored. Finally, `mergeMasterToBranch` is undefined (`false`). This scenario also works on forks of `ladybug-frontend`.
+
+Here is how to use the CI/CD of Ladybug:
+
+### Update the backend only
+
+If the backend is updated without front-end changes, no GitHub actions are triggered. Rely on the Jenkins test of ibis-ladybug to test your change.
+
+### Update the front-end
+
+When updating the front-end, work on a branch that is allowed to live on a fork of the ladybug-frontend project. The Cypress test is executed for every commit. If you turn your work into a pull request, the success or failure status of the Cypress test will be shown in the pull request. As long as the updated front-end code is not referenced by the ibis-ladybug project, it is not part of Ladybug.
+
+### Update front-end and backend
+
+Update the front-end as explained below. Release the front-end in a WebJar as explained in [Create and publish NPM package and WebJar](#create-and-publish-npm-package-and-webjar). Ensure that the commit and the tag are pushed to GitHub project ibissource/ladybug-frontend. Then update `pom.xml` of ibis-ladybug to reference the new WebJar; do so on a branch pushed to ibissource/ibis-ladybug. Then browse to https://github.com/ibissource/ladybug-frontend and go to "Actions". Check the latest run of the Cypress test to see whether the change works.
