@@ -18,10 +18,9 @@ package nl.nn.testtool.web.api;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
+import java.util.LinkedHashMap;
 import java.util.Set;
 
 import javax.ws.rs.DefaultValue;
@@ -85,9 +84,9 @@ public class MetadataApi extends ApiBase {
 				return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Storage param given is invalid, should be [debugStorage] or [testStorage]").build();
 			}
 			List<List<Object>> list = storage.getMetadata(limit, metadataNames, searchValues, MetadataExtractor.VALUE_TYPE_STRING);
-			List<Map<String, String>> metadata = new ArrayList<>();
+			List<LinkedHashMap<String, String>> metadata = new ArrayList<>();
 			for (List<Object> item : list) {
-				Map<String, String> metadataItem = new HashMap<>();
+				LinkedHashMap<String, String> metadataItem = new LinkedHashMap<>();
 				for (int i = 0; i < metadataNames.size(); i++) {
 					metadataItem.put(metadataNames.get(i), item.get(i).toString());
 				}
