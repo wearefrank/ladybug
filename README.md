@@ -193,8 +193,9 @@ Create and publish NPM package and WebJar
 - Make sure the latest changes are committed (and preferably pushed) to the project
 - Open your terminal and navigate to your project folder (so `PATH/TO/ladybug`)
 - If this is the first time, you need to log into NPM
-    - Create an account on [NPM](https://www.npmjs.com/signup) if you don't have one yet
-    - In the terminal run the following command `npm login`, which prompts you to log into NPM
+    - Create an account on [NPM](https://www.npmjs.com/signup) if you don't have one yet.
+    - Ask a colleague to add your account to the WeAreFrank! organization.
+    - In the terminal run the following command `npm login`, which prompts you to log into NPM.
 
 ### Creating and publishing an NPM package
 - Run the command `ng build`, to build the current project
@@ -208,6 +209,7 @@ Create and publish NPM package and WebJar
   - `main.134a36bdfc8f0ad9.js`
 - Remove the `dependencies` and `devDependencies` from the copied `package.json` (`dist/ladybug/package.json`). Make sure you do not remove them from the original `package.json`.
 - Navigate to `dist/ladybug` in your terminal
+- In that directory, update `package.json`. Update the `prepare` script to be: `cd ../.. && husky install`.
 - Run `npm publish`
 - Run `git tag vX.Y.Z`, with X.Y.Z being the latest version of the package, which you can find in your `package.json` (for example `0.0.12`)
 - Run `git push origin vX.Y.Z`, with X.Y.Z being the version you just specified.
