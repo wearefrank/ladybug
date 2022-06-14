@@ -35,12 +35,15 @@ import org.apache.commons.lang.StringUtils;
 import lombok.Setter;
 import nl.nn.testtool.Report;
 import nl.nn.testtool.TestTool;
+import nl.nn.testtool.filter.View;
+import nl.nn.testtool.filter.Views;
 import nl.nn.testtool.transform.ReportXmlTransformer;
 
 @Path("/testtool")
 public class TestToolApi extends ApiBase {
 	private @Setter TestTool testTool;
 	private @Setter ReportXmlTransformer reportXmlTransformer;
+	private @Setter Views views;
 	private String defaultTransformation;
 
 	@PostConstruct
@@ -181,4 +184,27 @@ public class TestToolApi extends ApiBase {
 		map.put("transformation", transformation);
 		return Response.ok(map).build();
 	}
+
+	/**
+	 * @return The configured views
+	 */
+	@GET
+	@Path("/views/")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response getViews() {
+		Map<String, Map<String, Object>> response = new HashMap<String, Map<String, Object>>();
+		for (View view : views) {
+			Map<String, Object> map = new HashMap<String, Object>();
+			map.put("storageName", view.getStorage().getName());
+			if (view == views.getDefaultView()) {
+				map.put("defaultView", true);
+			} else {
+				map.put("defaultView", false);
+			}
+			map.put("metadataNames", view.getMetadataNames());
+			response.put(view.getName(), map);
+		}
+		return Response.ok(response).build();
+	}
+
 }
