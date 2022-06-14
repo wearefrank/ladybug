@@ -31,10 +31,12 @@ import org.slf4j.LoggerFactory;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;
+import nl.nn.testtool.filter.View;
 import nl.nn.testtool.filter.Views;
 import nl.nn.testtool.run.ReportRunner;
 import nl.nn.testtool.storage.CrudStorage;
 import nl.nn.testtool.storage.LogStorage;
+import nl.nn.testtool.storage.Storage;
 import nl.nn.testtool.transform.MessageTransformer;
 
 /**
@@ -927,6 +929,20 @@ public class TestTool {
 			}
 		}
 		return reportsInProgressEstimatedMemoryUsage;
+	}
+
+	public Storage getStorage(String name) {
+		for (View view : views) {
+			Storage storage = view.getStorage();
+			if (name.equals(storage.getName())) {
+				return storage;
+			}
+		}
+		// TODO: Introduce views for test tab also and replace getViews() in TestToolApi with getTabs()
+		if (name.equals("Test")) {
+			return getTestStorage();
+		}
+		return null;
 	}
 
 	public static String getName() {

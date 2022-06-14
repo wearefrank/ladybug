@@ -15,16 +15,13 @@
 */
 package nl.nn.testtool.web.api;
 
-import nl.nn.testtool.Checkpoint;
-import nl.nn.testtool.Report;
-import nl.nn.testtool.run.ReportRunner;
-import nl.nn.testtool.run.RunResult;
-import nl.nn.testtool.storage.CrudStorage;
-import nl.nn.testtool.storage.Storage;
-import nl.nn.testtool.storage.StorageException;
-import nl.nn.testtool.transform.ReportXmlTransformer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.lang.invoke.MethodHandles;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
@@ -34,12 +31,26 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.lang.invoke.MethodHandles;
-import java.util.*;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import lombok.Setter;
+import nl.nn.testtool.Checkpoint;
+import nl.nn.testtool.Report;
+import nl.nn.testtool.TestTool;
+import nl.nn.testtool.run.ReportRunner;
+import nl.nn.testtool.run.RunResult;
+import nl.nn.testtool.storage.CrudStorage;
+import nl.nn.testtool.storage.Storage;
+import nl.nn.testtool.storage.StorageException;
+import nl.nn.testtool.transform.ReportXmlTransformer;
 
 @Path("/runner")
 public class RunApi extends ApiBase {
 	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+	private @Setter TestTool testTool;
+
 	/**
 	 * Rerun the given report, and save the output the target storage.
 	 *
@@ -51,9 +62,13 @@ public class RunApi extends ApiBase {
 	@Produces(MediaType.APPLICATION_JSON)
 	@Consumes(MediaType.APPLICATION_JSON)
 	public Response runReport(@PathParam("storageId") int storageId) {
-		Storage testStorage = getBean("testStorage");
+		// TODO: Add param testStorageName and use testTool.getStorage(testStorageName)
+		Storage testStorage = testTool.getTestStorage();
 		List<String> exceptions = new ArrayList<>();
-		ReportRunner runner = getRunner(getBean("debugStorage"));
+		// TODO: Add param debugStorageName and use testTool.getStorage(debugStorageName) (frontend can use the storage
+		// name of the default view or add a dropdown to the Test tab for the user to select the debug view from which
+		// the storage should be used
+		ReportRunner runner = getRunner(testTool.getDebugStorage());
 		HashMap<String, Object> result = new HashMap<>();
 		String exception = null;
 
@@ -67,7 +82,7 @@ public class RunApi extends ApiBase {
 		try {
 			Report report = testStorage.getReport(storageId);
 			if (report != null) {
-				report.setTestTool(getBean("testTool"));
+				report.setTestTool(testTool);
 				reranReports.put(storageId, report);
 				exception = runner.run(Collections.singletonList(report), true, true);
 				RunResult runResult = runner.getResults().get(storageId);
@@ -128,6 +143,8 @@ public class RunApi extends ApiBase {
 	public Response runReport(@PathParam("debugStorage") String debugStorageStorageParam, @PathParam("storageId") int storageId) {
 		try {
 			// Get run result report.
+			// TODO: Rename debugStorageStorageParam to debugStorageName and use testTool.getStorage(debugStorageName)
+			// (frontend needs to be changed to use storage name instead of bean name)
 			Storage debugStorage = getBean(debugStorageStorageParam);
 			ReportRunner reportRunner = getRunner(debugStorage);
 			Report runResultReport = reportRunner.getRunResultReport(reportRunner.getResults().get(storageId).correlationId);
@@ -221,7 +238,7 @@ public class RunApi extends ApiBase {
 		ReportRunner runner = (ReportRunner) runners.get(debugStorage);
 		if (runner == null) {
 			runner = new ReportRunner();
-			runner.setTestTool(getBean("testTool"));
+			runner.setTestTool(testTool);
 			runner.setDebugStorage(debugStorage);
 			runner.setSecurityContext(this);
 			runners.put(debugStorage, runner);
