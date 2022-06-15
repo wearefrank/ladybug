@@ -140,12 +140,12 @@ public class RunApi extends ApiBase {
 	@Path("/replace/{debugStorage}/{storageId}")
 	@Produces(MediaType.APPLICATION_JSON)
 	@Consumes(MediaType.APPLICATION_JSON)
-	public Response runReport(@PathParam("debugStorage") String debugStorageStorageParam, @PathParam("storageId") int storageId) {
+	public Response runReport(@PathParam("debugStorage") String storageName, @PathParam("storageId") int storageId) {
 		try {
 			// Get run result report.
 			// TODO: Rename debugStorageStorageParam to debugStorageName and use testTool.getStorage(debugStorageName)
 			// (frontend needs to be changed to use storage name instead of bean name)
-			Storage debugStorage = getBean(debugStorageStorageParam);
+			Storage debugStorage = testTool.getStorage(storageName);
 			ReportRunner reportRunner = getRunner(debugStorage);
 			Report runResultReport = reportRunner.getRunResultReport(reportRunner.getResults().get(storageId).correlationId);
 
@@ -205,13 +205,13 @@ public class RunApi extends ApiBase {
 
 	/**
 	 * Resets the re-runner with the given debug storage.
-	 * @param storageParam Name of the debug storage.
+	 * @param storageName Name of the debug storage.
 	 * @return The response after resetting.
 	 */
 	@POST
 	@Path("/reset/{debugStorage}")
-	public Response resetRunner(@PathParam("debugStorage") String storageParam) {
-		Storage storage = getBean(storageParam);
+	public Response resetRunner(@PathParam("debugStorage") String storageName) {
+		Storage storage = testTool.getStorage(storageName);
 		ReportRunner runner = getRunner(storage);
 		runner.reset();
 		return Response.ok().build();

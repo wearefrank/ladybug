@@ -31,7 +31,6 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
@@ -39,7 +38,6 @@ import lombok.Setter;
 import nl.nn.testtool.MetadataExtractor;
 import nl.nn.testtool.TestTool;
 import nl.nn.testtool.storage.Storage;
-import nl.nn.testtool.storage.StorageException;
 
 @Path("/metadata")
 public class MetadataApi extends ApiBase {
@@ -48,7 +46,7 @@ public class MetadataApi extends ApiBase {
 	/**
 	 * Searches the storage metadata.
 	 *
-	 * @param storageParam Name of the storage to search.
+	 * @param storageName Name of the storage to search.
 	 * @param metadataNames The metadata names to return.
 	 * @param limit Maximum number of results to return.
 	 * @param uriInfo Query parameters for search.
@@ -59,7 +57,7 @@ public class MetadataApi extends ApiBase {
 	@GET
 	@Path("/{storage}/")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response getMetadataList(@PathParam("storage") String storageParam,
+	public Response getMetadataList(@PathParam("storage") String storageName,
 									@QueryParam("metadataNames") ArrayList<String> metadataNames,
 									@DefaultValue("-1") @QueryParam("limit") int limit ,
 									@DefaultValue(".*") @QueryParam("filter") String filterParam ,
@@ -74,15 +72,9 @@ public class MetadataApi extends ApiBase {
 			}
 		}
 		try {
+
 			// Get storage, search for metadata, and return the results.
-			Storage storage;
-			if ("debugStorage".equals(storageParam)) {
-				storage = testTool.getDebugStorage();
-			} else if ("testStorage".equals(storageParam)) {
-				storage = testTool.getTestStorage();
-			} else {
-				return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Storage param given is invalid, should be [debugStorage] or [testStorage]").build();
-			}
+			Storage storage = testTool.getStorage(storageName);
 			List<List<Object>> list = storage.getMetadata(limit, metadataNames, searchValues, MetadataExtractor.VALUE_TYPE_STRING);
 			List<LinkedHashMap<String, String>> metadata = new ArrayList<>();
 			for (List<Object> item : list) {
