@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,22 +15,21 @@
 */
 package nl.nn.testtool.web.api;
 
-import nl.nn.testtool.SecurityContext;
-import nl.nn.testtool.storage.Storage;
-import org.springframework.context.ApplicationContext;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.core.Context;
 import java.security.Principal;
 import java.util.List;
 import java.util.Map;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.core.Context;
+
+import org.springframework.context.ApplicationContext;
+
+import nl.nn.testtool.SecurityContext;
+
 public abstract class ApiBase implements SecurityContext {
+	protected static ApplicationContext applicationContext;
 	@Context
 	protected HttpServletRequest httpRequest;
-
-	protected static ApplicationContext applicationContext;
-	protected static Map<String, Storage> storages;
 
 	protected Object getBeanObject(String beanName) {
 		if (applicationContext == null)

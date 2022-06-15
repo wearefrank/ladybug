@@ -1,9 +1,6 @@
 name: Start tests of ladybug-frontend
 on:
   push:
-    paths:
-      - '.github/workflows/start-frontend-test.yml'
-      - 'pom.xml'
 jobs:
   dispatch:
     name: Start tests of ladybug-frontend
