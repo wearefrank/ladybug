@@ -17,6 +17,8 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <spring.version>5.3.18</spring.version>
     <cxf.version>3.1.18</cxf.version>
+    <!-- The line below is parsed by the GitHub actions test that triggers the ladybug-frontend Cypress test -->
+    <frontend.version>0.0.24</frontend.version>
   </properties>
 
   <organization>
@@ -56,7 +58,7 @@
     <dependency>
       <groupId>org.webjars.npm</groupId>
       <artifactId>wearefrank__ladybug</artifactId>
-      <version>0.0.20</version>
+      <version>${frontend.version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.cxf</groupId>
@@ -109,7 +111,7 @@
     <dependency>
       <groupId>net.sf.saxon</groupId>
       <artifactId>Saxon-HE</artifactId>
-      <version>9.4.0.7</version>
+      <version>10.8</version>
     </dependency>
     <dependency>
       <groupId>org.ibissource</groupId>
@@ -122,9 +124,16 @@
       <version>1.18.10</version>
     </dependency>
     <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>4.13.1</version>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <version>5.8.2</version>
+      <scope>test</scope>
+    </dependency>
+    <!-- https://junit.org/junit5/docs/current/user-guide/#migrating-from-junit4 -->
+    <dependency>
+      <groupId>org.junit.vintage</groupId>
+      <artifactId>junit-vintage-engine</artifactId>
+      <version>5.8.2</version>
       <scope>test</scope>
     </dependency>
     <dependency>

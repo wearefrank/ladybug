@@ -20,10 +20,12 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import javax.xml.xpath.XPathExpression;
+import javax.xml.xpath.XPathExpressionException;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import net.sf.saxon.trans.XPathException;
 import nl.nn.testtool.Checkpoint;
 import nl.nn.testtool.Report;
 import nl.nn.testtool.util.XmlUtil;
@@ -34,15 +36,15 @@ import nl.nn.testtool.util.XmlUtil;
 public class XpathMetadataFieldExtractor extends DefaultValueMetadataFieldExtractor {
 	private static Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 	protected String xpath;
-	protected XmlUtil.XPathEvaluator xpathEvaluator;
+	protected XPathExpression xpathExpression;
 	protected String extractFrom = "first";
 
-	public void setXpath(String xpath) throws XPathException {
+	public void setXpath(String xpath) throws XPathExpressionException {
 		this.xpath = xpath;
 		if (xpath == null) {
-			xpathEvaluator = null;
+			xpathExpression = null;
 		} else {
-			xpathEvaluator = XmlUtil.createXPathEvaluator(xpath);
+			xpathExpression = XmlUtil.createXPathExpression(xpath);
 		}
 	}
 
@@ -70,8 +72,8 @@ public class XpathMetadataFieldExtractor extends DefaultValueMetadataFieldExtrac
 			String message = ((Checkpoint)iterator.next()).getMessage();
 			if (message != null) {
 				try { 
-					value = xpathEvaluator.evaluate(message);
-				} catch (XPathException e) {
+					value = xpathExpression.evaluate(XmlUtil.createXmlSourceFromString(message));
+				} catch (XPathExpressionException e) {
 					log.debug("The message probably isn't in XML format", e);
 				}
 			}

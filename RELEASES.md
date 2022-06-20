@@ -6,6 +6,8 @@ Ladybug Test Tool release notes
 Upcoming
 --------
 
+- Bump Saxon from 9.4.0.7 to 10.8
+- Support Saxon 10 (keep 9 working too)
 - Fix concurrency issue
 - Show byte[] as UTF-8 with toggle button for Base64
 - Upgrade jackson from 1.1.1 to 2.13.0

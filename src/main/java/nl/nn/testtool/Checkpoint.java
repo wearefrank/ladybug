@@ -30,13 +30,14 @@ import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.xml.xpath.XPathExpressionException;
+
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import net.sf.saxon.trans.XPathException;
 import nl.nn.testtool.MessageCapturer.StreamingType;
 import nl.nn.testtool.MessageEncoder.ToStringResult;
 import nl.nn.testtool.run.ReportRunner;
@@ -546,7 +547,8 @@ public class Checkpoint implements Serializable, Cloneable {
 							if(StringUtils.isNotEmpty(targetCheckpointMessage)) {
 								if(StringUtils.isNotEmpty(xpathExpression)) {
 									try {
-										String xpathResult = XmlUtil.createXPathEvaluator(xpathExpression).evaluate(targetCheckpointMessage);
+										String xpathResult = XmlUtil.createXPathExpression(xpathExpression).evaluate(
+												XmlUtil.createXmlSourceFromString(targetCheckpointMessage));
 										if(xpathResult != null) {
 											try {
 												result = result.replace(matchResult.group(), xpathResult);
@@ -558,7 +560,7 @@ public class Checkpoint implements Serializable, Cloneable {
 												}
 											}
 										}
-									} catch (XPathException e) {
+									} catch (XPathExpressionException e) {
 										log.warn(warningMessageHeader(matchResult.group())+"Invalid xpath expression or XML message in target checkpoint");
 									}
 								} else {
