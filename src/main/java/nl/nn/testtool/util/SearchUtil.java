@@ -37,7 +37,7 @@ public class SearchUtil {
 	}
 
 	public static String getUserHelp() {
-		return "When the search value starts with ( and ends with ) the search values is considered a regular expression."
+		return "When the search value starts with ( and ends with ) the search value is considered a regular expression."
 			+ " When the search value consists of the 2 characters \"\" it will match the empty string."
 			+ " When the search value consists of the 4 characters null it will match when the object searched for is null."
 			+ " Otherwise the search value is considered a case insensitive wildcard search using * as the wildcard character"

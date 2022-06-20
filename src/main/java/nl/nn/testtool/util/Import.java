@@ -18,6 +18,7 @@ package nl.nn.testtool.util;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectInputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.zip.GZIPInputStream;
@@ -95,7 +96,6 @@ public class Import {
 		return errorMessage;
 	}
 
-	// TODO closeXMLEncoder methode (en anderen?) gebruiken?
 	public static ImportResult importTtr(InputStream inputStream, CrudStorage storage, Logger log) {
 		GZIPInputStream gzipInputStream = null;
 		XMLDecoder xmlDecoder = null;
@@ -133,20 +133,73 @@ public class Import {
 				xmlDecoder.close();
 			}
 			if (gzipInputStream != null) {
-				try {
-					gzipInputStream.close();
-				} catch(IOException e) {
-					if (log != null) log.error("IOException closing gzipInputStream", e);
-				}
+				closeInputStream(gzipInputStream, "closing gzip input stream after ttr import", log);
 			}
 			if (inputStream != null) {
-				try {
-					inputStream.close();
-				} catch(IOException e) {
-					if (log != null) log.error("IOException closing inputStream", e);
-				}
+				closeInputStream(gzipInputStream, "closing input stream after ttr import", log);
 			}
 		}
 		return importResult;
 	}
+
+	public static Report getReport(InputStream inputStream, Integer storageId, Long storageSize, Logger log) throws StorageException {
+		Report report = null;
+		GZIPInputStream gzipInputStream = null;
+		ObjectInputStream objectInputStream = null;
+		try {
+			gzipInputStream = new GZIPInputStream(inputStream);
+			objectInputStream = new ObjectInputStream(gzipInputStream);
+			report = (Report)objectInputStream.readObject();
+			report.setStorageId(storageId);
+			report.setStorageSize(storageSize);
+		} catch(IOException e) {
+			logAndThrow(log, e, "IOException reading report " + storageId + " from bytes");
+		} catch(ClassNotFoundException e) {
+			logAndThrow(log, e, "ClassNotFoundException reading report " + storageId + " from file");
+		} finally {
+			if (objectInputStream != null) {
+				closeInputStream(objectInputStream, "closing object input stream after reading report " + storageId + " from file", log);
+			}
+			if (gzipInputStream != null) {
+				closeInputStream(gzipInputStream, "closing gzip input stream after reading report " + storageId + " from file", log);
+			}
+		}
+		return report;
+	}
+
+	public static void closeInputStream(InputStream inputStream, String action, Logger log) {
+		try {
+			inputStream.close();
+		} catch(IOException e) {
+			if (log != null) log.warn("IOException " + action, e);
+		}
+	}
+
+	public static void closeReader(java.io.Reader reader, String action, Logger log) {
+		try {
+			reader.close();
+		} catch(IOException e) {
+			log.warn("IOException " + action, e);
+		}
+	}
+
+	public static void closeCSVReader(CSVReader csvReader, String action, Logger log) {
+		try {
+			csvReader.close();
+		} catch(IOException e) {
+			log.warn("IOException " + action, e);
+		}
+	}
+
+	public static void logAndThrow(Logger log, String message) throws StorageException {
+		log.error(message);
+		throw new StorageException(message);
+	}
+
+	public static void logAndThrow(Logger log, Exception e, String message) throws StorageException {
+		message = message + ": " + e.getMessage();
+		log.error(message, e);
+		throw new StorageException(message, e);
+	}
+
 }

@@ -15,18 +15,11 @@
 */
 package nl.nn.testtool.storage.file;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.util.List;
-
-import org.slf4j.Logger;
 
 import nl.nn.testtool.MetadataExtractor;
 import nl.nn.testtool.Report;
 import nl.nn.testtool.storage.StorageException;
-import nl.nn.testtool.util.CSVReader;
 import nl.nn.testtool.util.SearchUtil;
 
 /**
@@ -154,57 +147,6 @@ public class Storage implements nl.nn.testtool.storage.LogStorage {
 	@Override
 	public void close() {
 		writer.close();
-	}
-
-	protected static void closeCSVReader(CSVReader csvReader, String action, Logger log) {
-		try {
-			csvReader.close();
-		} catch(IOException e) {
-			log.warn("IOException " + action, e);
-		}
-	}
-	
-	protected static void closeReader(java.io.Reader reader, String action, Logger log) {
-		try {
-			reader.close();
-		} catch(IOException e) {
-			log.warn("IOException " + action, e);
-		}
-	}
-	
-	protected static void closeInputStream(InputStream inputStream, String action, Logger log) {
-		try {
-			inputStream.close();
-		} catch(IOException e) {
-			log.warn("IOException " + action, e);
-		}
-	}
-	
-	protected static void closeOutputStream(OutputStream outputStream, String action, Logger log) {
-		try {
-			outputStream.close();
-		} catch(IOException e) {
-			log.warn("IOException " + action, e);
-		}
-	}
-	
-	protected static void closeOutputStreamWriter(OutputStreamWriter outputStreamWriter, String action, Logger log) {
-		try {
-			outputStreamWriter.close();
-		} catch(IOException e) {
-			log.warn("IOException " + action, e);
-		}
-	}
-
-	protected static void logAndThrow(Logger log, String message) throws StorageException {
-		log.error(message);
-		throw new StorageException(message);
-	}
-
-	protected static void logAndThrow(Logger log, Exception e, String message) throws StorageException {
-		message = message + ": " + e.getMessage();
-		log.error(message, e);
-		throw new StorageException(message, e);
 	}
 
 	@Override

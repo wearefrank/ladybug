@@ -15,19 +15,14 @@
 */
 package nl.nn.testtool.util;
 
-import nl.nn.testtool.Checkpoint;
-import nl.nn.testtool.Report;
-import nl.nn.testtool.TestTool;
-import nl.nn.testtool.storage.Storage;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.beans.XMLEncoder;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.lang.invoke.MethodHandles;
 import java.text.SimpleDateFormat;
@@ -39,6 +34,15 @@ import java.util.Set;
 import java.util.zip.GZIPOutputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import nl.nn.testtool.Checkpoint;
+import nl.nn.testtool.Report;
+import nl.nn.testtool.TestTool;
+import nl.nn.testtool.storage.Storage;
+import nl.nn.testtool.storage.StorageException;
 
 public class Export {
 	private static Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
@@ -170,7 +174,7 @@ public class Export {
 				fileOutputStream = createTempFile(
 						replaceSpecialCharsInFilename(report.getName()), ".ttr",
 						exportResult);
-				fileOutputStream.write(getReportBytes(report));
+				fileOutputStream.write(getReportBytesPortable(report));
 			} else if (checkpoint != null) {
 				fileOutputStream = createTempFile(
 						replaceSpecialCharsInFilename(checkpoint.getName()),
@@ -242,7 +246,7 @@ public class Export {
 
 	private static void writeReport(Report report, String zipEntryName,
 			ZipOutputStream zipOutputStream) throws IOException {
-		writeZipEntry(zipEntryName, getReportBytes(report), zipOutputStream);
+		writeZipEntry(zipEntryName, getReportBytesPortable(report), zipOutputStream);
 	}
 
 	private static void writeReportXml(String reportXml, String zipEntryName,
@@ -262,7 +266,16 @@ public class Export {
 		zipOutputStream.closeEntry();
 	}
 
-	public static byte[] getReportBytes(Report report) throws IOException {
+	private static byte[] getMessageBytes(String message) throws UnsupportedEncodingException {
+		// TODO use a different encoding when specified in the xml message?
+		if (message == null) {
+			return new byte[0];
+		} else {
+			return message.getBytes("UTF-8");
+		}
+	}
+
+	public static byte[] getReportBytesPortable(Report report) throws IOException {
 		ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
 		GZIPOutputStream gzipOutputStream = null;
 		// Use XMLEncoder as it is more compatible over different Java
@@ -289,13 +302,26 @@ public class Export {
 		return byteArrayOutputStream.toByteArray();
 	}
 
-	private static byte[] getMessageBytes(String message) throws UnsupportedEncodingException {
-		// TODO use a different encoding when specified in the xml message?
-		if (message == null) {
-			return new byte[0];
-		} else {
-			return message.getBytes("UTF-8");
+	public static byte[] getReportBytes(Report report) throws StorageException {
+		ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+		GZIPOutputStream gzipOutputStream = null;
+		ObjectOutputStream objectOutputStream = null;
+		try {
+			gzipOutputStream = new GZIPOutputStream(byteArrayOutputStream);
+			objectOutputStream = new ObjectOutputStream(gzipOutputStream);
+			objectOutputStream.writeObject(report);
+		} catch(IOException e) {
+			logAndThrow(log, e, "IOException storing report");
+		} finally {
+			if (objectOutputStream != null) {
+				closeOutputStream(objectOutputStream, "closing object output stream after getting report bytes", log);
+			}
+			if (gzipOutputStream != null) {
+				closeOutputStream(gzipOutputStream, "closing gzip output stream after getting report bytes", log);
+			}
+			closeOutputStream(byteArrayOutputStream, "closing byte array output stream after getting report bytes", log);
 		}
+		return byteArrayOutputStream.toByteArray();
 	}
 
 	public static void closeXMLEncoder(XMLEncoder xmlEncoder) {
@@ -312,6 +338,24 @@ public class Export {
 				log.warn("IOException " + action, e);
 			}
 		}
+	}
+
+	public static void closeOutputStreamWriter(OutputStreamWriter outputStreamWriter, String action, Logger log) {
+		try {
+			outputStreamWriter.close();
+		} catch(IOException e) {
+			log.warn("IOException " + action, e);
+		}
+	}
+
+	// Prevent the need for Export using classes to also need Import to call logAndThrow()
+	public static void logAndThrow(Logger log, String message) throws StorageException {
+		Import.logAndThrow(log, message);
+	}
+
+	// Prevent the need for Export using classes to also need Import to call logAndThrow()
+	public static void logAndThrow(Logger log, Exception e, String message) throws StorageException {
+		Import.logAndThrow(log, e, message);
 	}
 
 }

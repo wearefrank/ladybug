@@ -6,6 +6,7 @@ Ladybug Test Tool release notes
 Upcoming
 --------
 
+- Add database storage implementation
 - Bump Saxon from 9.4.0.7 to 10.8
 - Support Saxon 10 (keep 9 working too)
 - Fix concurrency issue

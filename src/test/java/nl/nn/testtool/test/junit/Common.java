@@ -10,6 +10,8 @@ public class Common {
 
 	public static final ApplicationContext CONTEXT_MEM_STORAGE = new ClassPathXmlApplicationContext("springTestToolTestJUnit-forMemStorage.xml");
 
+	public static final ApplicationContext CONTEXT_DB_STORAGE = new ClassPathXmlApplicationContext("springTestToolTestJUnit-forDbStorage.xml");
+
 	public static String methodNameWithoutTestParameter(String methodNameWithTestParameter) {
 		String[] components = methodNameWithTestParameter.split("\\[");
 		return components[0];
