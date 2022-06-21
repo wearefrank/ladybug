@@ -383,7 +383,7 @@ public class ReportApi extends ApiBase {
 	@Path("/report/move/{storage}/{storageId}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	public Response updatePath(@PathParam("storage") String storageName, @PathParam("storageId") int storageId, Map<String, String> map) {
-		CrudStorage storage = (CrudStorage) testTool.getStorage(storageName); // TODO: Check with Jaco if this is ok
+		CrudStorage storage = (CrudStorage) testTool.getStorage(storageName);
 		String path = map.get("path");
 		String action = map.get("action");
 		if (StringUtils.isEmpty(action) || StringUtils.isEmpty(path))
