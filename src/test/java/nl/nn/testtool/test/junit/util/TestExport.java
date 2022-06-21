@@ -164,7 +164,7 @@ public class TestExport {
 			boolean applyToXmlIgnores, boolean applyEpochTimestampIgnores, boolean applyStackTraceIgnores,
 			boolean ignoreStorageId)
 			throws IOException, StorageException {
-		byte[] bytes = Export.getReportBytes(report);
+		byte[] bytes = Export.getReportBytesPortable(report);
 		ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(bytes);
 		GZIPInputStream gzipInputStream = new GZIPInputStream(byteArrayInputStream);
 		StringBuffer stringBuffer = new StringBuffer();

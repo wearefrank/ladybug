@@ -246,7 +246,7 @@ public class XmlStorage implements CrudStorage {
 
 	@Override
 	public int getFilterType(String column) {
-		return 0;
+		return FILTER_RESET;
 	}
 
 	@Override

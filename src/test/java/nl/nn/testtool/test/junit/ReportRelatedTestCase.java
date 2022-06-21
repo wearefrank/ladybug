@@ -66,7 +66,8 @@ public class ReportRelatedTestCase {
 	public static Collection<Object[]> data() {
 		return Arrays.asList(new Object[][] {
 			{"File storage", Common.CONTEXT_FILE_STORAGE},
-			{"Memory storage", Common.CONTEXT_MEM_STORAGE}
+			{"Memory storage", Common.CONTEXT_MEM_STORAGE},
+			{"Database storage", Common.CONTEXT_DB_STORAGE}
 		});
 	}
 
@@ -94,7 +95,7 @@ public class ReportRelatedTestCase {
 
 	@Before
 	public void setUp() {
-		File logsDir = new File("logs");
+		File logsDir = new File("target/test-data/file-storage");
 		if (!logsDir.isDirectory()) {
 			logsDir.mkdir();
 		}

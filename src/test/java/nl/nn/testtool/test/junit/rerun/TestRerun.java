@@ -52,7 +52,8 @@ public class TestRerun {
 	public static Collection<Object[]> data() {
 		return Arrays.asList(new Object[][] {
 			{"File storage", (TestTool) Common.CONTEXT_FILE_STORAGE.getBean("testTool")},
-			{"Memory storage", (TestTool) Common.CONTEXT_MEM_STORAGE.getBean("testTool")}
+			{"Memory storage", (TestTool) Common.CONTEXT_MEM_STORAGE.getBean("testTool")},
+			{"Database storage", (TestTool) Common.CONTEXT_DB_STORAGE.getBean("testTool")}
 		});
 	}
 

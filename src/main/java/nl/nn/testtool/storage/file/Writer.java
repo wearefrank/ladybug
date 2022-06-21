@@ -16,13 +16,11 @@
 package nl.nn.testtool.storage.file;
 
 import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.ObjectOutputStream;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.lang.invoke.MethodHandles;
@@ -31,7 +29,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.zip.GZIPOutputStream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,6 +37,8 @@ import nl.nn.testtool.MetadataExtractor;
 import nl.nn.testtool.Report;
 import nl.nn.testtool.storage.StorageException;
 import nl.nn.testtool.util.EscapeUtil;
+import nl.nn.testtool.util.Export;
+import nl.nn.testtool.util.Import;
 
 /**
  * @author Jaco de Groot
@@ -120,7 +119,7 @@ public class Writer {
 	}
 
 	protected void store(Report report, boolean preserveStorageId) throws StorageException {
-		byte[] reportBytes = getReportBytes(report);
+		byte[] reportBytes = Export.getReportBytes(report);
 		// Synchronize to keep order of storage id's in storage in incremental order
 		synchronized(synchronizeStore) {
 			if (!preserveStorageId) {
@@ -246,15 +245,15 @@ public class Writer {
 			bufferedReader = new BufferedReader(fileReader);
 			header = bufferedReader.readLine();
 		} catch(FileNotFoundException fileNotFoundException) {
-			Storage.logAndThrow(log, fileNotFoundException, "FileNotFoundException reading metadata header from file '" + metadataFile.getAbsolutePath() + "'");
+			Export.logAndThrow(log, fileNotFoundException, "FileNotFoundException reading metadata header from file '" + metadataFile.getAbsolutePath() + "'");
 		} catch(IOException ioException) {
-			Storage.logAndThrow(log, ioException, "IOException reading metadata header from file '" + metadataFile.getAbsolutePath() + "'");
+			Export.logAndThrow(log, ioException, "IOException reading metadata header from file '" + metadataFile.getAbsolutePath() + "'");
 		} finally {
 			if (bufferedReader != null) {
-				Storage.closeReader(bufferedReader, "closing buffered reader after reading metadata header from file '" + metadataFile.getAbsolutePath() + "'", log);
+				Import.closeReader(bufferedReader, "closing buffered reader after reading metadata header from file '" + metadataFile.getAbsolutePath() + "'", log);
 			}
 			if (fileReader != null) {
-				Storage.closeReader(fileReader, "closing file reader after reading metadata header from file '" + metadataFile.getAbsolutePath() + "'", log);
+				Import.closeReader(fileReader, "closing file reader after reading metadata header from file '" + metadataFile.getAbsolutePath() + "'", log);
 			}
 		}
 		if (metadataHeader.equals(header)) {
@@ -269,17 +268,17 @@ public class Writer {
 			reportsFileLength = reportsFile.length();
 			reportsFileOutputStream = new FileOutputStream(reportsFile, append);
 		} catch(IOException e) {
-			Storage.logAndThrow(log, e, "IOException opening reports file '" + reportsFile.getAbsolutePath() + "'");
+			Export.logAndThrow(log, e, "IOException opening reports file '" + reportsFile.getAbsolutePath() + "'");
 		}
 		try {
 			metadataFileOutputStream = new FileOutputStream(metadataFile, append);
 		} catch(IOException e) {
-			Storage.logAndThrow(log, e, "IOException opening metadata file '" + metadataFile.getAbsolutePath() + "'");
+			Export.logAndThrow(log, e, "IOException opening metadata file '" + metadataFile.getAbsolutePath() + "'");
 		}
 		try {
 			metadataOutputStreamWriter = new OutputStreamWriter(metadataFileOutputStream, "UTF-8");
 		} catch(UnsupportedEncodingException e) {
-			Storage.logAndThrow(log, e, "UnsupportedEncodingException opening metadata output stream");
+			Export.logAndThrow(log, e, "UnsupportedEncodingException opening metadata output stream");
 		}
 	}
 
@@ -288,7 +287,7 @@ public class Writer {
 			metadataOutputStreamWriter.write(metadataHeader);
 			metadataOutputStreamWriter.flush();
 		} catch(IOException ioException) {
-			Storage.logAndThrow(log, ioException, "IOException writing metadata header to file '" + metadataFile.getAbsolutePath() + "'");
+			Export.logAndThrow(log, ioException, "IOException writing metadata header to file '" + metadataFile.getAbsolutePath() + "'");
 		}
 		metadataFileLastModified = System.currentTimeMillis();
 	}
@@ -299,29 +298,29 @@ public class Writer {
 			reportsFileOutputStream.flush();
 			reportsFileLength = reportsFileLength + reportBytes.length;
 		} catch(IOException e) {
-			Storage.logAndThrow(log, e, "IOException writing report to file '" + reportsFile.getAbsolutePath() + "'");
+			Export.logAndThrow(log, e, "IOException writing report to file '" + reportsFile.getAbsolutePath() + "'");
 		}
 		try {
 			metadataOutputStreamWriter.write("\n");
 			metadataOutputStreamWriter.write(metadataCsvRecord);
 			metadataOutputStreamWriter.flush();
 		} catch(IOException e) {
-			Storage.logAndThrow(log, e, "IOException writing metadata to file '" + metadataFile.getAbsolutePath() + "'");
+			Export.logAndThrow(log, e, "IOException writing metadata to file '" + metadataFile.getAbsolutePath() + "'");
 		}
 		metadataFileLastModified = System.currentTimeMillis();
 	}
 
 	private void closeFiles() {
 		if (reportsFileOutputStream != null) {
-			Storage.closeOutputStream(reportsFileOutputStream, "closing reports file '" + reportsFile.getAbsolutePath() + "'", log);
+			Export.closeOutputStream(reportsFileOutputStream, "closing reports file '" + reportsFile.getAbsolutePath() + "'", log);
 			reportsFileOutputStream = null;
 		}
 		if (metadataOutputStreamWriter != null) {
-			Storage.closeOutputStreamWriter(metadataOutputStreamWriter, "closing metadata output stream writer", log);
+			Export.closeOutputStreamWriter(metadataOutputStreamWriter, "closing metadata output stream writer", log);
 			metadataOutputStreamWriter = null;
 		}
 		if (metadataFileOutputStream != null) {
-			Storage.closeOutputStream(metadataFileOutputStream, "closing metadata file output stream '" + metadataFile.getAbsolutePath() + "'", log);
+			Export.closeOutputStream(metadataFileOutputStream, "closing metadata file output stream '" + metadataFile.getAbsolutePath() + "'", log);
 			metadataFileOutputStream = null;
 		}
 	}
@@ -352,7 +351,7 @@ public class Writer {
 
 	private static void deleteFile(File file) throws StorageException {
 		if (!file.delete()) {
-			Storage.logAndThrow(log, "Could not delete file '" + file.getAbsolutePath() + "'");
+			Export.logAndThrow(log, "Could not delete file '" + file.getAbsolutePath() + "'");
 		}
 	}
 
@@ -360,31 +359,9 @@ public class Writer {
 		try {
 			Files.move(oldFile.toPath(), newFile.toPath());
 		} catch (Exception e) {
-			Storage.logAndThrow(log, e,
+			Export.logAndThrow(log, e,
 					"Could not rename file '" + oldFile.getAbsolutePath() + "' to '" + newFile.getAbsolutePath() + "'");
 		}
-	}
-
-	private static byte[] getReportBytes(Report report) throws StorageException {
-		ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-		GZIPOutputStream gzipOutputStream = null;
-		ObjectOutputStream objectOutputStream = null;
-		try {
-			gzipOutputStream = new GZIPOutputStream(byteArrayOutputStream);
-			objectOutputStream = new ObjectOutputStream(gzipOutputStream);
-			objectOutputStream.writeObject(report);
-		} catch(IOException e) {
-			Storage.logAndThrow(log, e, "IOException storing report");
-		} finally {
-			if (objectOutputStream != null) {
-				Storage.closeOutputStream(objectOutputStream, "closing object output stream after getting report bytes", log);
-			}
-			if (gzipOutputStream != null) {
-				Storage.closeOutputStream(gzipOutputStream, "closing gzip output stream after getting report bytes", log);
-			}
-			Storage.closeOutputStream(byteArrayOutputStream, "closing byte array output stream after getting report bytes", log);
-		}
-		return byteArrayOutputStream.toByteArray();
 	}
 
 	protected void finalize() throws Throwable {

@@ -15,28 +15,28 @@
 */
 package nl.nn.testtool.storage.file;
 
-import nl.nn.testtool.MetadataExtractor;
-import nl.nn.testtool.Report;
-import nl.nn.testtool.storage.StorageException;
-import nl.nn.testtool.util.CSVReader;
-import nl.nn.testtool.util.SearchUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.LineNumberReader;
-import java.io.ObjectInputStream;
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.zip.GZIPInputStream;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import nl.nn.testtool.MetadataExtractor;
+import nl.nn.testtool.Report;
+import nl.nn.testtool.storage.StorageException;
+import nl.nn.testtool.util.CSVReader;
+import nl.nn.testtool.util.Import;
+import nl.nn.testtool.util.SearchUtil;
 
 /**
  * @author Jaco de Groot
@@ -161,8 +161,8 @@ public class Reader {
 				}
 				if (!SearchUtil.matches(partialValues, partialSearchValues)) {
 					exclude = true;
-					if (log.isDebugEnabled()) {
-						log.debug("Exclude report based on search values (" + partialSearchValues + ") and already available metadata (" + partialValues + ")");
+					if (log.isTraceEnabled()) {
+						log.trace("Exclude report based on search values (" + partialSearchValues + ") and already available metadata (" + partialValues + ")");
 					}
 				}
 			}
@@ -260,10 +260,10 @@ public class Reader {
 					reportBytes = new byte[reportLocation.size.intValue()];
 					fileInputStream.read(reportBytes, 0, reportBytes.length);
 				} catch(IOException e) {
-					Storage.logAndThrow(log, e, "IOException reading report " + storageId + " from file " + file.getAbsolutePath());
+					Import.logAndThrow(log, e, "IOException reading report " + storageId + " from file " + file.getAbsolutePath());
 				} finally {
 					if (fileInputStream != null) {
-						Storage.closeInputStream(fileInputStream, "closing file input stream after reading report " + storageId + " from file " + file.getAbsolutePath(), log);
+						Import.closeInputStream(fileInputStream, "closing file input stream after reading report " + storageId + " from file " + file.getAbsolutePath(), log);
 					}
 				}
 			}
@@ -272,36 +272,18 @@ public class Reader {
 	}
 
 	protected Report getReport(Integer storageId, String synchronizeRotate) throws StorageException {
-		Report report = null;
 		byte[] reportBytes = getReportBytes(storageId, synchronizeRotate);
+		return getReport(storageId, reportBytes);
+	}
+
+	public static Report getReport(Integer storageId, byte[] reportBytes) throws StorageException {
+		Report report = null;
 		if (reportBytes != null) {
 			ByteArrayInputStream byteArrayInputStream = null;
-			GZIPInputStream gzipInputStream = null;
-			ObjectInputStream objectInputStream = null;
-			try {
-				byteArrayInputStream = new ByteArrayInputStream(reportBytes);
-				gzipInputStream = new GZIPInputStream(byteArrayInputStream);
-				objectInputStream = new ObjectInputStream(gzipInputStream);
-				report = (Report)objectInputStream.readObject();
-				report.setStorageId(storageId);
-				report.setStorageSize(new Long(reportBytes.length));
-			} catch(IOException e) {
-				Storage.logAndThrow(log, e, "IOException reading report " + storageId + " from bytes");
-			} catch(ClassNotFoundException e) {
-				Storage.logAndThrow(log, e, "ClassNotFoundException reading report " + storageId + " from file");
-			} finally {
-				if (objectInputStream != null) {
-					Storage.closeInputStream(objectInputStream, "closing object input stream after reading report " + storageId + " from file", log);
-				}
-				if (gzipInputStream != null) {
-					Storage.closeInputStream(gzipInputStream, "closing gzip input stream after reading report " + storageId + " from file", log);
-				}
-				if (byteArrayInputStream != null) {
-					Storage.closeInputStream(byteArrayInputStream, "closing byte array input stream after reading report " + storageId + " from file", log);
-				}
-			}
+			byteArrayInputStream = new ByteArrayInputStream(reportBytes);
+			report = Import.getReport(byteArrayInputStream, storageId, new Long(reportBytes.length), log);
 		}
-		return report;	
+		return report;
 	}
 
 	/**
@@ -375,8 +357,8 @@ public class Reader {
 									}
 								}
 								if (oldMetadataRecord == null) {
-									if (log.isDebugEnabled()) {
-										log.debug("Get metadata for report with storage id " + storageId + " from metadata file");
+									if (log.isTraceEnabled()) {
+										log.trace("Get metadata for report with storage id " + storageId + " from metadata file");
 									}
 									Map metadataRecord = new HashMap();
 									for (int i = 0; i < metadataHeaderParsed.size(); i++) {
@@ -390,8 +372,8 @@ public class Reader {
 									}
 									metadata.add(0, metadataRecord);
 								} else {
-									if (log.isDebugEnabled()) {
-										log.debug("Reusing old metadata for report with storage id " + storageId);
+									if (log.isTraceEnabled()) {
+										log.trace("Reusing old metadata for report with storage id " + storageId);
 									}
 									metadata.add(0, oldMetadataRecord);
 								}
@@ -407,19 +389,19 @@ public class Reader {
 				log.warn("Invalid header in metadata file '" + metadataFile.getAbsolutePath() + "'");
 			}
 		} catch(IOException e) {
-			Storage.logAndThrow(log, e, "IOException reading metadata from file '" + metadataFile.getAbsolutePath() + "'");
+			Import.logAndThrow(log, e, "IOException reading metadata from file '" + metadataFile.getAbsolutePath() + "'");
 		} finally {
 			if (csvReader != null) {
-				Storage.closeCSVReader(csvReader, "closing cvs reader after reading metadata from file '" + metadataFile.getAbsolutePath() + "'", log);
+				Import.closeCSVReader(csvReader, "closing cvs reader after reading metadata from file '" + metadataFile.getAbsolutePath() + "'", log);
 			}
 			if (lineNumberReader != null) {
-				Storage.closeReader(lineNumberReader, "closing line number reader after reading metadata from file '" + metadataFile.getAbsolutePath() + "'", log);
+				Import.closeReader(lineNumberReader, "closing line number reader after reading metadata from file '" + metadataFile.getAbsolutePath() + "'", log);
 			}
 			if (inputStreamReader != null) {
-				Storage.closeReader(inputStreamReader, "closing input stream reader after reading metadata from file '" + metadataFile.getAbsolutePath() + "'", log);
+				Import.closeReader(inputStreamReader, "closing input stream reader after reading metadata from file '" + metadataFile.getAbsolutePath() + "'", log);
 			}
 			if (fileInputStream != null) {
-				Storage.closeInputStream(fileInputStream, "closing file input stream after reading metadata from file '" + metadataFile.getAbsolutePath() + "'", log);
+				Import.closeInputStream(fileInputStream, "closing file input stream after reading metadata from file '" + metadataFile.getAbsolutePath() + "'", log);
 			}
 		}
 		return null;
