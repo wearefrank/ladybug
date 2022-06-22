@@ -39,8 +39,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementSetter;
-import org.springframework.jdbc.support.JdbcUtils;
-import org.springframework.jdbc.support.MetaDataAccessException;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -60,20 +58,23 @@ public class Storage implements nl.nn.testtool.storage.LogStorage, nl.nn.testtoo
 	private static final String TIMESTAMP_PATTERN = "yyyy-MM-dd'T'HH:mm:ss.SSS";
 	private @Setter @Getter String name;
 	private @Setter @Getter String table;
+	private @Setter @Getter String storageIdColumnName;
 	private @Setter @Getter List<String> metadataColumns;
 	private @Setter @Getter List<String> integerColumns;
 	private @Setter @Getter List<String> longColumns;
 	private @Setter @Getter List<String> timestampColumns;
 	private @Setter @Getter List<String> bigValueColumns; // Columns for which to limit the number of retrieved characters to 100
-	private @Setter JdbcTemplate jdbcTemplate;
-	private @Setter DbmsSupport dbmsSupport;
-	private @Setter MetadataExtractor metadataExtractor;
+	private @Setter @Getter JdbcTemplate jdbcTemplate;
+	private @Setter @Getter DbmsSupport dbmsSupport;
+	private @Setter @Getter MetadataExtractor metadataExtractor;
 	private String lastExceptionMessage;
 
 	@PostConstruct
 	public void init() throws StorageException {
-		if (!(metadataColumns != null && metadataColumns.contains("storageId"))) {
-			throw new StorageException("List metadataColumns should at least contain storageId");
+		if (storageIdColumnName == null) storageIdColumnName = "storageId";
+		if (!(metadataColumns != null && metadataColumns.contains(storageIdColumnName))) {
+			throw new StorageException("List metadataColumns should at least contain storageId column name '"
+					+ storageIdColumnName + "'");
 		}
 		if (integerColumns == null) integerColumns = new ArrayList<String>();
 		if (longColumns == null) longColumns = new ArrayList<String>();
@@ -87,8 +88,8 @@ public class Storage implements nl.nn.testtool.storage.LogStorage, nl.nn.testtoo
 		report.setStorageSize(new Long(reportBytes.length));
 		StringBuilder query = new StringBuilder("insert into " + table + " (");
 		for (String column : metadataColumns) {
-			// Column storageId is expected to have autoncrement="true" (when using Liquibase)
-			if (!column.equals("storageId")) {
+			// Column storageId is expected to be an auto increment column
+			if (!column.equals(storageIdColumnName)) {
 				if (query.charAt(query.length() - 1) != '(') {
 					query.append(", ");
 				}
@@ -97,7 +98,7 @@ public class Storage implements nl.nn.testtool.storage.LogStorage, nl.nn.testtoo
 		}
 		query.append(", report) values (");
 		for (String column : metadataColumns) {
-			if (!column.equals("storageId")) {
+			if (!column.equals(storageIdColumnName)) {
 				if (query.charAt(query.length() - 1) != '(') {
 					query.append(", ");
 				}
@@ -112,7 +113,7 @@ public class Storage implements nl.nn.testtool.storage.LogStorage, nl.nn.testtoo
 					public void setValues(PreparedStatement ps) throws SQLException {
 						int i = 1;
 						for (String column : metadataColumns) {
-							if (!column.equals("storageId")) {
+							if (!column.equals(storageIdColumnName)) {
 								if (integerColumns.contains(column)) {
 									ps.setInt(i, (Integer)metadataExtractor.getMetadata(report, column, MetadataExtractor.VALUE_TYPE_OBJECT));
 								} else if (longColumns.contains(column)) {
@@ -150,7 +151,7 @@ public class Storage implements nl.nn.testtool.storage.LogStorage, nl.nn.testtoo
 
 	@Override
 	public Report getReport(Integer storageId) throws StorageException {
-		String query = "select report, storageSize from " + table + " where storageId = ?";
+		String query = "select report, storageSize from " + table + " where " + storageIdColumnName + " = ?";
 		log.debug("Get report query: " + query);
 		List<Report> result = jdbcTemplate.query(query, new Object[]{storageId}, new int[] {Types.INTEGER},
 				(resultSet, rowNum) -> getReport(storageId, resultSet.getBlob(1), resultSet.getLong(2)));
@@ -174,7 +175,7 @@ public class Storage implements nl.nn.testtool.storage.LogStorage, nl.nn.testtoo
 // TODO: Write JUnit test or test with ibis-ladybug-test-webapp
 	@Override
 	public void delete(Report report) throws StorageException {
-		String query = "delete from " + table + " where storageId = ?";
+		String query = "delete from " + table + " where " + storageIdColumnName + " = ?";
 		log.debug("Delete report query: " + query);
 		jdbcTemplate.update(query,
 				new PreparedStatementSetter() {
@@ -205,7 +206,7 @@ public class Storage implements nl.nn.testtool.storage.LogStorage, nl.nn.testtoo
 // TODO: Write JUnit test or test with ibis-ladybug-test-webapp
 	@Override
 	public List<Integer> getStorageIds() throws StorageException {
-		String query = "select storageId from " + table + " order by storageId desc";
+		String query = "select " + storageIdColumnName + " from " + table + " order by " + storageIdColumnName + " desc";
 		log.debug("Get storage id's query: " + query);
 		try {
 			List<Integer> storageIds = jdbcTemplate.query(query, (rs, rowNum) -> rs.getInt(1));
@@ -248,6 +249,9 @@ public class Storage implements nl.nn.testtool.storage.LogStorage, nl.nn.testtoo
 		List<Integer> argTypes = new ArrayList<Integer>();
 		buildMetadataQuery(maxNumberOfRecords, metadataNames, searchValues, rangeSearchValues, simpleDateFormat,
 				query, args, argTypes);
+		if (log.isDebugEnabled()) {
+			log.debug("Get metadata query: " + query.toString());
+		}
 		List<List<Object>> metadata;
 		try {
 			metadata = jdbcTemplate.query(query.toString(), args.toArray(), argTypes.stream().mapToInt(i -> i).toArray(),
@@ -300,7 +304,6 @@ public class Storage implements nl.nn.testtool.storage.LogStorage, nl.nn.testtoo
 				query.append(metadataName);
 			}
 		}
-		
 		String rowNumber= dbmsSupport.getRowNumber(metadataNames.get(0), "desc");
 		if (StringUtils.isNotEmpty(rowNumber)) {
 			if (first) {
@@ -369,9 +372,6 @@ public class Storage implements nl.nn.testtool.storage.LogStorage, nl.nn.testtoo
 		query.append(" order by ");
 		query.append(metadataNames.get(0) + " desc");
 		query.append(dbmsSupport.provideTrailingFirstRowsHint(maxNumberOfRecords));
-		if (log.isDebugEnabled()) {
-			log.debug("Get metadata query: " + query.toString());
-		}
 	}
 
 	@Override
@@ -383,11 +383,11 @@ public class Storage implements nl.nn.testtool.storage.LogStorage, nl.nn.testtoo
 		if (searchValue.startsWith("~") && searchValue.contains("*")) {
 			addExpression(query, "lower(" + column + ") like lower(?)");
 		} else if (searchValue.startsWith("~")) {
-			addExpression(query, "lower(" + column + ")=lower(?)");
+			addExpression(query, "lower(" + column + ") = lower(?)");
 		} else if (searchValue.contains("*")) {
 			addExpression(query, column + " like ?");
 		} else {
-			addExpression(query, column + "=?");
+			addExpression(query, column + " = ?");
 		}
 		if (searchValue.startsWith("~")) {
 			searchValue = searchValue.substring(1);
