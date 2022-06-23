@@ -79,7 +79,8 @@ public class MetadataApi extends ApiBase {
 			List<LinkedHashMap<String, String>> metadata = new ArrayList<>();
 			for (List<Object> item : list) {
 				LinkedHashMap<String, String> metadataItem = new LinkedHashMap<>();
-				for (int i = 0; i < metadataNames.size(); i++) {
+				metadataItem.put("storageId", item.get(0).toString());
+				for (int i = 1; i < metadataNames.size(); i++) {
 					metadataItem.put(metadataNames.get(i), item.get(i).toString());
 				}
 				metadata.add(metadataItem);
