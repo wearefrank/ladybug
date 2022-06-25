@@ -192,9 +192,9 @@ public class TestToolApi extends ApiBase {
 	@Path("/views/")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getViewsResponse() {
-		// When this method is called getViews() the setViews() will not be called by Spring in certain situations. With
-		// ibis-ladybug-test-webapp this doesn't happen but as part of the Frank!Framework the setViews() isn't called
-		// (probably because ExtendedBeanInfo isn't used).
+		// Starting from CXF 3.2.0 the setViews() will not be called by Spring when the name of this method is
+		// getViews() instead of getViewsResponse() (with CXF 3.1.18 this was not the case) (maybe Spring's
+		// ExtendedBeanInfo isn't used anymore with newer CXF versions)
 		Map<String, Map<String, Object>> response = new HashMap<String, Map<String, Object>>();
 		for (View view : views) {
 			Map<String, Object> map = new HashMap<String, Object>();
