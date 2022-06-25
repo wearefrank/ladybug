@@ -191,7 +191,10 @@ public class TestToolApi extends ApiBase {
 	@GET
 	@Path("/views/")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response getViews() {
+	public Response getViewsResponse() {
+		// When this method is called getViews() the setViews() will not be called by Spring in certain situations. With
+		// ibis-ladybug-test-webapp this doesn't happen but as part of the Frank!Framework the setViews() isn't called
+		// (probably because ExtendedBeanInfo isn't used).
 		Map<String, Map<String, Object>> response = new HashMap<String, Map<String, Object>>();
 		for (View view : views) {
 			Map<String, Object> map = new HashMap<String, Object>();
