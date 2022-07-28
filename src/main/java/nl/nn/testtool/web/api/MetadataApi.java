@@ -96,6 +96,33 @@ public class MetadataApi extends ApiBase {
 		}
 	}
 
+
+	/**
+	 * Gets the count of metadata records
+	 *
+	 * @param storageName - the storage from which the metadata records reside
+	 * @return the metadata count
+	 */
+	@GET
+	@Path("/{storage}/count")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response getMetadataCount(@PathParam("storage") String storageName) {
+		try {
+			ArrayList<String> metadataFields = new ArrayList<>();
+			ArrayList<String> searchValues = new ArrayList<>();
+			for (String metadataField : getMetadataFields()) {
+				metadataFields.add(metadataField);
+				searchValues.add(null);
+			}
+			Storage storage = testTool.getStorage(storageName);
+			List<List<Object>> records = storage.getMetadata(-1, metadataFields, searchValues, MetadataExtractor.VALUE_TYPE_STRING);
+
+			return Response.ok().entity(records.size()).build();
+		} catch (Exception e) {
+			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Could not find metadata count - detailed error message - " + e + Arrays.toString(e.getStackTrace())).build();
+		}
+	}
+	
 	/**
 	 * @return A response containing list of metadata fields.
 	 */
