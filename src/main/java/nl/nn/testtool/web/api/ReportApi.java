@@ -93,6 +93,50 @@ public class ReportApi extends ApiBase {
 	}
 
 	/**
+	 * Returns the report details for the given storage and id.
+	 *
+	 * @param storageName Name of the storage.
+	 * @param storageIds Storage id of the report.
+	 * @param xml True if Xml of the report needs to be returned.
+	 * @param globalTransformer True if reportXmlTransformer should be set for the report.
+	 * @return A response containing serialized Report object.
+	 */
+	@GET
+	@Path("/report/{storage}/")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response getReports(@PathParam("storage") String storageName,
+							   @QueryParam("storageIds") ArrayList<Integer> storageIds,
+							   @QueryParam("xml") @DefaultValue("false") boolean xml,
+							   @QueryParam("globalTransformer") @DefaultValue("false") boolean globalTransformer) {
+		try {
+			Storage storage = testTool.getStorage(storageName);
+			HashMap<Integer, HashMap<String, Object>> map = new HashMap<>();
+
+			for (int storageId : storageIds) {
+				Report report = getReport(storage, storageId);
+				if (report == null)
+					return Response.status(Response.Status.NOT_FOUND).entity("Could not find report with id [" + storageId + "]").build();
+
+				if (globalTransformer) {
+					ReportXmlTransformer reportXmlTransformer = getBean("reportXmlTransformer");
+					if (reportXmlTransformer != null)
+						report.setGlobalReportXmlTransformer(reportXmlTransformer);
+				}
+
+				HashMap<String, Object> reportMap = new HashMap<>(1);
+				reportMap.put("report", report);
+				reportMap.put("xml", report.toXml());
+
+				map.put(storageId, reportMap);
+			}
+
+			return Response.ok(map).build();
+
+		} catch (Exception e) {
+			return Response.status(Response.Status.NOT_FOUND).entity("Exception while getting report [" + storageIds + "] from storage [" + storageName + "] - detailed error message - " + e + Arrays.toString(e.getStackTrace())).build();
+		}
+	}
+	/**
 	 * Deletes the report.
 	 *
 	 * @param storageName Name of the storage.
