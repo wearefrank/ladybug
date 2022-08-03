@@ -59,13 +59,14 @@ public class MetadataApi extends ApiBase {
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getMetadataList(@PathParam("storage") String storageName,
 									@QueryParam("metadataNames") ArrayList<String> metadataNames,
-									@DefaultValue("-1") @QueryParam("limit") int limit ,
+									@DefaultValue("-1") @QueryParam("limit") int limit,
+									@DefaultValue("") @QueryParam("filterHeader") String filterHeader,
 									@DefaultValue(".*") @QueryParam("filter") String filterParam ,
 									@Context UriInfo uriInfo) {
 
 		List<String> searchValues = new ArrayList<>();
 		for(String field : metadataNames) {
-			if ("name".equals(field)) {
+			if (filterHeader.equals(field)) {
 				searchValues.add("(" + filterParam + ")");
 			} else {
 				searchValues.add(null);
@@ -96,12 +97,34 @@ public class MetadataApi extends ApiBase {
 		}
 	}
 
+	/**
+	 * Returns the user help for each filter header.
+	 *
+	 * @param storageName - Name of the storage of the headers.
+	 * @param metadataNames - the header names.
+	 * @return The user help of each filter header.
+	 */
+	@GET
+	@Path("/{storage}/userHelp")
+	public Response getUserHelp(@PathParam("storage") String storageName, @QueryParam("metadataNames") ArrayList<String> metadataNames) {
+		try {
+			LinkedHashMap<String, String> userHelp = new LinkedHashMap<>();
+			Storage storage = testTool.getStorage(storageName);
+			for (String field : metadataNames) {
+				userHelp.put(field, storage.getUserHelp(field));
+			}
+
+			return Response.ok().entity(userHelp).build();
+		} catch (Exception e) {
+			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Could not find user help - detailed error message - " + e + Arrays.toString(e.getStackTrace())).build();
+		}
+	}
 
 	/**
-	 * Gets the count of metadata records
+	 * Gets the count of metadata records.
 	 *
-	 * @param storageName - the storage from which the metadata records reside
-	 * @return the metadata count
+	 * @param storageName - the storage from which the metadata records reside.
+	 * @return the metadata count.
 	 */
 	@GET
 	@Path("/{storage}/count")
