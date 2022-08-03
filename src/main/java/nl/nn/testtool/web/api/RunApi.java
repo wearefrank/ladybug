@@ -59,17 +59,15 @@ public class RunApi extends ApiBase {
 	 * @return The response of running the report.
 	 */
 	@POST
-	@Path("/run/{storageId}")
+	@Path("/run/{testStorageName}/{debugStorageName}/{storageId}")
 	@Produces(MediaType.APPLICATION_JSON)
 	@Consumes(MediaType.APPLICATION_JSON)
-	public Response runReport(@PathParam("storageId") int storageId) {
-		// TODO: Add param testStorageName and use testTool.getStorage(testStorageName)
-		Storage testStorage = testTool.getTestStorage();
+	public Response runReport(@PathParam("storageId") int storageId, @PathParam("testStorageName") String testStorageName, @PathParam("debugStorageName") String debugStorageName) {
+		System.out.println("testo: " + testStorageName);
+		System.out.println("debugo: " + debugStorageName);
+		Storage testStorage = testTool.getStorage(testStorageName);
 		List<String> exceptions = new ArrayList<>();
-		// TODO: Add param debugStorageName and use testTool.getStorage(debugStorageName) (frontend can use the storage
-		// name of the default view or add a dropdown to the Test tab for the user to select the debug view from which
-		// the storage should be used
-		ReportRunner runner = getRunner(testTool.getDebugStorage());
+		ReportRunner runner = getRunner(testTool.getStorage(debugStorageName));
 		HashMap<String, Object> result = new HashMap<>();
 		String exception = null;
 
