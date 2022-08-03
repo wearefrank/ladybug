@@ -52,6 +52,7 @@ import java.util.Scanner;
 public class ReportApi extends ApiBase {
 	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 	private @Setter TestTool testTool;
+	private @Setter ReportXmlTransformer reportXmlTransformer;
 
 	/**
 	 * Returns the report details for the given storage and id.
@@ -76,7 +77,6 @@ public class ReportApi extends ApiBase {
 				return Response.status(Response.Status.NOT_FOUND).entity("Could not find report with id [" + storageId + "]").build();
 
 			if (globalTransformer) {
-				ReportXmlTransformer reportXmlTransformer = getBean("reportXmlTransformer");
 				if (reportXmlTransformer != null)
 					report.setGlobalReportXmlTransformer(reportXmlTransformer);
 			}
@@ -118,7 +118,6 @@ public class ReportApi extends ApiBase {
 					return Response.status(Response.Status.NOT_FOUND).entity("Could not find report with id [" + storageId + "]").build();
 
 				if (globalTransformer) {
-					ReportXmlTransformer reportXmlTransformer = getBean("reportXmlTransformer");
 					if (reportXmlTransformer != null)
 						report.setGlobalReportXmlTransformer(reportXmlTransformer);
 				}
@@ -247,7 +246,6 @@ public class ReportApi extends ApiBase {
 				crudStorage.update(report);
 				storageUpdated = true;
 			} else {
-				ReportXmlTransformer reportXmlTransformer = getBean("reportXmlTransformer");
 				if (reportXmlTransformer != null)
 					report.setGlobalReportXmlTransformer(reportXmlTransformer);
 			}
@@ -466,7 +464,7 @@ public class ReportApi extends ApiBase {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response cloneReport(@QueryParam("storageId") int storageId, Map<String, String> map) {
-		CrudStorage storage = getBean("testStorage");
+		CrudStorage storage = testTool.getTestStorage();
 		Report original;
 		try {
 			original = getReport(storage, storageId);
@@ -522,7 +520,7 @@ public class ReportApi extends ApiBase {
 	 */
 	public Report getReport(Storage storage, Integer storageId) throws StorageException {
 		Report report = storage.getReport(storageId);
-		if (report != null)  report.setTestTool(getBean("testTool"));
+		if (report != null)  report.setTestTool(testTool);
 		return report;
 	}
 }

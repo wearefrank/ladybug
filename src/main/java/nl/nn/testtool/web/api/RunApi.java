@@ -50,6 +50,7 @@ import nl.nn.testtool.transform.ReportXmlTransformer;
 public class RunApi extends ApiBase {
 	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 	private @Setter TestTool testTool;
+	private @Setter ReportXmlTransformer reportXmlTransformer;
 
 	/**
 	 * Rerun the given report, and save the output the target storage.
@@ -120,7 +121,6 @@ public class RunApi extends ApiBase {
 			}
 		}
 		Report report = reranReports.get(storageId);
-		ReportXmlTransformer reportXmlTransformer = getBean("reportXmlTransformer");
 		report.setGlobalReportXmlTransformer(reportXmlTransformer);
 		runResultReport.setGlobalReportXmlTransformer(reportXmlTransformer);
 
