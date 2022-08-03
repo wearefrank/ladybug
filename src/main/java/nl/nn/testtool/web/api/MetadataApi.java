@@ -122,16 +122,6 @@ public class MetadataApi extends ApiBase {
 			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Could not find metadata count - detailed error message - " + e + Arrays.toString(e.getStackTrace())).build();
 		}
 	}
-	
-	/**
-	 * @return A response containing list of metadata fields.
-	 */
-	@GET
-	@Path("/")
-	@Produces(MediaType.APPLICATION_JSON)
-	public Response getMetadataInformation() {
-		return Response.ok().entity(getMetadataFields()).build();
-	}
 
 	/**
 	 * @return Set of strings for list of parameters in metadata.
