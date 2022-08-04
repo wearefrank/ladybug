@@ -63,8 +63,6 @@ public class RunApi extends ApiBase {
 	@Produces(MediaType.APPLICATION_JSON)
 	@Consumes(MediaType.APPLICATION_JSON)
 	public Response runReport(@PathParam("storageId") int storageId, @PathParam("testStorageName") String testStorageName, @PathParam("debugStorageName") String debugStorageName) {
-		System.out.println("testo: " + testStorageName);
-		System.out.println("debugo: " + debugStorageName);
 		Storage testStorage = testTool.getStorage(testStorageName);
 		List<String> exceptions = new ArrayList<>();
 		ReportRunner runner = getRunner(testTool.getStorage(debugStorageName));
