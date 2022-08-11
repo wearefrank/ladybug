@@ -61,13 +61,13 @@ public class MetadataApi extends ApiBase {
 									@QueryParam("metadataNames") ArrayList<String> metadataNames,
 									@DefaultValue("-1") @QueryParam("limit") int limit,
 									@DefaultValue("") @QueryParam("filterHeader") String filterHeader,
-									@DefaultValue(".*") @QueryParam("filter") String filterParam ,
+									@DefaultValue("(.*)") @QueryParam("filter") String filterParam ,
 									@Context UriInfo uriInfo) {
 
 		List<String> searchValues = new ArrayList<>();
 		for(String field : metadataNames) {
 			if (filterHeader.equals(field)) {
-				searchValues.add("(" + filterParam + ")");
+				searchValues.add(filterParam);
 			} else {
 				searchValues.add(null);
 			}
