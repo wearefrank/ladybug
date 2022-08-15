@@ -56,6 +56,8 @@ public class RunApi extends ApiBase {
 	 * Rerun the given report, and save the output the target storage.
 	 *
 	 * @param storageId the id of the report in the testStorage to run
+	 * @param testStorageName Name of the test storage.
+	 * @param debugStorageName Name of the debug storage.
 	 * @return The response of running the report.
 	 */
 	@POST
