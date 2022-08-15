@@ -752,6 +752,10 @@ public class TestTool {
 	
 	/**
 	 * @see TestTool#close(String)
+	 * 
+	 * @param correlationId ...
+	 * @param closeThreads ...
+	 * @param closeMessageCapturers ...
 	 */
 	public void close(String correlationId, boolean closeThreads, boolean closeMessageCapturers) {
 		if (closeThreads) {
@@ -804,9 +808,9 @@ public class TestTool {
 
 	/**
 	 * Close threads and/or message capturers when not already closed within a certain amount of time. Set
-	 * {@link #setWaitForMainThreadToFinish(boolean)} to <code>false</code> when there's a risk for reports to stay in
-	 * progress because some checkpoints are not properly surrounded with a try/catch that calls an abortpoint. This
-	 * method is used by {@link CloseReportsTask}
+	 * <code>waitForMainThreadToFinish</code> to <code>false</code> when there's a risk for reports to stay in progress
+	 * because some checkpoints are not properly surrounded with a try/catch that calls an abortpoint. This method is
+	 * used by {@link CloseReportsTask}
 	 * 
 	 * @see CloseReportsTask
 	 * @param threadsTime                the time in milliseconds that needs to be passed for threads to be closed
