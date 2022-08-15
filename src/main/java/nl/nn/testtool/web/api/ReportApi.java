@@ -196,7 +196,7 @@ public class ReportApi extends ApiBase {
 	 *
 	 * @param storageName Name of the storage.
 	 * @param storageId Storage id of the report.
-	 * @param map Map containing ["name" or "path" or "variables" or "description" or "transformation" or "checkpointId and "checkpointMessage"]
+	 * @param map Map containing ["name" or "path" or "variables" or "description" or "transformation" or "checkpointId and "checkpointMessage"].
 	 * @return The updated report.
 	 */
 	@POST
@@ -456,6 +456,7 @@ public class ReportApi extends ApiBase {
 	 * Cloning the reports with the given parameters.
 	 *
 	 * @param storageId Storage id of the report to be cloned.
+	 * @param storageName Name of the target storage.
 	 * @param map Map containing csv for cloning.
 	 * @return The response of cloning the report.
 	 */
