@@ -433,7 +433,7 @@ public class Report implements Serializable {
 				threadLevel.put(threadName, newLevel);
 				if (newLevel.equals(threadFirstLevel.get(threadName))) {
 					// threadCreatepoint has already been removed on first checkpoint for thread, hence use false
-					close(threadName, false);
+					closeThread(threadName, false);
 				}
 			}
 		}
@@ -545,13 +545,13 @@ public class Report implements Serializable {
 		return result;
 	}
 
-	protected void close() {
+	protected void closeThreads() {
 		while (threads.size() > 0) {
-			close(threads.get(0), false);
+			closeThread(threads.get(0), false);
 		}
 	}
 
-	protected void close(String threadName, boolean removeThreadCreatepoint) {
+	protected void closeThread(String threadName, boolean removeThreadCreatepoint) {
 		if (threads.remove(threadName)) {
 			Integer index = threadCheckpointIndex.remove(threadName);
 			threadFirstLevel.remove(threadName);
