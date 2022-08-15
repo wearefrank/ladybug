@@ -217,10 +217,13 @@ public class TestTool {
 	}
 
 	/**
-	 * Close child threads when main thread is finished to prevent threads that didn't start and aren't cancelled to
-	 * keep reports in progress. Setting this to true will risk checkpoint not being added for child threads that are
-	 * still running after the main thread is finished
+	 * Close child threads when main thread is finished (top level endpoint has been called) to prevent threads that
+	 * didn't start and aren't cancelled to keep reports in progress. Setting this to true will risk checkpoints not
+	 * being added for child threads that are still running after the main thread is finished. The use of
+	 * {@link CloseReportsTask} can lower this risk
 	 * 
+	 * @see CloseReportsTask
+	 * @see TestTool#close(String)
 	 * @param closeThreads ...
 	 */
 	public void setCloseThreads(boolean closeThreads) {
@@ -232,10 +235,13 @@ public class TestTool {
 	}
 
 	/**
-	 * Close message capturers when main thread is finished to prevent streams for which the close method isn't called
-	 * to keep reports in progress. Setting this to true will risk streams not being captured when they are still active
-	 * after the main thread is finished
+	 * Close message capturers when main thread is finished (top level endpoint has been called) to prevent streams for
+	 * which the close method isn't called to keep reports in progress. Setting this to true will risk streams not
+	 * being captured when they are still active after the main thread is finished. The use of {@link CloseReportsTask}
+	 * can lower this risk
 	 * 
+	 * @see CloseReportsTask
+	 * @see TestTool#close(String)
 	 * @param closeMessageCapturers ...
 	 */
 	public void setCloseMessageCapturers(boolean closeMessageCapturers) {
@@ -340,9 +346,13 @@ public class TestTool {
 	protected void closeReportIfFinished(Report report) {
 		synchronized(report) {
 			if (!report.isClosed()) {
-				if (!report.threadsFinished() && closeThreads
-						&& report.mainThreadFinished()) {
-					report.close();
+				if (report.mainThreadFinished()) {
+					if (!report.threadsFinished() && closeThreads) {
+						report.closeThreads();
+					}
+					if (report.getMainThreadFinishedTime() == Report.TIME_NOT_SET_VALUE) {
+						report.setMainThreadFinishedTime(System.currentTimeMillis());
+					}
 				}
 				if (report.threadsFinished()) {
 					if (report.getEndTime() == Report.TIME_NOT_SET_VALUE) {
@@ -705,41 +715,8 @@ public class TestTool {
 	}
 
 	/**
-	 * Mark a thread as finished. When all threads are finished the report will be closed and written to storage. When
-	 * all checkpoints are properly surrounded with a try/catch it should not be necessary to call this method. On the
-	 * other hand, to be on the safe side call this method in the finally of the root startpoint of the thread to
-	 * prevent reports from staying in progress and consuming memory. See code example at {@link #close(String)} also.
-	 * 
-	 * When a threadCreatepoint is called but it is not certain whether this thread will execute this method can be used
-	 * to mark this thread as finished / cancel it at a point where it is clear that this thread will not start.
-	 * 
-	 * @param correlationId ...
-	 * @param threadName    name of the thread to close or null to close all threads (name of a thread cannot be null as
-	 *                      Thread.setName(null) will result in: java.lang.NullPointerException: name cannot be null).
-	 *                      When closing all threads the threadCreatepoints are left behind for the user to see where
-	 *                      threads were supposed to start. This will warn the user that the thread didn't start and
-	 *                      that the thread wasn't cancelled either (by explicitly calling this method with the specific
-	 *                      thread name)
-	 */
-	public void close(String correlationId, String threadName) {
-		Report report;
-		synchronized(reportsInProgress) {
-			report = (Report)reportsInProgressByCorrelationId.get(correlationId);
-		}
-		if (report != null) {
-			synchronized(report) {
-				if (threadName == null) {
-					report.close();
-				} else {
-					report.close(threadName, true);
-				}
-				closeReportIfFinished(report);
-			}
-		}
-	}
-
-	/**
-	 * Mark all threads as finished and close the report, hence write the report to storage. When all checkpoints are
+	 * Mark all threads and message capturers as finished and close the report, hence write the report to storage. When
+	 * all necessary checkpoints are properly surrounded with a try/catch that calls an abortpoint and all threads are
 	 * properly surrounded with a try/catch it should not be necessary to call this method. On the other hand, to be on
 	 * the safe side call this method in the finally of the root startpoint of the report to prevent reports from
 	 * staying in progress and consuming memory. Hence for the top level startpoint use:
@@ -759,19 +736,26 @@ public class TestTool {
 	 * }
 	 *</code>
 	 * 
+	 * Don't use this when threads and/or {@link MessageCapturer}s can continue to live after the main thread has
+	 * finished (after it called the top level endpoint) and you want to wait for them to finish. In this case make sure
+	 * that all necessary checkpoints are properly surrounded with a try/catch that calls an abortpoint and all threads
+	 * are properly ended and all streams properly closed or use {@link CloseReportsTask}
+	 * 
+	 * @see CloseReportsTask
+	 * @see TestTool#setCloseThreads(boolean)
+	 * @see TestTool#setCloseMessageCapturers(boolean)
 	 * @param correlationId ...
 	 */
 	public void close(String correlationId) {
-		close(correlationId, null);
+		close(correlationId, true, true);
 	}
 	
-	public void close(String correlationId, boolean closeMessageCapturers) {
-		close(correlationId, true, closeMessageCapturers);
-	}
-
+	/**
+	 * @see TestTool#close(String)
+	 */
 	public void close(String correlationId, boolean closeThreads, boolean closeMessageCapturers) {
 		if (closeThreads) {
-			close(correlationId);
+			close(correlationId, null);
 		}
 		if (closeMessageCapturers) {
 			Report report;
@@ -783,6 +767,86 @@ public class TestTool {
 					report.closeMessageCapturers();
 					closeReportIfFinished(report);
 				}
+			}
+		}
+	}
+
+	/**
+	 * Mark a thread as finished. When a threadCreatepoint is called but it is not certain whether this thread will
+	 * execute this method can be used to mark this thread as finished / cancel it at a point where it is clear that
+	 * this thread will not start.
+	 *
+	 * @see #close(String)
+	 * @param correlationId ...
+	 * @param threadName    name of the thread to close or null to close all threads (name of a thread cannot be null as
+	 *                      Thread.setName(null) will result in: java.lang.NullPointerException: name cannot be null).
+	 *                      When closing all threads the threadCreatepoints are left behind for the user to see where
+	 *                      threads were supposed to start. This will warn the user that the thread didn't start and
+	 *                      that the thread wasn't cancelled either (by explicitly calling this method with the specific
+	 *                      thread name)
+	 */
+	public void close(String correlationId, String threadName) {
+		Report report;
+		synchronized(reportsInProgress) {
+			report = (Report)reportsInProgressByCorrelationId.get(correlationId);
+		}
+		if (report != null) {
+			synchronized(report) {
+				if (threadName == null) {
+					report.closeThreads();
+				} else {
+					report.closeThread(threadName, true);
+				}
+				closeReportIfFinished(report);
+			}
+		}
+	}
+
+	/**
+	 * Close threads and/or message capturers when not already closed within a certain amount of time. Set
+	 * {@link #setWaitForMainThreadToFinish(boolean)} to <code>false</code> when there's a risk for reports to stay in
+	 * progress because some checkpoints are not properly surrounded with a try/catch that calls an abortpoint. This
+	 * method is used by {@link CloseReportsTask}
+	 * 
+	 * @see CloseReportsTask
+	 * @param threadsTime                the time in milliseconds that needs to be passed for threads to be closed
+	 * @param messageCapturersTime       the time in milliseconds that needs to be passed for message capturers to be
+	 *                                   closed
+	 * @param waitForMainThreadToFinish  whether or not to wait for the main thread to finish. When <code>true</code>
+	 *                                   time for threads and message capturers is counted from the time the main thread
+	 *                                   has finished otherwise from the start of the report
+	 */
+	public final void close(long threadsTime, long messageCapturersTime, boolean waitForMainThreadToFinish) {
+		// Lock reportsInProgress as less as possible, synchronize on each report individually
+		Set<Report> reports = new HashSet<Report>();
+		synchronized(reportsInProgress) {
+			for (Report report : reportsInProgress) {
+				reports.add(report);
+			}
+		}
+		for (Report report : reports) {
+			synchronized (report) {
+				boolean closeThreads = false;
+				boolean closeMessageCapturers = false;
+				if (waitForMainThreadToFinish) {
+					if (report.mainThreadFinished()) {
+						if (report.getMainThreadFinishedTime() + threadsTime <= System.currentTimeMillis()) {
+							closeThreads = true;
+						}
+						if (report.getMainThreadFinishedTime() + messageCapturersTime <= System.currentTimeMillis()) {
+							closeMessageCapturers = true;
+						}
+					}
+				} else {
+					if (report.getStartTime() + threadsTime <= System.currentTimeMillis()) {
+						closeThreads = true;
+					}
+					if (report.getStartTime() + messageCapturersTime <= System.currentTimeMillis()) {
+						closeMessageCapturers = true;
+					}
+				}
+				close(report.getCorrelationId(), closeThreads, closeMessageCapturers);
+				closeReportIfFinished(report);
 			}
 		}
 	}

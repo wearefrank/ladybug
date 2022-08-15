@@ -82,6 +82,7 @@ public class Report implements Serializable {
 	// look at get and set methods) and needs a variable to be declared
 	// transient to not store the field.
 	private transient String mainThread;
+	private transient long mainThreadFinishedTime = TIME_NOT_SET_VALUE;
 	private transient List<String> threads = new ArrayList<String>();
 	private transient Map<String, Integer> threadCheckpointIndex = new HashMap<String, Integer>();
 	private transient Map<String, Integer> threadFirstLevel = new HashMap<String, Integer>();
@@ -186,6 +187,18 @@ public class Report implements Serializable {
 
 	public long getEndTime() {
 		return endTime;
+	}
+
+	@Transient
+	@JsonIgnore
+	public void setMainThreadFinishedTime(long mainThreadFinishedTime) {
+		this.mainThreadFinishedTime = mainThreadFinishedTime;
+	}
+
+	@Transient
+	@JsonIgnore
+	public long getMainThreadFinishedTime() {
+		return mainThreadFinishedTime;
 	}
 
 	public void setCorrelationId(String correlationId) {
@@ -414,8 +427,7 @@ public class Report implements Serializable {
 					}
 				} else {
 					message = addCheckpoint(threadName, sourceClassName, name, message, stubableCode,
-							stubableCodeThrowsException, matchingStubStrategies, checkpointType, index, level
-							);
+							stubableCodeThrowsException, matchingStubStrategies, checkpointType, index, level);
 				}
 				Integer newLevel = new Integer(level.intValue() + levelChangeNextCheckpoint);
 				threadLevel.put(threadName, newLevel);

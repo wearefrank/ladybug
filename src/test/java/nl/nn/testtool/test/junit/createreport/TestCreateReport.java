@@ -50,6 +50,7 @@ import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.read.ListAppender;
 import lombok.SneakyThrows;
 import nl.nn.testtool.Checkpoint;
+import nl.nn.testtool.CloseReportsTask;
 import nl.nn.testtool.MessageCapturerImpl;
 import nl.nn.testtool.MessageEncoder;
 import nl.nn.testtool.MessageEncoderImpl;
@@ -163,18 +164,19 @@ public class TestCreateReport extends ReportRelatedTestCase {
 		testTool.close(correlationId, correlationId + "-ChildThreadIdA");
 		testTool.close(correlationId, correlationId + "-ChildThreadIdB");
 		assertReport(correlationId);
-		testTool.close(correlationId);
+		testTool.close(correlationId, null);
 	}
 
 	@Test
 	public void testThreadsWithThreadCreatepointOnlyAndCloseThreads() throws StorageException, IOException {
-		testThreadsWithThreadCreatepointOnlyAndCloseThreads(true, false);
-		testThreadsWithThreadCreatepointOnlyAndCloseThreads(false, true);
-		testThreadsWithThreadCreatepointOnlyAndCloseThreads(true, true);
+		testThreadsWithThreadCreatepointOnlyAndCloseThreads(true, false, false);
+		testThreadsWithThreadCreatepointOnlyAndCloseThreads(false, true, false);
+		testThreadsWithThreadCreatepointOnlyAndCloseThreads(false, false, true);
+		testThreadsWithThreadCreatepointOnlyAndCloseThreads(true, true, true);
 	}
 
-	public void testThreadsWithThreadCreatepointOnlyAndCloseThreads(boolean withCloseMethod, boolean withSetMethod)
-			throws StorageException, IOException {
+	public void testThreadsWithThreadCreatepointOnlyAndCloseThreads(boolean withCloseMethod, boolean withSetMethod,
+			boolean withTask) throws StorageException, IOException {
 		if (withSetMethod) {
 			testTool.setCloseThreads(true);
 		}
@@ -186,7 +188,16 @@ public class TestCreateReport extends ReportRelatedTestCase {
 		if (withCloseMethod) {
 			testTool.close(correlationId);
 		}
+		if (withTask) {
+			CloseReportsTask task = new CloseReportsTask();
+			task.setTestTool(testTool);
+			task.setThreadsTime(0);
+			task.closeReports();
+		}
 		assertReport(correlationId, false, false, false, true, false);
+		if (withSetMethod) {
+			testTool.setCloseThreads(false);
+		}
 	}
 
 	private static void assertWarningsUseThreadCreatepointBeforeThreadStartpoint(ListAppender<ILoggingEvent> listAppender, String correlationId) {
@@ -510,12 +521,14 @@ public class TestCreateReport extends ReportRelatedTestCase {
 
 	@Test
 	public void testCloseMessageCapturers() throws IOException, StorageException {
-		testCloseMessageCapturers(true, false);
-		testCloseMessageCapturers(false, true);
-		testCloseMessageCapturers(true, true);
+		testCloseMessageCapturers(true, false, false);
+		testCloseMessageCapturers(false, true, false);
+		testCloseMessageCapturers(false, false, true);
+		testCloseMessageCapturers(true, true, true);
 	}
 
-	private void testCloseMessageCapturers(boolean withCloseMethod, boolean withSetMethod) throws IOException, StorageException {
+	private void testCloseMessageCapturers(boolean withCloseMethod, boolean withSetMethod, boolean withTask)
+			throws IOException, StorageException {
 		if (withSetMethod) {
 			testTool.setCloseMessageCapturers(true);
 		}
@@ -546,8 +559,17 @@ public class TestCreateReport extends ReportRelatedTestCase {
 		assertNotEquals(inputStreamOriginalMessage, inputStreamMessage);
 
 		testTool.endpoint(correlationId, null, reportName, "endmessage");
+		if (!withSetMethod) {
+			assertEquals("Report should be in progress (waiting for message capturer to close),", 1, testTool.getNumberOfReportsInProgress());
+		}
 		if (withCloseMethod) {
 			testTool.close(correlationId, false, true);
+		}
+		if (withTask) {
+			CloseReportsTask task = new CloseReportsTask();
+			task.setTestTool(testTool);
+			task.setMessageCapturersTime(0);
+			task.closeReports();
 		}
 
 		testWriterMessage(writerMessage);
@@ -556,6 +578,10 @@ public class TestCreateReport extends ReportRelatedTestCase {
 		testInputStreamMessage(inputStreamMessage);
 
 		assertReport(correlationId);
+
+		if (withSetMethod) {
+			testTool.setCloseMessageCapturers(false);
+		}
 	}
 
 	@Test
