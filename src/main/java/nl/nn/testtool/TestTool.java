@@ -813,9 +813,10 @@ public class TestTool {
 	 * used by {@link CloseReportsTask}
 	 * 
 	 * @see CloseReportsTask
-	 * @param threadsTime                the time in milliseconds that needs to be passed for threads to be closed
+	 * @param threadsTime                the time in milliseconds that needs to be passed for threads to be closed. Set
+	 *                                   to -1 to not close threads
 	 * @param messageCapturersTime       the time in milliseconds that needs to be passed for message capturers to be
-	 *                                   closed
+	 *                                   closed. Set to -1 to not close threads
 	 * @param waitForMainThreadToFinish  whether or not to wait for the main thread to finish. When <code>true</code>
 	 *                                   time for threads and message capturers is counted from the time the main thread
 	 *                                   has finished otherwise from the start of the report
@@ -834,18 +835,22 @@ public class TestTool {
 				boolean closeMessageCapturers = false;
 				if (waitForMainThreadToFinish) {
 					if (report.mainThreadFinished()) {
-						if (report.getMainThreadFinishedTime() + threadsTime <= System.currentTimeMillis()) {
+						if (report.getMainThreadFinishedTime() + threadsTime <= System.currentTimeMillis()
+								&& threadsTime != -1) {
 							closeThreads = true;
 						}
-						if (report.getMainThreadFinishedTime() + messageCapturersTime <= System.currentTimeMillis()) {
+						if (report.getMainThreadFinishedTime() + messageCapturersTime <= System.currentTimeMillis()
+								&& messageCapturersTime != -1) {
 							closeMessageCapturers = true;
 						}
 					}
 				} else {
-					if (report.getStartTime() + threadsTime <= System.currentTimeMillis()) {
+					if (report.getStartTime() + threadsTime <= System.currentTimeMillis()
+							&& threadsTime != -1) {
 						closeThreads = true;
 					}
-					if (report.getStartTime() + messageCapturersTime <= System.currentTimeMillis()) {
+					if (report.getStartTime() + messageCapturersTime <= System.currentTimeMillis()
+							&& messageCapturersTime != -1) {
 						closeMessageCapturers = true;
 					}
 				}

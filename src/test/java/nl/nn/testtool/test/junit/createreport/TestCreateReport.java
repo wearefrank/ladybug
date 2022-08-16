@@ -191,6 +191,11 @@ public class TestCreateReport extends ReportRelatedTestCase {
 		if (withTask) {
 			CloseReportsTask task = new CloseReportsTask();
 			task.setTestTool(testTool);
+			task.setThreadsTime(-1);
+			task.closeReports();
+			if (!withCloseMethod) {
+				assertEquals("Report should be in progress (waiting for threadStartpoint),", 1, testTool.getNumberOfReportsInProgress());
+			}
 			task.setThreadsTime(0);
 			task.closeReports();
 		}
@@ -568,6 +573,11 @@ public class TestCreateReport extends ReportRelatedTestCase {
 		if (withTask) {
 			CloseReportsTask task = new CloseReportsTask();
 			task.setTestTool(testTool);
+			task.setMessageCapturersTime(-1);
+			task.closeReports();
+			if (!withCloseMethod) {
+				assertEquals("Report should be in progress (waiting for message capturer to close),", 1, testTool.getNumberOfReportsInProgress());
+			}
 			task.setMessageCapturersTime(0);
 			task.closeReports();
 		}
