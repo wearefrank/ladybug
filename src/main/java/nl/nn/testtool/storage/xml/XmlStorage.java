@@ -49,7 +49,7 @@ public class XmlStorage implements CrudStorage {
 	/**
 	 * Initializes the storage. Creating necessary folders and metadata file.
 	 *
-	 * @throws Exception Security exception that might be thrown by JVM.
+	 * @throws StorageException ...
 	 */
 	public void init() throws StorageException {
 		if (StringUtils.isEmpty(reportsFolderPath))
