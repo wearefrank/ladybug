@@ -51,7 +51,7 @@ public class XmlStorage implements CrudStorage {
 	 *
 	 * @throws Exception Security exception that might be thrown by JVM.
 	 */
-	public void init() throws Exception {
+	public void init() throws StorageException {
 		if (StringUtils.isEmpty(reportsFolderPath))
 			throw new StorageException("Report folder path is empty. Please provide a path.");
 
@@ -61,7 +61,11 @@ public class XmlStorage implements CrudStorage {
 			metadataFile = new File(reportsFolder, "metadata.xml").getAbsolutePath();
 			log.warn("Metadatafile was not set. Using " + metadataFile);
 		}
-		metadataHandler = new MetadataHandler(metadataFile, this, false);
+		try {
+			metadataHandler = new MetadataHandler(metadataFile, this, false);
+		} catch (IOException e) {
+			throw new StorageException("Could not initialize xml storage", e);
+		}
 		updateMetadata();
 	}
 

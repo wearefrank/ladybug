@@ -6,6 +6,7 @@ Ladybug Test Tool release notes
 Upcoming
 --------
 
+- Add ProxyStorage
 - Add CloseReportsTask
 - Add database storage implementation
 - Bump Saxon from 9.4.0.7 to 10.8
