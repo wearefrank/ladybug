@@ -312,24 +312,49 @@ public class Report implements Serializable {
 			}
 		} else {
 			if (checkpointType == Checkpoint.TYPE_THREADSTARTPOINT && !threads.contains(childThreadId)) {
-				parentThreadName = threads.get(threads.size() - 1);
-				threadCreatepoint(parentThreadName, childThreadId);
-				log.warn("New child thread '" + childThreadId + "' for parent thread '" + parentThreadName
-						+ "' detected, use threadCreatepoint() before threadStartpoint() for checkpoint "
-						+ getCheckpointLogDescription(name, checkpointType, null));
+				if (threads.size() == 0) {
+					// This can happen when a report is still open because not all message capturers are closed while
+					// all threads are finished
+					warnNewChildThreadDetected(childThreadId, null, false, name, checkpointType);
+					return message;
+				} else {
+					parentThreadName = threads.get(threads.size() - 1);
+					threadCreatepoint(parentThreadName, childThreadId);
+					warnNewChildThreadDetected(childThreadId, parentThreadName, false, name, checkpointType);
+				}
 			} else if (checkpointType == Checkpoint.TYPE_STARTPOINT && !threads.contains(parentThreadName)) {
 				checkpointType = Checkpoint.TYPE_THREADSTARTPOINT;
 				childThreadId = parentThreadName;
-				parentThreadName = threads.get(threads.size() - 1);
-				threadCreatepoint(parentThreadName, childThreadId);
-				log.warn("New child thread '" + childThreadId + "' for parent thread '" + parentThreadName
-						+ "' detected, use threadCreatepoint() and threadStartpoint() instead of startpoint() for checkpoint "
-						+ getCheckpointLogDescription(name, checkpointType, null));
+				if (threads.size() == 0) {
+					// This can happen when a report is still open because not all message capturers are closed while
+					// all threads are finished
+					warnNewChildThreadDetected(childThreadId, null, true, name, checkpointType);
+					return message;
+				} else {
+					parentThreadName = threads.get(threads.size() - 1);
+					threadCreatepoint(parentThreadName, childThreadId);
+					warnNewChildThreadDetected(childThreadId, parentThreadName, true, name, checkpointType);
+				}
 			}
 		}
 		message = addCheckpoint(childThreadId, sourceClassName, name, message, stubableCode, stubableCodeThrowsException,
 				matchingStubStrategies, checkpointType, levelChangeNextCheckpoint);
 		return message;
+	}
+
+	private void warnNewChildThreadDetected(String childThreadId, String parentThreadName,
+			boolean threadStartpointNotUsed, String checkpointName, int checkpointType) {
+		String parentThreadWarning = " for guessed parent thread '" + parentThreadName + "'";
+		if (parentThreadName == null) {
+			parentThreadWarning = " for unknown parent thread";
+		}
+		String startpointWarning = " before threadStartpoint()";
+		if (threadStartpointNotUsed) {
+			startpointWarning = " and threadStartpoint() instead of startpoint()";
+		}
+		log.warn("New child thread '" + childThreadId + "'" + parentThreadWarning + " detected, use threadCreatepoint()"
+				+ startpointWarning + " for checkpoint "
+				+ getCheckpointLogDescription(checkpointName, checkpointType, null));
 	}
 
 	private void threadCreatepoint(String parentThreadName, String childThreadId) {

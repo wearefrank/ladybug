@@ -16,6 +16,9 @@
 
 package nl.nn.testtool.test.junit.createreport;
 
+import java.io.ByteArrayOutputStream;
+import java.io.OutputStream;
+
 import lombok.Getter;
 import lombok.Setter;
 import nl.nn.testtool.TestTool;
@@ -24,6 +27,7 @@ class TestThread extends Thread {
 	@Setter TestTool testTool;
 	@Setter String correlationId;
 	@Setter int nrOfTests = 1;
+	@Setter boolean keepReportOpenWithMessageCapturer = false;
 	@Getter Throwable throwable;
 
 	@Override
@@ -31,9 +35,14 @@ class TestThread extends Thread {
 		try {
 			for (int i = 0; i < nrOfTests; i++) {
 				testTool.startpoint(correlationId, null, getName(), "startmessage1");
+				if (keepReportOpenWithMessageCapturer) {
+					OutputStream outputStreamOriginalMessage = new ByteArrayOutputStream();
+					OutputStream outputStreamMessage = testTool.inputpoint(correlationId, null, "outputstream",
+							outputStreamOriginalMessage);
+					outputStreamMessage.write("Hello OutputStream World!".getBytes());
+				}
 				testTool.endpoint(correlationId, null, getName(), "endmessage1");
 			}
-
 		} catch (Throwable t) {
 			throwable = t;
 		}

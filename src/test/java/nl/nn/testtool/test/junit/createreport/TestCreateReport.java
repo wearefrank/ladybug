@@ -218,7 +218,7 @@ public class TestCreateReport extends ReportRelatedTestCase {
 	private static void assertWarningUseThreadCreatepointBeforeThreadStartpoint(ListAppender<ILoggingEvent> listAppender,
 			String correlationId, String childThreadName, String parentThreadName, String checkpointName) {
 		assertWarningInLog(listAppender, correlationId, "New child thread '" + childThreadName
-				+ "' for parent thread '" + parentThreadName
+				+ "' for guessed parent thread '" + parentThreadName
 				+ "' detected, use threadCreatepoint() before threadStartpoint() for checkpoint (name: "
 				+ checkpointName + ", type: ThreadStartpoint, level: null, correlationId: " + correlationId + ")");
 	}
@@ -236,7 +236,7 @@ public class TestCreateReport extends ReportRelatedTestCase {
 	private static void assertWarningUseThreadCreatepointAndThreadStartpoint(ListAppender<ILoggingEvent> listAppender,
 			String correlationId, String childThreadName, String parentThreadName, String checkpointName) {
 		assertWarningInLog(listAppender, correlationId,  "New child thread '" + childThreadName
-				+ "' for parent thread '" + parentThreadName
+				+ "' for guessed parent thread '" + parentThreadName
 				+ "' detected, use threadCreatepoint() and threadStartpoint() instead of startpoint() for checkpoint (name: "
 				+ checkpointName + ", type: ThreadStartpoint, level: null, correlationId: " + correlationId + ")");
 	}
@@ -311,16 +311,33 @@ public class TestCreateReport extends ReportRelatedTestCase {
 	}
 
 	/**
-	 * ArrayIndexOutOfBoundsException will occur when synchronization isn't done properly in TestTool.checkpoint(). E.g.
-	 * disable report.isClosed() check in TestTool.checkpoint() to make this test throw an exception and fail
+	 * Test whether synchronization is done properly in TestTool.checkpoint()
 	 * 
 	 * @throws Throwable
 	 */
 	@Test
 	public void testConcurrency() throws Throwable {
+		// Disable the following code in Report.java to make the test fail with an ArrayIndexOutOfBoundsException:
+		//		if (threads.size() == 0) {
+		//			// This can happen when a report is still open because not all message capturers are closed while
+		//			// all threads are finished
+		//			warnNewChildThreadDetected(childThreadId, null, false/true, checkpointType);
+		//			return message;
+		//		} else {
+		testConcurrency(true);
+		// Also disable report.isClosed() check in TestTool.checkpoint() to make the next test also fail with an
+		// ArrayIndexOutOfBoundsException (disable the previous test so this test will be executed)
+		testConcurrency(false);
+	}
+
+	private void testConcurrency(boolean keepReportOpenWithMessageCapturer) throws Throwable {
 		int nrOfThreads = 10;
 		int nrOfTestsPerThread = 10;
-		testTool.setMaxCheckpoints(nrOfThreads * nrOfTestsPerThread * 2);
+		int nrOfCheckpointsCalledByTestThread = 2;
+		if (keepReportOpenWithMessageCapturer) {
+			nrOfCheckpointsCalledByTestThread = 3;
+		}
+		testTool.setMaxCheckpoints(nrOfThreads * nrOfTestsPerThread * nrOfCheckpointsCalledByTestThread);
 		String correlationId = getCorrelationId();
 		TestThread[] testThreads = new TestThread[nrOfThreads];
 		for (int i = 0; i < nrOfThreads; i++) {
@@ -329,6 +346,7 @@ public class TestCreateReport extends ReportRelatedTestCase {
 			testThreads[i].setTestTool(testTool);
 			testThreads[i].setCorrelationId(correlationId);
 			testThreads[i].setNrOfTests(nrOfTestsPerThread);
+			testThreads[i].setKeepReportOpenWithMessageCapturer(keepReportOpenWithMessageCapturer);
 		}
 		for (int i = 0; i < nrOfThreads; i++) {
 			testThreads[i].start();
@@ -337,6 +355,9 @@ public class TestCreateReport extends ReportRelatedTestCase {
 			while (testThreads[i].isAlive()) Thread.sleep(10);
 		}
 		ignoreWarningsInLog(listAppender, correlationId, "New child thread '");
+		if (keepReportOpenWithMessageCapturer) {
+			ignoreWarningsInLog(listAppender, correlationId, "Unknown thread, ignored checkpoint (");
+		}
 		for (int i = 0; i < nrOfThreads; i++) {
 			if (testThreads[i].getThrowable() != null) {
 				throw new Exception(testThreads[i].getThrowable());
