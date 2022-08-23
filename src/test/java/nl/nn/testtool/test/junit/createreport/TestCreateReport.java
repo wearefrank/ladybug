@@ -313,7 +313,7 @@ public class TestCreateReport extends ReportRelatedTestCase {
 	/**
 	 * Test whether synchronization is done properly in TestTool.checkpoint()
 	 * 
-	 * @throws Throwable
+	 * @throws Throwable ...
 	 */
 	@Test
 	public void testConcurrency() throws Throwable {
@@ -371,7 +371,7 @@ public class TestCreateReport extends ReportRelatedTestCase {
 	 * addition to testConcurrency() (which is a simpler way to test for ArrayIndexOutOfBoundsException) this test will
 	 * also assert the generated reports.
 	 * 
-	 * @throws Throwable
+	 * @throws Throwable ...
 	 */
 	@Test
 	public void testConcurrentLastEndpointAndFirstStartpointForSameCorrelationId() throws Throwable {
