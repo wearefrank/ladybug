@@ -168,6 +168,15 @@
     </dependency>
   </dependencies>
 
+  <repositories>
+    <!-- Enable ibis-echo2 timestamp versions -->
+    <repository>
+      <id>ibissource</id>
+      <name>Ibissource</name>
+      <url>https://nexus.frankframework.org/content/repositories/public</url>
+    </repository>
+  </repositories>
+
   <build>
     <defaultGoal>install</defaultGoal>
     <plugins>
