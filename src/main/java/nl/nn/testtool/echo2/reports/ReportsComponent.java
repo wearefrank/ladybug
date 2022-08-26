@@ -902,7 +902,8 @@ public class ReportsComponent extends BaseComponent implements BeanParent, Actio
 		// different row in the new table
 		metadataTable.getSelectionModel().clearSelection();
 		for (int i = 0; i < metadataTableModel.getRowCount(); i++) {
-			if (metadataTableModel.getValueAt(0, i).equals(firstValueOfLastSelectedRow)) {
+			if (firstValueOfLastSelectedRow != null
+					&& metadataTableModel.getValueAt(0, i).equals(firstValueOfLastSelectedRow)) {
 				metadataTable.getSelectionModel().setSelectedIndex(i, true);
 			}
 		}
