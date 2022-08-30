@@ -61,7 +61,7 @@
 	</bean>
 
 	<bean name="dataSource" class="org.h2.jdbcx.JdbcDataSource">
-		<property name="URL" value="jdbc:h2:./target/test-data/db-storage/ladybug"/>
+		<property name="URL" value="jdbc:h2:./data/database-storage/ladybug"/>
 	</bean>
 
 	<bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
