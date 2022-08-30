@@ -95,11 +95,12 @@ public class ReportRelatedTestCase {
 
 	@Before
 	public void setUp() {
-		File logsDir = new File("target/test-data/file-storage");
-		if (!logsDir.isDirectory()) {
-			logsDir.mkdir();
+		File fileStorageDir = new File("data/file-storage");
+		if (!fileStorageDir.isDirectory()) {
+			fileStorageDir.mkdirs();
 		}
-		assertTrue(logsDir.isDirectory());
+		assertTrue("File storage dir not available: " + fileStorageDir.getAbsolutePath(),
+				fileStorageDir.isDirectory());
 		Logger log = (Logger)LoggerFactory.getLogger("nl.nn.testtool");
 		listAppender = new ListAppender<>();
 		listAppender.start();
@@ -111,6 +112,7 @@ public class ReportRelatedTestCase {
 
 	@After
 	public void tearDown() {
+		assertNotNull("No list appender found, setup failed?", listAppender);
 		List<ILoggingEvent> loggingEvents = listAppender.list;
 		int count = 0;
 		for (ILoggingEvent loggingEvent : loggingEvents) {

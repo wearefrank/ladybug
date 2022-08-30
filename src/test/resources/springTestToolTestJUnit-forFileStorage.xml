@@ -18,8 +18,8 @@
 	</bean>
 
 	<bean name="debugStorage" class="nl.nn.testtool.storage.file.Storage" autowire="byName" init-method="init">
-		<property name="reportsFilename" value="target/test-data/file-storage/ladybug.tts"/>
-		<property name="metadataFilename" value="target/test-data/file-storage/ladybug.ttm"/>
+		<property name="reportsFilename" value="data/file-storage/ladybug.tts"/>
+		<property name="metadataFilename" value="data/file-storage/ladybug.ttm"/>
 		<property name="persistentMetadata">
 			<list>
 				<value>storageId</value>
