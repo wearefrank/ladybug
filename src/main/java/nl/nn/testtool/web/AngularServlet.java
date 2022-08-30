@@ -102,7 +102,6 @@ public class AngularServlet extends HttpServlet {
 			}
 		};
 		includeWebJarAsset(request, responseWrapper, false);
-		
 	}
 
 	private void includeWebJarAsset(HttpServletRequest request, HttpServletResponse response, boolean forceIndexHtml)
@@ -140,6 +139,14 @@ public class AngularServlet extends HttpServlet {
 		} else {
 			webJarsRequestURI = webJarsBase + artifactId + version + pathInfo;
 		}
+		// When Servlet 3 method (see https://www.webjars.org/documentation#servlet3) is used the Content-Type header
+		// isn't set (tested with Tomcat 9.0.60) which will cause problems when X-Content-Type-Options: nosniff is begin
+		// used. Hence set the header like it is done by WebJars Servlet 2
+		// (https://www.webjars.org/documentation#servlet2)
+		String[] tokens = webJarsRequestURI.split("/");
+		String filename = tokens[tokens.length - 1];
+		String mimeType = getServletContext().getMimeType(filename);
+		response.setContentType(mimeType != null ? mimeType : "application/octet-stream");
 		HttpServletRequestWrapper wrapper = new HttpServletRequestWrapper(request) {
 			@Override
 			public String getServletPath() {
