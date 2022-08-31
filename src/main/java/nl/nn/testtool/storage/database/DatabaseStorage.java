@@ -45,6 +45,8 @@ import lombok.Setter;
 import lombok.SneakyThrows;
 import nl.nn.testtool.MetadataExtractor;
 import nl.nn.testtool.Report;
+import nl.nn.testtool.storage.CrudStorage;
+import nl.nn.testtool.storage.LogStorage;
 import nl.nn.testtool.storage.StorageException;
 import nl.nn.testtool.util.Export;
 import nl.nn.testtool.util.Import;
@@ -53,7 +55,7 @@ import nl.nn.testtool.util.SearchUtil;
 /**
  * @author Jaco de Groot
  */
-public class Storage implements nl.nn.testtool.storage.LogStorage, nl.nn.testtool.storage.CrudStorage {
+public class DatabaseStorage implements LogStorage, CrudStorage {
 	private static Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 	private static final String TIMESTAMP_PATTERN = "yyyy-MM-dd'T'HH:mm:ss.SSS";
 	private @Setter @Getter String name;

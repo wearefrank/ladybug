@@ -17,7 +17,7 @@
 		</property>
 	</bean>
 
-	<bean name="debugStorage" class="nl.nn.testtool.storage.database.Storage" autowire="byName" init-method="init">
+	<bean name="debugStorage" class="nl.nn.testtool.storage.database.DatabaseStorage" autowire="byName" init-method="init">
 		<property name="table" value="LADYBUG"/>
 		<property name="metadataColumns">
 			<list>

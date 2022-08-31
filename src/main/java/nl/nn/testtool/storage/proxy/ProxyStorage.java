@@ -24,6 +24,9 @@ import nl.nn.testtool.storage.CrudStorage;
 import nl.nn.testtool.storage.LogStorage;
 import nl.nn.testtool.storage.Storage;
 import nl.nn.testtool.storage.StorageException;
+import nl.nn.testtool.storage.database.DatabaseStorage;
+import nl.nn.testtool.storage.proofofmigration.ProofOfMigrationStorage;
+import nl.nn.testtool.storage.xml.XmlStorage;
 
 /**
  * Storage proxy class than can help Spring XML configuration to become more flexible. E.g. see #{testStorageActive} in
@@ -51,8 +54,10 @@ public class ProxyStorage implements CrudStorage, LogStorage {
 			((nl.nn.testtool.storage.file.TestStorage)destination).setMetadataExtractor(metadataExtractor);
 		} else if (destination instanceof nl.nn.testtool.storage.memory.Storage) {
 			((nl.nn.testtool.storage.memory.Storage)destination).setMetadataExtractor(metadataExtractor);
-		} else if (destination instanceof nl.nn.testtool.storage.database.Storage) {
-			((nl.nn.testtool.storage.database.Storage)destination).setMetadataExtractor(metadataExtractor);
+		} else if (destination instanceof DatabaseStorage) {
+			((DatabaseStorage)destination).setMetadataExtractor(metadataExtractor);
+		} else if (destination instanceof ProofOfMigrationStorage) {
+			((ProofOfMigrationStorage)destination).setMetadataExtractor(metadataExtractor);
 		} else if (destination instanceof nl.nn.testtool.storage.zip.Storage) {
 			((nl.nn.testtool.storage.zip.Storage)destination).setMetadataExtractor(metadataExtractor);
 		} else {
@@ -66,12 +71,14 @@ public class ProxyStorage implements CrudStorage, LogStorage {
 			((nl.nn.testtool.storage.file.Storage)destination).init();
 		} else if (destination instanceof nl.nn.testtool.storage.file.TestStorage) {
 			((nl.nn.testtool.storage.file.TestStorage)destination).init();
-		} else if (destination instanceof nl.nn.testtool.storage.database.Storage) {
-			((nl.nn.testtool.storage.database.Storage)destination).init();
+		} else if (destination instanceof DatabaseStorage) {
+			((DatabaseStorage)destination).init();
+		} else if (destination instanceof ProofOfMigrationStorage) {
+			((ProofOfMigrationStorage)destination).init();
 		} else if (destination instanceof nl.nn.testtool.storage.diff.Storage) {
 			((nl.nn.testtool.storage.diff.Storage)destination).init();
-		} else if (destination instanceof nl.nn.testtool.storage.xml.XmlStorage) {
-			((nl.nn.testtool.storage.xml.XmlStorage)destination).init();
+		} else if (destination instanceof XmlStorage) {
+			((XmlStorage)destination).init();
 		} else {
 			throw new RuntimeException("Method setMetadataExtractor() not implemented for "
 					+ destination.getClass().getName());

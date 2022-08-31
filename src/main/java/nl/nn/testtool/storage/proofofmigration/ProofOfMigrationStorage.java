@@ -29,6 +29,7 @@ import nl.nn.testtool.Checkpoint;
 import nl.nn.testtool.Report;
 import nl.nn.testtool.TestTool;
 import nl.nn.testtool.storage.StorageException;
+import nl.nn.testtool.storage.database.DatabaseStorage;
 
 /**
  * Utilize the proof of migration storage to use the Ladybug as a front-end for the proof of migration table. When
@@ -41,7 +42,7 @@ import nl.nn.testtool.storage.StorageException;
  * 
  * @author Jaco de Groot
  */
-public class Storage extends nl.nn.testtool.storage.database.Storage {
+public class ProofOfMigrationStorage extends DatabaseStorage {
 	private static Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 	private @Setter TestTool testTool;
 
