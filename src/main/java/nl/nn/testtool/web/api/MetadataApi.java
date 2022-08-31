@@ -77,7 +77,7 @@ public class MetadataApi extends ApiBase {
 
 			// Get storage, search for metadata, and return the results.
 			Storage storage = testTool.getStorage(storageName);
-			List<List<Object>> records = storage.getMetadata(limit, metadataNames, searchValues, MetadataExtractor.VALUE_TYPE_STRING);
+			List<List<Object>> records = storage.getMetadata(limit, metadataNames, searchValues, MetadataExtractor.VALUE_TYPE_GUI);
 			List<LinkedHashMap<String, String>> metadata = new ArrayList<>();
 			for (List<Object> record : records) {
 				LinkedHashMap<String, String> metadataItem = new LinkedHashMap<>();
