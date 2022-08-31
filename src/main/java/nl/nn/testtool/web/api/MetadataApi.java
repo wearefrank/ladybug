@@ -132,25 +132,10 @@ public class MetadataApi extends ApiBase {
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getMetadataCount(@PathParam("storage") String storageName) {
 		try {
-			ArrayList<String> metadataFields = new ArrayList<>();
-			ArrayList<String> searchValues = new ArrayList<>();
-			for (String metadataField : getMetadataFields()) {
-				metadataFields.add(metadataField);
-				searchValues.add(null);
-			}
 			Storage storage = testTool.getStorage(storageName);
-			List<List<Object>> records = storage.getMetadata(-1, metadataFields, searchValues, MetadataExtractor.VALUE_TYPE_STRING);
-
-			return Response.ok().entity(records.size()).build();
+			return Response.ok().entity(storage.getSize()).build();
 		} catch (Exception e) {
 			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Could not find metadata count - detailed error message - " + e + Arrays.toString(e.getStackTrace())).build();
 		}
-	}
-
-	/**
-	 * @return Set of strings for list of parameters in metadata.
-	 */
-	private Set<String> getMetadataFields() {
-		return new HashSet<String>(testTool.getViews().getDefaultView().getMetadataNames());
 	}
 }
