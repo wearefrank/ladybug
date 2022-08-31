@@ -89,23 +89,34 @@ public class Storage extends nl.nn.testtool.storage.database.Storage {
 		report.setTestTool(testTool);
 		report.setStorage(this);
 		report.setStorageId(storageId);
-		report.setName((String)result.get(0).get(0));
+		report.setName((String)result.get(0).get(1));
 		report.setCorrelationId((String)result.get(0).get(0));
+		int level = 0;
 		List<Checkpoint> checkpoints = new ArrayList<Checkpoint>();
-		for (List<Object> list : result) {
-			Checkpoint checkpoint = new Checkpoint(report, null, null,
-					list.get(2) + ". " + list.get(3) + " (" + list.get(4) + ")", Checkpoint.TYPE_INPUTPOINT, 0);
-			checkpoint.setMessage(list.get(5));
-			checkpoints.add(checkpoint);
-		}
-		Checkpoint checkpoint = new Checkpoint(report, null, null, (String)result.get(0).get(1),
-				Checkpoint.TYPE_INFOPOINT, 0);
+		Checkpoint checkpoint;
+		checkpoint = new Checkpoint(report, null, null, "Timestamps", Checkpoint.TYPE_INFOPOINT, 0);
 		StringBuilder message = new StringBuilder();
 		for (List<Object> list : result) {
 			message.append(list.get(2) + ". " + list.get(6) + "\n");
 		}
 		checkpoint.setMessage(message.toString());
 		checkpoints.add(checkpoint);
+		for (List<Object> list : result) {
+			int checkpointType = Checkpoint.TYPE_ABORTPOINT;
+			if ("request".equals(list.get(4))) {
+				checkpointType = Checkpoint.TYPE_STARTPOINT;
+			} else if ("response".equals(list.get(4))) {
+				checkpointType = Checkpoint.TYPE_ENDPOINT;
+			}
+			checkpoint = new Checkpoint(report, null, null, list.get(2) + ". " + list.get(3), checkpointType, level);
+			checkpoint.setMessage(list.get(5));
+			checkpoints.add(checkpoint);
+			if ("request".equals(list.get(4))) {
+				level++;
+			} else if ("response".equals(list.get(4))) {
+				level--;
+			}
+		}
 		report.setCheckpoints(checkpoints);
 		return report;
 	}
