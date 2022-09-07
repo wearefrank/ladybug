@@ -66,35 +66,9 @@ public class TestTool {
 	private String defaultStubStrategy = "Stub all external connection code";
 	private List<String> stubStrategies = new ArrayList<String>(); { stubStrategies.add(defaultStubStrategy); }
 	private Set<String> matchingStubStrategiesForExternalConnectionCode = new HashSet<>(stubStrategies);
-	/**
-	 * Close child threads when main thread is finished (top level endpoint has been called) to prevent threads from
-	 * keeping reports in progress in case they call checkpoints that aren't properly surrounded with a try/catch, see
-	 * {@link TestTool#close(String)}. Setting this to true will risk checkpoints not being added for child threads that
-	 * are still running after the main thread is finished. The use of {@link CloseReportsTask} can lower this risk
-	 * 
-	 * @see CloseReportsTask
-	 * @see TestTool#close(String)
-	 * @param closeThreads ...
-	 */
-	private @Setter @Getter boolean closeThreads = false;
-	/**
-	 * Only close new threads that didn't start and aren't cancelled {@link TestTool#close(String, String, boolean)}).
-	 * This way other threads can continue to add checkpoints to the report after the main thread has finished. See
-	 * {@link TestTool#close(String)} on how to properly surrounded checkpoint with a try/catch to prevent threads from
-	 * keeping reports in progress.
-	 */
-	private @Setter @Getter boolean closeNewThreadsOnly = false;
-	/**
-	 * Close message capturers when main thread is finished (top level endpoint has been called) to prevent streams for
-	 * which the close method isn't called to keep reports in progress. Setting this to true will risk streams not
-	 * being captured when they are still active after the main thread is finished. The use of {@link CloseReportsTask}
-	 * can lower this risk
-	 * 
-	 * @see CloseReportsTask
-	 * @see TestTool#close(String)
-	 * @param closeMessageCapturers ...
-	 */
-	private @Setter @Getter boolean closeMessageCapturers = false;
+	private @Getter boolean closeThreads = false;
+	private @Getter boolean closeNewThreadsOnly = false;
+	private @Getter boolean closeMessageCapturers = false;
 	private @Setter @Getter Views views;
 
 	public void setSecurityLoggerName(String securityLoggerName) {
@@ -241,6 +215,46 @@ public class TestTool {
 
 	public Set<String> getMatchingStubStrategiesForExternalConnectionCode() {
 		return matchingStubStrategiesForExternalConnectionCode;
+	}
+
+	/**
+	 * Close child threads when main thread is finished (top level endpoint has been called) to prevent threads from
+	 * keeping reports in progress in case they call checkpoints that aren't properly surrounded with a try/catch, see
+	 * {@link TestTool#close(String)}. Setting this to true will risk checkpoints not being added for child threads that
+	 * are still running after the main thread is finished. The use of {@link CloseReportsTask} can lower this risk
+	 * 
+	 * @see CloseReportsTask
+	 * @see TestTool#close(String)
+	 * @param closeThreads ...
+	 */
+	public void setCloseThreads(boolean closeThreads) {
+		this.closeThreads = closeThreads;
+	}
+
+	/**
+	 * Only close new threads that didn't start and aren't cancelled {@link TestTool#close(String, String)}).
+	 * This way other threads can continue to add checkpoints to the report after the main thread has finished. See
+	 * {@link TestTool#close(String)} on how to properly surrounded checkpoint with a try/catch to prevent threads from
+	 * keeping reports in progress.
+	 * 
+	 * @param closeNewThreadsOnly ...
+	 */
+	public void setCloseNewThreadsOnly(boolean closeNewThreadsOnly) {
+		this.closeNewThreadsOnly = closeNewThreadsOnly;
+	}
+
+	/**
+	 * Close message capturers when main thread is finished (top level endpoint has been called) to prevent streams for
+	 * which the close method isn't called to keep reports in progress. Setting this to true will risk streams not
+	 * being captured when they are still active after the main thread is finished. The use of {@link CloseReportsTask}
+	 * can lower this risk
+	 * 
+	 * @see CloseReportsTask
+	 * @see TestTool#close(String)
+	 * @param closeMessageCapturers ...
+	 */
+	public void setCloseMessageCapturers(boolean closeMessageCapturers) {
+		this.closeMessageCapturers = closeMessageCapturers;
 	}
 
 	private <T> T checkpoint(String correlationId, String childThreadId, String sourceClassName, String name,
