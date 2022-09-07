@@ -3,8 +3,15 @@ Ladybug Test Tool release notes
 
 
 
-Upcoming
---------
+Upcoming (2.3)
+--------------
+
+- Add closeNewThreadsOnly
+
+
+
+2.2
+---
 
 - Add ProxyStorage
 - Add CloseReportsTask

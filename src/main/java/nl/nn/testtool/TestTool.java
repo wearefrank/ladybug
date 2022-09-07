@@ -66,8 +66,35 @@ public class TestTool {
 	private String defaultStubStrategy = "Stub all external connection code";
 	private List<String> stubStrategies = new ArrayList<String>(); { stubStrategies.add(defaultStubStrategy); }
 	private Set<String> matchingStubStrategiesForExternalConnectionCode = new HashSet<>(stubStrategies);
-	private boolean closeThreads = false;
-	private boolean closeMessageCapturers = false;
+	/**
+	 * Close child threads when main thread is finished (top level endpoint has been called) to prevent threads from
+	 * keeping reports in progress in case they call checkpoints that aren't properly surrounded with a try/catch, see
+	 * {@link TestTool#close(String)}. Setting this to true will risk checkpoints not being added for child threads that
+	 * are still running after the main thread is finished. The use of {@link CloseReportsTask} can lower this risk
+	 * 
+	 * @see CloseReportsTask
+	 * @see TestTool#close(String)
+	 * @param closeThreads ...
+	 */
+	private @Setter @Getter boolean closeThreads = false;
+	/**
+	 * Only close new threads that didn't start and aren't cancelled {@link TestTool#close(String, String, boolean)}).
+	 * This way other threads can continue to add checkpoints to the report after the main thread has finished. See
+	 * {@link TestTool#close(String)} on how to properly surrounded checkpoint with a try/catch to prevent threads from
+	 * keeping reports in progress.
+	 */
+	private @Setter @Getter boolean closeNewThreadsOnly = false;
+	/**
+	 * Close message capturers when main thread is finished (top level endpoint has been called) to prevent streams for
+	 * which the close method isn't called to keep reports in progress. Setting this to true will risk streams not
+	 * being captured when they are still active after the main thread is finished. The use of {@link CloseReportsTask}
+	 * can lower this risk
+	 * 
+	 * @see CloseReportsTask
+	 * @see TestTool#close(String)
+	 * @param closeMessageCapturers ...
+	 */
+	private @Setter @Getter boolean closeMessageCapturers = false;
 	private @Setter @Getter Views views;
 
 	public void setSecurityLoggerName(String securityLoggerName) {
@@ -216,42 +243,6 @@ public class TestTool {
 		return matchingStubStrategiesForExternalConnectionCode;
 	}
 
-	/**
-	 * Close child threads when main thread is finished (top level endpoint has been called) to prevent threads that
-	 * didn't start and aren't cancelled to keep reports in progress. Setting this to true will risk checkpoints not
-	 * being added for child threads that are still running after the main thread is finished. The use of
-	 * {@link CloseReportsTask} can lower this risk
-	 * 
-	 * @see CloseReportsTask
-	 * @see TestTool#close(String)
-	 * @param closeThreads ...
-	 */
-	public void setCloseThreads(boolean closeThreads) {
-		this.closeThreads = closeThreads;
-	}
-
-	public boolean isCloseThreads() {
-		return closeThreads;
-	}
-
-	/**
-	 * Close message capturers when main thread is finished (top level endpoint has been called) to prevent streams for
-	 * which the close method isn't called to keep reports in progress. Setting this to true will risk streams not
-	 * being captured when they are still active after the main thread is finished. The use of {@link CloseReportsTask}
-	 * can lower this risk
-	 * 
-	 * @see CloseReportsTask
-	 * @see TestTool#close(String)
-	 * @param closeMessageCapturers ...
-	 */
-	public void setCloseMessageCapturers(boolean closeMessageCapturers) {
-		this.closeMessageCapturers = closeMessageCapturers;
-	}
-
-	public boolean isCloseMessageCapturers() {
-		return closeMessageCapturers;
-	}
-
 	private <T> T checkpoint(String correlationId, String childThreadId, String sourceClassName, String name,
 			T message, StubableCode stubableCode, StubableCodeThrowsException stubableCodeThrowsException,
 			Set<String> matchingStubStrategies, int checkpointType, int levelChangeNextCheckpoint) {
@@ -348,7 +339,7 @@ public class TestTool {
 			if (!report.isClosed()) {
 				if (report.mainThreadFinished()) {
 					if (!report.threadsFinished() && closeThreads) {
-						report.closeThreads();
+						report.closeThreads(closeNewThreadsOnly);
 					}
 					if (report.getMainThreadFinishedTime() == Report.TIME_NOT_SET_VALUE) {
 						report.setMainThreadFinishedTime(System.currentTimeMillis());
@@ -735,7 +726,7 @@ public class TestTool {
 	 *     close();
 	 * }
 	 *</code>
-	 * 
+	 *
 	 * Don't use this when threads and/or {@link MessageCapturer}s can continue to live after the main thread has
 	 * finished (after it called the top level endpoint) and you want to wait for them to finish. In this case make sure
 	 * that all necessary checkpoints are properly surrounded with a try/catch that calls an abortpoint and all threads
@@ -749,7 +740,7 @@ public class TestTool {
 	public void close(String correlationId) {
 		close(correlationId, true, true);
 	}
-	
+
 	/**
 	 * @see TestTool#close(String)
 	 * 
@@ -777,8 +768,8 @@ public class TestTool {
 
 	/**
 	 * Mark a thread as finished. When a threadCreatepoint is called but it is not certain whether this thread will
-	 * execute this method can be used to mark this thread as finished / cancel it at a point where it is clear that
-	 * this thread will not start.
+	 * execute this method can be used to mark this thread as finished / cancel it when it is certain that this thread
+	 * will not start.
 	 *
 	 * @see #close(String)
 	 * @param correlationId ...
@@ -797,9 +788,9 @@ public class TestTool {
 		if (report != null) {
 			synchronized(report) {
 				if (threadName == null) {
-					report.closeThreads();
+					report.closeThreads(false);
 				} else {
-					report.closeThread(threadName, true);
+					report.closeThread(threadName, false, true);
 				}
 				closeReportIfFinished(report);
 			}
@@ -809,8 +800,8 @@ public class TestTool {
 	/**
 	 * Close threads and/or message capturers when not already closed within a certain amount of time. Set
 	 * <code>waitForMainThreadToFinish</code> to <code>false</code> when there's a risk for reports to stay in progress
-	 * because some checkpoints are not properly surrounded with a try/catch that calls an abortpoint. This method is
-	 * used by {@link CloseReportsTask}
+	 * because some checkpoints handled by the main thread are not properly surrounded with a try/catch that calls an
+	 * abortpoint. This method is used by {@link CloseReportsTask}
 	 * 
 	 * @see CloseReportsTask
 	 * @param threadsTime                the time in milliseconds that needs to be passed for threads to be closed. Set

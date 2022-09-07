@@ -112,6 +112,7 @@ public class ReportRelatedTestCase {
 
 	@After
 	public void tearDown() {
+		assertEquals("Found report(s) in progress", 0, testTool.getNumberOfReportsInProgress());
 		assertNotNull("No list appender found, setup failed?", listAppender);
 		List<ILoggingEvent> loggingEvents = listAppender.list;
 		int count = 0;
@@ -152,7 +153,7 @@ public class ReportRelatedTestCase {
 	protected Report assertReport(String correlationId, String name, boolean applyXmlEncoderIgnores,
 			boolean applyEpochTimestampIgnore, boolean applyStackTraceIgnores, boolean applyCorrelationIdIgnores,
 			boolean assertExport) throws StorageException, IOException {
-		assertEquals("Found report(s) in progress,", 0, testTool.getNumberOfReportsInProgress());
+		assertEquals("Found report(s) in progress", 0, testTool.getNumberOfReportsInProgress());
 		Storage storage = testTool.getDebugStorage();
 		Report report = findAndGetReport(testTool, storage, correlationId);
 		return assertReport(report, resourcePath, name, applyXmlEncoderIgnores, applyEpochTimestampIgnore,
@@ -229,7 +230,7 @@ public class ReportRelatedTestCase {
 		List<List<Object>> metadata = storage.getMetadata(-1, metadataNames, searchValues,
 				MetadataExtractor.VALUE_TYPE_OBJECT);
 		if (assertExactlyOne) {
-			assertEquals("Didn't find exactly 1 report with correlationId " + correlationId + ",", 1, metadata.size());
+			assertEquals("Didn't find exactly 1 report with correlationId '" + correlationId + "'", 1, metadata.size());
 		}
 		List<Report> reports = new ArrayList<Report>();
 		for (int i = 0; i < metadata.size(); i++) {

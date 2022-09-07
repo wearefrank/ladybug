@@ -458,7 +458,8 @@ public class Report implements Serializable {
 				threadLevel.put(threadName, newLevel);
 				if (newLevel.equals(threadFirstLevel.get(threadName))) {
 					// threadCreatepoint has already been removed on first checkpoint for thread, hence use false
-					closeThread(threadName, false);
+					// for removeThreadCreatepoint
+					closeThread(threadName, false, false);
 				}
 			}
 		}
@@ -570,13 +571,23 @@ public class Report implements Serializable {
 		return result;
 	}
 
-	protected void closeThreads() {
-		while (threads.size() > 0) {
-			closeThread(threads.get(0), false);
+	protected void closeThreads(boolean closeNewThreadsOnly) {
+		int skip = 0;
+		while (threads.size() > skip) {
+			if (!closeThread(threads.get(0), closeNewThreadsOnly, false)) {
+				skip++;
+			}
 		}
 	}
 
-	protected void closeThread(String threadName, boolean removeThreadCreatepoint) {
+	protected boolean closeThread(String threadName, boolean closeNewThreadsOnly, boolean removeThreadCreatepoint) {
+		if (closeNewThreadsOnly) {
+			int firstLevel = threadFirstLevel.get(threadName);
+			int level = threadLevel.get(threadName);
+			if (level > firstLevel) {
+				return false;
+			}
+		}
 		if (threads.remove(threadName)) {
 			Integer index = threadCheckpointIndex.remove(threadName);
 			threadFirstLevel.remove(threadName);
@@ -586,8 +597,10 @@ public class Report implements Serializable {
 			if (removeThreadCreatepoint) {
 				removeThreadCreatepoint(index, threadName);
 			}
+			return true;
 		} else {
 			log.warn("Thread '" + threadName + "' to close for report with correlationId '" + correlationId + "' not found");
+			return false;
 		}
 	}
 

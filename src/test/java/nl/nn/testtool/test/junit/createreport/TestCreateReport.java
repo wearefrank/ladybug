@@ -160,7 +160,7 @@ public class TestCreateReport extends ReportRelatedTestCase {
 	public void testThreadsWithThreadCreatepointOnlyAndCancelThreads() throws StorageException, IOException {
 		String correlationId = getCorrelationId();
 		testThreads(correlationId, true, false, false, false, false, false);
-		assertEquals("Report should be in progress (waiting for threadStartpoint),", 1, testTool.getNumberOfReportsInProgress());
+		assertEquals("Report should be in progress (waiting for threadStartpoint)", 1, testTool.getNumberOfReportsInProgress());
 		testTool.close(correlationId, correlationId + "-ChildThreadIdA");
 		testTool.close(correlationId, correlationId + "-ChildThreadIdB");
 		assertReport(correlationId);
@@ -168,22 +168,37 @@ public class TestCreateReport extends ReportRelatedTestCase {
 	}
 
 	@Test
+	public void testCloseThreads() throws StorageException, IOException  {
+		String correlationId = getCorrelationId();
+		testTool.setCloseThreads(true);
+		testThreads(correlationId, true, true, true, true, true, false);
+		assertEquals("Report should not be in progress", 0, testTool.getNumberOfReportsInProgress());
+		testTool.setCloseNewThreadsOnly(true);
+		testThreads(correlationId, true, true, true, true, true, false);
+		assertEquals("Report should be in progress", 1, testTool.getNumberOfReportsInProgress());
+		testTool.close(correlationId);
+	}
+
+	@Test
 	public void testThreadsWithThreadCreatepointOnlyAndCloseThreads() throws StorageException, IOException {
-		testThreadsWithThreadCreatepointOnlyAndCloseThreads(true, false, false);
-		testThreadsWithThreadCreatepointOnlyAndCloseThreads(false, true, false);
-		testThreadsWithThreadCreatepointOnlyAndCloseThreads(false, false, true);
-		testThreadsWithThreadCreatepointOnlyAndCloseThreads(true, true, true);
+		testThreadsWithThreadCreatepointOnlyAndCloseThreads(true, false, false, false);
+		testThreadsWithThreadCreatepointOnlyAndCloseThreads(false, true, false, false);
+		testThreadsWithThreadCreatepointOnlyAndCloseThreads(false, true, true, false);
+		testThreadsWithThreadCreatepointOnlyAndCloseThreads(false, false, false, true);
+		testThreadsWithThreadCreatepointOnlyAndCloseThreads(true, true, false, true);
+		testThreadsWithThreadCreatepointOnlyAndCloseThreads(true, true, true, true);
 	}
 
 	public void testThreadsWithThreadCreatepointOnlyAndCloseThreads(boolean withCloseMethod, boolean withSetMethod,
-			boolean withTask) throws StorageException, IOException {
+			boolean closeNewThreadsOnly, boolean withTask) throws StorageException, IOException {
 		if (withSetMethod) {
 			testTool.setCloseThreads(true);
+			testTool.setCloseNewThreadsOnly(closeNewThreadsOnly);
 		}
 		String correlationId = getCorrelationId();
 		testThreads(correlationId, true, false, false, false, false, false);
 		if (!withSetMethod) {
-			assertEquals("Report should be in progress (waiting for threadStartpoint),", 1, testTool.getNumberOfReportsInProgress());
+			assertEquals("Report should be in progress (waiting for threadStartpoint)", 1, testTool.getNumberOfReportsInProgress());
 		}
 		if (withCloseMethod) {
 			testTool.close(correlationId);
@@ -194,7 +209,7 @@ public class TestCreateReport extends ReportRelatedTestCase {
 			task.setThreadsTime(-1);
 			task.closeReports();
 			if (!withCloseMethod) {
-				assertEquals("Report should be in progress (waiting for threadStartpoint),", 1, testTool.getNumberOfReportsInProgress());
+				assertEquals("Report should be in progress (waiting for threadStartpoint)", 1, testTool.getNumberOfReportsInProgress());
 			}
 			task.setThreadsTime(0);
 			task.closeReports();
@@ -202,6 +217,7 @@ public class TestCreateReport extends ReportRelatedTestCase {
 		assertReport(correlationId, false, false, false, true, false);
 		if (withSetMethod) {
 			testTool.setCloseThreads(false);
+			testTool.setCloseNewThreadsOnly(false);
 		}
 	}
 
@@ -363,6 +379,7 @@ public class TestCreateReport extends ReportRelatedTestCase {
 				throw new Exception(testThreads[i].getThrowable());
 			}
 		}
+		testTool.close(correlationId);
 	}
 
 	/**
@@ -480,7 +497,7 @@ public class TestCreateReport extends ReportRelatedTestCase {
 		testTool.startpoint(correlationId, null, reportName, "startmessage1");
 		testTool.startpoint(correlationId, null, "name2", "startmessage2");
 		testTool.abortpoint(correlationId, null, "name2", "endmessage2");
-		assertEquals("Report should be in progress (number of endpoints + abortpoints doesn't match number of startpoints),", 1, testTool.getNumberOfReportsInProgress());
+		assertEquals("Report should be in progress (number of endpoints + abortpoints doesn't match number of startpoints)", 1, testTool.getNumberOfReportsInProgress());
 		testTool.close(correlationId);
 		assertReport(correlationId);
 	}
@@ -586,7 +603,7 @@ public class TestCreateReport extends ReportRelatedTestCase {
 
 		testTool.endpoint(correlationId, null, reportName, "endmessage");
 		if (!withSetMethod) {
-			assertEquals("Report should be in progress (waiting for message capturer to close),", 1, testTool.getNumberOfReportsInProgress());
+			assertEquals("Report should be in progress (waiting for message capturer to close)", 1, testTool.getNumberOfReportsInProgress());
 		}
 		if (withCloseMethod) {
 			testTool.close(correlationId, false, true);
@@ -597,7 +614,7 @@ public class TestCreateReport extends ReportRelatedTestCase {
 			task.setMessageCapturersTime(-1);
 			task.closeReports();
 			if (!withCloseMethod) {
-				assertEquals("Report should be in progress (waiting for message capturer to close),", 1, testTool.getNumberOfReportsInProgress());
+				assertEquals("Report should be in progress (waiting for message capturer to close)", 1, testTool.getNumberOfReportsInProgress());
 			}
 			task.setMessageCapturersTime(0);
 			task.closeReports();
