@@ -54,15 +54,16 @@ public class ProofOfMigrationStorage extends DatabaseStorage {
 				query, args, argTypes);
 		if (log.isDebugEnabled()) {
 			log.debug("Get metadata original query: " + query.toString());
-			// E.g.: select ID, TIMESTAMP, COMPONENT, CORRELATION_ID, CHECKPOINT_NR, STATUS from PROOF_OF_MIGRATION order by ID desc limit 10
+			// E.g.: select ID, TIMESTAMP, COMPONENT, CORRELATION_ID, NR OF CHECKPOINTS, STATUS from PROOF_OF_MIGRATION order by ID desc limit 10
 			// The new metadata query will be logged by the super class
 			// E.g.: select min(ID) as min_id, min(TIMESTAMP), COMPONENT, CORRELATION_ID, max(CHECKPOINT_NR), min(STATUS) from PROOF_OF_MIGRATION group by COMPONENT, CORRELATION_ID order by min_id desc limit 10
 		}
-		replace(query, "ID"           , "min(ID) as min_id");
-		replace(query, "TIMESTAMP"    , "min(TIMESTAMP)");
-		replace(query, "STATUS"       , "min(STATUS)");
-		replace(query, "CHECKPOINT_NR", "max(CHECKPOINT_NR)");
-		replace(query, "order by ID"  , "group by COMPONENT, CORRELATION_ID order by min_id");
+		replace(query, "ID", "min(ID) as min_id");
+		replace(query, "TIMESTAMP", "min(TIMESTAMP)");
+		replace(query, "STATUS", "min(STATUS)");
+		replace(query, "NR OF CHECKPOINTS", "max(CHECKPOINT_NR)");
+		replace(query, "CHECKPOINT_NR", "max(CHECKPOINT_NR)"); // For backwards compatability with older Spring config xml that still use CHECKPOINT_NR, can be removed sometime in the future
+		replace(query, "order by ID" , "group by COMPONENT, CORRELATION_ID order by min_id");
 	}
 
 	@Override

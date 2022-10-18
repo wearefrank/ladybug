@@ -299,20 +299,20 @@
           <configuration>
             <lifecycleMappingMetadata>
               <pluginExecutions>
-<!--                <pluginExecution>-->
-<!--                  <pluginExecutionFilter>-->
-<!--                    <groupId>org.glassfish.copyright</groupId>-->
-<!--                    <artifactId>glassfish-copyright-maven-plugin</artifactId>-->
-<!--                    <versionRange>[2.4,)</versionRange>-->
-<!--                    <goals>-->
-<!--                      <goal>check</goal>-->
-<!--                      <goal>copyright</goal>-->
-<!--                    </goals>-->
-<!--                  </pluginExecutionFilter>-->
-<!--                  <action>-->
-<!--                    <ignore />-->
-<!--                  </action>-->
-<!--                </pluginExecution>-->
+                <pluginExecution>
+                  <pluginExecutionFilter>
+                    <groupId>org.glassfish.copyright</groupId>
+                    <artifactId>glassfish-copyright-maven-plugin</artifactId>
+                    <versionRange>[2.4,)</versionRange>
+                    <goals>
+                      <goal>check</goal>
+                      <goal>copyright</goal>
+                    </goals>
+                  </pluginExecutionFilter>
+                  <action>
+                    <ignore />
+                  </action>
+                </pluginExecution>
                 <pluginExecution>
                   <pluginExecutionFilter>
                     <groupId>org.commonjava.maven.plugins</groupId>
@@ -372,38 +372,38 @@
   </scm>
 
   <profiles>
-<!--    <profile>-->
-<!--      <activation>-->
-<!--        <property>-->
-<!--          <name>!maven.skip.copyright</name>-->
-<!--          <value>!true</value>-->
-<!--        </property>-->
-<!--      </activation> -->
-<!--      <build>-->
-<!--        <plugins>-->
-<!--          <plugin>-->
-<!--            <groupId>org.glassfish.copyright</groupId>-->
-<!--            <artifactId>glassfish-copyright-maven-plugin</artifactId>-->
-<!--            <version>2.4</version>-->
-<!--            <executions>-->
-<!--              <execution>-->
-<!--                <id>Check-CopyRight-Notice</id>-->
-<!--                <goals>-->
-<!--                  <goal>copyright</goal>&lt;!&ndash; Checks for Copyright notices &ndash;&gt;-->
-<!--                  <goal>check</goal>&lt;!&ndash; Fails the build &ndash;&gt;-->
-<!--                </goals>-->
-<!--                <phase>process-sources</phase>-->
-<!--              </execution>-->
-<!--            </executions>-->
-<!--            <configuration>-->
-<!--              <excludeFile>${ibis.ladybug.rootdir}${file.separator}copyrightExcludeFile.txt</excludeFile>-->
-<!--              <useDash>true</useDash>-->
-<!--              <templateFile>${ibis.ladybug.rootdir}/copyrightTemplateFile.txt</templateFile>-->
-<!--            </configuration>-->
-<!--          </plugin>-->
-<!--        </plugins>-->
-<!--      </build>-->
-<!--    </profile>-->
+    <profile>
+      <activation>
+        <property>
+          <name>!maven.skip.copyright</name>
+          <value>!true</value>
+        </property>
+      </activation> 
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.glassfish.copyright</groupId>
+            <artifactId>glassfish-copyright-maven-plugin</artifactId>
+            <version>2.4</version>
+            <executions>
+              <execution>
+                <id>Check-CopyRight-Notice</id>
+                <goals>
+                  <goal>copyright</goal><!-- Checks for Copyright notices -->
+                  <goal>check</goal><!-- Fails the build -->
+                </goals>
+                <phase>process-sources</phase>
+              </execution>
+            </executions>
+            <configuration>
+              <excludeFile>${ibis.ladybug.rootdir}${file.separator}copyrightExcludeFile.txt</excludeFile>
+              <useDash>true</useDash>
+              <templateFile>${ibis.ladybug.rootdir}/copyrightTemplateFile.txt</templateFile>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
     <profile>
       <id>ossrh</id>
       <build>
