@@ -61,8 +61,7 @@ public class ProofOfMigrationStorage extends DatabaseStorage {
 		replace(query, "ID", "min(ID) as min_id");
 		replace(query, "TIMESTAMP", "min(TIMESTAMP)");
 		replace(query, "STATUS", "min(STATUS)");
-		replace(query, "NR OF CHECKPOINTS", "max(CHECKPOINT_NR)");
-		replace(query, "CHECKPOINT_NR", "max(CHECKPOINT_NR)"); // For backwards compatability with older Spring config xml that still use CHECKPOINT_NR, can be removed sometime in the future
+		replace(query, "NR OF CHECKPOINTS", "count(CHECKPOINT_NR)");
 		replace(query, "order by ID" , "group by COMPONENT, CORRELATION_ID order by min_id");
 	}
 
