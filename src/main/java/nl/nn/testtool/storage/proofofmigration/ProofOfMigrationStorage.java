@@ -95,13 +95,6 @@ public class ProofOfMigrationStorage extends DatabaseStorage {
 		int level = 0;
 		List<Checkpoint> checkpoints = new ArrayList<Checkpoint>();
 		Checkpoint checkpoint;
-		checkpoint = new Checkpoint(report, null, null, "Timestamps", Checkpoint.TYPE_INFOPOINT, 0);
-		StringBuilder message = new StringBuilder();
-		for (List<Object> list : result) {
-			message.append(list.get(2) + ". " + list.get(6) + "\n");
-		}
-		checkpoint.setMessage(message.toString());
-		checkpoints.add(checkpoint);
 		for (List<Object> list : result) {
 			int checkpointType = Checkpoint.TYPE_ABORTPOINT;
 			if ("request".equals(list.get(4))) {
@@ -118,6 +111,13 @@ public class ProofOfMigrationStorage extends DatabaseStorage {
 				level--;
 			}
 		}
+		checkpoint = new Checkpoint(report, null, null, "Timestamps", Checkpoint.TYPE_INFOPOINT, 0);
+		StringBuilder message = new StringBuilder();
+		for (List<Object> list : result) {
+			message.append(list.get(2) + ". " + list.get(6) + "\n");
+		}
+		checkpoint.setMessage(message.toString());
+		checkpoints.add(checkpoint);
 		report.setCheckpoints(checkpoints);
 		return report;
 	}
