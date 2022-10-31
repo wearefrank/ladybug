@@ -77,7 +77,7 @@ public class ReportsTreeCellRenderer extends DefaultTreeCellRenderer {
 				String path = "/nl/nn/testtool/echo2/reports/";
 				String error = "";
 				if (MessageEncoderImpl.THROWABLE_ENCODER.equals(checkpoint.getEncoding())
-						|| checkpoint.isWaitingForStream()) {
+						|| checkpoint.isWaitingForStream() || checkpoint.getLevel() < 0) {
 					error = "-error";
 				}
 				if (checkpoint.getType() == Checkpoint.TYPE_STARTPOINT) {

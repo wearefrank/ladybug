@@ -21,7 +21,7 @@ package nl.nn.testtool;
 public class Path {
 	String[] names;
 	int[] counts;
-	
+
 	protected Path(int length) {
 		names = new String[length];
 		counts = new int[length];
@@ -29,7 +29,7 @@ public class Path {
 			counts[i] = 0;
 		}
 	}
-	
+
 	protected void setName(int index, String name) {
 		names[index] = name;
 	}
@@ -37,7 +37,7 @@ public class Path {
 	protected void incrementCount(int index) {
 		counts[index]++;
 	}
-	
+
 	public boolean equals(Path path) {
 		if (names.length != path.names.length) {
 			return false;
@@ -50,7 +50,7 @@ public class Path {
 		}
 		return true;
 	}
-	
+
 	public String toString() {
 		StringBuffer stringBuffer = new StringBuffer();
 		for (int i = 0; i < names.length; i++) {

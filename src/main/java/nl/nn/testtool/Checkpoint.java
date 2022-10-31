@@ -449,10 +449,14 @@ public class Checkpoint implements Serializable, Cloneable {
 	}
 
 	protected Path getPath(boolean checkpointInProgress) {
-		Path path = new Path(level + 1);
-		path.setName(level, name);
 		int currentLevel = level;
 		String currentName = name;
+		if (currentLevel < 0) {
+			currentName = "[INVALID LEVEL " + currentLevel + "]" + currentName;
+			currentLevel = 0;
+		}
+		Path path = new Path(currentLevel + 1);
+		path.setName(currentLevel, currentName);
 		int i = report.getCheckpoints().indexOf(this);
 		if (i == -1 && checkpointInProgress) {
 			// Checkpoint constructed but not added to list of checkpoints yet
@@ -463,7 +467,7 @@ public class Checkpoint implements Serializable, Cloneable {
 			Checkpoint currentCheckpoint = (Checkpoint)report.getCheckpoints().get(i);
 			if (currentCheckpoint.getLevel() == currentLevel && currentCheckpoint.getName().equals(currentName)) {
 				path.incrementCount(currentLevel);
-			} else if (currentCheckpoint.getLevel() < currentLevel) {
+			} else if (currentCheckpoint.getLevel() < currentLevel && currentCheckpoint.getLevel() > -1) {
 				currentLevel = currentCheckpoint.getLevel();
 				currentName = currentCheckpoint.getName();
 				path.setName(currentLevel, currentCheckpoint.getName());
