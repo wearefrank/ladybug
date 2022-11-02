@@ -6,6 +6,7 @@ Ladybug Test Tool release notes
 Upcoming (2.3)
 --------------
 
+- Handle invalid checkpoints with level < 0
 - Add closeNewThreadsOnly
 
 

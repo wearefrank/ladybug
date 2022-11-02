@@ -282,7 +282,9 @@ public class TreePane extends ContentPane implements TreeSelectionListener {
 	public DefaultMutableTreeNode addCheckpoint(DefaultMutableTreeNode parentNode, Checkpoint checkpoint) {
 		if (parentNode.getChildCount() > 0) {
 			int lastChildLevel = ((Checkpoint)((DefaultMutableTreeNode)parentNode.getLastChild()).getUserObject()).getLevel();
-			if (checkpoint.getLevel() > lastChildLevel) {
+			if (checkpoint.getLevel() < 0) {
+				// Ignore. See also INVALID LEVEL in Checkpoint.getPath(boolean checkpointInProgress)
+			} else if (checkpoint.getLevel() > lastChildLevel) {
 				// Increase level
 				parentNode = (DefaultMutableTreeNode)parentNode.getLastChild();
 			} else if (checkpoint.getLevel() < lastChildLevel) {
@@ -294,7 +296,7 @@ public class TreePane extends ContentPane implements TreeSelectionListener {
 		parentNode.add(node);
 		return parentNode;
 	}
-	
+
 	public void closeReport(Report report) {
 		int childToSelect = -1;
 		for (int i = 0; i < rootNode.getChildCount(); i++) {
