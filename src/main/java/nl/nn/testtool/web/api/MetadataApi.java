@@ -18,11 +18,10 @@ package nl.nn.testtool.web.api;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
 import java.util.LinkedHashMap;
-import java.util.Set;
+import java.util.List;
 
+import javax.inject.Inject;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -38,10 +37,11 @@ import lombok.Setter;
 import nl.nn.testtool.MetadataExtractor;
 import nl.nn.testtool.TestTool;
 import nl.nn.testtool.storage.Storage;
+import nl.nn.testtool.web.ApiServlet;
 
-@Path("/metadata")
+@Path("/" + ApiServlet.LADYBUG_API_PATH + "/metadata")
 public class MetadataApi extends ApiBase {
-	private @Setter TestTool testTool;
+	private @Setter @Inject TestTool testTool;
 
 	/**
 	 * Searches the storage metadata.
@@ -59,7 +59,7 @@ public class MetadataApi extends ApiBase {
 	@Path("/{storage}/")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getMetadataList(@PathParam("storage") String storageName,
-									@QueryParam("metadataNames") ArrayList<String> metadataNames,
+									@QueryParam("metadataNames") List<String> metadataNames,
 									@DefaultValue("-1") @QueryParam("limit") int limit,
 									@DefaultValue("") @QueryParam("filterHeader") String filterHeader,
 									@DefaultValue("(.*)") @QueryParam("filter") String filterParam ,
@@ -107,7 +107,7 @@ public class MetadataApi extends ApiBase {
 	 */
 	@GET
 	@Path("/{storage}/userHelp")
-	public Response getUserHelp(@PathParam("storage") String storageName, @QueryParam("metadataNames") ArrayList<String> metadataNames) {
+	public Response getUserHelp(@PathParam("storage") String storageName, @QueryParam("metadataNames") List<String> metadataNames) {
 		try {
 			LinkedHashMap<String, String> userHelp = new LinkedHashMap<>();
 			Storage storage = testTool.getStorage(storageName);

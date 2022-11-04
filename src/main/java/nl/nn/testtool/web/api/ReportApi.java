@@ -27,12 +27,15 @@ import nl.nn.testtool.storage.StorageException;
 import nl.nn.testtool.transform.ReportXmlTransformer;
 import nl.nn.testtool.util.Export;
 import nl.nn.testtool.util.ExportResult;
+import nl.nn.testtool.web.ApiServlet;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.cxf.jaxrs.ext.multipart.Attachment;
 import org.apache.cxf.jaxrs.ext.multipart.Multipart;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.inject.Inject;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -48,11 +51,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 
-@Path("/")
+@Path("/" + ApiServlet.LADYBUG_API_PATH + "/report")
 public class ReportApi extends ApiBase {
 	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-	private @Setter TestTool testTool;
-	private @Setter ReportXmlTransformer reportXmlTransformer;
+	private @Setter @Inject TestTool testTool;
+	private @Setter @Inject ReportXmlTransformer reportXmlTransformer;
 
 	/**
 	 * Returns the report details for the given storage and id.
@@ -64,7 +67,7 @@ public class ReportApi extends ApiBase {
 	 * @return A response containing serialized Report object.
 	 */
 	@GET
-	@Path("/report/{storage}/{storageId}")
+	@Path("/{storage}/{storageId}")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getReport(@PathParam("storage") String storageName,
 							  @PathParam("storageId") int storageId,
@@ -102,10 +105,10 @@ public class ReportApi extends ApiBase {
 	 * @return A response containing serialized Report object.
 	 */
 	@GET
-	@Path("/report/{storage}/")
+	@Path("/{storage}/")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getReports(@PathParam("storage") String storageName,
-							   @QueryParam("storageIds") ArrayList<Integer> storageIds,
+							   @QueryParam("storageIds") List<Integer> storageIds,
 							   @QueryParam("xml") @DefaultValue("false") boolean xml,
 							   @QueryParam("globalTransformer") @DefaultValue("false") boolean globalTransformer) {
 		try {
@@ -143,7 +146,7 @@ public class ReportApi extends ApiBase {
 	 * @return "Ok" if deleted properly, "Not implemented" if storage does not support deletion, "Not found" if report does not exist.
 	 */
 	@DELETE
-	@Path("/report/{storage}/{storageId}")
+	@Path("/{storage}/{storageId}")
 	public Response deleteReport(@PathParam("storage") String storageName, @PathParam("storageId") int storageId) {
 		Storage storage = testTool.getStorage(storageName);
 		if (!(storage instanceof CrudStorage)) {
@@ -170,7 +173,7 @@ public class ReportApi extends ApiBase {
 	 * @return the n latest reports.
 	 */
 	@GET
-	@Path("/report/latest/{storage}/{numberOfReports}")
+	@Path("/latest/{storage}/{numberOfReports}")
 	public Response getLatestReports(@PathParam("storage") String storageName, @PathParam("numberOfReports") int number) {
 		try {
 			Storage storage = testTool.getStorage(storageName);
@@ -200,7 +203,7 @@ public class ReportApi extends ApiBase {
 	 * @return The updated report.
 	 */
 	@POST
-	@Path("/report/{storage}/{storageId}")
+	@Path("/{storage}/{storageId}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response updateReport(@PathParam("storage") String storageName, @PathParam("storageId") int storageId, Map<String, String> map) {
@@ -267,7 +270,7 @@ public class ReportApi extends ApiBase {
 	 * @return Response containing a map containing transformation.
 	 */
 	@GET
-	@Path("/report/transformation/{storage}/{storageId}")
+	@Path("/transformation/{storage}/{storageId}")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getReportTransformation(@PathParam("storage") String storageName, @PathParam("storageId") int storageId) {
 		try {
@@ -289,7 +292,7 @@ public class ReportApi extends ApiBase {
 	 * @return The copied report.
 	 */
 	@PUT
-	@Path("/report/store/{storage}")
+	@Path("/store/{storage}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response copyReport(@PathParam("storage") String storageName, Map<String, List<Integer>> sources) {
@@ -328,7 +331,7 @@ public class ReportApi extends ApiBase {
 	 * @return The response of uploading a file.
 	 */
 	@POST
-	@Path("/report/upload/{storage}")
+	@Path("/upload/{storage}")
 	@Produces(MediaType.TEXT_HTML)
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
 	public Response uploadFile(@PathParam("storage") String storageName, @Multipart("file") Attachment attachment) {
@@ -354,7 +357,7 @@ public class ReportApi extends ApiBase {
 	 * @return List of serialized report objects.
 	 */
 	@POST
-	@Path("/report/upload")
+	@Path("/upload")
 	@Produces(MediaType.APPLICATION_JSON)
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
 	public Response getFileReport(@Multipart("file") Attachment attachment) {
@@ -387,7 +390,7 @@ public class ReportApi extends ApiBase {
 	 * @return The response when downloading a file.
 	 */
 	@GET
-	@Path("/report/download/{storage}/{exportReport}/{exportReportXml}")
+	@Path("/download/{storage}/{exportReport}/{exportReportXml}")
 	@Produces("application/octet-stream")
 	@Consumes(MediaType.APPLICATION_JSON)
 	public Response downloadFile(@PathParam("storage") String storageName, @PathParam("exportReport") String exportReportParam,
@@ -422,7 +425,7 @@ public class ReportApi extends ApiBase {
 	 * @return The response of updating the Path.
 	 */
 	@PUT
-	@Path("/report/move/{storage}/{storageId}")
+	@Path("/move/{storage}/{storageId}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	public Response updatePath(@PathParam("storage") String storageName, @PathParam("storageId") int storageId, Map<String, String> map) {
 		CrudStorage storage = (CrudStorage) testTool.getStorage(storageName);
@@ -461,7 +464,7 @@ public class ReportApi extends ApiBase {
 	 * @return The response of cloning the report.
 	 */
 	@POST
-	@Path("/report/move/{storageName}/{storageId}")
+	@Path("/move/{storageName}/{storageId}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response cloneReport(@QueryParam("storageId") int storageId, @QueryParam("storageName") String storageName, Map<String, String> map) {
@@ -513,7 +516,8 @@ public class ReportApi extends ApiBase {
 	}
 
 	/**
-	 * Returns the report and sets the testtool with the bean named "testTool".
+	 * Returns the report and sets the testTool bean on the report.
+	 * 
 	 * @param storage Storage to get the report from.
 	 * @param storageId Storage id of the report.
 	 * @return Report.

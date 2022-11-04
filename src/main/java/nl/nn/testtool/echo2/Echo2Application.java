@@ -20,6 +20,10 @@ import java.security.Principal;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.annotation.PostConstruct;
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
@@ -32,7 +36,6 @@ import nextapp.echo2.app.Border;
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Color;
 import nextapp.echo2.app.Component;
-import nextapp.echo2.app.ContentPane;
 import nextapp.echo2.app.Extent;
 import nextapp.echo2.app.Font;
 import nextapp.echo2.app.Insets;
@@ -62,6 +65,7 @@ import nl.nn.testtool.storage.Storage;
 import nl.nn.testtool.storage.StorageException;
 import nl.nn.testtool.transform.ReportXmlTransformer;
 
+@Singleton
 public class Echo2Application extends ApplicationInstance implements ApplicationContextAware, BeanParent, SecurityContext {
 	private static final long serialVersionUID = 1L;
 	private static Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
@@ -98,12 +102,16 @@ public class Echo2Application extends ApplicationInstance implements Application
 	private static RowLayoutData rowLayoutDataForLabel;
 	
 	private ApplicationContext applicationContext;
+	@Inject
 	private ContentPane contentPane;
 	private TabPane tabPane;
+	@Inject
 	private Tabs tabs;
 	private List<Integer> activeTabIndexHistory = new ArrayList<Integer>();
 	private TransformationWindow transformationWindow;
-	private TestTool testTool;
+	@Inject
+	TestTool testTool;
+	@Inject
 	private ReportXmlTransformer reportXmlTransformer;
 	private ReportsTreeCellRenderer reportsTreeCellRenderer;
 	private CrudStorage testStorage;
@@ -121,6 +129,7 @@ public class Echo2Application extends ApplicationInstance implements Application
 		return contentPane;
 	}
 
+	@Inject
 	public void setTestTool(TestTool testTool) {
 		this.testTool = testTool;
 	}
@@ -177,6 +186,7 @@ public class Echo2Application extends ApplicationInstance implements Application
 	 * <code>init()</code> method will also be called (again). The dispose()
 	 * method will be called when a component is removed from the hierarchy.
 	 */
+	@PostConstruct
 	public void initBean() {
 
 		// Construct
@@ -196,7 +206,7 @@ public class Echo2Application extends ApplicationInstance implements Application
 
 		transformationWindow.setReportXmlTransformer(reportXmlTransformer);
 
-		for (ContentPane tab : tabs) {
+		for (Tab tab : tabs) {
 			tabPane.add(tab);
 		}
 

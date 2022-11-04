@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -28,7 +28,9 @@ import java.util.regex.Pattern;
 
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
+import javax.ws.rs.container.PreMatching;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.ext.Provider;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,18 +51,20 @@ import lombok.Getter;
  *
  * Method part can be left empty in order to apply it for all methods, such as "/path/to/endpoint".
  */
+@Provider
+@PreMatching
 public class ApiAuthorizationFilter implements ContainerRequestFilter {
 	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 	private Map<Pattern, ConfigurationPart> configuration = new HashMap<>();
 	
 	public void setChangeReportGeneratorEnabledRoles(List<String> changeReportGeneratorEnabledRoles) {
 		log.info("Set change report generator enabled roles");
-		addConfigurationPart("POST/testtool$", changeReportGeneratorEnabledRoles);
+		addConfigurationPart("POST/" + ApiServlet.LADYBUG_API_PATH + "/testtool$", changeReportGeneratorEnabledRoles);
 	}
 
 	public void setRerunRoles(List<String> rerunRoles) {
 		log.info("Set rerun roles");
-		addConfigurationPart("POST/runner/run/.*", rerunRoles);
+		addConfigurationPart("POST/" + ApiServlet.LADYBUG_API_PATH + "/runner/run/.*", rerunRoles);
 	}
 
 	public void setLadybugApiRoles(Map<String, List<String>> ladybugApiRoles) {

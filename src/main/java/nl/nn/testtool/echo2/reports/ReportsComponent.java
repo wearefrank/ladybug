@@ -15,11 +15,41 @@
 */
 package nl.nn.testtool.echo2.reports;
 
+import java.lang.invoke.MethodHandles;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.TooManyListenersException;
+
+import javax.annotation.PostConstruct;
+import javax.enterprise.context.Dependent;
+import javax.inject.Inject;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import echopointng.SelectFieldEx;
 import echopointng.table.DefaultSortableTableModel;
 import echopointng.table.SortableTable;
 import echopointng.tree.DefaultTreeCellRenderer;
-import nextapp.echo2.app.*;
+import nextapp.echo2.app.Border;
+import nextapp.echo2.app.Button;
+import nextapp.echo2.app.CheckBox;
+import nextapp.echo2.app.Color;
+import nextapp.echo2.app.Column;
+import nextapp.echo2.app.Component;
+import nextapp.echo2.app.Extent;
+import nextapp.echo2.app.FillImageBorder;
+import nextapp.echo2.app.Grid;
+import nextapp.echo2.app.Insets;
+import nextapp.echo2.app.Label;
+import nextapp.echo2.app.ListBox;
+import nextapp.echo2.app.Row;
+import nextapp.echo2.app.SelectField;
+import nextapp.echo2.app.Table;
+import nextapp.echo2.app.TextField;
+import nextapp.echo2.app.WindowPane;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import nextapp.echo2.app.filetransfer.UploadSelect;
@@ -42,19 +72,11 @@ import nl.nn.testtool.storage.LogStorage;
 import nl.nn.testtool.storage.Storage;
 import nl.nn.testtool.storage.StorageException;
 import nl.nn.testtool.transform.ReportXmlTransformer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.lang.invoke.MethodHandles;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.TooManyListenersException;
 
 /**
  * @author Jaco de Groot
  */
+@Dependent
 public class ReportsComponent extends BaseComponent implements BeanParent, ActionListener {
 	private static final long serialVersionUID = 1L;
 	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
@@ -62,8 +84,11 @@ public class ReportsComponent extends BaseComponent implements BeanParent, Actio
 	public static final String OPEN_REPORT_ALLOWED = "Allowed";
 	private List<String> changeReportGeneratorEnabledRoles;
 	// TODO testTool overbodig maken nu we storage van view halen?
+	@Inject
 	private TestTool testTool;
+	@Inject
 	private MetadataExtractor metadataExtractor;
+	@Inject
 	private Views views;
 	private boolean addCompareButton = false;
 	private boolean addSeparateOptionsRow = false;
@@ -143,6 +168,7 @@ public class ReportsComponent extends BaseComponent implements BeanParent, Actio
 	/**
 	 * @see nl.nn.testtool.echo2.Echo2Application#initBean()
 	 */
+	@PostConstruct
 	public void initBean() {
 		super.initBean();
 

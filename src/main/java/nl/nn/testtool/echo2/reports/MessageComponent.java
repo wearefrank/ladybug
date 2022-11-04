@@ -21,6 +21,9 @@ import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.inject.Inject;
+import javax.inject.Named;
+
 import org.springframework.util.StringUtils;
 
 import echopointng.tree.DefaultMutableTreeNode;
@@ -51,11 +54,14 @@ import nl.nn.testtool.echo2.util.PopupWindow;
 public class MessageComponent extends BaseComponent implements ActionListener {
 	private static final long serialVersionUID = 1L;
 	private static final char REPLACE_NON_XML_CHAR = 0x00BF; // Inverted question mark.
+	@Inject
 	protected TestTool testTool;
 	private BeanParent beanParent;
 	protected Echo2Application echo2Application;
+	@Inject @Named("debugTreePane")
 	protected TreePane treePane;
 	protected DefaultMutableTreeNode node;
+	@Inject
 	protected InfoPane infoPane;
 	protected Report report;
 	protected Row buttonRow;

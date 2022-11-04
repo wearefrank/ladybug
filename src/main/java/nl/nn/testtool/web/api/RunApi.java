@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.inject.Inject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
@@ -45,12 +46,13 @@ import nl.nn.testtool.storage.CrudStorage;
 import nl.nn.testtool.storage.Storage;
 import nl.nn.testtool.storage.StorageException;
 import nl.nn.testtool.transform.ReportXmlTransformer;
+import nl.nn.testtool.web.ApiServlet;
 
-@Path("/runner")
+@Path("/" + ApiServlet.LADYBUG_API_PATH + "/runner")
 public class RunApi extends ApiBase {
 	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-	private @Setter TestTool testTool;
-	private @Setter ReportXmlTransformer reportXmlTransformer;
+	private @Setter @Inject TestTool testTool;
+	private @Setter @Inject ReportXmlTransformer reportXmlTransformer;
 
 	/**
 	 * Rerun the given report, and save the output the target storage.

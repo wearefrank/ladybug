@@ -21,26 +21,30 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import javax.enterprise.context.Dependent;
+import javax.inject.Inject;
+import javax.inject.Named;
+
 import echopointng.tree.DefaultMutableTreeNode;
 import echopointng.tree.TreePath;
+import lombok.Setter;
 import nl.nn.testtool.MetadataExtractor;
 import nl.nn.testtool.Report;
 import nl.nn.testtool.echo2.BeanParent;
 import nl.nn.testtool.echo2.TestPane;
 import nl.nn.testtool.filter.View;
+import nl.nn.testtool.storage.CrudStorage;
 import nl.nn.testtool.storage.Storage;
 import nl.nn.testtool.storage.StorageException;
 
+@Dependent @Named("testTreePane")
 public class TreePane extends nl.nn.testtool.echo2.reports.TreePane implements BeanParent {
 	private static final long serialVersionUID = 1L;
 	private InfoPane infoPane;
 	private BeanParent beanParent;
-	private Storage storage;
+	@Setter @Inject
+	private CrudStorage storage;
 	private List<Integer> reportsWithDirtyPaths = new ArrayList<Integer>();
-
-	public void setStorage(Storage storage) {
-		this.storage = storage;
-	}
 
 	@Override
 	public void setInfoPane(nl.nn.testtool.echo2.reports.InfoPane infoPane) {

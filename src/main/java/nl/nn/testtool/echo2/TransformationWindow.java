@@ -26,6 +26,9 @@ import nextapp.echo2.app.WindowPane;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import nl.nn.testtool.transform.ReportXmlTransformer;
+
+import javax.annotation.PostConstruct;
+
 import echopointng.tree.DefaultTreeCellRenderer;
 
 /**
@@ -107,6 +110,7 @@ public class TransformationWindow extends WindowPane implements ActionListener {
 	/**
 	 * @see nl.nn.testtool.echo2.Echo2Application#initBean()
 	 */
+	@PostConstruct
 	public void initBean() {
 		textArea.setText(reportXmlTransformer.getXslt());
 	}

@@ -16,6 +16,10 @@
 package nl.nn.testtool.echo2.reports;
 
 import java.io.UnsupportedEncodingException;
+
+import javax.annotation.PostConstruct;
+import javax.enterprise.context.Dependent;
+
 import echopointng.tree.DefaultMutableTreeNode;
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Insets;
@@ -34,6 +38,7 @@ import nl.nn.testtool.storage.CrudStorage;
 /**
  * @author Jaco de Groot
  */
+@Dependent
 public class CheckpointComponent extends MessageComponent {
 	private static final long serialVersionUID = 1L;
 	private Checkpoint checkpoint;
@@ -70,6 +75,7 @@ public class CheckpointComponent extends MessageComponent {
 	/**
 	 * @see nl.nn.testtool.echo2.Echo2Application#initBean()
 	 */
+	@PostConstruct
 	public void initBean() {
 		super.initBeanPre();
 
@@ -304,7 +310,7 @@ public class CheckpointComponent extends MessageComponent {
 		}
 		messageClassNamePropertyLabel.setText("Message class name: " + messageClassName);
 		pathPropertyLabel.setText("Path: " + checkpoint.getPath());
-		checkpointUIDPropertyLabel.setText("Checkpoint UID: "+checkpoint.getUID());
+		checkpointUIDPropertyLabel.setText("Checkpoint UID: "+checkpoint.getUid());
 		encodingPropertyLabel.setText("Encoding: "+checkpoint.getEncoding());
 		numberOfCharactersPropertyLabel.setText("Number of characters: "+(checkpoint.getMessage() != null ? checkpoint.getMessage().length() : "0"));
 		estimatedMemoryUsagePropertyLabel.setText("EstimatedMemoryUsage: " + checkpoint.getEstimatedMemoryUsage() + " bytes");

@@ -15,16 +15,23 @@
 */
 package nl.nn.testtool.echo2;
 
+import javax.annotation.PostConstruct;
+import javax.enterprise.context.Dependent;
+import javax.inject.Inject;
+
 import nextapp.echo2.app.Extent;
 import nextapp.echo2.app.SplitPane;
 import nextapp.echo2.extras.app.layout.TabPaneLayoutData;
 import nl.nn.testtool.echo2.test.InfoPane;
 import nl.nn.testtool.echo2.test.TreePane;
 
+@Dependent
 public class TestPane extends Tab implements BeanParent {
 	private static final long serialVersionUID = 1L;
 	private String title = "Test";
+	@Inject
 	private TreePane treePane;
+	@Inject
 	private InfoPane infoPane;
 
 	public TestPane() {
@@ -58,6 +65,7 @@ public class TestPane extends Tab implements BeanParent {
 	/**
 	 * @see nl.nn.testtool.echo2.Echo2Application#initBean()
 	 */
+	@PostConstruct
 	public void initBean() {
 
 		// Construct

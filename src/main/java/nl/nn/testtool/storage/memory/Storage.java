@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.annotation.PostConstruct;
+import javax.inject.Inject;
 
 import nl.nn.testtool.MetadataExtractor;
 import nl.nn.testtool.Report;
@@ -40,6 +41,7 @@ public class Storage implements CrudStorage, LogStorage {
 	protected List metadata;
 	private int initialStorageId = 0;
 	protected int storageId;
+	@Inject
 	protected MetadataExtractor metadataExtractor;
 	
 	public Storage() {

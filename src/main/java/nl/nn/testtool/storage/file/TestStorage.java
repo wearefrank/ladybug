@@ -20,6 +20,8 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
+import javax.annotation.PostConstruct;
+
 import nl.nn.testtool.MetadataExtractor;
 import nl.nn.testtool.Report;
 import nl.nn.testtool.storage.StorageException;
@@ -97,6 +99,7 @@ public class TestStorage implements nl.nn.testtool.storage.CrudStorage {
 		writer[1].setPersistentMetadata(metadataNames);
 	}
 
+	@PostConstruct
 	public void init() throws StorageException {
 		reader[0].init();
 		reader[1].init();

@@ -23,6 +23,9 @@ import nextapp.echo2.app.Row;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import nl.nn.testtool.echo2.Echo2Application;
+
+import javax.annotation.PostConstruct;
+
 import echopointng.tree.DefaultMutableTreeNode;
 
 /**
@@ -45,6 +48,7 @@ public class PathComponent extends Column implements ActionListener {
 	/**
 	 * @see nl.nn.testtool.echo2.Echo2Application#initBean()
 	 */
+	@PostConstruct
 	public void initBean() {
 		setInsets(new Insets(10));
 		Row buttonRow = Echo2Application.getNewRow();

@@ -24,6 +24,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
+
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,6 +45,7 @@ import nl.nn.testtool.transform.MessageTransformer;
 /**
  * @author Jaco de Groot
  */
+@ApplicationScoped
 public class TestTool {
 	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 	private static Logger securityLog;
@@ -57,8 +61,8 @@ public class TestTool {
 	private Map<String, Report> reportsInProgressByCorrelationId = new HashMap<String, Report>();
 	private long numberOfReportsInProgress = 0;
 	private Map<String, Report> originalReports = new HashMap<String, Report>();
-	private @Setter @Getter LogStorage debugStorage;
-	private @Setter @Getter CrudStorage testStorage;
+	private @Setter @Getter @Inject LogStorage debugStorage;
+	private @Setter @Getter @Inject CrudStorage testStorage;
 	private MessageEncoder messageEncoder = new MessageEncoderImpl();
 	private MessageCapturer messageCapturer = new MessageCapturerImpl();
 	private MessageTransformer messageTransformer;
@@ -69,7 +73,7 @@ public class TestTool {
 	private @Getter boolean closeThreads = false;
 	private @Getter boolean closeNewThreadsOnly = false;
 	private @Getter boolean closeMessageCapturers = false;
-	private @Setter @Getter Views views;
+	private @Setter @Getter @Inject Views views;
 
 	public void setSecurityLoggerName(String securityLoggerName) {
 		securityLog = LoggerFactory.getLogger(securityLoggerName);
@@ -84,7 +88,7 @@ public class TestTool {
 	}
 
 	public String getConfigName() {
-		return configName;
+		return configName + "BLA";
 	}
 
 	public void setConfigVersion(String configVersion) {
@@ -866,9 +870,15 @@ public class TestTool {
 	}
 
 	public static String getCorrelationId() {
-		return getName().replaceAll(" ", "_")
-				+ "-" + getVersion().replaceAll(" ", "_")
-				+ "-" + new UID().toString();
+		String name = getName();
+		if (name == null) {
+			name = "Ladybug";
+		}
+		String version = getVersion();
+		if (version == null) {
+			version = "unknown-version";
+		}
+		return name.replaceAll(" ", "_") + "-" + version.replaceAll(" ", "_") + "-" + new UID().toString();
 	}
 
 	/**
@@ -1016,7 +1026,8 @@ public class TestTool {
 				return storage;
 			}
 		}
-		// TODO: Introduce views for test tab also and replace getViews() in TestToolApi with getTabs()
+		// TODO: Introduce views for test tab also and replace getViews() in TestToolApi with getTabs() (for now the
+		// frontend is using hardcoded storage name Test for test tab)
 		if (name.equals("Test")) {
 			return getTestStorage();
 		}

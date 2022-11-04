@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.annotation.PostConstruct;
+import javax.inject.Inject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -38,12 +39,13 @@ import nl.nn.testtool.TestTool;
 import nl.nn.testtool.filter.View;
 import nl.nn.testtool.filter.Views;
 import nl.nn.testtool.transform.ReportXmlTransformer;
+import nl.nn.testtool.web.ApiServlet;
 
-@Path("/testtool")
+@Path("/" + ApiServlet.LADYBUG_API_PATH + "/testtool")
 public class TestToolApi extends ApiBase {
-	private @Setter TestTool testTool;
-	private @Setter ReportXmlTransformer reportXmlTransformer;
-	private @Setter Views views;
+	private @Setter @Inject TestTool testTool;
+	private @Setter @Inject ReportXmlTransformer reportXmlTransformer;
+	private @Setter @Inject Views views;
 	private String defaultTransformation;
 
 	@PostConstruct

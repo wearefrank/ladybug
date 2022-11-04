@@ -19,6 +19,11 @@ import java.lang.invoke.MethodHandles;
 import java.util.Enumeration;
 import java.util.Iterator;
 
+import javax.annotation.PostConstruct;
+import javax.enterprise.context.Dependent;
+import javax.inject.Inject;
+import javax.inject.Named;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,11 +47,14 @@ import nl.nn.testtool.storage.StorageException;
 /**
  * Jaco de Groot
  */
+@Dependent
+@Named("debugTreePane")
 public class TreePane extends ContentPane implements TreeSelectionListener {
 	private static final long serialVersionUID = 1L;
 	protected Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 	protected InfoPane infoPane;
 	private TreePane treePaneCounterpart;
+	@Inject
 	private ReportsTreeCellRenderer reportsTreeCellRenderer;
 	private static final String ROOT_NODE_NAME = "Reports";
 	protected DefaultMutableTreeNode rootNode;
@@ -71,6 +79,7 @@ public class TreePane extends ContentPane implements TreeSelectionListener {
 	/**
 	 * @see nl.nn.testtool.echo2.Echo2Application#initBean()
 	 */
+	@PostConstruct
 	public void initBean() {
 		Column layoutColumn = new Column();
 		add(layoutColumn);

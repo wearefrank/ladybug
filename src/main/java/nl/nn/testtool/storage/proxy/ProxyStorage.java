@@ -17,6 +17,8 @@ package nl.nn.testtool.storage.proxy;
 
 import java.util.List;
 
+import javax.annotation.PostConstruct;
+
 import lombok.Setter;
 import nl.nn.testtool.MetadataExtractor;
 import nl.nn.testtool.Report;
@@ -66,6 +68,7 @@ public class ProxyStorage implements CrudStorage, LogStorage {
 		}
 	}
 
+	@PostConstruct
 	public void init() throws StorageException {
 		if (destination instanceof nl.nn.testtool.storage.file.Storage) {
 			((nl.nn.testtool.storage.file.Storage)destination).init();

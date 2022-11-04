@@ -17,14 +17,20 @@ package nl.nn.testtool.echo2.test;
 
 import java.util.Set;
 
+import javax.annotation.PostConstruct;
+import javax.enterprise.context.Dependent;
+import javax.inject.Inject;
+
 import nextapp.echo2.app.ContentPane;
 import nl.nn.testtool.echo2.BeanParent;
 
 /**
  * @author Jaco de Groot
  */
+@Dependent
 public class InfoPane extends ContentPane implements BeanParent {
 	private static final long serialVersionUID = 1L;
+	@Inject
 	private TestComponent testComponent;
 	private BeanParent beanParent;
 
@@ -35,6 +41,7 @@ public class InfoPane extends ContentPane implements BeanParent {
 	/**
 	 * @see nl.nn.testtool.echo2.Echo2Application#initBean()
 	 */
+	@PostConstruct
 	public void initBean() {
 	}
 

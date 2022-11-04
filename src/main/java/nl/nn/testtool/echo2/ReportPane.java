@@ -15,6 +15,8 @@
 */
 package nl.nn.testtool.echo2;
 
+import javax.annotation.PostConstruct;
+
 import nextapp.echo2.app.ContentPane;
 import nextapp.echo2.app.Extent;
 import nextapp.echo2.app.SplitPane;
@@ -64,6 +66,7 @@ public class ReportPane extends ContentPane {
 	/**
 	 * @see nl.nn.testtool.echo2.Echo2Application#initBean()
 	 */
+	@PostConstruct
 	public void initBean() {
 		SplitPane splitPane = new SplitPane(SplitPane.ORIENTATION_HORIZONTAL);
 		splitPane.setResizable(true);

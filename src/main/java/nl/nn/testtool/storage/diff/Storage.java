@@ -27,6 +27,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
+import javax.annotation.PostConstruct;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,6 +44,7 @@ public class Storage extends nl.nn.testtool.storage.memory.Storage {
 		this.reportsDirectory = reportsDirectory;
 	}
 
+	@PostConstruct
 	public void init() throws StorageException {
 		readReports();
 	}

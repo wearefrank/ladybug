@@ -92,7 +92,23 @@ public class Report implements Serializable {
 	private transient TestTool testTool;
 	private transient boolean closed;
 	private transient Storage storage;
-	private transient Integer storageId;
+	// Property storageId will not be exposed by JSON-B when using storageId instead of transientStorageId, see also:
+	//   https://github.com/jakartaee/jsonb-api/issues/269
+	// For Jackson this is not the case (it will expose the property in both situations).
+	// Other differences between JSON-B and Jackson:
+	//   - Property names in the json response:
+	//     - JSON-B:
+	//       - Checkpoint.getUID() -> "UID":"0#0"
+	//       - Checkpoint.getUid() -> "uid":"0#0"
+	//     - Jackson:
+	//       - Checkpoint.getUID() -> "uid":"0#0"
+	//       - Checkpoint.getUid() -> "uid":"0#0"
+	//   - Properties with null values are not present in the json response with JSON-B while with Jackson the response
+	//     would for example contain "description":null
+	// When using Quarkus use either the quarkus-resteasy-jackson dependency or the quarkus-resteasy-jsonb dependency
+	// to enable Jackson and JSON-B. 
+	// When using CXF see jsonProvider in cxf-beans.xml
+	private transient Integer transientStorageId;
 	private transient long storageSize;
 	private transient ReportXmlTransformer reportXmlTransformer;
 	private transient ReportXmlTransformer globalReportXmlTransformer;
@@ -154,11 +170,11 @@ public class Report implements Serializable {
 	}
 
 	public void setStorageId(Integer storageId) {
-		this.storageId = storageId;
+		transientStorageId = storageId;
 	}
 
 	public Integer getStorageId() {
-		return storageId;
+		return transientStorageId;
 	}
 
 	@Transient

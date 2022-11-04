@@ -17,6 +17,8 @@ package nl.nn.testtool.storage.file;
 
 import java.util.List;
 
+import javax.annotation.PostConstruct;
+
 import nl.nn.testtool.MetadataExtractor;
 import nl.nn.testtool.Report;
 import nl.nn.testtool.storage.StorageException;
@@ -99,6 +101,7 @@ public class Storage implements nl.nn.testtool.storage.LogStorage {
 		writer.setPersistentMetadata(metadataNames);
 	}
 
+	@PostConstruct
 	public void init() throws StorageException {
 		reader.init();
 		writer.init(reader.getStorageIds(writer.getMetadataFileLastModified(), writer.getSynchronizeRotate()));

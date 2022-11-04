@@ -15,6 +15,11 @@
 */
 package nl.nn.testtool.echo2;
 
+import javax.annotation.PostConstruct;
+import javax.enterprise.context.Dependent;
+import javax.inject.Inject;
+import javax.inject.Named;
+
 import nextapp.echo2.app.Extent;
 import nextapp.echo2.app.SplitPane;
 import nextapp.echo2.extras.app.layout.TabPaneLayoutData;
@@ -33,18 +38,29 @@ import nl.nn.testtool.transform.ReportXmlTransformer;
 /**
  * @author Jaco de Groot
  */
+@Dependent
 public class DebugPane extends Tab implements BeanParent {
 	private static final long serialVersionUID = 1L;
 	private String title = "Debug";
+	@Inject
 	private TestTool testTool;
+	@Inject @Named("debugTreePane")
 	private TreePane treePane;
+	@Inject
 	private InfoPane infoPane;
+	@Inject
 	private ReportsComponent reportsComponent;
+	@Inject
 	private ReportComponent reportComponent;
+	@Inject
 	private CheckpointComponent checkpointComponent;
+	@Inject
 	private ReportsTreeCellRenderer reportsTreeCellRenderer;
+	@Inject
 	private ReportXmlTransformer reportXmlTransformer;
+	@Inject
 	private ReportsListPane reportsListPane;
+	@Inject
 	private CrudStorage testStorage;
 
 	public DebugPane() {
@@ -98,6 +114,7 @@ public class DebugPane extends Tab implements BeanParent {
 	/**
 	 * @see nl.nn.testtool.echo2.Echo2Application#initBean()
 	 */
+	@PostConstruct
 	public void initBean() {
 
 		// Construct

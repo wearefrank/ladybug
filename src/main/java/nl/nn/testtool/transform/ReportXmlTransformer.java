@@ -23,6 +23,9 @@ import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.lang.invoke.MethodHandles;
 
+import javax.annotation.PostConstruct;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import javax.xml.transform.ErrorListener;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
@@ -34,16 +37,20 @@ import javax.xml.transform.stream.StreamSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import lombok.Setter;
 import nl.nn.testtool.util.XmlUtil;
 
+@Singleton
 public class ReportXmlTransformer {
 	private Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+	private @Setter @Inject String xsltResource;
 	private String xslt;
 	private Transformer transformer;
 	private String createTransformerError;
 	private Exception createTransformerException;
 
-	public void setXsltResource(String xsltResource) {
+	@PostConstruct
+	public void init() {
 		StringBuffer result = new StringBuffer();
 		InputStream stream = getClass().getClassLoader().getResourceAsStream(xsltResource);
 		if (stream == null) {

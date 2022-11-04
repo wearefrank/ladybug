@@ -17,6 +17,8 @@ package nl.nn.testtool.echo2.reports;
 
 import java.lang.invoke.MethodHandles;
 
+import javax.enterprise.context.Dependent;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,6 +37,7 @@ import nl.nn.testtool.echo2.Echo2Application;
 /**
  * @author Jaco de Groot
  */
+@Dependent
 public class ReportsTreeCellRenderer extends DefaultTreeCellRenderer {
 	private Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 	private boolean showReportAndCheckpointIds;

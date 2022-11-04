@@ -1,5 +1,5 @@
 /*
-   Copyright 2020, 2022 WeAreFrank!, 2018 Nationale-Nederlanden
+   Copyright 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -13,30 +13,12 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.testtool.echo2.reports;
+package nl.nn.testtool.echo2;
 
-import javax.annotation.PostConstruct;
 import javax.enterprise.context.Dependent;
-import javax.inject.Inject;
-
-import nextapp.echo2.app.ContentPane;
 
 @Dependent
-public class ReportsListPane extends ContentPane {
+public class ContentPane extends nextapp.echo2.app.ContentPane {
 	private static final long serialVersionUID = 1L;
-	@Inject
-	private ReportsComponent reportsComponent;
 
-    public void setReportsComponent(ReportsComponent reportsComponent) {
-        this.reportsComponent = reportsComponent;
-    }
-    
-	/**
-	 * @see nl.nn.testtool.echo2.Echo2Application#initBean()
-	 */
-	@PostConstruct
-    public void initBean() {
-        add(reportsComponent, 0);
-    }
-    
 }

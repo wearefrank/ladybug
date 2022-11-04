@@ -30,6 +30,7 @@ import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.json.bind.annotation.JsonbTransient;
 import javax.xml.xpath.XPathExpressionException;
 
 import org.apache.commons.lang.StringUtils;
@@ -110,6 +111,9 @@ public class Checkpoint implements Serializable, Cloneable {
 	}
 
 	@JsonIgnore
+	// Quarkus with Jackson without @JsonbTransient on opening a report:
+	//   javax.json.bind.JsonbException: Recursive reference has been found in class class nl.nn.testtool.Report.
+	@JsonbTransient
 	public Report getReport() {
 		return report;
 	}
@@ -619,7 +623,9 @@ public class Checkpoint implements Serializable, Cloneable {
 		return report.getCheckpoints().indexOf(this);
 	}
 
-	public String getUID() {
+	// Use lowercase to make JSON-B behave the same as Jackson
+	// See also comment in Report above Integer transientStorageId
+	public String getUid() {
 		return report.getStorageId()+"#"+report.getCheckpoints().indexOf(this);
 	}
 

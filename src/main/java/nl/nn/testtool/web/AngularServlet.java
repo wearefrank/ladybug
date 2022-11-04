@@ -147,7 +147,7 @@ public class AngularServlet extends HttpServlet {
 		String filename = tokens[tokens.length - 1];
 		String mimeType = getServletContext().getMimeType(filename);
 		response.setContentType(mimeType != null ? mimeType : "application/octet-stream");
-		HttpServletRequestWrapper wrapper = new HttpServletRequestWrapper(request) {
+		HttpServletRequestWrapper requestWrapper = new HttpServletRequestWrapper(request) {
 			@Override
 			public String getServletPath() {
 				return webJarsBase;
@@ -158,7 +158,7 @@ public class AngularServlet extends HttpServlet {
 			}
 		};
 		RequestDispatcher requestDispatcher = request.getRequestDispatcher(webJarsRequestURI);
-		requestDispatcher.include(wrapper, response);
+		requestDispatcher.include(requestWrapper, response);
 	}
 }
 

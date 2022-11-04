@@ -17,6 +17,8 @@ package nl.nn.testtool.echo2;
 
 import java.lang.invoke.MethodHandles;
 
+import javax.annotation.PostConstruct;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,6 +39,7 @@ public class BaseComponent extends Column {
 	/**
 	 * @see nl.nn.testtool.echo2.Echo2Application#initBean()
 	 */
+	@PostConstruct
 	public void initBean() {
 		setInsets(new Insets(10));
 

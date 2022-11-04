@@ -26,6 +26,11 @@ import java.util.Scanner;
 import java.util.Set;
 import java.util.TooManyListenersException;
 
+import javax.annotation.PostConstruct;
+import javax.enterprise.context.Dependent;
+import javax.inject.Inject;
+import javax.inject.Named;
+
 import org.apache.commons.lang.StringUtils;
 
 import echopointng.ProgressBar;
@@ -68,12 +73,15 @@ import nl.nn.testtool.util.CsvUtil;
 /**
  * @author Jaco de Groot
  */
+@Dependent
 public class TestComponent extends BaseComponent implements BeanParent, ActionListener {
 	private static final long serialVersionUID = 1L;
 	private TestTool testTool;
 	private Storage debugStorage;
+	@Inject
 	private CrudStorage testStorage;
 	private Echo2Application echo2Application;
+	@Inject @Named("testTreePane")
 	private TreePane treePane;
 	private ProgressBar progressBar;
 	private ReportRunner reportRunner;
@@ -131,6 +139,7 @@ public class TestComponent extends BaseComponent implements BeanParent, ActionLi
 	/**
 	 * @see nl.nn.testtool.echo2.Echo2Application#initBean()
 	 */
+	@PostConstruct
 	public void initBean() {
 		super.initBean();
 

@@ -20,6 +20,8 @@ import java.text.SimpleDateFormat;
 import java.util.Iterator;
 import java.util.List;
 
+import javax.inject.Singleton;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,9 +34,9 @@ public class MetadataExtractor {
 	public static final int VALUE_TYPE_STRING = 1;
 	public static final int VALUE_TYPE_GUI = 2;
 	private static final SimpleDateFormat FORMAT_DATE_TIME = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
-	public List extraMetadataFieldExtractors;
+	public List<MetadataFieldExtractor> extraMetadataFieldExtractors;
 	
-	public void setExtraMetadataFieldExtractors(List extraMetadataFieldExtractors) {
+	public void setExtraMetadataFieldExtractors(List<MetadataFieldExtractor> extraMetadataFieldExtractors) {
 		this.extraMetadataFieldExtractors = extraMetadataFieldExtractors;
 	}
 
@@ -75,9 +77,9 @@ public class MetadataExtractor {
 		}
 		String label = null;
 		if (extraMetadataFieldExtractors != null) {
-			Iterator iterator = extraMetadataFieldExtractors.iterator();
+			Iterator<MetadataFieldExtractor> iterator = extraMetadataFieldExtractors.iterator();
 			while (iterator.hasNext() && label == null) {
-				MetadataFieldExtractor metadataFieldExtractor = (MetadataFieldExtractor)iterator.next();
+				MetadataFieldExtractor metadataFieldExtractor = iterator.next();
 				if (metadataFieldExtractor.getName().equals(metadataName)) {
 					label = metadataFieldExtractor.getLabel();
 				}
@@ -125,9 +127,9 @@ public class MetadataExtractor {
 		}
 		String shortLabel = null;
 		if (extraMetadataFieldExtractors != null) {
-			Iterator iterator = extraMetadataFieldExtractors.iterator();
+			Iterator<MetadataFieldExtractor> iterator = extraMetadataFieldExtractors.iterator();
 			while (iterator.hasNext() && shortLabel == null) {
-				MetadataFieldExtractor metadataFieldExtractor = (MetadataFieldExtractor)iterator.next();
+				MetadataFieldExtractor metadataFieldExtractor = iterator.next();
 				if (metadataFieldExtractor.getName().equals(metadataName)) {
 					shortLabel = metadataFieldExtractor.getShortLabel();
 				}
@@ -183,9 +185,9 @@ public class MetadataExtractor {
 		}
 		Object metadata = null;
 		if (extraMetadataFieldExtractors != null) {
-			Iterator iterator = extraMetadataFieldExtractors.iterator();
+			Iterator<MetadataFieldExtractor> iterator = extraMetadataFieldExtractors.iterator();
 			while (iterator.hasNext() && metadata == null) {
-				MetadataFieldExtractor metadataFieldExtractor = (MetadataFieldExtractor)iterator.next();
+				MetadataFieldExtractor metadataFieldExtractor = iterator.next();
 				if (metadataFieldExtractor.getName().equals(metadataName)) {
 					metadata = metadataFieldExtractor.extractMetadata(report);
 				}

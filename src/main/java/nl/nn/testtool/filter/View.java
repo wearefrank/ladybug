@@ -18,19 +18,26 @@ package nl.nn.testtool.filter;
 import java.util.List;
 import java.util.Map;
 
+import javax.enterprise.context.Dependent;
+import javax.inject.Inject;
+
 import nl.nn.testtool.Checkpoint;
 import nl.nn.testtool.Report;
 import nl.nn.testtool.echo2.BeanParent;
 import nl.nn.testtool.echo2.Echo2Application;
 import nl.nn.testtool.echo2.reports.ReportsComponent;
+import nl.nn.testtool.storage.LogStorage;
 import nl.nn.testtool.storage.Storage;
 
 /**
  * @author Jaco de Groot
  */
+@Dependent
 public class View implements BeanParent {
 	private String name;
-	private Storage storage;
+	@Inject
+	private LogStorage storage;
+	@Inject
 	private List<String> metadataNames;
 	private Map<String, String> metadataFilter;
 	private List<CheckpointMatcher> checkpointMatchers;
@@ -45,7 +52,7 @@ public class View implements BeanParent {
 		return name;
 	}
 
-	public void setStorage(Storage storage) {
+	public void setStorage(LogStorage storage) {
 		this.storage = storage;
 	}
 
@@ -102,7 +109,7 @@ public class View implements BeanParent {
 			CheckpointMatcher checkpointMatcher = checkpointMatchers.get(i);
 			match = checkpointMatcher.match(report, checkpoint);
 		}
-		return match;		
+		return match;
 	}
 
 	public String toString() {

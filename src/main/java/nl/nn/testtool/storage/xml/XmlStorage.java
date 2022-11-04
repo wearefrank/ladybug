@@ -26,6 +26,8 @@ import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.util.List;
 
+import javax.annotation.PostConstruct;
+
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,6 +53,7 @@ public class XmlStorage implements CrudStorage {
 	 *
 	 * @throws StorageException ...
 	 */
+	@PostConstruct
 	public void init() throws StorageException {
 		if (StringUtils.isEmpty(reportsFolderPath))
 			throw new StorageException("Report folder path is empty. Please provide a path.");

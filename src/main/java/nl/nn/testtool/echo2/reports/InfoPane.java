@@ -15,6 +15,9 @@
 */
 package nl.nn.testtool.echo2.reports;
 
+import javax.annotation.PostConstruct;
+import javax.enterprise.context.Dependent;
+
 import echopointng.Tree;
 import echopointng.tree.DefaultMutableTreeNode;
 import echopointng.tree.TreePath;
@@ -28,6 +31,7 @@ import nl.nn.testtool.echo2.BeanParent;
 /**
  * @author Jaco de Groot
  */
+@Dependent
 public class InfoPane extends ContentPane implements BeanParent {
 	private static final long serialVersionUID = 1L;
 	private ReportsComponent reportsComponent;
@@ -57,6 +61,7 @@ public class InfoPane extends ContentPane implements BeanParent {
 	/**
 	 * @see nl.nn.testtool.echo2.Echo2Application#initBean()
 	 */
+	@PostConstruct
 	public void initBean() {
 	}
 
