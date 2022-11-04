@@ -88,7 +88,7 @@ public class TestTool {
 	}
 
 	public String getConfigName() {
-		return configName + "BLA";
+		return configName;
 	}
 
 	public void setConfigVersion(String configVersion) {
