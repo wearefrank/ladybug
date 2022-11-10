@@ -60,28 +60,27 @@ public class ApiAuthorizationFilter implements ContainerRequestFilter {
 	private boolean initialWarningLogged = false;
 	private boolean globalFilter = false;
 
+	public ApiAuthorizationFilter() {
+		// When security disabled:
+		//   Whitelist all url's to allow all API resources (the filter() method will skip isUserInRole() check when the
+		//   user isn't authenticated)
+		// When security is enabled:
+		//   Deny access to all API resources by default and for example prevent that when by accident only
+		//   setDataAdminRoles() is called it allows access to resources that should be disallowed by a call to
+		//   setTesterRoles() (making /runner/run/.* override /runner/.* for the run resources)
+		setObserverRoles(null);
+		setDataAdminRoles(null);
+		setTesterRoles(null);
+	}
+
 	/**
-	 * Init to be used when filter is applied for all resource of the applicatione (e.g. in a Quarkus application)
+	 * Init to be used when filter is applied for all resource of the applicatione (e.g. in a Quarkus application). This
+	 * is not needed and not recommended when filter is applied to the ApiServlet resources only (e.g. when configured
+	 * in CXF, see cxf-beans.xml in Ladybug project (ApiServlet extends CXFServlet))
 	 */
 	@PostConstruct
 	public void initGlobalFilter() {
 		globalFilter = true;
-		init();
-	}
-
-	/**
-	 * Init to be used when filter is applied to the ApiServlet only (e.g. when configured in CXF, see cxf-beans.xml in
-	 * Ladybug project (ApiServlet extends CXFServlet))
-	 */
-	public void init() {
-		if (configuration.size() == 0) {
-			// Whitelist all url's (without roles) to make them work when the servlet container didn't authenticate the
-			// user (e.g. when running and developing locally). When security is enabled everything will be disallowed
-			// because all roles are null
-			setObserverRoles(null);
-			setDataAdminRoles(null);
-			setTesterRoles(null);
-		}
 	}
 
 	public void setObserverRoles(List<String> observerRoles) {
@@ -99,8 +98,8 @@ public class ApiAuthorizationFilter implements ContainerRequestFilter {
 		addConfigurationPart("DELETE/" + ApiServlet.LADYBUG_API_PATH + "/report/.*$", dataAdminRoles);
 		addConfigurationPart("PUT/"    + ApiServlet.LADYBUG_API_PATH + "/report/.*$", dataAdminRoles);
 		addConfigurationPart("POST/"   + ApiServlet.LADYBUG_API_PATH + "/report/.*$", dataAdminRoles);
-		addConfigurationPart("POST/"   + ApiServlet.LADYBUG_API_PATH + "/runner/.*", dataAdminRoles);
 		addConfigurationPart("PUT/"    + ApiServlet.LADYBUG_API_PATH + "/runner/.*", dataAdminRoles);
+		addConfigurationPart("POST/"   + ApiServlet.LADYBUG_API_PATH + "/runner/.*", dataAdminRoles);
 	}
 
 	/**
@@ -148,11 +147,10 @@ public class ApiAuthorizationFilter implements ContainerRequestFilter {
 			boolean pathMatches = pattern.matcher(path).matches();
 			boolean isMostSpecificConfigurationPartNull = mostSpecificConfigurationPart == null;
 			boolean isConfigurationPartMoreSpecific = isMostSpecificConfigurationPartNull
-					|| mostSpecificConfigurationPart.getSpecificity() < configurationPart.getSpecificity();
+					|| configurationPart.getSpecificity() > mostSpecificConfigurationPart.getSpecificity();
 			boolean configurationPartContainsMethod =
 					configuration.get(pattern).containsMethod(method);
-			if (pathMatches && (isMostSpecificConfigurationPartNull || isConfigurationPartMoreSpecific)
-					&& configurationPartContainsMethod) {
+			if (pathMatches && isConfigurationPartMoreSpecific && configurationPartContainsMethod) {
 				mostSpecificConfigurationPart = configurationPart;
 			}
 		}
