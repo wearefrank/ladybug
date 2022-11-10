@@ -138,6 +138,7 @@ public class ReportApi extends ApiBase {
 			return Response.status(Response.Status.NOT_FOUND).entity("Exception while getting report [" + storageIds + "] from storage [" + storageName + "] - detailed error message - " + e + Arrays.toString(e.getStackTrace())).build();
 		}
 	}
+
 	/**
 	 * Deletes the report.
 	 *

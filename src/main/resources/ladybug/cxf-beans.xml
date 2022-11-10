@@ -18,7 +18,7 @@
 	<jaxrs:server id="Ladybug-Api" bus="ladybug-api-bus" address="/" basePackages="nl.nn.testtool.web.api">
 		<jaxrs:providers>
 			<bean id="jsonProvider" class="com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider"/>
-			<bean id="apiAuthorizationFilter" class="nl.nn.testtool.web.ApiAuthorizationFilter" autowire="byName"/>
+			<bean id="apiAuthorizationFilter" class="nl.nn.testtool.web.ApiAuthorizationFilter" autowire="byName" init-method="init"/>
 		</jaxrs:providers>
 		<jaxrs:features>
 			<cxf:logging/>

@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import javax.annotation.PostConstruct;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.container.PreMatching;
@@ -56,15 +57,61 @@ import lombok.Getter;
 public class ApiAuthorizationFilter implements ContainerRequestFilter {
 	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 	private Map<Pattern, ConfigurationPart> configuration = new HashMap<>();
-	
-	public void setChangeReportGeneratorEnabledRoles(List<String> changeReportGeneratorEnabledRoles) {
-		log.info("Set change report generator enabled roles");
-		addConfigurationPart("POST/" + ApiServlet.LADYBUG_API_PATH + "/testtool$", changeReportGeneratorEnabledRoles);
+	private boolean initialWarningLogged = false;
+	private boolean globalFilter = false;
+
+	/**
+	 * Init to be used when filter is applied for all resource of the applicatione (e.g. in a Quarkus application)
+	 */
+	@PostConstruct
+	public void initGlobalFilter() {
+		globalFilter = true;
+		init();
 	}
 
-	public void setRerunRoles(List<String> rerunRoles) {
+	/**
+	 * Init to be used when filter is applied to the ApiServlet only (e.g. when configured in CXF, see cxf-beans.xml in
+	 * Ladybug project (ApiServlet extends CXFServlet))
+	 */
+	public void init() {
+		if (configuration.size() == 0) {
+			// Whitelist all url's (without roles) to make them work when the servlet container didn't authenticate the
+			// user (e.g. when running and developing locally). When security is enabled everything will be disallowed
+			// because all roles are null
+			setObserverRoles(null);
+			setDataAdminRoles(null);
+			setTesterRoles(null);
+		}
+	}
+
+	public void setObserverRoles(List<String> observerRoles) {
+		log.info("Set observer roles");
+		addConfigurationPart("GET/"  + ApiServlet.LADYBUG_API_PATH + "/testtool.*$", observerRoles);
+		addConfigurationPart("POST/" + ApiServlet.LADYBUG_API_PATH + "/testtool/transformation[/]?$", observerRoles); // [/]? because frontend is currently not using a slash at the end
+		addConfigurationPart("GET/"  + ApiServlet.LADYBUG_API_PATH + "/metadata/.*$", observerRoles);
+		addConfigurationPart("GET/"  + ApiServlet.LADYBUG_API_PATH + "/report/.*$", observerRoles);
+	}
+
+	public void setDataAdminRoles(List<String> dataAdminRoles) {
+		log.info("Set change report generator enabled roles");
+		addConfigurationPart("POST/"   + ApiServlet.LADYBUG_API_PATH + "/testtool$", dataAdminRoles);
+		addConfigurationPart("DELETE/" + ApiServlet.LADYBUG_API_PATH + "/in-progress/.*$", dataAdminRoles);
+		addConfigurationPart("DELETE/" + ApiServlet.LADYBUG_API_PATH + "/report/.*$", dataAdminRoles);
+		addConfigurationPart("PUT/"    + ApiServlet.LADYBUG_API_PATH + "/report/.*$", dataAdminRoles);
+		addConfigurationPart("POST/"   + ApiServlet.LADYBUG_API_PATH + "/report/.*$", dataAdminRoles);
+		addConfigurationPart("POST/"   + ApiServlet.LADYBUG_API_PATH + "/runner/.*", dataAdminRoles);
+		addConfigurationPart("PUT/"    + ApiServlet.LADYBUG_API_PATH + "/runner/.*", dataAdminRoles);
+	}
+
+	/**
+	 * Set tester roles, a role which is normally not available in production environments, hence actions for this role
+	 * will be disabled in P
+	 * 
+	 * @param testerRoles
+	 */
+	public void setTesterRoles(List<String> testerRoles) {
 		log.info("Set rerun roles");
-		addConfigurationPart("POST/" + ApiServlet.LADYBUG_API_PATH + "/runner/run/.*", rerunRoles);
+		addConfigurationPart("POST/" + ApiServlet.LADYBUG_API_PATH + "/runner/run/.*", testerRoles);
 	}
 
 	public void setLadybugApiRoles(Map<String, List<String>> ladybugApiRoles) {
@@ -82,47 +129,88 @@ public class ApiAuthorizationFilter implements ContainerRequestFilter {
 
 	@Override
 	public void filter(ContainerRequestContext requestContext) throws IOException {
-		if (requestContext.getSecurityContext().getUserPrincipal() == null) {
-			// The servlet container didn't authenticate the user (e.g. when running and developing locally). In this
-			// case allow everything
+		String path = requestContext.getUriInfo().getPath().toLowerCase();
+		if (path.startsWith("/")) {
+			// Remove extra / at the beginning when using Quarkus (and possible other setups)
+			path = path.substring(1);
+		}
+		if (globalFilter && !path.contains(ApiServlet.LADYBUG_API_PATH)) {
+			// Ignore everything but the Ladybug API using contains() instead of startsWith() to be on the safe side
+			// and prevent misuse of this return (e.g. by prefixing the Ladybug API path with multiple slashes)
 			return;
-		} else if (configuration.size() == 0) {
-			// When user is authenticated and rolesMap is empty deny everything by default to prevent security issues
-			// because of misconfiguration (e.g. no set methods for this bean being (auto)wired while the developer
-			// expected them to be (auto)wired)
-		} else {
-			// Find the matching path pattern with the biggest length
-			String path = requestContext.getUriInfo().getPath().toLowerCase();
-			ConfigurationPart mostSpecificConfigurationPart = null;
-			for (Pattern pattern : configuration.keySet()) {
-				ConfigurationPart configurationPart = configuration.get(pattern);
-				boolean pathMatches = pattern.matcher(path).matches();
-				boolean isMostSpecificConfigurationPartNull = mostSpecificConfigurationPart == null;
-				boolean isConfigurationPartMoreSpecific = isMostSpecificConfigurationPartNull
-						|| mostSpecificConfigurationPart.getSpecificity() < configurationPart.getSpecificity();
-				boolean configurationPartContainsMethod =
-						configuration.get(pattern).containsMethod(requestContext.getMethod());
-				if (pathMatches && (isMostSpecificConfigurationPartNull || isConfigurationPartMoreSpecific)
-						&& configurationPartContainsMethod) {
-					mostSpecificConfigurationPart = configurationPart;
-				}
-			}
-			// No specific security configuration is given for the path
-			if (mostSpecificConfigurationPart == null) return;
-			for (String role : mostSpecificConfigurationPart.getRoles()) {
-				// If user is in one of the roles, continue with the chain.
-				if (requestContext.getSecurityContext().isUserInRole(role)) return;
+		}
+		String method = requestContext.getMethod();
+		boolean noRolesFound = true;
+		ConfigurationPart mostSpecificConfigurationPart = null;
+		// Find the matching path pattern with the biggest length
+		for (Pattern pattern : configuration.keySet()) {
+			ConfigurationPart configurationPart = configuration.get(pattern);
+			boolean pathMatches = pattern.matcher(path).matches();
+			boolean isMostSpecificConfigurationPartNull = mostSpecificConfigurationPart == null;
+			boolean isConfigurationPartMoreSpecific = isMostSpecificConfigurationPartNull
+					|| mostSpecificConfigurationPart.getSpecificity() < configurationPart.getSpecificity();
+			boolean configurationPartContainsMethod =
+					configuration.get(pattern).containsMethod(method);
+			if (pathMatches && (isMostSpecificConfigurationPartNull || isConfigurationPartMoreSpecific)
+					&& configurationPartContainsMethod) {
+				mostSpecificConfigurationPart = configurationPart;
 			}
 		}
+		if (mostSpecificConfigurationPart != null) {
+			String reason = " allowed by " + mostSpecificConfigurationPart.toString();
+			if (requestContext.getSecurityContext().getUserPrincipal() == null) {
+				// The servlet container didn't authenticate the user (e.g. when running and developing locally). In
+				// this case allow everyone
+				if (!initialWarningLogged) {
+					log.warn("Security has been disabled, this should only be the case when developing locally!");
+					initialWarningLogged = true;
+				}
+				log(requestContext, method, path, true, reason + " with security disabled");
+				return;
+			} else {
+				for (String role : mostSpecificConfigurationPart.getRoles()) {
+					if (role != null) {
+						noRolesFound = false;
+						if (requestContext.getSecurityContext().isUserInRole(role)) {
+							log(requestContext, method, path, true, reason);
+							return;
+						}
+					}
+				}
+			}
+		}
+		String reason = " NOT ALLOWED becasue";
+		if (mostSpecificConfigurationPart == null) {
+			reason = reason + " no matching pattern found";
+		} else {
+			reason = reason + " user not in role for " + mostSpecificConfigurationPart;
+			if (noRolesFound) {
+				reason = reason + " (use ApiAuthorizationFilter.set*Roles())";
+			}
+		}
+		log(requestContext, method, path, false, reason);
 		// Return unauthorized.
-		requestContext.abortWith(Response.status(Response.Status.UNAUTHORIZED).build());
+		// Return string "Not allowed!" to be able to see the request is unauthorized when CXF returns OK (200) instead
+		// of UNAUTHORIZED (401). From https://cxf.apache.org/docs/jax-rs-filters.html:
+		//   At the moment it is not possible to override a response status code from a CXF interceptor running before
+		//   JAXRSOutInterceptor, like CustomOutInterceptor above, which will be fixed.
+		requestContext.abortWith(Response.status(Response.Status.UNAUTHORIZED).entity("Not allowed!").build());
+	}
+
+	private void log(ContainerRequestContext requestContext, String method, String path, boolean allowed,
+			String reason) {
+		String user = "";
+		if (requestContext.getSecurityContext().getUserPrincipal() != null) {
+			user = requestContext.getSecurityContext().getUserPrincipal().getName();
+		}
+		log.debug("[" + method + "]" + path + "[" + user + "]" + reason);
 	}
 
 	/**
 	 * This class is used to represent a piece of authorization configuration
 	 */
 	private static class ConfigurationPart {
-		private Set<String> methods;
+		private @Getter Set<String> methods;
 		private @Getter Pattern pattern;
 		private @Getter int specificity;
 		private @Getter List<String> roles;
@@ -154,7 +242,7 @@ public class ApiAuthorizationFilter implements ContainerRequestFilter {
 
 		@Override
 		public String toString() {
-			return "Methods: \"" + methods + "\", Pattern: \"" + pattern + "\", Roles: " + roles.toString();
+			return methods.toString() + pattern + roles.toString();
 		}
 	}
 }
