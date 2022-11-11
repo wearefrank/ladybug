@@ -56,7 +56,8 @@ import lombok.Getter;
 @PreMatching
 public class ApiAuthorizationFilter implements ContainerRequestFilter {
 	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-	private Map<Pattern, ConfigurationPart> configuration = new HashMap<>();
+	private Map<String, ConfigurationPart> configuration = new HashMap<>();
+	private boolean constructorDone = false;
 	private boolean initialWarningLogged = false;
 	private boolean globalFilter = false;
 
@@ -71,6 +72,7 @@ public class ApiAuthorizationFilter implements ContainerRequestFilter {
 		setObserverRoles(null);
 		setDataAdminRoles(null);
 		setTesterRoles(null);
+		constructorDone = true;
 	}
 
 	/**
@@ -84,7 +86,7 @@ public class ApiAuthorizationFilter implements ContainerRequestFilter {
 	}
 
 	public void setObserverRoles(List<String> observerRoles) {
-		log.info("Set observer roles");
+		if (constructorDone) log.info("Set observer roles");
 		addConfigurationPart("GET/"  + ApiServlet.LADYBUG_API_PATH + "/testtool.*$", observerRoles);
 		addConfigurationPart("POST/" + ApiServlet.LADYBUG_API_PATH + "/testtool/transformation[/]?$", observerRoles); // [/]? because frontend is currently not using a slash at the end
 		addConfigurationPart("GET/"  + ApiServlet.LADYBUG_API_PATH + "/metadata/.*$", observerRoles);
@@ -92,7 +94,7 @@ public class ApiAuthorizationFilter implements ContainerRequestFilter {
 	}
 
 	public void setDataAdminRoles(List<String> dataAdminRoles) {
-		log.info("Set change report generator enabled roles");
+		if (constructorDone) log.info("Set data admin roles");
 		addConfigurationPart("POST/"   + ApiServlet.LADYBUG_API_PATH + "/testtool$", dataAdminRoles);
 		addConfigurationPart("DELETE/" + ApiServlet.LADYBUG_API_PATH + "/in-progress/.*$", dataAdminRoles);
 		addConfigurationPart("DELETE/" + ApiServlet.LADYBUG_API_PATH + "/report/.*$", dataAdminRoles);
@@ -109,7 +111,7 @@ public class ApiAuthorizationFilter implements ContainerRequestFilter {
 	 * @param testerRoles
 	 */
 	public void setTesterRoles(List<String> testerRoles) {
-		log.info("Set rerun roles");
+		if (constructorDone) log.info("Set tester roles");
 		addConfigurationPart("POST/" + ApiServlet.LADYBUG_API_PATH + "/runner/run/.*", testerRoles);
 	}
 
@@ -120,10 +122,10 @@ public class ApiAuthorizationFilter implements ContainerRequestFilter {
 		}
 	}
 
-	private void addConfigurationPart(String path, List<String> roles) {
-		ConfigurationPart configurationPart = new ConfigurationPart(path, roles);
-		log.debug("Add configuration part [" + configurationPart.toString() + "]");
-		configuration.put(configurationPart.getPattern(), configurationPart);
+	private void addConfigurationPart(String methodsAndPathPattern, List<String> roles) {
+		ConfigurationPart configurationPart = new ConfigurationPart(methodsAndPathPattern, roles);
+		if (constructorDone) log.debug("Add configuration part [" + configurationPart.toString() + "]");
+		configuration.put(methodsAndPathPattern, configurationPart);
 	}
 
 	@Override
@@ -142,14 +144,14 @@ public class ApiAuthorizationFilter implements ContainerRequestFilter {
 		boolean noRolesFound = true;
 		ConfigurationPart mostSpecificConfigurationPart = null;
 		// Find the matching path pattern with the biggest length
-		for (Pattern pattern : configuration.keySet()) {
-			ConfigurationPart configurationPart = configuration.get(pattern);
+		for (String methodsAndPathPattern : configuration.keySet()) {
+			ConfigurationPart configurationPart = configuration.get(methodsAndPathPattern);
+			Pattern pattern = configurationPart.getPattern();
 			boolean pathMatches = pattern.matcher(path).matches();
 			boolean isMostSpecificConfigurationPartNull = mostSpecificConfigurationPart == null;
 			boolean isConfigurationPartMoreSpecific = isMostSpecificConfigurationPartNull
 					|| configurationPart.getSpecificity() > mostSpecificConfigurationPart.getSpecificity();
-			boolean configurationPartContainsMethod =
-					configuration.get(pattern).containsMethod(method);
+			boolean configurationPartContainsMethod = configurationPart.containsMethod(method);
 			if (pathMatches && isConfigurationPartMoreSpecific && configurationPartContainsMethod) {
 				mostSpecificConfigurationPart = configurationPart;
 			}
