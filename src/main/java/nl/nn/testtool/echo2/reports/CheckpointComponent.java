@@ -43,6 +43,7 @@ public class CheckpointComponent extends MessageComponent {
 	private static final long serialVersionUID = 1L;
 	private Checkpoint checkpoint;
 	private Label namePropertyLabel;
+	private Label typePropertyLabel;
 	private Label threadNamePropertyLabel;
 	private Label sourceClassNamePropertyLabel;
 	private Label messageClassNamePropertyLabel;
@@ -183,6 +184,9 @@ public class CheckpointComponent extends MessageComponent {
 		namePropertyLabel = Echo2Application.createInfoLabelWithColumnLayoutData();
 		add(namePropertyLabel);
 
+		typePropertyLabel = Echo2Application.createInfoLabelWithColumnLayoutData();
+		add(typePropertyLabel);
+
 		threadNamePropertyLabel = Echo2Application.createInfoLabelWithColumnLayoutData();
 		add(threadNamePropertyLabel);
 
@@ -302,6 +306,7 @@ public class CheckpointComponent extends MessageComponent {
 			setMessage(message);
 		}
 		namePropertyLabel.setText("Name: " + checkpoint.getName());
+		typePropertyLabel.setText("Type: " + Checkpoint.getTypeAsString(checkpoint.getType()));
 		threadNamePropertyLabel.setText("Thread name: " + checkpoint.getThreadName());
 		sourceClassNamePropertyLabel.setText("Source class name: " + checkpoint.getSourceClassName());
 		String messageClassName = checkpoint.getMessageClassName();

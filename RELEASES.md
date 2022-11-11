@@ -6,7 +6,8 @@ Ladybug Test Tool release notes
 Upcoming (2.3)
 --------------
 
-- Whitelist api resource (instead of blacklisting)
+- Add type label to checkpoint component (old GUI)
+- Whitelist api resources (instead of blacklisting)
 - Support Quarkus
 - Handle invalid checkpoints with level < 0
 - Add closeNewThreadsOnly
