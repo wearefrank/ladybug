@@ -108,7 +108,7 @@ public class ApiAuthorizationFilter implements ContainerRequestFilter {
 	 * Set tester roles, a role which is normally not available in production environments, hence actions for this role
 	 * will be disabled in P
 	 * 
-	 * @param testerRoles
+	 * @param testerRoles ...
 	 */
 	public void setTesterRoles(List<String> testerRoles) {
 		if (constructorDone) log.info("Set tester roles");
