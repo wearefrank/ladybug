@@ -82,7 +82,7 @@ public class ReportsComponent extends BaseComponent implements BeanParent, Actio
 	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 	// Custom View implementations may return other values on isOpenReportAllowed() (see TibetView in Frank!Framework)
 	public static final String OPEN_REPORT_ALLOWED = "Allowed";
-	private List<String> changeReportGeneratorEnabledRoles;
+	private List<String> dataAdminRoles;
 	// TODO testTool overbodig maken nu we storage van view halen?
 	@Inject
 	private TestTool testTool;
@@ -129,8 +129,8 @@ public class ReportsComponent extends BaseComponent implements BeanParent, Actio
 	private Echo2Application echo2Application;
 	private boolean initCalled = false;
 
-	public void setChangeReportGeneratorEnabledRoles(List<String> changeReportGeneratorEnabledRoles) {
-		this.changeReportGeneratorEnabledRoles = changeReportGeneratorEnabledRoles;
+	public void setDataAdminRoles(List<String> dataAdminRoles) {
+		this.dataAdminRoles = dataAdminRoles;
 	}
 
 	public void setTestTool(TestTool testTool) {
@@ -619,7 +619,7 @@ public class ReportsComponent extends BaseComponent implements BeanParent, Actio
 			regexFilterField.setText(testTool.getRegexFilter());
 			optionsWindow.setVisible(true);
 		} else if (e.getActionCommand().equals("UpdateGeneratorEnabled")) {
-			if (echo2Application.isUserInRoles(changeReportGeneratorEnabledRoles)) {
+			if (echo2Application.isUserInRoles(dataAdminRoles)) {
 				String msg = "Report generator ";
 				if ("Yes".equals(reportGeneratorEnabledSelectField.getSelectedItem())) {
 					testTool.setReportGeneratorEnabled(true);
@@ -641,7 +641,7 @@ public class ReportsComponent extends BaseComponent implements BeanParent, Actio
 				reportGeneratorEnabledErrorLabel.setVisible(true);
 			}
 		} else if (e.getActionCommand().equals("UpdateRegexValues")) {
-			if (echo2Application.isUserInRoles(changeReportGeneratorEnabledRoles)) {
+			if (echo2Application.isUserInRoles(dataAdminRoles)) {
 					testTool.setRegexFilter(regexFilterField.getText());
 				}
 			else {
