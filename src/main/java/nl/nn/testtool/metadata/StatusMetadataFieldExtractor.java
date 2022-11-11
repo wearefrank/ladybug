@@ -15,26 +15,31 @@
 */
 package nl.nn.testtool.metadata;
 
+import java.util.List;
+
 import nl.nn.testtool.Checkpoint;
 import nl.nn.testtool.Report;
 
 /**
  * @author Jaco de Groot
  */
-public class StatusExtractor extends DefaultValueMetadataFieldExtractor {
+public class StatusMetadataFieldExtractor extends DefaultValueMetadataFieldExtractor {
 	
-	public StatusExtractor() {
+	public StatusMetadataFieldExtractor() {
 		name = "status";
 		label = "Status";
 	}
 
 	public Object extractMetadata(Report report) {
-		for (Checkpoint checkpoint : report.getCheckpoints()) {
-			if (checkpoint.getType() == Checkpoint.TYPE_ABORTPOINT) {
-				return "Error";
+		String status = "Success";
+		List<Checkpoint> checkpoints = report.getCheckpoints();
+		if (checkpoints.size() > 0) {
+			Checkpoint lastCheckpoint = (Checkpoint)checkpoints.get(checkpoints.size() - 1);
+			if (lastCheckpoint.getType() == Checkpoint.TYPE_ABORTPOINT) {
+				status = "Error";
 			}
 		}
-		return "Success";
+		return status;
 	}
 
 }

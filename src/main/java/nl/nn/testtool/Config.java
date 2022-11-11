@@ -27,7 +27,7 @@ import nl.nn.testtool.echo2.Tabs;
 import nl.nn.testtool.echo2.TestPane;
 import nl.nn.testtool.filter.View;
 import nl.nn.testtool.filter.Views;
-import nl.nn.testtool.metadata.StatusExtractor;
+import nl.nn.testtool.metadata.StatusMetadataFieldExtractor;
 import nl.nn.testtool.storage.CrudStorage;
 import nl.nn.testtool.storage.LogStorage;
 import nl.nn.testtool.storage.memory.Storage;
@@ -49,7 +49,7 @@ public class Config {
 	MetadataExtractor metadataExtractor() {
 		MetadataExtractor metadataExtractor = new MetadataExtractor();
 		List<MetadataFieldExtractor> extraMetadataFieldExtractors = new ArrayList<MetadataFieldExtractor>();
-		extraMetadataFieldExtractors.add(new StatusExtractor());
+		extraMetadataFieldExtractors.add(new StatusMetadataFieldExtractor());
 		metadataExtractor.setExtraMetadataFieldExtractors(extraMetadataFieldExtractors);
 		return metadataExtractor;
 	}
