@@ -84,7 +84,7 @@ import nl.nn.testtool.transform.ReportXmlTransformer;
 public class Config {
 
 	@Bean
-	@Scope("singleton")
+	@Scope("prototype") // Echo2Application needs to be unique per user (not per JVM)
 	Echo2Application echo2Application() {
 		return new Echo2Application();
 	}
@@ -122,7 +122,7 @@ public class Config {
 	@Produces
 	@DefaultBean
 	@Bean
-	@Scope("prototype")
+	@Scope("singleton")
 	Views views(View view, LogStorage debugStorage) {
 		view.setName("Default");
 		List<View> list = new ArrayList<View>();
@@ -133,7 +133,7 @@ public class Config {
 	}
 
 	@Bean
-	@Scope("singleton")
+	@Scope("prototype")
 	View view() {
 		return new View();
 	}
@@ -165,7 +165,7 @@ public class Config {
 	@Produces
 	@DefaultBean
 	@Bean
-	@Scope("prototype")
+	@Scope("singleton")
 	List<String> metadataNames() {
 		List<String> metadataNames = new ArrayList<String>();
 		metadataNames.add("storageId");

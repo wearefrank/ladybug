@@ -21,8 +21,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.annotation.PostConstruct;
+import javax.enterprise.context.Dependent;
 import javax.inject.Inject;
-import javax.inject.Singleton;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -66,7 +66,7 @@ import nl.nn.testtool.storage.Storage;
 import nl.nn.testtool.storage.StorageException;
 import nl.nn.testtool.transform.ReportXmlTransformer;
 
-@Singleton
+@Dependent
 public class Echo2Application extends ApplicationInstance implements ApplicationContextAware, BeanParent, SecurityContext {
 	private static final long serialVersionUID = 1L;
 	private static Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
