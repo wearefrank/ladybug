@@ -19,19 +19,27 @@ import javax.annotation.PostConstruct;
 import javax.enterprise.context.Dependent;
 import javax.inject.Inject;
 
+import org.springframework.beans.factory.annotation.Autowired;
+
 import nextapp.echo2.app.Extent;
 import nextapp.echo2.app.SplitPane;
 import nextapp.echo2.extras.app.layout.TabPaneLayoutData;
+import nl.nn.testtool.TestTool;
 import nl.nn.testtool.echo2.test.InfoPane;
 import nl.nn.testtool.echo2.test.TreePane;
+import nl.nn.testtool.storage.CrudStorage;
+import nl.nn.testtool.storage.LogStorage;
+import nl.nn.testtool.transform.ReportXmlTransformer;
 
 @Dependent
 public class TestPane extends Tab implements BeanParent {
 	private static final long serialVersionUID = 1L;
 	private String title = "Test";
-	@Inject
+	private @Inject @Autowired TestTool testTool;
+	private @Inject @Autowired LogStorage debugStorage;
+	private @Inject @Autowired CrudStorage testStorage;
+	private @Inject @Autowired ReportXmlTransformer reportXmlTransformer;
 	private TreePane treePane;
-	@Inject
 	private InfoPane infoPane;
 
 	public TestPane() {
@@ -40,26 +48,6 @@ public class TestPane extends Tab implements BeanParent {
 
 	public void setTitle(String title) {
 		this.title = title;
-	}
-
-	public String getTitle() {
-		return title;
-	}
-
-	public void setTreePane(TreePane treePane) {
-		this.treePane = treePane;
-	}
-
-	public TreePane getTreePane() {
-		return treePane;
-	}
-
-	public void setInfoPane(InfoPane infoPane) {
-		this.infoPane = infoPane;
-	}
-
-	public InfoPane getInfoPane() {
-		return infoPane;
 	}
 
 	/**
@@ -78,12 +66,25 @@ public class TestPane extends Tab implements BeanParent {
 		splitPane1.setResizable(true);
 		splitPane1.setSeparatorPosition(new Extent(280, Extent.PX));
 
+		treePane = new TreePane();
+		infoPane = new InfoPane();
+
 		// Wire
 
 		splitPane1.add(treePane);
 		splitPane1.add(infoPane);
 		add(splitPane1);
 
+		treePane.setTestStorage(testStorage);
+		infoPane.setTestTool(testTool);
+		infoPane.setDebugStorage(debugStorage);
+		infoPane.setTestStorage(testStorage);
+		infoPane.setReportXmlTransformer(reportXmlTransformer);
+
+		// Init
+
+		treePane.initBean();
+		infoPane.initBean();
 	}
 
 	/**
@@ -93,6 +94,14 @@ public class TestPane extends Tab implements BeanParent {
 		super.initBean(beanParent);
 		treePane.initBean(this);
 		infoPane.initBean(this);
+	}
+
+	public TreePane getTreePane() {
+		return treePane;
+	}
+
+	public InfoPane getInfoPane() {
+		return infoPane;
 	}
 
 }

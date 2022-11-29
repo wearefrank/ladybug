@@ -38,7 +38,6 @@ import nl.nn.testtool.storage.CrudStorage;
 /**
  * @author Jaco de Groot
  */
-@Dependent
 public class CheckpointComponent extends MessageComponent {
 	private static final long serialVersionUID = 1L;
 	private Checkpoint checkpoint;
@@ -69,14 +68,9 @@ public class CheckpointComponent extends MessageComponent {
 		super();
 	}
 
-	public void setTreePane(TreePane treePane) {
-		this.treePane = treePane;
-	}
-	
 	/**
 	 * @see nl.nn.testtool.echo2.Echo2Application#initBean()
 	 */
-	@PostConstruct
 	public void initBean() {
 		super.initBeanPre();
 

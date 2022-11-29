@@ -22,10 +22,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.TooManyListenersException;
 
-import javax.annotation.PostConstruct;
-import javax.enterprise.context.Dependent;
-import javax.inject.Inject;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -76,7 +72,6 @@ import nl.nn.testtool.transform.ReportXmlTransformer;
 /**
  * @author Jaco de Groot
  */
-@Dependent
 public class ReportsComponent extends BaseComponent implements BeanParent, ActionListener {
 	private static final long serialVersionUID = 1L;
 	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
@@ -84,11 +79,8 @@ public class ReportsComponent extends BaseComponent implements BeanParent, Actio
 	public static final String OPEN_REPORT_ALLOWED = "Allowed";
 	private List<String> dataAdminRoles;
 	// TODO testTool overbodig maken nu we storage van view halen?
-	@Inject
 	private TestTool testTool;
-	@Inject
 	private MetadataExtractor metadataExtractor;
-	@Inject
 	private Views views;
 	private boolean addCompareButton = false;
 	private boolean addSeparateOptionsRow = false;
@@ -168,7 +160,6 @@ public class ReportsComponent extends BaseComponent implements BeanParent, Actio
 	/**
 	 * @see nl.nn.testtool.echo2.Echo2Application#initBean()
 	 */
-	@PostConstruct
 	public void initBean() {
 		super.initBean();
 
@@ -573,7 +564,7 @@ public class ReportsComponent extends BaseComponent implements BeanParent, Actio
 		} else if (e.getActionCommand().equals("DownloadTable")) {
 			try {
 				View view = getSelectedView();
-				Storage storage = view.getStorage();
+				Storage storage = view.getDebugStorage();
 				nl.nn.testtool.storage.memory.Storage memStorage = new nl.nn.testtool.storage.memory.Storage();
 				for (int i = 0; i < metadataTableModel.getRowCount(); i++) {
 					Integer storageId = (Integer)metadataTableModel.getValueAt(0, i);
@@ -652,7 +643,7 @@ public class ReportsComponent extends BaseComponent implements BeanParent, Actio
 			transformationWindow.setVisible(true);
 		} else if (e.getActionCommand().equals("OpenLatestReports")) {
 			View view = getSelectedView();
-			Storage storage = view.getStorage();
+			Storage storage = view.getDebugStorage();
 			List storageIds = null;
 			try {
 				storageIds = storage.getStorageIds();
@@ -699,7 +690,7 @@ public class ReportsComponent extends BaseComponent implements BeanParent, Actio
 			displayReports(false);
 		} else if (e.getActionCommand().startsWith("Select filter ")) {
 			String metadataName = e.getActionCommand().substring(14);
-			Storage storage = getSelectedView().getStorage();
+			Storage storage = getSelectedView().getDebugStorage();
 			List filterValues = null;
 			try {
 				filterValues = storage.getFilterValues(metadataName);
@@ -782,7 +773,7 @@ public class ReportsComponent extends BaseComponent implements BeanParent, Actio
 	private void openReport(View view, Integer storageId) {
 		String isOpenReportAllowed = view.isOpenReportAllowed(storageId);
 		if (OPEN_REPORT_ALLOWED.equals(isOpenReportAllowed)) {
-			Storage storage = view.getStorage();
+			Storage storage = view.getDebugStorage();
 			Report report = echo2Application.getReport(storage, storageId, this);
 			if (report != null) {
 				openReport(report, isOpenReportAllowed);
@@ -819,7 +810,7 @@ public class ReportsComponent extends BaseComponent implements BeanParent, Actio
 		if (testTool.warnMessageCapturerWaitingForClose()) {
 			displayError("One or more reports are finished but waiting for more than 30 seconds for one or more message capturers to close");
 		}
-		Storage storage = getSelectedView().getStorage();
+		Storage storage = getSelectedView().getDebugStorage();
 		if (storage instanceof LogStorage) {
 			displayError(((LogStorage)storage).getWarningsAndErrors());
 		}

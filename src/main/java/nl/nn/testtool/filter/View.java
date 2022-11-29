@@ -21,13 +21,16 @@ import java.util.Map;
 import javax.enterprise.context.Dependent;
 import javax.inject.Inject;
 
+import org.springframework.beans.factory.annotation.Autowired;
+
+import lombok.Getter;
+import lombok.Setter;
 import nl.nn.testtool.Checkpoint;
 import nl.nn.testtool.Report;
 import nl.nn.testtool.echo2.BeanParent;
 import nl.nn.testtool.echo2.Echo2Application;
 import nl.nn.testtool.echo2.reports.ReportsComponent;
 import nl.nn.testtool.storage.LogStorage;
-import nl.nn.testtool.storage.Storage;
 
 /**
  * @author Jaco de Groot
@@ -35,10 +38,8 @@ import nl.nn.testtool.storage.Storage;
 @Dependent
 public class View implements BeanParent {
 	private String name;
-	@Inject
-	private LogStorage storage;
-	@Inject
-	private List<String> metadataNames;
+	private @Setter @Getter @Inject @Autowired LogStorage debugStorage;
+	private @Setter @Getter @Inject @Autowired List<String> metadataNames;
 	private Map<String, String> metadataFilter;
 	private List<CheckpointMatcher> checkpointMatchers;
 	private BeanParent beanParent;
@@ -50,22 +51,6 @@ public class View implements BeanParent {
 
 	public String getName() {
 		return name;
-	}
-
-	public void setStorage(LogStorage storage) {
-		this.storage = storage;
-	}
-
-	public Storage getStorage() {
-		return storage;
-	}
-
-	public void setMetadataNames(List<String> metadataNames) {
-		this.metadataNames = metadataNames;
-	}
-
-	public List<String> getMetadataNames() {
-		return metadataNames;
 	}
 
 	public void setMetadataFilter(Map<String, String> metadataFilter) {

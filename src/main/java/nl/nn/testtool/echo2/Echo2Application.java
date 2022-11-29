@@ -27,6 +27,7 @@ import javax.inject.Singleton;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
@@ -57,8 +58,8 @@ import nl.nn.testtool.echo2.reports.InfoPane;
 import nl.nn.testtool.echo2.reports.PathComponent;
 import nl.nn.testtool.echo2.reports.ReportComponent;
 import nl.nn.testtool.echo2.reports.ReportsComponent;
-import nl.nn.testtool.echo2.reports.ReportsTreeCellRenderer;
 import nl.nn.testtool.echo2.reports.TreePane;
+import nl.nn.testtool.filter.Views;
 import nl.nn.testtool.run.ReportRunner;
 import nl.nn.testtool.storage.CrudStorage;
 import nl.nn.testtool.storage.Storage;
@@ -100,58 +101,21 @@ public class Echo2Application extends ApplicationInstance implements Application
 		columnLayoutDataForLabel.setInsets(new Insets(0, 5, 0, 0));
 	}
 	private static RowLayoutData rowLayoutDataForLabel;
-	
+
 	private ApplicationContext applicationContext;
-	@Inject
 	private ContentPane contentPane;
 	private TabPane tabPane;
-	@Inject
-	private Tabs tabs;
+	private @Inject @Autowired Tabs tabs;
+	private @Inject @Autowired Views views;
 	private List<Integer> activeTabIndexHistory = new ArrayList<Integer>();
 	private TransformationWindow transformationWindow;
-	@Inject
-	TestTool testTool;
-	@Inject
-	private ReportXmlTransformer reportXmlTransformer;
-	private ReportsTreeCellRenderer reportsTreeCellRenderer;
-	private CrudStorage testStorage;
+	private @Inject @Autowired TestTool testTool;
+	private @Inject @Autowired ReportXmlTransformer reportXmlTransformer;
+	private @Inject @Autowired CrudStorage testStorage;
 
 	public void setApplicationContext(ApplicationContext applicationContext)
 			throws BeansException {
 		this.applicationContext = applicationContext;
-	}
-
-	public void setContentPane(ContentPane contentPane) {
-		this.contentPane = contentPane;
-	}
-
-	public ContentPane getContentPane() {
-		return contentPane;
-	}
-
-	@Inject
-	public void setTestTool(TestTool testTool) {
-		this.testTool = testTool;
-	}
-
-	public void setReportXmlTransformer(ReportXmlTransformer reportXmlTransformer) {
-		this.reportXmlTransformer = reportXmlTransformer;
-	}
-
-	public void setReportsTreeCellRenderer(ReportsTreeCellRenderer reportsTreeCellRenderer) {
-		this.reportsTreeCellRenderer = reportsTreeCellRenderer;
-	}
-
-	public void setTabs(Tabs tabs) {
-		this.tabs = tabs;
-	}
-
-	public Tabs getTabs() {
-		return tabs;
-	}
-
-	public void setTestStorage(CrudStorage testStorage) {
-		this.testStorage = testStorage;
 	}
 
 	public TransformationWindow getTransformationWindow() {
@@ -191,6 +155,7 @@ public class Echo2Application extends ApplicationInstance implements Application
 
 		// Construct
 
+		contentPane = new ContentPane();
 		contentPane.setBackground(applicationBackgroundColor);
 
 		transformationWindow = new TransformationWindow();
@@ -292,38 +257,34 @@ public class Echo2Application extends ApplicationInstance implements Application
 		}
 
 		if (!reportFound) {
+
+			// TODO share code with DebugPane?
+
 			// Construct
-	
-			// TODO Via Spring doen, zie ook applicationContext.getBean("reportsComponent") verderop
-			ReportPane reportPane = new ReportPane();
-	
-			TabPaneLayoutData tabPaneLayoutReportPane = new TabPaneLayoutData();
-	
-			TreePane treePane = new TreePane();
-	
-			InfoPane infoPane = new InfoPane();
 
-			PathComponent pathComponent = new PathComponent();
-
-			// Wire
-	
-			// TODO op reportPane zou reportsComponent gezet moeten worden en op reportsComponent de setTree en setInfo?
-			reportPane.setLayoutData(tabPaneLayoutReportPane);
-			reportPane.setReport(report);
-			reportPane.setTreePane(treePane);
-			reportPane.setInfoPane(infoPane);
-	
 			String title = report.getName();
 			if (title.length() > 10) {
 				title = title.subSequence(0, 10) + "...";
 			}
-			tabPaneLayoutReportPane.setTitle(title);
-	
-			treePane.setInfoPane(infoPane);
-			treePane.setReportsTreeCellRenderer(reportsTreeCellRenderer);
-
-			// TODO van pathComponent, checkpointComponent (nu gedaan) en errorMessageComponent moeten ook nieuwe instanties worden aangemaakt (bij switchen tussen tabs die allebei op zelfde component staan wordt er eentje leeg)
+			ReportPane reportPane = new ReportPane();
+			TabPaneLayoutData tabPaneLayoutReportPane = new TabPaneLayoutData();
+			TreePane treePane = new TreePane();
+			InfoPane infoPane = new InfoPane();
 			ReportComponent reportComponent = new ReportComponent();
+			PathComponent pathComponent = new PathComponent();
+			CheckpointComponent checkpointComponent = new CheckpointComponent();
+
+			// Wire
+
+			reportPane.setLayoutData(tabPaneLayoutReportPane);
+			reportPane.setReport(report);
+			reportPane.setTreePane(treePane);
+			reportPane.setInfoPane(infoPane);
+
+			tabPaneLayoutReportPane.setTitle(title);
+
+			treePane.setInfoPane(infoPane);
+
 			reportComponent.setTestTool(testTool);
 			reportComponent.setTestStorage(testStorage);
 			reportComponent.setTreePane(treePane);
@@ -331,8 +292,6 @@ public class Echo2Application extends ApplicationInstance implements Application
 			reportComponent.initBean();
 			reportComponent.initBean(this);
 
-			// TODO code sharen met DebugPane? misschien makkelijkste door kleinere componenten ook met Spring te doen?
-			CheckpointComponent checkpointComponent = new CheckpointComponent();
 			checkpointComponent.setTestTool(testTool);
 			checkpointComponent.setTreePane(treePane);
 			checkpointComponent.setInfoPane(infoPane);
@@ -349,20 +308,14 @@ public class Echo2Application extends ApplicationInstance implements Application
 			treePane.initBean();
 			infoPane.initBean();
 			pathComponent.initBean();
-	
+
 			tabPane.add(reportPane);
 			tabPane.setActiveTabIndex(tabPane.getComponentCount() - 1);
-	
-			// TODO bovenstaande ook via spring
-			// TODO reportComponent maken/gebruiken i.p.v. reportsComponent? ReportsComponent hernoemen/aanpassen naar ReportTreeInfoComponent (er is al een ReportComponent)
-			ReportsComponent reportsComponent = (ReportsComponent)applicationContext.getBean("reportsComponent");
-			reportsComponent.setTreePane(treePane);
-	//		reportsComponent.setReportUploadListener(reportUploadListener);
-			reportsComponent.setReportXmlTransformer(reportXmlTransformer);
-			reportsComponent.initBean(this);
-			
-			// TODO reportsComponent.openReport in reportPane (initBean) doen?
-			reportsComponent.openReport(report, isOpenReportAllowed);
+
+			if (ReportsComponent.OPEN_REPORT_ALLOWED.equals(isOpenReportAllowed)) {
+				report.setGlobalReportXmlTransformer(reportXmlTransformer);
+				treePane.addReport(report, views.getDefaultView(), false);
+			}
 		}
 	}
 
@@ -649,7 +602,8 @@ public class Echo2Application extends ApplicationInstance implements Application
 		return null;
 	}
 
-	public ReportsTreeCellRenderer getReportsTreeCellRenderer() {
-		return reportsTreeCellRenderer;
+	public ContentPane getContentPane() {
+		return contentPane;
 	}
+
 }

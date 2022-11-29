@@ -22,8 +22,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.inject.Inject;
-import javax.inject.Named;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.StringUtils;
 
 import echopointng.tree.DefaultMutableTreeNode;
@@ -54,14 +54,11 @@ import nl.nn.testtool.echo2.util.PopupWindow;
 public class MessageComponent extends BaseComponent implements ActionListener {
 	private static final long serialVersionUID = 1L;
 	private static final char REPLACE_NON_XML_CHAR = 0x00BF; // Inverted question mark.
-	@Inject
-	protected TestTool testTool;
+	protected @Inject @Autowired TestTool testTool;
 	private BeanParent beanParent;
 	protected Echo2Application echo2Application;
-	@Inject @Named("debugTreePane")
 	protected TreePane treePane;
 	protected DefaultMutableTreeNode node;
-	@Inject
 	protected InfoPane infoPane;
 	protected Report report;
 	protected Row buttonRow;
@@ -77,6 +74,14 @@ public class MessageComponent extends BaseComponent implements ActionListener {
 
 	public void setTestTool(TestTool testTool) {
 		this.testTool = testTool;
+	}
+
+	public void setTreePane(TreePane treePane) {
+		this.treePane = treePane;
+	}
+
+	public void setInfoPane(InfoPane infoPane) {
+		this.infoPane = infoPane;
 	}
 
 	/**
@@ -143,10 +148,6 @@ public class MessageComponent extends BaseComponent implements ActionListener {
 
 	public BeanParent getBeanParent() {
 		return beanParent;
-	}
-
-	public void setInfoPane(InfoPane infoPane) {
-		this.infoPane = infoPane;
 	}
 
 	protected void setMessage(String message) {

@@ -18,11 +18,13 @@ package nl.nn.testtool.echo2;
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.Dependent;
 import javax.inject.Inject;
-import javax.inject.Named;
+
+import org.springframework.beans.factory.annotation.Autowired;
 
 import nextapp.echo2.app.Extent;
 import nextapp.echo2.app.SplitPane;
 import nextapp.echo2.extras.app.layout.TabPaneLayoutData;
+import nl.nn.testtool.MetadataExtractor;
 import nl.nn.testtool.TestTool;
 import nl.nn.testtool.echo2.reports.CheckpointComponent;
 import nl.nn.testtool.echo2.reports.InfoPane;
@@ -30,8 +32,8 @@ import nl.nn.testtool.echo2.reports.PathComponent;
 import nl.nn.testtool.echo2.reports.ReportComponent;
 import nl.nn.testtool.echo2.reports.ReportsComponent;
 import nl.nn.testtool.echo2.reports.ReportsListPane;
-import nl.nn.testtool.echo2.reports.ReportsTreeCellRenderer;
 import nl.nn.testtool.echo2.reports.TreePane;
+import nl.nn.testtool.filter.Views;
 import nl.nn.testtool.storage.CrudStorage;
 import nl.nn.testtool.transform.ReportXmlTransformer;
 
@@ -42,73 +44,21 @@ import nl.nn.testtool.transform.ReportXmlTransformer;
 public class DebugPane extends Tab implements BeanParent {
 	private static final long serialVersionUID = 1L;
 	private String title = "Debug";
-	@Inject
-	private TestTool testTool;
-	@Inject @Named("debugTreePane")
-	private TreePane treePane;
-	@Inject
-	private InfoPane infoPane;
-	@Inject
-	private ReportsComponent reportsComponent;
-	@Inject
-	private ReportComponent reportComponent;
-	@Inject
-	private CheckpointComponent checkpointComponent;
-	@Inject
-	private ReportsTreeCellRenderer reportsTreeCellRenderer;
-	@Inject
-	private ReportXmlTransformer reportXmlTransformer;
-	@Inject
+	private @Inject @Autowired TestTool testTool;
+	private @Inject @Autowired Views views;
+	private @Inject @Autowired CrudStorage testStorage;
+	private @Inject @Autowired MetadataExtractor metadataExtractor;
+	private @Inject @Autowired ReportXmlTransformer reportXmlTransformer;
 	private ReportsListPane reportsListPane;
-	@Inject
-	private CrudStorage testStorage;
+	private ReportsComponent reportsComponent;
+	private TreePane treePane;
+	private InfoPane infoPane;
+	private ReportComponent reportComponent;
+	private CheckpointComponent checkpointComponent;
+	private PathComponent pathComponent;
 
 	public DebugPane() {
 		super();
-	}
-
-	public void setTitle(String title) {
-		this.title = title;
-	}
-
-	public void setTestTool(TestTool testTool) {
-		this.testTool = testTool;
-	}
-
-	public void setTestStorage(CrudStorage testStorage) {
-		this.testStorage = testStorage;
-	}
-
-	public void setReportsComponent(ReportsComponent reportsComponent) {
-		this.reportsComponent = reportsComponent;
-	}
-
-	public ReportsComponent getReportsComponent() {
-		return reportsComponent;
-	}
-
-	public void setTreePane(TreePane treePane) {
-		this.treePane = treePane;
-	}
-
-	public TreePane getTreePane() {
-		return treePane;
-	}
-
-	public void setInfoPane(InfoPane infoPane) {
-		this.infoPane = infoPane;
-	}
-
-	public InfoPane getInfoPane() {
-		return infoPane;
-	}
-
-	public void setReportsTreeCellRenderer(ReportsTreeCellRenderer reportsTreeCellRenderer) {
-		this.reportsTreeCellRenderer = reportsTreeCellRenderer;
-	}
-
-	public void setReportXmlTransformer(ReportXmlTransformer reportXmlTransformer) {
-		this.reportXmlTransformer = reportXmlTransformer;
 	}
 
 	/**
@@ -122,12 +72,13 @@ public class DebugPane extends Tab implements BeanParent {
 		TabPaneLayoutData tabPaneLayoutDebugPane = new TabPaneLayoutData();
 		tabPaneLayoutDebugPane.setTitle(title);
 		setLayoutData(tabPaneLayoutDebugPane);
-		TreePane treePane = new TreePane();
-		InfoPane infoPane = new InfoPane();
+		reportsComponent = new ReportsComponent();
+		treePane = new TreePane();
+		infoPane = new InfoPane();
 		reportsListPane = new ReportsListPane();
 		reportComponent = new ReportComponent();
-		PathComponent pathComponent = new PathComponent();
 		checkpointComponent = new CheckpointComponent();
+		pathComponent = new PathComponent();
 
 		SplitPane splitPane1 = new SplitPane(SplitPane.ORIENTATION_VERTICAL);
 		splitPane1.setResizable(true);
@@ -138,17 +89,16 @@ public class DebugPane extends Tab implements BeanParent {
 
 		// Wire
 
-		setTreePane(treePane);
-		setInfoPane(infoPane);
-		
 		treePane.setInfoPane(infoPane);
-		treePane.setReportsTreeCellRenderer(reportsTreeCellRenderer);
 
 		reportsListPane.setReportsComponent(reportsComponent);
 		infoPane.setReportComponent(reportComponent);
 		infoPane.setPathComponent(pathComponent);
 		infoPane.setCheckpointComponent(checkpointComponent);
 
+		reportsComponent.setTestTool(testTool);
+		reportsComponent.setViews(views);
+		reportsComponent.setMetadataExtractor(metadataExtractor);
 		reportsComponent.setTreePane(treePane);
 		reportsComponent.setReportXmlTransformer(reportXmlTransformer);
 		reportComponent.setTestTool(testTool);
@@ -172,6 +122,7 @@ public class DebugPane extends Tab implements BeanParent {
 		treePane.initBean();
 		infoPane.initBean();
 
+		reportsComponent.initBean();
 		reportComponent.initBean();
 		pathComponent.initBean();
 		checkpointComponent.initBean();

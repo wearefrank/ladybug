@@ -35,6 +35,7 @@ import javax.ws.rs.core.Response;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import lombok.Setter;
 import nl.nn.testtool.Checkpoint;
@@ -51,8 +52,8 @@ import nl.nn.testtool.web.ApiServlet;
 @Path("/" + ApiServlet.LADYBUG_API_PATH + "/runner")
 public class RunApi extends ApiBase {
 	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-	private @Setter @Inject TestTool testTool;
-	private @Setter @Inject ReportXmlTransformer reportXmlTransformer;
+	private @Setter @Inject @Autowired TestTool testTool;
+	private @Setter @Inject @Autowired ReportXmlTransformer reportXmlTransformer;
 
 	/**
 	 * Rerun the given report, and save the output the target storage.

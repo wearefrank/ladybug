@@ -21,8 +21,14 @@ import java.util.List;
 import javax.enterprise.inject.Produces;
 import javax.inject.Singleton;
 
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Scope;
+
 import io.quarkus.arc.DefaultBean;
+import nl.nn.testtool.echo2.ComparePane;
 import nl.nn.testtool.echo2.DebugPane;
+import nl.nn.testtool.echo2.Echo2Application;
 import nl.nn.testtool.echo2.Tabs;
 import nl.nn.testtool.echo2.TestPane;
 import nl.nn.testtool.filter.View;
@@ -31,32 +37,112 @@ import nl.nn.testtool.metadata.StatusMetadataFieldExtractor;
 import nl.nn.testtool.storage.CrudStorage;
 import nl.nn.testtool.storage.LogStorage;
 import nl.nn.testtool.storage.memory.Storage;
-
+import nl.nn.testtool.transform.ReportXmlTransformer;
 
 /**
- * Default wiring using @DefaultBean (https://quarkus.io/guides/cdi-reference#default_beans) that can be overridden in
- * an application using Ladybug as a library.
+ * <p>
+ * For classes with <code>@Inject</code>, <code>@Autowired</code> and/or <code>@PostConstruct</code> annotations add
+ * <code>@Bean</code> methods to this class for Spring with <code>@Scope("singleton")</code> or
+ * <code>@Scope("prototype")</code> and add <code>@Dependent</code> or <code>@Singleton</code> to those classes for
+ * Quarkus.
+ * </p>
+ * 
+ * <p>
+ * For other classes add <code>@Bean</code> (Spring) and <code>@DefaultBean</code> (Quarkus) methods to this class which
+ * can be overridden for Spring in xml and for Quarkus in Java.
+ * </p>
+ * 
+ * Spring related:
+ * 
+ * <ul>
+ *   <li>Enable component scanning, e.g.: &lt;context:component-scan base-package="nl.nn.testtool"/&gt;</li>
+ *   <li>Use <code>@Autowired</code> also where <code>@Inject</code> is being used to get the same behavior whether or
+ *   not Spring is able to find the Inject class on the classpath. See also the explanation of
+ *   SpringBeanAutowiringInterceptor at
+ *   https://stackoverflow.com/questions/37592743/configuring-spring-to-ignore-dependencies-annotated-with-inject</li>
+ *   <li>The <code>@PostConstruct</code> annotation is part of Java SE 8 and supported by Spring, see also
+ *   https://docs.spring.io/spring-framework/docs/3.2.x/spring-framework-reference/html/beans.html#beans-postconstruct-and-predestroy-annotations</li>
+ *   <li>Spring will wire and init beans returned by the <code>@Bean</code> methods</li>
+ *   <li>Spring XML configuration can be used to override the defaults as specified by the annotations</li>
+ * </ul>
+ * 
+ * Quarkus related:
+ *  
+ * <ul>
+ *   <li>Quarkus doesn't wire and init beans returned by the methods in this class but will do it for
+ *   <code>@Dependent</code> and <code>@Singleton</code> classes</li>
+ *   <li>Default wiring using <code>@DefaultBean</code> (https://quarkus.io/guides/cdi-reference#default_beans) can be
+ *   overridden in an application using Ladybug as a library.</li>
+ * </ul>
  * 
  * @author Jaco de Groot
  */
 
 @Singleton
+@Scope("singleton")
+@Configuration
 public class Config {
 
+	@Bean
+	@Scope("singleton")
+	Echo2Application echo2Application() {
+		return new Echo2Application();
+	}
+
 	@Produces
-	@Singleton
 	@DefaultBean
-	MetadataExtractor metadataExtractor() {
-		MetadataExtractor metadataExtractor = new MetadataExtractor();
-		List<MetadataFieldExtractor> extraMetadataFieldExtractors = new ArrayList<MetadataFieldExtractor>();
-		extraMetadataFieldExtractors.add(new StatusMetadataFieldExtractor());
-		metadataExtractor.setExtraMetadataFieldExtractors(extraMetadataFieldExtractors);
-		return metadataExtractor;
+	@Bean
+	@Scope("prototype")
+	Tabs tabs(DebugPane debugPane, TestPane testPane, ComparePane comparePane) {
+		Tabs tabs = new Tabs();
+		tabs.add(debugPane);
+		tabs.add(testPane);
+		tabs.add(comparePane);
+		return tabs;
+	}
+
+	@Bean
+	@Scope("prototype")
+	DebugPane debugPane() {
+		return new DebugPane();
+	}
+
+	@Bean
+	@Scope("prototype")
+	TestPane testPane() {
+		return new TestPane();
+	}
+
+	@Bean
+	@Scope("prototype")
+	ComparePane comparePane() {
+		return new ComparePane();
+	}
+
+	@Produces
+	@DefaultBean
+	@Bean
+	@Scope("prototype")
+	Views views(View view, LogStorage debugStorage) {
+		view.setName("Default");
+		List<View> list = new ArrayList<View>();
+		list.add(view);
+		Views views = new Views();
+		views.setViews(list);
+		return views;
+	}
+
+	@Bean
+	@Scope("singleton")
+	View view() {
+		return new View();
 	}
 
 	@Produces
 	@Singleton
 	@DefaultBean
+	@Bean
+	@Scope("singleton")
 	LogStorage debugStorage(MetadataExtractor metadataExtractor) {
 		Storage storage = new Storage();
 		storage.setName("Debug");
@@ -67,6 +153,8 @@ public class Config {
 	@Produces
 	@Singleton
 	@DefaultBean
+	@Bean
+	@Scope("singleton")
 	CrudStorage testStorage(MetadataExtractor metadataExtractor) {
 		Storage storage = new Storage();
 		storage.setName("Test");
@@ -76,27 +164,8 @@ public class Config {
 
 	@Produces
 	@DefaultBean
-	Tabs tabs(DebugPane debugPane, TestPane testPane) {
-		Tabs tabs = new Tabs();
-		tabs.add(debugPane);
-		tabs.add(testPane);
-		return tabs;
-	}
-
-	@Produces
-	@DefaultBean
-	Views views(View view, LogStorage debugStorage) {
-		view.setName("Default");
-		view.setStorage(debugStorage);
-		List<View> list = new ArrayList<View>();
-		list.add(view);
-		Views views = new Views();
-		views.setViews(list);
-		return views;
-	}
-
-	@Produces
-	@DefaultBean
+	@Bean
+	@Scope("prototype")
 	List<String> metadataNames() {
 		List<String> metadataNames = new ArrayList<String>();
 		metadataNames.add("storageId");
@@ -114,6 +183,27 @@ public class Config {
 	@Produces
 	@Singleton
 	@DefaultBean
+	@Bean
+	@Scope("singleton")
+	MetadataExtractor metadataExtractor() {
+		MetadataExtractor metadataExtractor = new MetadataExtractor();
+		List<MetadataFieldExtractor> extraMetadataFieldExtractors = new ArrayList<MetadataFieldExtractor>();
+		extraMetadataFieldExtractors.add(new StatusMetadataFieldExtractor());
+		metadataExtractor.setExtraMetadataFieldExtractors(extraMetadataFieldExtractors);
+		return metadataExtractor;
+	}
+
+	@Bean
+	@Scope("singleton")
+	ReportXmlTransformer reportXmlTransformer() {
+		return new ReportXmlTransformer();
+	}
+
+	@Produces
+	@Singleton
+	@DefaultBean
+	@Bean
+	@Scope("singleton")
 	String xsltResource() {
 		return "ladybug/default.xslt";
 	}

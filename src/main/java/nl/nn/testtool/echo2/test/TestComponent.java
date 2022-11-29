@@ -26,11 +26,6 @@ import java.util.Scanner;
 import java.util.Set;
 import java.util.TooManyListenersException;
 
-import javax.annotation.PostConstruct;
-import javax.enterprise.context.Dependent;
-import javax.inject.Inject;
-import javax.inject.Named;
-
 import org.apache.commons.lang.StringUtils;
 
 import echopointng.ProgressBar;
@@ -65,7 +60,7 @@ import nl.nn.testtool.echo2.util.PopupWindow;
 import nl.nn.testtool.run.ReportRunner;
 import nl.nn.testtool.run.RunResult;
 import nl.nn.testtool.storage.CrudStorage;
-import nl.nn.testtool.storage.Storage;
+import nl.nn.testtool.storage.LogStorage;
 import nl.nn.testtool.storage.StorageException;
 import nl.nn.testtool.transform.ReportXmlTransformer;
 import nl.nn.testtool.util.CsvUtil;
@@ -73,15 +68,12 @@ import nl.nn.testtool.util.CsvUtil;
 /**
  * @author Jaco de Groot
  */
-@Dependent
 public class TestComponent extends BaseComponent implements BeanParent, ActionListener {
 	private static final long serialVersionUID = 1L;
 	private TestTool testTool;
-	private Storage debugStorage;
-	@Inject
+	private LogStorage debugStorage;
 	private CrudStorage testStorage;
 	private Echo2Application echo2Application;
-	@Inject @Named("testTreePane")
 	private TreePane treePane;
 	private ProgressBar progressBar;
 	private ReportRunner reportRunner;
@@ -124,7 +116,7 @@ public class TestComponent extends BaseComponent implements BeanParent, ActionLi
 		this.testTool = testTool;
 	}
 
-	public void setDebugStorage(Storage debugStorage) {
+	public void setDebugStorage(LogStorage debugStorage) {
 		this.debugStorage = debugStorage;
 	}
 
@@ -139,7 +131,6 @@ public class TestComponent extends BaseComponent implements BeanParent, ActionLi
 	/**
 	 * @see nl.nn.testtool.echo2.Echo2Application#initBean()
 	 */
-	@PostConstruct
 	public void initBean() {
 		super.initBean();
 
@@ -680,13 +671,13 @@ public class TestComponent extends BaseComponent implements BeanParent, ActionLi
 			refresh();
 		} else if (e.getActionCommand().equals("ToggleCheckpointIds")) {
 			showCheckpointIds = showCheckpointIdsCheckbox.isSelected();
-			echo2Application.getReportsTreeCellRenderer().setShowReportAndCheckpointIds(showCheckpointIds);
+			treePane.getReportsTreeCellRenderer().setShowReportAndCheckpointIds(showCheckpointIds);
 		} else if (e.getActionCommand().equals("RestoreDefaults")) {
 			showReportStorageIds = false;
 			showReportStorageIdsCheckbox.setSelected(false);
 			showCheckpointIds = false;
 			showCheckpointIdsCheckbox.setSelected(false);
-			echo2Application.getReportsTreeCellRenderer().setShowReportAndCheckpointIds(showCheckpointIds);
+			treePane.getReportsTreeCellRenderer().setShowReportAndCheckpointIds(showCheckpointIds);
 			refresh();
 		} else if (e.getActionCommand().equals("DeleteSelected")) {
 			if (minimalOneSelected()) {

@@ -30,6 +30,7 @@ import javax.inject.Inject;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -61,8 +62,8 @@ public class TestTool {
 	private Map<String, Report> reportsInProgressByCorrelationId = new HashMap<String, Report>();
 	private long numberOfReportsInProgress = 0;
 	private Map<String, Report> originalReports = new HashMap<String, Report>();
-	private @Setter @Getter @Inject LogStorage debugStorage;
-	private @Setter @Getter @Inject CrudStorage testStorage;
+	private @Setter @Getter @Inject @Autowired LogStorage debugStorage;
+	private @Setter @Getter @Inject @Autowired CrudStorage testStorage;
 	private MessageEncoder messageEncoder = new MessageEncoderImpl();
 	private MessageCapturer messageCapturer = new MessageCapturerImpl();
 	private MessageTransformer messageTransformer;
@@ -73,7 +74,7 @@ public class TestTool {
 	private @Getter boolean closeThreads = false;
 	private @Getter boolean closeNewThreadsOnly = false;
 	private @Getter boolean closeMessageCapturers = false;
-	private @Setter @Getter @Inject Views views;
+	private @Setter @Getter @Inject @Autowired Views views;
 
 	public void setSecurityLoggerName(String securityLoggerName) {
 		securityLog = LoggerFactory.getLogger(securityLoggerName);
@@ -1021,7 +1022,7 @@ public class TestTool {
 
 	public Storage getStorage(String name) {
 		for (View view : views) {
-			Storage storage = view.getStorage();
+			Storage storage = view.getDebugStorage();
 			if (name.equals(storage.getName())) {
 				return storage;
 			}

@@ -36,6 +36,7 @@ import javax.xml.transform.stream.StreamSource;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import lombok.Setter;
 import nl.nn.testtool.util.XmlUtil;
@@ -43,7 +44,7 @@ import nl.nn.testtool.util.XmlUtil;
 @Singleton
 public class ReportXmlTransformer {
 	private Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-	private @Setter @Inject String xsltResource;
+	private @Setter @Inject @Autowired String xsltResource;
 	private String xslt;
 	private Transformer transformer;
 	private String createTransformerError;

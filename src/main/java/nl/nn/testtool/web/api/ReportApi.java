@@ -15,6 +15,39 @@
 */
 package nl.nn.testtool.web.api;
 
+import java.io.InputStream;
+import java.io.Serializable;
+import java.lang.invoke.MethodHandles;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Scanner;
+
+import javax.inject.Inject;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.DefaultValue;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+
+import org.apache.commons.lang.StringUtils;
+import org.apache.cxf.jaxrs.ext.multipart.Attachment;
+import org.apache.cxf.jaxrs.ext.multipart.Multipart;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+
 import lombok.Setter;
 import nl.nn.testtool.MetadataExtractor;
 import nl.nn.testtool.Report;
@@ -29,33 +62,11 @@ import nl.nn.testtool.util.Export;
 import nl.nn.testtool.util.ExportResult;
 import nl.nn.testtool.web.ApiServlet;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.cxf.jaxrs.ext.multipart.Attachment;
-import org.apache.cxf.jaxrs.ext.multipart.Multipart;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.inject.Inject;
-import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import java.io.InputStream;
-import java.io.Serializable;
-import java.lang.invoke.MethodHandles;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Scanner;
-
 @Path("/" + ApiServlet.LADYBUG_API_PATH + "/report")
 public class ReportApi extends ApiBase {
 	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-	private @Setter @Inject TestTool testTool;
-	private @Setter @Inject ReportXmlTransformer reportXmlTransformer;
+	private @Setter @Inject @Autowired TestTool testTool;
+	private @Setter @Inject @Autowired ReportXmlTransformer reportXmlTransformer;
 
 	/**
 	 * Returns the report details for the given storage and id.

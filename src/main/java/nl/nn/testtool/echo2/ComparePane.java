@@ -19,10 +19,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.annotation.PostConstruct;
+import javax.enterprise.context.Dependent;
+import javax.inject.Inject;
+
+import org.springframework.beans.factory.annotation.Autowired;
 
 import nextapp.echo2.app.Extent;
 import nextapp.echo2.app.SplitPane;
 import nextapp.echo2.extras.app.layout.TabPaneLayoutData;
+import nl.nn.testtool.MetadataExtractor;
 import nl.nn.testtool.Report;
 import nl.nn.testtool.TestTool;
 import nl.nn.testtool.echo2.reports.CheckpointComponent;
@@ -30,8 +35,8 @@ import nl.nn.testtool.echo2.reports.InfoPane;
 import nl.nn.testtool.echo2.reports.PathComponent;
 import nl.nn.testtool.echo2.reports.ReportComponent;
 import nl.nn.testtool.echo2.reports.ReportsComponent;
-import nl.nn.testtool.echo2.reports.ReportsTreeCellRenderer;
 import nl.nn.testtool.echo2.reports.TreePane;
+import nl.nn.testtool.filter.Views;
 import nl.nn.testtool.run.ReportRunner;
 import nl.nn.testtool.storage.CrudStorage;
 import nl.nn.testtool.storage.Storage;
@@ -41,23 +46,27 @@ import nl.nn.testtool.transform.ReportXmlTransformer;
 /**
  * @author Jaco de Groot
  */
+@Dependent
 public class ComparePane extends Tab implements BeanParent {
 	private static final long serialVersionUID = 1L;
 	private String title = "Compare";
-	private TestTool testTool;
+	private @Inject @Autowired TestTool testTool;
+	private @Inject @Autowired Views views;
+	private @Inject @Autowired CrudStorage testStorage;
+	private @Inject @Autowired MetadataExtractor metadataExtractor;
+	private @Inject @Autowired ReportXmlTransformer reportXmlTransformer;
+	private ReportsComponent reportsComponent1;
+	private ReportsComponent reportsComponent2;
 	private TreePane treePane1;
 	private TreePane treePane2;
 	private InfoPane infoPane1;
 	private InfoPane infoPane2;
-	private ReportsComponent reportsComponent1;
 	private ReportComponent reportComponent1;
 	private CheckpointComponent checkpointComponent1;
-	private ReportsComponent reportsComponent2;
+	private PathComponent pathComponent1;
 	private ReportComponent reportComponent2;
 	private CheckpointComponent checkpointComponent2;
-	private ReportsTreeCellRenderer reportsTreeCellRenderer;
-	private ReportXmlTransformer reportXmlTransformer;
-	private CrudStorage testStorage;
+	private PathComponent pathComponent2;
 
 	public ComparePane() {
 		super();
@@ -75,50 +84,6 @@ public class ComparePane extends Tab implements BeanParent {
 		this.testStorage = testStorage;
 	}
 
-	public void setReportsComponent1(ReportsComponent reportsComponent1) {
-		this.reportsComponent1 = reportsComponent1;
-	}
-
-	public ReportsComponent getReportsComponent1() {
-		return reportsComponent1;
-	}
-
-	public ReportsComponent getReportsComponent2() {
-		return reportsComponent2;
-	}
-
-	public void setReportsComponent2(ReportsComponent reportsComponent2) {
-		this.reportsComponent2 = reportsComponent2;
-	}
-
-	public void setTreePane1(TreePane treePane) {
-		treePane1 = treePane;
-	}
-
-	public TreePane getTreePane1() {
-		return treePane1;
-	}
-
-	public void setTreePane2(TreePane treePane) {
-		treePane2 = treePane;
-	}
-
-	public TreePane getTreePane2() {
-		return treePane2;
-	}
-
-	public void setInfoPane1(InfoPane infoPane) {
-		infoPane1 = infoPane;
-	}
-
-	public void setInfoPane2(InfoPane infoPane) {
-		infoPane2 = infoPane;
-	}
-
-	public void setReportsTreeCellRenderer(ReportsTreeCellRenderer reportsTreeCellRenderer) {
-		this.reportsTreeCellRenderer = reportsTreeCellRenderer;
-	}
-
 	public void setReportXmlTransformer(ReportXmlTransformer reportXmlTransformer) {
 		this.reportXmlTransformer = reportXmlTransformer;
 	}
@@ -134,17 +99,25 @@ public class ComparePane extends Tab implements BeanParent {
 		TabPaneLayoutData tabPaneLayoutComparePane = new TabPaneLayoutData();
 		tabPaneLayoutComparePane.setTitle(title);
 		setLayoutData(tabPaneLayoutComparePane);
-		TreePane treePane1 = new TreePane();
-		TreePane treePane2 = new TreePane();
-		InfoPane infoPane1 = new InfoPane();
-		InfoPane infoPane2 = new InfoPane();
+		reportsComponent1 = new ReportsComponent();
+		reportsComponent2 = new ReportsComponent();
+		reportsComponent1.setAddCompareButton(true);
+		reportsComponent1.setAddSeparateOptionsRow(true);
+		reportsComponent1.setFocusMaxMetadataTableSize(false);
+		reportsComponent2.setAddCompareButton(true);
+		reportsComponent2.setAddSeparateOptionsRow(true);
+		reportsComponent2.setFocusMaxMetadataTableSize(false);
+		treePane1 = new TreePane();
+		treePane2 = new TreePane();
+		infoPane1 = new InfoPane();
+		infoPane2 = new InfoPane();
 		reportComponent1 = new ReportComponent();
-		PathComponent pathComponent1 = new PathComponent();
+		pathComponent1 = new PathComponent();
 		checkpointComponent1 = new CheckpointComponent();
 		reportComponent2 = new ReportComponent();
-		PathComponent pathComponent2 = new PathComponent();
+		pathComponent2 = new PathComponent();
 		checkpointComponent2 = new CheckpointComponent();
-		
+
 		SplitPane splitPane1 = new SplitPane(SplitPane.ORIENTATION_HORIZONTAL);
 		splitPane1.setResizable(true);
 		// TODO: Change separator position to 50% of browser's screen width for compatibility
@@ -157,25 +130,19 @@ public class ComparePane extends Tab implements BeanParent {
 		splitPane2.setResizable(true);
 		splitPane2.setSeparatorPosition(new Extent(250, Extent.PX));
 
-
 		SplitPane splitPane3 = new SplitPane(SplitPane.ORIENTATION_VERTICAL);
 		splitPane3.setResizable(true);
 		splitPane3.setSeparatorPosition(new Extent(250, Extent.PX));
 
 		// Wire
 
-		setTreePane1(treePane1);
-		setTreePane2(treePane2);
-		setInfoPane1(infoPane1);
-		setInfoPane2(infoPane2);
-
 		treePane1.setInfoPane(infoPane1);
 		treePane1.setTreePaneCounterpart(treePane2);
-		treePane1.setReportsTreeCellRenderer(reportsTreeCellRenderer);
+//		treePane1.setReportsTreeCellRenderer(new ReportsTreeCellRenderer());
 
 		treePane2.setInfoPane(infoPane2);
 		treePane2.setTreePaneCounterpart(treePane1);
-		treePane2.setReportsTreeCellRenderer(reportsTreeCellRenderer);
+//		treePane2.setReportsTreeCellRenderer(new ReportsTreeCellRenderer());
 
 		infoPane1.setReportsComponent(reportsComponent1);
 		infoPane1.setReportComponent(reportComponent1);
@@ -187,6 +154,9 @@ public class ComparePane extends Tab implements BeanParent {
 		infoPane2.setPathComponent(pathComponent2);
 		infoPane2.setCheckpointComponent(checkpointComponent2);
 
+		reportsComponent1.setTestTool(testTool);
+		reportsComponent1.setViews(views);
+		reportsComponent1.setMetadataExtractor(metadataExtractor);
 		reportsComponent1.setTreePane(treePane1);
 		reportsComponent1.setReportXmlTransformer(reportXmlTransformer);
 		reportsComponent1.setComparePane(this);
@@ -199,6 +169,9 @@ public class ComparePane extends Tab implements BeanParent {
 		checkpointComponent1.setTreePane(treePane1);
 		checkpointComponent1.setInfoPane(infoPane1);
 
+		reportsComponent2.setTestTool(testTool);
+		reportsComponent2.setViews(views);
+		reportsComponent2.setMetadataExtractor(metadataExtractor);
 		reportsComponent2.setTreePane(treePane2);
 		reportsComponent2.setReportXmlTransformer(reportXmlTransformer);
 		reportsComponent2.setComparePane(this);
@@ -224,10 +197,12 @@ public class ComparePane extends Tab implements BeanParent {
 
 		// Init
 
+		reportsComponent1.initBean();
 		reportComponent1.initBean();
 		pathComponent1.initBean();
 		checkpointComponent1.initBean();
 
+		reportsComponent2.initBean();
 		reportComponent2.initBean();
 		pathComponent2.initBean();
 		checkpointComponent2.initBean();
@@ -312,6 +287,22 @@ public class ComparePane extends Tab implements BeanParent {
 		} catch(StorageException e) {
 			// TODO display error
 		}
+	}
+
+	public TreePane getTreePane1() {
+		return treePane1;
+	}
+
+	public TreePane getTreePane2() {
+		return treePane2;
+	}
+
+	public ReportsComponent getReportsComponent1() {
+		return reportsComponent1;
+	}
+
+	public ReportsComponent getReportsComponent2() {
+		return reportsComponent2;
 	}
 
 }

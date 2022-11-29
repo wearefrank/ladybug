@@ -17,6 +17,8 @@ package nl.nn.testtool.web;
 
 import javax.inject.Inject;
 
+import org.springframework.beans.factory.annotation.Autowired;
+
 import nextapp.echo2.app.ApplicationInstance;
 import nextapp.echo2.webcontainer.WebContainerServlet;
 import nl.nn.testtool.echo2.Echo2Application;
@@ -26,8 +28,7 @@ import nl.nn.testtool.echo2.Echo2Application;
  */
 public class Echo2Servlet extends WebContainerServlet {
 	private static final long serialVersionUID = 1L;
-	@Inject
-	private Echo2Application echo2Application;
+	private @Inject @Autowired Echo2Application echo2Application;
 
 	@Override
 	public ApplicationInstance newApplicationInstance() {

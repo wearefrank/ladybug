@@ -15,10 +15,6 @@
 */
 package nl.nn.testtool.echo2.reports;
 
-import javax.annotation.PostConstruct;
-import javax.enterprise.context.Dependent;
-import javax.inject.Inject;
-
 import org.springframework.util.StringUtils;
 
 import echopointng.tree.DefaultMutableTreeNode;
@@ -46,10 +42,8 @@ import nl.nn.testtool.storage.CrudStorage;
 /**
  * @author Jaco de Groot
  */
-@Dependent
 public class ReportComponent extends MessageComponent {
 	private static final long serialVersionUID = 1L;
-	@Inject
 	private CrudStorage testStorage;
 	private Label nameLabel;
 	private Label descriptionLabel;
@@ -86,14 +80,9 @@ public class ReportComponent extends MessageComponent {
 		this.testStorage = testStorage;
 	}
 
-	public void setTreePane(TreePane treePane) {
-		this.treePane = treePane;
-	}
-
 	/**
 	 * @see nl.nn.testtool.echo2.Echo2Application#initBean()
 	 */
-	@PostConstruct
 	public void initBean() {
 		super.initBeanPre();
 

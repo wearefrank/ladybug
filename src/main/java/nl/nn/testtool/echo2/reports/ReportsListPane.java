@@ -15,16 +15,10 @@
 */
 package nl.nn.testtool.echo2.reports;
 
-import javax.annotation.PostConstruct;
-import javax.enterprise.context.Dependent;
-import javax.inject.Inject;
-
 import nextapp.echo2.app.ContentPane;
 
-@Dependent
 public class ReportsListPane extends ContentPane {
 	private static final long serialVersionUID = 1L;
-	@Inject
 	private ReportsComponent reportsComponent;
 
     public void setReportsComponent(ReportsComponent reportsComponent) {
@@ -34,7 +28,6 @@ public class ReportsListPane extends ContentPane {
 	/**
 	 * @see nl.nn.testtool.echo2.Echo2Application#initBean()
 	 */
-	@PostConstruct
     public void initBean() {
         add(reportsComponent, 0);
     }

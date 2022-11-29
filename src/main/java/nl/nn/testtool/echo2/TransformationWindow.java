@@ -15,6 +15,7 @@
 */
 package nl.nn.testtool.echo2;
 
+import echopointng.tree.DefaultTreeCellRenderer;
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Extent;
@@ -26,10 +27,6 @@ import nextapp.echo2.app.WindowPane;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import nl.nn.testtool.transform.ReportXmlTransformer;
-
-import javax.annotation.PostConstruct;
-
-import echopointng.tree.DefaultTreeCellRenderer;
 
 /**
  * @author Jaco de Groot
@@ -110,7 +107,6 @@ public class TransformationWindow extends WindowPane implements ActionListener {
 	/**
 	 * @see nl.nn.testtool.echo2.Echo2Application#initBean()
 	 */
-	@PostConstruct
 	public void initBean() {
 		textArea.setText(reportXmlTransformer.getXslt());
 	}

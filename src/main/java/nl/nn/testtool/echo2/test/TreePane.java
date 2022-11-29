@@ -21,10 +21,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import javax.enterprise.context.Dependent;
-import javax.inject.Inject;
-import javax.inject.Named;
-
 import echopointng.tree.DefaultMutableTreeNode;
 import echopointng.tree.TreePath;
 import lombok.Setter;
@@ -37,13 +33,11 @@ import nl.nn.testtool.storage.CrudStorage;
 import nl.nn.testtool.storage.Storage;
 import nl.nn.testtool.storage.StorageException;
 
-@Dependent @Named("testTreePane")
 public class TreePane extends nl.nn.testtool.echo2.reports.TreePane implements BeanParent {
 	private static final long serialVersionUID = 1L;
 	private InfoPane infoPane;
 	private BeanParent beanParent;
-	@Setter @Inject
-	private CrudStorage storage;
+	private @Setter CrudStorage testStorage;
 	private List<Integer> reportsWithDirtyPaths = new ArrayList<Integer>();
 
 	@Override
@@ -120,7 +114,7 @@ public class TreePane extends nl.nn.testtool.echo2.reports.TreePane implements B
 		metadataNames.add("path");
 		List<List<Object>> metadata = null;
 		try {
-			metadata = storage.getMetadata(-1, metadataNames, null, MetadataExtractor.VALUE_TYPE_OBJECT);
+			metadata = testStorage.getMetadata(-1, metadataNames, null, MetadataExtractor.VALUE_TYPE_OBJECT);
 		} catch (StorageException e) {
 			// TODO iets doen
 			e.printStackTrace();

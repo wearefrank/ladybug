@@ -32,6 +32,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import lombok.Setter;
 import nl.nn.testtool.Report;
@@ -43,9 +44,9 @@ import nl.nn.testtool.web.ApiServlet;
 
 @Path("/" + ApiServlet.LADYBUG_API_PATH + "/testtool")
 public class TestToolApi extends ApiBase {
-	private @Setter @Inject TestTool testTool;
-	private @Setter @Inject ReportXmlTransformer reportXmlTransformer;
-	private @Setter @Inject Views views;
+	private @Setter @Inject @Autowired TestTool testTool;
+	private @Setter @Inject @Autowired ReportXmlTransformer reportXmlTransformer;
+	private @Setter @Inject @Autowired Views views;
 	private String defaultTransformation;
 
 	@PostConstruct
@@ -200,7 +201,7 @@ public class TestToolApi extends ApiBase {
 		Map<String, Map<String, Object>> response = new HashMap<String, Map<String, Object>>();
 		for (View view : views) {
 			Map<String, Object> map = new HashMap<String, Object>();
-			map.put("storageName", view.getStorage().getName());
+			map.put("storageName", view.getDebugStorage().getName());
 			if (view == views.getDefaultView()) {
 				map.put("defaultView", true);
 			} else {

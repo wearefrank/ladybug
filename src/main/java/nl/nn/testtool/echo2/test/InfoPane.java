@@ -17,32 +17,45 @@ package nl.nn.testtool.echo2.test;
 
 import java.util.Set;
 
-import javax.annotation.PostConstruct;
-import javax.enterprise.context.Dependent;
-import javax.inject.Inject;
-
+import lombok.Setter;
 import nextapp.echo2.app.ContentPane;
+import nl.nn.testtool.TestTool;
 import nl.nn.testtool.echo2.BeanParent;
+import nl.nn.testtool.storage.CrudStorage;
+import nl.nn.testtool.storage.LogStorage;
+import nl.nn.testtool.transform.ReportXmlTransformer;
 
 /**
  * @author Jaco de Groot
  */
-@Dependent
 public class InfoPane extends ContentPane implements BeanParent {
 	private static final long serialVersionUID = 1L;
-	@Inject
+	private @Setter TestTool testTool;
+	private @Setter LogStorage debugStorage;
+	private @Setter CrudStorage testStorage;
+	private @Setter ReportXmlTransformer reportXmlTransformer;
 	private TestComponent testComponent;
 	private BeanParent beanParent;
-
-	public void setTestComponent(TestComponent testComponent) {
-		this.testComponent = testComponent;
-	}
 
 	/**
 	 * @see nl.nn.testtool.echo2.Echo2Application#initBean()
 	 */
-	@PostConstruct
 	public void initBean() {
+
+		// Construct
+
+		testComponent = new TestComponent();
+
+		// Wire
+
+		testComponent.setTestTool(testTool);
+		testComponent.setDebugStorage(debugStorage);
+		testComponent.setTestStorage(testStorage);
+		testComponent.setReportXmlTransformer(reportXmlTransformer);
+
+		// Init
+
+		testComponent.initBean();
 	}
 
 	/**

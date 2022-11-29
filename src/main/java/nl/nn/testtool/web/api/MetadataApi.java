@@ -33,6 +33,8 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
+import org.springframework.beans.factory.annotation.Autowired;
+
 import lombok.Setter;
 import nl.nn.testtool.MetadataExtractor;
 import nl.nn.testtool.TestTool;
@@ -41,7 +43,7 @@ import nl.nn.testtool.web.ApiServlet;
 
 @Path("/" + ApiServlet.LADYBUG_API_PATH + "/metadata")
 public class MetadataApi extends ApiBase {
-	private @Setter @Inject TestTool testTool;
+	private @Setter @Inject @Autowired TestTool testTool;
 
 	/**
 	 * Searches the storage metadata.
