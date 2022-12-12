@@ -6,6 +6,7 @@ Ladybug Test Tool release notes
 Upcoming (2.3)
 --------------
 
+- Add level label to checkpoint component (old GUI)
 - Add type label to checkpoint component (old GUI)
 - Whitelist api resources (instead of blacklisting)
 - Support Quarkus

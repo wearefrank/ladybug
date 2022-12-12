@@ -48,6 +48,7 @@ public class CheckpointComponent extends MessageComponent {
 	private Label messageClassNamePropertyLabel;
 	private Label pathPropertyLabel;
 	private Label checkpointUIDPropertyLabel;
+	private Label levelLabel;
 	private Label encodingPropertyLabel;
 	private Label numberOfCharactersPropertyLabel;
 	private Label estimatedMemoryUsagePropertyLabel;
@@ -201,6 +202,10 @@ public class CheckpointComponent extends MessageComponent {
 				+ "instead, extend your variable to, for example, ${checkpoint(287#13).xpath(results/result[1])}.");
 		add(checkpointUIDPropertyLabel);
 
+
+		levelLabel = Echo2Application.createInfoLabelWithColumnLayoutData();
+		add(levelLabel);
+
 		encodingPropertyLabel = Echo2Application.createInfoLabelWithColumnLayoutData();
 		add(encodingPropertyLabel);
 
@@ -310,6 +315,7 @@ public class CheckpointComponent extends MessageComponent {
 		messageClassNamePropertyLabel.setText("Message class name: " + messageClassName);
 		pathPropertyLabel.setText("Path: " + checkpoint.getPath());
 		checkpointUIDPropertyLabel.setText("Checkpoint UID: "+checkpoint.getUid());
+		levelLabel.setText("Level: " + checkpoint.getLevel());
 		encodingPropertyLabel.setText("Encoding: "+checkpoint.getEncoding());
 		numberOfCharactersPropertyLabel.setText("Number of characters: "+(checkpoint.getMessage() != null ? checkpoint.getMessage().length() : "0"));
 		estimatedMemoryUsagePropertyLabel.setText("EstimatedMemoryUsage: " + checkpoint.getEstimatedMemoryUsage() + " bytes");
