@@ -4,10 +4,12 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xmlns:context="http://www.springframework.org/schema/context"
 	xsi:schemaLocation="
-		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/beans   http://www.springframework.org/schema/beans/spring-beans.xsd
 		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
 	"
 	>
+
+	<context:component-scan base-package="nl.nn.testtool"/>
 
 	<!-- Use prototype for JUnit tests to reset settings between tests and when run in parallel prevent one test -->
 	<!-- that alters a setting to influence another test -->
@@ -20,18 +22,6 @@
 	<bean name="debugStorage" class="nl.nn.testtool.storage.file.Storage" autowire="byName" init-method="init">
 		<property name="reportsFilename" value="data/file-storage/ladybug.tts"/>
 		<property name="metadataFilename" value="data/file-storage/ladybug.ttm"/>
-		<property name="persistentMetadata">
-			<list>
-				<value>storageId</value>
-				<value>storageSize</value>
-				<value>name</value>
-				<value>correlationId</value>
-				<value>startTime</value>
-				<value>endTime</value>
-				<value>estimatedMemoryUsage</value>
-				<value>numberOfCheckpoints</value>
-			</list>
-		</property>
 		<property name="metadataExtractor">
 			<bean class="nl.nn.testtool.MetadataExtractor"/>
 		</property>

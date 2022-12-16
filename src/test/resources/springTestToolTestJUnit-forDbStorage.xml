@@ -4,10 +4,12 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xmlns:context="http://www.springframework.org/schema/context"
 	xsi:schemaLocation="
-		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/beans   http://www.springframework.org/schema/beans/spring-beans.xsd
 		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
 	"
 	>
+
+	<context:component-scan base-package="nl.nn.testtool"/>
 
 	<!-- Use prototype for JUnit tests to reset settings between tests and when run in parallel prevent one test -->
 	<!-- that alters a setting to influence another test -->
@@ -19,36 +21,6 @@
 
 	<bean name="debugStorage" class="nl.nn.testtool.storage.database.DatabaseStorage" autowire="byName" init-method="init">
 		<property name="table" value="LADYBUG"/>
-		<property name="metadataColumns">
-			<list>
-				<value>storageId</value>
-				<value>endTime</value>
-				<value>duration</value>
-				<value>name</value>
-				<value>correlationId</value>
-				<value>status</value>
-				<value>numberOfCheckpoints</value>
-				<value>estimatedMemoryUsage</value>
-				<value>storageSize</value>
-			</list>
-		</property>
-		<property name="integerColumns">
-			<list>
-				<value>storageId</value>
-				<value>numberOfCheckpoints</value>
-			</list>
-		</property>
-		<property name="longColumns">
-			<list>
-				<value>estimatedMemoryUsage</value>
-				<value>storageSize</value>
-			</list>
-		</property>
-		<property name="timestampColumns">
-			<list>
-				<value>endTime</value>
-			</list>
-		</property>
 		<property name="metadataExtractor" ref="metadataExtractor"/>
 	</bean>
 
@@ -67,8 +39,6 @@
 	<bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
 		<property name="dataSource" ref="dataSource"/>
 	</bean>
-
-	<bean name="dbmsSupport" class="nl.nn.testtool.storage.database.DbmsSupport" autowire="byName" init-method="init"/>
 
 	<bean name="liquibase" class="liquibase.integration.spring.SpringLiquibase">
 		<property name="dataSource" ref="dataSource" />
