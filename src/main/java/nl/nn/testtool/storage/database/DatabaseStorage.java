@@ -27,15 +27,18 @@ import java.sql.Types;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.List;
 
 import javax.annotation.PostConstruct;
+import javax.inject.Inject;
 
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementSetter;
@@ -55,43 +58,87 @@ import nl.nn.testtool.util.SearchUtil;
 /**
  * @author Jaco de Groot
  */
+// @Dependent disabled for Quarkus for now because of the use of JdbcTemplate
 public class DatabaseStorage implements LogStorage, CrudStorage {
 	private static Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-	private static final String TIMESTAMP_PATTERN = "yyyy-MM-dd'T'HH:mm:ss.SSS";
-	private @Setter @Getter String name;
-	private @Setter @Getter String table;
-	private @Setter @Getter String storageIdColumnName;
-	private @Setter @Getter List<String> metadataColumns;
-	private @Setter @Getter List<String> integerColumns;
-	private @Setter @Getter List<String> longColumns;
-	private @Setter @Getter List<String> timestampColumns;
-	private @Setter @Getter List<String> bigValueColumns; // Columns for which to limit the number of retrieved characters to 100
-	private @Setter @Getter JdbcTemplate jdbcTemplate;
-	private @Setter @Getter DbmsSupport dbmsSupport;
-	private @Setter @Getter MetadataExtractor metadataExtractor;
-	private String lastExceptionMessage;
+	protected static final String TIMESTAMP_PATTERN = "yyyy-MM-dd'T'HH:mm:ss.SSS";
+	protected @Setter @Getter String name;
+	protected @Setter String table;
+	protected @Setter @Getter @Inject @Autowired List<String> metadataNames; // Used as column names in this storage
+	protected @Setter String storageIdColumn;
+	protected @Setter List<String> integerColumns;
+	protected @Setter List<String> longColumns;
+	protected @Setter List<String> timestampColumns;
+	protected @Setter List<String> bigValueColumns; // Columns for which to limit the number of retrieved characters to 100
+	protected @Setter @Getter @Inject @Autowired JdbcTemplate jdbcTemplate;
+	protected @Setter @Getter @Inject @Autowired DbmsSupport dbmsSupport;
+	protected @Setter @Getter @Inject @Autowired MetadataExtractor metadataExtractor;
+	protected String lastExceptionMessage;
 
+	public String getTable() {
+		if (table == null) {
+			return "LADYBUG";
+		} else {
+			return table;
+		}
+	}
+
+	public String getStorageIdColumn() {
+		if (storageIdColumn == null) {
+			return "storageId";
+		} else {
+			return storageIdColumn;
+		}
+	}
+
+	public List<String> getIntegerColumns() {
+		if (integerColumns == null) {
+			return new ArrayList<String>(Arrays.asList("storageId", "numberOfCheckpoints"));
+		} else {
+			return integerColumns;
+		}
+	}
+
+	public List<String> getLongColumns() {
+		if (longColumns == null) {
+			return new ArrayList<String>(Arrays.asList("estimatedMemoryUsage", "storageSize"));
+		} else {
+			return longColumns;
+		}
+	}
+
+	public List<String> getTimestampColumns() {
+		if (timestampColumns == null) {
+			return new ArrayList<String>(Arrays.asList("endTime"));
+		} else {
+			return timestampColumns;
+		}
+	}
+
+	public List<String> getBigValueColumns() {
+		if (bigValueColumns == null) {
+			return new ArrayList<String>(Arrays.asList());
+		} else {
+			return bigValueColumns;
+		}
+	}
+	
 	@PostConstruct
 	public void init() throws StorageException {
-		if (storageIdColumnName == null) storageIdColumnName = "storageId";
-		if (!(metadataColumns != null && metadataColumns.contains(storageIdColumnName))) {
-			throw new StorageException("List metadataColumns should at least contain storageId column name '"
-					+ storageIdColumnName + "'");
+		if (!(getMetadataNames() != null && getMetadataNames().contains(getStorageIdColumn()))) {
+			throw new StorageException("List metadataNames " + metadataNames
+					+ " should at least contain storageId column name '" + getStorageIdColumn() + "'");
 		}
-		if (integerColumns == null) integerColumns = new ArrayList<String>();
-		if (longColumns == null) longColumns = new ArrayList<String>();
-		if (timestampColumns == null) timestampColumns = new ArrayList<String>();
-		if (bigValueColumns == null) bigValueColumns = new ArrayList<String>();
 	}
 
 	@Override
 	public void store(Report report) throws StorageException {
 		byte[] reportBytes = Export.getReportBytes(report);
 		report.setStorageSize(new Long(reportBytes.length));
-		StringBuilder query = new StringBuilder("insert into " + table + " (");
-		for (String column : metadataColumns) {
+		StringBuilder query = new StringBuilder("insert into " + getTable() + " (");
+		for (String column : getMetadataNames()) {
 			// Column storageId is expected to be an auto increment column
-			if (!column.equals(storageIdColumnName)) {
+			if (!column.equals(getStorageIdColumn())) {
 				if (query.charAt(query.length() - 1) != '(') {
 					query.append(", ");
 				}
@@ -99,8 +146,8 @@ public class DatabaseStorage implements LogStorage, CrudStorage {
 			}
 		}
 		query.append(", report) values (");
-		for (String column : metadataColumns) {
-			if (!column.equals(storageIdColumnName)) {
+		for (String column : getMetadataNames()) {
+			if (!column.equals(getStorageIdColumn())) {
 				if (query.charAt(query.length() - 1) != '(') {
 					query.append(", ");
 				}
@@ -114,13 +161,13 @@ public class DatabaseStorage implements LogStorage, CrudStorage {
 					@Override
 					public void setValues(PreparedStatement ps) throws SQLException {
 						int i = 1;
-						for (String column : metadataColumns) {
-							if (!column.equals(storageIdColumnName)) {
-								if (integerColumns.contains(column)) {
+						for (String column : getMetadataNames()) {
+							if (!column.equals(getStorageIdColumn())) {
+								if (getIntegerColumns().contains(column)) {
 									ps.setInt(i, (Integer)metadataExtractor.getMetadata(report, column, MetadataExtractor.VALUE_TYPE_OBJECT));
-								} else if (longColumns.contains(column)) {
+								} else if (getLongColumns().contains(column)) {
 									ps.setLong(i, (Long)metadataExtractor.getMetadata(report, column, MetadataExtractor.VALUE_TYPE_OBJECT));
-								} else if (timestampColumns.contains(column)) {
+								} else if (getTimestampColumns().contains(column)) {
 									ps.setTimestamp(i, new Timestamp((Long)metadataExtractor.getMetadata(report, column, MetadataExtractor.VALUE_TYPE_OBJECT)));
 								} else {
 									ps.setString(i, (String)metadataExtractor.getMetadata(report, column, MetadataExtractor.VALUE_TYPE_OBJECT));
@@ -153,7 +200,7 @@ public class DatabaseStorage implements LogStorage, CrudStorage {
 
 	@Override
 	public Report getReport(Integer storageId) throws StorageException {
-		String query = "select report, storageSize from " + table + " where " + storageIdColumnName + " = ?";
+		String query = "select report, storageSize from " + getTable() + " where " + getStorageIdColumn() + " = ?";
 		log.debug("Get report query: " + query);
 		List<Report> result = jdbcTemplate.query(query, new Object[]{storageId}, new int[] {Types.INTEGER},
 				(resultSet, rowNum) -> getReport(storageId, resultSet.getBlob(1), resultSet.getLong(2)));
@@ -177,7 +224,7 @@ public class DatabaseStorage implements LogStorage, CrudStorage {
 // TODO: Write JUnit test or test with ibis-ladybug-test-webapp
 	@Override
 	public void delete(Report report) throws StorageException {
-		String query = "delete from " + table + " where " + storageIdColumnName + " = ?";
+		String query = "delete from " + getTable() + " where " + getStorageIdColumn() + " = ?";
 		log.debug("Delete report query: " + query);
 		jdbcTemplate.update(query,
 				new PreparedStatementSetter() {
@@ -196,19 +243,25 @@ public class DatabaseStorage implements LogStorage, CrudStorage {
 
 	@Override
 	public int getSize() throws StorageException {
-		String query = "select count(*) from " + table;
+		StringBuilder query = new StringBuilder();
+		buildSizeQuery(query);
 		log.debug("Get size query: " + query);
 		try {
-			return jdbcTemplate.queryForObject(query, Integer.class);
+			return jdbcTemplate.queryForObject(query.toString(), Integer.class);
 		} catch(DataAccessException e){
 			throw new StorageException("Could not read size", e);
 		}
 	}
 
+	protected void buildSizeQuery(StringBuilder query) throws StorageException {
+		query.append("select count(*) from " + getTable());
+	}
+
 // TODO: Write JUnit test or test with ibis-ladybug-test-webapp
 	@Override
 	public List<Integer> getStorageIds() throws StorageException {
-		String query = "select " + storageIdColumnName + " from " + table + " order by " + storageIdColumnName + " desc";
+		String query = "select " + getStorageIdColumn() + " from " + getTable() + " order by "
+				+ getStorageIdColumn() + " desc";
 		log.debug("Get storage id's query: " + query);
 		try {
 			List<Integer> storageIds = jdbcTemplate.query(query, (rs, rowNum) -> rs.getInt(1));
@@ -261,9 +314,9 @@ public class DatabaseStorage implements LogStorage, CrudStorage {
 						{
 							List<Object> row = new ArrayList<Object>();
 							for (int i = 0; i < metadataNames.size(); i++) {
-								if (integerColumns.contains(metadataNames.get(i))) {
+								if (getIntegerColumns().contains(metadataNames.get(i))) {
 									row.add(rs.getInt(i + 1));
-								} else if (timestampColumns.contains(metadataNames.get(i))) {
+								} else if (getTimestampColumns().contains(metadataNames.get(i))) {
 									Timestamp timestamp = rs.getTimestamp(i + 1);
 									String value = null;
 									if (timestamp != null) {
@@ -280,6 +333,7 @@ public class DatabaseStorage implements LogStorage, CrudStorage {
 		} catch(DataAccessException e){
 			throw new StorageException("Could not read metadata", e);
 		}
+		postProcessMetadataResult(metadata, maxNumberOfRecords, metadataNames, searchValues, metadataValueType);
 		for (int i = 0; i < metadata.size(); i++) {
 			if (!SearchUtil.matches((List<Object>)metadata.get(i), regexSearchValues)) {
 				metadata.remove(i);
@@ -300,7 +354,7 @@ public class DatabaseStorage implements LogStorage, CrudStorage {
 			} else {
 				query.append(", ");
 			}
-			if (bigValueColumns.contains(metadataName)) {
+			if (getBigValueColumns().contains(metadataName)) {
 				query.append("substr(" + metadataName + ", 1, 100)");
 			} else {
 				query.append(metadataName);
@@ -315,7 +369,7 @@ public class DatabaseStorage implements LogStorage, CrudStorage {
 			}
 			query.append(rowNumber);
 		}
-		query.append(" from " + table);
+		query.append(" from " + getTable());
 		for (int i = 0; i < rangeSearchValues.size(); i++) {
 			String searchValue = rangeSearchValues.get(i);
 			if (searchValue != null) {
@@ -326,19 +380,19 @@ public class DatabaseStorage implements LogStorage, CrudStorage {
 					String searchValueRight = searchValue.substring(j + 1,
 							searchValue.length() - 1);
 					if (StringUtils.isNotEmpty(searchValueLeft)) {
-						if (integerColumns.contains(column)) {
+						if (getIntegerColumns().contains(column)) {
 							addNumberExpression(query, args, argTypes, column, ">=",
 									searchValueLeft);
-						} else if (timestampColumns.contains(column)) {
+						} else if (getTimestampColumns().contains(column)) {
 							addTimestampExpression(query, args, argTypes, column, ">=",
 									searchValueLeft, simpleDateFormat);
 						}
 					}
 					if (StringUtils.isNotEmpty(searchValueRight)) {
-						if (integerColumns.contains(column)) {
+						if (getIntegerColumns().contains(column)) {
 							addNumberExpression(query, args, argTypes, column, "<=",
 									searchValueRight);
-						} else if (timestampColumns.contains(column)) {
+						} else if (getTimestampColumns().contains(column)) {
 							addTimestampExpression(query, args, argTypes, column, "<=",
 									searchValueRight, simpleDateFormat);
 						}
@@ -352,9 +406,9 @@ public class DatabaseStorage implements LogStorage, CrudStorage {
 			String searchValue = searchValues.get(i);
 			if (StringUtils.isNotEmpty(searchValue)) {
 				String column = metadataNames.get(i);
-				if (integerColumns.contains(column)) {
+				if (getIntegerColumns().contains(column)) {
 					addNumberExpression(query, args, argTypes, column, "<=", searchValue);
-				} else if (timestampColumns.contains(column)) {
+				} else if (getTimestampColumns().contains(column)) {
 					addTimestampExpression(query, args, argTypes, column, "<=",
 							searchValue, simpleDateFormat);
 				} else {
@@ -374,6 +428,13 @@ public class DatabaseStorage implements LogStorage, CrudStorage {
 		query.append(" order by ");
 		query.append(metadataNames.get(0) + " desc");
 		query.append(dbmsSupport.provideTrailingFirstRowsHint(maxNumberOfRecords));
+	}
+
+	/*
+	 * Override this method in a subclass when needed
+	 */
+	protected void postProcessMetadataResult(List<List<Object>> metadata, int maxNumberOfRecords,
+			List<String> metadataNames, List<String> searchValues, int metadataValueType) {
 	}
 
 	@Override
@@ -488,9 +549,9 @@ public class DatabaseStorage implements LogStorage, CrudStorage {
 	}
 
 	public String getUserHelp(String column) {
-		if (integerColumns.contains(column)) {
+		if (getIntegerColumns().contains(column)) {
 			return "Search all rows which are less than or equal to the search value";
-		} else if (timestampColumns.contains(column)) {
+		} else if (getTimestampColumns().contains(column)) {
 			return "Search all rows which are less than or equal to the search value."
 					+ " When the search value only complies with the beginning of pattern yyyy-MM-dd'T'HH:mm:ss.SSS, it will be internally completed according to the value 9999-12-31T23:59:59.999";
 		} else {

@@ -37,7 +37,7 @@ import nl.nn.testtool.storage.LogStorage;
  */
 @Dependent
 public class View implements BeanParent {
-	private String name;
+	protected String name;
 	private @Setter @Getter @Inject @Autowired LogStorage debugStorage;
 	private @Setter @Getter @Inject @Autowired List<String> metadataNames;
 	private Map<String, String> metadataFilter;
@@ -98,7 +98,7 @@ public class View implements BeanParent {
 	}
 
 	public String toString() {
-		return name;
+		return getName();
 	}
 
 }

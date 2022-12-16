@@ -18,7 +18,9 @@ package nl.nn.testtool.storage.database;
 import java.sql.SQLException;
 
 import javax.annotation.PostConstruct;
+import javax.inject.Inject;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.JdbcUtils;
 import org.springframework.jdbc.support.MetaDataAccessException;
@@ -36,8 +38,9 @@ See that most databaseProductName values are returned as-is as commonDatabaseNam
   https://github.com/spring-projects/spring-framework/blob/main/spring-jdbc/src/main/java/org/springframework/jdbc/support/JdbcUtils.java
 
 */
+// @Singleton disabled for Quarkus for now because of the use of JdbcTemplate
 public class DbmsSupport {
-	private @Setter JdbcTemplate jdbcTemplate;
+	private @Setter @Inject @Autowired JdbcTemplate jdbcTemplate;
 	private String commonDatabaseName;
 
 	@PostConstruct

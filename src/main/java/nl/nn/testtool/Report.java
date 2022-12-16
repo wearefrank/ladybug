@@ -453,7 +453,8 @@ public class Report implements Serializable {
 				} else if (checkpoints.size() >= testTool.getMaxCheckpoints()) {
 					message = TestTool.execute(stubableCode, stubableCodeThrowsException, message);
 					if (logMaxCheckpoints) {
-						log.warn("Maximum number of checkpoints exceeded, ignored checkpoint "
+						log.warn("Maximum number of checkpoints (" + testTool.getMaxCheckpoints()
+								+ ") exceeded, ignored checkpoint "
 								+ getCheckpointLogDescription(name, checkpointType, level) + " "
 								+ getOtherCheckpointsLogDescription());
 						logMaxCheckpoints = false;

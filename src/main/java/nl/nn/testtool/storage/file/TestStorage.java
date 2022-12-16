@@ -21,6 +21,9 @@ import java.util.Iterator;
 import java.util.List;
 
 import javax.annotation.PostConstruct;
+import javax.inject.Inject;
+
+import org.springframework.beans.factory.annotation.Autowired;
 
 import nl.nn.testtool.MetadataExtractor;
 import nl.nn.testtool.Report;
@@ -94,9 +97,29 @@ public class TestStorage implements nl.nn.testtool.storage.CrudStorage {
 	 * 
 	 * @param metadataNames ...
 	 */
-	public void setPersistentMetadata(List metadataNames) {
+	public void setPersistentMetadata(List<String> metadataNames) {
 		writer[0].setPersistentMetadata(metadataNames);
 		writer[1].setPersistentMetadata(metadataNames);
+	}
+
+	/**
+	 * The metadataNames to be shown in the debug tab are usually not a good default for persistent metadata of the test
+	 * storage but when injected it gives a chance to set the proper defaults
+	 * 
+	 * @param metadataNames ...
+	 */
+	@Inject
+	@Autowired
+	public void setMetadataNames(List<String> metadataNames) {
+		if (writer[0].getPersistentMetadata() == null) {
+			metadataNames = new ArrayList<String>();
+			metadataNames.add("storageId");
+			metadataNames.add("storageSize");
+			metadataNames.add("path");
+			metadataNames.add("name");
+			writer[0].setPersistentMetadata(metadataNames);
+			writer[1].setPersistentMetadata(metadataNames);
+		}
 	}
 
 	@PostConstruct

@@ -6,6 +6,10 @@ Ladybug Test Tool release notes
 Upcoming (2.3)
 --------------
 
+- Improve proof of migration
+  - Show first endpoint in overview / metadata table
+  - Add separate errors view
+  - Make sure the record for old component and the record for the new component (that have the same correlation id) are displayed directly below each other
 - Add level label to checkpoint component (old GUI)
 - Add type label to checkpoint component (old GUI)
 - Whitelist api resources (instead of blacklisting)
@@ -18,6 +22,7 @@ Upcoming (2.3)
 2.2
 ---
 
+- Add ProofOfMigrationStorage
 - Add ProxyStorage
 - Add CloseReportsTask
 - Add database storage implementation

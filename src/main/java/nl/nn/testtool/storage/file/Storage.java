@@ -18,6 +18,9 @@ package nl.nn.testtool.storage.file;
 import java.util.List;
 
 import javax.annotation.PostConstruct;
+import javax.inject.Inject;
+
+import org.springframework.beans.factory.annotation.Autowired;
 
 import nl.nn.testtool.MetadataExtractor;
 import nl.nn.testtool.Report;
@@ -54,7 +57,7 @@ public class Storage implements nl.nn.testtool.storage.LogStorage {
 	public String getName() {
 		return name;
 	}
-		
+
 	public void setReportsFilename(String reportsFilename) {
 		reader.setReportsFilename(reportsFilename);
 		writer.setReportsFilename(reportsFilename);
@@ -97,8 +100,21 @@ public class Storage implements nl.nn.testtool.storage.LogStorage {
 	 * 
 	 * @param metadataNames ...
 	 */
-	public void setPersistentMetadata(List metadataNames) {
+	public void setPersistentMetadata(List<String> metadataNames) {
 		writer.setPersistentMetadata(metadataNames);
+	}
+
+	/**
+	 * The metadataNames to be shown in the debug tab are usually a good default for persistent metadata
+	 * 
+	 * @param metadataNames ...
+	 */
+	@Inject
+	@Autowired
+	public void setMetadataNames(List<String> metadataNames) {
+		if (writer.getPersistentMetadata() == null) {
+			writer.setPersistentMetadata(metadataNames);
+		}
 	}
 
 	@PostConstruct

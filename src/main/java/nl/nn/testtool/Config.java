@@ -23,6 +23,7 @@ import javax.inject.Singleton;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.context.annotation.Scope;
 
 import io.quarkus.arc.DefaultBean;
@@ -36,7 +37,12 @@ import nl.nn.testtool.filter.Views;
 import nl.nn.testtool.metadata.StatusMetadataFieldExtractor;
 import nl.nn.testtool.storage.CrudStorage;
 import nl.nn.testtool.storage.LogStorage;
+import nl.nn.testtool.storage.database.DbmsSupport;
 import nl.nn.testtool.storage.memory.Storage;
+import nl.nn.testtool.storage.proofofmigration.ProofOfMigrationErrorsStorage;
+import nl.nn.testtool.storage.proofofmigration.ProofOfMigrationErrorsView;
+import nl.nn.testtool.storage.proofofmigration.ProofOfMigrationStorage;
+import nl.nn.testtool.storage.proofofmigration.ProofOfMigrationView;
 import nl.nn.testtool.transform.ReportXmlTransformer;
 
 /**
@@ -62,7 +68,8 @@ import nl.nn.testtool.transform.ReportXmlTransformer;
  *   https://stackoverflow.com/questions/37592743/configuring-spring-to-ignore-dependencies-annotated-with-inject</li>
  *   <li>The <code>@PostConstruct</code> annotation is part of Java SE 8 and supported by Spring, see also
  *   https://docs.spring.io/spring-framework/docs/3.2.x/spring-framework-reference/html/beans.html#beans-postconstruct-and-predestroy-annotations</li>
- *   <li>Spring will wire and init beans returned by the <code>@Bean</code> methods</li>
+ *   <li>Spring will wire and init beans returned by the <code>@Bean</code> methods (as far as those beans have the
+ *   needed <code>@Inject</code>, <code>@Autowired</code> and <code>@PostConstruct</code> annotations</li>
  *   <li>Spring XML configuration can be used to override the defaults as specified by the annotations</li>
  * </ul>
  * 
@@ -120,6 +127,7 @@ public class Config {
 	}
 
 	@Produces
+	@Singleton
 	@DefaultBean
 	@Bean
 	@Scope("singleton")
@@ -163,6 +171,7 @@ public class Config {
 	}
 
 	@Produces
+	@Singleton
 	@DefaultBean
 	@Bean
 	@Scope("singleton")
@@ -206,6 +215,37 @@ public class Config {
 	@Scope("singleton")
 	String xsltResource() {
 		return "ladybug/default.xslt";
+	}
+
+	@Bean
+	@Scope("singleton")
+	@Lazy
+	DbmsSupport dbmsSupport() {
+		return new DbmsSupport();
+	}
+
+	@Bean
+	@Scope("prototype")
+	ProofOfMigrationStorage proofOfMigrationStorage() {
+		return new ProofOfMigrationStorage();
+	}
+
+	@Bean
+	@Scope("prototype")
+	ProofOfMigrationView proofOfMigrationView() {
+		return new ProofOfMigrationView();
+	}
+
+	@Bean
+	@Scope("prototype")
+	ProofOfMigrationErrorsStorage proofOfMigrationErrorsStorage() {
+		return new ProofOfMigrationErrorsStorage();
+	}
+
+	@Bean
+	@Scope("prototype")
+	ProofOfMigrationErrorsView proofOfMigrationErrorsView() {
+		return new ProofOfMigrationErrorsView();
 	}
 
 }
