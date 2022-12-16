@@ -686,7 +686,7 @@ public class TestCreateReport extends ReportRelatedTestCase {
 		testTool.endpoint(correlationId, null, reportName, "endmessage1");
 		assertReport(correlationId);
 		assertWarningInLog(listAppender, correlationId,
-				"Maximum number of checkpoints exceeded, ignored checkpoint (name: name2, type: Endpoint, level: 2, correlationId: "
+				"Maximum number of checkpoints (2) exceeded, ignored checkpoint (name: name2, type: Endpoint, level: 2, correlationId: "
 				+ correlationId + ") (next checkpoints for this report will be ignored without any logging)");
 		assertEquals(0, testTool.getNumberOfReportsInProgress());
 		assertEquals("startmessage2", startmessage2);
