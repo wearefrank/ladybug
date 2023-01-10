@@ -27,6 +27,8 @@ import nl.nn.testtool.Report;
  */
 public class RegexMetadataFieldExtractor extends DefaultValueMetadataFieldExtractor {
 	protected String regex;
+	protected String checkpointName;
+	protected boolean checkpointNameCheck = false;
 	protected Pattern pattern;
 	protected boolean extractFromFirstCheckpointOnly = true;
 
@@ -39,6 +41,11 @@ public class RegexMetadataFieldExtractor extends DefaultValueMetadataFieldExtrac
 		}
 	}
 
+	public void setCheckpointName(String checkpointName) {
+		this.checkpointName = checkpointName;
+		checkpointNameCheck = true;
+	}
+
 	public void setExtractFromFirstCheckpointOnly(boolean extractFromFirstCheckpointOnly) {
 		this.extractFromFirstCheckpointOnly = extractFromFirstCheckpointOnly;
 	}
@@ -47,13 +54,15 @@ public class RegexMetadataFieldExtractor extends DefaultValueMetadataFieldExtrac
 		String value = null;
 		Iterator iterator = report.getCheckpoints().iterator();
 		while (value == null && iterator.hasNext()) {
-			String message = ((Checkpoint)iterator.next()).getMessage();
-			Matcher matcher = pattern.matcher(message);
-			if (matcher.find()) {
-				value = matcher.group(matcher.groupCount());
-			}
-			if (extractFromFirstCheckpointOnly) {
-				break;
+			Checkpoint checkpoint = (Checkpoint) iterator.next();
+			if(checkpointNameCheck && checkpoint.getName().equals(checkpointName)) {
+				Matcher matcher = pattern.matcher(checkpoint.getMessage());
+				if (matcher.find()) {
+					value = matcher.group(matcher.groupCount());
+				}
+				if (extractFromFirstCheckpointOnly) {
+					break;
+				}
 			}
 		}
 		if (value == null) {
