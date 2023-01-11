@@ -1,5 +1,5 @@
 /*
-   Copyright 2022 WeAreFrank!
+   Copyright 2022-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -151,8 +151,9 @@ public class Config {
 	@DefaultBean
 	@Bean
 	@Scope("singleton")
+	// When CrudStorage is also implemented by the returned storage it's reports can be deleted in the debug tab
 	LogStorage debugStorage(MetadataExtractor metadataExtractor) {
-		Storage storage = new Storage();
+		Storage storage = new Storage(); // Memory storage which also implements CrudStorage
 		storage.setName("Debug");
 		storage.setMetadataExtractor(metadataExtractor);
 		return storage;

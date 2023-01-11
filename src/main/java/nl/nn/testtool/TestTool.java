@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2022 WeAreFrank!, 2018 Nationale-Nederlanden
+   Copyright 2019-2023 WeAreFrank!, 2018 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -315,8 +315,14 @@ public class TestTool {
 					report.setTestTool(this);
 					report.setCorrelationId(correlationId);
 					report.setName(name);
-					if (StringUtils.isNotEmpty(regexFilter) && !name.matches(regexFilter)) {
-						report.setReportFilterMatching(false);
+					if (StringUtils.isNotEmpty(regexFilter)) {
+						String nameToMatch = name;
+						if (nameToMatch == null) {
+							nameToMatch = ""; // Same behavior as SearchUtil.matches()
+						}
+						if (!nameToMatch.matches(regexFilter)) {
+							report.setReportFilterMatching(false);
+						}
 					}
 					Report originalReport;
 					synchronized(originalReports) {

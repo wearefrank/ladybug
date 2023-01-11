@@ -63,7 +63,14 @@ public class TestSearchUtil {
 		assertAnyDoesNotMatch(values, search);
 
 		assertTrue(SearchUtil.matches(null, "null"));
-		assertTrue(SearchUtil.matches("", "\"\""));
+		assertFalse(SearchUtil.matches(null, "[null]"));
+		assertTrue(SearchUtil.matches("null", "[null]"));
+		assertTrue(SearchUtil.matches("null", "[Null]"));
+		assertFalse(SearchUtil.matches(null, "[[null]]"));
+		assertTrue(SearchUtil.matches("null", "[[null]]"));
+		assertFalse(SearchUtil.matches("null", "[[Null]]"));
+		assertTrue(SearchUtil.matches("", "[]"));
+		assertTrue(SearchUtil.matches("", "[[]]"));
 		assertTrue(SearchUtil.matches(null, "()"));
 		assertTrue(SearchUtil.matches("", "()"));
 		assertTrue(SearchUtil.matches("null", "(null)"));

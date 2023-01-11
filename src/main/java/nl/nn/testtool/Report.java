@@ -1,5 +1,5 @@
 /*
-   Copyright 2018-2022 WeAreFrank!
+   Copyright 2018-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -407,77 +407,73 @@ public class Report implements Serializable {
 		String threadName = Thread.currentThread().getName();
 		Integer index = threadCheckpointIndex.get(threadName);
 		Integer level = threadLevel.get(threadName);
-		if (name == null) {
-			log.warn("Ignored checkpoint with null name " + getCheckpointLogDescription(name, checkpointType, level));
-		} else {
-			if (checkpointType == Checkpoint.TYPE_THREADSTARTPOINT) {
-				// At this point index will already be != null when name of the child thread was used as childThreadId
-				// when calling threadCreatepoint()
-				if (index == null) {
-					index = threadCheckpointIndex.remove(childThreadId);
-					if (index != null) {
-						// Rename child thread id in the relevant maps to the actual thread name of the child thread (which
-						// at this point is the current thread (calling it's first checkpoint (threadStartpoint())) for as
-						// far as they are not already the same (in which case index will be initialized with a non null
-						// value at the beginning of this method
-						threads.add(threads.indexOf(childThreadId), threadName);
-						threads.remove(childThreadId);
-						threadCheckpointIndex.put(threadName, index);
-						level = threadFirstLevel.remove(childThreadId);
-						threadFirstLevel.put(threadName, level);
-						level = threadLevel.remove(childThreadId);
-						threadLevel.put(threadName, level);
-						String parent = (String)threadParent.remove(childThreadId);
-						threadParent.put(threadName, parent);
-					} else {
-						log.warn("Unknown childThreadId '" + childThreadId
-								+ "', use the same childThreadId when calling threadCreatepoint() and threadStartpoint()");
-					}
-				}
+		if (checkpointType == Checkpoint.TYPE_THREADSTARTPOINT) {
+			// At this point index will already be != null when name of the child thread was used as childThreadId
+			// when calling threadCreatepoint()
+			if (index == null) {
+				index = threadCheckpointIndex.remove(childThreadId);
 				if (index != null) {
-					removeThreadCreatepoint(index, threadName);
+					// Rename child thread id in the relevant maps to the actual thread name of the child thread (which
+					// at this point is the current thread (calling it's first checkpoint (threadStartpoint())) for as
+					// far as they are not already the same (in which case index will be initialized with a non null
+					// value at the beginning of this method
+					threads.add(threads.indexOf(childThreadId), threadName);
+					threads.remove(childThreadId);
+					threadCheckpointIndex.put(threadName, index);
+					level = threadFirstLevel.remove(childThreadId);
+					threadFirstLevel.put(threadName, level);
+					level = threadLevel.remove(childThreadId);
+					threadLevel.put(threadName, level);
+					String parent = (String)threadParent.remove(childThreadId);
+					threadParent.put(threadName, parent);
+				} else {
+					log.warn("Unknown childThreadId '" + childThreadId
+							+ "', use the same childThreadId when calling threadCreatepoint() and threadStartpoint()");
 				}
 			}
-			if (index == null) {
-				log.warn("Unknown thread, ignored checkpoint " + getCheckpointLogDescription(name, checkpointType,
-						level));
+			if (index != null) {
+				removeThreadCreatepoint(index, threadName);
+			}
+		}
+		if (index == null) {
+			log.warn("Unknown thread, ignored checkpoint " + getCheckpointLogDescription(name, checkpointType,
+					level));
+		} else {
+			if (!isReportFilterMatching()) {
+				message = TestTool.execute(stubableCode, stubableCodeThrowsException, message);
+				if (logReportFilterMatching) {
+					log.debug("Report name doesn't match report filter regex, ignored checkpoint "
+							+ getCheckpointLogDescription(name, checkpointType, level) + " "
+							+ getOtherCheckpointsLogDescription());
+					logReportFilterMatching = false;
+				}
+			} else if (checkpoints.size() >= testTool.getMaxCheckpoints()) {
+				message = TestTool.execute(stubableCode, stubableCodeThrowsException, message);
+				if (logMaxCheckpoints) {
+					log.warn("Maximum number of checkpoints (" + testTool.getMaxCheckpoints()
+							+ ") exceeded, ignored checkpoint "
+							+ getCheckpointLogDescription(name, checkpointType, level) + " "
+							+ getOtherCheckpointsLogDescription());
+					logMaxCheckpoints = false;
+				}
+			} else if (getEstimatedMemoryUsage() >= testTool.getMaxMemoryUsage()) {
+				message = TestTool.execute(stubableCode, stubableCodeThrowsException, message);
+				if (logMaxMemoryUsage) {
+					log.warn("Maximum memory usage reached for this report, ignored checkpoint "
+							+ getCheckpointLogDescription(name, checkpointType, level) + " "
+							+ getOtherCheckpointsLogDescription());
+					logMaxMemoryUsage = false;
+				}
 			} else {
-				if (!isReportFilterMatching()) {
-					message = TestTool.execute(stubableCode, stubableCodeThrowsException, message);
-					if (logReportFilterMatching) {
-						log.debug("Report name doesn't match report filter regex, ignored checkpoint "
-								+ getCheckpointLogDescription(name, checkpointType, level) + " "
-								+ getOtherCheckpointsLogDescription());
-						logReportFilterMatching = false;
-					}
-				} else if (checkpoints.size() >= testTool.getMaxCheckpoints()) {
-					message = TestTool.execute(stubableCode, stubableCodeThrowsException, message);
-					if (logMaxCheckpoints) {
-						log.warn("Maximum number of checkpoints (" + testTool.getMaxCheckpoints()
-								+ ") exceeded, ignored checkpoint "
-								+ getCheckpointLogDescription(name, checkpointType, level) + " "
-								+ getOtherCheckpointsLogDescription());
-						logMaxCheckpoints = false;
-					}
-				} else if (getEstimatedMemoryUsage() >= testTool.getMaxMemoryUsage()) {
-					message = TestTool.execute(stubableCode, stubableCodeThrowsException, message);
-					if (logMaxMemoryUsage) {
-						log.warn("Maximum memory usage reached for this report, ignored checkpoint "
-								+ getCheckpointLogDescription(name, checkpointType, level) + " "
-								+ getOtherCheckpointsLogDescription());
-						logMaxMemoryUsage = false;
-					}
-				} else {
-					message = addCheckpoint(threadName, sourceClassName, name, message, stubableCode,
-							stubableCodeThrowsException, matchingStubStrategies, checkpointType, index, level);
-				}
-				Integer newLevel = new Integer(level.intValue() + levelChangeNextCheckpoint);
-				threadLevel.put(threadName, newLevel);
-				if (newLevel.equals(threadFirstLevel.get(threadName))) {
-					// threadCreatepoint has already been removed on first checkpoint for thread, hence use false
-					// for removeThreadCreatepoint
-					closeThread(threadName, false, false);
-				}
+				message = addCheckpoint(threadName, sourceClassName, name, message, stubableCode,
+						stubableCodeThrowsException, matchingStubStrategies, checkpointType, index, level);
+			}
+			Integer newLevel = new Integer(level.intValue() + levelChangeNextCheckpoint);
+			threadLevel.put(threadName, newLevel);
+			if (newLevel.equals(threadFirstLevel.get(threadName))) {
+				// threadCreatepoint has already been removed on first checkpoint for thread, hence use false
+				// for removeThreadCreatepoint
+				closeThread(threadName, false, false);
 			}
 		}
 		return message;

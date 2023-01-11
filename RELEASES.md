@@ -6,6 +6,7 @@ Ladybug Test Tool release notes
 Upcoming (2.3)
 --------------
 
+- Improve (database) storage search
 - Improve proof of migration
   - Show first endpoint in overview / metadata table
   - Add separate errors view

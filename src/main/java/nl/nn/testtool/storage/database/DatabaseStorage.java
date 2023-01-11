@@ -1,5 +1,5 @@
 /*
-   Copyright 2022 WeAreFrank!
+   Copyright 2022-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -66,7 +66,7 @@ public class DatabaseStorage implements LogStorage, CrudStorage {
 	protected @Setter String table;
 	protected @Setter @Getter @Inject @Autowired List<String> metadataNames; // Used as column names in this storage
 	protected @Setter String storageIdColumn;
-	protected @Setter List<String> integerColumns;
+	protected @Setter List<String> integerColumns; // Number and timestamp columns enable range searching
 	protected @Setter List<String> longColumns;
 	protected @Setter List<String> timestampColumns;
 	protected @Setter List<String> bigValueColumns; // Columns for which to limit the number of retrieved characters to 100
@@ -101,7 +101,7 @@ public class DatabaseStorage implements LogStorage, CrudStorage {
 
 	public List<String> getLongColumns() {
 		if (longColumns == null) {
-			return new ArrayList<String>(Arrays.asList("estimatedMemoryUsage", "storageSize"));
+			return new ArrayList<String>(Arrays.asList("duration", "estimatedMemoryUsage", "storageSize"));
 		} else {
 			return longColumns;
 		}
@@ -282,14 +282,16 @@ public class DatabaseStorage implements LogStorage, CrudStorage {
 		List<String> regexSearchValues = new ArrayList<String>();
 		for (int i = 0; i < searchValues.size(); i++) {
 			String searchValue = searchValues.get(i);
-			if (searchValue != null && searchValue.startsWith("<")
-					&& searchValue.endsWith(">")) {
+			if (searchValue != null && searchValue.startsWith("<") && searchValue.endsWith(">") && (
+					getIntegerColumns().contains(metadataNames.get(i))
+					|| getLongColumns().contains(metadataNames.get(i))
+					|| getTimestampColumns().contains(metadataNames.get(i))
+					)) {
 				rangeSearchValues.add(searchValue);
 				regexSearchValues.add(null);
 				searchValues.remove(i);
 				searchValues.add(i, null);
-			} else if (searchValue != null && searchValue.startsWith("(")
-					&& searchValue.endsWith(")")) {
+			} else if (searchValue != null && searchValue.startsWith("(") && searchValue.endsWith(")")) {
 				rangeSearchValues.add(null);
 				regexSearchValues.add(searchValue);
 				searchValues.remove(i);
@@ -305,7 +307,7 @@ public class DatabaseStorage implements LogStorage, CrudStorage {
 		buildMetadataQuery(maxNumberOfRecords, metadataNames, searchValues, rangeSearchValues, simpleDateFormat,
 				query, args, argTypes);
 		if (log.isDebugEnabled()) {
-			log.debug("Get metadata query: " + query.toString());
+			log.debug("Get metadata query (with arguments: " + args + "): " + query.toString());
 		}
 		List<List<Object>> metadata;
 		try {
@@ -316,6 +318,8 @@ public class DatabaseStorage implements LogStorage, CrudStorage {
 							for (int i = 0; i < metadataNames.size(); i++) {
 								if (getIntegerColumns().contains(metadataNames.get(i))) {
 									row.add(rs.getInt(i + 1));
+								} else if (getLongColumns().contains(metadataNames.get(i))) {
+									row.add(rs.getLong(i + 1));
 								} else if (getTimestampColumns().contains(metadataNames.get(i))) {
 									Timestamp timestamp = rs.getTimestamp(i + 1);
 									String value = null;
@@ -380,21 +384,19 @@ public class DatabaseStorage implements LogStorage, CrudStorage {
 					String searchValueRight = searchValue.substring(j + 1,
 							searchValue.length() - 1);
 					if (StringUtils.isNotEmpty(searchValueLeft)) {
-						if (getIntegerColumns().contains(column)) {
-							addNumberExpression(query, args, argTypes, column, ">=",
-									searchValueLeft);
+						if (getIntegerColumns().contains(column) || getLongColumns().contains(column)) {
+							addNumberExpression(query, args, argTypes, column, ">=", searchValueLeft);
 						} else if (getTimestampColumns().contains(column)) {
-							addTimestampExpression(query, args, argTypes, column, ">=",
-									searchValueLeft, simpleDateFormat);
+							addTimestampExpression(query, args, argTypes, column, ">=", searchValueLeft,
+									simpleDateFormat);
 						}
 					}
 					if (StringUtils.isNotEmpty(searchValueRight)) {
-						if (getIntegerColumns().contains(column)) {
-							addNumberExpression(query, args, argTypes, column, "<=",
-									searchValueRight);
+						if (getIntegerColumns().contains(column) || getLongColumns().contains(column)) {
+							addNumberExpression(query, args, argTypes, column, "<=", searchValueRight);
 						} else if (getTimestampColumns().contains(column)) {
-							addTimestampExpression(query, args, argTypes, column, "<=",
-									searchValueRight, simpleDateFormat);
+							addTimestampExpression(query, args, argTypes, column, "<=", searchValueRight,
+									simpleDateFormat);
 						}
 					}
 				} else {
@@ -406,13 +408,14 @@ public class DatabaseStorage implements LogStorage, CrudStorage {
 			String searchValue = searchValues.get(i);
 			if (StringUtils.isNotEmpty(searchValue)) {
 				String column = metadataNames.get(i);
-				if (getIntegerColumns().contains(column)) {
+				if (searchValue.equals("null")) {
+					addExpression(query, column + " is null");
+				} else if (getIntegerColumns().contains(column)) {
 					addNumberExpression(query, args, argTypes, column, "<=", searchValue);
 				} else if (getTimestampColumns().contains(column)) {
-					addTimestampExpression(query, args, argTypes, column, "<=",
-							searchValue, simpleDateFormat);
+					addTimestampExpression(query, args, argTypes, column, "<=", searchValue, simpleDateFormat);
 				} else {
-					addLikeExpression(query, args, argTypes, column, searchValue);
+					addLikeOrEqualsExpression(query, args, argTypes, column, searchValue);
 				}
 			}
 		}
@@ -441,20 +444,33 @@ public class DatabaseStorage implements LogStorage, CrudStorage {
 	public void close() {
 	}
 
-	private void addLikeExpression(StringBuilder query, List<Object> args, List<Integer> argTypes,
+	private void addLikeOrEqualsExpression(StringBuilder query, List<Object> args, List<Integer> argTypes,
 			String column, String searchValue) throws StorageException {
-		if (searchValue.startsWith("~") && searchValue.contains("*")) {
-			addExpression(query, "lower(" + column + ") like lower(?)");
-		} else if (searchValue.startsWith("~")) {
-			addExpression(query, "lower(" + column + ") = lower(?)");
-		} else if (searchValue.contains("*")) {
-			addExpression(query, column + " like ?");
+		if (!(searchValue.startsWith("[") && searchValue.endsWith("]"))
+				&& !(searchValue.startsWith("*") || searchValue.endsWith("*"))) {
+			searchValue = "*" + searchValue + "*";
+		}
+		if (searchValue.contains("*")) {
+			if (searchValue.startsWith("[[") && searchValue.endsWith("]]")) {
+				addExpression(query, column + " like ?");
+			} else {
+				addExpression(query, "lower(" + column + ") like lower(?)");
+			}
 		} else {
-			addExpression(query, column + " = ?");
+			if (searchValue.startsWith("[[") && searchValue.endsWith("]]")) {
+				addExpression(query, column + " = ?");
+			} else {
+				addExpression(query, "lower(" + column + ") = lower(?)");
+			}
 		}
-		if (searchValue.startsWith("~")) {
-			searchValue = searchValue.substring(1);
+		if (searchValue.startsWith("[") && searchValue.endsWith("]")) {
+			searchValue = searchValue.substring(1, searchValue.length() - 1);
 		}
+		if (searchValue.startsWith("[") && searchValue.endsWith("]")) {
+			searchValue = searchValue.substring(1, searchValue.length() - 1);
+		}
+		searchValue = searchValue.replaceAll("\\%", "\\\\%");
+		searchValue = searchValue.replaceAll("\\_", "\\\\_");
 		searchValue = searchValue.replaceAll("\\*", "%");
 		args.add(searchValue);
 		argTypes.add(Types.VARCHAR);
@@ -549,16 +565,16 @@ public class DatabaseStorage implements LogStorage, CrudStorage {
 	}
 
 	public String getUserHelp(String column) {
-		if (getIntegerColumns().contains(column)) {
-			return "Search all rows which are less than or equal to the search value";
+		String userHelpBase = SearchUtil.getUserHelpWildcards();
+		String userHelpBaseNonString = "Search all rows which are less than or equal to the search value.";
+		if (getIntegerColumns().contains(column) || getLongColumns().contains(column)) {
+			userHelpBase = userHelpBaseNonString
+					+ " When the search value starts with < and ends with > a range search is done between and including the specified values separated by |.";
 		} else if (getTimestampColumns().contains(column)) {
-			return "Search all rows which are less than or equal to the search value."
-					+ " When the search value only complies with the beginning of pattern yyyy-MM-dd'T'HH:mm:ss.SSS, it will be internally completed according to the value 9999-12-31T23:59:59.999";
-		} else {
-			return "Search all rows which completely equal the search value (case sensitive)."
-					+ " The wilcard character '*' is supported."
-					+ " When the search value start with the character '~', the search is performed case insensitive";
+			userHelpBase = userHelpBaseNonString
+				+ " When the search value only complies with the beginning of pattern yyyy-MM-dd'T'HH:mm:ss.SSS, it will be supplemented with the end of 9999-12-31T23:59:59.999";
 		}
+		return userHelpBase + SearchUtil.getUserHelpRegex() + SearchUtil.getUserHelpNullAndEmpty();
 	}
 
 }

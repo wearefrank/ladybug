@@ -1,5 +1,5 @@
 /*
-   Copyright 2020, 2022 WeAreFrank!, 2018 Nationale-Nederlanden
+   Copyright 2020, 2022-2023 WeAreFrank!, 2018 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ import java.util.StringTokenizer;
  */
 public class SearchUtil {
 
-	public static boolean matches(List values, List searchValues) {
+	public static boolean matches(List<Object> values, List<String> searchValues) {
 		if (searchValues != null) {
 			for (int i = 0; i < values.size(); i++) {
 				Object value = values.get(i);
@@ -37,14 +37,23 @@ public class SearchUtil {
 	}
 
 	public static String getUserHelp() {
-		return "When the search value starts with ( and ends with ) the search value is considered a regular expression."
-			+ " When the search value consists of the 2 characters \"\" it will match the empty string."
-			+ " When the search value consists of the 4 characters null it will match when the object searched for is null."
-			+ " Otherwise the search value is considered a case insensitive wildcard search using * as the wildcard character"
-			+ " (if the search value starts [ and ends with ] the search value is considered case sensitive)"
-			+ " (if the search value doesn't contain the wildcard character it is interpreted as having a wildcard at the beginning and the end)."
-			+ " In wildcard mode and regular expression mode the null object equals the empty string."
-			+ " The toString() method will be called on the object the search value is matched against.";
+		return getUserHelpWildcards() + getUserHelpRegex() + getUserHelpNullAndEmpty();
+	}
+
+	public static String getUserHelpWildcards() {
+		return "Search case insensitive using * as the wildcard character."
+			+ " Wildcards are automatically added at the beginning and the end unless the search value starts with [ and ends with ] or already starts or ends with the wildcard."
+			+ " The search is done case sensitive when the search value starts with [[ and ends with ]].";
+	}
+
+	public static String getUserHelpRegex() {
+		return " A regular expression search is done when the search value starts with ( and ends with )."
+			+ " In regular expression mode the null object is the same as the empty string.";
+	}
+
+	public static String getUserHelpNullAndEmpty() {
+		return " When the search value consists of the 4 characters null it will match when the object searched for is null."
+			+ " Use [] to match the empty string and [null] to match the string of the 4 characters null.";
 	}
 
 	public static boolean matches(Object value, String query) {
@@ -64,19 +73,15 @@ public class SearchUtil {
 					if (value != null) {
 						return false;
 					}
-				} else if (query.equals("\"\"")) {
-					// Special value search
-					if (value == null || !value.toString().equals("")) {
-						return false;
-					}
 				} else {
 					// Wildcard search
 					boolean caseInsensitive = true;
-					if (query.startsWith("[") && query.endsWith("]")) {
-						query = query.substring(1, query.length() -1);
+					if (query.startsWith("[[") && query.endsWith("]]")) {
+						query = query.substring(2, query.length() - 2);
 						caseInsensitive = false;
-					}
-					if (query.indexOf('*') == -1) {
+					} else if (query.startsWith("[") && query.endsWith("]")) {
+						query = query.substring(1, query.length() - 1);
+					} else if (!(query.startsWith("*") || query.endsWith("*"))){
 						query = "*" + query + "*";
 					}
 					String valueAsString;
@@ -85,34 +90,40 @@ public class SearchUtil {
 					} else {
 						valueAsString = value.toString();
 					}
-					if (caseInsensitive) {
-						query = query.toLowerCase();
-						valueAsString = valueAsString.toLowerCase();
-					}
-					boolean queryStartsWithWildcard = query.startsWith("*");
-					boolean queryEndsWithWildcard = query.endsWith("*");
-					int j = 0;
-					StringTokenizer stringTokenizer = new StringTokenizer(query, "*");
-					while (stringTokenizer.hasMoreTokens()) {
-						String token = stringTokenizer.nextToken();
-						if (!queryStartsWithWildcard) {
-							if (!valueAsString.startsWith(token)) {
-								return false;
+					if (query.equals("")) {
+						if (value == null || !valueAsString.equals("")) {
+							return false;
+						}
+					} else {
+						if (caseInsensitive) {
+							query = query.toLowerCase();
+							valueAsString = valueAsString.toLowerCase();
+						}
+						boolean queryStartsWithWildcard = query.startsWith("*");
+						boolean queryEndsWithWildcard = query.endsWith("*");
+						int j = 0;
+						StringTokenizer stringTokenizer = new StringTokenizer(query, "*");
+						while (stringTokenizer.hasMoreTokens()) {
+							String token = stringTokenizer.nextToken();
+							if (!queryStartsWithWildcard) {
+								if (!valueAsString.startsWith(token)) {
+									return false;
+								}
+								queryStartsWithWildcard = true;
+							} else if (!queryEndsWithWildcard && !stringTokenizer.hasMoreTokens()) {
+								if (!valueAsString.substring(j).endsWith(token)) {
+									return false;
+								}
+							} else if (token.length() != 0) {
+								if (j + token.length() > valueAsString.length()) {
+									return false;
+								}
+								j = valueAsString.indexOf(token, j);
+								if (j == -1) {
+									return false;
+								}
+								j = j + token.length();
 							}
-							queryStartsWithWildcard = true;
-						} else if (!queryEndsWithWildcard && !stringTokenizer.hasMoreTokens()) {
-							if (!valueAsString.substring(j).endsWith(token)) {
-								return false;
-							}
-						} else if (token.length() != 0) {
-							if (j + token.length() > valueAsString.length()) {
-								return false;
-							}
-							j = valueAsString.indexOf(token, j);
-							if (j == -1) {
-								return false;
-							}
-							j = j + token.length();
 						}
 					}
 				}

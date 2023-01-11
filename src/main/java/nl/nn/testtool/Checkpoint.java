@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2022 WeAreFrank!, 2018 Nationale-Nederlanden
+   Copyright 2019-2023 WeAreFrank!, 2018 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -469,12 +469,14 @@ public class Checkpoint implements Serializable, Cloneable {
 		i--;
 		for ( ; i >= 0; i--) {
 			Checkpoint currentCheckpoint = (Checkpoint)report.getCheckpoints().get(i);
-			if (currentCheckpoint.getLevel() == currentLevel && currentCheckpoint.getName().equals(currentName)) {
+			String nextName = currentCheckpoint.getName();
+			if (currentCheckpoint.getLevel() == currentLevel &&
+					((nextName == null && currentName == null) || nextName.equals(currentName))) {
 				path.incrementCount(currentLevel);
 			} else if (currentCheckpoint.getLevel() < currentLevel && currentCheckpoint.getLevel() > -1) {
 				currentLevel = currentCheckpoint.getLevel();
-				currentName = currentCheckpoint.getName();
-				path.setName(currentLevel, currentCheckpoint.getName());
+				currentName = nextName;
+				path.setName(currentLevel, currentName);
 			}
 		}
 		return path;

@@ -1,5 +1,5 @@
 /*
-   Copyright 2020, 2022 WeAreFrank!, 2018-2019 Nationale-Nederlanden
+   Copyright 2020, 2022-2023 WeAreFrank!, 2018-2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -178,7 +178,7 @@ public class MetadataExtractor {
 			return new Integer(report.getNumberOfCheckpoints());
 		}
 		if (metadataName.equals("duration")) {
-			return "" + (report.getEndTime() - report.getStartTime());
+			return new Long(report.getEndTime() - report.getStartTime());
 		}
 		if (metadataName.equals("variableCsv")) {
 			return report.getVariableCsv();
