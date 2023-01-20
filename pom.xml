@@ -202,7 +202,7 @@
           <version>1.5.3</version>
           <executions>
             <execution>
-                <phase>generate-sources</phase>
+                <phase>generate-resources</phase><!-- generate-resources instead of generate-sources to run after copyright check with <phase>process-sources</phase> -->
                 <goals>
                   <goal>replace</goal>
                 </goals>
