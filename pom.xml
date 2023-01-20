@@ -349,7 +349,7 @@
         <artifactId>maven-site-plugin</artifactId>
         <version>3.12.1</version>
         <configuration>
-          <skip>true</skip><!-- Prevent copyright check running a second time and failing because of replacements by replacer-plugin (generated site isn't used anyway) -->
+          <skip>true</skip><!-- Prevent copyright check running a second time and failing because of replacements by replacer-plugin. And speed up the build in Jenkins (generated site isn't used) -->
         </configuration>
       </plugin>
     </plugins>
