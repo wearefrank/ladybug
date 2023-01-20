@@ -19,6 +19,9 @@
     <cxf.version>3.5.4</cxf.version>
     <!-- The line below is parsed by the GitHub actions test that triggers the ladybug-frontend Cypress test -->
     <frontend.version>0.0.38</frontend.version>
+    <!-- Frank!Runner with specials/ibis-ladybug will override the replacement properties to disable replacement -->
+    <inject.replace.from>javax.inject</inject.replace.from>
+    <inject.replace.to>nl.nn.testtool</inject.replace.to>
   </properties>
 
   <organization>
@@ -193,6 +196,31 @@
   <build>
     <defaultGoal>install</defaultGoal>
     <plugins>
+      <plugin>
+        <groupId>com.google.code.maven-replacer-plugin</groupId>
+          <artifactId>replacer</artifactId>
+          <version>1.5.3</version>
+          <executions>
+            <execution>
+                <phase>generate-sources</phase>
+                <goals>
+                  <goal>replace</goal>
+                </goals>
+            </execution>
+          </executions>
+          <configuration>
+            <basedir>${basedir}</basedir>
+            <includes>
+              <include>**/*.java</include>
+            </includes>
+            <replacements>
+               <replacement>
+                 <token>import ${inject.replace.from}.Inject;</token>
+                 <value>import ${inject.replace.to}.Inject;</value>
+               </replacement>
+            </replacements>
+        </configuration>
+      </plugin>
       <!--
         Add META-INF/jandex.idx, see also:
           https://quarkus.io/guides/cdi-reference#how-to-generate-a-jandex-index
