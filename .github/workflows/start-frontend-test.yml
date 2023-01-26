@@ -1,6 +1,10 @@
 name: Start tests of ladybug-frontend
 on:
   push:
+  # Needed because pushes on a fork cannot trigger ladybug-frontend because of
+  # authorization. If a branch on a fork is made into a pull request, the
+  # ladybug-frontend tests should be triggered.
+  pull_request:
 jobs:
   dispatch:
     name: Start tests of ladybug-frontend
