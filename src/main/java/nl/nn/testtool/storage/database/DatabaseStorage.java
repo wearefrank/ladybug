@@ -19,7 +19,6 @@ import java.io.ByteArrayInputStream;
 import java.lang.invoke.MethodHandles;
 import java.math.BigDecimal;
 import java.sql.Blob;
-import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -539,8 +538,8 @@ public class DatabaseStorage implements LogStorage, CrudStorage {
 			searchValueToParse = searchValue;
 		}
 		try {
-			args.add(new Date(simpleDateFormat.parse(searchValueToParse).getTime()));
-			argTypes.add(Types.DATE);
+			args.add(new Timestamp(simpleDateFormat.parse(searchValueToParse).getTime()));
+			argTypes.add(Types.TIMESTAMP);
 			addExpression(query, column + " " + operator + " ?");
 		} catch (ParseException e) {
 			throwExceptionOnInvalidTimestamp(searchValue);
