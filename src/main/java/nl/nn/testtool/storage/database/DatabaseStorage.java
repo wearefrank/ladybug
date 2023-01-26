@@ -274,10 +274,12 @@ public class DatabaseStorage implements LogStorage, CrudStorage {
 	@Override
 	public List<List<Object>> getMetadata(int maxNumberOfRecords, List<String> metadataNames, List<String> searchValues,
 			int metadataValueType) throws StorageException {
-		// According to SimpleDateFormat javadoc it needs to be synchronized
-		// when accessed by multiple threads, hence instantiate it here instead
-		// of instantiating it at class level and synchronizing it.
-		final SimpleDateFormat simpleDateFormat = new SimpleDateFormat(TIMESTAMP_PATTERN);
+		// Prevent SQL injection (searchValues are passed as parameters to the SQL statement)
+		for (String metadataName : metadataNames) {
+			if (!this.metadataNames.contains(metadataName)) {
+				throw new StorageException("Invalid metadata name: " + metadataName);
+			}
+		}
 		List<String> rangeSearchValues = new ArrayList<String>();
 		List<String> regexSearchValues = new ArrayList<String>();
 		for (int i = 0; i < searchValues.size(); i++) {
@@ -301,6 +303,9 @@ public class DatabaseStorage implements LogStorage, CrudStorage {
 				regexSearchValues.add(null);
 			}
 		}
+		// According to SimpleDateFormat javadoc it needs to be synchronized when accessed by multiple threads, hence
+		// instantiate it here instead of instantiating it at class level and synchronizing it.
+		SimpleDateFormat simpleDateFormat = new SimpleDateFormat(TIMESTAMP_PATTERN);
 		StringBuilder query = new StringBuilder();
 		List<Object> args = new ArrayList<Object>();
 		List<Integer> argTypes = new ArrayList<Integer>();
