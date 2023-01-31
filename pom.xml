@@ -18,7 +18,7 @@
     <spring.version>5.3.23</spring.version>
     <cxf.version>3.5.4</cxf.version>
     <!-- The line below is parsed by the GitHub actions test that triggers the ladybug-frontend Cypress test -->
-    <frontend.version>0.0.39</frontend.version>
+    <frontend.version>0.0.40</frontend.version>
     <!-- Frank!Runner with specials/ibis-ladybug will override the replacement properties to disable replacement -->
     <inject.replace.from>javax.inject</inject.replace.from>
     <inject.replace.to>nl.nn.testtool</inject.replace.to>
