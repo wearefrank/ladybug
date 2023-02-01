@@ -127,14 +127,15 @@ public class ProofOfMigrationStorage extends DatabaseStorage {
 			// The new metadata query will be logged by the super class
 			// E.g.: select min(ID) as min_id, min(TIMESTAMP), COMPONENT, min(concat(CHECKPOINT_NR, '. ', ENDPOINT_NAME)), CORRELATION_ID, count(CHECKPOINT_NR), min(STATUS) from PROOF_OF_MIGRATION where STATUS != 'Success' group by COMPONENT, CORRELATION_ID order by min_id desc limit 10
 		}
-		replace(query, "ID", "min(ID) as min_id");
-		replace(query, "TIMESTAMP", "min(TIMESTAMP)");
-		replace(query, "ENDPOINT_NAME", "min(concat(CHECKPOINT_NR, '. ', ENDPOINT_NAME))");
+		replace(query, "ID", "min(m.ID) as min_id");
+		replace(query, "TIMESTAMP", "i.TIMESTAMP)");
+		replace(query, "CORRELATION_ID", "i.CORRELATION_ID)");
 		replace(query, "NR OF CHECKPOINTS", "count(CHECKPOINT_NR)");
-		replace(query, "STATUS", "min(STATUS)");
-		replace(query, "order by ID" , GROUP_BY + " order by min_id");
+		replace(query, "STATUS", "min(m.STATUS)");
+		replace(query, "MESSAGES", "MESSAGES m, IDS i where m.CORRELATION_ID=i.CORRELATION_ID");
+		replace(query, "order by ID" , GROUP_BY + " order by i.TIMESTAMP");
 		if (isShowErrorsOnly()) {
-			replace(query, "group by" , "where STATUS != 'Success' group by");
+			replace(query, "group by" , "and STATUS != 'Success' group by");
 		}
 	}
 
