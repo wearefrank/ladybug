@@ -128,11 +128,11 @@ public class ProofOfMigrationStorage extends DatabaseStorage {
 			// E.g.: select min(ID) as min_id, min(TIMESTAMP), COMPONENT, min(concat(CHECKPOINT_NR, '. ', ENDPOINT_NAME)), CORRELATION_ID, count(CHECKPOINT_NR), min(STATUS) from PROOF_OF_MIGRATION where STATUS != 'Success' group by COMPONENT, CORRELATION_ID order by min_id desc limit 10
 		}
 		replace(query, "ID", "min(m.ID) as min_id");
-		replace(query, "TIMESTAMP", "i.TIMESTAMP)");
-		replace(query, "CORRELATION_ID", "i.CORRELATION_ID)");
+		replace(query, "TIMESTAMP", "i.TIMESTAMP");
+		replace(query, "CORRELATION_ID", "i.CORRELATION_ID");
 		replace(query, "NR OF CHECKPOINTS", "count(CHECKPOINT_NR)");
 		replace(query, "STATUS", "min(m.STATUS)");
-		replace(query, "MESSAGES", "MESSAGES m, IDS i where m.CORRELATION_ID=i.CORRELATION_ID");
+		replace(query, getTable(), getTable() + " m, IDS i where m.CORRELATION_ID=i.CORRELATION_ID");
 		replace(query, "order by ID" , GROUP_BY + " order by i.TIMESTAMP");
 		if (isShowErrorsOnly()) {
 			replace(query, "group by" , "and STATUS != 'Success' group by");
