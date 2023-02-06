@@ -1,5 +1,5 @@
 /*
-   Copyright 2021-2022 WeAreFrank!
+   Copyright 2021-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -56,6 +56,15 @@ public class TestToolApi extends ApiBase {
 
 	public String getDefaultTransformation() {
 		return defaultTransformation;
+	}
+
+	/**
+	 * @return whether the ping of front-end went correctly;
+	 */
+	@GET
+	@Path("/ping")
+	public Response getPing() {
+		return Response.ok().build();
 	}
 
 	/**
