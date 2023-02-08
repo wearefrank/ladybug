@@ -275,7 +275,7 @@ public class DatabaseStorage implements LogStorage, CrudStorage {
 			int metadataValueType) throws StorageException {
 		// Prevent SQL injection (searchValues are passed as parameters to the SQL statement)
 		for (String metadataName : metadataNames) {
-			if (!this.metadataNames.contains(metadataName)) {
+			if (!getMetadataNames().contains(metadataName)) {
 				throw new StorageException("Invalid metadata name: " + metadataName);
 			}
 		}
