@@ -9,11 +9,11 @@
    <Checkpoint Name="testThreadsWithThreadCreatepointOnlyAndCloseThreads"
                Type="Startpoint"
                Level="0">startmessage1</Checkpoint>
-   <Checkpoint Name="Waiting for thread 'IGNORE-CORRELATIONID-ChildThreadIdA' to start..."
+   <Checkpoint Name="Waiting for thread 'main-ChildThreadIdA' to start..."
                Type="ThreadCreatepoint"
                Level="1"
                Null="true"/>
-   <Checkpoint Name="Waiting for thread 'IGNORE-CORRELATIONID-ChildThreadIdB' to start..."
+   <Checkpoint Name="Waiting for thread 'main-ChildThreadIdB' to start..."
                Type="ThreadCreatepoint"
                Level="1"
                Null="true"/>

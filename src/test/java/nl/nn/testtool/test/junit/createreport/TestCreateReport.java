@@ -64,6 +64,9 @@ import nl.nn.testtool.test.junit.ReportRelatedTestCase;
  */
 public class TestCreateReport extends ReportRelatedTestCase {
 	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+	private enum EndParentThreadAfter {
+		CHILD_THREAD_CREATEPOINT, CHILD_THREAD_STARTPOINT, CHILD_THREAD_ENDPOINT
+	}
 
 	@Before
 	public void setUp() {
@@ -138,31 +141,34 @@ public class TestCreateReport extends ReportRelatedTestCase {
 
 	@Test
 	public void testThreads() throws StorageException, IOException {
-		testThreads(getCorrelationId(), true, true, true, true, false, true);
-		testThreads(getCorrelationId(), true, true, true, false, false, true);
+		testThreads(getCorrelationId(), true, true, true, false, false, EndParentThreadAfter.CHILD_THREAD_ENDPOINT, true);
+		testThreads(getCorrelationId(), true, true, true, false, false, EndParentThreadAfter.CHILD_THREAD_CREATEPOINT, true);
 	}
 
 	@Test
 	public void testThreadsWithoutThreadCreatepoint() throws StorageException, IOException {
 		String correlationId = getCorrelationId();
-		testThreads(correlationId, false, true, true, true, false, true);
-		assertWarningsUseThreadCreatepointBeforeThreadStartpoint(listAppender, correlationId);
+		testThreads(correlationId, false, true, true, false, false, EndParentThreadAfter.CHILD_THREAD_ENDPOINT, true);
+		assertWarningsUseThreadCreatepointBeforeThreadStartpoint(listAppender, correlationId,
+				Thread.currentThread().getName());
 	}
 
 	@Test
 	public void testThreadsWithoutThreadCreatepointAndThreadStartpoint() throws StorageException, IOException {
 		String correlationId = getCorrelationId();
-		testThreads(correlationId, false, false, true, true, false, true);
-		assertWarningsUseThreadCreatepointAndThreadStartpoint(listAppender, correlationId);
+		testThreads(correlationId, false, false, true, false, false, EndParentThreadAfter.CHILD_THREAD_ENDPOINT, true);
+		assertWarningsUseThreadCreatepointAndThreadStartpoint(listAppender, correlationId,
+				Thread.currentThread().getName());
 	}
 
 	@Test
 	public void testThreadsWithThreadCreatepointOnlyAndCancelThreads() throws StorageException, IOException {
 		String correlationId = getCorrelationId();
-		testThreads(correlationId, true, false, false, false, false, false);
-		assertEquals("Report should be in progress (waiting for threadStartpoint)", 1, testTool.getNumberOfReportsInProgress());
-		testTool.close(correlationId, correlationId + "-ChildThreadIdA");
-		testTool.close(correlationId, correlationId + "-ChildThreadIdB");
+		testThreads(correlationId, true, false, false, false, false, EndParentThreadAfter.CHILD_THREAD_CREATEPOINT, false);
+		assertEquals("Report should be in progress (waiting for threadStartpoint)", 1,
+				testTool.getNumberOfReportsInProgress());
+		testTool.close(correlationId, Thread.currentThread().getName() + "-ChildThreadIdA");
+		testTool.close(correlationId, Thread.currentThread().getName() + "-ChildThreadIdB");
 		assertReport(correlationId);
 		testTool.close(correlationId, null);
 	}
@@ -171,10 +177,16 @@ public class TestCreateReport extends ReportRelatedTestCase {
 	public void testCloseThreads() throws StorageException, IOException  {
 		String correlationId = getCorrelationId();
 		testTool.setCloseThreads(true);
-		testThreads(correlationId, true, true, true, true, true, false);
+		testThreads(correlationId, true, true, true, true, false, EndParentThreadAfter.CHILD_THREAD_STARTPOINT, false);
 		assertEquals("Report should not be in progress", 0, testTool.getNumberOfReportsInProgress());
+		assertWarningInLog(listAppender,
+				"No report in progress for correlationId and checkpoint not a startpoint, ignored checkpoint (name: name2a, type: ThreadEndpoint, level: null, correlationId: "
+				+ correlationId + ")");
+		assertWarningInLog(listAppender,
+				"No report in progress for correlationId and checkpoint not a startpoint, ignored checkpoint (name: name2b, type: ThreadEndpoint, level: null, correlationId: "
+				+ correlationId + ")");
 		testTool.setCloseNewThreadsOnly(true);
-		testThreads(correlationId, true, true, true, true, true, false);
+		testThreads(correlationId, true, true, true, true, true, EndParentThreadAfter.CHILD_THREAD_STARTPOINT, false);
 		assertEquals("Report should be in progress", 1, testTool.getNumberOfReportsInProgress());
 		testTool.close(correlationId);
 	}
@@ -196,7 +208,7 @@ public class TestCreateReport extends ReportRelatedTestCase {
 			testTool.setCloseNewThreadsOnly(closeNewThreadsOnly);
 		}
 		String correlationId = getCorrelationId();
-		testThreads(correlationId, true, false, false, false, false, false);
+		testThreads(correlationId, true, false, false, false, false, EndParentThreadAfter.CHILD_THREAD_CREATEPOINT, false);
 		if (!withSetMethod) {
 			assertEquals("Report should be in progress (waiting for threadStartpoint)", 1, testTool.getNumberOfReportsInProgress());
 		}
@@ -221,52 +233,52 @@ public class TestCreateReport extends ReportRelatedTestCase {
 		}
 	}
 
-	private static void assertWarningsUseThreadCreatepointBeforeThreadStartpoint(ListAppender<ILoggingEvent> listAppender, String correlationId) {
+	private static void assertWarningsUseThreadCreatepointBeforeThreadStartpoint(
+			ListAppender<ILoggingEvent> listAppender, String correlationId, String parentThreadName) {
 		List<String> names = new ArrayList<String>();
 		names.add("A");
 		names.add("B");
 		for (String name : names) {
 			assertWarningUseThreadCreatepointBeforeThreadStartpoint(listAppender, correlationId,
-					correlationId + "-ChildThreadId" + name, "main", "name2" + name.toLowerCase());
+					parentThreadName, parentThreadName + "-ChildThreadId" + name , "name2" + name.toLowerCase());
 		}
 	}
 
 	private static void assertWarningUseThreadCreatepointBeforeThreadStartpoint(ListAppender<ILoggingEvent> listAppender,
-			String correlationId, String childThreadName, String parentThreadName, String checkpointName) {
-		assertWarningInLog(listAppender, correlationId, "New child thread '" + childThreadName
+			String correlationId, String parentThreadName, String childThreadName, String checkpointName) {
+		assertWarningInLog(listAppender, "New child thread '" + childThreadName
 				+ "' for guessed parent thread '" + parentThreadName
 				+ "' detected, use threadCreatepoint() before threadStartpoint() for checkpoint (name: "
 				+ checkpointName + ", type: ThreadStartpoint, level: null, correlationId: " + correlationId + ")");
 	}
 
-	private static void assertWarningsUseThreadCreatepointAndThreadStartpoint(ListAppender<ILoggingEvent> listAppender, String correlationId) {
+	private static void assertWarningsUseThreadCreatepointAndThreadStartpoint(ListAppender<ILoggingEvent> listAppender,
+			String correlationId, String parentThreadName) {
 		List<String> names = new ArrayList<String>();
 		names.add("A");
 		names.add("B");
 		for (String name : names) {
 			assertWarningUseThreadCreatepointAndThreadStartpoint(listAppender, correlationId,
-					correlationId + "-ThreadName" + name, "main", "name3" + name.toLowerCase());
+					parentThreadName, parentThreadName + "-ChildThreadName" + name, "name3" + name.toLowerCase());
 		}
 	}
 
 	private static void assertWarningUseThreadCreatepointAndThreadStartpoint(ListAppender<ILoggingEvent> listAppender,
-			String correlationId, String childThreadName, String parentThreadName, String checkpointName) {
-		assertWarningInLog(listAppender, correlationId,  "New child thread '" + childThreadName
+			String correlationId, String parentThreadName, String childThreadName, String checkpointName) {
+		assertWarningInLog(listAppender, "New child thread '" + childThreadName
 				+ "' for guessed parent thread '" + parentThreadName
 				+ "' detected, use threadCreatepoint() and threadStartpoint() instead of startpoint() for checkpoint (name: "
 				+ checkpointName + ", type: ThreadStartpoint, level: null, correlationId: " + correlationId + ")");
 	}
 
-	private static void assertWarningInLog(ListAppender<ILoggingEvent> listAppender, String correlationId,
-			String warning) {
+	private static void assertWarningInLog(ListAppender<ILoggingEvent> listAppender, String warning) {
 		List<ILoggingEvent> loggingEvents = listAppender.list;
 		assertEquals(Level.WARN, loggingEvents.get(0).getLevel());
 		assertEquals(warning, loggingEvents.get(0).getMessage());
 		loggingEvents.remove(0);
 	}
 
-	private static void ignoreWarningsInLog(ListAppender<ILoggingEvent> listAppender, String correlationId,
-			String warningsStartsWith) {
+	private static void ignoreWarningsInLog(ListAppender<ILoggingEvent> listAppender, String warningsStartsWith) {
 		List<ILoggingEvent> loggingEvents = listAppender.list;
 		for (int i = 0; i < loggingEvents.size(); i++) {
 			ILoggingEvent loggingEvent = loggingEvents.get(i);
@@ -278,49 +290,64 @@ public class TestCreateReport extends ReportRelatedTestCase {
 	}
 
 	private void testThreads(String correlationId, boolean useThreadCreatepoint, boolean useThreadStartpoint,
-			boolean useChildCheckpoints, boolean waitForChildThread, boolean keepThreadOpen, boolean assertReport)
-			throws StorageException, IOException {
-		String childThreadIdA = correlationId + "-ChildThreadIdA";
-		String childThreadIdB = correlationId + "-ChildThreadIdB";
-		String threadNameA = correlationId + "-ThreadNameA";
-		String threadNameB = correlationId + "-ThreadNameB";
+			boolean useChildCheckpoints, boolean keepChildThreadOpen, boolean delaySecondChildThread,
+			EndParentThreadAfter endParentThreadAfter, boolean assertReport) throws StorageException, IOException {
+		String parentThreadName = Thread.currentThread().getName();
+		String childThreadIdA = parentThreadName + "-ChildThreadIdA";
+		String childThreadIdB = parentThreadName + "-ChildThreadIdB";
+		String childThreadNameA = parentThreadName + "-ChildThreadNameA";
+		String childThreadNameB = parentThreadName + "-ChildThreadNameB";
 		testTool.startpoint(correlationId, null, reportName, "startmessage1");
 		if (useThreadCreatepoint) {
 			testTool.threadCreatepoint(correlationId, childThreadIdA);
 			testTool.threadCreatepoint(correlationId, childThreadIdB);
 		}
-		if (!waitForChildThread) {
+		if (endParentThreadAfter == EndParentThreadAfter.CHILD_THREAD_CREATEPOINT) {
 			testTool.endpoint(correlationId, null, reportName, "endmessage1");
 		}
-		String originalThreadName = Thread.currentThread().getName();
 		if (useThreadStartpoint) {
-			Thread.currentThread().setName(threadNameA);
+			Thread.currentThread().setName(childThreadNameA);
 			testTool.threadStartpoint(correlationId, childThreadIdA, null, "name2a", "startmessage2");
-			Thread.currentThread().setName(threadNameB);
-			testTool.threadStartpoint(correlationId, childThreadIdB, null, "name2b", "startmessage2");
-		}
-		if (useChildCheckpoints) {
-			Thread.currentThread().setName(threadNameA);
-			testTool.startpoint(correlationId, null, "name3a", "startmessage3");
-			Thread.currentThread().setName(threadNameB);
-			testTool.startpoint(correlationId, null, "name3b", "startmessage3");
-			if (!keepThreadOpen) {
-				Thread.currentThread().setName(threadNameB);
-				testTool.endpoint(correlationId, null, "name3b", "endmessage3");
-				Thread.currentThread().setName(threadNameA);
-				testTool.endpoint(correlationId, null, "name3a", "endmessage3");
+			if (!delaySecondChildThread) {
+				Thread.currentThread().setName(childThreadNameB);
+				testTool.threadStartpoint(correlationId, childThreadIdB, null, "name2b", "startmessage2");
 			}
 		}
-		if (useThreadStartpoint) {
-			Thread.currentThread().setName(threadNameA);
-			testTool.threadEndpoint(correlationId, null, "name2a", "endmessage2");
-			Thread.currentThread().setName(threadNameB);
-			testTool.threadEndpoint(correlationId, null, "name2b", "endmessage2");
+		if (useChildCheckpoints) {
+			Thread.currentThread().setName(childThreadNameA);
+			testTool.startpoint(correlationId, null, "name3a", "startmessage3");
+			if (!delaySecondChildThread) {
+				Thread.currentThread().setName(childThreadNameB);
+				testTool.startpoint(correlationId, null, "name3b", "startmessage3");
+			}
+			if (!keepChildThreadOpen) {
+				Thread.currentThread().setName(childThreadNameB);
+				testTool.endpoint(correlationId, null, "name3b", "endmessage3");
+				if (!delaySecondChildThread) {
+					Thread.currentThread().setName(childThreadNameA);
+					testTool.endpoint(correlationId, null, "name3a", "endmessage3");
+				}
+			}
 		}
-		Thread.currentThread().setName(originalThreadName);
-		if (waitForChildThread) {
+		if (endParentThreadAfter == EndParentThreadAfter.CHILD_THREAD_STARTPOINT) {
+			Thread.currentThread().setName(parentThreadName);
 			testTool.endpoint(correlationId, null, reportName, "endmessage1");
 		}
+		if (delaySecondChildThread) {
+			Thread.currentThread().setName(childThreadNameB);
+			testTool.threadStartpoint(correlationId, childThreadIdB, null, "name2b", "startmessage2");
+		}
+		if (useThreadStartpoint) {
+			Thread.currentThread().setName(childThreadNameA);
+			testTool.threadEndpoint(correlationId, null, "name2a", "endmessage2");
+			Thread.currentThread().setName(childThreadNameB);
+			testTool.threadEndpoint(correlationId, null, "name2b", "endmessage2");
+		}
+		if (endParentThreadAfter == EndParentThreadAfter.CHILD_THREAD_ENDPOINT) {
+			Thread.currentThread().setName(parentThreadName);
+			testTool.endpoint(correlationId, null, reportName, "endmessage1");
+		}
+		Thread.currentThread().setName(parentThreadName);
 		if (assertReport) {
 			assertReport(correlationId);
 		}
@@ -370,9 +397,9 @@ public class TestCreateReport extends ReportRelatedTestCase {
 		for (int i = 0; i < nrOfThreads; i++) {
 			while (testThreads[i].isAlive()) Thread.sleep(10);
 		}
-		ignoreWarningsInLog(listAppender, correlationId, "New child thread '");
+		ignoreWarningsInLog(listAppender, "New child thread '");
 		if (keepReportOpenWithMessageCapturer) {
-			ignoreWarningsInLog(listAppender, correlationId, "Unknown thread, ignored checkpoint (");
+			ignoreWarningsInLog(listAppender, "Unknown thread 'Thread-");
 		}
 		for (int i = 0; i < nrOfThreads; i++) {
 			if (testThreads[i].getThrowable() != null) {
@@ -458,8 +485,8 @@ public class TestCreateReport extends ReportRelatedTestCase {
 				parentThreadName = "Thread-1";
 			}
 			assertReport(report, resourcePath, reportName + nameSuffix, false, false, false, false, false);
-			assertWarningUseThreadCreatepointAndThreadStartpoint(listAppender, correlationId, childThreadName,
-					parentThreadName, childThreadName);
+			assertWarningUseThreadCreatepointAndThreadStartpoint(listAppender, correlationId, parentThreadName,
+					childThreadName, childThreadName);
 		} else if (reports.size() == 2) {
 			Report report1 = reports.get(0);
 			Report report2 = reports.get(1);
@@ -522,16 +549,16 @@ public class TestCreateReport extends ReportRelatedTestCase {
 	@Test
 	public void testAbortThread() throws StorageException, IOException {
 		String correlationId = getCorrelationId();
-		String threadName = correlationId + "-ThreadName";
+		String parentThreadName = Thread.currentThread().getName();
+		String childThreadName = parentThreadName +"-ChildThreadName";
 		testTool.startpoint(correlationId, null, reportName, "startmessage1");
-		testTool.threadCreatepoint(correlationId, threadName);
-		String originalThreadName = Thread.currentThread().getName();
-		Thread.currentThread().setName(threadName);
+		testTool.threadCreatepoint(correlationId, childThreadName);
+		Thread.currentThread().setName(childThreadName);
 		testTool.threadStartpoint(correlationId, null, "name2", "startmessage2");
 		testTool.startpoint(correlationId, null, "name3", "startmessage3");
 		testTool.abortpoint(correlationId, null, "name3", "abortmessage3");
 		testTool.abortpoint(correlationId, null, "name2", "abortmessage2");
-		Thread.currentThread().setName(originalThreadName);
+		Thread.currentThread().setName(parentThreadName);
 		testTool.endpoint(correlationId, null, reportName, "endmessage1");
 		assertReport(correlationId);
 	}
@@ -548,7 +575,7 @@ public class TestCreateReport extends ReportRelatedTestCase {
 	@Test
 	public void testCloseReportWithThreads() throws StorageException, IOException {
 		String correlationId = getCorrelationId();
-		testThreads(correlationId, true, true, true, false, true, false);
+		testThreads(correlationId, true, true, true, true, false, EndParentThreadAfter.CHILD_THREAD_CREATEPOINT, false);
 		testTool.close(correlationId);
 		assertReport(correlationId);
 	}
@@ -556,9 +583,9 @@ public class TestCreateReport extends ReportRelatedTestCase {
 	@Test
 	public void testCancelThreads() throws StorageException, IOException {
 		String correlationId = getCorrelationId();
-		testThreads(correlationId, true, true, true, false, true, false);
-		testTool.close(correlationId, correlationId + "-ThreadNameA");
-		testTool.close(correlationId, correlationId + "-ThreadNameB");
+		testThreads(correlationId, true, true, true, true, false, EndParentThreadAfter.CHILD_THREAD_CREATEPOINT, false);
+		testTool.close(correlationId, Thread.currentThread().getName() + "-ChildThreadNameA");
+		testTool.close(correlationId, Thread.currentThread().getName() + "-ChildThreadNameB");
 		assertReport(correlationId);
 	}
 
@@ -685,7 +712,7 @@ public class TestCreateReport extends ReportRelatedTestCase {
 		String endmessage2 = testTool.endpoint(correlationId, null, "name2", () -> {return "endmessage2";}, new HashSet<String>());
 		testTool.endpoint(correlationId, null, reportName, "endmessage1");
 		assertReport(correlationId);
-		assertWarningInLog(listAppender, correlationId,
+		assertWarningInLog(listAppender,
 				"Maximum number of checkpoints (2) exceeded, ignored checkpoint (name: name2, type: Endpoint, level: 2, correlationId: "
 				+ correlationId + ") (next checkpoints for this report will be ignored without any logging)");
 		assertEquals(0, testTool.getNumberOfReportsInProgress());

@@ -237,10 +237,11 @@ public class TestTool {
 	}
 
 	/**
-	 * Only close new threads that didn't start and aren't cancelled {@link TestTool#close(String, String)}).
-	 * This way other threads can continue to add checkpoints to the report after the main thread has finished. See
-	 * {@link TestTool#close(String)} on how to properly surrounded checkpoint with a try/catch to prevent threads from
-	 * keeping reports in progress.
+	 * Only close threads when all of them haven't started and aren't cancelled {@link TestTool#close(String, String)}).
+	 * This way threads can continue to add checkpoints to the report after the main thread has finished until all
+	 * threads are finished while threads that will not start and aren't cancelld will not keep the report in progress.
+	 * See {@link TestTool#close(String)} on how to properly surrounded checkpoint with a try/catch to prevent threads
+	 * from keeping reports in progress.
 	 * 
 	 * @param closeNewThreadsOnly ...
 	 */
@@ -694,7 +695,7 @@ public class TestTool {
 
 	/**
 	 * Startpoint for a child thread. Specify a childThreadId that was also used when
-	 * calling threadStartpoint.
+	 * calling threadCreatepoint.
 	 * 
 	 * @param <T> ...
 	 * @param correlationId ...
@@ -815,7 +816,7 @@ public class TestTool {
 				if (threadName == null) {
 					report.closeThreads(false);
 				} else {
-					report.closeThread(threadName, false, true);
+					report.closeThread(threadName, true);
 				}
 				closeReportIfFinished(report);
 			}

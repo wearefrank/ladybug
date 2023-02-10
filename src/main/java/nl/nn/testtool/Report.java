@@ -436,8 +436,8 @@ public class Report implements Serializable {
 			}
 		}
 		if (index == null) {
-			log.warn("Unknown thread, ignored checkpoint " + getCheckpointLogDescription(name, checkpointType,
-					level));
+			log.warn("Unknown thread '" + threadName + "', ignored checkpoint "
+			 		+ getCheckpointLogDescription(name, checkpointType, level));
 		} else {
 			if (!isReportFilterMatching()) {
 				message = TestTool.execute(stubableCode, stubableCodeThrowsException, message);
@@ -473,7 +473,7 @@ public class Report implements Serializable {
 			if (newLevel.equals(threadFirstLevel.get(threadName))) {
 				// threadCreatepoint has already been removed on first checkpoint for thread, hence use false
 				// for removeThreadCreatepoint
-				closeThread(threadName, false, false);
+				closeThread(threadName, false);
 			}
 		}
 		return message;
@@ -585,22 +585,23 @@ public class Report implements Serializable {
 	}
 
 	protected void closeThreads(boolean closeNewThreadsOnly) {
-		int skip = 0;
-		while (threads.size() > skip) {
-			if (!closeThread(threads.get(0), closeNewThreadsOnly, false)) {
-				skip++;
+		if (closeNewThreadsOnly) {
+			// Don't close new threads while other threads are active (and don't close other threads either when new
+			// threads aren't closed)
+			for (String threadName : threads) {
+				int firstLevel = threadFirstLevel.get(threadName);
+				int level = threadLevel.get(threadName);
+				if (level > firstLevel) {
+					return;
+				}
 			}
+		}
+		while (threads.size() > 0) {
+			closeThread(threads.get(0), false);
 		}
 	}
 
-	protected boolean closeThread(String threadName, boolean closeNewThreadsOnly, boolean removeThreadCreatepoint) {
-		if (closeNewThreadsOnly) {
-			int firstLevel = threadFirstLevel.get(threadName);
-			int level = threadLevel.get(threadName);
-			if (level > firstLevel) {
-				return false;
-			}
-		}
+	protected void closeThread(String threadName, boolean removeThreadCreatepoint) {
 		if (threads.remove(threadName)) {
 			Integer index = threadCheckpointIndex.remove(threadName);
 			threadFirstLevel.remove(threadName);
@@ -610,10 +611,8 @@ public class Report implements Serializable {
 			if (removeThreadCreatepoint) {
 				removeThreadCreatepoint(index, threadName);
 			}
-			return true;
 		} else {
 			log.warn("Thread '" + threadName + "' to close for report with correlationId '" + correlationId + "' not found");
-			return false;
 		}
 	}
 
