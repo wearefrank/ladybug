@@ -1,5 +1,5 @@
 /*
-   Copyright 2020, 2022 WeAreFrank!, 2018 Nationale-Nederlanden
+   Copyright 2020, 2023 WeAreFrank!, 2018 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import nl.nn.testtool.Report;
  */
 public class RegexMetadataFieldExtractor extends DefaultValueMetadataFieldExtractor {
 	protected String regex;
+	protected String checkpointName;
 	protected Pattern pattern;
 	protected boolean extractFromFirstCheckpointOnly = true;
 
@@ -39,6 +40,10 @@ public class RegexMetadataFieldExtractor extends DefaultValueMetadataFieldExtrac
 		}
 	}
 
+	public void setCheckpointName(String checkpointName) {
+		this.checkpointName = checkpointName;
+	}
+
 	public void setExtractFromFirstCheckpointOnly(boolean extractFromFirstCheckpointOnly) {
 		this.extractFromFirstCheckpointOnly = extractFromFirstCheckpointOnly;
 	}
@@ -47,13 +52,15 @@ public class RegexMetadataFieldExtractor extends DefaultValueMetadataFieldExtrac
 		String value = null;
 		Iterator iterator = report.getCheckpoints().iterator();
 		while (value == null && iterator.hasNext()) {
-			String message = ((Checkpoint)iterator.next()).getMessage();
-			Matcher matcher = pattern.matcher(message);
-			if (matcher.find()) {
-				value = matcher.group(matcher.groupCount());
-			}
-			if (extractFromFirstCheckpointOnly) {
-				break;
+			Checkpoint checkpoint = (Checkpoint) iterator.next();
+			if(checkpointName == null || checkpointName.equals(checkpoint.getName())) {
+				Matcher matcher = pattern.matcher(checkpoint.getMessage());
+				if (matcher.find()) {
+					value = matcher.group(matcher.groupCount());
+				}
+				if (extractFromFirstCheckpointOnly) {
+					break;
+				}
 			}
 		}
 		if (value == null) {
