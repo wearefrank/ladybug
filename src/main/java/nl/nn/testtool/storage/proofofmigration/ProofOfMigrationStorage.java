@@ -49,7 +49,8 @@ import nl.nn.testtool.storage.database.DatabaseStorage;
 //@Dependent disabled for Quarkus for now because of the use of JdbcTemplate
 public class ProofOfMigrationStorage extends DatabaseStorage {
 	private static Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-	private static final String GROUP_BY = "group by COMPONENT, CORRELATION_ID";
+	// Use i. (instead of m.) to help the query optimizer to start with the IDS table instead of the MESSAGES table
+	private static final String GROUP_BY = "group by COMPONENT, i.CORRELATION_ID";
 	private @Setter @Inject @Autowired TestTool testTool;
 	private @Setter List<String> columns;
 	private @Setter boolean showErrorsOnly = false;
@@ -65,7 +66,7 @@ public class ProofOfMigrationStorage extends DatabaseStorage {
 
 	public String getTable() {
 		if (table == null) {
-			return "PROOF_OF_MIGRATION";
+			return "MESSAGES";
 		} else {
 			return table;
 		}
@@ -79,7 +80,7 @@ public class ProofOfMigrationStorage extends DatabaseStorage {
 	public List<String> getColumns() {
 		if (columns == null) {
 			return new ArrayList<String>(Arrays.asList(
-					"ID", "TIMESTAMP", "COMPONENT", "ENDPOINT_NAME", "CORRELATION_ID", "NR OF CHECKPOINTS", "STATUS"));
+					"ID", "TIMESTAMP", "COMPONENT", "ENDPOINT NAME", "CONVERSATION ID", "CORRELATION ID", "NR OF CHECKPOINTS", "STATUS"));
 		} else {
 			return columns;
 		}
@@ -123,54 +124,26 @@ public class ProofOfMigrationStorage extends DatabaseStorage {
 				query, args, argTypes);
 		if (log.isDebugEnabled()) {
 			log.debug("Get metadata original query: " + query.toString());
-			// E.g.: select ID, TIMESTAMP, COMPONENT, ENDPOINT_NAME, CORRELATION_ID, NR OF CHECKPOINTS, STATUS from PROOF_OF_MIGRATION order by ID desc limit 10
+			// E.g.: select ID, TIMESTAMP, COMPONENT, ENDPOINT_NAME, CONVERSATION_ID, CORRELATION_ID, NR OF CHECKPOINTS, STATUS from MESSAGES order by ID desc limit 10
 			// The new metadata query will be logged by the super class
-			// E.g.: select min(ID) as min_id, min(TIMESTAMP), COMPONENT, min(concat(CHECKPOINT_NR, '. ', ENDPOINT_NAME)), CORRELATION_ID, count(CHECKPOINT_NR), min(STATUS) from PROOF_OF_MIGRATION where STATUS != 'Success' group by COMPONENT, CORRELATION_ID order by min_id desc limit 10
+			// E.g.: select min(m.ID), i.TIMESTAMP, COMPONENT, min(concat(CHECKPOINT_NR, '. ', ENDPOINT_NAME)), i.ORIGINAL_ID, i.CORRELATION_ID, count(CHECKPOINT_NR), min(m.STATUS) from MESSAGES m, IDS i where m.CORRELATION_ID=i.CORRELATION_ID group by COMPONENT, i.CORRELATION_ID order by i.TIMESTAMP desc, i.CORRELATION_ID limit 10
 		}
-		replace(query, "ID", "min(m.ID) as min_id");
+		// Test by selecting Proof of migration (errors) view in the Ladybug test webapp
+		replace(query, "ID", "min(m.ID)");
 		replace(query, "TIMESTAMP", "i.TIMESTAMP");
-		replace(query, "CORRELATION_ID", "i.CORRELATION_ID");
+		replace(query, "ENDPOINT NAME", "min(concat(CHECKPOINT_NR, '. ', ENDPOINT_NAME))");
+		replace(query, "CONVERSATION ID", "i.ORIGINAL_ID");
+		replace(query, "CORRELATION ID", "i.CORRELATION_ID");
 		replace(query, "NR OF CHECKPOINTS", "count(CHECKPOINT_NR)");
 		replace(query, "STATUS", "min(m.STATUS)");
 		replace(query, getTable(), getTable() + " m, IDS i where m.CORRELATION_ID=i.CORRELATION_ID");
-		replace(query, "order by ID" , GROUP_BY + " order by i.TIMESTAMP");
+		// For performance it's important that the first selection can be made based on the IDS table, hence the
+		// 'order by i.TIMESTAMP'. This will also make sure the record for the old component and the record for the new
+		// component (that have the same correlation id) are displayed directly below each other (the extra order on
+		// i.CORRELATION_ID will make this 100% waterproof)
+		replace(query, "order by ID desc" , GROUP_BY + " order by i.TIMESTAMP desc, i.CORRELATION_ID");
 		if (isShowErrorsOnly()) {
 			replace(query, "group by" , "and STATUS != 'Success' group by");
-		}
-	}
-
-	/*
-	 * Make sure the record for old component and the record for the new component (that have the same correlation id)
-	 * are displayed directly below each other. The order by ID in the query doesn't guarantee that.
-	 */
-	@Override
-	protected void postProcessMetadataResult(List<List<Object>> metadata, int maxNumberOfRecords,
-			List<String> metadataNames, List<String> searchValues, int metadataValueType) {
-		int correlationIdPosition = -1;
-		int position = 0;
-		for (String metadataName : metadataNames) {
-			if (metadataName.equals("CORRELATION_ID")) {
-				correlationIdPosition = position;
-			}
-			position++;
-		}
-		if (correlationIdPosition == -1) {
-			log.warn("Could not find field CORRELATION_ID");
-		} else {
-			for (int i = metadata.size() - 1; i > 0; i--) {
-				Object correlationId = metadata.get(i).get(correlationIdPosition);
-				if (!correlationId.equals(metadata.get(i - 1).get(correlationIdPosition))
-						&& !(i < metadata.size() - 1
-								&& correlationId.equals(metadata.get(i + 1).get(correlationIdPosition)))) {
-					for (int j = i - 2; j > -1; j--) {
-						if (correlationId.equals(metadata.get(j).get(correlationIdPosition))) {
-							List<Object> record = metadata.remove(j);
-							metadata.add(i - 1, record);
-							j = 0;
-						}
-					}
-				}
-			}
 		}
 	}
 
@@ -183,8 +156,8 @@ public class ProofOfMigrationStorage extends DatabaseStorage {
 			// The new size query will be logged by the super class
 			// E.g.: select count(*) from (select COMPONENT, CORRELATION_ID from PROOF_OF_MIGRATION group by COMPONENT, CORRELATION_ID) as DUMMY
 		}
-		replace(query, "from", "from (select " + GROUP_BY.substring(9) + " from");
-		query.append(" " + GROUP_BY + ") as DUMMY");
+		replace(query, "from", "from (select " + GROUP_BY.substring(9).replace("i.", "") + " from");
+		query.append(" " + GROUP_BY.replace("i.", "") + ") as DUMMY");
 	}
 
 	@Override
@@ -194,8 +167,11 @@ public class ProofOfMigrationStorage extends DatabaseStorage {
 				+ getTable() + " where CORRELATION_ID = (select CORRELATION_ID from " + getTable() + " where "
 				+ getStorageIdColumn() + " = ?) and COMPONENT = (select COMPONENT from " + getTable() + " where "
 				+ getStorageIdColumn() + " = ?) order by CHECKPOINT_NR";
-		log.debug("Get report query: " + query);
-		List<List<Object>> result = getJdbcTemplate().query(query, new Object[]{storageId, storageId},
+		List<Object> args = new ArrayList<Object>();
+		args.add(storageId);
+		args.add(storageId);
+		log.debug("Get report query (with arguments: " + args + "): " + query);
+		List<List<Object>> result = getJdbcTemplate().query(query, args.toArray(),
 				new int[] {Types.INTEGER, Types.INTEGER},
 				(resultSet, rowNum) -> {
 					List<Object> list = new ArrayList<Object>();
