@@ -16,7 +16,7 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <spring.version>5.3.23</spring.version>
-    <cxf.version>3.5.4</cxf.version>
+    <cxf.version>3.5.5</cxf.version>
     <!-- The line below is parsed by the GitHub actions test that triggers the ladybug-frontend Cypress test -->
     <frontend.version>0.0.40</frontend.version>
     <!-- Frank!Runner with specials/ibis-ladybug will override the replacement properties to disable replacement -->
