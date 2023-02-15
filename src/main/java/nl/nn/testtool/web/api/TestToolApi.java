@@ -210,19 +210,23 @@ public class TestToolApi extends ApiBase {
 				map.put("defaultView", false);
 			}
 			map.put("metadataNames", view.getMetadataNames());
-			map.put("nodeLinkStrategy", view.getNodeLinkStrategy());
+			if (getSessionAttr(view.getName() + ".NodeLinkStrategy", false) != null) {
+				map.put("nodeLinkStrategy", getSessionAttr(view.getName() + ".NodeLinkStrategy"));
+			} else {
+				map.put("nodeLinkStrategy", view.getNodeLinkStrategy());
+			}
 			response.put(view.getName(), map);
 		}
 		return Response.ok(response).build();
 	}
 
 	@PUT
-	@Path("/views/{nodeLinkStrategy}")
+	@Path("/views/node-link-strategy")
 	@Consumes(MediaType.APPLICATION_JSON)
-	public Response changeNodeLinkStrategy(@PathParam("nodeLinkStrategy") String nodeLinkStrategy, @QueryParam("viewName") String viewName) {
+	public Response changeNodeLinkStrategy(@QueryParam("nodeLinkStrategy") String nodeLinkStrategy, @QueryParam("viewName") String viewName) {
 		for (View view: views) {
 			if (viewName.equals(view.getName())) {
-				view.setNodeLinkStrategy(nodeLinkStrategy);
+				setSessionAttr(view.getName() + ".NodeLinkStrategy", nodeLinkStrategy);
 				break;
 			}
 		}
