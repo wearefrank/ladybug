@@ -221,7 +221,7 @@ public class TestToolApi extends ApiBase {
 	}
 
 	@PUT
-	@Path("/views/node-link-strategy")
+	@Path("/node-link-strategy")
 	@Consumes(MediaType.APPLICATION_JSON)
 	public Response changeNodeLinkStrategy(@QueryParam("nodeLinkStrategy") String nodeLinkStrategy, @QueryParam("viewName") String viewName) {
 		for (View view: views) {
