@@ -1,5 +1,5 @@
 /*
-   Copyright 2021-2022 WeAreFrank!
+   Copyright 2021-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -25,8 +25,10 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -208,9 +210,28 @@ public class TestToolApi extends ApiBase {
 				map.put("defaultView", false);
 			}
 			map.put("metadataNames", view.getMetadataNames());
+			if (getSessionAttr(view.getName() + ".NodeLinkStrategy", false) != null) {
+				map.put("nodeLinkStrategy", getSessionAttr(view.getName() + ".NodeLinkStrategy"));
+			} else {
+				map.put("nodeLinkStrategy", view.getNodeLinkStrategy());
+			}
 			response.put(view.getName(), map);
 		}
 		return Response.ok(response).build();
+	}
+
+	@PUT
+	@Path("/node-link-strategy")
+	@Consumes(MediaType.APPLICATION_JSON)
+	public Response changeNodeLinkStrategy(@QueryParam("nodeLinkStrategy") String nodeLinkStrategy, @QueryParam("viewName") String viewName) {
+		for (View view: views) {
+			if (viewName.equals(view.getName())) {
+				setSessionAttr(view.getName() + ".NodeLinkStrategy", nodeLinkStrategy);
+				break;
+			}
+		}
+
+		return Response.ok().build();
 	}
 
 }

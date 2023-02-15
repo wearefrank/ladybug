@@ -1,5 +1,5 @@
 /*
-   Copyright 2020, 2022 WeAreFrank!, 2018, 2019 Nationale-Nederlanden
+   Copyright 2020, 2022-2023 WeAreFrank!, 2018, 2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -38,6 +38,7 @@ import nl.nn.testtool.storage.LogStorage;
 @Dependent
 public class View implements BeanParent {
 	protected String name;
+	protected String nodeLinkStrategy;
 	private @Setter @Getter @Inject @Autowired LogStorage debugStorage;
 	private @Setter @Getter @Inject @Autowired List<String> metadataNames;
 	private Map<String, String> metadataFilter;
@@ -45,12 +46,29 @@ public class View implements BeanParent {
 	private BeanParent beanParent;
 	private Echo2Application echo2Application;
 
+	protected enum NodeLinkStrategy {
+		PATH,
+		CHECKPOINT_NUMBER,
+		NONE
+	}
+
 	public void setName(String name) {
 		this.name = name;
 	}
 
 	public String getName() {
 		return name;
+	}
+
+	public void setNodeLinkStrategy(String nodeLinkStrategy) {
+		this.nodeLinkStrategy = nodeLinkStrategy;
+	}
+
+	public String getNodeLinkStrategy() {
+		if (nodeLinkStrategy == null) {
+			return NodeLinkStrategy.PATH.toString();
+		}
+		return nodeLinkStrategy;
 	}
 
 	public void setMetadataFilter(Map<String, String> metadataFilter) {
