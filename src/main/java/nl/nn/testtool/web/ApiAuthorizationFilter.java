@@ -1,5 +1,5 @@
 /*
-   Copyright 2021-2022 WeAreFrank!
+   Copyright 2021-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -89,6 +89,7 @@ public class ApiAuthorizationFilter implements ContainerRequestFilter {
 		if (constructorDone) log.info("Set observer roles");
 		addConfigurationPart("GET/"  + ApiServlet.LADYBUG_API_PATH + "/testtool.*$", observerRoles);
 		addConfigurationPart("POST/" + ApiServlet.LADYBUG_API_PATH + "/testtool/transformation[/]?$", observerRoles); // [/]? because frontend is currently not using a slash at the end
+		addConfigurationPart("PUT/"  + ApiServlet.LADYBUG_API_PATH + "/testtool/views/.*$", observerRoles);
 		addConfigurationPart("GET/"  + ApiServlet.LADYBUG_API_PATH + "/metadata/.*$", observerRoles);
 		addConfigurationPart("GET/"  + ApiServlet.LADYBUG_API_PATH + "/report/.*$", observerRoles);
 	}
