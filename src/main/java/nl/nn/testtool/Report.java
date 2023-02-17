@@ -534,12 +534,7 @@ public class Report implements Serializable {
 			}
 			message = checkpoint.setMessage(message);
 		}
-		for (int i = threads.indexOf(threadName); i < threads.size(); i++) {
-			String key = threads.get(i);
-			Integer value = threadCheckpointIndex.get(key);
-			threadCheckpointIndex.put(key, value + 1);
-		}
-		if (index >= checkpoints.size()) {
+		if (index > checkpoints.size()) {
 			String warning = "Ladybug adjustment of checkpoint index to prevent IndexOutOfBoundsException."
 					+ " For unknown reason index is " + index + " while checkpoints size is " + checkpoints.size() + "."
 					+ " Please create an issue at https://github.com/ibissource/ibis-ladybug/issues/new\n"
@@ -568,6 +563,11 @@ public class Report implements Serializable {
 		// Add checkpoint to the list after stubable code has been executed. Otherwise when a report in progress is
 		// opened it might give the impression that the stubable code is already executed
 		checkpoints.add(index, checkpoint);
+		for (int i = threads.indexOf(threadName); i < threads.size(); i++) {
+			String key = threads.get(i);
+			Integer value = threadCheckpointIndex.get(key);
+			threadCheckpointIndex.put(key, value + 1);
+		}
 		if (log.isDebugEnabled()) {
 			log.debug("Added checkpoint " + getCheckpointLogDescription(name, checkpointType, level));
 		}

@@ -1,5 +1,5 @@
 /*
-   Copyright 2021-2022 WeAreFrank!
+   Copyright 2021-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -267,7 +267,7 @@ public class TestCreateReport extends ReportRelatedTestCase {
 			String correlationId, String parentThreadName, String childThreadName, String checkpointName) {
 		assertWarningInLog(listAppender, "New child thread '" + childThreadName
 				+ "' for guessed parent thread '" + parentThreadName
-				+ "' detected, use threadCreatepoint() and threadStartpoint() instead of startpoint() for checkpoint (name: "
+				+ "' detected, use threadCreatepoint() and threadStartpoint() instead of startpoint() for ignored checkpoint (name: "
 				+ checkpointName + ", type: ThreadStartpoint, level: null, correlationId: " + correlationId + ")");
 	}
 
