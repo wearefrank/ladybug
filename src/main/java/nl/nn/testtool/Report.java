@@ -127,9 +127,9 @@ public class Report implements Serializable {
 	public Report() {
 		mainThread = Thread.currentThread().getName();
 		threads.add(mainThread);
-		threadCheckpointIndex.put(mainThread, new Integer(0));
-		threadFirstLevel.put(mainThread, new Integer(0));
-		threadLevel.put(mainThread, new Integer(0));
+		threadCheckpointIndex.put(mainThread, 0);
+		threadFirstLevel.put(mainThread, 0);
+		threadLevel.put(mainThread, 0);
 		threadsActiveCount++;
 	}
 
@@ -400,7 +400,7 @@ public class Report implements Serializable {
 			for (int i = threads.indexOf(threadName) + 1; i < threads.size(); i++) {
 				String key = threads.get(i);
 				Integer value = threadCheckpointIndex.get(key);
-				threadCheckpointIndex.put(key, new Integer(value.intValue() - 1));
+				threadCheckpointIndex.put(key, value - 1);
 			}
 		}
 	}
@@ -472,7 +472,7 @@ public class Report implements Serializable {
 				message = addCheckpoint(threadName, sourceClassName, name, message, stubableCode,
 						stubableCodeThrowsException, matchingStubStrategies, checkpointType, index, level);
 			}
-			Integer newLevel = new Integer(level + levelChangeNextCheckpoint);
+			Integer newLevel = level + levelChangeNextCheckpoint;
 			threadLevel.put(threadName, newLevel);
 			if (newLevel.equals(threadFirstLevel.get(threadName))) {
 				// threadCreatepoint has already been removed on first checkpoint for thread, hence use false

@@ -1,5 +1,5 @@
 /*
-   Copyright 2020-2022 WeAreFrank!, 2018 Nationale-Nederlanden
+   Copyright 2020-2023 WeAreFrank!, 2018 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -123,7 +123,7 @@ public class Writer {
 		// Synchronize to keep order of storage id's in storage in incremental order
 		synchronized(synchronizeStore) {
 			if (!preserveStorageId) {
-				Integer storageId = new Integer(latestStorageId++);
+				Integer storageId = latestStorageId++;
 				report.setStorageId(storageId);
 			}
 			report.setStorageSize(new Long(reportBytes.length));
@@ -172,7 +172,7 @@ public class Writer {
 //						latestStorageId = report.getStorageId().intValue() + 1;
 //					}
 //				} else {
-//					Integer storageId = new Integer(latestStorageId++);
+//					Integer storageId = latestStorageId++;
 //					report.setStorageId(storageId);
 //				}
 //				byte[] reportBytes = getReportBytes(report);

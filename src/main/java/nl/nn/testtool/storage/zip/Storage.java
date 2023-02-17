@@ -1,5 +1,5 @@
 /*
-   Copyright 2020-2022 WeAreFrank!, 2018 Nationale-Nederlanden
+   Copyright 2020-2023 WeAreFrank!, 2018 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -89,7 +89,7 @@ public class Storage implements nl.nn.testtool.storage.CrudStorage {
 			e.printStackTrace();
 		}
 		report.setStorage(this);
-		report.setStorageId(new Integer(storageId++));
+		report.setStorageId(storageId++);
 		reports.put(report.getStorageId(), report);
 		storageIds.add(report.getStorageId());
 		metadata.add(new HashMap());
