@@ -6,6 +6,7 @@ Ladybug Test Tool release notes
 Upcoming (2.3)
 --------------
 
+- Prevent IndexOutOfBoundsException and add warning to report
 - Add CONVERSATION ID to Proof of migration view
 - Don't close new threads while other threads are active
 - Disable javax.inject.Inject (change pom.xml to enable)

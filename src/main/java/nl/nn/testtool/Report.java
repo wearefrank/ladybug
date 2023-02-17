@@ -331,12 +331,12 @@ public class Report implements Serializable {
 				if (threads.size() == 0) {
 					// This can happen when a report is still open because not all message capturers are closed while
 					// all threads are finished
-					warnNewChildThreadDetected(childThreadId, null, false, name, checkpointType);
+					warnNewChildThreadDetected(childThreadId, null, false, name, checkpointType, true);
 					return message;
 				} else {
 					parentThreadName = threads.get(threads.size() - 1);
 					threadCreatepoint(parentThreadName, childThreadId);
-					warnNewChildThreadDetected(childThreadId, parentThreadName, false, name, checkpointType);
+					warnNewChildThreadDetected(childThreadId, parentThreadName, false, name, checkpointType, false);
 				}
 			} else if (checkpointType == Checkpoint.TYPE_STARTPOINT && !threads.contains(parentThreadName)) {
 				checkpointType = Checkpoint.TYPE_THREADSTARTPOINT;
@@ -344,12 +344,12 @@ public class Report implements Serializable {
 				if (threads.size() == 0) {
 					// This can happen when a report is still open because not all message capturers are closed while
 					// all threads are finished
-					warnNewChildThreadDetected(childThreadId, null, true, name, checkpointType);
+					warnNewChildThreadDetected(childThreadId, null, true, name, checkpointType, true);
 					return message;
 				} else {
 					parentThreadName = threads.get(threads.size() - 1);
 					threadCreatepoint(parentThreadName, childThreadId);
-					warnNewChildThreadDetected(childThreadId, parentThreadName, true, name, checkpointType);
+					warnNewChildThreadDetected(childThreadId, parentThreadName, true, name, checkpointType, true);
 				}
 			}
 		}
@@ -359,7 +359,7 @@ public class Report implements Serializable {
 	}
 
 	private void warnNewChildThreadDetected(String childThreadId, String parentThreadName,
-			boolean threadStartpointNotUsed, String checkpointName, int checkpointType) {
+			boolean threadStartpointNotUsed, String checkpointName, int checkpointType, boolean ignored) {
 		String parentThreadWarning = " for guessed parent thread '" + parentThreadName + "'";
 		if (parentThreadName == null) {
 			parentThreadWarning = " for unknown parent thread";
@@ -368,8 +368,12 @@ public class Report implements Serializable {
 		if (threadStartpointNotUsed) {
 			startpointWarning = " and threadStartpoint() instead of startpoint()";
 		}
+		String ignoredWarning = "";
+		if (ignored) {
+			ignoredWarning = " ignored";
+		}
 		log.warn("New child thread '" + childThreadId + "'" + parentThreadWarning + " detected, use threadCreatepoint()"
-				+ startpointWarning + " for checkpoint "
+				+ startpointWarning + " for" + ignoredWarning + " checkpoint "
 				+ getCheckpointLogDescription(checkpointName, checkpointType, null));
 	}
 
@@ -468,7 +472,7 @@ public class Report implements Serializable {
 				message = addCheckpoint(threadName, sourceClassName, name, message, stubableCode,
 						stubableCodeThrowsException, matchingStubStrategies, checkpointType, index, level);
 			}
-			Integer newLevel = new Integer(level.intValue() + levelChangeNextCheckpoint);
+			Integer newLevel = new Integer(level + levelChangeNextCheckpoint);
 			threadLevel.put(threadName, newLevel);
 			if (newLevel.equals(threadFirstLevel.get(threadName))) {
 				// threadCreatepoint has already been removed on first checkpoint for thread, hence use false
@@ -483,7 +487,7 @@ public class Report implements Serializable {
 	private  <T> T addCheckpoint(String threadName, String sourceClassName, String name, T message,
 			StubableCode stubableCode, StubableCodeThrowsException stubableCodeThrowsException,
 			Set<String> matchingStubStrategies, int checkpointType, Integer index, Integer level) {
-		Checkpoint checkpoint = new Checkpoint(this, threadName, sourceClassName, name, checkpointType, level.intValue());
+		Checkpoint checkpoint = new Checkpoint(this, threadName, sourceClassName, name, checkpointType, level);
 		boolean stub = false;
 		if (originalReport != null) {
 			Path path = checkpoint.getPath(true);
@@ -533,11 +537,37 @@ public class Report implements Serializable {
 		for (int i = threads.indexOf(threadName); i < threads.size(); i++) {
 			String key = threads.get(i);
 			Integer value = threadCheckpointIndex.get(key);
-			threadCheckpointIndex.put(key, new Integer(value.intValue() + 1));
+			threadCheckpointIndex.put(key, value + 1);
+		}
+		if (index >= checkpoints.size()) {
+			String warning = "Ladybug adjustment of checkpoint index to prevent IndexOutOfBoundsException."
+					+ " For unknown reason index is " + index + " while checkpoints size is " + checkpoints.size() + "."
+					+ " Please create an issue at https://github.com/ibissource/ibis-ladybug/issues/new\n"
+					+ "\nmainThread: " + mainThread
+					+ "\nmainThreadFinishedTime: " + mainThreadFinishedTime
+					+ "\nthreads: " + threads
+					+ "\nthreadCheckpointIndex: " + threadCheckpointIndex
+					+ "\nthreadFirstLevel: " + threadFirstLevel
+					+ "\nthreadLevel: " + threadLevel
+					+ "\nthreadParent: " + threadParent
+					+ "\nthreadsActiveCount: " + threadsActiveCount
+					+ "\nstreamingMessageListeners: " + streamingMessageListeners
+					+ "\ncloseThreads: " + testTool.isCloseThreads()
+					+ "\ncloseNewThreadsOnly: " + testTool.isCloseNewThreadsOnly()
+					+ "\ncloseMessageCapturers: " + testTool.isCloseMessageCapturers()
+					;
+			log.warn(warning);
+			Checkpoint warningCheckpoint = new Checkpoint(this, threadName, this.getClass().getCanonicalName(),
+					"WARNING", Checkpoint.TYPE_INFOPOINT, level);
+			warningCheckpoint.setMessage(warning);
+			threadCheckpointIndex.put(threadName, checkpoints.size());
+			index = checkpoints.size() - 1;
+			checkpoints.add(index, warningCheckpoint);
+			index++;
 		}
 		// Add checkpoint to the list after stubable code has been executed. Otherwise when a report in progress is
-		// opened is might give the impression that the stubable code is already executed
-		checkpoints.add(index.intValue(), checkpoint);
+		// opened it might give the impression that the stubable code is already executed
+		checkpoints.add(index, checkpoint);
 		if (log.isDebugEnabled()) {
 			log.debug("Added checkpoint " + getCheckpointLogDescription(name, checkpointType, level));
 		}
