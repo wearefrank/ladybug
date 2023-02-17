@@ -136,6 +136,7 @@ public class ProofOfMigrationStorage extends DatabaseStorage {
 		replace(query, "CORRELATION ID", "i.CORRELATION_ID");
 		replace(query, "NR OF CHECKPOINTS", "count(CHECKPOINT_NR)");
 		replace(query, "STATUS", "min(m.STATUS)");
+		replace(query, "where", "and"); // Present when filter used by user
 		replace(query, getTable(), getTable() + " m, IDS i where m.CORRELATION_ID=i.CORRELATION_ID");
 		// For performance it's important that the first selection can be made based on the IDS table, hence the
 		// 'order by i.TIMESTAMP'. This will also make sure the record for the old component and the record for the new
