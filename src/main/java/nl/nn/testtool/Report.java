@@ -538,19 +538,7 @@ public class Report implements Serializable {
 			String warning = "Ladybug adjustment of checkpoint index to prevent IndexOutOfBoundsException."
 					+ " For unknown reason index is " + index + " while checkpoints size is " + checkpoints.size() + "."
 					+ " Please create an issue at https://github.com/ibissource/ibis-ladybug/issues/new\n"
-					+ "\nmainThread: " + mainThread
-					+ "\nmainThreadFinishedTime: " + mainThreadFinishedTime
-					+ "\nthreads: " + threads
-					+ "\nthreadCheckpointIndex: " + threadCheckpointIndex
-					+ "\nthreadFirstLevel: " + threadFirstLevel
-					+ "\nthreadLevel: " + threadLevel
-					+ "\nthreadParent: " + threadParent
-					+ "\nthreadsActiveCount: " + threadsActiveCount
-					+ "\nstreamingMessageListeners: " + streamingMessageListeners
-					+ "\ncloseThreads: " + testTool.isCloseThreads()
-					+ "\ncloseNewThreadsOnly: " + testTool.isCloseNewThreadsOnly()
-					+ "\ncloseMessageCapturers: " + testTool.isCloseMessageCapturers()
-					;
+					+ getThreadInfo();
 			log.warn(warning);
 			Checkpoint warningCheckpoint = new Checkpoint(this, threadName, this.getClass().getCanonicalName(),
 					"WARNING", Checkpoint.TYPE_INFOPOINT, level);
@@ -572,6 +560,21 @@ public class Report implements Serializable {
 			log.debug("Added checkpoint " + getCheckpointLogDescription(name, checkpointType, level));
 		}
 		return message;
+	}
+
+	public String getThreadInfo() {
+		return "\nmainThread: " + mainThread
+				+ "\nmainThreadFinishedTime: " + mainThreadFinishedTime
+				+ "\nthreads: " + threads
+				+ "\nthreadCheckpointIndex: " + threadCheckpointIndex
+				+ "\nthreadFirstLevel: " + threadFirstLevel
+				+ "\nthreadLevel: " + threadLevel
+				+ "\nthreadParent: " + threadParent
+				+ "\nthreadsActiveCount: " + threadsActiveCount
+				+ "\nstreamingMessageListeners: " + streamingMessageListeners
+				+ "\ncloseThreads: " + testTool.isCloseThreads()
+				+ "\ncloseNewThreadsOnly: " + testTool.isCloseNewThreadsOnly()
+				+ "\ncloseMessageCapturers: " + testTool.isCloseMessageCapturers();
 	}
 
 	protected String truncateMessage(Checkpoint checkpoint, String message) {

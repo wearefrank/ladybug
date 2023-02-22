@@ -6,6 +6,7 @@ Ladybug Test Tool release notes
 Upcoming (2.3)
 --------------
 
+- Log thread info in CloseReportsTask
 - Prevent IndexOutOfBoundsException and add warning to report
 - Add CONVERSATION ID to Proof of migration view
 - Don't close new threads while other threads are active

@@ -838,7 +838,8 @@ public class TestTool {
 	 *                                   time for threads and message capturers is counted from the time the main thread
 	 *                                   has finished otherwise from the start of the report
 	 */
-	public final void close(long threadsTime, long messageCapturersTime, boolean waitForMainThreadToFinish) {
+	public final void close(long threadsTime, long messageCapturersTime, boolean waitForMainThreadToFinish,
+			boolean logThreadInfoBeforeClose, long logThreadInfoAfterReportAge, long logThreadInfoBeforeReportAge) {
 		// Lock reportsInProgress as less as possible, synchronize on each report individually
 		Set<Report> reports = new HashSet<Report>();
 		synchronized(reportsInProgress) {
@@ -869,6 +870,21 @@ public class TestTool {
 					if (report.getStartTime() + messageCapturersTime <= System.currentTimeMillis()
 							&& messageCapturersTime != -1) {
 						closeMessageCapturers = true;
+					}
+				}
+				boolean logThreadInfoBecauseOfAge = false;
+				if (report.getStartTime() + logThreadInfoAfterReportAge  <= System.currentTimeMillis()
+						&& report.getStartTime() + logThreadInfoBeforeReportAge >= System.currentTimeMillis()) {
+					logThreadInfoBecauseOfAge = true;
+				}
+				if (closeThreads || closeMessageCapturers || logThreadInfoBecauseOfAge) {
+					String message = "Thread info for report in progress '" + report.getName() + "' (closeThreads="
+							+ closeThreads + ",closeMessageCapturers=" + closeMessageCapturers + "): "
+							+ report.getThreadInfo();
+					if (logThreadInfoBeforeClose || logThreadInfoBecauseOfAge) {
+						log.info(message);
+					} else {
+						log.debug(message);
 					}
 				}
 				close(report.getCorrelationId(), closeThreads, closeMessageCapturers);

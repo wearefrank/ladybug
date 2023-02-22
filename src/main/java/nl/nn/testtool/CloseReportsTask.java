@@ -1,5 +1,5 @@
 /*
-   Copyright 2022 WeAreFrank!
+   Copyright 2022-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,9 +21,9 @@ import lombok.Setter;
  * An alternative for {@link TestTool#close(String)}, {@link TestTool#setCloseThreads(boolean)} and
  * {@link TestTool#setCloseMessageCapturers(boolean)} that can be scheduled (e.g. by Spring) giving threads and message
  * capturers a chance to finish after the last checkpoint of a report has already finished. For more information see
- * {@link TestTool#close(long, long, boolean)}
+ * {@link TestTool#close(long, long, boolean, boolean, long, long)}
  * 
- * @see TestTool#close(long, long, boolean)
+ * @see TestTool#close(long, long, boolean, boolean, long, long)
  * @see TestTool#close(String)
  * @see TestTool#setCloseThreads(boolean)
  * @see TestTool#setCloseMessageCapturers(boolean)
@@ -34,9 +34,13 @@ public class CloseReportsTask {
 	private @Setter long threadsTime = 60 * 1000;
 	private @Setter long messageCapturersTime = 60 * 1000;
 	private @Setter boolean waitForMainThreadToFinish = true;
+	private @Setter boolean logThreadInfoBeforeClose = false;
+	private @Setter long logThreadInfoAfterReportAge = -1;
+	private @Setter long logThreadInfoBeforeReportAge = -1;
 
 	public void closeReports() {
-		testTool.close(threadsTime, messageCapturersTime, waitForMainThreadToFinish);
+		testTool.close(threadsTime, messageCapturersTime, waitForMainThreadToFinish, logThreadInfoBeforeClose,
+				logThreadInfoAfterReportAge, logThreadInfoBeforeReportAge);
 	}
 
 }
