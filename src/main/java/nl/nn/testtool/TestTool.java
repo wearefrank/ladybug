@@ -837,9 +837,15 @@ public class TestTool {
 	 * @param waitForMainThreadToFinish  whether or not to wait for the main thread to finish. When <code>true</code>
 	 *                                   time for threads and message capturers is counted from the time the main thread
 	 *                                   has finished otherwise from the start of the report
+	 * @param logThreadInfoBeforeClose   whether or not to log thread info on info level before calling close on a
+	 *                                   report
+	 * @param logThreadInfoMinReportAge  log thread info at info level for reports with an age above this minimum age
+	 *                                   (disabled when minimum age and maximum age is the same)
+	 * @param logThreadInfoMaxReportAge  log thread info at info level for reports with an age below this maximum age
+	 *                                   (disabled when minimum age and maximum age is the same)
 	 */
 	public final void close(long threadsTime, long messageCapturersTime, boolean waitForMainThreadToFinish,
-			boolean logThreadInfoBeforeClose, long logThreadInfoAfterReportAge, long logThreadInfoBeforeReportAge) {
+			boolean logThreadInfoBeforeClose, long logThreadInfoMinReportAge, long logThreadInfoMaxReportAge) {
 		// Lock reportsInProgress as less as possible, synchronize on each report individually
 		Set<Report> reports = new HashSet<Report>();
 		synchronized(reportsInProgress) {
@@ -873,8 +879,8 @@ public class TestTool {
 					}
 				}
 				boolean logThreadInfoBecauseOfAge = false;
-				if (report.getStartTime() + logThreadInfoAfterReportAge  <= System.currentTimeMillis()
-						&& report.getStartTime() + logThreadInfoBeforeReportAge >= System.currentTimeMillis()) {
+				if (report.getStartTime() + logThreadInfoMinReportAge < System.currentTimeMillis()
+						&& report.getStartTime() + logThreadInfoMaxReportAge > System.currentTimeMillis()) {
 					logThreadInfoBecauseOfAge = true;
 				}
 				if (closeThreads || closeMessageCapturers || logThreadInfoBecauseOfAge) {

@@ -35,12 +35,13 @@ public class CloseReportsTask {
 	private @Setter long messageCapturersTime = 60 * 1000;
 	private @Setter boolean waitForMainThreadToFinish = true;
 	private @Setter boolean logThreadInfoBeforeClose = false;
-	private @Setter long logThreadInfoAfterReportAge = -1;
-	private @Setter long logThreadInfoBeforeReportAge = -1;
+	// Log thread info is disabled when minimum age and maximum age is the same
+	private @Setter long logThreadInfoMinReportAge = 5 * 60 * 1000;
+	private @Setter long logThreadInfoMaxReportAge = 5 * 60 * 1000;
 
 	public void closeReports() {
 		testTool.close(threadsTime, messageCapturersTime, waitForMainThreadToFinish, logThreadInfoBeforeClose,
-				logThreadInfoAfterReportAge, logThreadInfoBeforeReportAge);
+				logThreadInfoMinReportAge, logThreadInfoMaxReportAge);
 	}
 
 }
