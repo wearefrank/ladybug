@@ -1,5 +1,5 @@
 /*
-   Copyright 2021-2022 WeAreFrank!
+   Copyright 2021-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -432,39 +432,41 @@ public class ReportApi extends ApiBase {
 	 * Copy or move report files in the same storage to different paths.
 	 *
 	 * @param storageName Name of the storage.
-	 * @param storageId Storage id of the report to be moved.
+	 * @param storageIds Storage ids of the reports to be moved.
 	 * @param map Map containing "path" and "action". Actions could be "copy" or "move".
 	 * @return The response of updating the Path.
 	 */
 	@PUT
-	@Path("/move/{storage}/{storageId}")
+	@Path("/move/{storage}")
 	@Consumes(MediaType.APPLICATION_JSON)
-	public Response updatePath(@PathParam("storage") String storageName, @PathParam("storageId") int storageId, Map<String, String> map) {
+	public Response updatePath(@PathParam("storage") String storageName, @QueryParam("storageIds") List<Integer> storageIds, Map<String, String> map) {
 		CrudStorage storage = (CrudStorage) testTool.getStorage(storageName);
 		String path = map.get("path");
 		String action = map.get("action");
 		if (StringUtils.isEmpty(action) || StringUtils.isEmpty(path))
 			return Response.status(Response.Status.BAD_REQUEST).entity("[action] and [path] are both required in the request body.").build();
 
-		try {
-			Report original = getReport(storage, storageId);
-			if ("copy".equalsIgnoreCase(action)) {
-				Report clone = original.clone();
-				clone.setPath(path);
-				storage.store(clone);
-			} else if ("move".equalsIgnoreCase(action)) {
-				original.setPath(path);
-				storage.update(original);
-			} else {
-				return Response.status(Response.Status.BAD_REQUEST).entity("Action parameter can only be either [copy] or [move]").build();
+		for (int storageId : storageIds) {
+			try {
+				Report original = getReport(storage, storageId);
+				if ("copy".equalsIgnoreCase(action)) {
+					Report clone = original.clone();
+					clone.setPath(path);
+					storage.store(clone);
+				} else if ("move".equalsIgnoreCase(action)) {
+					original.setPath(path);
+					storage.update(original);
+				} else {
+					return Response.status(Response.Status.BAD_REQUEST).entity("Action parameter can only be either [copy] or [move]").build();
+				}
+			} catch (StorageException e) {
+				return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Storage exception with storage id [" + storageId + "] in storage [" + storageName + "] - detailed error message - " + e + Arrays.toString(e.getStackTrace())).build();
+			} catch (CloneNotSupportedException e) {
+				return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Cloning exception for report with storage id [" + storageId + "] in storage [" + storageName + "] - detailed error message - " + e + Arrays.toString(e.getStackTrace())).build();
 			}
-
-			return Response.ok().build();
-		} catch (StorageException e) {
-			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Storage exception with storage id [" + storageId + "] in storage [" + storageName + "] - detailed error message - " + e + Arrays.toString(e.getStackTrace())).build();
-		} catch (CloneNotSupportedException e) {
-			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Cloning exception for report with storage id [" + storageId + "] in storage [" + storageName + "] - detailed error message - " + e + Arrays.toString(e.getStackTrace())).build();
 		}
+
+		return Response.ok().build();
 	}
 
 	/**
