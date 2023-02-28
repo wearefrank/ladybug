@@ -207,7 +207,7 @@ public class TestToolApi extends ApiBase {
 			map.put("storageName", view.getDebugStorage().getName());
 			map.put("defaultView", view == views.getDefaultView());
 			map.put("metadataNames", view.getMetadataNames());
-			map.put("CrudStorage", view.getDebugStorage() instanceof CrudStorage);
+			map.put("crudStorage", view.getDebugStorage() instanceof CrudStorage);
 			if (getSessionAttr(view.getName() + ".NodeLinkStrategy", false) != null) {
 				map.put("nodeLinkStrategy", getSessionAttr(view.getName() + ".NodeLinkStrategy"));
 			} else {
