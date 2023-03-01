@@ -33,6 +33,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import nl.nn.testtool.storage.CrudStorage;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -67,13 +68,27 @@ public class TestToolApi extends ApiBase {
 	@Path("/")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getInfo() {
+		Map<String, Object> info = getTestToolInfo();
+		return Response.ok(info).build();
+	}
+
+	@GET
+	@Path("/reset")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response resetInfo() {
+		testTool.reset();
+		Map<String, Object> info = getTestToolInfo();
+		return Response.ok(info).build();
+	}
+
+	public Map<String, Object> getTestToolInfo() {
 		HashMap<String, Object> map = new HashMap<>(4);
 		map.put("generatorEnabled", testTool.isReportGeneratorEnabled());
 		map.put("estMemory", testTool.getReportsInProgressEstimatedMemoryUsage());
 		map.put("regexFilter", testTool.getRegexFilter());
 		map.put("reportsInProgress", testTool.getNumberOfReportsInProgress());
 		map.put("stubStrategies", testTool.getStubStrategies());
-		return Response.ok(map).build();
+		return map;
 	}
 
 	/**
@@ -204,12 +219,9 @@ public class TestToolApi extends ApiBase {
 		for (View view : views) {
 			Map<String, Object> map = new HashMap<String, Object>();
 			map.put("storageName", view.getDebugStorage().getName());
-			if (view == views.getDefaultView()) {
-				map.put("defaultView", true);
-			} else {
-				map.put("defaultView", false);
-			}
+			map.put("defaultView", view == views.getDefaultView());
 			map.put("metadataNames", view.getMetadataNames());
+			map.put("crudStorage", view.getDebugStorage() instanceof CrudStorage);
 			if (getSessionAttr(view.getName() + ".NodeLinkStrategy", false) != null) {
 				map.put("nodeLinkStrategy", getSessionAttr(view.getName() + ".NodeLinkStrategy"));
 			} else {
