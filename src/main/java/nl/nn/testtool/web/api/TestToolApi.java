@@ -68,13 +68,27 @@ public class TestToolApi extends ApiBase {
 	@Path("/")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getInfo() {
+		Map<String, Object> info = getTestToolInfo();
+		return Response.ok(info).build();
+	}
+
+	@GET
+	@Path("/reset")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response resetInfo() {
+		testTool.reset();
+		Map<String, Object> info = getTestToolInfo();
+		return Response.ok(info).build();
+	}
+
+	public Map<String, Object> getTestToolInfo() {
 		HashMap<String, Object> map = new HashMap<>(4);
 		map.put("generatorEnabled", testTool.isReportGeneratorEnabled());
 		map.put("estMemory", testTool.getReportsInProgressEstimatedMemoryUsage());
 		map.put("regexFilter", testTool.getRegexFilter());
 		map.put("reportsInProgress", testTool.getNumberOfReportsInProgress());
 		map.put("stubStrategies", testTool.getStubStrategies());
-		return Response.ok(map).build();
+		return map;
 	}
 
 	/**
