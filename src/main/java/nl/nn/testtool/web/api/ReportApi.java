@@ -531,7 +531,7 @@ public class ReportApi extends ApiBase {
 
 	/**
 	 * Returns the report and sets the testTool bean on the report.
-	 *
+	 * 
 	 * @param storage Storage to get the report from.
 	 * @param storageId Storage id of the report.
 	 * @return Report.
