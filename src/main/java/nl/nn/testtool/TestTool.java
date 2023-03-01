@@ -58,6 +58,7 @@ public class TestTool {
 	private Debugger debugger;
 	private Rerunner rerunner;
 	private boolean reportGeneratorEnabled = true;
+	private boolean defaultReportGeneratorEnabled = true;
 	private List<Report> reportsInProgress = new ArrayList<Report>();
 	private Map<String, Report> reportsInProgressByCorrelationId = new HashMap<String, Report>();
 	private long numberOfReportsInProgress = 0;
@@ -68,6 +69,7 @@ public class TestTool {
 	private MessageCapturer messageCapturer = new MessageCapturerImpl();
 	private MessageTransformer messageTransformer;
 	private String regexFilter;
+	private String defaultRegexFilter;
 	private String defaultStubStrategy = "Stub all external connection code";
 	private List<String> stubStrategies = new ArrayList<String>(); { stubStrategies.add(defaultStubStrategy); }
 	private Set<String> matchingStubStrategiesForExternalConnectionCode = new HashSet<>(stubStrategies);
@@ -76,6 +78,16 @@ public class TestTool {
 	private @Getter boolean closeMessageCapturers = false;
 	private @Setter @Getter @Inject @Autowired Views views;
 
+
+	public void init() {
+		defaultRegexFilter = regexFilter;
+		defaultReportGeneratorEnabled = reportGeneratorEnabled;
+	}
+
+	public void reset() {
+		regexFilter = defaultRegexFilter;
+		reportGeneratorEnabled = defaultReportGeneratorEnabled;
+	}
 	public void setSecurityLoggerName(String securityLoggerName) {
 		securityLog = LoggerFactory.getLogger(securityLoggerName);
 	}
