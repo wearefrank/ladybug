@@ -154,25 +154,30 @@ public class ReportApi extends ApiBase {
 	 * Deletes the report.
 	 *
 	 * @param storageName Name of the storage.
-	 * @param storageId Storage id of the report to be deleted.
 	 * @return "Ok" if deleted properly, "Not implemented" if storage does not support deletion, "Not found" if report does not exist.
 	 */
 	@DELETE
-	@Path("/{storage}/{storageId}")
-	public Response deleteReport(@PathParam("storage") String storageName, @PathParam("storageId") int storageId) {
+	@Path("/{storage}/")
+	public Response deleteReport(@PathParam("storage") String storageName, @QueryParam("storageIds") List<Integer> storageIds) {
 		Storage storage = testTool.getStorage(storageName);
 		if (!(storage instanceof CrudStorage)) {
 			String msg = "Given storage [" + storageName + "] does not implement delete function.";
 			log.warn(msg);
 			return Response.status(Response.Status.NOT_IMPLEMENTED).entity(msg).build();
 		}
-		try {
-			Report report = getReport(storage, storageId);
-			if (report == null)
-				return Response.status(Response.Status.NOT_FOUND).entity("Could not find report with storage id [" + storageId + "]").build();
-			((CrudStorage) storage).delete(report);
-		} catch (StorageException e) {
-			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Could not delete report with storageId [" + storageId + "] - detailed error message - " + e + Arrays.toString(e.getStackTrace())).build();
+		List<String> errorMessages = new ArrayList<>();
+		for (int storageId : storageIds) {
+			try {
+				Report report = getReport(storage, storageId);
+				if (report == null)
+					return Response.status(Response.Status.NOT_FOUND).entity("Could not find report with storage id [" + storageId + "]").build();
+				((CrudStorage) storage).delete(report);
+			} catch (StorageException e) {
+				errorMessages.add("Could not delete report with storageId [" + storageId + "] - detailed error message - " + e + Arrays.toString(e.getStackTrace()));
+			}
+		}
+		if (!errorMessages.isEmpty()) {
+			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(errorMessages).build();
 		}
 		return Response.ok().build();
 	}
