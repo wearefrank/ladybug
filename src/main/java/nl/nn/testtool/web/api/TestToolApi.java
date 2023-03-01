@@ -33,6 +33,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import nl.nn.testtool.storage.CrudStorage;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -204,12 +205,9 @@ public class TestToolApi extends ApiBase {
 		for (View view : views) {
 			Map<String, Object> map = new HashMap<String, Object>();
 			map.put("storageName", view.getDebugStorage().getName());
-			if (view == views.getDefaultView()) {
-				map.put("defaultView", true);
-			} else {
-				map.put("defaultView", false);
-			}
+			map.put("defaultView", view == views.getDefaultView());
 			map.put("metadataNames", view.getMetadataNames());
+			map.put("crudStorage", view.getDebugStorage() instanceof CrudStorage);
 			if (getSessionAttr(view.getName() + ".NodeLinkStrategy", false) != null) {
 				map.put("nodeLinkStrategy", getSessionAttr(view.getName() + ".NodeLinkStrategy"));
 			} else {
