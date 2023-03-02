@@ -97,7 +97,7 @@ public class ProofOfMigrationStorage extends DatabaseStorage {
 	@Override
 	public List<String> getIntegerColumns() {
 		if (integerColumns == null) {
-			return new ArrayList<String>(Arrays.asList("ID", "CHECKPOINT_NR"));
+			return new ArrayList<String>(Arrays.asList("ID", "NR OF CHECKPOINTS"));
 		} else {
 			return integerColumns;
 		}
@@ -131,20 +131,27 @@ public class ProofOfMigrationStorage extends DatabaseStorage {
 		// Test by selecting Proof of migration (errors) view in the Ladybug test webapp
 		replace(query, "ID", "min(m.ID)");
 		replace(query, "TIMESTAMP", "i.TIMESTAMP");
-		replace(query, "ENDPOINT NAME", "min(concat(CHECKPOINT_NR, '. ', ENDPOINT_NAME))");
+		replace(query, "ENDPOINT NAME", "min(concat(m.CHECKPOINT_NR, '. ', m.ENDPOINT_NAME))");
 		replace(query, "CONVERSATION ID", "i.ORIGINAL_ID");
 		replace(query, "CORRELATION ID", "i.CORRELATION_ID");
-		replace(query, "NR OF CHECKPOINTS", "count(CHECKPOINT_NR)");
+		replace(query, "NR OF CHECKPOINTS", "count(m.CHECKPOINT_NR)");
 		replace(query, "STATUS", "min(m.STATUS)");
 		replace(query, "where", "and"); // Present when filter used by user
 		replace(query, getTable(), getTable() + " m, IDS i where m.CORRELATION_ID=i.CORRELATION_ID");
+		// Occurrences in where clause, test with filter
+		replace(query, "TIMESTAMP", "i.TIMESTAMP"); // Prefix is added by replace so it will skip i.TIMESTAMP
+		replace(query, "lower(ENDPOINT NAME)", "lower(m.ENDPOINT_NAME)");
+		replace(query, "lower(CONVERSATION ID)", "lower(i.ORIGINAL_ID)");
+		replace(query, "lower(CORRELATION ID)", "lower(i.CORRELATION_ID)");
+		replace(query, "NR OF CHECKPOINTS", "m.CHECKPOINT_NR + 1000"); // Disable as it's not possible to filter on count(m.CHECKPOINT_NR) (when not disabled the result would be confusing)
+		replace(query, "lower(STATUS)", "lower(m.STATUS)");
 		// For performance it's important that the first selection can be made based on the IDS table, hence the
 		// 'order by i.TIMESTAMP'. This will also make sure the record for the old component and the record for the new
 		// component (that have the same correlation id) are displayed directly below each other (the extra order on
 		// i.CORRELATION_ID will make this 100% waterproof)
 		replace(query, "order by ID desc" , GROUP_BY + " order by i.TIMESTAMP desc, i.CORRELATION_ID");
 		if (isShowErrorsOnly()) {
-			replace(query, "group by" , "and STATUS != 'Success' group by");
+			replace(query, "group by" , "and m.STATUS != 'Success' group by");
 		}
 	}
 
