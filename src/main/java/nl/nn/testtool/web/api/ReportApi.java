@@ -154,6 +154,7 @@ public class ReportApi extends ApiBase {
 	 * Deletes the report.
 	 *
 	 * @param storageName Name of the storage.
+	 * @param storageIds  Storage id's of the reports to delete
 	 * @return "Ok" if deleted properly, "Not implemented" if storage does not support deletion, "Not found" if report does not exist.
 	 */
 	@DELETE
