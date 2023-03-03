@@ -19,7 +19,8 @@
     <cxf.version>3.5.5</cxf.version>
     <!-- The line below is parsed by the GitHub actions test that triggers the ladybug-frontend Cypress test -->
     <frontend.version>0.0.42</frontend.version>
-    <!-- Frank!Runner with specials/ibis-ladybug will override the replacement properties to disable replacement -->
+    <!-- Frank!Runner with specials/ibis-ladybug overrides the replacement properties to disable replacement -->
+    <inject.replace.include>**/*.java</inject.replace.include>
     <inject.replace.from>javax.inject</inject.replace.from>
     <inject.replace.to>nl.nn.testtool</inject.replace.to>
   </properties>
@@ -218,7 +219,7 @@
           <configuration>
             <basedir>${basedir}</basedir>
             <includes>
-              <include>**/*.java</include>
+              <include>${inject.replace.include}</include>
             </includes>
             <replacements>
                <replacement>
