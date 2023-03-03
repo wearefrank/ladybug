@@ -1,5 +1,5 @@
 /*
-   Copyright 2021-2022 WeAreFrank!
+   Copyright 2021-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.inject.Inject;
 import javax.ws.rs.DefaultValue;
@@ -85,11 +86,11 @@ public class MetadataApi extends ApiBase {
 				LinkedHashMap<String, String> metadataItem = new LinkedHashMap<>();
 				metadataItem.put("storageId", record.get(0).toString());
 				for (int i = 1; i < metadataNames.size(); i++) {
-					String value = null;
+					String metadataValue = null;
 					if (record.get(i) != null) {
-						value = record.get(i).toString();
+						metadataValue = record.get(i).toString();
 					}
-					metadataItem.put(metadataNames.get(i), value);
+					metadataItem.put(metadataNames.get(i), metadataValue);
 				}
 				metadata.add(metadataItem);
 			}
@@ -111,7 +112,7 @@ public class MetadataApi extends ApiBase {
 	@Path("/{storage}/userHelp")
 	public Response getUserHelp(@PathParam("storage") String storageName, @QueryParam("metadataNames") List<String> metadataNames) {
 		try {
-			LinkedHashMap<String, String> userHelp = new LinkedHashMap<>();
+			Map<String, String> userHelp = new LinkedHashMap<>();
 			Storage storage = testTool.getStorage(storageName);
 			for (String field : metadataNames) {
 				userHelp.put(field, storage.getUserHelp(field));

@@ -82,7 +82,7 @@ public class TestToolApi extends ApiBase {
 	}
 
 	public Map<String, Object> getTestToolInfo() {
-		HashMap<String, Object> map = new HashMap<>(4);
+		Map<String, Object> map = new HashMap<>(4);
 		map.put("generatorEnabled", testTool.isReportGeneratorEnabled());
 		map.put("estMemory", testTool.getReportsInProgressEstimatedMemoryUsage());
 		map.put("regexFilter", testTool.getRegexFilter());
