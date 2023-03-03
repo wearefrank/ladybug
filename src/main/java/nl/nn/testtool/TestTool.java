@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
@@ -78,7 +79,7 @@ public class TestTool {
 	private @Getter boolean closeMessageCapturers = false;
 	private @Setter @Getter @Inject @Autowired Views views;
 
-
+	@PostConstruct
 	public void init() {
 		defaultRegexFilter = regexFilter;
 		defaultReportGeneratorEnabled = reportGeneratorEnabled;
@@ -88,6 +89,7 @@ public class TestTool {
 		regexFilter = defaultRegexFilter;
 		reportGeneratorEnabled = defaultReportGeneratorEnabled;
 	}
+
 	public void setSecurityLoggerName(String securityLoggerName) {
 		securityLog = LoggerFactory.getLogger(securityLoggerName);
 	}
