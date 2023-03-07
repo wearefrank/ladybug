@@ -190,26 +190,27 @@ Create and publish NPM package and WebJar
 ========================================
 
 ### Prerequisites
-- Make sure the latest changes are committed (and preferably pushed) to the project
-- Open your terminal and navigate to your project folder (so `PATH/TO/ladybug`)
+- Make sure the latest changes are committed and pushed to the project.
+- Open your terminal and navigate to your project folder (so `PATH/TO/ladybug-frontend`).
 - If this is the first time, you need to log into NPM
     - Create an account on [NPM](https://www.npmjs.com/signup) if you don't have one yet.
     - Ask a colleague to add your account to the WeAreFrank! organization.
     - In the terminal run the following command `npm login`, which prompts you to log into NPM.
 
 ### Creating and publishing an NPM package
-- Run the command `ng build`, to build the current project
-- Copy the following files into the generated `dist/ladybug` folder
+- Run the command `ng build` in your terminal, to build the current project
+- Copy the following files into the generated `dist/ladybug` folder:
     - README.md
     - LICENSE
     - package.json
-- In the `dist/ladybug/index.html` change the types of the three scripts on line 15 to `application/javascript` (so module -> application/javascript). The specific scripts are:
+- In the `dist/ladybug/index.html` file change the types of the three scripts on line 15 to `application/javascript` (so `type="module"` -> `type="application/javascript"`). The specific scripts are:
   - `runtime.e3a101410a4894ca.js`
   - `polyfills.42dedf2fcdca615b.js`
   - `main.134a36bdfc8f0ad9.js`
-- Remove the `dependencies` and `devDependencies` from the copied `package.json` (`dist/ladybug/package.json`). Make sure you do not remove them from the original `package.json`.
+- In `dist/ladybug/package.json` (so the copied `package.json` file) do the following:
+  - Remove the contents of `dependencies` and `devDependencies`
+  - Update the `prepare` script to be: `cd ../.. && husky install`
 - Navigate to `dist/ladybug` in your terminal
-- In that directory, update `package.json`. Update the `prepare` script to be: `cd ../.. && husky install`.
 - Run `npm publish`
 - Run `git tag vX.Y.Z`, with X.Y.Z being the latest version of the package, which you can find in your `package.json` (for example `0.0.12`)
 - Run `git push origin vX.Y.Z`, with X.Y.Z being the version you just specified.
@@ -226,7 +227,7 @@ Create and publish NPM package and WebJar
 
 ### Prepare for next cycle
 - Go into the file `ladybug-frontend/package.json` and increment the version number (for example `0.0.12` -> `0.0.13`)
-- Commit and push the changes in `ladybug-frontend/package.json`, with the commit message `Set version to X.Y.Z for the next development cycle`
+- Commit and push the changes in `ladybug-frontend/package.json`, with the commit message `Set version to A.B.C for the next development cycle`, where `A.B.C` is your new version.
 
 CI/CD
 =====
