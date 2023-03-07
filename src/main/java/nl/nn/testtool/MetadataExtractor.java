@@ -22,6 +22,7 @@ import java.util.List;
 
 import javax.inject.Singleton;
 
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -86,7 +87,7 @@ public class MetadataExtractor {
 			}
 		}
 		if (label == null) {
-			label = metadataName;
+			label = StringUtils.capitalize(metadataName);
 		}
 		return label;
 	}
