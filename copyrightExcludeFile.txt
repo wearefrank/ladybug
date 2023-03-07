@@ -8,6 +8,8 @@
 \src\test\
 /wip
 \wip
+/.idea
+\.idea
 MANIFEST.MF
 README
 LICENSE
