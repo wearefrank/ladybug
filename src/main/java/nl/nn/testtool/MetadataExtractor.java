@@ -87,7 +87,7 @@ public class MetadataExtractor {
 			}
 		}
 		if (label == null) {
-			label = StringUtils.capitalize(metadataName);
+			label = metadataName;
 		}
 		return label;
 	}

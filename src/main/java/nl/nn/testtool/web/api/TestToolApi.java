@@ -51,6 +51,7 @@ import nl.nn.testtool.web.ApiServlet;
 @Path("/" + ApiServlet.LADYBUG_API_PATH + "/testtool")
 public class TestToolApi extends ApiBase {
 	private @Setter @Inject @Autowired TestTool testTool;
+	private @Setter @Inject @Autowired MetadataExtractor metadataExtractor;
 	private @Setter @Inject @Autowired ReportXmlTransformer reportXmlTransformer;
 	private @Setter @Inject @Autowired Views views;
 	private String defaultTransformation;
@@ -224,7 +225,7 @@ public class TestToolApi extends ApiBase {
 			map.put("storageName", view.getDebugStorage().getName());
 			map.put("defaultView", view == views.getDefaultView());
 			map.put("metadataNames", view.getMetadataNames());
-			map.put("beautifulMetadataNames", getBeautifulMetadataNames(view.getMetadataNames()));
+			map.put("metadataLabels", getMetadataLabels(view.getMetadataNames()));
 			map.put("crudStorage", view.getDebugStorage() instanceof CrudStorage);
 			if (getSessionAttr(view.getName() + ".NodeLinkStrategy", false) != null) {
 				map.put("nodeLinkStrategy", getSessionAttr(view.getName() + ".NodeLinkStrategy"));
@@ -236,14 +237,13 @@ public class TestToolApi extends ApiBase {
 		return Response.ok(response).build();
 	}
 
-	public List<String> getBeautifulMetadataNames(List<String> metadataNames) {
-		List<String> beautifulMetadataNames = new ArrayList<>();
-		MetadataExtractor metadataExtractor = new MetadataExtractor();
+	public List<String> getMetadataLabels(List<String> metadataNames) {
+		List<String> metadataLabels = new ArrayList<>();
 		for (String metadataName : metadataNames) {
-			beautifulMetadataNames.add(metadataExtractor.getLabel(metadataName));
+			metadataLabels.add(metadataExtractor.getLabel(metadataName));
 		}
 
-		return beautifulMetadataNames;
+		return metadataLabels;
 	}
 
 	@PUT
