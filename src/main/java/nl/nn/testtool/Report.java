@@ -84,6 +84,7 @@ public class Report implements Serializable {
 	private transient String mainThread;
 	private transient long mainThreadFinishedTime = TIME_NOT_SET_VALUE;
 	private transient List<String> threads = new ArrayList<String>();
+	private transient List<String> threadsWithThreadCreatepoint = new ArrayList<String>();
 	private transient Map<String, Integer> threadCheckpointIndex = new HashMap<String, Integer>();
 	private transient Map<String, Integer> threadFirstLevel = new HashMap<String, Integer>();
 	private transient Map<String, Integer> threadLevel = new HashMap<String, Integer>();
@@ -325,6 +326,7 @@ public class Report implements Serializable {
 			} else {
 				name = "Waiting for thread '" + childThreadId + "' to start...";
 				threadCreatepoint(parentThreadName, childThreadId);
+				threadsWithThreadCreatepoint.add(childThreadId);
 			}
 		} else {
 			if (checkpointType == Checkpoint.TYPE_THREADSTARTPOINT && !threads.contains(childThreadId)) {
@@ -394,10 +396,10 @@ public class Report implements Serializable {
 	 * @param index
 	 * @param threadName
 	 */
-	private void removeThreadCreatepoint(int index, String threadName) {
-		if (index < checkpoints.size() && checkpoints.get(index).getType() == Checkpoint.TYPE_THREADCREATEPOINT) {
+	private void removeThreadCreatepoint(int index, String childThreadId) {
+		if (threadsWithThreadCreatepoint.remove(childThreadId)) {
 			checkpoints.remove(index);
-			for (int i = threads.indexOf(threadName) + 1; i < threads.size(); i++) {
+			for (int i = threads.indexOf(childThreadId) + 1; i < threads.size(); i++) {
 				String key = threads.get(i);
 				Integer value = threadCheckpointIndex.get(key);
 				threadCheckpointIndex.put(key, value - 1);
@@ -413,22 +415,25 @@ public class Report implements Serializable {
 		Integer level = threadLevel.get(threadName);
 		if (checkpointType == Checkpoint.TYPE_THREADSTARTPOINT) {
 			// At this point index will already be != null when name of the child thread was used as childThreadId
-			// when calling threadCreatepoint()
+			// when calling threadCreatepoint() (no rename of child thread id in the relevant maps needed in that case)
 			if (index == null) {
 				index = threadCheckpointIndex.remove(childThreadId);
 				if (index != null) {
-					// Rename child thread id in the relevant maps to the actual thread name of the child thread (which
-					// at this point is the current thread (calling it's first checkpoint (threadStartpoint())) for as
-					// far as they are not already the same (in which case index will be initialized with a non null
-					// value at the beginning of this method
+					// Rename child thread id in the relevant lists and maps to the actual thread name of the child
+					// thread (which at this point is the current thread (calling it's first checkpoint with
+					// threadStartpoint()) for as far as they are not already the same (in which case index will be
+					// initialized with a non null value at the beginning of this method)
 					threads.add(threads.indexOf(childThreadId), threadName);
 					threads.remove(childThreadId);
+					if (threadsWithThreadCreatepoint.remove(childThreadId)) {
+						threadsWithThreadCreatepoint.add(threadName);
+					}
 					threadCheckpointIndex.put(threadName, index);
 					level = threadFirstLevel.remove(childThreadId);
 					threadFirstLevel.put(threadName, level);
 					level = threadLevel.remove(childThreadId);
 					threadLevel.put(threadName, level);
-					String parent = (String)threadParent.remove(childThreadId);
+					String parent = threadParent.remove(childThreadId);
 					threadParent.put(threadName, parent);
 				} else {
 					log.warn("Unknown childThreadId '" + childThreadId
@@ -535,6 +540,8 @@ public class Report implements Serializable {
 			message = checkpoint.setMessage(message);
 		}
 		if (index > checkpoints.size()) {
+			// This code should not be necessary anymore (see testRemoveThreadCreatepoint() for the issue that has been
+			// fixed). Keep the following code for now and remove it somewhere in the future
 			String warning = "Ladybug adjustment of checkpoint index to prevent IndexOutOfBoundsException."
 					+ " For unknown reason index is " + index + " while checkpoints size is " + checkpoints.size() + "."
 					+ " Please create an issue at https://github.com/ibissource/ibis-ladybug/issues/new\n"
@@ -635,15 +642,17 @@ public class Report implements Serializable {
 	}
 
 	protected void closeThread(String threadName, boolean removeThreadCreatepoint) {
-		if (threads.remove(threadName)) {
-			Integer index = threadCheckpointIndex.remove(threadName);
+		Integer index = threadCheckpointIndex.get(threadName);
+		if (index != null) {
+			if (removeThreadCreatepoint) {
+				removeThreadCreatepoint(index, threadName);
+			}
+			threads.remove(threadName);
+			threadCheckpointIndex.remove(threadName);
 			threadFirstLevel.remove(threadName);
 			threadLevel.remove(threadName);
 			threadParent.remove(threadName);
 			threadsActiveCount--;
-			if (removeThreadCreatepoint) {
-				removeThreadCreatepoint(index, threadName);
-			}
 		} else {
 			log.warn("Thread '" + threadName + "' to close for report with correlationId '" + correlationId + "' not found");
 		}

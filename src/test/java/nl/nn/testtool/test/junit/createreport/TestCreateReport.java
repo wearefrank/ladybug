@@ -80,8 +80,11 @@ public class TestCreateReport extends ReportRelatedTestCase {
 		testTool.startpoint(correlationId, this.getClass().getTypeName(), reportName, "startmessage");
 		testTool.endpoint(correlationId, this.getClass().getTypeName(), reportName, "endmessage");
 		assertReport(correlationId);
-		// Same but with StubableCode
-		correlationId = getCorrelationId();
+	}
+
+	@Test
+	public void testSingleStartAndEndPointPlainMessageWithStubableCode() throws StorageException, IOException {
+		String correlationId = getCorrelationId();
 		testTool.startpoint(correlationId, this.getClass().getTypeName(), reportName, () -> {return "startmessage";}, new HashSet<String>());
 		testTool.endpoint(correlationId, this.getClass().getTypeName(), reportName, () -> {return "endmessage";}, new HashSet<String>());
 		assertReport(correlationId);
@@ -587,6 +590,73 @@ public class TestCreateReport extends ReportRelatedTestCase {
 		testTool.close(correlationId, Thread.currentThread().getName() + "-ChildThreadNameA");
 		testTool.close(correlationId, Thread.currentThread().getName() + "-ChildThreadNameB");
 		assertReport(correlationId);
+	}
+
+	/*
+	 * This test reproduces IndexOutOfBoundsException on version 2.3-20221102.162219 (commit 3b93527) (on which it was
+	 * reported)
+	 */
+	@Test
+	public void testRemoveThreadCreatepoint() throws StorageException, IOException {
+		String correlationId = getCorrelationId();
+		String parentThreadName = Thread.currentThread().getName();
+		String childThreadName1 = "child-1";
+		String childThreadName2 = "child-2";
+		String childThreadName3 = "child-3";
+		String childThreadName4 = "child-4";
+		String childThreadName5 = "child-5";
+		String childThreadName6 = "child-6";
+
+		testTool.startpoint(correlationId, null, reportName, "startmessage");
+
+		Thread.currentThread().setName(parentThreadName);
+		testTool.threadCreatepoint(correlationId, childThreadName1);
+		Thread.currentThread().setName(childThreadName1);
+		testTool.threadStartpoint(correlationId, null, "start1", "message1");
+
+		Thread.currentThread().setName(parentThreadName);
+		testTool.threadCreatepoint(correlationId, childThreadName2);
+
+		Thread.currentThread().setName(parentThreadName);
+		testTool.threadCreatepoint(correlationId, childThreadName3);
+
+		Thread.currentThread().setName(parentThreadName);
+		testTool.threadCreatepoint(correlationId, childThreadName4);
+
+		Thread.currentThread().setName(parentThreadName);
+		testTool.threadCreatepoint(correlationId, childThreadName5);
+
+		Thread.currentThread().setName(parentThreadName);
+		testTool.threadCreatepoint(correlationId, childThreadName6);
+
+		testTool.close(correlationId, childThreadName6);
+		testTool.close(correlationId, childThreadName5);
+		testTool.close(correlationId, childThreadName4);
+
+		String firstException = null;
+		try {
+			Thread.currentThread().setName(childThreadName1);
+			testTool.startpoint(correlationId, null, "start2", "message2");
+		} catch (Exception e) {
+			firstException = e.getClass() + ": " + e.getMessage();
+		}
+
+		String secondException= null;
+		try {
+			Thread.currentThread().setName(parentThreadName);
+			testTool.abortpoint(correlationId, this.getClass().getTypeName(), reportName, "endmessage");
+		} catch (Exception e) {
+			secondException = e.getClass() + ": " + e.getMessage();
+		}
+
+		// Prevent report in progress failure
+		testTool.close(correlationId);
+
+		assertNull(firstException);
+		assertNull(secondException);
+		// On commit 3b93527 instead of the previous assertions the following assertions pass:
+		// assertEquals("class java.lang.IndexOutOfBoundsException: Index: -1, Size: 4", firstException);
+		// assertEquals("class java.lang.IndexOutOfBoundsException: Index: 5, Size: 4", secondException);
 	}
 
 	@Test

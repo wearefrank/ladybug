@@ -1,5 +1,5 @@
 /*
-   Copyright 2020-2022 WeAreFrank!, 2018-2019 Nationale-Nederlanden
+   Copyright 2020-2023 WeAreFrank!, 2018-2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -201,7 +201,6 @@ public class CheckpointComponent extends MessageComponent {
 				+ "If this message is a valid XML message and you'd like to use a specific part of its data "
 				+ "instead, extend your variable to, for example, ${checkpoint(287#13).xpath(results/result[1])}.");
 		add(checkpointUIDPropertyLabel);
-
 
 		levelLabel = Echo2Application.createInfoLabelWithColumnLayoutData();
 		add(levelLabel);

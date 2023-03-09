@@ -1,5 +1,5 @@
 /*
-   Copyright 2020, 2022 WeAreFrank!, 2018 Nationale-Nederlanden
+   Copyright 2020, 2022-2023 WeAreFrank!, 2018 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -14,8 +14,6 @@
    limitations under the License.
 */
 package nl.nn.testtool.echo2.reports;
-
-import javax.annotation.PostConstruct;
 
 import echopointng.Tree;
 import echopointng.tree.DefaultMutableTreeNode;
