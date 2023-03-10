@@ -6,6 +6,7 @@ Ladybug Test Tool release notes
 Upcoming (2.3)
 --------------
 
+- Fix open report on sorted table
 - Fix removeThreadCreatepoint() causing incorrect order of checkpoints and IndexOutOfBoundsException
 - Log thread info in CloseReportsTask
 - Prevent IndexOutOfBoundsException and add warning to report
