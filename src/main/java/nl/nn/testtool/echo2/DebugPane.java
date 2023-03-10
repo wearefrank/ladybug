@@ -1,5 +1,5 @@
 /*
-   Copyright 2020, 2022 WeAreFrank!, 2018 Nationale-Nederlanden
+   Copyright 2020, 2022-2023 WeAreFrank!, 2018 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,7 +15,10 @@
 */
 package nl.nn.testtool.echo2;
 
+import java.util.List;
+
 import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
 import javax.enterprise.context.Dependent;
 import javax.inject.Inject;
 
@@ -49,6 +52,10 @@ public class DebugPane extends Tab implements BeanParent {
 	private @Inject @Autowired CrudStorage testStorage;
 	private @Inject @Autowired MetadataExtractor metadataExtractor;
 	private @Inject @Autowired ReportXmlTransformer reportXmlTransformer;
+	// With @Autowired all String beans (e.g. the beans in Spring xml with class="java.lang.String") are added to a
+	// list and wired instead of the specified dataAdminRoles (e.g. <util:list id="dataAdminRoles">). Hence use
+	// @Resource instead. See also https://stackoverflow.com/a/1363435/17193564
+	private @Inject @Resource(name="dataAdminRoles") List<String> dataAdminRoles;
 	private ReportsListPane reportsListPane;
 	private ReportsComponent reportsComponent;
 	private TreePane treePane;
@@ -101,6 +108,7 @@ public class DebugPane extends Tab implements BeanParent {
 		reportsComponent.setMetadataExtractor(metadataExtractor);
 		reportsComponent.setTreePane(treePane);
 		reportsComponent.setReportXmlTransformer(reportXmlTransformer);
+		reportsComponent.setDataAdminRoles(dataAdminRoles);
 		reportComponent.setTestTool(testTool);
 		reportComponent.setTestStorage(testStorage);
 		reportComponent.setTreePane(treePane);

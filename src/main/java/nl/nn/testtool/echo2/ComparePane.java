@@ -1,5 +1,5 @@
 /*
-   Copyright 2020, 2022 WeAreFrank!, 2018 Nationale-Nederlanden
+   Copyright 2020, 2022-2023 WeAreFrank!, 2018 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
 import javax.enterprise.context.Dependent;
 import javax.inject.Inject;
 
@@ -55,6 +56,8 @@ public class ComparePane extends Tab implements BeanParent {
 	private @Inject @Autowired CrudStorage testStorage;
 	private @Inject @Autowired MetadataExtractor metadataExtractor;
 	private @Inject @Autowired ReportXmlTransformer reportXmlTransformer;
+	// See comment about @Resource in DebugPane
+	private @Inject @Resource(name="dataAdminRoles") List<String> dataAdminRoles;
 	private ReportsComponent reportsComponent1;
 	private ReportsComponent reportsComponent2;
 	private TreePane treePane1;
@@ -159,6 +162,7 @@ public class ComparePane extends Tab implements BeanParent {
 		reportsComponent1.setMetadataExtractor(metadataExtractor);
 		reportsComponent1.setTreePane(treePane1);
 		reportsComponent1.setReportXmlTransformer(reportXmlTransformer);
+		reportsComponent1.setDataAdminRoles(dataAdminRoles);
 		reportsComponent1.setComparePane(this);
 		reportComponent1.setTestTool(testTool);
 		reportComponent1.setTestStorage(testStorage);
@@ -174,6 +178,7 @@ public class ComparePane extends Tab implements BeanParent {
 		reportsComponent2.setMetadataExtractor(metadataExtractor);
 		reportsComponent2.setTreePane(treePane2);
 		reportsComponent2.setReportXmlTransformer(reportXmlTransformer);
+		reportsComponent2.setDataAdminRoles(dataAdminRoles);
 		reportsComponent2.setComparePane(this);
 		reportComponent2.setTestTool(testTool);
 		reportComponent2.setTestStorage(testStorage);
