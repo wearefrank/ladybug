@@ -27,6 +27,7 @@ import nl.nn.testtool.Report;
 public class StatusMetadataFieldExtractor extends DefaultValueMetadataFieldExtractor {
 	private MetadataFieldExtractor delegate = null;
 	private String otherLabelForError = null;
+	private int maxLength = 0;
 
 	public StatusMetadataFieldExtractor() {
 		name = "status";
@@ -44,6 +45,10 @@ public class StatusMetadataFieldExtractor extends DefaultValueMetadataFieldExtra
 		this.otherLabelForError = otherLabelForError;
 	}
 
+	public void setMaxLength(int maxLength) {
+		this.maxLength = maxLength;
+	}
+
 	public Object extractMetadata(Report report) {
 		String status = "Success";
 		List<Checkpoint> checkpoints = report.getCheckpoints();
@@ -54,6 +59,9 @@ public class StatusMetadataFieldExtractor extends DefaultValueMetadataFieldExtra
 			} else if(delegate != null) {
 				status = (String) delegate.extractMetadata(report);
 			}
+		}
+		if((maxLength > 0) && (status.length() > maxLength)) {
+			status = status.substring(0, maxLength);
 		}
 		return status;
 	}

@@ -62,6 +62,22 @@ public class StatusMetadataFieldExtractorTest {
 		assertEquals("Error", instance.extractMetadata(report));		
 	}
 
+	@Test
+	public void whenStatusLengthExceedsMaxLengthThenTruncated() {
+		Report report = getReport(Checkpoint.TYPE_ENDPOINT);
+		StatusMetadataFieldExtractor instance = new StatusMetadataFieldExtractor();
+		instance.setMaxLength(2);
+		assertEquals("Su", instance.extractMetadata(report));		
+	}
+
+	@Test
+	public void whenStatusLengthNotAboveMaxThenNotTruncated() {
+		Report report = getReport(Checkpoint.TYPE_ENDPOINT);
+		StatusMetadataFieldExtractor instance = new StatusMetadataFieldExtractor();
+		instance.setMaxLength("Success".length());
+		assertEquals("Success", instance.extractMetadata(report));				
+	}
+	
 	private Report getReport(int typeOfLastCheckpoint) {
 		TestTool testTool = new TestTool();
 		Report report = new Report();
