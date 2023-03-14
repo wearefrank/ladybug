@@ -18,16 +18,30 @@ package nl.nn.testtool.metadata;
 import java.util.List;
 
 import nl.nn.testtool.Checkpoint;
+import nl.nn.testtool.MetadataFieldExtractor;
 import nl.nn.testtool.Report;
 
 /**
  * @author Jaco de Groot
  */
 public class StatusMetadataFieldExtractor extends DefaultValueMetadataFieldExtractor {
-	
+	private MetadataFieldExtractor delegate = null;
+	private String otherLabelForError = null;
+
 	public StatusMetadataFieldExtractor() {
 		name = "status";
 		label = "Status";
+	}
+
+	/**
+	 * If there was no abort then calculate the status from the delegate MetadataFieldextractor.
+	 */
+	public void setDelegate(MetadataFieldExtractor delegate) {
+		this.delegate = delegate;
+	}
+
+	public void setOtherLabelForError(String otherLabelForError) {
+		this.otherLabelForError = otherLabelForError;
 	}
 
 	public Object extractMetadata(Report report) {
@@ -36,10 +50,19 @@ public class StatusMetadataFieldExtractor extends DefaultValueMetadataFieldExtra
 		if (checkpoints.size() > 0) {
 			Checkpoint lastCheckpoint = (Checkpoint)checkpoints.get(checkpoints.size() - 1);
 			if (lastCheckpoint.getType() == Checkpoint.TYPE_ABORTPOINT) {
-				status = "Error";
+				status = getStatusForAbortPoint();
+			} else if(delegate != null) {
+				status = (String) delegate.extractMetadata(report);
 			}
 		}
 		return status;
 	}
 
+	private String getStatusForAbortPoint() {
+		if(otherLabelForError == null) {
+			return "Error";
+		} else {
+			return otherLabelForError;
+		}		
+	}
 }
