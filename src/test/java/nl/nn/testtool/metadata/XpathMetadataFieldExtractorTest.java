@@ -40,6 +40,32 @@ public class XpathMetadataFieldExtractorTest {
 		assertEquals("theDefault", instance.extractMetadata(report));
 	}
 
+	@Test
+	public void whenXpathFindsNothingAndDelegateThenDelegateAccessed() throws Exception {
+		XpathMetadataFieldExtractor delegate = new XpathMetadataFieldExtractor();
+		delegate.setExtractFrom("last");
+		delegate.setXpath("/one/two");
+		Report report = getReport();
+		XpathMetadataFieldExtractor instance = new XpathMetadataFieldExtractor();
+		instance.setExtractFrom("last");
+		instance.setDelegate(delegate);
+		instance.setXpath("/one/three");
+		assertEquals("My second value", instance.extractMetadata(report));
+	}
+
+	@Test
+	public void whenXpathFindsSomethingThenDelegateNotAccessed() throws Exception {
+		XpathMetadataFieldExtractor delegate = new XpathMetadataFieldExtractor();
+		delegate.setExtractFrom("last");
+		delegate.setXpath("/one/three");
+		Report report = getReport();
+		XpathMetadataFieldExtractor instance = new XpathMetadataFieldExtractor();
+		instance.setExtractFrom("last");
+		instance.setDelegate(delegate);
+		instance.setXpath("/one/two");
+		assertEquals("My second value", instance.extractMetadata(report));
+	}
+
 	private Report getReport() {
 		TestTool testTool = new TestTool();
 		Report report = new Report();
