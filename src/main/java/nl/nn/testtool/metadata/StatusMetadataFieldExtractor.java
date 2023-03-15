@@ -37,6 +37,8 @@ public class StatusMetadataFieldExtractor extends DefaultValueMetadataFieldExtra
 
 	/**
 	 * If there was no abort then calculate the status from the delegate MetadataFieldextractor.
+	 * 
+	 * @param delegate ...
 	 */
 	public void setDelegate(MetadataFieldExtractor delegate) {
 		this.delegate = delegate;
