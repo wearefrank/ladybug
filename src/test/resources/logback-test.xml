@@ -14,6 +14,7 @@
   </appender>
 
   <logger name="nl.nn.testtool.test.junit" level="debug"/>
+  <!-- JUnit tests will fail when enabled -->
   <!-- logger name="nl.nn.testtool" level="debug"/ -->
 
   <root level="info">

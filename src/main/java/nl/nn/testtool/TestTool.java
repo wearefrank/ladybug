@@ -813,8 +813,9 @@ public class TestTool {
 	 *
 	 * @see #close(String)
 	 * @param correlationId ...
-	 * @param threadName    name of the thread to close or null to close all threads (name of a thread cannot be null as
-	 *                      Thread.setName(null) will result in: java.lang.NullPointerException: name cannot be null).
+	 * @param threadName    child thread id or name of the thread to close or null to close all threads (name of a
+	 *                      thread cannot be null as Thread.setName(null) will result in:
+	 *                      java.lang.NullPointerException: name cannot be null).
 	 *                      When closing all threads the threadCreatepoints are left behind for the user to see where
 	 *                      threads were supposed to start. This will warn the user that the thread didn't start and
 	 *                      that the thread wasn't cancelled either (by explicitly calling this method with the specific

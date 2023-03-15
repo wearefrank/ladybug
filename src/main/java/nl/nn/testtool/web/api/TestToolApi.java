@@ -18,6 +18,8 @@ package nl.nn.testtool.web.api;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.List;
+import java.util.ArrayList;
 
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
@@ -33,6 +35,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import nl.nn.testtool.MetadataExtractor;
 import nl.nn.testtool.storage.CrudStorage;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,6 +51,7 @@ import nl.nn.testtool.web.ApiServlet;
 @Path("/" + ApiServlet.LADYBUG_API_PATH + "/testtool")
 public class TestToolApi extends ApiBase {
 	private @Setter @Inject @Autowired TestTool testTool;
+	private @Setter @Inject @Autowired MetadataExtractor metadataExtractor;
 	private @Setter @Inject @Autowired ReportXmlTransformer reportXmlTransformer;
 	private @Setter @Inject @Autowired Views views;
 	private String defaultTransformation;
@@ -221,11 +225,21 @@ public class TestToolApi extends ApiBase {
 			map.put("storageName", view.getDebugStorage().getName());
 			map.put("defaultView", view == views.getDefaultView());
 			map.put("metadataNames", view.getMetadataNames());
+			map.put("metadataLabels", getMetadataLabels(view.getMetadataNames()));
 			map.put("crudStorage", view.getDebugStorage() instanceof CrudStorage);
 			map.put("nodeLinkStrategy", view.getNodeLinkStrategy());
 			response.put(view.getName(), map);
 		}
 		return Response.ok(response).build();
+	}
+
+	public List<String> getMetadataLabels(List<String> metadataNames) {
+		List<String> metadataLabels = new ArrayList<>();
+		for (String metadataName : metadataNames) {
+			metadataLabels.add(metadataExtractor.getLabel(metadataName));
+		}
+
+		return metadataLabels;
 	}
 
 	@PUT

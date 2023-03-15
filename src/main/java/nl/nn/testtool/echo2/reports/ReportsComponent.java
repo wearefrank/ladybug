@@ -566,8 +566,8 @@ public class ReportsComponent extends BaseComponent implements BeanParent, Actio
 				View view = getSelectedView();
 				Storage storage = view.getDebugStorage();
 				nl.nn.testtool.storage.memory.Storage memStorage = new nl.nn.testtool.storage.memory.Storage();
-				for (int i = 0; i < metadataTableModel.getRowCount(); i++) {
-					Integer storageId = (Integer)metadataTableModel.getValueAt(0, i);
+				for (int i = 0; i < metadataSortableTableModel.getRowCount(); i++) {
+					Integer storageId = (Integer)metadataSortableTableModel.getValueAt(0, i);
 					String isOpenReportAllowed = view.isOpenReportAllowed(storageId);
 					if (OPEN_REPORT_ALLOWED.equals(isOpenReportAllowed)) {
 						Report report = storage.getReport(storageId);
@@ -587,12 +587,12 @@ public class ReportsComponent extends BaseComponent implements BeanParent, Actio
 			View view = getSelectedView();
 			Table table = (Table)e.getSource();
 			int selectedIndex = table.getSelectionModel().getMinSelectedIndex();
-			firstValueOfLastSelectedRow = metadataTableModel.getValueAt(0, selectedIndex);
+			firstValueOfLastSelectedRow = metadataSortableTableModel.getValueAt(0, selectedIndex);
 			openReport(view, (Integer)firstValueOfLastSelectedRow);
 		} else if (e.getActionCommand().equals("OpenAll")) {
 			View view = getSelectedView();
-			for (int i = 0; i < metadataTableModel.getRowCount(); i++) {
-				Integer storageId = (Integer)metadataTableModel.getValueAt(0, i);
+			for (int i = 0; i < metadataSortableTableModel.getRowCount(); i++) {
+				Integer storageId = (Integer)metadataSortableTableModel.getValueAt(0, i);
 				openReport(view, storageId);
 			}
 		} else if (e.getActionCommand().equals("ViewSelect")) {
