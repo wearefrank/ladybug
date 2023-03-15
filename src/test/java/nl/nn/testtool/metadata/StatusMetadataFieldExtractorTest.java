@@ -20,6 +20,14 @@ public class StatusMetadataFieldExtractorTest {
 	}
 
 	@Test
+	public void testSuccessStatusWithOtherSuccessLabel() {
+		Report report = getReport(Checkpoint.TYPE_ENDPOINT);
+		StatusMetadataFieldExtractor instance = new StatusMetadataFieldExtractor();
+		instance.setSuccessLabel("OK");
+		assertEquals("OK", instance.extractMetadata(report));
+	}
+
+	@Test
 	public void testErrorStatus() {
 		Report report = getReport(Checkpoint.TYPE_ABORTPOINT);
 		StatusMetadataFieldExtractor instance = new StatusMetadataFieldExtractor();
@@ -30,7 +38,7 @@ public class StatusMetadataFieldExtractorTest {
 	public void whenSuccessStatusAndHaveOtherLabelThenStillSuccess() {
 		Report report = getReport(Checkpoint.TYPE_ENDPOINT);
 		StatusMetadataFieldExtractor instance = new StatusMetadataFieldExtractor();
-		instance.setOtherLabelForError("Aborted");
+		instance.setErrorLabel("Aborted");
 		assertEquals("Success", instance.extractMetadata(report));
 	}
 
@@ -38,7 +46,7 @@ public class StatusMetadataFieldExtractorTest {
 	public void whenErrorStatusAndHaveOtherLabelThenOtherLabelReturned() {
 		Report report = getReport(Checkpoint.TYPE_ABORTPOINT);
 		StatusMetadataFieldExtractor instance = new StatusMetadataFieldExtractor();
-		instance.setOtherLabelForError("Aborted");
+		instance.setErrorLabel("Aborted");
 		assertEquals("Aborted", instance.extractMetadata(report));
 	}
 

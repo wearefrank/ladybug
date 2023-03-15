@@ -26,7 +26,8 @@ import nl.nn.testtool.Report;
  */
 public class StatusMetadataFieldExtractor extends DefaultValueMetadataFieldExtractor {
 	private MetadataFieldExtractor delegate = null;
-	private String otherLabelForError = null;
+	private String errorLabel = "Error";
+	private String successLabel = "Success";
 	private int maxLength = 0;
 
 	public StatusMetadataFieldExtractor() {
@@ -41,8 +42,12 @@ public class StatusMetadataFieldExtractor extends DefaultValueMetadataFieldExtra
 		this.delegate = delegate;
 	}
 
-	public void setOtherLabelForError(String otherLabelForError) {
-		this.otherLabelForError = otherLabelForError;
+	public void setErrorLabel(String errorLabel) {
+		this.errorLabel = errorLabel;
+	}
+
+	public void setSuccessLabel(String successLabel) {
+		this.successLabel = successLabel;
 	}
 
 	public void setMaxLength(int maxLength) {
@@ -50,12 +55,12 @@ public class StatusMetadataFieldExtractor extends DefaultValueMetadataFieldExtra
 	}
 
 	public Object extractMetadata(Report report) {
-		String status = "Success";
+		String status = successLabel;
 		List<Checkpoint> checkpoints = report.getCheckpoints();
 		if (checkpoints.size() > 0) {
 			Checkpoint lastCheckpoint = (Checkpoint)checkpoints.get(checkpoints.size() - 1);
 			if (lastCheckpoint.getType() == Checkpoint.TYPE_ABORTPOINT) {
-				status = getStatusForAbortPoint();
+				status = errorLabel;
 			} else if(delegate != null) {
 				status = (String) delegate.extractMetadata(report);
 			}
@@ -64,13 +69,5 @@ public class StatusMetadataFieldExtractor extends DefaultValueMetadataFieldExtra
 			status = status.substring(0, maxLength);
 		}
 		return status;
-	}
-
-	private String getStatusForAbortPoint() {
-		if(otherLabelForError == null) {
-			return "Error";
-		} else {
-			return otherLabelForError;
-		}		
 	}
 }
