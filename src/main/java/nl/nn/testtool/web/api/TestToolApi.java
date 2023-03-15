@@ -222,11 +222,7 @@ public class TestToolApi extends ApiBase {
 			map.put("defaultView", view == views.getDefaultView());
 			map.put("metadataNames", view.getMetadataNames());
 			map.put("crudStorage", view.getDebugStorage() instanceof CrudStorage);
-			if (getSessionAttr(view.getName() + ".NodeLinkStrategy", false) != null) {
-				map.put("nodeLinkStrategy", getSessionAttr(view.getName() + ".NodeLinkStrategy"));
-			} else {
-				map.put("nodeLinkStrategy", view.getNodeLinkStrategy());
-			}
+			map.put("nodeLinkStrategy", view.getNodeLinkStrategy());
 			response.put(view.getName(), map);
 		}
 		return Response.ok(response).build();
