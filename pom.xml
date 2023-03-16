@@ -190,6 +190,11 @@
       <version>1.0</version>
       <scope>provided</scope>
     </dependency>
+    <dependency>
+      <groupId>nu.studer</groupId>
+      <artifactId>java-ordered-properties</artifactId>
+      <version>1.0.4</version>
+    </dependency>
   </dependencies>
 
   <repositories>
