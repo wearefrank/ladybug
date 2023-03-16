@@ -1,5 +1,5 @@
 /*
-   Copyright 2020-2022 WeAreFrank!, 2018-2019 Nationale-Nederlanden
+   Copyright 2020-2023 WeAreFrank!, 2018-2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,17 +15,16 @@
 */
 package nl.nn.testtool.echo2.test;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Scanner;
-import java.util.Set;
-import java.util.TooManyListenersException;
 
+import nl.nn.testtool.util.CommonPropertiesComparator;
+import nl.nn.testtool.util.ScenarioPropertiesComparator;
+import nu.studer.java.util.OrderedProperties;
 import org.apache.commons.lang.StringUtils;
 
 import echopointng.ProgressBar;
@@ -95,10 +94,11 @@ public class TestComponent extends BaseComponent implements BeanParent, ActionLi
 	private final int INDEX_OPEN_BUTTON = 2;
 	private final int INDEX_COMPARE_BUTTON = 3;
 	private final int INDEX_REPLACE_BUTTON = 4;
-	private final int INDEX_STORAGEID_LABEL = 5;
-	private final int INDEX_ERROR_LABEL = 6;
-	private final int INDEX_RESULT_LABEL = 7;
-	private final int INDEX_DYNAMIC_VAR_LABEL = 8;
+	private final int INDEX_CONVER_TO_TEST_BUTTON = 5;
+	private final int INDEX_STORAGEID_LABEL = 6;
+	private final int INDEX_ERROR_LABEL = 7;
+	private final int INDEX_RESULT_LABEL = 8;
+	private final int INDEX_DYNAMIC_VAR_LABEL = 9;
 	private TextArea cloneGenerationReportInputTextArea;
 	private Label cloneGenerationReportInputLabel;
 
@@ -252,6 +252,12 @@ public class TestComponent extends BaseComponent implements BeanParent, ActionLi
 		Echo2Application.decorateButton(prepareUploadButton);
 		prepareUploadButton.addActionListener(this);
 		buttonRow.add(prepareUploadButton);
+
+		Button convertToTestButton = new Button("Convert to test");
+		convertToTestButton.setActionCommand("ConvertToTest");
+		Echo2Application.decorateButton(convertToTestButton);
+		convertToTestButton.addActionListener(this);
+		buttonRow.add(convertToTestButton);
 
 		progressBar = new ProgressBar();
 		buttonRow.add(progressBar);
@@ -517,6 +523,12 @@ public class TestComponent extends BaseComponent implements BeanParent, ActionLi
 		button.setVisible(false);
 		Echo2Application.decorateButton(button);
 		row.add(button, INDEX_REPLACE_BUTTON);
+
+		Button convertToTestButton = new Button("Convert to test");
+		convertToTestButton.setActionCommand("ConvertRowToTest");
+		convertToTestButton.addActionListener(this);
+		Echo2Application.decorateButton(convertToTestButton);
+		row.add(convertToTestButton, INDEX_CONVER_TO_TEST_BUTTON);
 
 		Report report = null;
 		try {
@@ -880,8 +892,104 @@ public class TestComponent extends BaseComponent implements BeanParent, ActionLi
 					displayAndLogError(errorMessage);
 				}
 			}
+		} else if (e.getActionCommand().equals("ConvertRowToTest")) {
+			Button button = (Button)e.getSource();
+			Row row = (Row)button.getParent();
+			generateTestScenario(row);
+		} else if (e.getActionCommand().equals("ConvertToTest")) {
+			if (minimalOneSelected()) {
+				for (Row row : getReportRows()) {
+					CheckBox checkbox = (CheckBox)row.getComponent(INDEX_CHECKBOX);
+					if (checkbox.isSelected()) {
+						generateTestScenario(row);
+					}
+				}
+			} else {
+				List<String> actionLabels = new ArrayList<String>();
+				List<String> actionCommands = new ArrayList<String>();
+				List<ActionListener> actionListeners = new ArrayList<ActionListener>();
+				actionLabels.add("Yes, convert all reports to test scenarios");
+				actionCommands.add("ConvertAllToTestOk");
+				actionListeners.add(this);
+				actionLabels.add("No, cancel this action");
+				actionCommands.add("ConvertAllToTestCancel");
+				actionListeners.add(this);
+				PopupWindow popupWindow = new PopupWindow("",
+						"Are you sure you want to convert all reports to test scenarios?", 375, 130,
+						actionLabels, actionCommands, actionListeners);
+				echo2Application.getContentPane().add(popupWindow);
+			}
+		} else if (e.getActionCommand().equals("ConvertAllToTestOk")) {
+			for (Row row : getReportRows()) {
+				generateTestScenario(row);
+			}
 		}
 		updateProgressBar();
+	}
+
+	private void generateTestScenario(Row row) {
+		Report report = getReport(row);
+		if (report == null) {
+			displayError("Couldn't get corresponding report object for row.");
+			return;
+		}
+		if (!report.getName().startsWith("Pipeline ")) {
+			displayError("Report [" + report.getName() + "] is not a pipeline report. Test generation isn't implemented for this type of report.");
+			return;
+		}
+		String reportName = report.getName();
+		String adapterName = reportName.substring(9);
+		//TODO: figure out how to consistently get a path to the testtool folder
+		Path testDir = Paths.get("C:/workspace/temp", adapterName);
+		try {
+			Files.createDirectories(testDir);
+		} catch (IOException e) {
+			displayAndLogError("Error occurred when creating test directory [" + testDir.toAbsolutePath() + "] for report [" + reportName + "]: " + e);
+			return;
+		}
+		String scenarioSuffix = "01";
+		try {
+			OptionalInt maxSuffix = Files.list(testDir).filter(path -> path.getFileName().toString().matches("scenario\\d+.properties")).mapToInt(path -> {
+				String fileName = path.getFileName().toString();
+				return Integer.parseInt(fileName.substring(8,fileName.indexOf(".")));
+			}).max();
+			if (maxSuffix.isPresent()) {
+				scenarioSuffix = String.format("%0" + 2 + "d", maxSuffix.getAsInt() + 1);
+			}
+		} catch (IOException e) {
+			displayAndLogError("Error occurred counting existing scenarios in test directory [" + testDir.toAbsolutePath() + "] for report [" + reportName + "]: " + e);
+			return;
+		}
+		Path scenarioDir = testDir.resolve(scenarioSuffix);
+		Path scenarioFile = testDir.resolve("scenario" + scenarioSuffix + ".properties");
+		Path commonFile = testDir.resolve("common.properties");
+		if (!Files.exists(scenarioDir)) {
+			try {
+				Files.createDirectory(scenarioDir);
+			} catch (IOException e) {
+				displayAndLogError("Error occurred when creating scenario directory [" + scenarioDir.toAbsolutePath() + "] for report [" + reportName + "]: " + e);
+				return;
+			}
+		} else {
+			try {
+				if (Files.list(scenarioDir).findAny().isPresent()) {
+					displayError("Error: scenario directory [" + scenarioDir.toAbsolutePath() + "] already exists and is not empty. Not converting report [" + reportName + "]");
+					return;
+				}
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			}
+		}
+		if (!Files.exists(commonFile)) {
+			try {
+				Files.createFile(commonFile);
+			} catch (IOException e) {
+				displayAndLogError("Error occurred when creating common file [" + commonFile.toAbsolutePath() + "] for report [" + reportName + "]: " + e);
+				return;
+			}
+		}
+		new Scenario(report, scenarioDir, scenarioFile, commonFile, adapterName);
+
 	}
 
 	private void generateReportClonesFromCsv(Report reportToClone) {
@@ -1046,6 +1154,221 @@ public class TestComponent extends BaseComponent implements BeanParent, ActionLi
 		return uploadWindow;
 	}
 
+	private static class Scenario {
+		private static final HashSet<String> ignoredSenders = new HashSet(Arrays.asList(
+				"nl.nn.adapterframework.jdbc.ResultSet2FileSender",
+				"nl.nn.adapterframework.jdbc.DirectQuerySender",
+				"nl.nn.adapterframework.jdbc.FixedQuerySender",
+				"nl.nn.adapterframework.jdbc.XmlQuerySender",
+				"nl.nn.adapterframework.senders.DelaySender",
+				"nl.nn.adapterframework.senders.EchoSender",
+				"nl.nn.adapterframework.senders.IbisLocalSender",
+				"nl.nn.adapterframework.senders.LogSender",
+				"nl.nn.adapterframework.senders.ParallelSenders",
+				"nl.nn.adapterframework.senders.SenderSeries",
+				"nl.nn.adapterframework.senders.SenderWrapper",
+				"nl.nn.adapterframework.senders.XsltSender",
+				"nl.nn.adapterframework.senders.CommandSender",
+				"nl.nn.adapterframework.senders.FixedResultSender",
+				"nl.nn.adapterframework.senders.JavascriptSender",
+				"nl.nn.adapterframework.jdbc.MessageStoreSender",
+				"nl.nn.adapterframework.senders.ReloadSender",
+				"nl.nn.adapterframework.compression.ZipWriterSender",
+				"nl.nn.adapterframework.senders.LocalFileSystemSender"
+		));
+
+		private static final HashSet<String> ignoredSessionKeys = new HashSet(Arrays.asList(
+				"cid",
+				"id",
+				"key",
+				"messageId",
+				"originalMessage",
+				"tcid",
+				"tsReceived"
+		));
+
+		private File scenarioFile = null, commonFile = null;
+		Path resultFolder, scenarioFolder = null;
+		private String suffix = "01";
+		FileReader scenarioReader, commonReader;
+		OrderedProperties scenarioProperties, commonProperties;
+		Map<String, String> existingStubs;
+
+		public Scenario(Report report, Path scenarioDir, Path scenario, Path common, String adapterName) {
+			scenarioFile = scenario.toFile();
+			commonFile = common.toFile();
+			FileWriter scenarioWriter, commonWriter;
+			OrderedProperties.OrderedPropertiesBuilder commonBuilder = new OrderedProperties.OrderedPropertiesBuilder();
+			commonBuilder.withOrdering(new CommonPropertiesComparator());
+			commonBuilder.withSuppressDateInComment(true);
+			commonProperties = commonBuilder.build();
+
+			OrderedProperties.OrderedPropertiesBuilder scenarioBuilder = new OrderedProperties.OrderedPropertiesBuilder();
+			scenarioBuilder.withOrdering(new ScenarioPropertiesComparator());
+			scenarioBuilder.withSuppressDateInComment(true);
+			scenarioProperties = scenarioBuilder.build();
+			scenarioProperties.setProperty("scenario.description", "Test scenario for adapter " + adapterName + ", automatically generated based on a ladybug report");
+			scenarioProperties.setProperty("include", "common.properties");
+			String adapterProperty = "adapter." + adapterName;
+			int paramI = 1;
+			int current_step_nr = 0;
+			scenarioProperties.setProperty("step" + ++current_step_nr + "." + adapterProperty + ".write", stepPadding(current_step_nr) + "-" + adapterName + "-in.xml");
+
+			boolean skipUntilEndOfSender = false;
+			String skipUntilEndOfSenderName = "";
+			int skipUntilEndOfSenderLevel = -1;
+			List<Checkpoint> checkpoints = report.getCheckpoints();
+			for (Checkpoint checkpoint : checkpoints) {
+				if (skipUntilEndOfSender) {
+					//If we're currently stubbing a sender, and we haven't reached the end of it yet
+					if (checkpoint.getLevel() == skipUntilEndOfSenderLevel && checkpoint.getType() == Checkpoint.TYPE_ENDPOINT && checkpoint.getName().equals(skipUntilEndOfSenderName)) {
+						skipUntilEndOfSender = false;
+					}
+				} else if (checkpoint.getType() < 3 && checkpoint.getName().startsWith("Sender ")) {
+					if (!ignoredSenders.contains(checkpoint.getSourceClassName())) {
+						//If sender should be stubbed:
+						String senderName = checkpoint.getName().substring(7);
+						String senderProperty = "stub." + senderName;
+						scenarioProperties.setProperty("step" + ++current_step_nr + "." + senderProperty + ".read", stepPadding(current_step_nr) + "-" + senderName + "-in.xml");
+						scenarioProperties.setProperty("step" + ++current_step_nr + "." + senderProperty + ".write", stepPadding(current_step_nr) + "-" + senderName + "-out.xml");
+						//TODO: add stub to common.properties if it doesn't have it yet
+						skipUntilEndOfSender = true;
+						skipUntilEndOfSenderName = senderName;
+						skipUntilEndOfSenderLevel = checkpoint.getLevel();
+					}
+				} else if (checkpoint.getLevel() == 1 && checkpoint.getType() == Checkpoint.TYPE_INPUTPOINT) {
+					//SessionKey for listener found
+					String sessionKeyName = checkpoint.getName().substring(11);
+					if (!ignoredSessionKeys.contains(sessionKeyName)) {
+						scenarioProperties.setProperty(adapterProperty + ".param" + paramI + ".name", sessionKeyName);
+						scenarioProperties.setProperty(adapterProperty + ".param" + paramI + ".value", checkpoint.getMessage());
+						paramI++;
+					}
+				}
+			}
+			scenarioProperties.setProperty("step" + ++current_step_nr + "." + adapterProperty + ".read", stepPadding(current_step_nr) + "-" + adapterName + "-out.xml");
+
+			System.out.println("Scenario file: " + scenario.toAbsolutePath());
+			System.out.println("Common file: " + common.toAbsolutePath());
+			System.out.println("Scenario dir: " + scenarioDir.toAbsolutePath());
+
+			try {
+				scenarioWriter = new FileWriter(scenarioFile);
+				commonWriter = new FileWriter(commonFile);
+				scenarioProperties.store(scenarioWriter, null);
+				commonProperties.store(commonWriter, null);
+			} catch (IOException e) {
+				throw new RuntimeException("Failed to write properties to file", e);
+			}
+		}
+
+		private static String stepPadding(int i) {
+			return String.format("%0" + 2 + "d", i);
+		}
+
+//		private void processStep(int step, Node checkpoint, String endpoint) {
+//			int level = Integer.parseInt(checkpoint.getAttributes().getNamedItem("Level").getTextContent());
+//			boolean startpoint = checkpoint.getAttributes().getNamedItem("Type").getTextContent().equals("Startpoint");
+//			boolean write = (level & 1) != 1;
+//			String message = null;
+//			try {
+//				message = XmlUtils.nodeContentsToString(checkpoint);
+//			} catch (TransformerException e) {
+//				throw new RuntimeException(e);
+//			}
+//			String proxyName = ProxyFactory.getProxy(false, "FF", endpoint).getName();
+//			//create folders and scenario file when step = 1 because step 1 contains the adapter name
+//			if (step == 1) {
+//				inputAdapter = proxyName;
+//				resultFolder = resultFolder.resolve(inputAdapter);
+//				suffix = nextTestSuffix(resultFolder);
+//				String scenarioName = "scenario" + suffix;
+//				scenarioFile = resultFolder.resolve(scenarioName + ".properties").toFile();
+//				commonFile = resultFolder.resolve("common.properties").toFile();
+//				scenarioFolder = resultFolder.resolve(suffix);
+//				scenarioFolder.toFile().mkdirs();
+//				try {
+//					System.out.println(scenarioFile.createNewFile());
+//					System.out.println(commonFile.createNewFile());
+//				} catch (IOException e) {
+//					throw new RuntimeException("Failed to create new test scenario file: ", e);
+//				}
+//				try {
+//					scenarioReader = new FileReader(scenarioFile);
+//					commonReader = new FileReader(commonFile);
+//					scenario.load(scenarioReader);
+//					common.load(commonReader);
+//				} catch (IOException e) {
+//					e.printStackTrace();
+//				}
+//				existingStubs = Map.ofEntries(common.entrySet().stream().filter(property -> {
+//					String key = property.getKey();
+//					return key.startsWith("stub") && key.endsWith("serviceName");
+//				}).map(property -> {
+//					String key = property.getKey();
+//					key = key.substring(0, key.lastIndexOf("."));
+//					return Map.entry(property.getValue().toLowerCase(), key);
+//				}).toArray(Map.Entry[]::new));
+//				scenario.setProperty("scenario.description", "Automatically generated test scenario for " + inputAdapter);
+//				scenario.setProperty("include", "common.properties");
+//				scenario.setProperty("adapter.GetPartyDetails_1.param1.name", "conversationId");
+//				scenario.setProperty("adapter.GetPartyDetails_1.param1.value", "TestId-GetPartyDetails_1");
+//				common.setProperty("adapter." + proxyName + ".className", "nl.nn.adapterframework.senders.IbisJavaSender");
+//				common.setProperty("adapter." + proxyName + ".serviceName", "testtool-" + proxyName);
+//				common.setProperty("adapter." + proxyName + ".convertExceptionToMessage", "true");
+//				List<Map.Entry<String, String>> existingIgnoreValuePairs = getExistingIgnoreValuePairs(common);
+//				int ignoresCount = existingIgnoreValuePairs.size();
+//				for (Map.Entry<String, String> entry : newIgnores) {
+//					if (existingIgnoreValuePairs.contains(entry)) continue;
+//					ignoresCount++;
+//					common.setProperty("ignoreContentBetweenKeys." + ignoresCount + ".key1", entry.getKey());
+//					common.setProperty("ignoreContentBetweenKeys." + ignoresCount + ".key2", entry.getValue());
+//				}
+//			}
+//			String type = "adapter";
+//			String propertyNamePrefix = "adapter.";
+//			if (!proxyName.equals(inputAdapter)) {
+//				type = "stub";
+//				propertyNamePrefix = "stub.Call";
+//				String serviceName = "testtool-Call" + proxyName;
+//				String stubName = propertyNamePrefix + proxyName;
+//				String existingStubName = existingStubs.get(serviceName.toLowerCase());
+//				if (!stubName.equals(existingStubName)) {
+//					existingStubs.put(serviceName.toLowerCase(), stubName);
+//					common.setProperty(stubName + ".className", "nl.nn.adapterframework.receivers.JavaListener");
+//					common.setProperty(stubName + ".serviceName", serviceName);
+//
+//					if (existingStubName != null) {
+//						common.removeProperty(existingStubName + ".className");
+//						common.removeProperty(existingStubName + ".serviceName");
+//						try {
+//							replaceStubName(resultFolder, existingStubName, stubName);
+//						} catch (IOException e) {
+//							System.out.println("Error occured when replacing old stub name [" + existingStubName + "] with new stub name [" + stubName + "]");
+//							throw new RuntimeException(e);
+//						}
+//					}
+//				}
+//			}
+//			String stepPadded = String.format("%0" + 2 + "d", step);
+//			String filename = String.format("%s-%s-%s-%s.xml", stepPadded, type, proxyName, startpoint ? "in" : "out");
+//			scenario.setProperty(
+//					String.format("step%s.%s%s.%s", step, propertyNamePrefix, proxyName, (write ? "write" : "read")),
+//					suffix + "/" + filename);
+//			File messageFile = scenarioFolder.resolve(filename).toFile();
+//			try {
+//				if (messageFile.createNewFile()) {
+//					if (XmlUtils.isWellFormed(message)) {
+//						Files.write(messageFile.toPath(), XmlUtils.transform(new InputSource(new StringReader(message)), "/testScenarioMessageFormatter.xsl").getBytes(StandardCharsets.UTF_8));
+//					} else {
+//						Files.write(messageFile.toPath(), message.getBytes(StandardCharsets.UTF_8));
+//					}
+//				}
+//			} catch (TransformerConfigurationException | ConfigurationException | SAXException | IOException e) {
+//				throw new RuntimeException("Failed to create file for message: ", e);
+//			}
+//		}
+	}
 }
 
 class MetadataComparator implements Comparator<List<Object>> {
