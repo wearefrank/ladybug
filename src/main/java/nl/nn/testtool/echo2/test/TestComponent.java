@@ -16,12 +16,14 @@
 package nl.nn.testtool.echo2.test;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.Map.Entry;
 
+import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.testtool.util.CommonPropertiesComparator;
 import nl.nn.testtool.util.ScenarioPropertiesComparator;
 import nu.studer.java.util.OrderedProperties;
@@ -63,6 +65,12 @@ import nl.nn.testtool.storage.LogStorage;
 import nl.nn.testtool.storage.StorageException;
 import nl.nn.testtool.transform.ReportXmlTransformer;
 import nl.nn.testtool.util.CsvUtil;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+
+import javax.xml.transform.TransformerConfigurationException;
+
+import static nl.nn.testtool.util.XmlUtil.*;
 
 /**
  * @author Jaco de Groot
@@ -1212,16 +1220,22 @@ public class TestComponent extends BaseComponent implements BeanParent, ActionLi
 			String adapterProperty = "adapter." + adapterName;
 			int paramI = 1;
 			int current_step_nr = 0;
+			List<Checkpoint> checkpoints = report.getCheckpoints();
 			scenarioProperties.setProperty("step" + ++current_step_nr + "." + adapterProperty + ".write", stepPadding(current_step_nr) + "-" + adapterName + "-in.xml");
+			createInputOutputFile(scenarioDir, current_step_nr, "adapter", adapterName, true, checkpoints.get(0).getMessage());
+			commonProperties.setProperty(adapterProperty + ".className", "nl.nn.adapterframework.senders.IbisJavaSender");
+			commonProperties.setProperty(adapterProperty + ".serviceName", "testtool-" + adapterName);
+			commonProperties.setProperty(adapterProperty + ".convertExceptionToMessage", "true");
 
 			boolean skipUntilEndOfSender = false;
 			String skipUntilEndOfSenderName = "";
 			int skipUntilEndOfSenderLevel = -1;
-			List<Checkpoint> checkpoints = report.getCheckpoints();
+
 			for (Checkpoint checkpoint : checkpoints) {
 				if (skipUntilEndOfSender) {
 					//If we're currently stubbing a sender, and we haven't reached the end of it yet
 					if (checkpoint.getLevel() == skipUntilEndOfSenderLevel && checkpoint.getType() == Checkpoint.TYPE_ENDPOINT && checkpoint.getName().equals(skipUntilEndOfSenderName)) {
+						createInputOutputFile(scenarioDir, current_step_nr, "stub", checkpoint.getName().substring(7), false, checkpoint.getMessage());
 						skipUntilEndOfSender = false;
 					}
 				} else if (checkpoint.getType() < 3 && checkpoint.getName().startsWith("Sender ")) {
@@ -1230,8 +1244,28 @@ public class TestComponent extends BaseComponent implements BeanParent, ActionLi
 						String senderName = checkpoint.getName().substring(7);
 						String senderProperty = "stub." + senderName;
 						scenarioProperties.setProperty("step" + ++current_step_nr + "." + senderProperty + ".read", stepPadding(current_step_nr) + "-" + senderName + "-in.xml");
+						createInputOutputFile(scenarioDir, current_step_nr, "stub", senderName, true, checkpoint.getMessage());
 						scenarioProperties.setProperty("step" + ++current_step_nr + "." + senderProperty + ".write", stepPadding(current_step_nr) + "-" + senderName + "-out.xml");
-						//TODO: add stub to common.properties if it doesn't have it yet
+
+						String serviceName = "testtool-Call" + senderName;
+						String existingStubName = existingStubs.get(serviceName.toLowerCase());
+						if (!senderProperty.equals(existingStubName)) {
+							existingStubs.put(serviceName.toLowerCase(), senderProperty);
+							commonProperties.setProperty(senderProperty + ".className", "nl.nn.adapterframework.receivers.JavaListener");
+							commonProperties.setProperty(senderProperty + ".serviceName", serviceName);
+
+							if (existingStubName != null) {
+								commonProperties.removeProperty(existingStubName + ".className");
+								commonProperties.removeProperty(existingStubName + ".serviceName");
+								try {
+									replaceStubName(resultFolder, existingStubName, senderProperty);
+								} catch (IOException e) {
+									System.out.println("Error occured when replacing old stub name [" + existingStubName + "] with new stub name [" + senderProperty + "]");
+									throw new RuntimeException(e);
+								}
+							}
+						}
+
 						skipUntilEndOfSender = true;
 						skipUntilEndOfSenderName = senderName;
 						skipUntilEndOfSenderLevel = checkpoint.getLevel();
@@ -1247,6 +1281,7 @@ public class TestComponent extends BaseComponent implements BeanParent, ActionLi
 				}
 			}
 			scenarioProperties.setProperty("step" + ++current_step_nr + "." + adapterProperty + ".read", stepPadding(current_step_nr) + "-" + adapterName + "-out.xml");
+			createInputOutputFile(scenarioDir, current_step_nr, "adapter", adapterName, false, checkpoints.get(checkpoints.size() - 1).getMessage());
 
 			System.out.println("Scenario file: " + scenario.toAbsolutePath());
 			System.out.println("Common file: " + common.toAbsolutePath());
@@ -1259,6 +1294,41 @@ public class TestComponent extends BaseComponent implements BeanParent, ActionLi
 				commonProperties.store(commonWriter, null);
 			} catch (IOException e) {
 				throw new RuntimeException("Failed to write properties to file", e);
+			}
+		}
+
+		private static void replaceStubName(Path folder, String oldStubName, String newStubName) throws IOException {
+			if (oldStubName.equals(newStubName)) {
+				return;
+			}
+			File[] scenarios = folder.toFile().listFiles((dir, name) -> name.matches("scenario\\d*\\.properties"));
+			for (File scenario : scenarios) {
+				List<String> result = Files.readAllLines(scenario.toPath());
+				boolean changed = false;
+				for (int i = 0; i < result.size(); i++) {
+					String line = result.get(i);
+					if (line.contains(oldStubName + ".read") || line.contains(oldStubName + ".write")) {
+						result.set(i, line.replace(oldStubName, newStubName));
+						changed = true;
+					}
+				}
+				if (changed) Files.write(scenario.toPath(), result);
+			}
+		}
+
+		private static void createInputOutputFile(Path folder, int step, String type, String name, boolean startpoint, String message) {
+			String filename = String.format("%s-%s-%s-%s.xml", stepPadding(step), type, name, startpoint ? "in" : "out");
+			File messageFile = folder.resolve(filename).toFile();
+			try {
+				if (messageFile.createNewFile()) {
+					if (isXml(message)) {
+						Files.write(messageFile.toPath(), transform(new InputSource(new StringReader(message)), "/ladybug/testScenarioMessageFormatter.xsl").getBytes(StandardCharsets.UTF_8));
+					} else {
+						Files.write(messageFile.toPath(), message.getBytes(StandardCharsets.UTF_8));
+					}
+				}
+			} catch (TransformerConfigurationException | ConfigurationException | SAXException | IOException e) {
+				throw new RuntimeException("Failed to create file for message: ", e);
 			}
 		}
 
