@@ -1,5 +1,5 @@
 /*
-   Copyright 2020, 2022 WeAreFrank!, 2018 Nationale-Nederlanden
+   Copyright 2020, 2022-2023 WeAreFrank!, 2018 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import lombok.Setter;
 import nextapp.echo2.app.ContentPane;
 import nl.nn.testtool.TestTool;
 import nl.nn.testtool.echo2.BeanParent;
+import nl.nn.testtool.extensions.CustomReportAction;
 import nl.nn.testtool.storage.CrudStorage;
 import nl.nn.testtool.storage.LogStorage;
 import nl.nn.testtool.transform.ReportXmlTransformer;
@@ -34,6 +35,8 @@ public class InfoPane extends ContentPane implements BeanParent {
 	private @Setter LogStorage debugStorage;
 	private @Setter CrudStorage testStorage;
 	private @Setter ReportXmlTransformer reportXmlTransformer;
+	private @Setter CustomReportAction customReportAction;
+
 	private TestComponent testComponent;
 	private BeanParent beanParent;
 
@@ -52,6 +55,7 @@ public class InfoPane extends ContentPane implements BeanParent {
 		testComponent.setDebugStorage(debugStorage);
 		testComponent.setTestStorage(testStorage);
 		testComponent.setReportXmlTransformer(reportXmlTransformer);
+		testComponent.setCustomReportAction(customReportAction);
 
 		// Init
 
