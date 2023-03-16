@@ -1,5 +1,5 @@
 /*
-   Copyright 2020-2022 WeAreFrank!, 2018 Nationale-Nederlanden
+   Copyright 2020-2023 WeAreFrank!, 2018 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import nextapp.echo2.extras.app.layout.TabPaneLayoutData;
 import nl.nn.testtool.TestTool;
 import nl.nn.testtool.echo2.test.InfoPane;
 import nl.nn.testtool.echo2.test.TreePane;
+import nl.nn.testtool.extensions.CustomReportAction;
 import nl.nn.testtool.storage.CrudStorage;
 import nl.nn.testtool.storage.LogStorage;
 import nl.nn.testtool.transform.ReportXmlTransformer;
@@ -39,6 +40,8 @@ public class TestPane extends Tab implements BeanParent {
 	private @Inject @Autowired LogStorage debugStorage;
 	private @Inject @Autowired CrudStorage testStorage;
 	private @Inject @Autowired ReportXmlTransformer reportXmlTransformer;
+	private @Inject @Autowired CustomReportAction customReportAction;
+
 	private TreePane treePane;
 	private InfoPane infoPane;
 
@@ -80,6 +83,7 @@ public class TestPane extends Tab implements BeanParent {
 		infoPane.setDebugStorage(debugStorage);
 		infoPane.setTestStorage(testStorage);
 		infoPane.setReportXmlTransformer(reportXmlTransformer);
+		infoPane.setCustomReportAction(customReportAction);
 
 		// Init
 
