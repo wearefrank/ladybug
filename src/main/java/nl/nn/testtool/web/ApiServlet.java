@@ -30,7 +30,7 @@ import org.springframework.context.event.ContextRefreshedEvent;
 
 public class ApiServlet extends CXFServlet {
 	private static final long serialVersionUID = 1L;
-	public static final String LADYBUG_API_PATH = "ladybug-api";
+	public static final String LADYBUG_API_PATH = "ladybug-api"; // See comment in doRequest() method below
 
 	/**
 	 * Static method that can be used to set the default mapping when creating this servlet programmatically instead of
@@ -127,16 +127,27 @@ public class ApiServlet extends CXFServlet {
 			RequestDispatcher requestDispatcher = request.getRequestDispatcher(pathInfo);
 			requestDispatcher.forward(requestWrapper, response);
 		} else {
+			HttpServletRequestWrapper requestWrapper = new HttpServletRequestWrapper(request) {
+				@Override
+				public String getQueryString() {
+					String queryString = request.getQueryString();
+					if (queryString == null) {
+						// On WebSphere the query string is removed when a request is forwarded
+						queryString = (String)request.getAttribute("javax.servlet.forward.query_string");
+					}
+					return queryString;
+				}
+			};
 			if (method.equals("GET")) {
-				super.doGet(request, response);
+				super.doGet(requestWrapper, response);
 			} else if (method.equals("POST")) {
-				super.doPost(request, response);
+				super.doPost(requestWrapper, response);
 			} else if (method.equals("PUT")) {
-				super.doPut(request, response);
+				super.doPut(requestWrapper, response);
 			} else if (method.equals("DELETE")) {
-				super.doDelete(request, response);
+				super.doDelete(requestWrapper, response);
 			} else if (method.equals("HEAD")) {
-				super.doHead(request, response);
+				super.doHead(requestWrapper, response);
 			}
 		}
 	}
