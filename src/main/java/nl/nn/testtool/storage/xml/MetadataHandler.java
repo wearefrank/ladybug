@@ -1,5 +1,5 @@
 /*
-   Copyright 2020-2021 WeAreFrank!
+   Copyright 2020-2021, 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,18 +15,14 @@
 */
 package nl.nn.testtool.storage.xml;
 
-import nl.nn.testtool.Report;
-import nl.nn.testtool.storage.StorageException;
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -34,6 +30,14 @@ import java.util.List;
 import java.util.Scanner;
 import java.util.Set;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import nl.nn.testtool.Report;
+import nl.nn.testtool.storage.StorageException;
 
 /**
  * Handles metadata for {@link XmlStorage}.
@@ -239,7 +243,7 @@ public class MetadataHandler {
 			}
 		}
 		List<List<Object>> result = new ArrayList<List<Object>>(metadataMap.size());
-		Iterator<Integer> iterator = metadataMap.keySet().iterator();
+		Iterator<Integer> iterator = getStorageIds().iterator();
 		while (iterator.hasNext() && result.size() < maxNumberOfRecords) {
 			Integer storageId = iterator.next();
 			Metadata m = metadataMap.get(storageId);
@@ -255,7 +259,34 @@ public class MetadataHandler {
 	}
 
 	public List<Integer> getStorageIds() {
-		return new ArrayList<>(metadataMap.keySet());
+		List<Key> keys = metadataMap.values().stream()
+				.map(Key::new)
+				.collect(Collectors.toList());
+		Collections.sort(keys);
+		return keys.stream().map(Key::getStorageId).collect(Collectors.toList());
+	}
+
+	private class Key implements Comparable<Key> {
+		private final String name;
+		private final Integer storageId;
+
+		Key(Metadata metadata) {
+			this.name = metadata.name;
+			this.storageId = metadata.storageId;
+		}
+
+		public Integer getStorageId() {
+			return storageId;
+		}
+
+		@Override
+		public int compareTo(Key other) {
+			int result = Comparator.nullsFirst(Comparator.<String>naturalOrder()).compare(name, other.name);
+			if(result == 0) {
+				result = storageId.compareTo(other.storageId);
+			}
+			return result;
+		}
 	}
 
 	public int getSize() {
