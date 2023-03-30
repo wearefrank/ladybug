@@ -40,7 +40,7 @@ public class TestPane extends Tab implements BeanParent {
 	private @Inject @Autowired LogStorage debugStorage;
 	private @Inject @Autowired CrudStorage testStorage;
 	private @Inject @Autowired ReportXmlTransformer reportXmlTransformer;
-	private @Inject @Autowired CustomReportAction customReportAction;
+	private @Inject @Autowired(required = false) CustomReportAction customReportAction;
 
 	private TreePane treePane;
 	private InfoPane infoPane;
