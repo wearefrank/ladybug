@@ -67,8 +67,12 @@ public class StatusMetadataFieldExtractor extends DefaultValueMetadataFieldExtra
 				status = (String) delegate.extractMetadata(report);
 			}
 		}
-		if((maxLength > 0) && (status.length() > maxLength)) {
-			status = status.substring(0, maxLength);
+		if(maxLength > 0){
+			if(status != null){
+				if(status.length() > maxLength){
+					status = status.substring(0, maxLength);
+				}
+			}
 		}
 		return status;
 	}
