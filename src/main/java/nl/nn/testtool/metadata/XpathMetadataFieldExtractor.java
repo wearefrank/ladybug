@@ -1,5 +1,5 @@
 /*
-   Copyright 2020, 2022 WeAreFrank!, 2018 Nationale-Nederlanden
+   Copyright 2020, 2022, 2023 WeAreFrank!, 2018 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -23,10 +23,12 @@ import java.util.List;
 import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import nl.nn.testtool.Checkpoint;
+import nl.nn.testtool.MetadataFieldExtractor;
 import nl.nn.testtool.Report;
 import nl.nn.testtool.util.XmlUtil;
 
@@ -38,6 +40,7 @@ public class XpathMetadataFieldExtractor extends DefaultValueMetadataFieldExtrac
 	protected String xpath;
 	protected XPathExpression xpathExpression;
 	protected String extractFrom = "first";
+	private MetadataFieldExtractor delegate = null;
 
 	public void setXpath(String xpath) throws XPathExpressionException {
 		this.xpath = xpath;
@@ -50,6 +53,15 @@ public class XpathMetadataFieldExtractor extends DefaultValueMetadataFieldExtrac
 
 	public void setExtractFrom(String extractFrom) {
 		this.extractFrom = extractFrom;
+	}
+
+	/**
+	 * If there was no abort then calculate the status from the delegate MetadataFieldextractor.
+	 * 
+	 * @param delegate ...
+	 */
+	public void setDelegate(MetadataFieldExtractor delegate) {
+		this.delegate = delegate;
 	}
 
 	public Object extractMetadata(Report report) {
@@ -73,6 +85,12 @@ public class XpathMetadataFieldExtractor extends DefaultValueMetadataFieldExtrac
 			if (message != null) {
 				try { 
 					value = xpathExpression.evaluate(XmlUtil.createXmlSourceFromString(message));
+					if(StringUtils.isBlank(value) && (delegate != null)) {
+						value = (String) delegate.extractMetadata(report);
+					}
+					if(StringUtils.isBlank(value) && (defaultValue != null)) {
+						value = defaultValue;
+					}
 				} catch (XPathExpressionException e) {
 					log.debug("The message probably isn't in XML format", e);
 				}

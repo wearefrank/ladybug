@@ -1,5 +1,5 @@
 /*
-   Copyright 2020-2022 WeAreFrank!, 2018-2019 Nationale-Nederlanden
+   Copyright 2020-2023 WeAreFrank!, 2018-2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -57,6 +57,8 @@ import nl.nn.testtool.echo2.reports.ReportUploadListener;
 import nl.nn.testtool.echo2.reports.ReportsComponent;
 import nl.nn.testtool.echo2.util.Download;
 import nl.nn.testtool.echo2.util.PopupWindow;
+import nl.nn.testtool.extensions.CustomReportAction;
+import nl.nn.testtool.extensions.CustomReportActionResult;
 import nl.nn.testtool.run.ReportRunner;
 import nl.nn.testtool.run.RunResult;
 import nl.nn.testtool.storage.CrudStorage;
@@ -86,9 +88,9 @@ public class TestComponent extends BaseComponent implements BeanParent, ActionLi
 	private int numberOfComponentsToSkipForRowManipulation = 0;
 	private String lastDisplayedPath;
 	private BeanParent beanParent;
-
 	private TextArea cloneGenerationTextArea;
 	private Label reportGenerationWarningLabel;
+	private CustomReportAction customReportAction;
 
 	private final int INDEX_CHECKBOX = 0;
 	private final int INDEX_RUN_BUTTON = 1;
@@ -107,7 +109,7 @@ public class TestComponent extends BaseComponent implements BeanParent, ActionLi
 	private CheckBox showCheckpointIdsCheckbox;
 	private boolean showReportStorageIds;
 	private boolean showCheckpointIds;
-	
+
 	public TestComponent() {
 		super();
 	}
@@ -126,6 +128,10 @@ public class TestComponent extends BaseComponent implements BeanParent, ActionLi
 
 	public void setReportXmlTransformer(ReportXmlTransformer reportXmlTransformer) {
 		this.reportXmlTransformer = reportXmlTransformer;
+	}
+
+	public void setCustomReportAction(CustomReportAction customReportAction) {
+		this.customReportAction = customReportAction;
 	}
 
 	/**
@@ -252,6 +258,14 @@ public class TestComponent extends BaseComponent implements BeanParent, ActionLi
 		Echo2Application.decorateButton(prepareUploadButton);
 		prepareUploadButton.addActionListener(this);
 		buttonRow.add(prepareUploadButton);
+
+		if (customReportAction != null) {
+			Button customReportActionButton = new Button(customReportAction.getButtonText());
+			customReportActionButton.setActionCommand("CustomReportAction");
+			Echo2Application.decorateButton(customReportActionButton);
+			customReportActionButton.addActionListener(this);
+			buttonRow.add(customReportActionButton);
+		}
 
 		progressBar = new ProgressBar();
 		buttonRow.add(progressBar);
@@ -664,6 +678,25 @@ public class TestComponent extends BaseComponent implements BeanParent, ActionLi
 			displayAndLogError(Download.download(testStorage));
 		} else if (e.getActionCommand().equals("OpenUploadWindow")) {
 			uploadWindow.setVisible(true);
+		} else if (e.getActionCommand().equals("CustomReportAction")) {
+			String errorMessage = null;
+			if (minimalOneSelected()) {
+				List<Report> reports = new ArrayList<Report>();
+				for (Row row : getReportRows()) {
+					CheckBox checkbox = (CheckBox)row.getComponent(INDEX_CHECKBOX);
+					if (checkbox.isSelected() && errorMessage == null) {
+						Report report = getReport(row);
+						reports.add(report);
+					}
+				}
+				CustomReportActionResult customReportActionResult = customReportAction.handleReports(reports);
+				if (customReportActionResult.getSuccessMessage() != null) {
+					displayOkay(customReportActionResult.getSuccessMessage());
+				}
+				if (customReportActionResult.getErrorMessage() != null) {
+					displayError(customReportActionResult.getErrorMessage());
+				}
+			}
 		} else if (e.getActionCommand().equals("OpenOptionsWindow")) {
 			optionsWindow.setVisible(true);
 		} else if (e.getActionCommand().equals("ToggleReportStorageIds")) {

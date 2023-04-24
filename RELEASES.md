@@ -6,6 +6,8 @@ Ladybug Test Tool release notes
 Upcoming (2.3)
 --------------
 
+- Fix new GUI not working on WebSphere
+- Add CustomReportAction
 - Fix open report on sorted table
 - Fix removeThreadCreatepoint() causing incorrect order of checkpoints and IndexOutOfBoundsException
 - Log thread info in CloseReportsTask
