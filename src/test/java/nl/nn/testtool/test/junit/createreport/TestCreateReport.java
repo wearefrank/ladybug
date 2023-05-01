@@ -791,6 +791,21 @@ public class TestCreateReport extends ReportRelatedTestCase {
 	}
 
 	@Test
+	public void testMaxCheckpointsWithCloseThread() {
+		testTool.setMaxCheckpoints(1);
+		String correlationId = getCorrelationId();
+		String childThreadName1 = "child-1";
+		testTool.startpoint(correlationId, null, reportName, "startmessage");
+		testTool.threadCreatepoint(correlationId, childThreadName1);
+		// Will give IndexOutOfBoundsException when removeThreadCreatepoint() doesn't check index < checkpoints.size()
+		testTool.close(correlationId, childThreadName1);
+		testTool.endpoint(correlationId, null, reportName, "endmessage");
+		assertWarningInLog(listAppender,
+				"Maximum number of checkpoints (1) exceeded, ignored checkpoint (name: Waiting for thread 'child-1' to start..., type: ThreadCreatepoint, level: 1, correlationId: "
+				+ correlationId + ") (next checkpoints for this report will be ignored without any logging)");
+	}
+
+	@Test
 	public void testStreamsWithReaderAndInputStream() throws IOException, StorageException {
 		String correlationId = getCorrelationId();
 		int maxMessageLength = 15;

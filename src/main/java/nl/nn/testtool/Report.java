@@ -398,11 +398,15 @@ public class Report implements Serializable {
 	 */
 	private void removeThreadCreatepoint(int index, String childThreadId) {
 		if (threadsWithThreadCreatepoint.remove(childThreadId)) {
-			checkpoints.remove(index);
-			for (int i = threads.indexOf(childThreadId) + 1; i < threads.size(); i++) {
-				String key = threads.get(i);
-				Integer value = threadCheckpointIndex.get(key);
-				threadCheckpointIndex.put(key, value - 1);
+			// When testTool.getMaxCheckpoints() or testTool.getMaxMemoryUsage() is reached method threadCreatepoint()
+			// will still be called but no checkpoint is added, hence check index < checkpoints.size()
+			if (index < checkpoints.size()) {
+				checkpoints.remove(index);
+				for (int i = threads.indexOf(childThreadId) + 1; i < threads.size(); i++) {
+					String key = threads.get(i);
+					Integer value = threadCheckpointIndex.get(key);
+					threadCheckpointIndex.put(key, value - 1);
+				}
 			}
 		}
 	}

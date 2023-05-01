@@ -6,6 +6,7 @@ Ladybug Test Tool release notes
 Upcoming (2.3)
 --------------
 
+- Fix IndexOutOfBoundsException when max checkpoints or memory usage reached and a thread is closed
 - Fix new GUI not working on WebSphere
 - Add CustomReportAction
 - Fix open report on sorted table
