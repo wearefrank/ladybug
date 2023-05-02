@@ -186,6 +186,14 @@ proxy.
 
 When the tests are running, you will see the ibis-ladybug GUI. The GUI will show the effects of the commands that are applied by the tests.
 
+Quarkus
+=====
+To see how to run the backend for Quarkus, please see [Quarkus backend](https://github.com/ibissource/ladybug-quarkus#demo-and-test-ladybug-in-quarkus).\
+For the frontend, do the following:
+ - Check out of the branch [Quarkus configuration](https://github.com/ibissource/ladybug-frontend/tree/quarkus-configuration)
+ - Run `ng serve --open` or run `ng serve` and navigate to [localhost/ladybug](http://localhost/ladybug/)
+ - NOTE: It is important to note that running a report in the test tab is not yet possible with Quarkus
+
 Create and publish NPM package and WebJar
 ========================================
 
@@ -203,17 +211,19 @@ Create and publish NPM package and WebJar
     - README.md
     - LICENSE
     - package.json
-- In the `dist/ladybug/index.html` change the types of the three scripts on line 15 to `application/javascript` (so module -> application/javascript). The specific scripts are:
+- In the `dist/ladybug/index.html` change the types of the three scripts on line 15 to `application/javascript` (so `type="module"` -> `type="application/javascript"`). The specific scripts are:
   - `runtime.e3a101410a4894ca.js`
   - `polyfills.42dedf2fcdca615b.js`
   - `main.134a36bdfc8f0ad9.js`
-- Remove the `dependencies` and `devDependencies` from the copied `package.json` (`dist/ladybug/package.json`). Make sure you do not remove them from the original `package.json`.
+- In the copied `package.json` (`dist/ladybug/package.json`) do the following:
+  - Remove the contents of `dependencies` and `devDependencies`
+  - Update the `prepare` script to be `cd ../.. && husky install`
 - Navigate to `dist/ladybug` in your terminal
-- In that directory, update `package.json`. Update the `prepare` script to be: `cd ../.. && husky install`.
-- Run `npm publish`
-- Run `git tag vX.Y.Z`, with X.Y.Z being the latest version of the package, which you can find in your `package.json` (for example `0.0.12`)
-- Run `git push origin vX.Y.Z`, with X.Y.Z being the version you just specified.
-- You have now published the NPM package
+- Run the following commands in order:
+  - `npm publish`
+  - `git tag vX.Y.Z`, with X.Y.Z being the latest version of the package, which you can find in your `package.json` (for example `0.0.12`)
+  - `git push origin vX.Y.Z`, with X.Y.Z being the version you just specified.
+- You have now successfully published the NPM package
 
 ### Creating and publishing WebJar
 - Navigate to [WebJars](https://webjars.org)
