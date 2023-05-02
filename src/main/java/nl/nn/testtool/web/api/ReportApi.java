@@ -49,11 +49,14 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import lombok.Setter;
+import nl.nn.testtool.Checkpoint;
 import nl.nn.testtool.MetadataExtractor;
 import nl.nn.testtool.Report;
 import nl.nn.testtool.TestTool;
 import nl.nn.testtool.echo2.test.TestComponent;
 import nl.nn.testtool.echo2.util.Upload;
+import nl.nn.testtool.filter.View;
+import nl.nn.testtool.filter.Views;
 import nl.nn.testtool.storage.CrudStorage;
 import nl.nn.testtool.storage.Storage;
 import nl.nn.testtool.storage.StorageException;
@@ -67,6 +70,7 @@ public class ReportApi extends ApiBase {
 	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 	private @Setter @Inject @Autowired TestTool testTool;
 	private @Setter @Inject @Autowired ReportXmlTransformer reportXmlTransformer;
+	private @Setter @Inject @Autowired Views views;
 
 	/**
 	 * Returns the report details for the given storage and id.
@@ -107,7 +111,55 @@ public class ReportApi extends ApiBase {
 	}
 
 	/**
-	 * Returns the report details for the given storage and id.
+	 * Get a list of uids for the checkpoints of a specific report. Currently only implementing getting the uids of the
+	 * checkpoints to show or hide according to a specific view (trying to apply the best practice that path params are
+	 * used to identify a specific resource or resources, while query parameters are used to sort/filter those resources
+	 * (see https://stackoverflow.com/questions/30967822/when-do-i-use-path-params-vs-query-params-in-a-restful-api)
+	 * 
+	 * @param storageName ...
+	 * @param storageId   ...
+	 * @param viewName    name of the view that determines which checkpoints to show/return and which to hide/exclude
+	 * @param invert      when true return the checkpoints to hide and exclude the checkpoint to show
+	 * @return            ...
+	 */
+	@GET
+	@Path("/{storage}/{storageId}/checkpoints/uids")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response getCheckpointUids(	@PathParam("storage") String storageName,
+										@PathParam("storageId") int storageId,
+										@QueryParam("view") String viewName,
+										@QueryParam("invert") boolean invert
+										) {
+		try {
+			Storage storage = testTool.getStorage(storageName);
+			Report report = getReport(storage, storageId);
+			if (report == null)
+				return Response.status(Response.Status.NOT_FOUND).entity("Could not find report with id [" + storageId + "]").build();
+			List<String> response = new ArrayList<String>();
+			for (View view : views) {
+				if (view.getName().equals(viewName)) {
+					for (Checkpoint checkpoint : report.getCheckpoints()) {
+						if (view.showCheckpoint(report, checkpoint)) {
+							if (!invert) {
+								response.add(checkpoint.getUid());
+							}
+						} else {
+							if (invert) {
+								response.add(checkpoint.getUid());
+							}
+						}
+					}
+					break;
+				}
+			}
+			return Response.ok(response).build();
+		} catch (Exception e) {
+			return Response.status(Response.Status.NOT_FOUND).entity("Exception while getting report [" + storageId + "] from storage [" + storageName + "] - detailed error message - " + e + Arrays.toString(e.getStackTrace())).build();
+		}
+	}
+
+	/**
+	 * Returns the reports for the given storage and ids.
 	 *
 	 * @param storageName Name of the storage.
 	 * @param storageIds Storage id of the report.
