@@ -235,7 +235,7 @@ public class CheckpointComponent extends MessageComponent {
 		}
 		messageIsStubbedLabel.setVisible(checkpoint.isStubbed());
 		if (checkpoint.getStubNotFound() != null) {
-			messageStubNotFoundLabel.setText("Could not find stub message for '" + checkpoint.getStubNotFound());
+			messageStubNotFoundLabel.setText("Could not find stub message for " + checkpoint.getStubNotFound());
 			messageStubNotFoundLabel.setVisible(true);
 		} else {
 			messageStubNotFoundLabel.setVisible(false);

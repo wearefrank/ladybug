@@ -1,5 +1,5 @@
 /*
-   Copyright 2020-2022 WeAreFrank!, 2018 Nationale-Nederlanden
+   Copyright 2020-2023 WeAreFrank!, 2018 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -121,7 +121,8 @@ public class TreePane extends ContentPane implements TreeSelectionListener {
 			while (resultNode == null && enumeration.hasMoreElements()) {
 				DefaultMutableTreeNode currentNode = (DefaultMutableTreeNode)enumeration.nextElement();
 				Checkpoint currentCheckpoint = (Checkpoint)currentNode.getUserObject();
-				if (currentCheckpoint.getPath().equals(checkpoint.getPath())) {
+				if (currentCheckpoint.getPath().equals(checkpoint.getPath())
+						&& currentCheckpoint.getType() == checkpoint.getType()) {
 					resultNode = currentNode;
 				}
 			}

@@ -16,6 +16,7 @@
 package nl.nn.testtool;
 
 import java.beans.ExceptionListener;
+import java.beans.Transient;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
@@ -87,6 +88,7 @@ public class Checkpoint implements Serializable, Cloneable {
 	private int stub = STUB_FOLLOW_REPORT_STRATEGY;
 	private boolean stubbed = false;
 	private String stubNotFound;
+	private transient boolean originalCheckpointFound = false;
 	private int preTruncatedMessageLength = -1;
 	private transient Map<String, Pattern> variablePatternMap;
 
@@ -445,6 +447,18 @@ public class Checkpoint implements Serializable, Cloneable {
 
 	public String getStubNotFound() {
 		return stubNotFound;
+	}
+
+	@Transient
+	@JsonIgnore
+	public void setOriginalCheckpointFound(boolean originalCheckpointFound) {
+		this.originalCheckpointFound = originalCheckpointFound;
+	}
+
+	@Transient
+	@JsonIgnore
+	public boolean isOriginalCheckpointFound() {
+		return originalCheckpointFound;
 	}
 
 	@JsonIgnore

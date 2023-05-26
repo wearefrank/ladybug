@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021, 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 package nl.nn.testtool.test.junit.util;
 
 import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -69,6 +70,7 @@ public class TestExport {
 						method.invoke(report, defaultValue + name.length());
 					}
 				} else if (method.getParameters()[0].getType() == boolean.class) {
+					assertIsMethodAvailable(isMethods, name);
 					Boolean defaultValue = (Boolean)isMethods.get(name).invoke(report, new Object[0]);
 					if (defaultValue) {
 						method.invoke(report, false);
@@ -115,6 +117,7 @@ public class TestExport {
 					Integer defaultValue = (Integer)getMethods.get(name).invoke(checkpoint, new Object[0]);
 					method.invoke(checkpoint, defaultValue + name.length());
 				} else if (method.getParameters()[0].getType() == boolean.class) {
+					assertIsMethodAvailable(isMethods, name);
 					Boolean defaultValue = (Boolean)isMethods.get(name).invoke(checkpoint, new Object[0]);
 					if (defaultValue) {
 						method.invoke(checkpoint, false);
@@ -155,6 +158,10 @@ public class TestExport {
 				}
 			}
 		}
+	}
+
+	private static void assertIsMethodAvailable(Map<String, Method> isMethods, String name) {
+		assertNotNull(isMethods.get(name), "No is method available for " + name + " (maybe a get instead of is method was used)");
 	}
 
 	// TODO: We have too many boolean arguments, not clear. We can make a new class, say XmlComparator,

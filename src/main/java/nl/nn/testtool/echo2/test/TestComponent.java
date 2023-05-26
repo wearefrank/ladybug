@@ -46,6 +46,7 @@ import nextapp.echo2.app.event.ActionListener;
 import nextapp.echo2.app.filetransfer.UploadSelect;
 import nl.nn.testtool.Checkpoint;
 import nl.nn.testtool.MetadataExtractor;
+import nl.nn.testtool.Path;
 import nl.nn.testtool.Report;
 import nl.nn.testtool.TestTool;
 import nl.nn.testtool.echo2.BaseComponent;
@@ -563,22 +564,44 @@ public class TestComponent extends BaseComponent implements BeanParent, ActionLi
 					errorLabel.setText("Result report not found. Report generator not enabled?");
 					errorLabel.setVisible(true);
 				} else {
-					if(report != null) {
-						int stubbed = 0;
-						// Don't count first checkpoint which is always used as input (stub property on this checkpoint
-						// doesn't influence behavior).
-						boolean first = true;
-						for (Checkpoint checkpoint : runResultReport.getCheckpoints()) {
-							if (first) {
-								first = false;
-							} else if (checkpoint.isStubbed()) {
-								stubbed++;
+					if (report != null) {
+						int stubbedOrig = 0;
+						for (Checkpoint checkpoint : report.getCheckpoints()) {
+							if (checkpoint.isStubbed()) {
+								stubbedOrig++;
 							}
 						}
-						int total = runResultReport.getCheckpoints().size() - 1;
-						String stubInfo = " (" + stubbed + "/" + total + " stubbed)";
-						resultLabel.setText("(" + (report.getEndTime() - report.getStartTime()) + " >> "
-								+ (runResultReport.getEndTime() - runResultReport.getStartTime()) + " ms)" + stubInfo);
+						int stubbedResult = 0;
+						int noStubInOriginalReport = 0;
+						int correlated = 0;
+						for (Checkpoint checkpoint : runResultReport.getCheckpoints()) {
+							if (checkpoint.isStubbed()) {
+								stubbedResult++;
+							}
+							if (checkpoint.getStubNotFound() != null) {
+								noStubInOriginalReport++;
+							}
+							if (checkpoint.isOriginalCheckpointFound()) {
+								correlated++;
+							}
+						}
+						int totalOrig = report.getCheckpoints().size();
+						int totalResult = runResultReport.getCheckpoints().size();
+						int total = totalOrig;
+						if (totalResult > totalOrig) {
+							total = totalResult;
+						}
+						String info = "(" + (report.getEndTime() - report.getStartTime()) + " >> "
+								+ (runResultReport.getEndTime() - runResultReport.getStartTime()) + " ms)"
+								+ " (" + stubbedOrig + "/" + totalOrig + " >> " + stubbedResult + "/" + totalResult + " stubbed)"
+								+ " (" + correlated + "/" + total + " correlated)";
+						if (noStubInOriginalReport > 0) {
+							info = info + " Stub message not found in original report for " + noStubInOriginalReport + " checkpoint";
+							if (noStubInOriginalReport > 1) {
+								info = info + "s";
+							}
+						}
+						resultLabel.setText(info);// + stubsNotFound);
 						report.setGlobalReportXmlTransformer(reportXmlTransformer);
 						runResultReport.setGlobalReportXmlTransformer(reportXmlTransformer);
 						runResultReport.setTransformation(report.getTransformation());

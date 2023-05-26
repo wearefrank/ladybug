@@ -500,8 +500,8 @@ public class Report implements Serializable {
 		boolean stub = false;
 		if (originalReport != null) {
 			Path path = checkpoint.getPath(true);
-			Checkpoint originalCheckpoint = (Checkpoint)originalReport.getCheckpoint(path);
-			if (originalCheckpoint == null) {
+			Checkpoint originalCheckpoint = originalReport.getCheckpoint(path);
+			if (originalCheckpoint == null || originalCheckpoint.getType() != checkpoint.getType()) {
 				if (matchingStubStrategies != null) {
 					if (matchingStubStrategies.contains(originalReport.getStubStrategy())) {
 						stub = true;
@@ -510,6 +510,7 @@ public class Report implements Serializable {
 					stub = testTool.stub(checkpoint, originalReport.getStubStrategy());
 				}
 			} else {
+				checkpoint.setOriginalCheckpointFound(true);
 				checkpoint.setStub(originalCheckpoint.getStub());
 				if (originalCheckpoint.getStub() == Checkpoint.STUB_FOLLOW_REPORT_STRATEGY) {
 					if (matchingStubStrategies != null) {
