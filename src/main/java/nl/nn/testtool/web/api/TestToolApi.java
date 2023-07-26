@@ -18,6 +18,7 @@ package nl.nn.testtool.web.api;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.ArrayList;
 
@@ -219,7 +220,7 @@ public class TestToolApi extends ApiBase {
 		// Starting from CXF 3.2.0 the setViews() will not be called by Spring when the name of this method is
 		// getViews() instead of getViewsResponse() (with CXF 3.1.18 this was not the case) (maybe Spring's
 		// ExtendedBeanInfo isn't used anymore with newer CXF versions)
-		Map<String, Map<String, Object>> response = new HashMap<String, Map<String, Object>>();
+		LinkedHashMap<String, Map<String, Object>> response = new LinkedHashMap<String, Map<String, Object>>();
 		for (View view : views) {
 			Map<String, Object> map = new HashMap<String, Object>();
 			map.put("storageName", view.getDebugStorage().getName());
