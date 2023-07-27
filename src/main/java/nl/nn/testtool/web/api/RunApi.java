@@ -112,23 +112,44 @@ public class RunApi extends ApiBase {
 
 	private HashMap<String, Object> extractRunResult(Report runResultReport, int storageId, HashMap<Integer, Report> reranReports, ReportRunner runner) {
 		HashMap<String, Object> res = new HashMap<>();
-		int stubbed = 0;
-		boolean first = true;
-		for (Checkpoint checkpoint : runResultReport.getCheckpoints()) {
-			if (first) {
-				first = false;
-			} else if (checkpoint.isStubbed()) {
-				stubbed++;
-			}
-		}
 		Report report = reranReports.get(storageId);
 		report.setGlobalReportXmlTransformer(reportXmlTransformer);
 		runResultReport.setGlobalReportXmlTransformer(reportXmlTransformer);
 
-		res.put("stubbed", stubbed);
-		res.put("total", runResultReport.getCheckpoints().size() - 1);
-		res.put("previousTime", report.getEndTime() - report.getStartTime());
-		res.put("currentTime", runResultReport.getEndTime() - runResultReport.getStartTime());
+		int originalReportStubbed = 0;
+		int resultReportStubbed = 0;
+		int resultReportCorrelated = 0;
+		int noStubInOriginalReport = 0;
+
+		for (Checkpoint checkpoint : report.getCheckpoints()) {
+			if (checkpoint.isStubbed()) {
+				originalReportStubbed++;
+			}
+		}
+
+		for (Checkpoint checkpoint : runResultReport.getCheckpoints()) {
+			if (checkpoint.isStubbed()) {
+				resultReportStubbed++;
+			}
+			if (checkpoint.isOriginalCheckpointFound()) {
+				resultReportStubbed++;
+			}
+			if (checkpoint.getStubNotFound() != null) {
+				noStubInOriginalReport++;
+			}
+		}
+
+		int total = Math.max(report.getCheckpoints().size(), runResultReport.getCheckpoints().size());
+		String info = "(" + (report.getEndTime() - report.getStartTime()) + " >> "
+				+ (runResultReport.getEndTime() - runResultReport.getStartTime()) + " ms) "
+				+ "(" + originalReportStubbed + "/" + report.getCheckpoints().size() + " >> "
+				+ resultReportStubbed + "/" + runResultReport.getCheckpoints().size() + " stubbed) "
+				+ "(" + resultReportCorrelated + "/" + total + " correlated)";
+		if (noStubInOriginalReport > 0) {
+			info += " Stub message not found in original report for " + noStubInOriginalReport + " checkpoint(s)";
+		}
+
+		res.put("info", info);
 		res.put("equal", report.toXml(runner).equals(runResultReport.toXml(runner)));
 		res.put("originalReport", report);
 		res.put("runResultReport", runResultReport);
