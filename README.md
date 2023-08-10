@@ -206,6 +206,7 @@ Create and publish NPM package and WebJar
     - In the terminal run the following command `npm login`, which prompts you to log into NPM.
 
 ### Creating and publishing an NPM package
+- Run the command `yarn install --frozen-lockfile`, to sync with changes done by others
 - Run the command `ng build`, to build the current project
 - Copy the following files into the generated `dist/ladybug` folder
     - README.md
@@ -223,7 +224,9 @@ Create and publish NPM package and WebJar
   - `npm publish`
   - `git tag vX.Y.Z`, with X.Y.Z being the latest version of the package, which you can find in your `package.json` (for example `0.0.12`)
   - `git push origin vX.Y.Z`, with X.Y.Z being the version you just specified.
-- You have now successfully published the NPM package
+    - When Chrome cannot be started because the binary is not found: set CHROME_BIN=C:\...\chrome.exe
+    - When Chrome cannot be started (two attempts are done by the command), shut down Chrome (in which probably two tabs have been opened)
+- You have now successfully published the NPM package, see https://www.npmjs.com/package/@wearefrank/ladybug
 
 ### Creating and publishing WebJar
 - Navigate to [WebJars](https://webjars.org)
@@ -232,7 +235,7 @@ Create and publish NPM package and WebJar
 - As package name, type in: `@wearefrank/ladybug`
 - Select the correct version
 - Click on the `Deploy` button to deploy the WebJar. Wait for the Deploy Log to finish (there should be a `Deployed!` somewhere).
-- You have now published the WebJar
+- You have now published the WebJar, see (after a few hours) https://repo.maven.apache.org/maven2/org/webjars/npm/wearefrank__ladybug/
 
 ### Prepare for next cycle
 - Go into the file `ladybug-frontend/package.json` and increment the version number (for example `0.0.12` -> `0.0.13`)
