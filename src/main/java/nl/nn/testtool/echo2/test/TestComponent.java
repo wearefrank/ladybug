@@ -67,6 +67,7 @@ import nl.nn.testtool.storage.LogStorage;
 import nl.nn.testtool.storage.StorageException;
 import nl.nn.testtool.transform.ReportXmlTransformer;
 import nl.nn.testtool.util.CsvUtil;
+import nl.nn.testtool.web.api.RunApi;
 
 /**
  * @author Jaco de Groot
@@ -565,43 +566,7 @@ public class TestComponent extends BaseComponent implements BeanParent, ActionLi
 					errorLabel.setVisible(true);
 				} else {
 					if (report != null) {
-						int stubbedOrig = 0;
-						for (Checkpoint checkpoint : report.getCheckpoints()) {
-							if (checkpoint.isStubbed()) {
-								stubbedOrig++;
-							}
-						}
-						int stubbedResult = 0;
-						int noStubInOriginalReport = 0;
-						int correlated = 0;
-						for (Checkpoint checkpoint : runResultReport.getCheckpoints()) {
-							if (checkpoint.isStubbed()) {
-								stubbedResult++;
-							}
-							if (checkpoint.getStubNotFound() != null) {
-								noStubInOriginalReport++;
-							}
-							if (checkpoint.isOriginalCheckpointFound()) {
-								correlated++;
-							}
-						}
-						int totalOrig = report.getCheckpoints().size();
-						int totalResult = runResultReport.getCheckpoints().size();
-						int total = totalOrig;
-						if (totalResult > totalOrig) {
-							total = totalResult;
-						}
-						String info = "(" + (report.getEndTime() - report.getStartTime()) + " >> "
-								+ (runResultReport.getEndTime() - runResultReport.getStartTime()) + " ms)"
-								+ " (" + stubbedOrig + "/" + totalOrig + " >> " + stubbedResult + "/" + totalResult + " stubbed)"
-								+ " (" + correlated + "/" + total + " correlated)";
-						if (noStubInOriginalReport > 0) {
-							info = info + " Stub message not found in original report for " + noStubInOriginalReport + " checkpoint";
-							if (noStubInOriginalReport > 1) {
-								info = info + "s";
-							}
-						}
-						resultLabel.setText(info);// + stubsNotFound);
+						resultLabel.setText(RunApi.getRunInfo(report, runResultReport));
 						report.setGlobalReportXmlTransformer(reportXmlTransformer);
 						runResultReport.setGlobalReportXmlTransformer(reportXmlTransformer);
 						runResultReport.setTransformation(report.getTransformation());

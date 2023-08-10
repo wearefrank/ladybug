@@ -71,7 +71,7 @@ public class RunApi extends ApiBase {
 		Storage testStorage = testTool.getStorage(testStorageName);
 		List<String> exceptions = new ArrayList<>();
 		ReportRunner runner = getRunner(testTool.getStorage(debugStorageName));
-		HashMap<String, Object> result = new HashMap<>();
+		Map<String, Object> result = new HashMap<>();
 		String exception = null;
 
 		// Reran reports will allow us to keep track of old reran reports. This will later be used in replace and result.
@@ -110,46 +110,14 @@ public class RunApi extends ApiBase {
 		return Response.ok(result).build();
 	}
 
-	private HashMap<String, Object> extractRunResult(Report runResultReport, int storageId, HashMap<Integer, Report> reranReports, ReportRunner runner) {
-		HashMap<String, Object> res = new HashMap<>();
+	private Map<String, Object> extractRunResult(Report runResultReport, int storageId, HashMap<Integer, Report> reranReports, ReportRunner runner) {
+		Map<String, Object> res = new HashMap<>();
 		Report report = reranReports.get(storageId);
 		report.setGlobalReportXmlTransformer(reportXmlTransformer);
 		runResultReport.setGlobalReportXmlTransformer(reportXmlTransformer);
-
-		int originalReportStubbed = 0;
-		int resultReportStubbed = 0;
-		int resultReportCorrelated = 0;
-		int noStubInOriginalReport = 0;
-
-		for (Checkpoint checkpoint : report.getCheckpoints()) {
-			if (checkpoint.isStubbed()) {
-				originalReportStubbed++;
-			}
-		}
-
-		for (Checkpoint checkpoint : runResultReport.getCheckpoints()) {
-			if (checkpoint.isStubbed()) {
-				resultReportStubbed++;
-			}
-			if (checkpoint.isOriginalCheckpointFound()) {
-				resultReportStubbed++;
-			}
-			if (checkpoint.getStubNotFound() != null) {
-				noStubInOriginalReport++;
-			}
-		}
-
-		int total = Math.max(report.getCheckpoints().size(), runResultReport.getCheckpoints().size());
-		String info = "(" + (report.getEndTime() - report.getStartTime()) + " >> "
-				+ (runResultReport.getEndTime() - runResultReport.getStartTime()) + " ms) "
-				+ "(" + originalReportStubbed + "/" + report.getCheckpoints().size() + " >> "
-				+ resultReportStubbed + "/" + runResultReport.getCheckpoints().size() + " stubbed) "
-				+ "(" + resultReportCorrelated + "/" + total + " correlated)";
-		if (noStubInOriginalReport > 0) {
-			info += " Stub message not found in original report for " + noStubInOriginalReport + " checkpoint(s)";
-		}
-
-		res.put("info", info);
+		runResultReport.setTransformation(report.getTransformation());
+		runResultReport.setReportXmlTransformer(report.getReportXmlTransformer());
+		res.put("info", getRunInfo(report, runResultReport));
 		res.put("equal", report.toXml(runner).equals(runResultReport.toXml(runner)));
 		res.put("originalReport", report);
 		res.put("runResultReport", runResultReport);
@@ -267,5 +235,45 @@ public class RunApi extends ApiBase {
 		}
 
 		return runner;
+	}
+
+	public static String getRunInfo(Report report, Report runResultReport) {
+		int stubbedOrig = 0;
+		for (Checkpoint checkpoint : report.getCheckpoints()) {
+			if (checkpoint.isStubbed()) {
+				stubbedOrig++;
+			}
+		}
+		int stubbedResult = 0;
+		int noStubInOriginalReport = 0;
+		int correlated = 0;
+		for (Checkpoint checkpoint : runResultReport.getCheckpoints()) {
+			if (checkpoint.isStubbed()) {
+				stubbedResult++;
+			}
+			if (checkpoint.getStubNotFound() != null) {
+				noStubInOriginalReport++;
+			}
+			if (checkpoint.isOriginalCheckpointFound()) {
+				correlated++;
+			}
+		}
+		int totalOrig = report.getCheckpoints().size();
+		int totalResult = runResultReport.getCheckpoints().size();
+		int total = totalOrig;
+		if (totalResult > totalOrig) {
+			total = totalResult;
+		}
+		String info = "(" + (report.getEndTime() - report.getStartTime()) + " >> "
+				+ (runResultReport.getEndTime() - runResultReport.getStartTime()) + " ms)"
+				+ " (" + stubbedOrig + "/" + totalOrig + " >> " + stubbedResult + "/" + totalResult + " stubbed)"
+				+ " (" + correlated + "/" + total + " correlated)";
+		if (noStubInOriginalReport > 0) {
+			info = info + " Stub message not found in original report for " + noStubInOriginalReport + " checkpoint";
+			if (noStubInOriginalReport > 1) {
+				info = info + "s";
+			}
+		}
+		return info;
 	}
 }
