@@ -1,5 +1,5 @@
 /*
-   Copyright 2020, 2022 WeAreFrank!, 2018-2019 Nationale-Nederlanden
+   Copyright 2020, 2022-2023 WeAreFrank!, 2018-2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,12 +21,10 @@ import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.inject.Inject;
-
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.StringUtils;
 
 import echopointng.tree.DefaultMutableTreeNode;
+import lombok.Setter;
 import nextapp.echo2.app.Alignment;
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Column;
@@ -47,6 +45,9 @@ import nl.nn.testtool.echo2.Echo2Application;
 import nl.nn.testtool.echo2.ReportPane;
 import nl.nn.testtool.echo2.util.Download;
 import nl.nn.testtool.echo2.util.PopupWindow;
+import nl.nn.testtool.run.ReportRunner;
+import nl.nn.testtool.storage.LogStorage;
+import nl.nn.testtool.storage.StorageException;
 
 /**
  * @author Jaco de Groot
@@ -54,12 +55,13 @@ import nl.nn.testtool.echo2.util.PopupWindow;
 public class MessageComponent extends BaseComponent implements ActionListener {
 	private static final long serialVersionUID = 1L;
 	private static final char REPLACE_NON_XML_CHAR = 0x00BF; // Inverted question mark.
-	protected @Inject @Autowired TestTool testTool;
+	protected @Setter TestTool testTool;
+	protected @Setter LogStorage debugStorage;
+	protected @Setter TreePane treePane;
+	protected @Setter InfoPane infoPane;
 	private BeanParent beanParent;
 	protected Echo2Application echo2Application;
-	protected TreePane treePane;
 	protected DefaultMutableTreeNode node;
-	protected InfoPane infoPane;
 	protected Report report;
 	protected Row buttonRow;
 	protected Button editButton;
@@ -71,18 +73,6 @@ public class MessageComponent extends BaseComponent implements ActionListener {
 	protected Column messageColumn;
 	protected Button lineNumbersButton;
 	protected TextArea messageTextArea;
-
-	public void setTestTool(TestTool testTool) {
-		this.testTool = testTool;
-	}
-
-	public void setTreePane(TreePane treePane) {
-		this.treePane = treePane;
-	}
-
-	public void setInfoPane(InfoPane infoPane) {
-		this.infoPane = infoPane;
-	}
 
 	/**
 	 * @see nl.nn.testtool.echo2.Echo2Application#initBean()
@@ -442,9 +432,22 @@ public class MessageComponent extends BaseComponent implements ActionListener {
 				toggleEdit();
 			}
 		} else if (e.getActionCommand().equals("Rerun")) {
-			String errorMessage = testTool.rerun(report, echo2Application);
+			String correlationId = TestTool.getCorrelationId();
+			String errorMessage = testTool.rerun(correlationId, report, echo2Application);
 			if (errorMessage == null) {
-				displayOkay("Rerun succeeded");
+				String message = "Rerun succeeded";
+				Report runResultReport = null;
+				try {
+					runResultReport = ReportRunner.getRunResultReport(debugStorage, correlationId);
+				} catch(StorageException storageException) {
+					displayAndLogError(storageException);
+				}
+				if (runResultReport != null) {
+					message = message + " " + ReportRunner.getRunResultInfo(report, runResultReport);
+				} else {
+					message = message + " (no run result info available)";
+				}
+				displayOkay(message);
 			} else {
 				displayAndLogError(errorMessage);
 			}

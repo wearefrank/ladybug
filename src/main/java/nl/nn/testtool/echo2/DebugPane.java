@@ -38,6 +38,7 @@ import nl.nn.testtool.echo2.reports.ReportsListPane;
 import nl.nn.testtool.echo2.reports.TreePane;
 import nl.nn.testtool.filter.Views;
 import nl.nn.testtool.storage.CrudStorage;
+import nl.nn.testtool.storage.LogStorage;
 import nl.nn.testtool.transform.ReportXmlTransformer;
 
 /**
@@ -49,6 +50,7 @@ public class DebugPane extends Tab implements BeanParent {
 	private String title = "Debug";
 	private @Inject @Autowired TestTool testTool;
 	private @Inject @Autowired Views views;
+	private @Inject @Autowired LogStorage debugStorage;
 	private @Inject @Autowired CrudStorage testStorage;
 	private @Inject @Autowired MetadataExtractor metadataExtractor;
 	private @Inject @Autowired ReportXmlTransformer reportXmlTransformer;
@@ -110,11 +112,13 @@ public class DebugPane extends Tab implements BeanParent {
 		reportsComponent.setReportXmlTransformer(reportXmlTransformer);
 		reportsComponent.setDataAdminRoles(dataAdminRoles);
 		reportComponent.setTestTool(testTool);
+		reportComponent.setDebugStorage(debugStorage);
 		reportComponent.setTestStorage(testStorage);
 		reportComponent.setTreePane(treePane);
 		reportComponent.setInfoPane(infoPane);
 		pathComponent.setTreePane(treePane);
 		checkpointComponent.setTestTool(testTool);
+		checkpointComponent.setDebugStorage(debugStorage);
 		checkpointComponent.setTreePane(treePane);
 		checkpointComponent.setInfoPane(infoPane);
 

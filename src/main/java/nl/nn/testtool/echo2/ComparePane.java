@@ -40,6 +40,7 @@ import nl.nn.testtool.echo2.reports.TreePane;
 import nl.nn.testtool.filter.Views;
 import nl.nn.testtool.run.ReportRunner;
 import nl.nn.testtool.storage.CrudStorage;
+import nl.nn.testtool.storage.LogStorage;
 import nl.nn.testtool.storage.Storage;
 import nl.nn.testtool.storage.StorageException;
 import nl.nn.testtool.transform.ReportXmlTransformer;
@@ -53,6 +54,7 @@ public class ComparePane extends Tab implements BeanParent {
 	private String title = "Compare";
 	private @Inject @Autowired TestTool testTool;
 	private @Inject @Autowired Views views;
+	private @Inject @Autowired LogStorage debugStorage;
 	private @Inject @Autowired CrudStorage testStorage;
 	private @Inject @Autowired MetadataExtractor metadataExtractor;
 	private @Inject @Autowired ReportXmlTransformer reportXmlTransformer;
@@ -77,18 +79,6 @@ public class ComparePane extends Tab implements BeanParent {
 
 	public void setTitle(String title) {
 		this.title = title;
-	}
-
-	public void setTestTool(TestTool testTool) {
-		this.testTool = testTool;
-	}
-
-	public void setTestStorage(CrudStorage testStorage) {
-		this.testStorage = testStorage;
-	}
-
-	public void setReportXmlTransformer(ReportXmlTransformer reportXmlTransformer) {
-		this.reportXmlTransformer = reportXmlTransformer;
 	}
 
 	/**
@@ -165,11 +155,13 @@ public class ComparePane extends Tab implements BeanParent {
 		reportsComponent1.setDataAdminRoles(dataAdminRoles);
 		reportsComponent1.setComparePane(this);
 		reportComponent1.setTestTool(testTool);
+		reportComponent1.setDebugStorage(debugStorage);
 		reportComponent1.setTestStorage(testStorage);
 		reportComponent1.setTreePane(treePane1);
 		reportComponent1.setInfoPane(infoPane1);
 		pathComponent1.setTreePane(treePane1);
 		checkpointComponent1.setTestTool(testTool);
+		checkpointComponent1.setDebugStorage(debugStorage);
 		checkpointComponent1.setTreePane(treePane1);
 		checkpointComponent1.setInfoPane(infoPane1);
 
@@ -181,11 +173,13 @@ public class ComparePane extends Tab implements BeanParent {
 		reportsComponent2.setDataAdminRoles(dataAdminRoles);
 		reportsComponent2.setComparePane(this);
 		reportComponent2.setTestTool(testTool);
+		reportComponent2.setDebugStorage(debugStorage);
 		reportComponent2.setTestStorage(testStorage);
 		reportComponent2.setTreePane(treePane2);
 		reportComponent2.setInfoPane(infoPane2);
 		pathComponent2.setTreePane(treePane2);
 		checkpointComponent2.setTestTool(testTool);
+		checkpointComponent2.setDebugStorage(debugStorage);
 		checkpointComponent2.setTreePane(treePane2);
 		checkpointComponent2.setInfoPane(infoPane2);
 

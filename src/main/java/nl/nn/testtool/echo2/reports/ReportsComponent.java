@@ -78,7 +78,6 @@ public class ReportsComponent extends BaseComponent implements BeanParent, Actio
 	// Custom View implementations may return other values on isOpenReportAllowed() (see TibetView in Frank!Framework)
 	public static final String OPEN_REPORT_ALLOWED = "Allowed";
 	private List<String> dataAdminRoles;
-	// TODO testTool overbodig maken nu we storage van view halen?
 	private TestTool testTool;
 	private MetadataExtractor metadataExtractor;
 	private Views views;

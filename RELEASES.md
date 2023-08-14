@@ -6,6 +6,7 @@ Ladybug Test Tool release notes
 Upcoming (2.3)
 --------------
 
+- Add run result info to Debug tab
 - Improve run result info
 - Fix IndexOutOfBoundsException when max checkpoints or memory usage reached and a thread is closed
 - Fix new GUI not working on WebSphere

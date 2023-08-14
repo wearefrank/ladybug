@@ -44,9 +44,7 @@ import nextapp.echo2.app.WindowPane;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import nextapp.echo2.app.filetransfer.UploadSelect;
-import nl.nn.testtool.Checkpoint;
 import nl.nn.testtool.MetadataExtractor;
-import nl.nn.testtool.Path;
 import nl.nn.testtool.Report;
 import nl.nn.testtool.TestTool;
 import nl.nn.testtool.echo2.BaseComponent;
@@ -67,7 +65,6 @@ import nl.nn.testtool.storage.LogStorage;
 import nl.nn.testtool.storage.StorageException;
 import nl.nn.testtool.transform.ReportXmlTransformer;
 import nl.nn.testtool.util.CsvUtil;
-import nl.nn.testtool.web.api.RunApi;
 
 /**
  * @author Jaco de Groot
@@ -566,7 +563,7 @@ public class TestComponent extends BaseComponent implements BeanParent, ActionLi
 					errorLabel.setVisible(true);
 				} else {
 					if (report != null) {
-						resultLabel.setText(RunApi.getRunInfo(report, runResultReport));
+						resultLabel.setText(ReportRunner.getRunResultInfo(report, runResultReport));
 						report.setGlobalReportXmlTransformer(reportXmlTransformer);
 						runResultReport.setGlobalReportXmlTransformer(reportXmlTransformer);
 						runResultReport.setTransformation(report.getTransformation());

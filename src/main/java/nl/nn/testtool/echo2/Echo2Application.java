@@ -1,5 +1,5 @@
 /*
-   Copyright 2020, 2022 WeAreFrank!, 2018, 2019 Nationale-Nederlanden
+   Copyright 2020, 2022-2023 WeAreFrank!, 2018, 2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -62,6 +62,7 @@ import nl.nn.testtool.echo2.reports.TreePane;
 import nl.nn.testtool.filter.Views;
 import nl.nn.testtool.run.ReportRunner;
 import nl.nn.testtool.storage.CrudStorage;
+import nl.nn.testtool.storage.LogStorage;
 import nl.nn.testtool.storage.Storage;
 import nl.nn.testtool.storage.StorageException;
 import nl.nn.testtool.transform.ReportXmlTransformer;
@@ -111,6 +112,7 @@ public class Echo2Application extends ApplicationInstance implements Application
 	private TransformationWindow transformationWindow;
 	private @Inject @Autowired TestTool testTool;
 	private @Inject @Autowired ReportXmlTransformer reportXmlTransformer;
+	private @Inject @Autowired LogStorage debugStorage;
 	private @Inject @Autowired CrudStorage testStorage;
 
 	public void setApplicationContext(ApplicationContext applicationContext)
@@ -286,6 +288,7 @@ public class Echo2Application extends ApplicationInstance implements Application
 			treePane.setInfoPane(infoPane);
 
 			reportComponent.setTestTool(testTool);
+			reportComponent.setDebugStorage(debugStorage);
 			reportComponent.setTestStorage(testStorage);
 			reportComponent.setTreePane(treePane);
 			reportComponent.setInfoPane(infoPane);
@@ -293,6 +296,7 @@ public class Echo2Application extends ApplicationInstance implements Application
 			reportComponent.initBean(this);
 
 			checkpointComponent.setTestTool(testTool);
+			checkpointComponent.setDebugStorage(debugStorage);
 			checkpointComponent.setTreePane(treePane);
 			checkpointComponent.setInfoPane(infoPane);
 			checkpointComponent.initBean();

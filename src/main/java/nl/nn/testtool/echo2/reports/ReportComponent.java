@@ -1,5 +1,5 @@
 /*
-   Copyright 2018-2022 WeAreFrank!
+   Copyright 2018-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -31,7 +31,6 @@ import nextapp.echo2.app.TextField;
 import nextapp.echo2.app.WindowPane;
 import nextapp.echo2.app.event.ActionEvent;
 import nl.nn.testtool.Report;
-import nl.nn.testtool.TestTool;
 import nl.nn.testtool.echo2.BeanParent;
 import nl.nn.testtool.echo2.Echo2Application;
 import nl.nn.testtool.echo2.TransformationWindow;
@@ -70,10 +69,6 @@ public class ReportComponent extends MessageComponent {
 
 	public ReportComponent() {
 		super();
-	}
-
-	public void setTestTool(TestTool testTool) {
-		this.testTool = testTool;
 	}
 
 	public void setTestStorage(CrudStorage testStorage) {

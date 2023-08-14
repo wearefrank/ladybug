@@ -117,7 +117,7 @@ public class RunApi extends ApiBase {
 		runResultReport.setGlobalReportXmlTransformer(reportXmlTransformer);
 		runResultReport.setTransformation(report.getTransformation());
 		runResultReport.setReportXmlTransformer(report.getReportXmlTransformer());
-		res.put("info", getRunInfo(report, runResultReport));
+		res.put("info", ReportRunner.getRunResultInfo(report, runResultReport));
 		res.put("equal", report.toXml(runner).equals(runResultReport.toXml(runner)));
 		res.put("originalReport", report);
 		res.put("runResultReport", runResultReport);
@@ -235,45 +235,5 @@ public class RunApi extends ApiBase {
 		}
 
 		return runner;
-	}
-
-	public static String getRunInfo(Report report, Report runResultReport) {
-		int stubbedOrig = 0;
-		for (Checkpoint checkpoint : report.getCheckpoints()) {
-			if (checkpoint.isStubbed()) {
-				stubbedOrig++;
-			}
-		}
-		int stubbedResult = 0;
-		int noStubInOriginalReport = 0;
-		int correlated = 0;
-		for (Checkpoint checkpoint : runResultReport.getCheckpoints()) {
-			if (checkpoint.isStubbed()) {
-				stubbedResult++;
-			}
-			if (checkpoint.getStubNotFound() != null) {
-				noStubInOriginalReport++;
-			}
-			if (checkpoint.isOriginalCheckpointFound()) {
-				correlated++;
-			}
-		}
-		int totalOrig = report.getCheckpoints().size();
-		int totalResult = runResultReport.getCheckpoints().size();
-		int total = totalOrig;
-		if (totalResult > totalOrig) {
-			total = totalResult;
-		}
-		String info = "(" + (report.getEndTime() - report.getStartTime()) + " >> "
-				+ (runResultReport.getEndTime() - runResultReport.getStartTime()) + " ms)"
-				+ " (" + stubbedOrig + "/" + totalOrig + " >> " + stubbedResult + "/" + totalResult + " stubbed)"
-				+ " (" + correlated + "/" + total + " correlated)";
-		if (noStubInOriginalReport > 0) {
-			info = info + " Stub message not found in original report for " + noStubInOriginalReport + " checkpoint";
-			if (noStubInOriginalReport > 1) {
-				info = info + "s";
-			}
-		}
-		return info;
 	}
 }

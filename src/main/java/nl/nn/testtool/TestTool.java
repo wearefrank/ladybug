@@ -933,8 +933,8 @@ public class TestTool {
 	 * @param securityContext ...
 	 * @return ...
 	 */
-	public String rerun(Report report, SecurityContext securityContext) {
-		return rerun(null, report, securityContext, null);
+	public String rerun(String correlationId, Report report, SecurityContext securityContext) {
+		return rerun(correlationId, report, securityContext, null);
 	}
 
 	/**
@@ -953,9 +953,6 @@ public class TestTool {
 		} else if (rerunner != null && debugger != null) {
 			errorMessage = "Both rerunner and debugger configured";
 		} else {
-			if (correlationId == null) {
-				correlationId = getCorrelationId();
-			}
 			boolean reportGeneratorEnabled = isReportGeneratorEnabled();
 			if (reportGeneratorEnabled) {
 				synchronized(originalReports) {
