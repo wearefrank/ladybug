@@ -93,7 +93,8 @@ public class RunApi extends ApiBase {
 				}
 
 				Report runResultReport = runner.getRunResultReport(runResult.correlationId);
-				result = extractRunResult(runResultReport, report.getStorageId(), reranReports, runner);
+				runResultReport.setTestTool(testTool);
+				result = extractRunResult(report, runResultReport, runner);
 			}
 		} catch (StorageException e) {
 			exceptions.add("Exception for report in [testStorage] with storage id [" + storageId + "] - detailed error message -  " + e + Arrays.toString(e.getStackTrace()));
@@ -110,9 +111,8 @@ public class RunApi extends ApiBase {
 		return Response.ok(result).build();
 	}
 
-	private Map<String, Object> extractRunResult(Report runResultReport, int storageId, HashMap<Integer, Report> reranReports, ReportRunner runner) {
+	private Map<String, Object> extractRunResult(Report report, Report runResultReport, ReportRunner runner) {
 		Map<String, Object> res = new HashMap<>();
-		Report report = reranReports.get(storageId);
 		report.setGlobalReportXmlTransformer(reportXmlTransformer);
 		runResultReport.setGlobalReportXmlTransformer(reportXmlTransformer);
 		runResultReport.setTransformation(report.getTransformation());
