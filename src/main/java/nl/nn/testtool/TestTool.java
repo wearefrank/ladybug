@@ -71,9 +71,21 @@ public class TestTool {
 	private MessageTransformer messageTransformer;
 	private String regexFilter;
 	private String defaultRegexFilter;
-	private String defaultStubStrategy = "Stub all external connection code";
-	private List<String> stubStrategies = new ArrayList<String>(); { stubStrategies.add(defaultStubStrategy); }
-	private Set<String> matchingStubStrategiesForExternalConnectionCode = new HashSet<>(stubStrategies);
+	public static final String STUB_STRATEGY_STUB_ALL_EXTERNAL_CONNECTION_CODE = "Stub all external connection code";
+	public static final String STUB_STRATEGY_NEVER = "Never";
+	public static final String STUB_STRATEGY_ALWAYS = "Always";
+	private String defaultStubStrategy = STUB_STRATEGY_STUB_ALL_EXTERNAL_CONNECTION_CODE;
+	private List<String> stubStrategies = new ArrayList<String>();
+		{
+			stubStrategies.add(STUB_STRATEGY_STUB_ALL_EXTERNAL_CONNECTION_CODE);
+			stubStrategies.add(STUB_STRATEGY_NEVER);
+			stubStrategies.add(STUB_STRATEGY_ALWAYS);
+		}
+	private Set<String> matchingStubStrategiesForExternalConnectionCode = new HashSet<>();
+		{
+			matchingStubStrategiesForExternalConnectionCode.add(STUB_STRATEGY_STUB_ALL_EXTERNAL_CONNECTION_CODE);
+			matchingStubStrategiesForExternalConnectionCode.add(STUB_STRATEGY_ALWAYS);
+		}
 	private @Getter boolean closeThreads = false;
 	private @Getter boolean closeNewThreadsOnly = false;
 	private @Getter boolean closeMessageCapturers = false;
@@ -1011,15 +1023,23 @@ public class TestTool {
 	}
 
 	/**
-	 * Check whether the checkpoint should be stubbed for the given stub
-	 * strategy.
+	 * Check whether the checkpoint should be stubbed for the given stub strategy in case no matchingStubStrategies for
+	 * the checkpoint is known
 	 * 
 	 * @param checkpoint ...
 	 * @param strategy ...
 	 * @return whether the checkpoint should be stubbed
 	 */	
 	public boolean stub(Checkpoint checkpoint, String strategy) {
-		return debugger.stub(checkpoint, strategy);
+		if (debugger == null) {
+			if (STUB_STRATEGY_ALWAYS.equals(strategy)) {
+				return true;
+			} else {
+				return false;
+			}
+		} else {
+			return debugger.stub(checkpoint, strategy);
+		}
 	}
 
 	public Report getReportInProgress(int index) {

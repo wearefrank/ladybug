@@ -506,7 +506,7 @@ public class Report implements Serializable {
 					if (matchingStubStrategies.contains(originalReport.getStubStrategy())) {
 						stub = true;
 					}
-				} else if (testTool.getDebugger() != null) {
+				} else {
 					stub = testTool.stub(checkpoint, originalReport.getStubStrategy());
 				}
 			} else {
@@ -517,7 +517,7 @@ public class Report implements Serializable {
 						if (matchingStubStrategies.contains(originalReport.getStubStrategy())) {
 							stub = true;
 						}
-					} else if (testTool.getDebugger() != null) {
+					} else {
 						stub = testTool.stub(originalCheckpoint, originalReport.getStubStrategy());
 					}
 				} else if (originalCheckpoint.getStub() == Checkpoint.STUB_NO) {
