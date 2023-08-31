@@ -224,7 +224,7 @@ Create and publish NPM package and WebJar
   - `npm publish`
   - `git tag vX.Y.Z`, with X.Y.Z being the latest version of the package, which you can find in your `package.json` (for example `0.0.12`)
   - `git push origin vX.Y.Z`, with X.Y.Z being the version you just specified.
-    - When Chrome cannot be started because the binary is not found: set CHROME_BIN=C:\...\chrome.exe
+    - When Chrome cannot be started because the binary is not found: set CHROME_BIN=C:\\...\\chrome.exe (in Git bash: export CHROME_BIN=C:\\\\...\\\\chrome.exe)
     - When Chrome cannot be started (two attempts are done by the command), shut down Chrome (in which probably two tabs have been opened)
 - You have now successfully published the NPM package, see https://www.npmjs.com/package/@wearefrank/ladybug
 
