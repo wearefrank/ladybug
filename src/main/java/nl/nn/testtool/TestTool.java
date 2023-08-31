@@ -86,6 +86,8 @@ public class TestTool {
 			matchingStubStrategiesForExternalConnectionCode.add(STUB_STRATEGY_STUB_ALL_EXTERNAL_CONNECTION_CODE);
 			matchingStubStrategiesForExternalConnectionCode.add(STUB_STRATEGY_ALWAYS);
 		}
+	public static final String DEFAULT_STUB_MESSAGE =
+			"Default Ladybug stub message (counterpart checkpoint in original report not found?)";
 	private @Getter boolean closeThreads = false;
 	private @Getter boolean closeNewThreadsOnly = false;
 	private @Getter boolean closeMessageCapturers = false;

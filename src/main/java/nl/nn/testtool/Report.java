@@ -502,6 +502,14 @@ public class Report implements Serializable {
 			Path path = checkpoint.getPath(true);
 			Checkpoint originalCheckpoint = originalReport.getCheckpoint(path);
 			if (originalCheckpoint == null || originalCheckpoint.getType() != checkpoint.getType()) {
+				String stubNotFoundMessage = path.toString() + " of type " + checkpoint.getTypeAsString();
+				if (originalCheckpoint != null) {
+					stubNotFoundMessage = stubNotFoundMessage + " which doesn't match type "
+							+ originalCheckpoint.getTypeAsString() + " in original report";
+				}
+				checkpoint.setStubNotFound(stubNotFoundMessage);
+				// Make null so message encoder will return default stub message
+				originalCheckpoint = null;
 				if (matchingStubStrategies != null) {
 					if (matchingStubStrategies.contains(originalReport.getStubStrategy())) {
 						stub = true;
@@ -510,7 +518,6 @@ public class Report implements Serializable {
 					stub = testTool.stub(checkpoint, originalReport.getStubStrategy());
 				}
 			} else {
-				checkpoint.setOriginalCheckpointFound(true);
 				checkpoint.setStub(originalCheckpoint.getStub());
 				if (originalCheckpoint.getStub() == Checkpoint.STUB_FOLLOW_REPORT_STRATEGY) {
 					if (matchingStubStrategies != null) {
@@ -528,9 +535,6 @@ public class Report implements Serializable {
 			}
 			if (stub) {
 				checkpoint.setStubbed(true);
-				if (originalCheckpoint == null) {
-					checkpoint.setStubNotFound(path.toString());
-				}
 				message = getMessageEncoder().toObject(originalCheckpoint, message);
 				message = checkpoint.setMessage(message);
 			}

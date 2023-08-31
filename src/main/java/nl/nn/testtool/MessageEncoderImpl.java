@@ -1,5 +1,5 @@
 /*
-   Copyright 2021, 2022 WeAreFrank!
+   Copyright 2021-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -140,7 +140,9 @@ public class MessageEncoderImpl implements MessageEncoder {
 		}
 		// Can be null when called from toObject(Checkpoint originalCheckpoint, T messageToStub), see javadoc on param
 		// originalCheckpoint in MessageEncoder
-		if (originalCheckpoint == null || originalCheckpoint.getMessage() == null) {
+		if (originalCheckpoint == null) {
+			return (T)TestTool.DEFAULT_STUB_MESSAGE;
+		} else if (originalCheckpoint.getMessage() == null) {
 			return null;
 		} else {
 			String message = originalCheckpoint.getMessage();

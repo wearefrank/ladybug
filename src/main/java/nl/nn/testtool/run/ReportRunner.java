@@ -124,40 +124,53 @@ public class ReportRunner implements Runnable {
 
 	public static String getRunResultInfo(Report report, Report runResultReport) {
 		int stubbedOrig = 0;
+		int stubsNotFoundOrig = 0;
 		for (Checkpoint checkpoint : report.getCheckpoints()) {
 			if (checkpoint.isStubbed()) {
 				stubbedOrig++;
 			}
+			if (checkpoint.getStubNotFound() != null) {
+				stubsNotFoundOrig++;
+			}
 		}
 		int stubbedResult = 0;
-		int noStubInOriginalReport = 0;
-		int correlated = 0;
+		int stubsNotFoundResult = 0;
+		String alternativeStubInfo = "";
+		int alternativeStubSkipped = 0;
 		for (Checkpoint checkpoint : runResultReport.getCheckpoints()) {
 			if (checkpoint.isStubbed()) {
 				stubbedResult++;
+				if (checkpoint.getStubNotFound() != null) {
+					if (alternativeStubInfo.length() == 0) {
+						alternativeStubInfo = " (Alternative stub used for: "
+								+ checkpoint.getStubNotFound();
+					} else if (alternativeStubInfo.length() > 200) {
+						alternativeStubSkipped++;
+					} else {
+						alternativeStubInfo = alternativeStubInfo + ", "
+								+ checkpoint.getStubNotFound();
+					}
+				}
 			}
 			if (checkpoint.getStubNotFound() != null) {
-				noStubInOriginalReport++;
-			}
-			if (checkpoint.isOriginalCheckpointFound()) {
-				correlated++;
+				stubsNotFoundResult++;
 			}
 		}
 		int totalOrig = report.getCheckpoints().size();
 		int totalResult = runResultReport.getCheckpoints().size();
-		int total = totalOrig;
-		if (totalResult > totalOrig) {
-			total = totalResult;
-		}
 		String info = "(" + (report.getEndTime() - report.getStartTime()) + " >> "
 				+ (runResultReport.getEndTime() - runResultReport.getStartTime()) + " ms)"
-				+ " (" + stubbedOrig + "/" + totalOrig + " >> " + stubbedResult + "/" + totalResult + " stubbed)"
-				+ " (" + correlated + "/" + total + " correlated)";
-		if (noStubInOriginalReport > 0) {
-			info = info + " Stub message not found in original report for " + noStubInOriginalReport + " checkpoint";
-			if (noStubInOriginalReport > 1) {
-				info = info + "s";
+				+ " (" + stubbedOrig + "/" + totalOrig + " >> " + stubbedResult + "/" + totalResult + " stubbed)";
+		if (stubsNotFoundOrig > 0 || stubsNotFoundResult > 0) {
+			info = info + " (" + stubsNotFoundOrig + "/" + totalOrig + " >> " + stubsNotFoundResult + "/" + totalResult
+					+ " stubs not found)";
+		}
+		if (alternativeStubInfo.length() > 0) {
+			info = info + alternativeStubInfo;
+			if (alternativeStubSkipped > 0) {
+				info = info + " and " + alternativeStubSkipped + " more";
 			}
+			info = info + ")";
 		}
 		return info;
 	}

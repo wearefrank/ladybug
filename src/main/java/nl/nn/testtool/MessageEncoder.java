@@ -1,5 +1,5 @@
 /*
-   Copyright 2021-2022 WeAreFrank!
+   Copyright 2021-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -90,7 +90,9 @@ public interface MessageEncoder {
 	 *                            encoded and possible other relevant information to determine the original object type.
 	 *                            It can be null when the original checkpoint cannot be found (in that case the decision
 	 *                            to stub is not based on the original checkpoint but based on a stubbing strategy that
-	 *                            stubs certain types of checkpoints)
+	 *                            stubs certain types of checkpoints). When null the default implementation
+	 *                            {@link MessageEncoderImpl} will return the default stub message
+	 *                            {@link TestTool#DEFAULT_STUB_MESSAGE}
 	 * @param messageToStub       the message in the report in progress that needs to be stubbed
 	 * @return                    a stub for the message that needs to be stubbed
 	 */

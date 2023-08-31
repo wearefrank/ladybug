@@ -17,9 +17,6 @@ package nl.nn.testtool.echo2.reports;
 
 import java.io.UnsupportedEncodingException;
 
-import javax.annotation.PostConstruct;
-import javax.enterprise.context.Dependent;
-
 import echopointng.tree.DefaultMutableTreeNode;
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Insets;
@@ -139,7 +136,8 @@ public class CheckpointComponent extends MessageComponent {
 
 		messageIsStubbedLabel = Echo2Application.createInfoLabelWithColumnLayoutData();
 		messageIsStubbedLabel.setVisible(false);
-		messageIsStubbedLabel.setText("Message is stubbed (copied from original report)");
+
+		messageIsStubbedLabel.setText("Message is stubbed");
 		add(messageIsStubbedLabel);
 
 		messageStubNotFoundLabel = Echo2Application.createInfoLabelWithColumnLayoutData();
