@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden
+   Copyright 2023 WeAreFrank!, 2018 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,6 +15,8 @@
 */
 package nl.nn.testtool.transform;
 
+import nl.nn.testtool.Checkpoint;
+
 /**
  * Transform a message before it is stored in a checkpiont. E.g. make it
  * possible to hide a password.
@@ -23,6 +25,6 @@ package nl.nn.testtool.transform;
  */
 public interface MessageTransformer {
 
-	String transform(String message);
+	String transform(Checkpoint checkpoint, String message);
 
 }

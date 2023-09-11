@@ -155,7 +155,7 @@ public class Checkpoint implements Serializable, Cloneable {
 		if (report != null) {
 			message = report.truncateMessage(this, message);
 			if (report.getMessageTransformer() != null) {
-				message = report.getMessageTransformer().transform(message);
+				message = report.getMessageTransformer().transform(this, message);
 			}
 		}
 		this.message = message;
