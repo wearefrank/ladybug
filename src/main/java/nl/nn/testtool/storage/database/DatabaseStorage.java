@@ -69,6 +69,7 @@ public class DatabaseStorage implements LogStorage, CrudStorage {
 	protected @Setter List<String> longColumns;
 	protected @Setter List<String> timestampColumns;
 	protected @Setter List<String> bigValueColumns; // Columns for which to limit the number of retrieved characters to 100
+	protected @Setter long maxStorageSize = -1;
 	protected @Setter @Getter @Inject @Autowired JdbcTemplate jdbcTemplate;
 	protected @Setter @Getter @Inject @Autowired DbmsSupport dbmsSupport;
 	protected @Setter @Getter @Inject @Autowired MetadataExtractor metadataExtractor;
@@ -121,7 +122,7 @@ public class DatabaseStorage implements LogStorage, CrudStorage {
 			return bigValueColumns;
 		}
 	}
-	
+
 	@PostConstruct
 	public void init() throws StorageException {
 		if (!(getMetadataNames() != null && getMetadataNames().contains(getStorageIdColumn()))) {
@@ -177,7 +178,15 @@ public class DatabaseStorage implements LogStorage, CrudStorage {
 						ps.setBlob(i, new ByteArrayInputStream(reportBytes));
 					}
 				});
-// TODO: For LogStorage: Above a certain limit of storage used or number of reports delete one or more of the oldest reports
+		if (maxStorageSize > -1) {
+			String averageQuery = "select avg(storageSize) from " + getTable();
+			int averageStorageSize = jdbcTemplate.queryForObject(averageQuery, Integer.class);
+			log.debug("Get average storage size query (returned " + averageStorageSize + "): " + averageQuery);
+			int maxNrOfReports = (int)(maxStorageSize / averageStorageSize);
+			String deleteQuery = "delete from " + getTable() + " where " + getStorageIdColumn()
+					+ " <= ((select max(" + getStorageIdColumn() + ") from " + getTable() + ") - ?)";
+			delete(deleteQuery, maxNrOfReports);
+		}
 	}
 
 	@Override
@@ -224,16 +233,19 @@ public class DatabaseStorage implements LogStorage, CrudStorage {
 	@Override
 	public void delete(Report report) throws StorageException {
 		String query = "delete from " + getTable() + " where " + getStorageIdColumn() + " = ?";
-		log.debug("Delete report query: " + query);
+		delete(query, report.getStorageId());
+	}
+
+	private void delete(String query, int i) throws StorageException {
+		log.debug("Delete report query (with param value " + i + "): " + query);
 		jdbcTemplate.update(query,
 				new PreparedStatementSetter() {
 					@Override
 					public void setValues(PreparedStatement ps) throws SQLException {
-						ps.setInt(1, report.getStorageId());
+						ps.setInt(1, i);
 					}
 				});
 	}
-
 // TODO: Write JUnit test or test with ibis-ladybug-test-webapp
 	@Override
 	public void clear() throws StorageException {
