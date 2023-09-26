@@ -177,17 +177,25 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>io.quarkus</groupId>
-      <artifactId>quarkus-arc</artifactId>
+      <groupId>io.quarkus.arc</groupId>
+      <artifactId>arc</artifactId>
       <version>1.13.4.Final</version><!-- 2.7.0.Final doesn't compile with Java 8 -->
       <scope>provided</scope>
       <exclusions>
-        <!-- Prevent following warning when running JUnit: SLF4J: Class path contains multiple SLF4J bindings. -->
+        <!-- Exclude quarkus-core to prevent following warning when running JUnit: SLF4J: Class path contains multiple SLF4J bindings. -->
+        <!-- And with jakarta.enterprise.cdi-api as a normal dependency all transitive dependencies can be excluded (Quarkus arc is then only needed for DefaultBean) -->
         <exclusion>
-          <groupId>io.quarkus</groupId>
-          <artifactId>quarkus-core</artifactId>
+          <groupId>*</groupId>
+          <artifactId>*</artifactId>
         </exclusion>
       </exclusions>
+    </dependency>
+    <!-- Normal dependency instead of a transitive dependency of Quarkus arc (Spring is using the cdi-api annotations also) -->
+    <dependency>
+      <groupId>jakarta.enterprise</groupId>
+      <artifactId>jakarta.enterprise.cdi-api</artifactId>
+      <version>2.0.2</version>
+      <scope>provided</scope>
     </dependency>
     <!-- Resolve @JsonbTransient -->
     <dependency>
