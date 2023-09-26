@@ -1,5 +1,5 @@
 /*
-   Copyright 2020-2022 WeAreFrank!, 2018-2019 Nationale-Nederlanden
+   Copyright 2020-2023 WeAreFrank!, 2018-2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -134,7 +134,7 @@ public class Reader {
 			metadataReadOnly = metadataCacheReadOnly;
 		}
 		List result = new ArrayList();
-		for (int i = 0; i < metadataReadOnly.size() &&  (maxNumberOfRecords == -1 || i < maxNumberOfRecords); i++) {
+		for (int i = 0; i < metadataReadOnly.size() && (maxNumberOfRecords == -1 || i < maxNumberOfRecords); i++) {
 			Map metadataRecord = (Map)metadataReadOnly.get(i);
 			// Check whether it's already possible to exclude this record from
 			// the result (based on the search values and the already available

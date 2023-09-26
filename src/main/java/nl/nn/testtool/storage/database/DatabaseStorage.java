@@ -23,8 +23,6 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.sql.Types;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -314,14 +312,10 @@ public class DatabaseStorage implements LogStorage, CrudStorage {
 				regexSearchValues.add(null);
 			}
 		}
-		// According to SimpleDateFormat javadoc it needs to be synchronized when accessed by multiple threads, hence
-		// instantiate it here instead of instantiating it at class level and synchronizing it.
-		SimpleDateFormat simpleDateFormat = new SimpleDateFormat(TIMESTAMP_PATTERN);
 		StringBuilder query = new StringBuilder();
 		List<Object> args = new ArrayList<Object>();
 		List<Integer> argTypes = new ArrayList<Integer>();
-		buildMetadataQuery(maxNumberOfRecords, metadataNames, searchValues, rangeSearchValues, simpleDateFormat,
-				query, args, argTypes);
+		buildMetadataQuery(maxNumberOfRecords, metadataNames, searchValues, rangeSearchValues, query, args, argTypes);
 		if (log.isDebugEnabled()) {
 			log.debug("Get metadata query (with arguments: " + args + "): " + query.toString());
 		}
@@ -332,20 +326,18 @@ public class DatabaseStorage implements LogStorage, CrudStorage {
 						{
 							List<Object> row = new ArrayList<Object>();
 							for (int i = 0; i < metadataNames.size(); i++) {
+								Object value = null;
 								if (getIntegerColumns().contains(metadataNames.get(i))) {
-									row.add(rs.getInt(i + 1));
+									value = rs.getInt(i + 1);
 								} else if (getLongColumns().contains(metadataNames.get(i))) {
-									row.add(rs.getLong(i + 1));
+									value = rs.getLong(i + 1);
 								} else if (getTimestampColumns().contains(metadataNames.get(i))) {
-									Timestamp timestamp = rs.getTimestamp(i + 1);
-									String value = null;
-									if (timestamp != null) {
-										value = simpleDateFormat.format(timestamp);
-									}
-									row.add(value);
+									value = rs.getTimestamp(i + 1).getTime();
 								} else {
-									row.add(rs.getString(i + 1));
+									value = rs.getString(i + 1);
 								}
+								row.add(metadataExtractor.fromObjectToMetadataValueType(metadataNames.get(i), value,
+										metadataValueType));
 							}
 							return row;
 						}
@@ -364,8 +356,8 @@ public class DatabaseStorage implements LogStorage, CrudStorage {
 	}
 
 	protected void buildMetadataQuery(int maxNumberOfRecords, List<String> metadataNames, List<String> searchValues,
-			List<String> rangeSearchValues,	SimpleDateFormat simpleDateFormat, StringBuilder query,
-			List<Object> args, List<Integer> argTypes) throws StorageException {
+			List<String> rangeSearchValues, StringBuilder query, List<Object> args, List<Integer> argTypes)
+			throws StorageException {
 		query.append("select " + dbmsSupport.provideFirstRowsHintAfterFirstKeyword(maxNumberOfRecords));
 		boolean first = true;
 		for (String metadataName : metadataNames) {
@@ -403,16 +395,14 @@ public class DatabaseStorage implements LogStorage, CrudStorage {
 						if (getIntegerColumns().contains(column) || getLongColumns().contains(column)) {
 							addNumberExpression(query, args, argTypes, column, ">=", searchValueLeft);
 						} else if (getTimestampColumns().contains(column)) {
-							addTimestampExpression(query, args, argTypes, column, ">=", searchValueLeft,
-									simpleDateFormat);
+							addTimestampExpression(query, args, argTypes, column, ">=", searchValueLeft);
 						}
 					}
 					if (StringUtils.isNotEmpty(searchValueRight)) {
 						if (getIntegerColumns().contains(column) || getLongColumns().contains(column)) {
 							addNumberExpression(query, args, argTypes, column, "<=", searchValueRight);
 						} else if (getTimestampColumns().contains(column)) {
-							addTimestampExpression(query, args, argTypes, column, "<=", searchValueRight,
-									simpleDateFormat);
+							addTimestampExpression(query, args, argTypes, column, "<=", searchValueRight);
 						}
 					}
 				} else {
@@ -429,7 +419,7 @@ public class DatabaseStorage implements LogStorage, CrudStorage {
 				} else if (getIntegerColumns().contains(column)) {
 					addNumberExpression(query, args, argTypes, column, "<=", searchValue);
 				} else if (getTimestampColumns().contains(column)) {
-					addTimestampExpression(query, args, argTypes, column, "<=", searchValue, simpleDateFormat);
+					addTimestampExpression(query, args, argTypes, column, "<=", searchValue);
 				} else {
 					addLikeOrEqualsExpression(query, args, argTypes, column, searchValue);
 				}
@@ -507,8 +497,7 @@ public class DatabaseStorage implements LogStorage, CrudStorage {
 	}
 
 	private void addTimestampExpression(StringBuilder query, List<Object> args, List<Integer> argTypes,
-			String column, String operator, String searchValue,
-			SimpleDateFormat simpleDateFormat) throws StorageException {
+			String column, String operator, String searchValue) throws StorageException {
 		String searchValueToParse;
 		if (searchValue.length() < 23) {
 			if (">=".equals(operator)) {
@@ -549,13 +538,10 @@ public class DatabaseStorage implements LogStorage, CrudStorage {
 		} else {
 			searchValueToParse = searchValue;
 		}
-		try {
-			args.add(new Timestamp(simpleDateFormat.parse(searchValueToParse).getTime()));
-			argTypes.add(Types.TIMESTAMP);
-			addExpression(query, column + " " + operator + " ?");
-		} catch (ParseException e) {
-			throwExceptionOnInvalidTimestamp(searchValue);
-		}
+		long l = (Long)metadataExtractor.fromStringtoObject(column, searchValueToParse);
+		args.add(new Timestamp(l));
+		argTypes.add(Types.TIMESTAMP);
+		addExpression(query, column + " " + operator + " ?");
 	}
 
 	private void throwExceptionOnInvalidTimestamp(String searchValue) throws StorageException {

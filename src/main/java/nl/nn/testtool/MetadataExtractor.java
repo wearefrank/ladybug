@@ -16,11 +16,11 @@
 package nl.nn.testtool;
 
 import java.lang.invoke.MethodHandles;
-import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.Iterator;
 import java.util.List;
-
-import javax.inject.Singleton;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,9 +33,9 @@ public class MetadataExtractor {
 	public static final int VALUE_TYPE_OBJECT = 0;
 	public static final int VALUE_TYPE_STRING = 1;
 	public static final int VALUE_TYPE_GUI = 2;
-	private static final SimpleDateFormat FORMAT_DATE_TIME = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+	private static final DateTimeFormatter FORMAT_DATE_TIME = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS").withZone(ZoneId.systemDefault());
 	public List<MetadataFieldExtractor> extraMetadataFieldExtractors;
-	
+
 	public void setExtraMetadataFieldExtractors(List<MetadataFieldExtractor> extraMetadataFieldExtractors) {
 		this.extraMetadataFieldExtractors = extraMetadataFieldExtractors;
 	}
@@ -210,11 +210,8 @@ public class MetadataExtractor {
 	}
 
 	public Object fromObjectToGUI(String metadataName, Object metadataValue) {
-		if (metadataName.equals("startTime")) {
-			return FORMAT_DATE_TIME.format(metadataValue);
-		}
-		if (metadataName.equals("endTime")) {
-			return FORMAT_DATE_TIME.format(metadataValue);
+		if (metadataName.equals("startTime") || metadataName.equals("endTime")) {
+			return FORMAT_DATE_TIME.format(Instant.ofEpochMilli((Long)metadataValue));
 		}
 		return metadataValue;
 	}

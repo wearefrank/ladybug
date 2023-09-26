@@ -38,17 +38,17 @@ import nl.nn.testtool.util.SearchUtil;
  */
 public class Storage implements CrudStorage, LogStorage {
 	protected String name;
-	protected Map reports;
-	protected List storageIds;
-	protected List metadata;
+	protected Map<Integer, Report> reports;
+	protected List<Integer> storageIds;
+	protected Map<Integer, Map<Integer, Map<String, Object>>> metadata;
 	private int initialStorageId = 0;
 	protected int storageId;
 	protected @Inject @Autowired MetadataExtractor metadataExtractor;
 	
 	public Storage() {
-		reports = new HashMap();
-		storageIds = new ArrayList();
-		metadata = new ArrayList();
+		reports = new HashMap<Integer, Report>();
+		storageIds = new ArrayList<Integer>();
+		metadata = new HashMap<Integer, Map<Integer, Map<String, Object>>>();
 	}
 
 	/**
@@ -83,23 +83,19 @@ public class Storage implements CrudStorage, LogStorage {
 		report.setStorageId(storageId++);
 		reports.put(report.getStorageId(), report);
 		storageIds.add(report.getStorageId());
-		metadata.add(new HashMap());
 	}
 
 	@Override
 	public void update(Report report) throws StorageException {
 		reports.put(report.getStorageId(), report);
-		int i = storageIds.indexOf(report.getStorageId());
-		metadata.remove(i);
-		metadata.add(i, new HashMap());
+		metadata.remove(report.getStorageId());
 	}
 
 	@Override
 	public void delete(Report report) throws StorageException {
-		reports.remove(report);
-		int i = storageIds.indexOf(report.getStorageId());
+		reports.remove(report.getStorageId());
 		storageIds.remove(report.getStorageId());
-		metadata.remove(i);
+		metadata.remove(report.getStorageId());
 	}
 
 	@Override
@@ -113,30 +109,38 @@ public class Storage implements CrudStorage, LogStorage {
 	}
 
 	@Override
-	public synchronized List getStorageIds() {
-		return new ArrayList(storageIds);
+	public synchronized List<Integer> getStorageIds() {
+		return new ArrayList<Integer>(storageIds);
 	}
 
 	@Override
 	public synchronized List getMetadata(int maxNumberOfRecords, List metadataNames,
 			List searchValues, int metadataValueType) throws StorageException {
-		List result = new ArrayList();
-		for (int i = 0; i < metadata.size() && (maxNumberOfRecords == -1 || i < maxNumberOfRecords); i++) {
-			Map metadataRecord = (Map)metadata.get(i);
-			List resultRecord = new ArrayList();
-			Iterator metadataNamesIterator = metadataNames.iterator();
+		List<Object> result = new ArrayList<Object>();
+		for (int i = 0; i < storageIds.size() && (maxNumberOfRecords == -1 || i < maxNumberOfRecords); i++) {
+			Map<Integer, Map<String, Object>> metadataRecordPerType = metadata.get(storageIds.get(i));
+			if (metadataRecordPerType == null) {
+				metadataRecordPerType = new HashMap<Integer, Map<String, Object>>();
+				metadata.put(storageIds.get(i), metadataRecordPerType);
+			}
+			Map<String, Object> metadataRecord = metadataRecordPerType.get(metadataValueType);
+			if (metadataRecord == null) {
+				metadataRecord = new HashMap<String, Object>();
+				metadataRecordPerType.put(metadataValueType, metadataRecord);
+			}
+			List<Object> resultRecord = new ArrayList<Object>();
+			Iterator<String> metadataNamesIterator = metadataNames.iterator();
 			while (metadataNamesIterator.hasNext()) {
 				String metadataName = (String)metadataNamesIterator.next();
 				Object metadataValue;
-//				if (!metadataRecord.keySet().contains(metadataName)) {
+				if (!metadataRecord.keySet().contains(metadataName)) {
 					Report report = getReport((Integer)storageIds.get(i));
 					metadataValue = metadataExtractor.getMetadata(report,
 							metadataName, metadataValueType);
 					metadataRecord.put(metadataName, metadataValue);
-//				} else {
-//					// TODO hier wordt geen rekening gehouden met metadataValueType
-//					metadataValue = metadataRecord.get(metadataName);
-//				}
+				} else {
+					metadataValue = metadataRecord.get(metadataName);
+				}
 				resultRecord.add(metadataValue);
 			}
 			if (SearchUtil.matches(resultRecord, searchValues)) {
@@ -162,7 +166,7 @@ public class Storage implements CrudStorage, LogStorage {
 	}
 
 	@Override
-	public void clear() {
+	public void clear() throws StorageException {
 		reports.clear();
 		storageIds.clear();
 		metadata.clear();

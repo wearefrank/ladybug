@@ -118,10 +118,10 @@ public class ProofOfMigrationStorage extends DatabaseStorage {
 
 	@Override
 	protected void buildMetadataQuery(int maxNumberOfRecords, List<String> metadataNames, List<String> searchValues,
-			List<String> rangeSearchValues,	SimpleDateFormat simpleDateFormat, StringBuilder query,
-			List<Object> args, List<Integer> argTypes) throws StorageException {
-		super.buildMetadataQuery(maxNumberOfRecords, metadataNames, searchValues, rangeSearchValues, simpleDateFormat,
-				query, args, argTypes);
+			List<String> rangeSearchValues, StringBuilder query, List<Object> args, List<Integer> argTypes)
+			throws StorageException {
+		super.buildMetadataQuery(maxNumberOfRecords, metadataNames, searchValues, rangeSearchValues, query, args,
+				argTypes);
 		if (log.isDebugEnabled()) {
 			log.debug("Get metadata original query: " + query.toString());
 			// E.g.: select ID, TIMESTAMP, COMPONENT, ENDPOINT_NAME, CONVERSATION_ID, CORRELATION_ID, NR OF CHECKPOINTS, STATUS from MESSAGES order by ID desc limit 10

@@ -23,7 +23,6 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
@@ -99,7 +98,6 @@ public class Storage extends nl.nn.testtool.storage.memory.Storage {
 			report.setStorageId(storageId++);
 			storageIds.add(report.getStorageId());
 			reports.put(report.getStorageId(), report);
-			metadata.add(new HashMap());
 		}
 	}
 
