@@ -19,7 +19,7 @@
     <cxf.version>3.5.5</cxf.version>
     <!-- The line below is parsed by the GitHub actions test that triggers the ladybug-frontend Cypress test -->
     <frontend.version>0.0.49</frontend.version>
-    <!-- Frank!Runner with specials/ibis-ladybug overrides the replacement properties to disable replacement -->
+    <!-- Create skip-replace-inject.txt (replacement is only needed in the published jar by CI/CD) (more info in nl/nn/testtool/Inject.java -->
     <inject.replace.include>**/*.java</inject.replace.include>
     <inject.replace.from>javax.inject</inject.replace.from>
     <inject.replace.to>nl.nn.testtool</inject.replace.to>
@@ -458,6 +458,18 @@
 
   <profiles>
     <profile>
+      <id>skip-replace-inject</id>
+      <activation>
+        <file>
+          <exists>skip-replace-inject.txt</exists>
+        </file>
+      </activation>
+      <properties>
+        <inject.replace.include>DISABLE</inject.replace.include>
+      </properties>
+    </profile>
+    <profile>
+      <id>skip-copyright</id>
       <activation>
         <property>
           <name>!maven.skip.copyright</name>
