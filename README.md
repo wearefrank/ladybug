@@ -138,6 +138,8 @@ Clone the following projects to your Git folder or any other folder of your choi
 - https://github.com/ibissource/frank-runner (building and running the test webapp with Ladybug)
 - https://github.com/ibissource/iaf (in case you want to test your Ladybug changes with the Frank!Framework)
 
+Create skip-replace-inject.txt in the ibis-ladybug folder (see pom.xml for more info).
+
 Read the Frank!Runner [README.md](https://github.com/ibissource/frank-runner#frankrunner) to learn how to integrate it
 with your IDE but you can also just start the restart.bat in the frank-runner/specials/ibis-ladybug folder. This should
 build and run the test webapp with Ladybug. When Tomcat has been started by the Frank!Runner browse to:
