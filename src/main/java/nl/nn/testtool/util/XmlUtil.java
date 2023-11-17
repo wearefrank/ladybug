@@ -1,5 +1,5 @@
 /*
-   Copyright 2020-2022 WeAreFrank!, 2018 Nationale-Nederlanden
+   Copyright 2020-2023 WeAreFrank!, 2018 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -23,7 +23,6 @@ import java.io.PrintStream;
 import java.io.StringReader;
 import java.io.StringWriter;
 
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParserFactory;
 import javax.xml.transform.OutputKeys;
@@ -33,10 +32,13 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
+import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 
+import org.w3c.dom.Document;
 import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
@@ -68,11 +70,7 @@ public class XmlUtil {
 		SAXParserFactory factory = new org.apache.xerces.jaxp.SAXParserFactoryImpl();
 		try {
 			factory.newSAXParser().parse(inputSource, new DefaultHandler());
-		} catch (SAXException e) {
-			return false;
-		} catch (IOException e) {
-			return false;
-		} catch (ParserConfigurationException e) {
+		} catch (SAXException | IOException | ParserConfigurationException e) {
 			return false;
 		}
 		return true;
@@ -82,12 +80,33 @@ public class XmlUtil {
 		return new net.sf.saxon.TransformerFactoryImpl();
 	}
 
-	public static DocumentBuilderFactory getDocumentBuilderFactory() {
-		// Deprecated
-		// return new net.sf.saxon.dom.DocumentBuilderFactoryImpl();
-		// Xerces
-		// return new org.apache.xerces.jaxp.DocumentBuilderFactoryImpl();
-		return DocumentBuilderFactory.newInstance();
+	/**
+	 * Searches for the given node in a document
+	 * @param nodeName The name of the node as a String
+	 * @param doc The Document in which to look for the node
+	 * @return returns true if the given node exists
+	 */
+	public static boolean fileHasNode(String nodeName, Document doc) {
+		try {
+			if (nodeName.contains(":")) {
+				//if the given node has a namespace prefix, strip the prefix.
+				return getNodesByXPath("//*[local-name()='" + nodeName.substring(nodeName.indexOf(":") + 1) + "']", doc).getLength() != 0;
+			}
+			return getNodesByXPath("//*[local-name()='" + nodeName + "']", doc).getLength() != 0;
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	/**
+	 * Gets the nodelist from a document with xPath expression
+	 * @param doc document to convert to Nodelist
+	 * @param xPathExpression given xPathExpression to search by
+	 * @return return the nodelist from xPathExpression
+	 * @throws XPathExpressionException if there is an error in the XPath expression
+	 */
+	public static NodeList getNodesByXPath(String xPathExpression, Document doc) throws XPathExpressionException {
+		return (NodeList) createXPathExpression(xPathExpression).evaluate(doc.getDocumentElement(), XPathConstants.NODESET);
 	}
 
 	@SneakyThrows
@@ -99,8 +118,8 @@ public class XmlUtil {
 		return stringWriter.toString();
 	}
 
-	public static Node stringToNode(String string) throws SAXException, IOException, ParserConfigurationException {
-		return getDocumentBuilderFactory().newDocumentBuilder()
+	public static Node stringToNode(String string) throws SAXException, IOException {
+		return DocumentUtil.getDocumentBuilder()
 				.parse(new ByteArrayInputStream(string.getBytes())).getDocumentElement();
 	}
 }
