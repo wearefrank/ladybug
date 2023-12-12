@@ -101,13 +101,17 @@ Direct integration of the Ladybug has been done in the Ladybug test webapp:
 
 - https://github.com/ibissource/ibis-ladybug-test-webapp
 
+The Quarkus application to demo and test Ladybug:
+
+- https://github.com/ibissource/ladybug-quarkus
+
 And the Open ZaakBrug:
 
 - https://github.com/Sudwest-Fryslan/OpenZaakBrug
 
-The Ladybug test webapp doesn't contain much files so you can easily look at all the files and get an idea of how
-Ladybug has been integrated. The [next section](#how-to-change-and-test-ladybug) describes how to run the Ladybug test
-webapp. For the Open ZaakBrug the most important files to look at are:
+The first two project do not contain much files so you can easily look at all the files and get an idea of how Ladybug
+has been integrated. The [next section](#how-to-change-and-test-ladybug) describes how to run the Ladybug test webapp.
+For the Open ZaakBrug the most important files to look at are:
 
 - https://github.com/Sudwest-Fryslan/OpenZaakBrug/blob/master/src/main/java/nl/haarlem/translations/zdstozgw/Application.java
 - https://github.com/Sudwest-Fryslan/OpenZaakBrug/blob/master/src/main/resources/spring-ladybug.xml
