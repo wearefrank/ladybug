@@ -73,7 +73,7 @@ public class ParameterizedTypeImpl implements ParameterizedType {
      * <p> This method throws a MalformedParameterizedTypeException
      * under the following circumstances:
      * If the number of actual type arguments (i.e., the size of the
-     * array <tt>typeArgs</tt>) does not correspond to the number of
+     * array <var>typeArgs</var>) does not correspond to the number of
      * formal type arguments.
      * If any of the actual type arguments is not an instance of the
      * bounds on the corresponding formal.
@@ -82,7 +82,7 @@ public class ParameterizedTypeImpl implements ParameterizedType {
      * @param actualTypeArguments - a (possibly empty) array of types
      * representing the actual type arguments to the parameterized type
      * @param ownerType - the enclosing type, if known.
-     * @return An instance of <tt>ParameterizedType</tt>
+     * @return An instance of <var>ParameterizedType</var>
      * @throws MalformedParameterizedTypeException - if the instantiation
      * is invalid
      */
@@ -95,14 +95,14 @@ public class ParameterizedTypeImpl implements ParameterizedType {
 
 
     /**
-     * Returns an array of <tt>Type</tt> objects representing the actual type
+     * Returns an array of <var>Type</var> objects representing the actual type
      * arguments to this type.
      *
      * <p>Note that in some cases, the returned array be empty. This can occur
      * if this type represents a non-parameterized type nested within
      * a parameterized type.
      *
-     * @return an array of <tt>Type</tt> objects representing the actual type
+     * @return an array of <var>Type</var> objects representing the actual type
      *     arguments to this type
      * @throws TypeNotPresentException if any of the
      *     actual type arguments refers to a non-existent type declaration
@@ -116,10 +116,10 @@ public class ParameterizedTypeImpl implements ParameterizedType {
     }
 
     /**
-     * Returns the <tt>Type</tt> object representing the class or interface
+     * Returns the <var>Type</var> object representing the class or interface
      * that declared this type.
      *
-     * @return the <tt>Type</tt> object representing the class or interface
+     * @return the <var>Type</var> object representing the class or interface
      *     that declared this type
      */
     public Class<?> getRawType() {
@@ -128,15 +128,15 @@ public class ParameterizedTypeImpl implements ParameterizedType {
 
 
     /**
-     * Returns a <tt>Type</tt> object representing the type that this type
-     * is a member of.  For example, if this type is <tt>O&lt;T&gt;.I&lt;S&gt;</tt>,
-     * return a representation of <tt>O&lt;T&gt;</tt>.
+     * Returns a <var>Type</var> object representing the type that this type
+     * is a member of.  For example, if this type is <var>O&lt;T&gt;.I&lt;S&gt;</var>,
+     * return a representation of <var>O&lt;T&gt;</var>.
      *
-     * <p>If this type is a top-level type, <tt>null</tt> is returned.
+     * <p>If this type is a top-level type, <var>null</var> is returned.
      *
-     * @return a <tt>Type</tt> object representing the type that
+     * @return a <var>Type</var> object representing the type that
      *     this type is a member of. If this type is a top-level type,
-     *     <tt>null</tt> is returned
+     *     <var>null</var> is returned
      * @throws TypeNotPresentException if the owner type
      *     refers to a non-existent type declaration
      * @throws MalformedParameterizedTypeException if the owner type
