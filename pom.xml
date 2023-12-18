@@ -321,9 +321,13 @@
           </execution>
         </executions>
         <configuration>
+          <!-- Prevent following warning with JDK 11 and higher: The code being documented uses modules but the packages defined in https://docs.oracle.com/javase/8/docs/api/ are in the unnamed module. -->
           <source>1.8</source>
           <additionalJOptions>
+            <!-- Make CI/CD fail on Javadoc warnings (Reports an error if any warnings occur, see https://docs.oracle.com/en/java/javase/21/docs/specs/man/javadoc.html) -->
             <additionalJOption>-Xwerror</additionalJOption>
+            <!-- Prevent following warning with JDK 17 and higher: no comment (JDK 21 also gives: no main description) -->
+            <additionalJOption>-Xdoclint:-missing</additionalJOption>
           </additionalJOptions>
         </configuration>
       </plugin>

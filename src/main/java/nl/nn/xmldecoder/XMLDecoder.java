@@ -29,9 +29,6 @@ import java.beans.XMLEncoder;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
-import java.security.AccessControlContext;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 
 import org.xml.sax.InputSource;
 import org.xml.sax.helpers.DefaultHandler;
@@ -66,7 +63,6 @@ import org.xml.sax.helpers.DefaultHandler;
  * @author Philip Milne
  */
 public class XMLDecoder {
-    private final AccessControlContext acc = AccessController.getContext();
     private final DocumentHandler handler = new DocumentHandler();
     private final InputSource input;
     private Object owner;
@@ -195,15 +191,7 @@ public class XMLDecoder {
             return false;
         }
         if (this.array == null) {
-            if ((this.acc == null) && (null != System.getSecurityManager())) {
-                throw new SecurityException("AccessControlContext is not set");
-            }
-            AccessController.doPrivileged(new PrivilegedAction<Void>() {
-                public Void run() {
-                    XMLDecoder.this.handler.parse(XMLDecoder.this.input);
-                    return null;
-                }
-            }, this.acc);
+            XMLDecoder.this.handler.parse(XMLDecoder.this.input);
             this.array = this.handler.getObjects();
         }
         return true;
