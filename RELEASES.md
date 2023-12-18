@@ -6,6 +6,7 @@ Ladybug Test Tool release notes
 Upcoming (2.3)
 --------------
 
+- Fix performance impact of max memory usage check
 - Add maxStorageSize to DatabaseStorage
 - Add HideMessageTransformer and LinkingMessageTransformer
 - Add run result info to Debug tab

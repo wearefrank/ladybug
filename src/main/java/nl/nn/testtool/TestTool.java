@@ -363,6 +363,7 @@ public class TestTool {
 						report.setStubStrategy(originalReport.getStubStrategy());
 						report.setOriginalReport(originalReport);
 					}
+					report.init();
 					reportsInProgress.add(0, report);
 					reportsInProgressByCorrelationId.put(correlationId, report);
 					numberOfReportsInProgress++;

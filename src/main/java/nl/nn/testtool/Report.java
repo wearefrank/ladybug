@@ -76,11 +76,11 @@ public class Report implements Serializable {
 	private List<Checkpoint> checkpoints = new ArrayList<Checkpoint>();
 	private String transformation;
 	private String variableCsv;
-	// Please note that the get and set methods need @Transient annotation for
-	// XmlEncoder to not store the property. This is in contrast to
-	// serialization / ObjectOutputStream that is using variables (and doesn't
-	// look at get and set methods) and needs a variable to be declared
-	// transient to not store the field.
+	// Please note that the get and set methods need @Transient annotation for XmlEncoder to not store the property.
+	// This is in contrast to serialization / ObjectOutputStream that is using variables (and doesn't look at get and
+	// set methods) and needs a variable to be declared transient to not store the field.
+	// Also note that ObjectInputStream will use default values 0 and false for transient primitives, see
+	// https://stackoverflow.com/questions/10531076/serialization-via-objectinputstream-and-transient-fields
 	private transient String mainThread;
 	private transient long mainThreadFinishedTime = TIME_NOT_SET_VALUE;
 	private transient List<String> threads = new ArrayList<String>();
@@ -111,6 +111,9 @@ public class Report implements Serializable {
 	// When using CXF see jsonProvider in cxf-beans.xml
 	private transient Integer transientStorageId;
 	private transient long storageSize;
+	// When set to a different value then 0 it will still be 0 after being initialized by ObjectInputStream, see
+	// comment above about default values for ObjectInputStream
+	private transient long estimatedMemoryUsage = 0L;
 	private transient ReportXmlTransformer reportXmlTransformer;
 	private transient ReportXmlTransformer globalReportXmlTransformer;
 	private transient String xml;
@@ -124,15 +127,6 @@ public class Report implements Serializable {
 	private transient boolean logMaxMemoryUsage = true;
 	private transient Map<Object, Set<Checkpoint>> streamingMessageListeners = new HashMap<Object, Set<Checkpoint>>();
 	private transient Map<Object, StreamingMessageResult> streamingMessageResults = new HashMap<Object, StreamingMessageResult>();
-
-	public Report() {
-		mainThread = Thread.currentThread().getName();
-		threads.add(mainThread);
-		threadCheckpointIndex.put(mainThread, 0);
-		threadFirstLevel.put(mainThread, 0);
-		threadLevel.put(mainThread, 0);
-		threadsActiveCount++;
-	}
 
 	@Transient
 	@JsonIgnore
@@ -313,6 +307,15 @@ public class Report implements Serializable {
 	@Transient
 	public boolean isReportFilterMatching() {
 		return reportFilterMatching;
+	}
+
+	protected void init() {
+		mainThread = Thread.currentThread().getName();
+		threads.add(mainThread);
+		threadCheckpointIndex.put(mainThread, 0);
+		threadFirstLevel.put(mainThread, 0);
+		threadLevel.put(mainThread, 0);
+		threadsActiveCount++;
 	}
 
 	protected <T> T checkpoint(String childThreadId, String sourceClassName, String name, T message,
@@ -572,6 +575,7 @@ public class Report implements Serializable {
 			Integer value = threadCheckpointIndex.get(key);
 			threadCheckpointIndex.put(key, value + 1);
 		}
+		estimatedMemoryUsage += checkpoint.getEstimatedMemoryUsage();
 		if (log.isDebugEnabled()) {
 			log.debug("Added checkpoint " + getCheckpointLogDescription(name, checkpointType, level));
 		}
@@ -795,9 +799,14 @@ public class Report implements Serializable {
 	}
 
 	public long getEstimatedMemoryUsage() {
-		long estimatedMemoryUsage = 0L;
-		for (Checkpoint checkpoint : checkpoints) {
-			estimatedMemoryUsage += checkpoint.getEstimatedMemoryUsage();
+		// Variable estimatedMemoryUsage is transient so it needs to be recalculated after the Report object has been
+		// loaded from storage. In other situations it should not be recalculated because this method is being called
+		// every time a checkpoint is added (to check whether the max memory usage has been exceeded) so recalculating
+		// it every time would be bad for performance.
+		if (estimatedMemoryUsage == 0L && mainThread == null) {
+			for (Checkpoint checkpoint : checkpoints) {
+				estimatedMemoryUsage += checkpoint.getEstimatedMemoryUsage();
+			}
 		}
 		return estimatedMemoryUsage;
 	}

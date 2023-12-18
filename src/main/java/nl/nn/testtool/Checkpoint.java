@@ -491,7 +491,7 @@ public class Checkpoint implements Serializable, Cloneable {
 		if (message == null) {
 			return 0L;
 		} else {
-			return message.length() * 2;
+			return message.length() * 2L;
 		}
 	}
 
