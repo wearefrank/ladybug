@@ -24,14 +24,6 @@
 		<property name="metadataExtractor" ref="metadataExtractor"/>
 	</bean>
 
-	<bean name="metadataExtractor" class="nl.nn.testtool.MetadataExtractor">
-		<property name="extraMetadataFieldExtractors">
-			<list>
-				<bean class="nl.nn.testtool.metadata.StatusMetadataFieldExtractor"/>
-			</list>
-		</property>
-	</bean>
-
 	<!-- Without connection pooling (takes much longer to run all tests) -->
 	<!-- bean name="dataSource" class="org.h2.jdbcx.JdbcDataSource">
 		<property name="URL" value="jdbc:h2:./data/database-storage/ladybug"/>
