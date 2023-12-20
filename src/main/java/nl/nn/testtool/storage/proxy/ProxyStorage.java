@@ -1,5 +1,5 @@
 /*
-   Copyright 2022 WeAreFrank!
+   Copyright 2022-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,9 +15,13 @@
 */
 package nl.nn.testtool.storage.proxy;
 
+import java.lang.invoke.MethodHandles;
 import java.util.List;
 
 import javax.annotation.PostConstruct;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import lombok.Setter;
 import nl.nn.testtool.MetadataExtractor;
@@ -31,13 +35,17 @@ import nl.nn.testtool.storage.proofofmigration.ProofOfMigrationStorage;
 import nl.nn.testtool.storage.xml.XmlStorage;
 
 /**
- * Storage proxy class than can help Spring XML configuration to become more flexible. E.g. see #{testStorageActive} in
- * Frank!Framework's springIbisTestTool.xml
+ * Storage proxy class than can help Spring XML configuration to become more flexible (e.g. see #{testStorageActive} in
+ * Frank!Framework's springIbisTestTool.xml) and when a storage cannot be initialized it will, when specified, try
+ * another storage. This can be used to have the database storage check whether the Ladybug tables are available and if not
+ * use another storage (see proxy storage usage in Frank!Framework's springIbisTestTool.xml).
  * 
  * @author Jaco de Groot
  */
 public class ProxyStorage implements CrudStorage, LogStorage {
+	private static Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 	private @Setter Storage destination;
+	private @Setter Storage alternativeDestination;
 
 	@Override
 	public void setName(String name) {
@@ -70,6 +78,20 @@ public class ProxyStorage implements CrudStorage, LogStorage {
 
 	@PostConstruct
 	public void init() throws StorageException {
+		try {
+			init(destination);
+		} catch(StorageException e) {
+			if (alternativeDestination != null) {
+				log.debug("Could not init " + destination.getName() + " will try " + alternativeDestination.getName()
+						+ "instead");
+				init(alternativeDestination);
+			} else {
+				throw e;
+			}
+		}
+	}
+
+	public void init(Storage destination) throws StorageException {
 		if (destination instanceof nl.nn.testtool.storage.file.Storage) {
 			((nl.nn.testtool.storage.file.Storage)destination).init();
 		} else if (destination instanceof nl.nn.testtool.storage.file.TestStorage) {

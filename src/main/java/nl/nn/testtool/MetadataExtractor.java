@@ -15,30 +15,24 @@
 */
 package nl.nn.testtool;
 
-import java.lang.invoke.MethodHandles;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Iterator;
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  * @author Jaco de Groot
  */
 public class MetadataExtractor {
-	private static Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 	public static final int VALUE_TYPE_OBJECT = 0;
 	public static final int VALUE_TYPE_STRING = 1;
 	public static final int VALUE_TYPE_GUI = 2;
 	private static final DateTimeFormatter FORMAT_DATE_TIME = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS").withZone(ZoneId.systemDefault());
-	public List<MetadataFieldExtractor> extraMetadataFieldExtractors;
-
-	public void setExtraMetadataFieldExtractors(List<MetadataFieldExtractor> extraMetadataFieldExtractors) {
-		this.extraMetadataFieldExtractors = extraMetadataFieldExtractors;
-	}
+	public @Setter @Getter List<MetadataFieldExtractor> extraMetadataFieldExtractors;
 
 	public String getLabel(String metadataName) {
 		// TODO use reflection or spring or something like that for getLabel and getShortLabel?
@@ -247,6 +241,18 @@ public class MetadataExtractor {
 			return new Integer(metadataValue);
 		}
 		return metadataValue;
+	}
+
+	public boolean isInteger(String metadataName) {
+		return metadataName.equals("storageId") || metadataName.equals("numberOfCheckpoints");
+	}
+
+	public boolean isLong(String metadataName) {
+		return metadataName.equals("duration") || metadataName.equals("estimatedMemoryUsage") || metadataName.equals("storageSize");
+	}
+
+	public boolean isTimestamp(String metadataName) {
+		return metadataName.equals("endTime");
 	}
 
 }

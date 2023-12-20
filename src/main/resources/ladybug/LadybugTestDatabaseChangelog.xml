@@ -1,0 +1,22 @@
+<databaseChangeLog
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.8.xsd"
+	>
+	<!-- Separate changelog to make it possible to use database storage only as debug storage or as test storage -->
+	<changeSet id="LadybugTest:1" author="Jaco de Groot">
+		<comment>Add table LADYBUGTEST</comment>
+		<createTable tableName="LADYBUGTEST">
+			<column name="STORAGEID" type="INTEGER" autoIncrement="true">
+				<constraints primaryKey="true" nullable="false" primaryKeyName="PK_LADYBUGTEST"/>
+			</column>
+			<column name="PATH"  type="VARCHAR(4096)"/><!-- Like Linux for most filesystems (https://unix.stackexchange.com/questions/32795/what-is-the-maximum-allowed-filename-and-folder-size-with-ecryptfs) -->
+			<column name="NAME" type="VARCHAR(256)"/>
+			<column name="REPORT" type="BLOB"/>
+			<column name="DESCRIPTION"  type="VARCHAR(10000)"/>
+		</createTable>
+		<createIndex tableName="LADYBUGTEST" indexName="IX_LADYBUGTEST">
+			<column name="STORAGEID"/>
+		</createIndex>
+	</changeSet>
+</databaseChangeLog>

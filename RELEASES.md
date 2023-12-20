@@ -6,6 +6,10 @@ Ladybug Test Tool release notes
 Upcoming (2.3)
 --------------
 
+- Add Liquibase xml files (remove experimental version from test jar)
+- Add alternative destination to proxy storage
+- Implement database test storage
+- Optionally store report xml in database
 - Fix performance impact of max memory usage check
 - Add maxStorageSize to DatabaseStorage
 - Add HideMessageTransformer and LinkingMessageTransformer

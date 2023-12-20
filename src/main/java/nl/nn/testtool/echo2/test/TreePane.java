@@ -1,5 +1,5 @@
 /*
-   Copyright 2020, 2022 WeAreFrank!, 2018 Nationale-Nederlanden
+   Copyright 2020, 2022-2023 WeAreFrank!, 2018 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -119,6 +119,7 @@ public class TreePane extends nl.nn.testtool.echo2.reports.TreePane implements B
 			// TODO iets doen
 			e.printStackTrace();
 		}
+		Collections.sort(metadata, new MetadataRecordComparator(1, -1));
 		List<String> pathsToAdd = new ArrayList<String>();
 		Iterator<List<Object>> metadataIterator = metadata.iterator();
 		while (metadataIterator.hasNext()) {
@@ -131,7 +132,6 @@ public class TreePane extends nl.nn.testtool.echo2.reports.TreePane implements B
 				pathsToAdd.add(path);
 			}
 		}
-		Collections.sort(pathsToAdd);
 		DefaultMutableTreeNode selectNode = addPaths(pathsToAdd, rootNode, selectPath);
 		if (selectNode == null) {
 			selectNode = rootNode;

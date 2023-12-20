@@ -19,7 +19,7 @@
 		</property>
 	</bean>
 
-	<bean name="debugStorage" class="nl.nn.testtool.storage.file.Storage" autowire="byName" init-method="init">
+	<bean name="debugStorage" class="nl.nn.testtool.storage.file.Storage" autowire="byName">
 		<property name="reportsFilename" value="data/file-storage/ladybug.tts"/>
 		<property name="metadataFilename" value="data/file-storage/ladybug.ttm"/>
 		<property name="metadataExtractor">

@@ -16,6 +16,7 @@
 package nl.nn.testtool.storage.database;
 
 import java.io.ByteArrayInputStream;
+import java.io.StringReader;
 import java.lang.invoke.MethodHandles;
 import java.math.BigDecimal;
 import java.sql.Blob;
@@ -44,6 +45,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;
 import nl.nn.testtool.MetadataExtractor;
+import nl.nn.testtool.MetadataFieldExtractor;
 import nl.nn.testtool.Report;
 import nl.nn.testtool.storage.CrudStorage;
 import nl.nn.testtool.storage.LogStorage;
@@ -61,23 +63,45 @@ public class DatabaseStorage implements LogStorage, CrudStorage {
 	protected static final String TIMESTAMP_PATTERN = "yyyy-MM-dd'T'HH:mm:ss.SSS";
 	protected @Setter @Getter String name;
 	protected @Setter String table;
-	protected @Setter @Getter @Inject @Autowired List<String> metadataNames; // Used as column names in this storage
+	protected @Setter @Getter Boolean checkTableExists;
+	protected @Setter @Inject @Autowired List<String> metadataNames; // Used as column names in this storage
 	protected @Setter String storageIdColumn;
-	protected @Setter List<String> integerColumns; // Number and timestamp columns enable range searching
-	protected @Setter List<String> longColumns;
-	protected @Setter List<String> timestampColumns;
 	protected @Setter List<String> bigValueColumns; // Columns for which to limit the number of retrieved characters to 100
-	protected @Setter long maxStorageSize = -1;
+	protected @Setter Boolean storeReportXml;
+	protected @Setter Long maxStorageSize;
 	protected @Setter @Getter @Inject @Autowired JdbcTemplate jdbcTemplate;
 	protected @Setter @Getter @Inject @Autowired DbmsSupport dbmsSupport;
 	protected @Setter @Getter @Inject @Autowired MetadataExtractor metadataExtractor;
 	protected String lastExceptionMessage;
+
+	// Return defaults in get methods to make is possible for overriding class to return different default values when
+	// set method hasn't been called (by checking for null value)
 
 	public String getTable() {
 		if (table == null) {
 			return "LADYBUG";
 		} else {
 			return table;
+		}
+	}
+
+	public boolean isCheckTableExists() {
+		if (checkTableExists == null) {
+			return true;
+		} else {
+			return checkTableExists;
+		}
+	}
+
+	public List<String> getMetadataNames() {
+		if (getMetadataExtractor().getExtraMetadataFieldExtractors() != null) {
+			List<String> metadataNames = new ArrayList<String>(this.metadataNames);
+			for (MetadataFieldExtractor extractor : getMetadataExtractor().getExtraMetadataFieldExtractors()) {
+				metadataNames.add(extractor.getName());
+			}
+			return metadataNames;
+		} else {
+			return metadataNames;
 		}
 	}
 
@@ -89,40 +113,36 @@ public class DatabaseStorage implements LogStorage, CrudStorage {
 		}
 	}
 
-	public List<String> getIntegerColumns() {
-		if (integerColumns == null) {
-			return new ArrayList<String>(Arrays.asList("storageId", "numberOfCheckpoints"));
-		} else {
-			return integerColumns;
-		}
-	}
-
-	public List<String> getLongColumns() {
-		if (longColumns == null) {
-			return new ArrayList<String>(Arrays.asList("duration", "estimatedMemoryUsage", "storageSize"));
-		} else {
-			return longColumns;
-		}
-	}
-
-	public List<String> getTimestampColumns() {
-		if (timestampColumns == null) {
-			return new ArrayList<String>(Arrays.asList("endTime"));
-		} else {
-			return timestampColumns;
-		}
-	}
-
 	public List<String> getBigValueColumns() {
 		if (bigValueColumns == null) {
-			return new ArrayList<String>(Arrays.asList());
+			return new ArrayList<String>(Arrays.asList("reportXml"));
 		} else {
 			return bigValueColumns;
 		}
 	}
 
+	public boolean isStoreReportXml() {
+		if (storeReportXml == null) {
+			return false;
+		} else {
+			return storeReportXml;
+		}
+	}
+
+	public long getMaxStorageSize() {
+		if (maxStorageSize == null) {
+			return 100 * 1024 * 1024;
+		} else {
+			return maxStorageSize;
+		}
+	}
+
 	@PostConstruct
 	public void init() throws StorageException {
+		if (isCheckTableExists()) {
+			// Throw exception if table doesn't exist so ProxyStorage (when used) can try an alternative destination
+			getSize();
+		}
 		if (!(getMetadataNames() != null && getMetadataNames().contains(getStorageIdColumn()))) {
 			throw new StorageException("List metadataNames " + metadataNames
 					+ " should at least contain storageId column name '" + getStorageIdColumn() + "'");
@@ -132,7 +152,12 @@ public class DatabaseStorage implements LogStorage, CrudStorage {
 	@Override
 	public void store(Report report) throws StorageException {
 		byte[] reportBytes = Export.getReportBytes(report);
-		report.setStorageSize(new Long(reportBytes.length));
+		String reportXml = report.toXml();
+		long storageSize = reportBytes.length;
+		if (isStoreReportXml()) {
+			storageSize = storageSize + reportXml.length();
+		}
+		report.setStorageSize(storageSize);
 		StringBuilder query = new StringBuilder("insert into " + getTable() + " (");
 		for (String column : getMetadataNames()) {
 			// Column storageId is expected to be an auto increment column
@@ -143,7 +168,11 @@ public class DatabaseStorage implements LogStorage, CrudStorage {
 				query.append(column);
 			}
 		}
-		query.append(", report) values (");
+		query.append(", report");
+		if (isStoreReportXml()) {
+			query.append(", reportxml");
+		}
+		query.append(") values (");
 		for (String column : getMetadataNames()) {
 			if (!column.equals(getStorageIdColumn())) {
 				if (query.charAt(query.length() - 1) != '(') {
@@ -152,7 +181,11 @@ public class DatabaseStorage implements LogStorage, CrudStorage {
 				query.append("?");
 			}
 		}
-		query.append(", ?)");
+		query.append(", ?");
+		if (isStoreReportXml()) {
+			query.append(", ?");
+		}
+		query.append(")");
 		log.debug("Store report query: " + query.toString());
 		jdbcTemplate.update(query.toString(),
 				new PreparedStatementSetter() {
@@ -161,11 +194,11 @@ public class DatabaseStorage implements LogStorage, CrudStorage {
 						int i = 1;
 						for (String column : getMetadataNames()) {
 							if (!column.equals(getStorageIdColumn())) {
-								if (getIntegerColumns().contains(column)) {
+								if (isInteger(column)) {
 									ps.setInt(i, (Integer)metadataExtractor.getMetadata(report, column, MetadataExtractor.VALUE_TYPE_OBJECT));
-								} else if (getLongColumns().contains(column)) {
+								} else if (isLong(column)) {
 									ps.setLong(i, (Long)metadataExtractor.getMetadata(report, column, MetadataExtractor.VALUE_TYPE_OBJECT));
-								} else if (getTimestampColumns().contains(column)) {
+								} else if (isTimestamp(column)) {
 									ps.setTimestamp(i, new Timestamp((Long)metadataExtractor.getMetadata(report, column, MetadataExtractor.VALUE_TYPE_OBJECT)));
 								} else {
 									ps.setString(i, (String)metadataExtractor.getMetadata(report, column, MetadataExtractor.VALUE_TYPE_OBJECT));
@@ -174,13 +207,17 @@ public class DatabaseStorage implements LogStorage, CrudStorage {
 							}
 						}
 						ps.setBlob(i, new ByteArrayInputStream(reportBytes));
+						i++;
+						if (isStoreReportXml()) {
+							ps.setClob(i, new StringReader(reportXml));
+						}
 					}
 				});
-		if (maxStorageSize > -1) {
+		if (getMaxStorageSize() > -1) {
 			String averageQuery = "select avg(storageSize) from " + getTable();
 			int averageStorageSize = jdbcTemplate.queryForObject(averageQuery, Integer.class);
 			log.debug("Get average storage size query (returned " + averageStorageSize + "): " + averageQuery);
-			int maxNrOfReports = (int)(maxStorageSize / averageStorageSize);
+			int maxNrOfReports = (int)(getMaxStorageSize() / averageStorageSize);
 			String deleteQuery = "delete from " + getTable() + " where " + getStorageIdColumn()
 					+ " <= ((select max(" + getStorageIdColumn() + ") from " + getTable() + ") - ?)";
 			delete(deleteQuery, maxNrOfReports);
@@ -206,32 +243,34 @@ public class DatabaseStorage implements LogStorage, CrudStorage {
 
 	@Override
 	public Report getReport(Integer storageId) throws StorageException {
-		String query = "select report, storageSize from " + getTable() + " where " + getStorageIdColumn() + " = ?";
+		String query = "select report from " + getTable() + " where " + getStorageIdColumn() + " = ?";
 		log.debug("Get report query: " + query);
 		List<Report> result = jdbcTemplate.query(query, new Object[]{storageId}, new int[] {Types.INTEGER},
-				(resultSet, rowNum) -> getReport(storageId, resultSet.getBlob(1), resultSet.getLong(2)));
+				(resultSet, rowNum) -> getReport(storageId, resultSet.getBlob(1)));
 		return result.get(0);
 	}
 
 	// StorageException is allowed by Storage.getReport(), hence no need to handle it in the lambda expression that will
 	// call this method
 	@SneakyThrows
-	private static Report getReport(Integer storageId, Blob blob, long storageSize) {
+	private static Report getReport(Integer storageId, Blob blob) {
 		return Import.getReport(blob.getBinaryStream(), storageId, blob.length(), log);
 	}
 
-// TODO: Implement for CrudStorage
-// TODO: Write JUnit test or test with ibis-ladybug-test-webapp
 	@Override
 	public void update(Report report) throws StorageException {
-		throw new StorageException("Update method is not implemented yet...");
+		delete(report.getStorageId());
+		store(report);
 	}
 
-// TODO: Write JUnit test or test with ibis-ladybug-test-webapp
 	@Override
 	public void delete(Report report) throws StorageException {
+		delete(report.getStorageId());
+	}
+
+	private void delete(Integer storageId) throws StorageException {
 		String query = "delete from " + getTable() + " where " + getStorageIdColumn() + " = ?";
-		delete(query, report.getStorageId());
+		delete(query, storageId);
 	}
 
 	private void delete(String query, int i) throws StorageException {
@@ -244,7 +283,7 @@ public class DatabaseStorage implements LogStorage, CrudStorage {
 					}
 				});
 	}
-// TODO: Write JUnit test or test with ibis-ladybug-test-webapp
+
 	@Override
 	public void clear() throws StorageException {
 		throw new StorageException("Clear method is not implemented yet...");
@@ -266,11 +305,9 @@ public class DatabaseStorage implements LogStorage, CrudStorage {
 		query.append("select count(*) from " + getTable());
 	}
 
-// TODO: Write JUnit test or test with ibis-ladybug-test-webapp
 	@Override
 	public List<Integer> getStorageIds() throws StorageException {
-		String query = "select " + getStorageIdColumn() + " from " + getTable() + " order by "
-				+ getStorageIdColumn() + " desc";
+		String query = getStorageIdsQuery();
 		log.debug("Get storage id's query: " + query);
 		try {
 			List<Integer> storageIds = jdbcTemplate.query(query, (rs, rowNum) -> rs.getInt(1));
@@ -278,6 +315,10 @@ public class DatabaseStorage implements LogStorage, CrudStorage {
 		} catch(DataAccessException e){
 			throw new StorageException("Could not read storage id's", e);
 		}
+	}
+
+	protected String getStorageIdsQuery() {
+		return "select " + getStorageIdColumn() + " from " + getTable() + " order by " + getStorageIdColumn() + " desc";
 	}
 
 	@Override
@@ -291,25 +332,27 @@ public class DatabaseStorage implements LogStorage, CrudStorage {
 		}
 		List<String> rangeSearchValues = new ArrayList<String>();
 		List<String> regexSearchValues = new ArrayList<String>();
-		for (int i = 0; i < searchValues.size(); i++) {
-			String searchValue = searchValues.get(i);
-			if (searchValue != null && searchValue.startsWith("<") && searchValue.endsWith(">") && (
-					getIntegerColumns().contains(metadataNames.get(i))
-					|| getLongColumns().contains(metadataNames.get(i))
-					|| getTimestampColumns().contains(metadataNames.get(i))
-					)) {
-				rangeSearchValues.add(searchValue);
-				regexSearchValues.add(null);
-				searchValues.remove(i);
-				searchValues.add(i, null);
-			} else if (searchValue != null && searchValue.startsWith("(") && searchValue.endsWith(")")) {
-				rangeSearchValues.add(null);
-				regexSearchValues.add(searchValue);
-				searchValues.remove(i);
-				searchValues.add(i, null);
-			} else {
-				rangeSearchValues.add(null);
-				regexSearchValues.add(null);
+		if (searchValues != null) {
+			for (int i = 0; i < searchValues.size(); i++) {
+				String searchValue = searchValues.get(i);
+				if (searchValue != null && searchValue.startsWith("<") && searchValue.endsWith(">") && (
+						isInteger(metadataNames.get(i))
+						|| isLong(metadataNames.get(i))
+						|| isTimestamp(metadataNames.get(i))
+						)) {
+					rangeSearchValues.add(searchValue);
+					regexSearchValues.add(null);
+					searchValues.remove(i);
+					searchValues.add(i, null);
+				} else if (searchValue != null && searchValue.startsWith("(") && searchValue.endsWith(")")) {
+					rangeSearchValues.add(null);
+					regexSearchValues.add(searchValue);
+					searchValues.remove(i);
+					searchValues.add(i, null);
+				} else {
+					rangeSearchValues.add(null);
+					regexSearchValues.add(null);
+				}
 			}
 		}
 		StringBuilder query = new StringBuilder();
@@ -327,11 +370,11 @@ public class DatabaseStorage implements LogStorage, CrudStorage {
 							List<Object> row = new ArrayList<Object>();
 							for (int i = 0; i < metadataNames.size(); i++) {
 								Object value = null;
-								if (getIntegerColumns().contains(metadataNames.get(i))) {
+								if (isInteger(metadataNames.get(i))) {
 									value = rs.getInt(i + 1);
-								} else if (getLongColumns().contains(metadataNames.get(i))) {
+								} else if (isLong(metadataNames.get(i))) {
 									value = rs.getLong(i + 1);
-								} else if (getTimestampColumns().contains(metadataNames.get(i))) {
+								} else if (isTimestamp(metadataNames.get(i))) {
 									value = rs.getTimestamp(i + 1).getTime();
 								} else {
 									value = rs.getString(i + 1);
@@ -346,10 +389,12 @@ public class DatabaseStorage implements LogStorage, CrudStorage {
 			throw new StorageException("Could not read metadata", e);
 		}
 		postProcessMetadataResult(metadata, maxNumberOfRecords, metadataNames, searchValues, metadataValueType);
-		for (int i = 0; i < metadata.size(); i++) {
-			if (!SearchUtil.matches((List<Object>)metadata.get(i), regexSearchValues)) {
-				metadata.remove(i);
-				i--;
+		if (searchValues != null) {
+			for (int i = 0; i < metadata.size(); i++) {
+				if (!SearchUtil.matches((List<Object>)metadata.get(i), regexSearchValues)) {
+					metadata.remove(i);
+					i--;
+				}
 			}
 		}
 		return metadata;
@@ -366,7 +411,7 @@ public class DatabaseStorage implements LogStorage, CrudStorage {
 			} else {
 				query.append(", ");
 			}
-			if (getBigValueColumns().contains(metadataName)) {
+			if (isBigValue(metadataName)) {
 				query.append("substr(" + metadataName + ", 1, 100)");
 			} else {
 				query.append(metadataName);
@@ -392,16 +437,16 @@ public class DatabaseStorage implements LogStorage, CrudStorage {
 					String searchValueRight = searchValue.substring(j + 1,
 							searchValue.length() - 1);
 					if (StringUtils.isNotEmpty(searchValueLeft)) {
-						if (getIntegerColumns().contains(column) || getLongColumns().contains(column)) {
+						if (isInteger(column) || isLong(column)) {
 							addNumberExpression(query, args, argTypes, column, ">=", searchValueLeft);
-						} else if (getTimestampColumns().contains(column)) {
+						} else if (isTimestamp(column)) {
 							addTimestampExpression(query, args, argTypes, column, ">=", searchValueLeft);
 						}
 					}
 					if (StringUtils.isNotEmpty(searchValueRight)) {
-						if (getIntegerColumns().contains(column) || getLongColumns().contains(column)) {
+						if (isInteger(column) || isLong(column)) {
 							addNumberExpression(query, args, argTypes, column, "<=", searchValueRight);
-						} else if (getTimestampColumns().contains(column)) {
+						} else if (isTimestamp(column)) {
 							addTimestampExpression(query, args, argTypes, column, "<=", searchValueRight);
 						}
 					}
@@ -410,18 +455,20 @@ public class DatabaseStorage implements LogStorage, CrudStorage {
 				}
 			}
 		}
-		for (int i = 0; i < searchValues.size(); i++) {
-			String searchValue = searchValues.get(i);
-			if (StringUtils.isNotEmpty(searchValue)) {
-				String column = metadataNames.get(i);
-				if (searchValue.equals("null")) {
-					addExpression(query, column + " is null");
-				} else if (getIntegerColumns().contains(column)) {
-					addNumberExpression(query, args, argTypes, column, "<=", searchValue);
-				} else if (getTimestampColumns().contains(column)) {
-					addTimestampExpression(query, args, argTypes, column, "<=", searchValue);
-				} else {
-					addLikeOrEqualsExpression(query, args, argTypes, column, searchValue);
+		if (searchValues != null) {
+			for (int i = 0; i < searchValues.size(); i++) {
+				String searchValue = searchValues.get(i);
+				if (StringUtils.isNotEmpty(searchValue)) {
+					String column = metadataNames.get(i);
+					if (searchValue.equals("null")) {
+						addExpression(query, column + " is null");
+					} else if (isInteger(column)) {
+						addNumberExpression(query, args, argTypes, column, "<=", searchValue);
+					} else if (isTimestamp(column)) {
+						addTimestampExpression(query, args, argTypes, column, "<=", searchValue);
+					} else {
+						addLikeOrEqualsExpression(query, args, argTypes, column, searchValue);
+					}
 				}
 			}
 		}
@@ -556,6 +603,22 @@ public class DatabaseStorage implements LogStorage, CrudStorage {
 		}
 	}
 
+	public boolean isInteger(String column) {
+		return metadataExtractor.isInteger(column);
+	}
+
+	public boolean isLong(String column) {
+		return metadataExtractor.isLong(column);
+	}
+
+	public boolean isTimestamp(String column) {
+		return metadataExtractor.isTimestamp(column);
+	}
+
+	public boolean isBigValue(String column) {
+		return getBigValueColumns().contains(column);
+	}
+
 	@Override
 	public int getFilterType(String column) {
 		return FILTER_RESET;
@@ -569,10 +632,10 @@ public class DatabaseStorage implements LogStorage, CrudStorage {
 	public String getUserHelp(String column) {
 		String userHelpBase = SearchUtil.getUserHelpWildcards();
 		String userHelpBaseNonString = "Search all rows which are less than or equal to the search value.";
-		if (getIntegerColumns().contains(column) || getLongColumns().contains(column)) {
+		if (isInteger(column) || isLong(column)) {
 			userHelpBase = userHelpBaseNonString
 					+ " When the search value starts with < and ends with > a range search is done between and including the specified values separated by |.";
-		} else if (getTimestampColumns().contains(column)) {
+		} else if (isTimestamp(column)) {
 			userHelpBase = userHelpBaseNonString
 				+ " When the search value only complies with the beginning of pattern yyyy-MM-dd'T'HH:mm:ss.SSS, it will be supplemented with the end of 9999-12-31T23:59:59.999";
 		}

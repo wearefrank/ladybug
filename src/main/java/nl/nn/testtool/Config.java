@@ -47,10 +47,16 @@ import nl.nn.testtool.transform.ReportXmlTransformer;
 
 /**
  * <p>
+ * Default configuration / wiring of beans to minimize the Spring (xml) / Quarkus configuration needed to integrate
+ * Ladybug into an application.
+ * </p>
+ * 
+ * <p>
  * For classes with <code>@Inject</code>, <code>@Autowired</code> and/or <code>@PostConstruct</code> annotations add
  * <code>@Bean</code> methods to this class for Spring with <code>@Scope("singleton")</code> or
- * <code>@Scope("prototype")</code> and add <code>@Dependent</code> or <code>@Singleton</code> to those classes for
- * Quarkus.
+ * <code>@Scope("prototype")</code> and for Quarkus add <code>@Produces</code> and optionally <code>@Singleton</code> to
+ * this class or add <code>@Dependent</code> or <code>@Singleton</code> to the classes with <code>@Inject</code>,
+ * <code>@Autowired</code> and/or <code>@PostConstruct</code> annotations.
  * </p>
  * 
  * <p>
@@ -74,10 +80,10 @@ import nl.nn.testtool.transform.ReportXmlTransformer;
  * </ul>
  * 
  * Quarkus related:
- *  
+ * 
  * <ul>
- *   <li>Quarkus doesn't wire and init beans returned by the methods in this class but will do it for
- *   <code>@Dependent</code> and <code>@Singleton</code> classes</li>
+ *   <li>Quarkus doesn't wire and init beans returned by the methods in this class but will do it for beans created
+ *   based on classes that contain <code>@Dependent</code> or <code>@Singleton</code></li>
  *   <li>Default wiring using <code>@DefaultBean</code> (https://quarkus.io/guides/cdi-reference#default_beans) can be
  *   overridden in an application using Ladybug as a library.</li>
  * </ul>

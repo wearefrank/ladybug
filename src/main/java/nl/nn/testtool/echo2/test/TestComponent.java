@@ -17,7 +17,6 @@ package nl.nn.testtool.echo2.test;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -449,7 +448,7 @@ public class TestComponent extends BaseComponent implements BeanParent, ActionLi
 			}
 		}
 		boolean directChildReportsPresent = false;
-		Collections.sort(metadata, new MetadataComparator());
+		Collections.sort(metadata, new MetadataRecordComparator(1, 2));
 		Iterator<List<Object>> metadataIterator;
 		// First direct child's (path.equals(metadataPath))
 		metadataIterator = metadata.iterator();
@@ -1064,14 +1063,4 @@ public class TestComponent extends BaseComponent implements BeanParent, ActionLi
 		return uploadWindow;
 	}
 
-}
-
-class MetadataComparator implements Comparator<List<Object>> {
-
-	public int compare(List<Object> arg0, List<Object> arg1) {
-		String string0 = (String)arg0.get(1) + (String)arg0.get(2);
-		String string1 = (String)arg1.get(1) + (String)arg1.get(2);
-		return string0.compareTo(string1);
-	}
-	
 }

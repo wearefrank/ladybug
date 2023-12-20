@@ -17,7 +17,6 @@ package nl.nn.testtool.storage.proofofmigration;
 
 import java.lang.invoke.MethodHandles;
 import java.sql.Types;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -54,6 +53,10 @@ public class ProofOfMigrationStorage extends DatabaseStorage {
 	private @Setter @Inject @Autowired TestTool testTool;
 	private @Setter List<String> columns;
 	private @Setter boolean showErrorsOnly = false;
+	// Number and timestamp columns enable range searching
+	protected @Setter List<String> integerColumns;
+	protected @Setter List<String> longColumns;
+	protected @Setter List<String> timestampColumns;
 
 	@Override
 	public String getName() {
@@ -64,11 +67,21 @@ public class ProofOfMigrationStorage extends DatabaseStorage {
 		}
 	}
 
+	@Override
 	public String getTable() {
 		if (table == null) {
 			return "MESSAGES";
 		} else {
 			return table;
+		}
+	}
+
+	@Override
+	public boolean isCheckTableExists() {
+		if (checkTableExists == null) {
+			return false;
+		} else {
+			return checkTableExists;
 		}
 	}
 
@@ -86,6 +99,7 @@ public class ProofOfMigrationStorage extends DatabaseStorage {
 		}
 	}
 
+	@Override
 	public String getStorageIdColumn() {
 		if (storageIdColumn == null) {
 			return "ID";
@@ -95,20 +109,38 @@ public class ProofOfMigrationStorage extends DatabaseStorage {
 	}
 
 	@Override
-	public List<String> getIntegerColumns() {
-		if (integerColumns == null) {
-			return new ArrayList<String>(Arrays.asList("ID", "NR OF CHECKPOINTS"));
+	public long getMaxStorageSize() {
+		if (maxStorageSize == null) {
+			return -1L;
 		} else {
-			return integerColumns;
+			return maxStorageSize;
 		}
 	}
 
 	@Override
-	public List<String> getTimestampColumns() {
-		if (timestampColumns == null) {
-			return new ArrayList<String>(Arrays.asList("TIMESTAMP"));
+	public boolean isInteger(String metadataName) {
+		if (integerColumns == null) {
+			return metadataName.equals("ID") || metadataName.equals("NR OF CHECKPOINTS");
 		} else {
-			return timestampColumns;
+			return integerColumns.contains(metadataName);
+		}
+	}
+
+	@Override
+	public boolean isLong(String metadataName) {
+		if (integerColumns == null) {
+			return false;
+		} else {
+			return integerColumns.contains(metadataName);
+		}
+	}
+
+	@Override
+	public boolean isTimestamp(String metadataName) {
+		if (timestampColumns == null) {
+			return metadataName.equals("TIMESTAMP");
+		} else {
+			return timestampColumns.contains(metadataName);
 		}
 	}
 

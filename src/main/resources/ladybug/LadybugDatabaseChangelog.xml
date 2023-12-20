@@ -3,21 +3,22 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.8.xsd"
 	>
-	<changeSet id="IAF_Util:8" author="Jaco de Groot">
-		<comment>Add LADYBUG Table</comment>
+	<changeSet id="Ladybug:1" author="Jaco de Groot">
+		<comment>Add table LADYBUG</comment>
 		<createTable tableName="LADYBUG">
 			<column name="STORAGEID" type="INTEGER" autoIncrement="true">
 				<constraints primaryKey="true" nullable="false" primaryKeyName="PK_LADYBUG"/>
 			</column>
 			<column name="ENDTIME" type="DATETIME"/>
 			<column name="DURATION" type="BIGINT"/>
-			<column name="NAME" type="java.sql.Types.VARCHAR(256)"/>
-			<column name="CORRELATIONID" type="java.sql.Types.VARCHAR(256)"/>
-			<column name="STATUS" type="java.sql.Types.VARCHAR(100)"/>
+			<column name="NAME" type="VARCHAR(256)"/>
+			<column name="CORRELATIONID" type="VARCHAR(256)"/>
+			<column name="STATUS" type="VARCHAR(256)"/>
 			<column name="NUMBEROFCHECKPOINTS" type="INTEGER"/>
 			<column name="ESTIMATEDMEMORYUSAGE" type="BIGINT"/>
 			<column name="STORAGESIZE" type="BIGINT"/>
-			<column name="REPORT" type="LONGBLOB"/> <!-- LONGBLOB required for MySQL and MariaDB, compatible with BLOB for other dbmses -->
+			<column name="REPORT" type="BLOB"/>
+			<column name="REPORTXML"  type="CLOB"/>
 		</createTable>
 		<createIndex tableName="LADYBUG" indexName="IX_LADYBUG">
 			<column name="STORAGEID"/>
