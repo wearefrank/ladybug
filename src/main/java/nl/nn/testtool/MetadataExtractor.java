@@ -36,6 +36,10 @@ public class MetadataExtractor {
 	public static final int VALUE_TYPE_GUI = 2;
 	private static final DateTimeFormatter FORMAT_DATE_TIME = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS").withZone(ZoneId.systemDefault());
 	private List<MetadataFieldExtractor> metadataFieldExtractors;
+	/**
+	 * Add extra fields or override standard fields (e.g. replace standard status field with application specific status
+	 * field)
+	 */
 	public @Setter @Getter List<MetadataFieldExtractor> extraMetadataFieldExtractors;
 
 	@PostConstruct
@@ -45,48 +49,50 @@ public class MetadataExtractor {
 	}
 
 	public String getLabel(String metadataName) {
-		// TODO use reflection or spring or something like that for getLabel and getShortLabel?
-		if (metadataName.equals("storageId")) {
-			return "Storage Id";
-		}
-		if (metadataName.equals("storageSize")) {
-			return "Storage size";
-		}
-		if (metadataName.equals("name")) {
-			return "Name";
-		}
-		if (metadataName.equals("description")) {
-			return "Description";
-		}
-		if (metadataName.equals("path")) {
-			return "Path";
-		}
-		if (metadataName.equals("correlationId")) {
-			return "Correlation Id";
-		}
-		if (metadataName.equals("startTime")) {
-			return "Start time";
-		}
-		if (metadataName.equals("endTime")) {
-			return "End time";
-		}
-		if (metadataName.equals("estimatedMemoryUsage")) {
-			return "Estimated memory usage";
-		}
-		if (metadataName.equals("numberOfCheckpoints")) {
-			return "Number of checkpoints";
-		}
-		if (metadataName.equals("duration")) {
-			return "Duration";
-		}
 		String label = null;
-		for (MetadataFieldExtractor metadataFieldExtractor : metadataFieldExtractors) {
-			if (metadataFieldExtractor.getName().equals(metadataName)) {
-				label = metadataFieldExtractor.getLabel();
-			}
-		}
 		if (extraMetadataFieldExtractors != null) {
 			for (MetadataFieldExtractor metadataFieldExtractor : extraMetadataFieldExtractors) {
+				if (metadataFieldExtractor.getName().equals(metadataName)) {
+					label = metadataFieldExtractor.getLabel();
+				}
+			}
+		}
+		if (label == null) {
+			// TODO use reflection or spring or something like that for getLabel and getShortLabel?
+			if (metadataName.equals("storageId")) {
+				return "Storage Id";
+			}
+			if (metadataName.equals("storageSize")) {
+				return "Storage size";
+			}
+			if (metadataName.equals("name")) {
+				return "Name";
+			}
+			if (metadataName.equals("description")) {
+				return "Description";
+			}
+			if (metadataName.equals("path")) {
+				return "Path";
+			}
+			if (metadataName.equals("correlationId")) {
+				return "Correlation Id";
+			}
+			if (metadataName.equals("startTime")) {
+				return "Start time";
+			}
+			if (metadataName.equals("endTime")) {
+				return "End time";
+			}
+			if (metadataName.equals("estimatedMemoryUsage")) {
+				return "Estimated memory usage";
+			}
+			if (metadataName.equals("numberOfCheckpoints")) {
+				return "Number of checkpoints";
+			}
+			if (metadataName.equals("duration")) {
+				return "Duration";
+			}
+			for (MetadataFieldExtractor metadataFieldExtractor : metadataFieldExtractors) {
 				if (metadataFieldExtractor.getName().equals(metadataName)) {
 					label = metadataFieldExtractor.getLabel();
 				}
@@ -99,47 +105,49 @@ public class MetadataExtractor {
 	}
 
 	public String getShortLabel(String metadataName) {
-		if (metadataName.equals("storageId")) {
-			return "StorageId";
-		}
-		if (metadataName.equals("storageSize")) {
-			return "StorageSize";
-		}
-		if (metadataName.equals("name")) {
-			return "Name";
-		}
-		if (metadataName.equals("description")) {
-			return "Description";
-		}
-		if (metadataName.equals("path")) {
-			return "Path";
-		}
-		if (metadataName.equals("correlationId")) {
-			return "CorrelationId";
-		}
-		if (metadataName.equals("startTime")) {
-			return "StartTime";
-		}
-		if (metadataName.equals("endTime")) {
-			return "EndTime";
-		}
-		if (metadataName.equals("estimatedMemoryUsage")) {
-			return "EstMemUsage";
-		}
-		if (metadataName.equals("numberOfCheckpoints")) {
-			return "NrChpts";
-		}
-		if (metadataName.equals("duration")) {
-			return "Duration";
-		}
 		String shortLabel = null;
-		for (MetadataFieldExtractor metadataFieldExtractor : metadataFieldExtractors) {
-			if (metadataFieldExtractor.getName().equals(metadataName)) {
-				shortLabel = metadataFieldExtractor.getShortLabel();
-			}
-		}
 		if (extraMetadataFieldExtractors != null) {
 			for (MetadataFieldExtractor metadataFieldExtractor : extraMetadataFieldExtractors) {
+				if (metadataFieldExtractor.getName().equals(metadataName)) {
+					shortLabel = metadataFieldExtractor.getShortLabel();
+				}
+			}
+		}
+		if (shortLabel == null) {
+			if (metadataName.equals("storageId")) {
+				return "StorageId";
+			}
+			if (metadataName.equals("storageSize")) {
+				return "StorageSize";
+			}
+			if (metadataName.equals("name")) {
+				return "Name";
+			}
+			if (metadataName.equals("description")) {
+				return "Description";
+			}
+			if (metadataName.equals("path")) {
+				return "Path";
+			}
+			if (metadataName.equals("correlationId")) {
+				return "CorrelationId";
+			}
+			if (metadataName.equals("startTime")) {
+				return "StartTime";
+			}
+			if (metadataName.equals("endTime")) {
+				return "EndTime";
+			}
+			if (metadataName.equals("estimatedMemoryUsage")) {
+				return "EstMemUsage";
+			}
+			if (metadataName.equals("numberOfCheckpoints")) {
+				return "NrChpts";
+			}
+			if (metadataName.equals("duration")) {
+				return "Duration";
+			}
+			for (MetadataFieldExtractor metadataFieldExtractor : metadataFieldExtractors) {
 				if (metadataFieldExtractor.getName().equals(metadataName)) {
 					shortLabel = metadataFieldExtractor.getShortLabel();
 				}
@@ -156,6 +164,13 @@ public class MetadataExtractor {
 	}
 
 	private Object getMetadataAsObject(Report report, String metadataName) {
+		if (extraMetadataFieldExtractors != null) {
+			for (MetadataFieldExtractor metadataFieldExtractor : extraMetadataFieldExtractors) {
+				if (metadataFieldExtractor.getName().equals(metadataName)) {
+					return metadataFieldExtractor.extractMetadata(report);
+				}
+			}
+		}
 		// TODO use reflection or spring or something like that?
 		if (metadataName.equals("storageId")) {
 			return report.getStorageId();
@@ -196,13 +211,6 @@ public class MetadataExtractor {
 		for (MetadataFieldExtractor metadataFieldExtractor : metadataFieldExtractors) {
 			if (metadataFieldExtractor.getName().equals(metadataName)) {
 				return metadataFieldExtractor.extractMetadata(report);
-			}
-		}
-		if (extraMetadataFieldExtractors != null) {
-			for (MetadataFieldExtractor metadataFieldExtractor : extraMetadataFieldExtractors) {
-				if (metadataFieldExtractor.getName().equals(metadataName)) {
-					return metadataFieldExtractor.extractMetadata(report);
-				}
 			}
 		}
 		return null;

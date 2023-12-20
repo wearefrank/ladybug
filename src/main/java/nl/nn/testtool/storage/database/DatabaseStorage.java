@@ -97,7 +97,11 @@ public class DatabaseStorage implements LogStorage, CrudStorage {
 		if (getMetadataExtractor().getExtraMetadataFieldExtractors() != null) {
 			List<String> metadataNames = new ArrayList<String>(this.metadataNames);
 			for (MetadataFieldExtractor extractor : getMetadataExtractor().getExtraMetadataFieldExtractors()) {
-				metadataNames.add(extractor.getName());
+				// ExtraMetadataFieldExtractors can override standard fields (see extraMetadataFieldExtractors in
+				// MetadataExtractor)
+				if (!metadataNames.contains(extractor.getName())) {
+					metadataNames.add(extractor.getName());
+				}
 			}
 			return metadataNames;
 		} else {
