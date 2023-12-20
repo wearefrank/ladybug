@@ -18,11 +18,14 @@ package nl.nn.testtool;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.Iterator;
+import java.util.ArrayList;
 import java.util.List;
+
+import javax.annotation.PostConstruct;
 
 import lombok.Getter;
 import lombok.Setter;
+import nl.nn.testtool.metadata.StatusMetadataFieldExtractor;
 
 /**
  * @author Jaco de Groot
@@ -32,7 +35,14 @@ public class MetadataExtractor {
 	public static final int VALUE_TYPE_STRING = 1;
 	public static final int VALUE_TYPE_GUI = 2;
 	private static final DateTimeFormatter FORMAT_DATE_TIME = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS").withZone(ZoneId.systemDefault());
+	private List<MetadataFieldExtractor> metadataFieldExtractors;
 	public @Setter @Getter List<MetadataFieldExtractor> extraMetadataFieldExtractors;
+
+	@PostConstruct
+	public void init() {
+		metadataFieldExtractors = new ArrayList<MetadataFieldExtractor>();
+		metadataFieldExtractors.add(new StatusMetadataFieldExtractor());
+	}
 
 	public String getLabel(String metadataName) {
 		// TODO use reflection or spring or something like that for getLabel and getShortLabel?
@@ -70,10 +80,13 @@ public class MetadataExtractor {
 			return "Duration";
 		}
 		String label = null;
+		for (MetadataFieldExtractor metadataFieldExtractor : metadataFieldExtractors) {
+			if (metadataFieldExtractor.getName().equals(metadataName)) {
+				label = metadataFieldExtractor.getLabel();
+			}
+		}
 		if (extraMetadataFieldExtractors != null) {
-			Iterator<MetadataFieldExtractor> iterator = extraMetadataFieldExtractors.iterator();
-			while (iterator.hasNext() && label == null) {
-				MetadataFieldExtractor metadataFieldExtractor = iterator.next();
+			for (MetadataFieldExtractor metadataFieldExtractor : extraMetadataFieldExtractors) {
 				if (metadataFieldExtractor.getName().equals(metadataName)) {
 					label = metadataFieldExtractor.getLabel();
 				}
@@ -120,10 +133,13 @@ public class MetadataExtractor {
 			return "Duration";
 		}
 		String shortLabel = null;
+		for (MetadataFieldExtractor metadataFieldExtractor : metadataFieldExtractors) {
+			if (metadataFieldExtractor.getName().equals(metadataName)) {
+				shortLabel = metadataFieldExtractor.getShortLabel();
+			}
+		}
 		if (extraMetadataFieldExtractors != null) {
-			Iterator<MetadataFieldExtractor> iterator = extraMetadataFieldExtractors.iterator();
-			while (iterator.hasNext() && shortLabel == null) {
-				MetadataFieldExtractor metadataFieldExtractor = iterator.next();
+			for (MetadataFieldExtractor metadataFieldExtractor : extraMetadataFieldExtractors) {
 				if (metadataFieldExtractor.getName().equals(metadataName)) {
 					shortLabel = metadataFieldExtractor.getShortLabel();
 				}
@@ -177,17 +193,19 @@ public class MetadataExtractor {
 		if (metadataName.equals("variableCsv")) {
 			return report.getVariableCsv();
 		}
-		Object metadata = null;
+		for (MetadataFieldExtractor metadataFieldExtractor : metadataFieldExtractors) {
+			if (metadataFieldExtractor.getName().equals(metadataName)) {
+				return metadataFieldExtractor.extractMetadata(report);
+			}
+		}
 		if (extraMetadataFieldExtractors != null) {
-			Iterator<MetadataFieldExtractor> iterator = extraMetadataFieldExtractors.iterator();
-			while (iterator.hasNext() && metadata == null) {
-				MetadataFieldExtractor metadataFieldExtractor = iterator.next();
+			for (MetadataFieldExtractor metadataFieldExtractor : extraMetadataFieldExtractors) {
 				if (metadataFieldExtractor.getName().equals(metadataName)) {
-					metadata = metadataFieldExtractor.extractMetadata(report);
+					return metadataFieldExtractor.extractMetadata(report);
 				}
 			}
 		}
-		return metadata;
+		return null;
 	}
 
 	public Object fromObjectToMetadataValueType(String metadataName, Object metadataValue, int metadataValueType) {
