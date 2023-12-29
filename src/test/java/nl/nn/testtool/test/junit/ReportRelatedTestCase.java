@@ -26,6 +26,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -41,12 +42,13 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 
-import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.read.ListAppender;
+import nl.nn.testtool.Checkpoint;
 import nl.nn.testtool.MetadataExtractor;
 import nl.nn.testtool.Report;
 import nl.nn.testtool.TestTool;
@@ -61,6 +63,7 @@ import nl.nn.testtool.transform.ReportXmlTransformer;
  */
 @RunWith(Parameterized.class)
 public class ReportRelatedTestCase {
+	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
 	@Parameters(name = "{0}")
 	public static Collection<Object[]> data() {
@@ -101,7 +104,7 @@ public class ReportRelatedTestCase {
 		}
 		assertTrue("File storage dir not available: " + fileStorageDir.getAbsolutePath(),
 				fileStorageDir.isDirectory());
-		Logger log = (Logger)LoggerFactory.getLogger("nl.nn.testtool");
+		ch.qos.logback.classic.Logger log = (ch.qos.logback.classic.Logger)LoggerFactory.getLogger("nl.nn.testtool");
 		listAppender = new ListAppender<>();
 		listAppender.start();
 		log.addAppender(listAppender);
@@ -112,6 +115,15 @@ public class ReportRelatedTestCase {
 
 	@After
 	public void tearDown() {
+		if (testTool.getNumberOfReportsInProgress() > 0) {
+			Report report = testTool.getReportInProgress(0);
+			log.error("Checkpoints of report in progress '" + report.getName() + "':");
+			for (Checkpoint checkpoint : report.getCheckpoints()) {
+				log.error("Name: " + checkpoint.getName()
+						+ ", Level: " + checkpoint.getLevel()
+						+ ", Message: " + checkpoint.getMessage());
+			}
+		}
 		assertEquals("Found report(s) in progress", 0, testTool.getNumberOfReportsInProgress());
 		assertNotNull("No list appender found, setup failed?", listAppender);
 		List<ILoggingEvent> loggingEvents = listAppender.list;
