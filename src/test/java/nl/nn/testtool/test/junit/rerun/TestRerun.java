@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021, 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -104,10 +104,10 @@ public class TestRerun {
 		actual = ReportRelatedTestCase.applyXmlEncoderIgnores(actual);
 		actual = ReportRelatedTestCase.applyEstimatedMemoryUsageIgnore(actual);
 		ReportRelatedTestCase.assertXml(RESOURCE_PATH, reportName, actual);
-		int numReportsBeforeRerun = storage.getSize();
+		int maxStorageIdBeforeRerun = ReportRelatedTestCase.getMaxStorageId(testTool, storage);
 		assertNull(testTool.rerun(ReportRelatedTestCase.getCorrelationId(), report, null, null));
-		int numReportsAfterRerun = storage.getSize();
-		assertEquals(numReportsAfterRerun, numReportsBeforeRerun + 1);
+		int maxStorageIdAfterRerun = ReportRelatedTestCase.getMaxStorageId(testTool, storage);
+		assertEquals(maxStorageIdAfterRerun, maxStorageIdBeforeRerun + 1);
 		assertEquals((Integer)10, i);
 	}
 

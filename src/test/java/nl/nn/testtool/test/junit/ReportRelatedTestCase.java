@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021, 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -238,6 +238,18 @@ public class ReportRelatedTestCase {
 			reports.add(report);
 		}
 		return reports;
+	}
+
+	public static Integer getMaxStorageId(TestTool testTool, Storage storage) throws StorageException {
+		List<Integer> storageIds = storage.getStorageIds();
+		Integer firstStorageId = storageIds.get(0);
+		Integer lastStorageId = storageIds.get(storageIds.size() - 1);
+		// Memory storage and file storage store reports in opposite sequences
+		if (firstStorageId > lastStorageId) {
+			return firstStorageId;
+		} else {
+			return lastStorageId;
+		}
 	}
 
 	public static void assertXml(String path, String testCaseName, String actual) throws StorageException, IOException {
