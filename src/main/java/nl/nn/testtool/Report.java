@@ -321,8 +321,8 @@ public class Report implements Serializable {
 	protected <T> T checkpoint(String childThreadId, String sourceClassName, String name, T message,
 			StubableCode stubableCode, StubableCodeThrowsException stubableCodeThrowsException,
 			Set<String> matchingStubStrategies, int checkpointType, int levelChangeNextCheckpoint) {
-		String parentThreadName = Thread.currentThread().getName();
 		if (checkpointType == Checkpoint.TYPE_THREADCREATEPOINT) {
+			String parentThreadName = Thread.currentThread().getName();
 			if (!threads.contains(parentThreadName)) {
 				log.warn("Unknown parent thread '" + parentThreadName + "' for child thread '" + childThreadId
 						+ "' , ignored checkpoint " + getCheckpointLogDescription(name, checkpointType, null));
@@ -339,20 +339,24 @@ public class Report implements Serializable {
 					warnNewChildThreadDetected(childThreadId, null, false, name, checkpointType, true);
 					return message;
 				} else {
-					parentThreadName = threads.get(threads.size() - 1);
+					String parentThreadName = threads.get(threads.size() - 1);
 					threadCreatepoint(parentThreadName, childThreadId);
 					warnNewChildThreadDetected(childThreadId, parentThreadName, false, name, checkpointType, false);
 				}
-			} else if (checkpointType == Checkpoint.TYPE_STARTPOINT && !threads.contains(parentThreadName)) {
+			} else if (checkpointType == Checkpoint.TYPE_STARTPOINT
+					&& !threads.contains(Thread.currentThread().getName())) {
 				checkpointType = Checkpoint.TYPE_THREADSTARTPOINT;
-				childThreadId = parentThreadName;
-				if (threads.size() == 0) {
-					// This can happen when a report is still open because not all message capturers are closed while
-					// all threads are finished
+				childThreadId = Thread.currentThread().getName();
+				if (threads.size() == 0 || checkpoints.size() == 0) {
+					// No threads can happen when a report is still open because not all message capturers are closed
+					// while all threads are finished
+					// No checkpoint can happen when two threads start a new report for the same correlationId and one
+					// of them is the first to run the synchronized(reportsInProgress) in class TestTool and the other 
+					// is the first to run the synchronized(report) in class TestTool (see also devMode in TestTool)
 					warnNewChildThreadDetected(childThreadId, null, true, name, checkpointType, true);
 					return message;
 				} else {
-					parentThreadName = threads.get(threads.size() - 1);
+					String parentThreadName = threads.get(threads.size() - 1);
 					threadCreatepoint(parentThreadName, childThreadId);
 					warnNewChildThreadDetected(childThreadId, parentThreadName, true, name, checkpointType, true);
 				}
