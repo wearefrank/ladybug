@@ -420,9 +420,9 @@ public class TestCreateReport extends ReportRelatedTestCase {
 			while (testThreads[i].isAlive()) Thread.sleep(10);
 		}
 		ignoreWarningsInLog(listAppender, "New child thread '");
-		if (keepReportOpenWithMessageCapturer) {
-			ignoreWarningsInLog(listAppender, "Unknown thread 'Thread-");
-		}
+		ignoreWarningsInLog(listAppender, "Unknown thread 'Thread-");
+		ignoreWarningsInLog(listAppender,
+				"No report in progress for correlationId and checkpoint not a startpoint, ignored checkpoint (name: Thread-");
 		for (int i = 0; i < nrOfThreads; i++) {
 			if (testThreads[i].getThrowable() != null) {
 				throw new Exception(testThreads[i].getThrowable());
