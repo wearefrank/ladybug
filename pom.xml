@@ -252,9 +252,9 @@
           https://quarkus.io/guides/getting-started#working-with-multi-module-project-or-external-modules
       -->
       <plugin>
-        <groupId>org.jboss.jandex</groupId>
+        <groupId>io.smallrye</groupId>
         <artifactId>jandex-maven-plugin</artifactId>
-        <version>1.2.3</version>
+        <version>3.1.2</version>
         <executions>
           <execution>
             <id>make-index</id>
