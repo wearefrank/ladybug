@@ -18,7 +18,7 @@
     <spring.version>5.3.23</spring.version>
     <cxf.version>3.5.5</cxf.version>
     <!-- The line below is parsed by the GitHub actions test that triggers the ladybug-frontend Cypress test -->
-    <frontend.version>0.0.49</frontend.version>
+    <frontend.version>0.0.50</frontend.version>
     <!-- Logback 1.3 requires slf4j-api 2.0. Logback is used with scope test so ignore https://github.com/ibissource/ibis-ladybug/security/dependabot until Frank!Framework starts using slf4j-api 2.0 -->
     <logback.version>1.2.13</logback.version>
     <!-- Create skip-replace-inject.txt (replacement is only needed in the published jar by CI/CD) (more info in nl/nn/testtool/Inject.java -->
