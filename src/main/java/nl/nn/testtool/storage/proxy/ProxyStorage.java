@@ -1,5 +1,5 @@
 /*
-   Copyright 2022-2023 WeAreFrank!
+   Copyright 2022-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -23,90 +23,40 @@ import javax.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import lombok.Getter;
 import lombok.Setter;
-import nl.nn.testtool.MetadataExtractor;
 import nl.nn.testtool.Report;
 import nl.nn.testtool.storage.CrudStorage;
 import nl.nn.testtool.storage.LogStorage;
 import nl.nn.testtool.storage.Storage;
 import nl.nn.testtool.storage.StorageException;
-import nl.nn.testtool.storage.database.DatabaseStorage;
-import nl.nn.testtool.storage.proofofmigration.ProofOfMigrationStorage;
-import nl.nn.testtool.storage.xml.XmlStorage;
 
 /**
  * Storage proxy class than can help Spring XML configuration to become more flexible (e.g. see #{testStorageActive} in
- * Frank!Framework's springIbisTestTool.xml) and when a storage cannot be initialized it will, when specified, try
- * another storage. This can be used to have the database storage check whether the Ladybug tables are available and if not
- * use another storage (see proxy storage usage in Frank!Framework's springIbisTestTool.xml).
+ * Frank!Framework's springIbisTestTool.xml) and use an alternative storage when getSize() on the preferred storage
+ * throws an exception. This can for example be used to check whether the Ladybug tables are available and if not use
+ * file storage instead of database storage (see proxy storage usage in Frank!Framework's springIbisTestTool.xml).
  * 
  * @author Jaco de Groot
  */
 public class ProxyStorage implements CrudStorage, LogStorage {
 	private static Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+	private @Setter @Getter String name;
 	private @Setter Storage destination;
 	private @Setter Storage alternativeDestination;
-
-	@Override
-	public void setName(String name) {
-		destination.setName(name);
-	}
-
-	@Override
-	public String getName() {
-		return destination.getName();
-	}
-
-	public void setMetadataExtractor(MetadataExtractor metadataExtractor) {
-		if (destination instanceof nl.nn.testtool.storage.file.Storage) {
-			((nl.nn.testtool.storage.file.Storage)destination).setMetadataExtractor(metadataExtractor);
-		} else if (destination instanceof nl.nn.testtool.storage.file.TestStorage) {
-			((nl.nn.testtool.storage.file.TestStorage)destination).setMetadataExtractor(metadataExtractor);
-		} else if (destination instanceof nl.nn.testtool.storage.memory.Storage) {
-			((nl.nn.testtool.storage.memory.Storage)destination).setMetadataExtractor(metadataExtractor);
-		} else if (destination instanceof DatabaseStorage) {
-			((DatabaseStorage)destination).setMetadataExtractor(metadataExtractor);
-		} else if (destination instanceof ProofOfMigrationStorage) {
-			((ProofOfMigrationStorage)destination).setMetadataExtractor(metadataExtractor);
-		} else if (destination instanceof nl.nn.testtool.storage.zip.Storage) {
-			((nl.nn.testtool.storage.zip.Storage)destination).setMetadataExtractor(metadataExtractor);
-		} else {
-			throw new RuntimeException("Method setMetadataExtractor() not implemented for "
-					+ destination.getClass().getName());
-		}
-	}
 
 	@PostConstruct
 	public void init() throws StorageException {
 		try {
-			init(destination);
+			destination.getSize();
 		} catch(StorageException e) {
 			if (alternativeDestination != null) {
-				log.debug("Could not init " + destination.getName() + " will try " + alternativeDestination.getName()
-						+ "instead");
-				init(alternativeDestination);
+				log.debug("Could not init " + destination.getName() + " will use " + alternativeDestination.getName()
+						+ " instead");
+				destination = alternativeDestination;
 			} else {
 				throw e;
 			}
-		}
-	}
-
-	public void init(Storage destination) throws StorageException {
-		if (destination instanceof nl.nn.testtool.storage.file.Storage) {
-			((nl.nn.testtool.storage.file.Storage)destination).init();
-		} else if (destination instanceof nl.nn.testtool.storage.file.TestStorage) {
-			((nl.nn.testtool.storage.file.TestStorage)destination).init();
-		} else if (destination instanceof DatabaseStorage) {
-			((DatabaseStorage)destination).init();
-		} else if (destination instanceof ProofOfMigrationStorage) {
-			((ProofOfMigrationStorage)destination).init();
-		} else if (destination instanceof nl.nn.testtool.storage.diff.Storage) {
-			((nl.nn.testtool.storage.diff.Storage)destination).init();
-		} else if (destination instanceof XmlStorage) {
-			((XmlStorage)destination).init();
-		} else {
-			throw new RuntimeException("Method setMetadataExtractor() not implemented for "
-					+ destination.getClass().getName());
 		}
 	}
 
