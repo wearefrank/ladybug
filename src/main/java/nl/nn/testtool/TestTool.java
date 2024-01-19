@@ -23,6 +23,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ThreadLocalRandom;
 
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
@@ -92,6 +93,7 @@ public class TestTool {
 	private @Getter boolean closeNewThreadsOnly = false;
 	private @Getter boolean closeMessageCapturers = false;
 	private @Setter @Getter @Inject @Autowired Views views;
+	boolean devMode = false; // See testConcurrentLastEndpointAndFirstStartpointForSameCorrelationId()
 
 	@PostConstruct
 	public void init() {
@@ -296,9 +298,15 @@ public class TestTool {
 			Set<String> matchingStubStrategies, int checkpointType, int levelChangeNextCheckpoint) {
 		boolean executeStubableCode = true;
 		if (reportGeneratorEnabled) {
-			// Method getReportInProgress() will synchronize on reportsInProgress which is blocking for all threads for
-			// all reports
-			Report report = getReportInProgress(correlationId, name, checkpointType);
+			Report report;
+			// Blocking for all threads for all reports
+			synchronized(reportsInProgress) {
+				report = getReportInProgress(correlationId);
+				if (report == null) {
+					report = createReport(correlationId, name, checkpointType);
+				}
+			}
+			if (devMode) randomSleep();
 			while (report != null) {
 				// "synchronized(report)" is only blocking for threads writing to the same report (which is only the
 				// case when multiple threads use the same correlationId)
@@ -312,8 +320,12 @@ public class TestTool {
 					// report.checkpoint() below and closing the report. Hence double check that the report isn't
 					// closed.
 					if (report.isClosed()) {
-						// Create a new report
-						report = getReportInProgress(correlationId, name, checkpointType);
+						synchronized(reportsInProgress) {
+							report = getReportInProgress(correlationId);
+							if (report == null) {
+								report = createReport(correlationId, name, checkpointType);
+							}
+						}
 						// Synchronize and check isClosed() on report again as it will now point to a different report
 						continue;
 					}
@@ -332,46 +344,41 @@ public class TestTool {
 		return message;
 	}
 
-	private Report getReportInProgress(String correlationId, String name, int checkpointType) {
-		Report report;
-		synchronized(reportsInProgress) {
-			report = (Report)reportsInProgressByCorrelationId.get(correlationId);
-			if (report == null) {
-				if (checkpointType == Checkpoint.TYPE_STARTPOINT) {
-					log.debug("Create new report for '" + correlationId + "'");
-					report = new Report();
-					report.setStartTime(System.currentTimeMillis());
-					report.setTestTool(this);
-					report.setCorrelationId(correlationId);
-					report.setName(name);
-					if (StringUtils.isNotEmpty(regexFilter)) {
-						String nameToMatch = name;
-						if (nameToMatch == null) {
-							nameToMatch = ""; // Same behavior as SearchUtil.matches()
-						}
-						if (!nameToMatch.matches(regexFilter)) {
-							report.setReportFilterMatching(false);
-						}
-					}
-					Report originalReport;
-					synchronized(originalReports) {
-						originalReport = (Report)originalReports.remove(correlationId);
-					}
-					if (originalReport == null) {
-						report.setStubStrategy(getDefaultStubStrategy());
-					} else {
-						report.setStubStrategy(originalReport.getStubStrategy());
-						report.setOriginalReport(originalReport);
-					}
-					report.init();
-					reportsInProgress.add(0, report);
-					reportsInProgressByCorrelationId.put(correlationId, report);
-					numberOfReportsInProgress++;
-				} else {
-					log.warn("No report in progress for correlationId and checkpoint not a startpoint, ignored checkpoint "
-							+ Report.getCheckpointLogDescription(name, checkpointType, null, correlationId));
+	private Report createReport(String correlationId, String name, int checkpointType) {
+		Report report = null;
+		if (checkpointType == Checkpoint.TYPE_STARTPOINT) {
+			log.debug("Create new report for '" + correlationId + "'");
+			report = new Report();
+			report.setStartTime(System.currentTimeMillis());
+			report.setTestTool(this);
+			report.setCorrelationId(correlationId);
+			report.setName(name);
+			if (StringUtils.isNotEmpty(regexFilter)) {
+				String nameToMatch = name;
+				if (nameToMatch == null) {
+					nameToMatch = ""; // Same behavior as SearchUtil.matches()
+				}
+				if (!nameToMatch.matches(regexFilter)) {
+					report.setReportFilterMatching(false);
 				}
 			}
+			Report originalReport;
+			synchronized(originalReports) {
+				originalReport = (Report)originalReports.remove(correlationId);
+			}
+			if (originalReport == null) {
+				report.setStubStrategy(getDefaultStubStrategy());
+			} else {
+				report.setStubStrategy(originalReport.getStubStrategy());
+				report.setOriginalReport(originalReport);
+			}
+			report.init();
+			reportsInProgress.add(0, report);
+			reportsInProgressByCorrelationId.put(correlationId, report);
+			numberOfReportsInProgress++;
+		} else {
+			log.warn("No report in progress for correlationId and checkpoint not a startpoint, ignored checkpoint "
+					+ Report.getCheckpointLogDescription(name, checkpointType, null, correlationId));
 		}
 		return report;
 	}
@@ -422,6 +429,14 @@ public class TestTool {
 					}
 				}
 			}
+		}
+	}
+
+	private void randomSleep() {
+		try {
+			Thread.sleep(ThreadLocalRandom.current().nextLong(0, 10));
+		} catch (InterruptedException e) {
+			e.printStackTrace();
 		}
 	}
 
@@ -804,18 +819,25 @@ public class TestTool {
 	 * @param closeMessageCapturers ...
 	 */
 	public void close(String correlationId, boolean closeThreads, boolean closeMessageCapturers) {
+		close(null, correlationId, closeThreads, closeMessageCapturers);
+	}
+
+	private void close(Report report, String correlationId, boolean closeThreads, boolean closeMessageCapturers) {
 		if (closeThreads) {
 			close(correlationId, null);
 		}
 		if (closeMessageCapturers) {
-			Report report;
-			synchronized(reportsInProgress) {
-				report = (Report)reportsInProgressByCorrelationId.get(correlationId);
+			if (report == null) {
+				synchronized(reportsInProgress) {
+					report = (Report)reportsInProgressByCorrelationId.get(correlationId);
+				}
 			}
 			if (report != null) {
 				synchronized(report) {
-					report.closeMessageCapturers();
-					closeReportIfFinished(report);
+					if (!report.isClosed()) {
+						report.closeMessageCapturers();
+						closeReportIfFinished(report);
+					}
 				}
 			}
 		}
@@ -923,7 +945,7 @@ public class TestTool {
 						log.debug(message);
 					}
 				}
-				close(report.getCorrelationId(), closeThreads, closeMessageCapturers);
+				close(report, report.getCorrelationId(), closeThreads, closeMessageCapturers);
 				closeReportIfFinished(report);
 			}
 		}

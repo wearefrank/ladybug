@@ -20,7 +20,7 @@ jobs:
         github-token: ${{ secrets.CI_ACCESSTOKEN }}
         script: |
           await github.rest.actions.createWorkflowDispatch({
-            owner: 'ibissource',
+            owner: 'wearefrank',
             repo: 'ladybug-frontend',
             workflow_id: 'testing.js.yml',
             ref: 'master',
@@ -31,3 +31,4 @@ jobs:
               mergeMasterToBranch: 'true'
             }
           })
+          

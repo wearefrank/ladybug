@@ -1,5 +1,5 @@
 /*
-   Copyright 2022-2023 WeAreFrank!
+   Copyright 2022-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -63,7 +63,6 @@ public class DatabaseStorage implements LogStorage, CrudStorage {
 	protected static final String TIMESTAMP_PATTERN = "yyyy-MM-dd'T'HH:mm:ss.SSS";
 	protected @Setter @Getter String name;
 	protected @Setter String table;
-	protected @Setter @Getter Boolean checkTableExists;
 	protected @Setter @Inject @Autowired List<String> metadataNames; // Used as column names in this storage
 	protected @Setter String storageIdColumn;
 	protected @Setter List<String> bigValueColumns; // Columns for which to limit the number of retrieved characters to 100
@@ -82,14 +81,6 @@ public class DatabaseStorage implements LogStorage, CrudStorage {
 			return "LADYBUG";
 		} else {
 			return table;
-		}
-	}
-
-	public boolean isCheckTableExists() {
-		if (checkTableExists == null) {
-			return true;
-		} else {
-			return checkTableExists;
 		}
 	}
 
@@ -143,10 +134,6 @@ public class DatabaseStorage implements LogStorage, CrudStorage {
 
 	@PostConstruct
 	public void init() throws StorageException {
-		if (isCheckTableExists()) {
-			// Throw exception if table doesn't exist so ProxyStorage (when used) can try an alternative destination
-			getSize();
-		}
 		if (!(getMetadataNames() != null && getMetadataNames().contains(getStorageIdColumn()))) {
 			throw new StorageException("List metadataNames " + metadataNames
 					+ " should at least contain storageId column name '" + getStorageIdColumn() + "'");

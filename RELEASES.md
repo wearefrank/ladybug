@@ -6,6 +6,7 @@ Ladybug Test Tool release notes
 Upcoming (2.3)
 --------------
 
+- Ignore first checkpoint when report created with other thread
 - Add Liquibase xml files (remove experimental version from test jar)
 - Add alternative destination to proxy storage
 - Implement database test storage
