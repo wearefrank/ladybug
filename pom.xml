@@ -130,6 +130,17 @@
       <artifactId>ibis-xerces</artifactId>
       <version>2.12.1-xml-schema-1.1</version>
     </dependency>
+    <!-- Add Xalan to be able to run old GUI on Java 17 and higher -->
+    <dependency>
+      <groupId>xalan</groupId>
+      <artifactId>xalan</artifactId>
+      <version>2.7.3</version>
+    </dependency>
+    <dependency>
+      <groupId>xalan</groupId>
+      <artifactId>serializer</artifactId>
+      <version>2.7.3</version>
+    </dependency>
     <dependency>
       <groupId>org.projectlombok</groupId>
       <artifactId>lombok</artifactId>
