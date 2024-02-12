@@ -17,10 +17,10 @@ reports and optionally stub certain checkpoints for regression testing.
 - [How to change and test Ladybug](#how-to-change-and-test-ladybug)
   - [General setup](#general-setup)
   - [Backend development](#backend-development)
-  - [Testing backend changes with Frank!Framework](#testing-backend-changes-with-frank!framework)
+  - [Testing backend changes with Frank!Framework](#testing-backend-changes-with-frankframework)
   - [Frontend development](#frontend-development)
   - [Testing frontend changes with the test webapp](#testing-frontend-changes-with-the-test-webapp)
-  - [Testing frontend changes with Frank!Framework](#testing-frontend-changes-with-frank!framework)
+  - [Testing frontend changes with Frank!Framework](#testing-frontend-changes-with-frankframework)
   - [Testing frontend changes with unit tests](#testing-frontend-changes-with-unit-tests)
 - [Create and publish NPM package and WebJar](#create-and-publish-npm-package-and-webjar)
 - [CI/CD](#cicd)
@@ -192,7 +192,7 @@ Please do the following to set up your development environment for the front-end
 Testing frontend changes with the test webapp
 ---------------------------------------------
 
-* Start the backend using `frank-runner/specials/ibis-ladybug` as explained before. Wait until Tomcat is up and running.
+* Start the backend using `frank-runner/specials/ibis-ladybug` as explained at [Backend development](#backend-development). Wait until Tomcat is up and running.
 * Execute command `ng serve` from within the `ladybug-frontend` checkout. This wil make Node.js serve the Ladybug frontend files and proxy the Ladybug backend api as the src folder contains a proxy.conf.json (this will circumvent CORS related problems as the frontend served by Node.js on port 4200 would call the api on port 80). It is now possible to use both the WebJars packaged Ladybug frontend and the Ladybug frontend served by Node.js. The page on the following url (also mentioned above) contains links to both frontends: `http://localhost`.
 
 Testing frontend changes with Frank!Framework
