@@ -36,7 +36,7 @@ import nl.nn.testtool.util.XmlUtil;
  * @author Jaco de Groot
  */
 public class XpathMetadataFieldExtractor extends DefaultValueMetadataFieldExtractor {
-	private static Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 	protected String xpath;
 	protected XPathExpression xpathExpression;
 	protected String extractFrom = "first";

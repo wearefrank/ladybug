@@ -40,7 +40,7 @@ import nl.nn.testtool.storage.StorageException;
  * @author Jaco de Groot
  */
 public class ProxyStorage implements CrudStorage, LogStorage {
-	private static Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 	private @Setter @Getter String name;
 	private @Setter Storage destination;
 	private @Setter Storage alternativeDestination;

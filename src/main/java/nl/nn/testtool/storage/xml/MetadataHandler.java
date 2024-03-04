@@ -44,7 +44,7 @@ public class MetadataHandler {
 	private HashMap<Integer, Metadata> metadataMap;
 	protected File metadataFile;
 	private int lastStorageId = 1;
-	private final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
 	/**
 	 * Creates a new file with the given path.

@@ -1,5 +1,5 @@
 /*
-   Copyright 2020, 2022, 2023 WeAreFrank!, 2018 Nationale-Nederlanden
+   Copyright 2020, 2022-2024 WeAreFrank!, 2018 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,13 +15,9 @@
 */
 package nl.nn.testtool.metadata;
 
-import java.lang.invoke.MethodHandles;
 import java.util.Iterator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import nl.nn.testtool.Checkpoint;
 import nl.nn.testtool.Report;
@@ -31,7 +27,6 @@ import nl.nn.testtool.Report;
  */
 public class SessionKeyMetadataFieldExtractor extends
 		DefaultValueMetadataFieldExtractor {
-	private static Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 	protected String sessionKey;
 	protected String regex;
 	protected Pattern pattern;

@@ -43,7 +43,7 @@ import nl.nn.testtool.util.XmlUtil;
 
 @Singleton
 public class ReportXmlTransformer {
-	private final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 	private @Setter @Inject @Autowired String xsltResource;
 	private String xslt;
 	private Transformer transformer;
@@ -154,7 +154,7 @@ public class ReportXmlTransformer {
 }
 
 class TransformerFactoryErrorListener implements ErrorListener {
-	private final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 	String errorMessages;
 
 	public void error(TransformerException exception) {

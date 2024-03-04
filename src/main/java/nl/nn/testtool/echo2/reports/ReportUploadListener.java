@@ -1,5 +1,5 @@
 /*
-   Copyright 2020, 2022 WeAreFrank!, 2018, 2019 Nationale-Nederlanden
+   Copyright 2020, 2022, 2024 WeAreFrank!, 2018, 2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -33,7 +33,7 @@ import nl.nn.testtool.storage.StorageException;
  * @author Jaco de Groot
  */
 public class ReportUploadListener implements UploadListener {
-	Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 	ReportsComponent reportsComponent;
 	TestComponent testComponent;
 	CrudStorage storage;

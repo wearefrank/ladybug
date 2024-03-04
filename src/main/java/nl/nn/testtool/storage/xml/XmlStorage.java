@@ -46,7 +46,7 @@ public class XmlStorage implements CrudStorage {
 	private String name, metadataFile, reportsFolderPath;
 	private MetadataHandler metadataHandler;
 	private File reportsFolder;
-	Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
 	/**
 	 * Initializes the storage. Creating necessary folders and metadata file.
