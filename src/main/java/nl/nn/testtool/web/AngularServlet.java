@@ -1,5 +1,5 @@
 /*
-   Copyright 2021-2022 WeAreFrank!
+   Copyright 2021-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -167,7 +167,7 @@ class BaseRewritingServletOutputStream extends ServletOutputStream {
 	String newBase;
 	int i = -1;
 	int phase = 1;
-	StringBuffer stringBuffer = new StringBuffer();
+	StringBuilder builder = new StringBuilder();
 	
 	BaseRewritingServletOutputStream(ServletOutputStream servletOutputStream, String newBase) {
 		this.servletOutputStream = servletOutputStream;
@@ -193,11 +193,11 @@ class BaseRewritingServletOutputStream extends ServletOutputStream {
 				// Discard char from old base
 			} else {
 				servletOutputStream.write(b);
-				stringBuffer.append((char)b);
+				builder.append((char)b);
 				if (phase == 2 && (char)b == '"') {
 					i = -1;
 				} else {
-					if (endsWith(stringBuffer, "<base href=\"")) {
+					if (endsWith(builder, "<base href=\"")) {
 						for (int i = 0; i < newBase.length(); i++) {
 							servletOutputStream.write(newBase.charAt(i));
 						}
@@ -210,10 +210,10 @@ class BaseRewritingServletOutputStream extends ServletOutputStream {
 		}
 	}
 
-	private boolean endsWith(StringBuffer stringBuffer, String string) {
-		if (stringBuffer.length() >= string.length()) {
+	private boolean endsWith(StringBuilder builder, String string) {
+		if (builder.length() >= string.length()) {
 			for (int i = 0; i < string.length(); i++) {
-				if (!(string.charAt(i) == stringBuffer.charAt(stringBuffer.length() - string.length() + i))) {
+				if (!(string.charAt(i) == builder.charAt(builder.length() - string.length() + i))) {
 					return false;
 				}
 			}

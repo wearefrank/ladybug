@@ -107,14 +107,14 @@ gebruiken om een string m.b.v. stringreader om te zetten naar csv. Want bij een
 string verwacht je op het einde ook geen newline tenzij...
 */
 
-    public List nextCSV() throws NoSuchElementException, IOException {
+    public List<String> nextCSV() throws NoSuchElementException, IOException {
         if (state == 4) {
             throw new NoSuchElementException();
         }
         lineNumberLast = lineNumberNext;
         int c;
-        List l = new ArrayList();
-        StringBuffer sb = new StringBuffer();
+        List<String> l = new ArrayList<>();
+        StringBuilder sb = new StringBuilder();
         while (true) {
             c = r.read();
             if (state == 0) {
@@ -155,7 +155,7 @@ string verwacht je op het einde ook geen newline tenzij...
                 } else if (c == separator) {
                     state = 0;
                     l.add(sb.toString());
-                    sb = new StringBuffer();
+                    sb = new StringBuilder();
                 } else if (c == '\n') {
                     state = 0;
                     l.add(sb.toString());
@@ -173,7 +173,7 @@ string verwacht je op het einde ook geen newline tenzij...
                 if (c == separator) {
                     state = 0;
                     l.add(sb.toString());
-                    sb = new StringBuffer();
+                    sb = new StringBuilder();
                 } else if (c == '\n') {
                     state = 0;
                     l.add(sb.toString());

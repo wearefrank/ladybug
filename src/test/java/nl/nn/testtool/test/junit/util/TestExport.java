@@ -50,11 +50,12 @@ public class TestExport {
 		Report report = new Report();
 		// Find all bean properties and change default values to test that transient properties are not added to the
 		// XMLEncoder xml (properties with default values will never be added to the xml by XMLEncoder)
-		Map<String, Method> setMethods = new HashMap<String, Method>();
+		Map<String, Method> setMethods = new HashMap<>();
 		getBeanProperties(report.getClass(), "set", setMethods);
-		Map<String, Method> getMethods = new HashMap<String, Method>();
-		getBeanProperties(report.getClass(), "get", getMethods);
-		Map<String, Method> isMethods = new HashMap<String, Method>();
+		Map<String, Method> getMethods;
+    getMethods = new HashMap<>();
+    getBeanProperties(report.getClass(), "get", getMethods);
+		Map<String, Method> isMethods = new HashMap<>();
 		getBeanProperties(report.getClass(), "is", isMethods);
 		for (String name : setMethods.keySet()) {
 			Method method = setMethods.get(name);
@@ -104,11 +105,11 @@ public class TestExport {
 		}
 		Checkpoint checkpoint = new Checkpoint();
 		checkpoint.setReport(report);
-		setMethods = new HashMap<String, Method>();
+		setMethods = new HashMap<>();
 		getBeanProperties(checkpoint.getClass(), "set", setMethods);
-		getMethods = new HashMap<String, Method>();
+		getMethods = new HashMap<>();
 		getBeanProperties(checkpoint.getClass(), "get", getMethods);
-		isMethods = new HashMap<String, Method>();
+		isMethods = new HashMap<>();
 		getBeanProperties(checkpoint.getClass(), "is", isMethods);
 		for (String name : setMethods.keySet()) {
 			Method method = setMethods.get(name);
@@ -174,13 +175,13 @@ public class TestExport {
 		byte[] bytes = Export.getReportBytesPortable(report);
 		ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(bytes);
 		GZIPInputStream gzipInputStream = new GZIPInputStream(byteArrayInputStream);
-		StringBuffer stringBuffer = new StringBuffer();
+		StringBuilder builder = new StringBuilder();
 		int i = gzipInputStream.read();
 		while (i != -1) {
-			stringBuffer.append((char)i);
+			builder.append((char)i);
 			i = gzipInputStream.read();
 		}
-		String actual = stringBuffer.toString();
+		String actual = builder.toString();
 		actual = ReportRelatedTestCase.applyXmlEncoderIgnores(actual);
 		if (ignoreStorageId) {
 			actual = ReportRelatedTestCase.ignoreStorageId(actual, report);

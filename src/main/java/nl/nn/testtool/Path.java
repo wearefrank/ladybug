@@ -1,5 +1,5 @@
 /*
-   Copyright 2020, 2022-2023 WeAreFrank!, 2018 Nationale-Nederlanden
+   Copyright 2020, 2022-2024 WeAreFrank!, 2018 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -53,10 +53,10 @@ public class Path {
 	}
 
 	public String toString() {
-		StringBuffer stringBuffer = new StringBuffer();
+		StringBuilder builder = new StringBuilder();
 		for (int i = 0; i < names.length; i++) {
-			stringBuffer.append("/" + names[i] + "[" + counts[i] + "]");
+			builder.append("/" + names[i] + "[" + counts[i] + "]");
 		}
-		return stringBuffer.toString();
+		return builder.toString();
 	}
 }
