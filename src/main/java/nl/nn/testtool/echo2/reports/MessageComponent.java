@@ -355,29 +355,29 @@ public class MessageComponent extends BaseComponent implements ActionListener {
 	}
 
 	private static String replaceNonValidXmlCharacters(String string, Row row, boolean differenceFound) {
-		StringBuffer buffer = new StringBuffer();
+		StringBuilder builder = new StringBuilder();
 		int c;
 		for (int i = 0; i < string.length(); i += Character.charCount(c)) {
 			c = string.codePointAt(i);
 			if (isPrintableUnicodeChar(c)) {
-				buffer.appendCodePoint(c);
+				builder.appendCodePoint(c);
 			} else {
 				String substitute = REPLACE_NON_XML_CHAR + "#" + c + ";";
 				if (row == null) {
-					buffer.append(substitute);
+					builder.append(substitute);
 				} else {
-					row.add(createLabel(buffer.toString(), true, differenceFound));
+					row.add(createLabel(builder.toString(), true, differenceFound));
 					Label label = createLabel(substitute, true, differenceFound);
 					label.setBackground(Echo2Application.getButtonRolloverBackgroundColor());
 					row.add(label);
-					buffer = new StringBuffer();
+					builder = new StringBuilder();
 				}
 			}
 		}
 		if (row != null) {
-			row.add(createLabel(buffer.toString(), true, differenceFound));
+			row.add(createLabel(builder.toString(), true, differenceFound));
 		}
-		return buffer.toString();
+		return builder.toString();
 	}
 
 	// Copied from IAF XmlUtils

@@ -26,7 +26,7 @@ public class EscapeUtil {
 		if (value == null) {
 			return "";
 		} else {
-			StringBuffer result = new StringBuffer();
+			StringBuilder result = new StringBuilder();
 			for (int i = 0; i < value.length(); i++) {
 				if (value.charAt(i) == '<') {
 					result.append("&lt;");
@@ -70,14 +70,14 @@ public class EscapeUtil {
 		return value;
 	}
 	
-	public static String escapeCsv(List values) {
-		StringBuffer stringBuffer = new StringBuffer();
+	public static String escapeCsv(List<String> values) {
+		StringBuilder builder = new StringBuilder();
 		for (int i = 0; i < values.size() - 1; i++) {
-			stringBuffer.append(escapeCsv((String)values.get(i)));
-			stringBuffer.append(",");
+			builder.append(escapeCsv(values.get(i)));
+			builder.append(",");
 		}
-		stringBuffer.append(escapeCsv((String)values.get(values.size() - 1)));
-		return stringBuffer.toString();
+		builder.append(escapeCsv(values.get(values.size() - 1)));
+		return builder.toString();
 	}
 
 }

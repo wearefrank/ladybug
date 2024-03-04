@@ -54,15 +54,15 @@ public class HideMessageTransformer implements MessageTransformer {
 			hide = true;
 		}
 		if (hide && message != null) {
-			StringBuffer buffer = new StringBuffer();
+			StringBuilder builder = new StringBuilder();
 			for (int i = 0; i < message.length(); i++) {
 				if (Character.isWhitespace(message.charAt(i)) && skipeWhitespace) {
-					buffer.append(message.charAt(i));
+					builder.append(message.charAt(i));
 				} else {
-					buffer.append('*');
+					builder.append('*');
 				}
 			}
-			message = buffer.toString();
+			message = builder.toString();
 		}
 		return message;
 	}

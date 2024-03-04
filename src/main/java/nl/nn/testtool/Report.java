@@ -83,12 +83,12 @@ public class Report implements Serializable {
 	// https://stackoverflow.com/questions/10531076/serialization-via-objectinputstream-and-transient-fields
 	private transient String mainThread;
 	private transient long mainThreadFinishedTime = TIME_NOT_SET_VALUE;
-	private transient List<String> threads = new ArrayList<String>();
-	private transient List<String> threadsWithThreadCreatepoint = new ArrayList<String>();
-	private transient Map<String, Integer> threadCheckpointIndex = new HashMap<String, Integer>();
-	private transient Map<String, Integer> threadFirstLevel = new HashMap<String, Integer>();
-	private transient Map<String, Integer> threadLevel = new HashMap<String, Integer>();
-	private transient Map<String, String> threadParent = new HashMap<String, String>();
+	private transient List<String> threads = new ArrayList<>();
+	private transient List<String> threadsWithThreadCreatepoint = new ArrayList<>();
+	private transient Map<String, Integer> threadCheckpointIndex = new HashMap<>();
+	private transient Map<String, Integer> threadFirstLevel = new HashMap<>();
+	private transient Map<String, Integer> threadLevel = new HashMap<>();
+	private transient Map<String, String> threadParent = new HashMap<>();
 	private transient int threadsActiveCount = 0;
 	private transient TestTool testTool;
 	private transient boolean closed;
@@ -120,13 +120,13 @@ public class Report implements Serializable {
 	private transient Report originalReport;
 	private transient boolean differenceChecked = false;
 	private transient boolean differenceFound = false;
-	private transient Map<String, String> truncatedMessageMap = new RefCompareMap<String, String>();
+	private transient Map<String, String> truncatedMessageMap = new RefCompareMap<>();
 	private transient boolean reportFilterMatching = true;
 	private transient boolean logReportFilterMatching = true;
 	private transient boolean logMaxCheckpoints = true;
 	private transient boolean logMaxMemoryUsage = true;
-	private transient Map<Object, Set<Checkpoint>> streamingMessageListeners = new HashMap<Object, Set<Checkpoint>>();
-	private transient Map<Object, StreamingMessageResult> streamingMessageResults = new HashMap<Object, StreamingMessageResult>();
+	private transient Map<Object, Set<Checkpoint>> streamingMessageListeners = new HashMap<>();
+	private transient Map<Object, StreamingMessageResult> streamingMessageResults = new HashMap<>();
 
 	@Transient
 	@JsonIgnore
@@ -891,17 +891,17 @@ public class Report implements Serializable {
 
 	public String toXml(ReportRunner reportRunner) {
 		if (xml == null) {
-			StringBuffer stringBuffer = new StringBuffer();
-			stringBuffer.append("<Report");
-			stringBuffer.append(" Name=\"" + EscapeUtil.escapeXml(name) + "\"");
-			stringBuffer.append(" Description=\"" + EscapeUtil.escapeXml(description) + "\"");
-			stringBuffer.append(" Path=\"" + EscapeUtil.escapeXml(path) + "\"");
-			stringBuffer.append(" CorrelationId=\"" + EscapeUtil.escapeXml(correlationId) + "\"");
-			stringBuffer.append(" StartTime=\"" + startTime + "\"");
-			stringBuffer.append(" EndTime=\"" + endTime + "\"");
-			stringBuffer.append(" NumberOfCheckpoints=\"" + getNumberOfCheckpoints() + "\"");
-			stringBuffer.append(" EstimatedMemoryUsage=\"" + getEstimatedMemoryUsage() + "\"");
-			stringBuffer.append(">");
+			StringBuilder builder = new StringBuilder();
+			builder.append("<Report");
+			builder.append(" Name=\"" + EscapeUtil.escapeXml(name) + "\"");
+			builder.append(" Description=\"" + EscapeUtil.escapeXml(description) + "\"");
+			builder.append(" Path=\"" + EscapeUtil.escapeXml(path) + "\"");
+			builder.append(" CorrelationId=\"" + EscapeUtil.escapeXml(correlationId) + "\"");
+			builder.append(" StartTime=\"" + startTime + "\"");
+			builder.append(" EndTime=\"" + endTime + "\"");
+			builder.append(" NumberOfCheckpoints=\"" + getNumberOfCheckpoints() + "\"");
+			builder.append(" EstimatedMemoryUsage=\"" + getEstimatedMemoryUsage() + "\"");
+			builder.append(">");
 			for (Checkpoint checkpoint : checkpoints) {
 				String message;
 				if(reportRunner != null && checkpoint.containsVariables()) {
@@ -909,62 +909,62 @@ public class Report implements Serializable {
 				} else {
 					message = checkpoint.getMessage();
 				}
-				stringBuffer.append("<Checkpoint");
-				stringBuffer.append(" Name=\"" + EscapeUtil.escapeXml(checkpoint.getName()) + "\"");
-				stringBuffer.append(" Type=\"" + EscapeUtil.escapeXml(checkpoint.getTypeAsString()) + "\"");
-				stringBuffer.append(" Level=\"" + checkpoint.getLevel() + "\"");
+				builder.append("<Checkpoint");
+				builder.append(" Name=\"" + EscapeUtil.escapeXml(checkpoint.getName()) + "\"");
+				builder.append(" Type=\"" + EscapeUtil.escapeXml(checkpoint.getTypeAsString()) + "\"");
+				builder.append(" Level=\"" + checkpoint.getLevel() + "\"");
 				if (checkpoint.getSourceClassName() != null) {
-					stringBuffer.append(" SourceClassName=\"" + EscapeUtil.escapeXml(checkpoint.getSourceClassName()) + "\"");
+					builder.append(" SourceClassName=\"" + EscapeUtil.escapeXml(checkpoint.getSourceClassName()) + "\"");
 				}
 				if (checkpoint.getMessageClassName() != null) {
-					stringBuffer.append(" MessageClassName=\"" + EscapeUtil.escapeXml(checkpoint.getMessageClassName()) + "\"");
+					builder.append(" MessageClassName=\"" + EscapeUtil.escapeXml(checkpoint.getMessageClassName()) + "\"");
 				}
 				if (checkpoint.getPreTruncatedMessageLength() != -1) {
-					stringBuffer.append(" PreTruncatedMessageLength=\"" + checkpoint.getPreTruncatedMessageLength() + "\"");
+					builder.append(" PreTruncatedMessageLength=\"" + checkpoint.getPreTruncatedMessageLength() + "\"");
 				}
 				if (checkpoint.getEncoding() != null) {
-					stringBuffer.append(" Encoding=\"" + EscapeUtil.escapeXml(checkpoint.getEncoding()) + "\"");
+					builder.append(" Encoding=\"" + EscapeUtil.escapeXml(checkpoint.getEncoding()) + "\"");
 				}
 				if (checkpoint.getStreaming() != null) {
-					stringBuffer.append(" Streaming=\"" + EscapeUtil.escapeXml(checkpoint.getStreaming()) + "\"");
+					builder.append(" Streaming=\"" + EscapeUtil.escapeXml(checkpoint.getStreaming()) + "\"");
 				}
 				if (checkpoint.isWaitingForStream()) {
-					stringBuffer.append(" WaitingForStream=\"" + checkpoint.isWaitingForStream() + "\"");
+					builder.append(" WaitingForStream=\"" + checkpoint.isWaitingForStream() + "\"");
 				}
 				if (checkpoint.getStub() != Checkpoint.STUB_FOLLOW_REPORT_STRATEGY) {
-					stringBuffer.append(" Stub=\"" + checkpoint.getStub() + "\"");
+					builder.append(" Stub=\"" + checkpoint.getStub() + "\"");
 				}
 				if (checkpoint.isStubbed()) {
-					stringBuffer.append(" Stubbed=\"" + checkpoint.isStubbed() + "\"");
+					builder.append(" Stubbed=\"" + checkpoint.isStubbed() + "\"");
 				}
 				if (checkpoint.getStubNotFound() != null) {
-					stringBuffer.append(" StubNotFound=\"" + checkpoint.getStubNotFound() + "\"");
+					builder.append(" StubNotFound=\"" + checkpoint.getStubNotFound() + "\"");
 				}
 				if (message == null) {
-					stringBuffer.append(" Null=\"true\"/>");
+					builder.append(" Null=\"true\"/>");
 				} else {
 					if (XmlUtil.isXml(message)) {
 						String textDecl = null;
 						if (message.startsWith("<?")) {
 							int i = message.indexOf("?>") + 2;
 							textDecl = message.substring(0, i);
-							stringBuffer.append(" TextDecl=\"");
-							stringBuffer.append(EscapeUtil.escapeXml(textDecl));
-							stringBuffer.append("\">");
+							builder.append(" TextDecl=\"");
+							builder.append(EscapeUtil.escapeXml(textDecl));
+							builder.append("\">");
 							message = message.substring(i);
 						} else {
-							stringBuffer.append(">");
+							builder.append(">");
 						}
-						stringBuffer.append(message);
+						builder.append(message);
 					} else {
-						stringBuffer.append(">");
-						stringBuffer.append(EscapeUtil.escapeXml(message));
+						builder.append(">");
+						builder.append(EscapeUtil.escapeXml(message));
 					}
-					stringBuffer.append("</Checkpoint>");
+					builder.append("</Checkpoint>");
 				}
 			}
-			stringBuffer.append("</Report>");
-			xml = stringBuffer.toString();
+			builder.append("</Report>");
+			xml = builder.toString();
 			if (reportXmlTransformer != null || (transformation != null && transformation.trim().length() > 0)) {
 				if (reportXmlTransformer == null) {
 					reportXmlTransformer = new ReportXmlTransformer();

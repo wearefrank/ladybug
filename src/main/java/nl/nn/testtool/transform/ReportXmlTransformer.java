@@ -43,7 +43,7 @@ import nl.nn.testtool.util.XmlUtil;
 
 @Singleton
 public class ReportXmlTransformer {
-	private Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+	private final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 	private @Setter @Inject @Autowired String xsltResource;
 	private String xslt;
 	private Transformer transformer;
@@ -52,7 +52,7 @@ public class ReportXmlTransformer {
 
 	@PostConstruct
 	public void init() {
-		StringBuffer result = new StringBuffer();
+		StringBuilder result = new StringBuilder();
 		InputStream stream = getClass().getClassLoader().getResourceAsStream(xsltResource);
 		if (stream == null) {
 			createTransformerError = "Could not find xslt resource: " + xsltResource;
@@ -154,7 +154,7 @@ public class ReportXmlTransformer {
 }
 
 class TransformerFactoryErrorListener implements ErrorListener {
-	private Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+	private final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 	String errorMessages;
 
 	public void error(TransformerException exception) {

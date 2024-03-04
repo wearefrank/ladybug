@@ -53,10 +53,10 @@ public class Path {
 	}
 
 	public String toString() {
-		StringBuffer stringBuffer = new StringBuffer();
+		StringBuilder builder = new StringBuilder();
 		for (int i = 0; i < names.length; i++) {
-			stringBuffer.append("/" + names[i] + "[" + counts[i] + "]");
+			builder.append("/" + names[i] + "[" + counts[i] + "]");
 		}
-		return stringBuffer.toString();
+		return builder.toString();
 	}
 }

@@ -112,7 +112,7 @@ public class TestStorage implements nl.nn.testtool.storage.CrudStorage {
 	@Autowired
 	public void setMetadataNames(List<String> metadataNames) {
 		if (writer[0].getPersistentMetadata() == null) {
-			metadataNames = new ArrayList<String>();
+			metadataNames = new ArrayList<>();
 			metadataNames.add("storageId");
 			metadataNames.add("storageSize");
 			metadataNames.add("path");
@@ -190,7 +190,7 @@ public class TestStorage implements nl.nn.testtool.storage.CrudStorage {
 			} else {
 				byte[] reportBytes = reader[source].getReportBytes(storageId, writer[source].getSynchronizeRotate());
 				List persistentMetadata = writer[destination].getPersistentMetadata();
-				List searchValues = new ArrayList();
+				List<String> searchValues = new ArrayList<>();
 				searchValues.add("(" + storageId + ")"); // TODO een getMetadata maken die op exacte waarden kan zoeken zodat je er geen reg. expr. van hoeft te maken?
 				for (int i = 1; i < persistentMetadata.size(); i++) {
 					searchValues.add(null); // TODO is dit nodig?

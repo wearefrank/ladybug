@@ -44,7 +44,7 @@ import nl.nn.testtool.util.Import;
  * @author Jaco de Groot
  */
 public class Writer {
-	private static Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 	private final String synchronizeStore = "";
 	private final String synchronizeRotate = "";
 	private String reportsFilename;
@@ -57,7 +57,7 @@ public class Writer {
 	private FileOutputStream reportsFileOutputStream;
 	private FileOutputStream metadataFileOutputStream;
 	private OutputStreamWriter metadataOutputStreamWriter;
-	private List persistentMetadata;
+	private List<String> persistentMetadata;
 	private String metadataHeader;
 	private MetadataExtractor metadataExtractor;
 	// TODO private maken en via een methode doen?
@@ -91,12 +91,12 @@ public class Writer {
 		return freeSpaceMinimum;
 	}
 
-	protected void setPersistentMetadata(List metadataNames) {
+	protected void setPersistentMetadata(List<String> metadataNames) {
 		persistentMetadata = metadataNames;
 		metadataHeader = EscapeUtil.escapeCsv(persistentMetadata);
 	}
 
-	protected List getPersistentMetadata() {
+	protected List<String> getPersistentMetadata() {
 		return persistentMetadata;
 	}
 
@@ -129,7 +129,7 @@ public class Writer {
 			report.setStorageSize(new Long(reportBytes.length));
 			List metadataValues = new ArrayList();
 			for (int i = 0; i < persistentMetadata.size(); i++) {
-				String metadataName = (String)persistentMetadata.get(i);
+				String metadataName = persistentMetadata.get(i);
 				metadataValues.add(metadataExtractor.getMetadata(report,
 						metadataName, MetadataExtractor.VALUE_TYPE_STRING));
 			}
@@ -137,7 +137,7 @@ public class Writer {
 		}
 	}
 
-	protected void store(String reportName, byte[] reportBytes, List metadataValues) throws StorageException {
+	protected void store(String reportName, byte[] reportBytes, List<String> metadataValues) throws StorageException {
 		synchronized(synchronizeStore) {
 			try {
 				if (reportsFileOutputStream == null) {
