@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2023 WeAreFrank!, 2018 Nationale-Nederlanden
+   Copyright 2019-2024 WeAreFrank!, 2018 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -33,7 +33,7 @@ import java.util.regex.Pattern;
 import javax.json.bind.annotation.JsonbTransient;
 import javax.xml.xpath.XPathExpressionException;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

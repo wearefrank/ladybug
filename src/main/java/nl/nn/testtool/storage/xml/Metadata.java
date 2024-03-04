@@ -1,5 +1,5 @@
 /*
-   Copyright 2020-2021 WeAreFrank!
+   Copyright 2020-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,8 +18,8 @@ package nl.nn.testtool.storage.xml;
 import nl.nn.testtool.Checkpoint;
 import nl.nn.testtool.MetadataExtractor;
 import nl.nn.testtool.Report;
-import org.apache.commons.lang.StringEscapeUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringEscapeUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
 import java.text.SimpleDateFormat;

@@ -1,5 +1,5 @@
 /*
-   Copyright 2020-2023 WeAreFrank!, 2018-2019 Nationale-Nederlanden
+   Copyright 2020-2024 WeAreFrank!, 2018-2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -25,7 +25,7 @@ import java.util.Scanner;
 import java.util.Set;
 import java.util.TooManyListenersException;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import echopointng.ProgressBar;
 import nextapp.echo2.app.Button;
