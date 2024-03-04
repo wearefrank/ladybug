@@ -1,5 +1,5 @@
 /*
-   Copyright 2020, 2022-2023 WeAreFrank!, 2018 Nationale-Nederlanden
+   Copyright 2020, 2022-2024 WeAreFrank!, 2018 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,11 +15,15 @@
 */
 package nl.nn.testtool.echo2.test;
 
+import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import echopointng.tree.DefaultMutableTreeNode;
 import echopointng.tree.TreePath;
@@ -35,6 +39,7 @@ import nl.nn.testtool.storage.StorageException;
 
 public class TreePane extends nl.nn.testtool.echo2.reports.TreePane implements BeanParent {
 	private static final long serialVersionUID = 1L;
+	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 	private InfoPane infoPane;
 	private BeanParent beanParent;
 	private @Setter CrudStorage testStorage;
