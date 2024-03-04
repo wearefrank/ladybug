@@ -25,7 +25,7 @@ import java.util.Scanner;
 import java.util.Set;
 import java.util.TooManyListenersException;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import echopointng.ProgressBar;
 import nextapp.echo2.app.Button;

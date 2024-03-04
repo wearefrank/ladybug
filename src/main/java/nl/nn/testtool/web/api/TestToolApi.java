@@ -38,7 +38,7 @@ import javax.ws.rs.core.Response;
 
 import nl.nn.testtool.MetadataExtractor;
 import nl.nn.testtool.storage.CrudStorage;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import lombok.Setter;

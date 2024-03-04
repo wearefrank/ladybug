@@ -18,8 +18,8 @@ package nl.nn.testtool.storage.xml;
 import nl.nn.testtool.Checkpoint;
 import nl.nn.testtool.MetadataExtractor;
 import nl.nn.testtool.Report;
-import org.apache.commons.lang.StringEscapeUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringEscapeUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
