@@ -15,8 +15,5 @@
 			<column name="REPORT" type="BLOB"/>
 			<column name="DESCRIPTION"  type="VARCHAR(10000)"/>
 		</createTable>
-		<createIndex tableName="LADYBUGTEST" indexName="IX_LADYBUGTEST">
-			<column name="STORAGEID"/>
-		</createIndex>
 	</changeSet>
 </databaseChangeLog>
