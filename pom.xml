@@ -150,14 +150,14 @@
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter</artifactId>
-      <version>5.8.2</version>
+      <version>5.10.2</version>
       <scope>test</scope>
     </dependency>
     <!-- https://junit.org/junit5/docs/current/user-guide/#migrating-from-junit4 -->
     <dependency>
       <groupId>org.junit.vintage</groupId>
       <artifactId>junit-vintage-engine</artifactId>
-      <version>5.8.2</version>
+      <version>5.10.2</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -181,13 +181,13 @@
     <dependency>
       <groupId>org.liquibase</groupId>
       <artifactId>liquibase-core</artifactId>
-      <version>4.19.0</version>
+      <version>4.26.0</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-dbcp2</artifactId>
-      <version>2.9.0</version>
+      <version>2.11.0</version>
       <scope>test</scope>
     </dependency>
     <dependency>
