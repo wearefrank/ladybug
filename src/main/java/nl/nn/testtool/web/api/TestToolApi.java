@@ -1,5 +1,5 @@
 /*
-   Copyright 2021-2023 WeAreFrank!
+   Copyright 2021-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -38,7 +38,7 @@ import javax.ws.rs.core.Response;
 
 import nl.nn.testtool.MetadataExtractor;
 import nl.nn.testtool.storage.CrudStorage;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import lombok.Setter;

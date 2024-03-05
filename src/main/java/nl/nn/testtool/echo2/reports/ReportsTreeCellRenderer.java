@@ -1,5 +1,5 @@
 /*
-   Copyright 2020-2022 WeAreFrank!, 2018 Nationale-Nederlanden
+   Copyright 2020-2022, 2024 WeAreFrank!, 2018 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -14,11 +14,6 @@
    limitations under the License.
 */
 package nl.nn.testtool.echo2.reports;
-
-import java.lang.invoke.MethodHandles;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import echopointng.Tree;
 import echopointng.tree.DefaultMutableTreeNode;
@@ -36,7 +31,6 @@ import nl.nn.testtool.echo2.Echo2Application;
  * @author Jaco de Groot
  */
 public class ReportsTreeCellRenderer extends DefaultTreeCellRenderer {
-	private Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 	private boolean showReportAndCheckpointIds;
 
 	/**

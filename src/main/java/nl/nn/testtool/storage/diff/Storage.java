@@ -1,5 +1,5 @@
 /*
-   Copyright 2020, 2022-2023 WeAreFrank!, 2018 Nationale-Nederlanden
+   Copyright 2020, 2022-2024 WeAreFrank!, 2018 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -36,7 +36,6 @@ import nl.nn.testtool.storage.StorageException;
 
 // TODO of gewoon onderdeel van memory.Storage class maken (als filename gezet dan lezen en schrijven naar bestand)?
 public class Storage extends nl.nn.testtool.storage.memory.Storage {
-	private static Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 	private String reportsDirectory;
 
 	public void setReportsDirectory(String reportsDirectory) {

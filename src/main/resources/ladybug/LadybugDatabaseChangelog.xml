@@ -20,8 +20,5 @@
 			<column name="REPORT" type="BLOB"/>
 			<column name="REPORTXML"  type="CLOB"/>
 		</createTable>
-		<createIndex tableName="LADYBUG" indexName="IX_LADYBUG">
-			<column name="STORAGEID"/>
-		</createIndex>
 	</changeSet>
 </databaseChangeLog>

@@ -1,5 +1,5 @@
 /*
-   Copyright 2020-2023 WeAreFrank!, 2018-2019 Nationale-Nederlanden
+   Copyright 2020-2024 WeAreFrank!, 2018-2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
 */
 package nl.nn.testtool.echo2.test;
 
+import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -25,7 +26,9 @@ import java.util.Scanner;
 import java.util.Set;
 import java.util.TooManyListenersException;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import echopointng.ProgressBar;
 import nextapp.echo2.app.Button;
@@ -70,6 +73,7 @@ import nl.nn.testtool.util.CsvUtil;
  */
 public class TestComponent extends BaseComponent implements BeanParent, ActionListener {
 	private static final long serialVersionUID = 1L;
+	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 	private TestTool testTool;
 	private LogStorage debugStorage;
 	private CrudStorage testStorage;

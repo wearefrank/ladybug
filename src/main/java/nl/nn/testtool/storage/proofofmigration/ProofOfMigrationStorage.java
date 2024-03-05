@@ -47,7 +47,7 @@ import nl.nn.testtool.storage.database.DatabaseStorage;
  */
 //@Dependent disabled for Quarkus for now because of the use of JdbcTemplate
 public class ProofOfMigrationStorage extends DatabaseStorage {
-	private static Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 	// Use i. (instead of m.) to help the query optimizer to start with the IDS table instead of the MESSAGES table
 	private static final String GROUP_BY = "group by COMPONENT, i.CORRELATION_ID";
 	private @Setter @Inject @Autowired TestTool testTool;

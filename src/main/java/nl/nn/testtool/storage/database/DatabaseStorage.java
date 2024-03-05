@@ -33,7 +33,7 @@ import java.util.List;
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,7 +59,7 @@ import nl.nn.testtool.util.SearchUtil;
  */
 // @Dependent disabled for Quarkus for now because of the use of JdbcTemplate
 public class DatabaseStorage implements LogStorage, CrudStorage {
-	private static Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 	protected static final String TIMESTAMP_PATTERN = "yyyy-MM-dd'T'HH:mm:ss.SSS";
 	protected @Setter @Getter String name;
 	protected @Setter String table;

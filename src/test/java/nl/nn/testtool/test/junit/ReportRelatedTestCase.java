@@ -270,32 +270,32 @@ public class ReportRelatedTestCase {
 		File logFile = new File(FILESYSTEM_PATH + path + testCaseName + LOG_SUFFIX);
 		String expected = getResource(path, testCaseName + EXPECTED_SUFFIX, true);
 		if (!expected.equals(actual)) {
-			StringBuffer buffer = new StringBuffer();
-			buffer.append("===\n");
-			buffer.append("=== " + testCaseName + " ===\n");
-			buffer.append("===\n");
-			buffer.append("expected:\n");
-			buffer.append("[" + expected + "]\n");
-			buffer.append("actual:\n");
-			buffer.append("[" + actual + "]\n");
-			buffer.append("equal part:\n");
-			buffer.append("[\n");
+			StringBuilder builder = new StringBuilder();
+			builder.append("===\n");
+			builder.append("=== " + testCaseName + " ===\n");
+			builder.append("===\n");
+			builder.append("expected:\n");
+			builder.append("[" + expected + "]\n");
+			builder.append("actual:\n");
+			builder.append("[" + actual + "]\n");
+			builder.append("equal part:\n");
+			builder.append("[\n");
 			int i = 0;
 			for (; i < expected.length() && i < actual.length() && expected.charAt(i) == actual.charAt(i); i++) {
-				buffer.append(expected.charAt(i));
+				builder.append(expected.charAt(i));
 			}
-			buffer.append("]\n");
+			builder.append("]\n");
 			if (i > expected.length()) {
-				buffer.append("expected next char: " + expected.charAt(i) + " (" + (int)expected.charAt(i) + ")\n");
+				builder.append("expected next char: " + expected.charAt(i) + " (" + (int)expected.charAt(i) + ")\n");
 			}
 			if (i > actual.length()) {
-				buffer.append("actual next char: " + actual.charAt(i) + " (" + (int)actual.charAt(i) + ")\n");
+				builder.append("actual next char: " + actual.charAt(i) + " (" + (int)actual.charAt(i) + ")\n");
 			}
 			writeFile(expectedfile, expected, false);
 			System.err.println("===>>> See " + expectedfile.getCanonicalPath());
 			writeFile(actualFile, actual, true);
 			System.err.println("===>>> See " + actualFile.getCanonicalPath());
-			writeFile(logFile, buffer.toString(), true);
+			writeFile(logFile, builder.toString(), true);
 			System.err.println("===>>> See " + logFile.getCanonicalPath());
 		} else {
 			// Clean up previous run (file will only exist when previous run has failed)
@@ -362,7 +362,7 @@ public class ReportRelatedTestCase {
 
 	public static String getResource(String path, String name, boolean createResourceWithMessageWhenNotFound)
 			throws IOException {
-		StringBuffer result = new StringBuffer();
+		StringBuilder result = new StringBuilder();
 		String resourceName = path + name;
 		InputStream stream = ReportRelatedTestCase.class.getClassLoader().getResourceAsStream(resourceName);
 		if (stream == null) {
@@ -384,9 +384,9 @@ public class ReportRelatedTestCase {
 				i = stream.read(bytes);
 			}
 		} catch (UnsupportedEncodingException e1) {
-			result.append("UnsupportedEncodingException reading xslt: " + e1.getMessage());
+			result.append("UnsupportedEncodingException reading xslt: ").append(e1.getMessage());
 		} catch (IOException e2) {
-			result.append("IOException reading xslt: " + e2.getMessage());
+			result.append("IOException reading xslt: ").append(e2.getMessage());
 		}
 		return result.toString();
 	}

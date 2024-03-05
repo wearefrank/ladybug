@@ -1,5 +1,5 @@
 /*
-   Copyright 2020, 2022 WeAreFrank!, 2018 Nationale-Nederlanden
+   Copyright 2020, 2022, 2024 WeAreFrank!, 2018 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -30,7 +30,7 @@ import nextapp.echo2.app.filetransfer.DownloadProvider;
  * @author Jaco de Groot
  */
 public class FileDownloadProvider implements DownloadProvider {
-	private Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 	private File file;
 	private String fileName;
 

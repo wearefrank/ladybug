@@ -1,5 +1,5 @@
 /*
-   Copyright 2020-2023 WeAreFrank!, 2018-2019 Nationale-Nederlanden
+   Copyright 2020-2024 WeAreFrank!, 2018-2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -42,7 +42,7 @@ import nl.nn.testtool.util.SearchUtil;
  * @author Jaco de Groot
  */
 public class Reader {
-	private static Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 	private String reportsFilename;
 	private String metadataFilename;
 	private File reportsFile;
