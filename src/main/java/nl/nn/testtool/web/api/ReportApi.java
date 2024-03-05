@@ -235,6 +235,23 @@ public class ReportApi extends ApiBase {
 		return Response.ok().build();
 	}
 
+	@DELETE
+	@Path("/{storage}/")
+	public Response deleteAllReports(@PathParam("storage") String storageName) {
+		Storage storage = testTool.getStorage(storageName);
+		List<String> errorMessages = new ArrayList<>();
+		try {
+			storage.clear();
+		} catch(StorageException e) {
+			errorMessages.add(String.format("Could not clear storage [%s], reason: %s", storage.getName(), e.getMessage());
+			log.error("Failed to clear storage [{}]", storage.getName(), e);
+		}
+		if (!errorMessages.isEmpty()) {
+			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(errorMessages).build();
+		}
+		return Response.ok().build();
+	}
+
 	/**
 	 * Get the n latest reports in the storage.
 	 *
