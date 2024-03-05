@@ -242,7 +242,7 @@ Create and publish NPM package and WebJar
 ### Creating and publishing an NPM package
 - Run the command `yarn install --immutable`, to sync with changes done by others
 - Run the command `ng build`, to build the current project
-- In the `dist/ladybug/index.html` change the types of the three scripts on line 15 to `application/javascript` (so `type="module"` -> `type="application/javascript"`). The specific scripts are:
+- In the `dist/ladybug/index.html` change the types of the three scripts on line 14 to `application/javascript` (so `type="module"` -> `type="application/javascript"`). The specific scripts are:
   - `runtime.e3a101410a4894ca.js`
   - `polyfills.42dedf2fcdca615b.js`
   - `main.134a36bdfc8f0ad9.js`
