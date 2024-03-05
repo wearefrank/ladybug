@@ -236,7 +236,7 @@ public class ReportApi extends ApiBase {
 	}
 
 	@DELETE
-	@Path("/{storage}/")
+	@Path("/all/{storage}/")
 	public Response deleteAllReports(@PathParam("storage") String storageName) {
 		Storage storage = testTool.getStorage(storageName);
 		List<String> errorMessages = new ArrayList<>();
