@@ -243,7 +243,7 @@ public class ReportApi extends ApiBase {
 		try {
 			storage.clear();
 		} catch(StorageException e) {
-			errorMessages.add(String.format("Could not clear storage [%s], reason: %s", storage.getName(), e.getMessage());
+			errorMessages.add(String.format("Could not clear storage [%s], reason: %s", storage.getName(), e.getMessage()));
 			log.error("Failed to clear storage [{}]", storage.getName(), e);
 		}
 		if (!errorMessages.isEmpty()) {
