@@ -93,6 +93,7 @@ public class TestTool {
 	private @Getter boolean closeNewThreadsOnly = false;
 	private @Getter boolean closeMessageCapturers = false;
 	private @Setter @Getter @Inject @Autowired Views views;
+	private @Setter @Getter int reportsInProgressThreshold = 300000;
 	boolean devMode = false; // See testConcurrentLastEndpointAndFirstStartpointForSameCorrelationId()
 
 	@PostConstruct

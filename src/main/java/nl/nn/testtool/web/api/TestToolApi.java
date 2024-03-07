@@ -168,6 +168,18 @@ public class TestToolApi extends ApiBase {
 		}
 	}
 
+    /**
+     * Gets the report in progress warning threshold time
+     *
+     * @return Response containing the time it will take before ladybug shows a warning that a report is still in progress
+     * */
+    @GET
+    @Path("/in-progress/threshold-time")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getReportsInProgressWarningThreshold(){
+        return Response.ok(testTool.getReportsInProgressThreshold()).build();
+    }
+
 	/**
 	 * Change the default transformation.
 	 *
