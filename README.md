@@ -186,7 +186,7 @@ Please do the following to set up your development environment for the front-end
 * Change directory to your checkout of ladybug-frontend.
 * The Node Package Manager (npm) includes another package manager, yarn. We use that one because it is more stable. Enable it by executing the command `corepack enable`. You should do this in a command prompt that runs with administrator permissions.
 * Use `yarn -v` to check that you have yarn version 3.2.x.
-* Run `yarn install --frozen-lockfile` to install your dependencies. The flag ensures that you get exactly the same dependencies as the other developers have. If you want to include a new dependency, update `package.json` and do `yarn install`. File `yarn.lock` will be updated, the list of all dependencies including dependencies of other dependencies. Check in `yarn.lock` to ensure that other developers will update to the same dependencies as you. In case you don't have a direct internet connection you might need to set HTTPS_PROXY, see https://docs.cypress.io/guides/references/proxy-configuration.
+* Run `yarn install --immutable` to install your dependencies. The flag ensures that you get exactly the same dependencies as the other developers have. If you want to include a new dependency, update `package.json` and do `yarn install`. File `yarn.lock` will be updated, the list of all dependencies including dependencies of other dependencies. Check in `yarn.lock` to ensure that other developers will update to the same dependencies as you. In case you don't have a direct internet connection you might need to set HTTPS_PROXY, see https://docs.cypress.io/guides/references/proxy-configuration.
 * Run `yarn prepare` to prepare Git hooks. If you do not do this, you will not be able to commit or push in the ladybug-frontend project.
 
 Testing frontend changes with the test webapp
@@ -211,7 +211,7 @@ ng test
 
 At the time of writing, there are no unit tests but there are end-to-end tests.
 
-End-to-end testing is done using [Cypress](https://www.cypress.io/). Cypress is a dependency configured in `package.json`, so it should have been installed when you did `yarn install --frozen-lockfile`. You have the following options for running the tests:
+End-to-end testing is done using [Cypress](https://www.cypress.io/). Cypress is a dependency configured in `package.json`, so it should have been installed when you did `yarn install --immutable`. You have the following options for running the tests:
 * `yarn run e2e`. This runs the end-to-end tests headless and without user interaction.
 * `yarn run e2e-interactive`. This opens a Window from which you can choose what tests to start. You can select the webbrowser you want to test with.
 
@@ -240,13 +240,9 @@ Create and publish NPM package and WebJar
     - In the terminal run the following command `npm login`, which prompts you to log into NPM.
 
 ### Creating and publishing an NPM package
-- Run the command `yarn install --frozen-lockfile`, to sync with changes done by others
+- Run the command `yarn install --immutable`, to sync with changes done by others
 - Run the command `ng build`, to build the current project
-- Copy the following files into the generated `dist/ladybug` folder
-    - README.md
-    - LICENSE
-    - package.json
-- In the `dist/ladybug/index.html` change the types of the three scripts on line 15 to `application/javascript` (so `type="module"` -> `type="application/javascript"`). The specific scripts are:
+- In the `dist/ladybug/index.html` change the types of the three scripts on line 14 to `application/javascript` (so `type="module"` -> `type="application/javascript"`). The specific scripts are:
   - `runtime.e3a101410a4894ca.js`
   - `polyfills.42dedf2fcdca615b.js`
   - `main.134a36bdfc8f0ad9.js`
