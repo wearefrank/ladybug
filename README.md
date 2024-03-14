@@ -145,13 +145,13 @@ General setup
 
 Clone the following projects to your Git folder or any other folder of your choice:
 
-- https://github.com/ibissource/ibis-ladybug (backend code) (the project you are currently looking at)
-- https://github.com/ibissource/ladybug-frontend (frontend code, not needed when making backend changes)
-- https://github.com/ibissource/ibis-ladybug-test-webapp (webapp to test Ladybug)
-- https://github.com/ibissource/frank-runner (building and running the test webapp with Ladybug)
-- https://github.com/ibissource/iaf (in case you want to test your Ladybug changes with the Frank!Framework)
+- https://github.com/wearefrank/ladybug (backend code) (the project you are currently looking at)
+- https://github.com/wearefrank/ladybug-frontend (frontend code, not needed when making backend changes)
+- https://github.com/wearefrank/ladybug-test-webapp (webapp to test Ladybug)
+- https://github.com/wearefrank/frank-runner (building and running the test webapp with Ladybug)
+- https://github.com/frankframework/frankframework (in case you want to test your Ladybug changes with the Frank!Framework)
 
-Create skip-replace-inject.txt in the ibis-ladybug folder (see pom.xml for more info).
+Create skip-replace-inject.txt in the ibis-ladybug folder. You do not have to give it any contents. If you want to understand the purpose of this file, then see `pom.xml`.
 
 Backend development
 -------------------
@@ -182,11 +182,12 @@ Frontend development
 --------------------
 
 Please do the following to set up your development environment for the front-end:
-* Install [Node.js](https://nodejs.org/en/), choose version 16. You should get executables `npm` version 8.x and `node` version 16.x. Check these versions using `npm -v` and `node -v`.
+* Install [Node.js](https://nodejs.org/en/), choose version 20. You should get executables `npm` version 10.x and `node` version 20.x. Check these versions using `npm -v` and `node -v`.
 * Change directory to your checkout of ladybug-frontend.
 * The Node Package Manager (npm) includes another package manager, yarn. We use that one because it is more stable. Enable it by executing the command `corepack enable`. You should do this in a command prompt that runs with administrator permissions.
-* Use `yarn -v` to check that you have yarn version 3.2.x.
-* Run `yarn install --immutable` to install your dependencies. The flag ensures that you get exactly the same dependencies as the other developers have. If you want to include a new dependency, update `package.json` and do `yarn install`. File `yarn.lock` will be updated, the list of all dependencies including dependencies of other dependencies. Check in `yarn.lock` to ensure that other developers will update to the same dependencies as you. In case you don't have a direct internet connection you might need to set HTTPS_PROXY, see https://docs.cypress.io/guides/references/proxy-configuration.
+* Use `yarn -v` to check that you have the right version of yarn. The version you are using should equal the version that is asked in `package.json`. In `package.json` you have a line like: `"packageManager": "yarn@x.x.x"`.
+* Run `yarn install --immutable` to install your dependencies. The flag ensures that you get exactly the same dependencies as the other developers have. If you want to include a new dependency, update `package.json` and do `yarn install`. File `yarn.lock` will be updated, the list of all dependencies including dependencies of other dependencies. Check in `yarn.lock` to ensure that other developers will update to the same dependencies as you. If it is not your intention to introduce a new dependency, then do not check-in `yarn.lock`!. If you made an error with these installation instructions, you may have unwanted updates of the file.
+* In case you don't have a direct internet connection you might need to set HTTPS_PROXY, see https://docs.cypress.io/guides/references/proxy-configuration.
 * Run `yarn prepare` to prepare Git hooks. If you do not do this, you will not be able to commit or push in the ladybug-frontend project.
 
 Testing frontend changes with the test webapp
