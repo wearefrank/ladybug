@@ -151,7 +151,7 @@ Clone the following projects to your Git folder or any other folder of your choi
 - https://github.com/wearefrank/frank-runner (building and running the test webapp with Ladybug)
 - https://github.com/frankframework/frankframework (in case you want to test your Ladybug changes with the Frank!Framework)
 
-Create skip-replace-inject.txt in the ladybug folder. You do not have to give it any contents. If you want to understand the purpose of this file, then see `pom.xml`.
+Create skip-replace-inject.txt in checkout directory of the ladybug project. You do not have to give it any contents. If you want to understand the purpose of this file, then see `pom.xml`.
 
 Backend development
 -------------------
