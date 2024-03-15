@@ -15,5 +15,6 @@
 			<column name="REPORT" type="BLOB"/>
 			<column name="DESCRIPTION"  type="CLOB"/>
 		</createTable>
+		<createSequence sequenceName="SEQ_LADYBUGTEST"/><!-- To auto increment STORAGEID on Oracle -->
 	</changeSet>
 </databaseChangeLog>

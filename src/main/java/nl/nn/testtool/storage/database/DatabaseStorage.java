@@ -163,6 +163,9 @@ public class DatabaseStorage implements LogStorage, CrudStorage {
 		if (isStoreReportXml()) {
 			query.append(", reportxml");
 		}
+		if (dbmsSupport.autoIncrementKeyMustBeInserted()) {
+			query.append(", " + storageIdColumn);
+		}
 		query.append(") values (");
 		for (String column : getMetadataNames()) {
 			if (!column.equals(getStorageIdColumn())) {
@@ -175,6 +178,9 @@ public class DatabaseStorage implements LogStorage, CrudStorage {
 		query.append(", ?");
 		if (isStoreReportXml()) {
 			query.append(", ?");
+		}
+		if (dbmsSupport.autoIncrementKeyMustBeInserted()) {
+			query.append(", " + dbmsSupport.autoIncrementInsertValue("SEQ_" + getTable()));
 		}
 		query.append(")");
 		log.debug("Store report query: " + query.toString());

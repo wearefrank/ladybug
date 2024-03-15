@@ -80,4 +80,18 @@ public class DbmsSupport {
 		return "rn";
 	}
 
+	public boolean autoIncrementKeyMustBeInserted() {
+		if ("Oracle".equals(commonDatabaseName)) {
+			return true;
+		}
+		return false;
+	}
+
+	public String autoIncrementInsertValue(String sequenceName) {
+		if ("Oracle".equals(commonDatabaseName)) {
+			return sequenceName + ".NEXTVAL";
+		}
+		return null;
+	}
+
 }

@@ -20,5 +20,6 @@
 			<column name="REPORT" type="BLOB"/>
 			<column name="REPORTXML"  type="CLOB"/>
 		</createTable>
+		<createSequence sequenceName="SEQ_LADYBUG"/><!-- To auto increment STORAGEID on Oracle -->
 	</changeSet>
 </databaseChangeLog>
