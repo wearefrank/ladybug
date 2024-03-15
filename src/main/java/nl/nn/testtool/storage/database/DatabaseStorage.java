@@ -400,30 +400,34 @@ public class DatabaseStorage implements LogStorage, CrudStorage {
 	protected void buildMetadataQuery(int maxNumberOfRecords, List<String> metadataNames, List<String> searchValues,
 			List<String> rangeSearchValues, StringBuilder query, List<Object> args, List<Integer> argTypes)
 			throws StorageException {
-		query.append("select " + dbmsSupport.provideFirstRowsHintAfterFirstKeyword(maxNumberOfRecords));
+		query.append("select" + dbmsSupport.provideFirstRowsHintAfterFirstKeyword(maxNumberOfRecords));
+		String rowNumber = dbmsSupport.getRowNumber(metadataNames.get(0), "desc");
+		if (StringUtils.isNotEmpty(rowNumber)) {
+			query.append(" * from (select");
+		}
 		boolean first = true;
 		for (String metadataName : metadataNames) {
 			if (first) {
 				first = false;
 			} else {
-				query.append(", ");
+				query.append(",");
 			}
 			if (isBigValue(metadataName)) {
-				query.append("substr(" + metadataName + ", 1, 100)");
+				query.append(" substr(" + metadataName + ", 1, 100)");
 			} else {
-				query.append(metadataName);
+				query.append(" " + metadataName);
 			}
 		}
-		String rowNumber= dbmsSupport.getRowNumber(metadataNames.get(0), "desc");
 		if (StringUtils.isNotEmpty(rowNumber)) {
 			if (first) {
 				first = false;
 			} else {
-				query.append(", ");
+				query.append(",");
 			}
-			query.append(rowNumber);
+			query.append(" " + rowNumber);
 		}
 		query.append(" from " + getTable());
+		// where
 		for (int i = 0; i < rangeSearchValues.size(); i++) {
 			String searchValue = rangeSearchValues.get(i);
 			if (searchValue != null) {
@@ -474,7 +478,8 @@ public class DatabaseStorage implements LogStorage, CrudStorage {
 			query.deleteCharAt(query.length() - 1);
 		}
 		if (StringUtils.isNotEmpty(rowNumber)) {
-			query.append(" where " + dbmsSupport.getRowNumberShortName() + " < ?");
+			// An extra select was added earlier because rowNumber is not empty
+			query.append(") where " + dbmsSupport.getRowNumberShortName() + " < ?");
 			args.add(maxNumberOfRecords + 1);
 			argTypes.add(Types.INTEGER);
 		}
