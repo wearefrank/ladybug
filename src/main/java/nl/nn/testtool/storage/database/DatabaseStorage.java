@@ -164,7 +164,7 @@ public class DatabaseStorage implements LogStorage, CrudStorage {
 			query.append(", reportxml");
 		}
 		if (dbmsSupport.autoIncrementKeyMustBeInserted()) {
-			query.append(", " + storageIdColumn);
+			query.append(", " + getStorageIdColumn());
 		}
 		query.append(") values (");
 		for (String column : getMetadataNames()) {
