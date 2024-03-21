@@ -58,10 +58,10 @@ public class Report implements Serializable {
 	// exception. In the case Java isn't able to read the older version it will
 	// throw an exception, hence no reason either to force throwing an
 	// exception. The serialVersionUID also only effects reading objects through
-	// ObjectInputStream, it doesn't effect reading objects through XMLDecoder.
-	private transient static final long serialVersionUID = 5;
-	private transient static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-	protected transient static final long TIME_NOT_SET_VALUE = Long.MIN_VALUE;
+	// ObjectInputStream, it doesn't affect reading objects through XMLDecoder.
+	private static final transient long serialVersionUID = 5;
+	private static final transient Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+	protected static final transient long TIME_NOT_SET_VALUE = Long.MIN_VALUE;
 	// Please note that the set method should return void for XmlEncoder to
 	// store the property (hence the setVariableCsvWithoutException method)
 	private long startTime;
@@ -560,7 +560,7 @@ public class Report implements Serializable {
 			// fixed). Keep the following code for now and remove it somewhere in the future
 			String warning = "Ladybug adjustment of checkpoint index to prevent IndexOutOfBoundsException."
 					+ " For unknown reason index is " + index + " while checkpoints size is " + checkpoints.size() + "."
-					+ " Please create an issue at https://github.com/ibissource/ibis-ladybug/issues/new\n"
+					+ " Please create an issue at https://github.com/wearefrank/ladybug/issues/new\n"
 					+ getThreadInfo();
 			log.warn(warning);
 			Checkpoint warningCheckpoint = new Checkpoint(this, threadName, this.getClass().getCanonicalName(),
