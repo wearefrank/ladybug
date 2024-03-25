@@ -17,7 +17,7 @@ package nl.nn.testtool;
 
 /**
  * The pom.xml will replace javax.inject.Inject to this dummy to prevent problems with WebSphere when Enable-CDI is not
- * set to false (see also: https://github.com/ibissource/iaf/pull/4211/files):
+ * set to false (see also: https://github.com/frankframework/frankframework/pull/4211/files):
  * <pre>
  * com.ibm.ws.exception.RuntimeWarning: com.ibm.ws.exception.RuntimeError: com.ibm.ws.exception.RuntimeError: java.lang.RuntimeException: com.ibm.ws.cdi.CDIRuntimeException: com.ibm.ws.cdi.CDIDeploymentRuntimeException: org.jboss.weld.exceptions.DeploymentException: Exception List with 6 exceptions:
  * Exception 0 :

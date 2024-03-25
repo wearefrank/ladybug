@@ -34,7 +34,7 @@ See [release notes](RELEASES.md).
 Feedback
 ========
 
-For bug reports and feature requests create a new issue at <https://github.com/ibissource/ladybug/issues>. Ladybug
+For bug reports and feature requests create a new issue at <https://github.com/wearefrank/ladybug/issues>. Ladybug
 is developed and maintained by [WeAreFrank!](https://wearefrank.nl/). Contact us at <https://wearefrank.nl/en/contact/>
 or send an email to info@wearefrank.nl.
 
@@ -44,7 +44,7 @@ Ladybug online demo
 
 To see Ladybug in action as part of the Frank!Framework go to:
 
-- https://ibis4example.ibissource.org/iaf/gui/#!/testing/ladybug
+- https://frank2example.frankframework.org/iaf/gui/#/testing/ladybug
 
 And in Open ZaakBrug as part of http://demodam.nl:
 
@@ -106,11 +106,11 @@ help.
 
 Direct integration of the Ladybug has been done in the Ladybug test webapp:
 
-- https://github.com/ibissource/ladybug-test-webapp
+- https://github.com/wearefrank/ladybug-test-webapp
 
 The Quarkus application to demo and test Ladybug:
 
-- https://github.com/ibissource/ladybug-quarkus
+- https://github.com/wearefrank/ladybug-quarkus
 
 And the Open ZaakBrug:
 
@@ -128,11 +128,11 @@ For the Open ZaakBrug the most important files to look at are:
 
 The Frank!Framework is using AOP to integrate the Ladybug, see the Ladybug module of the Frank!Framework:
 
-- https://github.com/ibissource/iaf/tree/master/ladybug
+- https://github.com/frankframework/frankframework/tree/master/ladybug
 
 And the AOP related spring configuration xml:
 
-- https://github.com/ibissource/iaf/blob/master/ladybug/src/main/resources/springIbisDebuggerAdvice.xml
+- https://github.com/frankframework/frankframework/blob/master/ladybug/src/main/resources/springIbisDebuggerAdvice.xml
 
 The [next section](#how-to-change-and-test-ladybug) also describes how to run Ladybug with the Frank!Framework.
 
@@ -156,7 +156,7 @@ Create skip-replace-inject.txt in checkout directory of the ladybug project. You
 Backend development
 -------------------
 
-Read the Frank!Runner [README.md](https://github.com/ibissource/frank-runner#frankrunner) to learn how to integrate it
+Read the Frank!Runner [README.md](https://github.com/wearefrank/frank-runner#frankrunner) to learn how to integrate it
 with your IDE but you can also just start the restart.bat in the frank-runner/specials/ladybug folder. This should
 build and run the test webapp with Ladybug. When Tomcat has been started by the Frank!Runner browse to:
 
@@ -199,7 +199,7 @@ Testing frontend changes with the test webapp
 Testing frontend changes with Frank!Framework
 ---------------------------------------------
 
-The Frank!Framework incorporates Ladybug and configures is a bit different then the test webapp. It for example adds a Gray box view which you might want to test. The Frank!Framework serves the Ladybug on a different url then the test webapp so you need to configure the previously mentioned proxy a bit different and change the url in src/proxy.conf.json from http://localhost/ladybug to http://localhost/iaf/ladybug. In case you also have backend changes you can start the Frank!Framework as eplained above (with test.with.iaf=true). Otherwise it is easier to for example run Frank2Example1. See the Frank!Runner [README.md](https://github.com/ibissource/frank-runner#frankrunner) for more information on how to start a Frank2Example1 or another Frank.
+The Frank!Framework incorporates Ladybug and configures is a bit different then the test webapp. It for example adds a Gray box view which you might want to test. The Frank!Framework serves the Ladybug on a different url then the test webapp so you need to configure the previously mentioned proxy a bit different and change the url in src/proxy.conf.json from http://localhost/ladybug to http://localhost/iaf/ladybug. In case you also have backend changes you can start the Frank!Framework as eplained above (with test.with.iaf=true). Otherwise it is easier to for example run Frank2Example1. See the Frank!Runner [README.md](https://github.com/wearefrank/frank-runner#frankrunner) for more information on how to start a Frank2Example1 or another Frank.
 
 Testing frontend changes with unit tests
 ----------------------------------------
@@ -223,9 +223,9 @@ When the tests are running, you will see the ladybug GUI. The GUI will show the 
 
 Quarkus
 =====
-To see how to run the backend for Quarkus, please see [Quarkus backend](https://github.com/ibissource/ladybug-quarkus#demo-and-test-ladybug-in-quarkus).\
+To see how to run the backend for Quarkus, please see [Quarkus backend](https://github.com/wearefrank/ladybug-quarkus#demo-and-test-ladybug-in-quarkus).\
 For the frontend, do the following:
- - Check out of the branch [Quarkus configuration](https://github.com/ibissource/ladybug-frontend/tree/quarkus-configuration)
+ - Check out of the branch [Quarkus configuration](https://github.com/wearefrank/ladybug-frontend/tree/quarkus-configuration)
  - Run `ng serve --open` or run `ng serve` and navigate to [localhost/ladybug](http://localhost/ladybug/)
  - NOTE: It is important to note that running a report in the test tab is not yet possible with Quarkus
 
@@ -288,7 +288,7 @@ The Cypress test is used in two ways. First, it can be triggered if ladybug is u
 * useRealFrontend: `true`, because we do not want to use the checkout of ladybug-frontend, but the WebJar contained in ladybug.
 * mergeMasterToBranch: `true`, for the backend directs the test to merge the master into the checkout. This way, a pull request of the backend is emulated.
 
-This scenario does not work on forks of the ladybug project. A fork does not have rights to trigger tests within the `wearefrank/ladybug-frontend` project. A commit on `wearefrank/ladybug` triggers the front-end test. GitHub will not show the success or failure of the front-end test. Please browse to https://github.com/ibissource/ladybug-frontend and go to "Actions". Check the latest test run there.
+This scenario does not work on forks of the ladybug project. A fork does not have rights to trigger tests within the `wearefrank/ladybug-frontend` project. A commit on `wearefrank/ladybug` triggers the front-end test. GitHub will not show the success or failure of the front-end test. Please browse to https://github.com/wearefrank/ladybug-frontend and go to "Actions". Check the latest test run there.
 
 The second use of the Cypress test is testing the front-end. The Cypress test is triggered by every commit and every pull request update of the ladybug-frontend project. The input arguments are not set, causing the new commit (or merge commit for a PR) to be checked out for ladybug-frontend. For ladybug the master is checked out. Input `useRealFrontend` is undefined, which is equivalent to `false`. This means that the front-end comes from the checkout of ladybug-frontend; the WebJar inside ladybug is ignored. Finally, `mergeMasterToBranch` is undefined (`false`). This scenario also works on forks of `ladybug-frontend`.
 
@@ -306,6 +306,6 @@ When updating the front-end, work on a branch that is allowed to live on a fork 
 
 ### Update front-end and backend
 
-Update the front-end and the backend simultaneously on your development PC. The front-end changes will fail in CI/CD because they are tested against the master of the backend. Rely on the Cypress test on your development PC and on the Maven build of ladybug to test your work. When you trust your work, release the front-end in a WebJar as explained in [Create and publish NPM package and WebJar](#create-and-publish-npm-package-and-webjar). Please note that the released commit may live on another branch than master. Ensure that the commit and the tag are pushed to GitHub project ibissource/ladybug-frontend. Then update `pom.xml` of ladybug to reference the new WebJar; do so on a branch pushed to wearefrank/ladybug. This update of the backend triggers the GitHub actions front-end test as explained earlier. Check that the latest run of the front-end test succeeds.
+Update the front-end and the backend simultaneously on your development PC. The front-end changes will fail in CI/CD because they are tested against the master of the backend. Rely on the Cypress test on your development PC and on the Maven build of ladybug to test your work. When you trust your work, release the front-end in a WebJar as explained in [Create and publish NPM package and WebJar](#create-and-publish-npm-package-and-webjar). Please note that the released commit may live on another branch than master. Ensure that the commit and the tag are pushed to GitHub project wearefrank/ladybug-frontend. Then update `pom.xml` of ladybug to reference the new WebJar; do so on a branch pushed to wearefrank/ladybug. This update of the backend triggers the GitHub actions front-end test as explained earlier. Check that the latest run of the front-end test succeeds.
 
 At this point, you can merge your work on ladybug to its master branch. After this merge, additional pushes on your ladybug-frontend branch will succeed in CI/CD because the corresponding backend changes are in the backend master. You can merge your front-end changes to master if the GitHub actions test succeeds.
