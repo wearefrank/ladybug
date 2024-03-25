@@ -11,7 +11,7 @@
   Ladybug at certain checkpoints in you code (either directly or using AOP) to generate tree based reports. Implement a
   rerun method to be able to rerun reports and optionally stub certain checkpoints for regression testing.
   </description>
-  <url>https://ibissource.org/</url>
+  <url>https://github.com/wearefrank/ladybug</url>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -20,7 +20,7 @@
     <!-- The line below is parsed by the GitHub actions test that triggers the ladybug-frontend Cypress test -->
 
     <frontend.version>0.0.53</frontend.version>
-    <!-- Logback 1.3 requires slf4j-api 2.0. Logback is used with scope test so ignore https://github.com/ibissource/ibis-ladybug/security/dependabot until Frank!Framework starts using slf4j-api 2.0 -->
+    <!-- Logback 1.3 requires slf4j-api 2.0. Logback is used with scope test so ignore https://github.com/wearefrank/ladybug/security/dependabot until Frank!Framework starts using slf4j-api 2.0 -->
     <logback.version>1.2.13</logback.version>
     <!-- Create skip-replace-inject.txt (replacement is only needed in the published jar by CI/CD) (more info in nl/nn/testtool/Inject.java -->
     <inject.replace.include>**/*.java</inject.replace.include>
@@ -30,7 +30,7 @@
 
   <organization>
     <name>WeAreFrank!</name>
-    <url>https://github.com/ibissource/ibis-ladybug</url>
+    <url>https://github.com/wearefrank/ladybug</url>
   </organization>
 
   <licenses>
@@ -44,15 +44,15 @@
   <developers>
     <developer>
       <name>Jaco de Groot</name>
-      <email>jaco@ibissource.org</email>
-      <organization>Ibissource</organization>
-      <organizationUrl>https://ibissource.org</organizationUrl>
+      <email>jaco@wearefrank.nl</email>
+      <organization>WeAreFrank!</organization>
+      <organizationUrl>https://wearefrank.nl</organizationUrl>
     </developer>
     <developer>
       <name>Niels Meijer</name>
-      <email>niels@ibissource.org</email>
-      <organization>Ibissource</organization>
-      <organizationUrl>https://ibissource.org</organizationUrl>
+      <email>niels@wearefrank.nl</email>
+      <organization>WeAreFrank!</organization>
+      <organizationUrl>https://wearefrank.nl</organizationUrl>
     </developer>
   </developers>
 
@@ -469,9 +469,9 @@
   </reporting>
 
   <scm>
-    <url>https://github.com/ibissource/ibis-ladybug</url>
-    <connection>scm:git:https://github.com/ibissource/ibis-ladybug.git</connection>
-    <developerConnection>scm:git:https://github.com/ibissource/ibis-ladybug.git</developerConnection>
+    <url>https://github.com/wearefrank/ladybug</url>
+    <connection>scm:git:https://github.com/wearefrank/ladybug.git</connection>
+    <developerConnection>scm:git:https://github.com/wearefrank/ladybug.git</developerConnection>
     <tag>HEAD</tag>
   </scm>
 

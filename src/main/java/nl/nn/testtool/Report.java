@@ -560,7 +560,7 @@ public class Report implements Serializable {
 			// fixed). Keep the following code for now and remove it somewhere in the future
 			String warning = "Ladybug adjustment of checkpoint index to prevent IndexOutOfBoundsException."
 					+ " For unknown reason index is " + index + " while checkpoints size is " + checkpoints.size() + "."
-					+ " Please create an issue at https://github.com/ibissource/ibis-ladybug/issues/new\n"
+					+ " Please create an issue at https://github.com/wearefrank/ladybug/issues/new\n"
 					+ getThreadInfo();
 			log.warn(warning);
 			Checkpoint warningCheckpoint = new Checkpoint(this, threadName, this.getClass().getCanonicalName(),
