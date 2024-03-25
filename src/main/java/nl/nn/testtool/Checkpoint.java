@@ -52,23 +52,23 @@ import nl.nn.testtool.util.XmlUtil;
  */
 public class Checkpoint implements Serializable, Cloneable {
 	// See comment above field serialVersionUID on class Report
-	private transient static final long serialVersionUID = 4;
-	private transient static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-	private transient static final Pattern GENERIC_VARIABLE_PATTERN = Pattern.compile("\\$\\{.*?\\}");
-	private transient static final Pattern EXTERNAL_VARIABLE_PATTERN = Pattern.compile("\\$\\{checkpoint\\(([0-9]+#[0-9]+)\\)(\\.xpath\\((.*?)\\)|)\\}");
+	private static final long serialVersionUID = 4;
+	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+	private static final Pattern GENERIC_VARIABLE_PATTERN = Pattern.compile("\\$\\{.*?\\}");
+	private static final Pattern EXTERNAL_VARIABLE_PATTERN = Pattern.compile("\\$\\{checkpoint\\(([0-9]+#[0-9]+)\\)(\\.xpath\\((.*?)\\)|)\\}");
 
-	public transient static final int TYPE_STARTPOINT = 1;
-	public transient static final int TYPE_ENDPOINT = 2;
-	public transient static final int TYPE_ABORTPOINT = 3;
-	public transient static final int TYPE_INPUTPOINT = 4;
-	public transient static final int TYPE_OUTPUTPOINT = 5;
-	public transient static final int TYPE_INFOPOINT = 6;
-	public transient static final int TYPE_THREADCREATEPOINT = 7;
-	public transient static final int TYPE_THREADSTARTPOINT = 8;
-	public transient static final int TYPE_THREADENDPOINT = 9;
-	public transient static final int STUB_FOLLOW_REPORT_STRATEGY = -1;
-	public transient static final int STUB_NO = 0;
-	public transient static final int STUB_YES = 1;
+	public static final int TYPE_STARTPOINT = 1;
+	public static final int TYPE_ENDPOINT = 2;
+	public static final int TYPE_ABORTPOINT = 3;
+	public static final int TYPE_INPUTPOINT = 4;
+	public static final int TYPE_OUTPUTPOINT = 5;
+	public static final int TYPE_INFOPOINT = 6;
+	public static final int TYPE_THREADCREATEPOINT = 7;
+	public static final int TYPE_THREADSTARTPOINT = 8;
+	public static final int TYPE_THREADENDPOINT = 9;
+	public static final int STUB_FOLLOW_REPORT_STRATEGY = -1;
+	public static final int STUB_NO = 0;
+	public static final int STUB_YES = 1;
 
 	private Report report;
 	private String threadName;
@@ -79,8 +79,6 @@ public class Checkpoint implements Serializable, Cloneable {
 	private String encoding;
 	private String streaming;
 	private boolean waitingForStream = false;
-	private transient StringWriter messageCapturerWriter;
-	private transient ByteArrayOutputStream messageCapturerOutputStream;
 	private boolean noCloseReceivedForStream = false;
 	private int type;
 	private int level = 0;
@@ -88,6 +86,9 @@ public class Checkpoint implements Serializable, Cloneable {
 	private boolean stubbed = false;
 	private String stubNotFound;
 	private int preTruncatedMessageLength = -1;
+	// For transient fields see comment above the first transient field in class Report
+	private transient StringWriter messageCapturerWriter;
+	private transient ByteArrayOutputStream messageCapturerOutputStream;
 	private transient Map<String, Pattern> variablePatternMap;
 
 	public Checkpoint() {
