@@ -58,10 +58,10 @@ public class Report implements Serializable {
 	// exception. In the case Java isn't able to read the older version it will
 	// throw an exception, hence no reason either to force throwing an
 	// exception. The serialVersionUID also only effects reading objects through
-	// ObjectInputStream, it doesn't effect reading objects through XMLDecoder.
-	private transient static final long serialVersionUID = 5;
-	private transient static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-	protected transient static final long TIME_NOT_SET_VALUE = Long.MIN_VALUE;
+	// ObjectInputStream, it doesn't affect reading objects through XMLDecoder.
+	private static final long serialVersionUID = 5;
+	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+	protected static final long TIME_NOT_SET_VALUE = Long.MIN_VALUE;
 	// Please note that the set method should return void for XmlEncoder to
 	// store the property (hence the setVariableCsvWithoutException method)
 	private long startTime;
