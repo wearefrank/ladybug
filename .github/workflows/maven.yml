@@ -30,7 +30,7 @@ jobs:
         distribution: 'temurin'
         cache: maven
     - name: Build with Maven
-      run: mvn -B package --file pom.xml
+      run: mvn -Dmaven.skip.copyright=true -B package --file pom.xml
     - name: Check whether skip-replace-inject.txt suppressed changing the sources
       run: git status
       if: always()
