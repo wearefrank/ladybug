@@ -20,7 +20,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@v4.1.2
     - name: Create skip-replace-inject.txt
       run: echo "Dummy text" > skip-replace-inject.txt
     - name: Set up JDK 8
