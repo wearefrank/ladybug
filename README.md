@@ -239,6 +239,7 @@ Create and publish NPM package and WebJar
     - Create an account on [NPM](https://www.npmjs.com/signup) if you don't have one yet.
     - Ask a colleague to add your account to the WeAreFrank! organization.
     - In the terminal run the following command `npm login`, which prompts you to log into NPM.
+    - Probably you have two factor authentication for your npm account. Make sure you have an authenticator app on your mobile phone that can give you a one-time pasword (6-digit code)
 
 ### Creating and publishing an NPM package
 - Run the command `yarn install --immutable`, to sync with changes done by others
@@ -251,8 +252,9 @@ Create and publish NPM package and WebJar
   - Remove the contents of `dependencies` and `devDependencies`
   - Update the `prepare` script to be `cd ../.. && husky install`
 - Navigate to `dist/ladybug` in your terminal
+- Read a one-time password for your npm account from your mobile phone.
 - Run the following commands in order:
-  - `npm publish`
+  - `npm publish -otp xxxxxx` with the one-time password substituted for `xxxxxx`.
   - `git tag vX.Y.Z`, with X.Y.Z being the latest version of the package, which you can find in your `package.json` (for example `0.0.12`)
   - `git push origin vX.Y.Z`, with X.Y.Z being the version you just specified.
     - When Chrome cannot be started because the binary is not found: set CHROME_BIN=C:\\...\\chrome.exe (in Git bash: export CHROME_BIN=C:\\\\...\\\\chrome.exe)
