@@ -35,7 +35,7 @@ jobs:
       run: git status
       if: always()
     - name: Check what files we have
-      run: tree
+      run: tree -D
       if: always()
     # Optional: Uploads the full dependency graph to GitHub to improve the quality of Dependabot alerts this repository can receive
     - name: Update dependency graph
