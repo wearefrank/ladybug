@@ -1,7 +1,7 @@
 <databaseChangeLog
 	xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.8.xsd"
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.26.xsd"
 	>
 	<!--
 	Separate changelog files to make it possible to only use one of them when either debug storage or test storage is
@@ -9,5 +9,5 @@
 	-->
  	<include file="ladybug/DatabaseChangelog_Debug.xml"/>
 	<include file="ladybug/DatabaseChangelog_Test.xml"/>
-	<include file="ladybug/DatabaseChangelog_Custom.xml"/>
+	<include file="ladybug/DatabaseChangelog_Custom.xml" errorIfMissing="false"/>
 </databaseChangeLog>
