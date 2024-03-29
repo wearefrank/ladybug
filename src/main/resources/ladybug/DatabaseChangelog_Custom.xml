@@ -1,0 +1,18 @@
+<databaseChangeLog
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.8.xsd"
+	>
+	<!--
+	This dummy file allows a developer to override it on the classpath with a specific one and have it executed
+	together with the standard Ladybug Liquibase script. E.g. when running Ladybug in a webapp add
+	WEB-INF/classes/ladybug/DatabaseChangelog_Custom.xml with the following script to add an extra column:
+
+	<changeSet id="LadybugCustom:1" author="Jaco de Groot">
+		<comment>Add column EXTRACOLUMN</comment>
+		<addColumn tableName="LADYBUG">
+			<column name="EXTRACOLUMN" type="java.sql.Types.VARCHAR(255)"/>
+		</addColumn>
+	</changeSet>
+	-->
+</databaseChangeLog>
