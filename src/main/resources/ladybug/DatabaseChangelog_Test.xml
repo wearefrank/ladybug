@@ -1,9 +1,8 @@
 <databaseChangeLog
 	xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.8.xsd"
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.26.xsd"
 	>
-	<!-- Separate changelog to make it possible to use database storage only as debug storage or as test storage -->
 	<changeSet id="LadybugTest:1" author="Jaco de Groot">
 		<comment>Add table LADYBUGTEST</comment>
 		<createTable tableName="LADYBUGTEST">
