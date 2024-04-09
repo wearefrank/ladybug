@@ -52,9 +52,9 @@ public class MetadataApi extends ApiBase {
 	 * @param storageName Name of the storage to search.
 	 * @param metadataNames The metadata names to return.
 	 * @param limit Maximum number of results to return.
-	 * @param filterHeader The header on which we filter.
+	 * @param filterHeaders The header on which we filter.
 	 * @param uriInfo Query parameters for search.
-	 * @param filterParam The regex on which the report names will be filtered
+	 * @param filterParams The regex on which the report names will be filtered
 	 * @return Response containing fields [List[String]] and values [List[List[Object]]].
 	 * @throws ApiException If an exception occurs during metadata search in storage.
 	 */
@@ -64,16 +64,18 @@ public class MetadataApi extends ApiBase {
 	public Response getMetadataList(@PathParam("storage") String storageName,
 									@QueryParam("metadataNames") List<String> metadataNames,
 									@DefaultValue("-1") @QueryParam("limit") int limit,
-									@DefaultValue("") @QueryParam("filterHeader") String filterHeader,
-									@DefaultValue("(.*)") @QueryParam("filter") String filterParam ,
+									@DefaultValue("") @QueryParam("filterHeader") List<String> filterHeaders,
+									@DefaultValue("(.*)") @QueryParam("filter") List<String> filterParams ,
 									@Context UriInfo uriInfo) {
 
 		List<String> searchValues = new ArrayList<>();
 		for(String field : metadataNames) {
-			if (filterHeader.equals(field)) {
-				searchValues.add(filterParam);
-			} else {
-				searchValues.add(null);
+			for (int filterHeaderIndex = 0; filterHeaderIndex < filterHeaders.size(); filterHeaderIndex++) {
+				if (filterHeaders.get(filterHeaderIndex).equals(field)) {
+					searchValues.add(filterParams.get(filterHeaderIndex));
+				} else {
+					searchValues.add(null);
+				}
 			}
 		}
 		try {
@@ -97,7 +99,7 @@ public class MetadataApi extends ApiBase {
 
 			return Response.ok().entity(metadata).build();
 		} catch (Exception e) {
-			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Could not find metadata with limit [" + limit + "] and filter [" + filterParam + "] - detailed error message - " + e + Arrays.toString(e.getStackTrace())).build();
+			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Could not find metadata with limit [" + limit + "] and filter [" + filterParams + "] - detailed error message - " + e + Arrays.toString(e.getStackTrace())).build();
 		}
 	}
 
