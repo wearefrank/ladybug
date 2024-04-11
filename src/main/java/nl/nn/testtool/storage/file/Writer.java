@@ -206,8 +206,9 @@ public class Writer {
 		try {
 			store(report, preserveStorageId);
 		} catch(Throwable throwable) {
+			lastExceptionMessage = throwable.getMessage();
+			// When StorageException is should already be logged
 			if (!(throwable instanceof StorageException)) {
-				lastExceptionMessage = throwable.getMessage();
 				log.error("Caught unexpected throwable storing report", throwable);
 			}
 		}
