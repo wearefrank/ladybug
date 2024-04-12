@@ -41,6 +41,8 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementSetter;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import lombok.Getter;
@@ -64,7 +66,10 @@ import nl.nn.testtool.util.SearchUtil;
 // Without proxyTargetClass = true the test webapp will give: Bean named 'proofOfMigrationStorage' is expected to be of
 // type 'nl.nn.testtool.storage.proofofmigration.ProofOfMigrationStorage' but was actually of type 'jdk.proxy3.$Proxy26'
 @EnableTransactionManagement(proxyTargetClass = true)
-@Transactional
+// REQUIRES_NEW to prevent interference with transactions of the application that is using Ladybug. Will prevent the
+// following error running TestIAF Larva tests with Narayana: You cannot commit during a managed transaction
+// READ_UNCOMMITTED to optimize performance and minimize locking
+@Transactional(propagation = Propagation.REQUIRES_NEW, isolation = Isolation.READ_UNCOMMITTED)
 // @Dependent disabled for Quarkus for now because of the use of JdbcTemplate
 public class DatabaseStorage implements LogStorage, CrudStorage {
 	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
