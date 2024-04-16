@@ -1,5 +1,5 @@
 /*
-   Copyright 2022-2023 WeAreFrank!
+   Copyright 2022-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,11 +20,17 @@ import java.util.List;
 
 import javax.enterprise.inject.Produces;
 import javax.inject.Singleton;
+import javax.sql.DataSource;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.context.annotation.Scope;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.datasource.DataSourceTransactionManager;
+import org.springframework.jdbc.datasource.SimpleDriverDataSource;
+import org.springframework.transaction.TransactionManager;
+import org.springframework.transaction.annotation.TransactionManagementConfigurer;
 
 import io.quarkus.arc.DefaultBean;
 import nl.nn.testtool.echo2.ComparePane;
@@ -93,7 +99,7 @@ import nl.nn.testtool.transform.ReportXmlTransformer;
 @Singleton
 @Scope("singleton")
 @Configuration
-public class Config {
+public class Config implements TransactionManagementConfigurer {
 
 	@Bean
 	@Scope("prototype") // Echo2Application needs to be unique per user (not per JVM)
@@ -217,6 +223,26 @@ public class Config {
 	@Scope("singleton")
 	String xsltResource() {
 		return "ladybug/default.xslt";
+	}
+
+	@Bean
+	DataSource dataSource() {
+		return new SimpleDriverDataSource();
+	}
+
+	@Bean
+	@Override
+	public TransactionManager annotationDrivenTransactionManager() {
+		DataSourceTransactionManager tx = new DataSourceTransactionManager();
+		tx.setDataSource(dataSource());
+		return tx;
+	}
+
+	@Bean
+	JdbcTemplate jdbcTemplate(DataSource dataSource) {
+		JdbcTemplate jdbcTemplate = new JdbcTemplate();
+		jdbcTemplate.setDataSource(dataSource);
+		return jdbcTemplate;
 	}
 
 	@Bean

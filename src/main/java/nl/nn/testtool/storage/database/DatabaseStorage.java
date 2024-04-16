@@ -64,13 +64,7 @@ import nl.nn.testtool.util.SearchUtil;
 // Without proxyTargetClass = true the test webapp will give: Bean named 'proofOfMigrationStorage' is expected to be of
 // type 'nl.nn.testtool.storage.proofofmigration.ProofOfMigrationStorage' but was actually of type 'jdk.proxy3.$Proxy26'
 @EnableTransactionManagement(proxyTargetClass = true)
-// Qualifier ladybug makes it possible to have an independent transaction manager to prevent interference with
-// transactions of the application that is using Ladybug. It will prevent the following error running TestIAF Larva
-// tests with Narayana: You cannot commit during a managed transaction. With propagation = Propagation.REQUIRES_NEW
-// this error is also gone but then tests fail with: Commit not allowed by transaction service. To optimize performance
-// and minimize locking isolation = Isolation.READ_UNCOMMITTED could be considered but will give the following error for
-// Oracle running the TestIAF test matrix: READ_COMMITTED and SERIALIZABLE are the only valid transaction levels.
-@Transactional("ladybug")
+@Transactional
 // @Dependent disabled for Quarkus for now because of the use of JdbcTemplate
 public class DatabaseStorage implements LogStorage, CrudStorage {
 	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
