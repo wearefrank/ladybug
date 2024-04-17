@@ -231,6 +231,7 @@ public class Config implements TransactionManagementConfigurer {
 	}
 
 	@Bean
+	@Primary
 	@Override
 	public TransactionManager annotationDrivenTransactionManager() {
 		DataSourceTransactionManager tx = new DataSourceTransactionManager();
