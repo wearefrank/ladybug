@@ -223,11 +223,13 @@ public class Config {
 	}
 
 	@Bean
+	@Scope("singleton")
 	DataSource dataSource() {
 		return new SimpleDriverDataSource();
 	}
 
 	@Bean
+	@Scope("prototype")
 	JdbcTemplate jdbcTemplate(DataSource dataSource) {
 		JdbcTemplate jdbcTemplate = new JdbcTemplate();
 		jdbcTemplate.setDataSource(dataSource);
