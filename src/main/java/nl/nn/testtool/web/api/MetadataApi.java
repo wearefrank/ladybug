@@ -70,12 +70,15 @@ public class MetadataApi extends ApiBase {
 
 		List<String> searchValues = new ArrayList<>();
 		for(String field : metadataNames) {
+			boolean changed = false;
 			for (int filterHeaderIndex = 0; filterHeaderIndex < filterHeaders.size(); filterHeaderIndex++) {
 				if (filterHeaders.get(filterHeaderIndex).equals(field)) {
 					searchValues.add(filterParams.get(filterHeaderIndex));
-				} else {
-					searchValues.add(null);
+					changed = true;
 				}
+			}
+			if(!changed) {
+				searchValues.add(null);
 			}
 		}
 		try {
