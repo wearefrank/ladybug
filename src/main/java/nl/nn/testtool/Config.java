@@ -1,5 +1,5 @@
 /*
-   Copyright 2022-2023 WeAreFrank!
+   Copyright 2022-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,11 +20,14 @@ import java.util.List;
 
 import javax.enterprise.inject.Produces;
 import javax.inject.Singleton;
+import javax.sql.DataSource;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.context.annotation.Scope;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.datasource.SimpleDriverDataSource;
 
 import io.quarkus.arc.DefaultBean;
 import nl.nn.testtool.echo2.ComparePane;
@@ -217,6 +220,20 @@ public class Config {
 	@Scope("singleton")
 	String xsltResource() {
 		return "ladybug/default.xslt";
+	}
+
+	@Bean
+	@Scope("singleton")
+	DataSource dataSource() {
+		return new SimpleDriverDataSource();
+	}
+
+	@Bean
+	@Scope("prototype")
+	JdbcTemplate jdbcTemplate(DataSource dataSource) {
+		JdbcTemplate jdbcTemplate = new JdbcTemplate();
+		jdbcTemplate.setDataSource(dataSource);
+		return jdbcTemplate;
 	}
 
 	@Bean

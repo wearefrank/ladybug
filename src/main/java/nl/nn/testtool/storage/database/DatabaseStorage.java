@@ -226,8 +226,9 @@ public class DatabaseStorage implements LogStorage, CrudStorage {
 		try {
 			store(report);
 		} catch(Throwable throwable) {
+			lastExceptionMessage = throwable.getMessage();
+			// When StorageException is should already be logged
 			if (!(throwable instanceof StorageException)) {
-				lastExceptionMessage = throwable.getMessage();
 				log.error("Caught unexpected throwable storing report", throwable);
 			}
 		}
