@@ -64,10 +64,9 @@ public class MetadataApi extends ApiBase {
 	public Response getMetadataList(@PathParam("storage") String storageName,
 									@QueryParam("metadataNames") List<String> metadataNames,
 									@DefaultValue("-1") @QueryParam("limit") int limit,
-									@DefaultValue("") @QueryParam("filterHeader") List<String> filterHeaders,
-									@DefaultValue("(.*)") @QueryParam("filter") List<String> filterParams ,
+									@QueryParam("filterHeader") List<String> filterHeaders,
+									@QueryParam("filter") List<String> filterParams ,
 									@Context UriInfo uriInfo) {
-
 		List<String> searchValues = new ArrayList<>();
 		for(String field : metadataNames) {
 			boolean changed = false;
