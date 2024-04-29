@@ -70,9 +70,9 @@ public class MetadataApi extends ApiBase {
 		List<String> searchValues = new ArrayList<>();
 		for(String field : metadataNames) {
 			boolean changed = false;
-			for (String filterHeader : filterHeaders) {
-				if (filterHeader.equals(field)) {
-					searchValues.add(filterParams.get(filterHeaders.indexOf(filterHeader)));
+			for (int filterHeaderIndex = 0; filterHeaderIndex < filterHeaders.size(); filterHeaderIndex++) {
+				if (filterHeaders.get(filterHeaderIndex).equals(field)) {
+					searchValues.add(filterParams.get(filterHeaderIndex));
 					changed = true;
 				}
 			}
@@ -101,7 +101,7 @@ public class MetadataApi extends ApiBase {
 
 			return Response.ok().entity(metadata).build();
 		} catch (Exception e) {
-			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Could not find metadata with limit [" + limit + "] and filter [" + filterParams + "] - detailed error message - " + e + Arrays.toString(e.getStackTrace())).build();
+			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Could not find metadata with limit " + limit + " and filter [" + filterParams + "] - detailed error message - " + e + Arrays.toString(e.getStackTrace())).build();
 		}
 	}
 
