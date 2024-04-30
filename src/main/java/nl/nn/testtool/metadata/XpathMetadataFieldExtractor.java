@@ -80,7 +80,7 @@ public class XpathMetadataFieldExtractor extends DefaultValueMetadataFieldExtrac
 			}
 		}
 		Iterator iterator = extractFromList.iterator();
-		while (value == null && iterator.hasNext()) {
+		while (StringUtils.isBlank(value) && iterator.hasNext()) {
 			String message = ((Checkpoint)iterator.next()).getMessage();
 			if (message != null) {
 				try { 

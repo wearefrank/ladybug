@@ -66,6 +66,15 @@ public class XpathMetadataFieldExtractorTest {
 		assertEquals("My second value", instance.extractMetadata(report));
 	}
 
+	@Test
+	public void whenXpathProducesBlankForFirstThenLastStillSearched() throws Exception {
+		Report report = getReportToTestBlankXpathMatch();
+		XpathMetadataFieldExtractor instance = new XpathMetadataFieldExtractor();
+		instance.setExtractFrom("all");
+		instance.setXpath("/one/two");
+		assertEquals("My second value", instance.extractMetadata(report));
+	}
+
 	private Report getReport() {
 		TestTool testTool = new TestTool();
 		Report report = new Report();
@@ -76,6 +85,27 @@ public class XpathMetadataFieldExtractorTest {
 		checkpoint.setReport(report);
 		checkpoint.setName("SessionKey anotherKey");
 		checkpoint.setMessage("<one><two>My value</two></one>");
+		checkpoint.setType(Checkpoint.TYPE_STARTPOINT);
+		checkpoint = new Checkpoint();
+		checkpoints.add(checkpoint);
+		checkpoint.setReport(report);
+		checkpoint.setName("SessionKey mySessionKey");
+		checkpoint.setMessage("<one><two>My second value</two></one>");
+		checkpoint.setType(Checkpoint.TYPE_ENDPOINT);
+		report.setCheckpoints(checkpoints);
+		return report;
+	}
+
+	private Report getReportToTestBlankXpathMatch() {
+		TestTool testTool = new TestTool();
+		Report report = new Report();
+		List<Checkpoint> checkpoints = new ArrayList<>();
+		report.setTestTool(testTool);
+		Checkpoint checkpoint = new Checkpoint();
+		checkpoints.add(checkpoint);
+		checkpoint.setReport(report);
+		checkpoint.setName("SessionKey anotherKey");
+		checkpoint.setMessage("<one><two></two></one>");
 		checkpoint.setType(Checkpoint.TYPE_STARTPOINT);
 		checkpoint = new Checkpoint();
 		checkpoints.add(checkpoint);
