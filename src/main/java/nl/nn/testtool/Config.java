@@ -27,7 +27,9 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.context.annotation.Scope;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.jdbc.datasource.SimpleDriverDataSource;
+import org.springframework.transaction.TransactionManager;
 
 import io.quarkus.arc.DefaultBean;
 import nl.nn.testtool.echo2.ComparePane;
@@ -227,6 +229,14 @@ public class Config {
 	@Scope("singleton")
 	DataSource dataSource() {
 		return new SimpleDriverDataSource();
+	}
+
+	@Bean
+	@Scope("prototype")
+	TransactionManager transactionManager(DataSource dataSource) {
+		DataSourceTransactionManager transactionManager = new DataSourceTransactionManager();
+		transactionManager.setDataSource(dataSource);
+		return transactionManager;
 	}
 
 	@Bean
