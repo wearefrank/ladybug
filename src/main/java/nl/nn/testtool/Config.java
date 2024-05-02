@@ -95,6 +95,7 @@ import nl.nn.testtool.transform.ReportXmlTransformer;
 
 @Singleton
 @Scope("singleton")
+@Lazy // Lazy init singleton beans (prototype beans are already loaded on demand)
 @Configuration
 public class Config {
 
@@ -238,7 +239,6 @@ public class Config {
 
 	@Bean
 	@Scope("singleton")
-	@Lazy
 	DbmsSupport dbmsSupport() {
 		return new DbmsSupport();
 	}
