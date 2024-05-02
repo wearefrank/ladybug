@@ -27,23 +27,15 @@
 		<property name="metadataExtractor" ref="metadataExtractor"/>
 	</bean>
 
-	<!-- Without connection pooling (takes much longer to run all tests) -->
-	<!-- bean name="dataSource" class="org.h2.jdbcx.JdbcDataSource">
+	<!--
+	Without connection pooling (takes much longer to run all tests). E.g. when using:
+	<bean name="dataSource" class="org.h2.jdbcx.JdbcDataSource">
 		<property name="URL" value="jdbc:h2:./data/database-storage/ladybug"/>
-	</bean -->
-
+	</bean>
+	-->
 	<bean id="dataSource" class="org.apache.commons.dbcp2.BasicDataSource" destroy-method="close">
 		<property name="driverClassName" value="org.h2.Driver"/>
 		<property name="url" value="jdbc:h2:./data/database-storage/ladybug"/>
-	</bean>
-
-	<bean name="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
-		<property name="dataSource" ref="dataSource"/>
-		<qualifier value="ladybug"/>
-	</bean>
-
-	<bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
-		<property name="dataSource" ref="dataSource"/>
 	</bean>
 
 	<bean name="ladybugDatabaseChangelog" class="liquibase.integration.spring.SpringLiquibase">
