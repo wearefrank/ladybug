@@ -41,6 +41,7 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import nl.nn.testtool.storage.LogStorage;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.cxf.jaxrs.ext.multipart.Attachment;
 import org.apache.cxf.jaxrs.ext.multipart.Multipart;
@@ -616,5 +617,22 @@ public class ReportApi extends ApiBase {
 		Report report = storage.getReport(storageId);
 		if (report != null)  report.setTestTool(testTool);
 		return report;
+	}
+
+	@GET
+	@Path("warningsAndErrors/{storage}")
+	@Produces(MediaType.TEXT_PLAIN)
+	public Response getWarningsAndErrors(
+			@PathParam("storage") String storageName
+	) {
+		Storage rawStorage = testTool.getStorage(storageName);
+		if (! (rawStorage instanceof LogStorage)) {
+			return null;
+		}
+		LogStorage storage = (LogStorage) rawStorage;
+		return Response
+				.status(Response.Status.OK)
+				.entity(storage.getWarningsAndErrors())
+				.build();
 	}
 }
