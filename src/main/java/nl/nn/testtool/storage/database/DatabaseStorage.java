@@ -46,6 +46,7 @@ import org.springframework.transaction.annotation.Transactional;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;
+import nl.nn.testtool.Config;
 import nl.nn.testtool.MetadataExtractor;
 import nl.nn.testtool.MetadataFieldExtractor;
 import nl.nn.testtool.Report;
@@ -57,15 +58,19 @@ import nl.nn.testtool.util.Import;
 import nl.nn.testtool.util.SearchUtil;
 
 /**
+ * Database storage implementation for Ladybug. The configuration of a transaction manager
+ * (see {@link Config#ladybugTransactionManager()} will disable auto-commit so PostgreSQL will not throw the following
+ * exception on insert of a report:
+ *   org.postgresql.util.PSQLException: Large Objects may not be used in auto-commit mode.
+ * It would also be possible to set auto-commit to false on Connection(Pool) or DataSource level but then still a
+ * transaction manger needs to be configured for JdbcTemplate to commit changes. Otherwise everything seems to be
+ * working fine (logging shows insert query) but no data appears in database and debug tab.
+ * 
+ * @see OptionalJtaTransactionManager
  * @author Jaco de Groot
  */
-// With transaction manager configured auto-commit is disabled and PostgreSQL will not throw the following exception
-// on insert of a report: org.postgresql.util.PSQLException: Large Objects may not be used in auto-commit mode.
 // Without proxyTargetClass = true the test webapp will give: Bean named 'proofOfMigrationStorage' is expected to be of
 // type 'nl.nn.testtool.storage.proofofmigration.ProofOfMigrationStorage' but was actually of type 'jdk.proxy3.$Proxy26'
-// It would also be possible to set auto-commit to false on Connection(Pool) or DataSource level but then still a
-// transaction manger needs to be configured for JdbcTemplate to commit changes. Otherwise everything seems to be
-// working fine (logging shows insert query) but no data appears in database and debug tab.
 @EnableTransactionManagement(proxyTargetClass = true)
 @Transactional
 // @Dependent disabled for Quarkus for now because of the use of JdbcTemplate

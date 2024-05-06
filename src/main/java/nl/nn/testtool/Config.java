@@ -27,7 +27,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.context.annotation.Scope;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.jdbc.datasource.SimpleDriverDataSource;
 import org.springframework.transaction.TransactionManager;
 
@@ -42,6 +41,7 @@ import nl.nn.testtool.filter.Views;
 import nl.nn.testtool.storage.CrudStorage;
 import nl.nn.testtool.storage.LogStorage;
 import nl.nn.testtool.storage.database.DbmsSupport;
+import nl.nn.testtool.storage.database.OptionalJtaTransactionManager;
 import nl.nn.testtool.storage.memory.Storage;
 import nl.nn.testtool.storage.proofofmigration.ProofOfMigrationErrorsStorage;
 import nl.nn.testtool.storage.proofofmigration.ProofOfMigrationErrorsView;
@@ -236,9 +236,9 @@ public class Config {
 	// Prefix with ladybug to prevent interference with other beans of the application that is using Ladybug. E.g. in
 	// F!F matrix test several combination fail with 5 scenarios failed (all JMS related)
 	TransactionManager ladybugTransactionManager(DataSource dataSource) {
-		DataSourceTransactionManager transactionManager = new DataSourceTransactionManager();
-		transactionManager.setDataSource(dataSource);
-		return transactionManager;
+		OptionalJtaTransactionManager optionalJtaTransactionManager = new OptionalJtaTransactionManager();
+		optionalJtaTransactionManager.setDataSource(dataSource);
+		return optionalJtaTransactionManager;
 	}
 
 	@Bean
