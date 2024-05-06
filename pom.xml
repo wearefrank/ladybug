@@ -147,6 +147,16 @@
       <version>1.18.30</version>
       <scope>provided</scope>
     </dependency>
+    <!--
+    OptionalJtaTransactionManager implements PlatformTransactionManager having @Nullable which will make Javadoc fail with: class file for javax.annotation.meta.When not found
+    https://stackoverflow.com/questions/53326271/spring-nullable-annotation-generates-unknown-enum-constant-warning
+    -->
+    <dependency>
+      <groupId>com.google.code.findbugs</groupId>
+      <artifactId>annotations</artifactId>
+      <version>3.0.1</version>
+      <scope>provided</scope>
+    </dependency>
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter</artifactId>

@@ -59,7 +59,7 @@ import nl.nn.testtool.util.SearchUtil;
 
 /**
  * Database storage implementation for Ladybug. The configuration of a transaction manager
- * (see {@link Config#ladybugTransactionManager()} will disable auto-commit so PostgreSQL will not throw the following
+ * (see {@link Config#ladybugTransactionManager(DataSource)} will disable auto-commit so PostgreSQL will not throw the following
  * exception on insert of a report:
  *   org.postgresql.util.PSQLException: Large Objects may not be used in auto-commit mode.
  * It would also be possible to set auto-commit to false on Connection(Pool) or DataSource level but then still a
