@@ -228,7 +228,7 @@ public class DatabaseStorage implements LogStorage, CrudStorage {
 				});
 		if (getMaxStorageSize() > -1) {
 			String averageQuery = "select avg(storageSize) from " + getTable();
-			int averageStorageSize = jdbcTemplate.queryForObject(averageQuery, Integer.class);
+			int averageStorageSize = ladybugJdbcTemplate.queryForObject(averageQuery, Integer.class);
 			log.debug("Get average storage size query (returned " + averageStorageSize + "): " + averageQuery);
 			int maxNrOfReports = (int)(getMaxStorageSize() / averageStorageSize);
 			String deleteQuery = "delete from " + getTable() + " where " + getStorageIdColumn()

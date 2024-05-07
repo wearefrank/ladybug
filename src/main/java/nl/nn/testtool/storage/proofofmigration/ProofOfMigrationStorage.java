@@ -202,7 +202,7 @@ public class ProofOfMigrationStorage extends DatabaseStorage {
 		args.add(storageId);
 		args.add(storageId);
 		log.debug("Get report query (with arguments: " + args + "): " + query);
-		List<List<Object>> result = getJdbcTemplate().query(query, args.toArray(),
+		List<List<Object>> result = getLadybugJdbcTemplate().query(query, args.toArray(),
 				new int[] {Types.INTEGER, Types.INTEGER},
 				(resultSet, rowNum) -> {
 					List<Object> list = new ArrayList<Object>();
