@@ -64,6 +64,15 @@ import lombok.Setter;
  * JNDI. See https://stackoverflow.com/a/5080761/17193564
  * </p>
  * 
+ * <p>
+ * Please note that when DataSourceTransactionManager is being used you might want to check whether a connection pool is
+ * provided. Java EE servers that provide a transaction manager will automatically link the data source to it and
+ * provide a connection pool. In case of Tomcat it depends on how the database connection is configured in the
+ * context.xml. DBCP or HikariCP can be used to add connection pooling at application level. This should not be done
+ * when Tomcat already provides a connection pool. Class PoolingDataSourceFactory of the Frank!Framework can be used to
+ * detect whether a connection pool is provided and automatically create a DBCP 2 connection pool when needed.
+ * </p>
+ * 
  * @author Jaco de Groot
  */
 public class OptionalJtaTransactionManager implements PlatformTransactionManager, InitializingBean {
