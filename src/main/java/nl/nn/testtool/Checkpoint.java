@@ -218,8 +218,10 @@ public class Checkpoint implements Serializable, Cloneable {
 
 								@Override
 								public void write(char[] cbuf, int off, int len) {
+									log.info("String write, len=[{}]", len);
 									if (length + len > testTool.getMaxMessageLength()) {
 										if (!truncated) {
+											log.info("Max length is being exceeded, still writing [{}] characters", testTool.getMaxMessageLength() - length);
 											super.write(cbuf, off, testTool.getMaxMessageLength() - length);
 											truncated = true;
 										}
@@ -266,8 +268,10 @@ public class Checkpoint implements Serializable, Cloneable {
 
 								@Override
 								public void write(byte[] b, int off, int len) {
+									log.info("Binary write, len=[{}]", len);
 									if (length + len > testTool.getMaxMessageLength()) {
 										if (!truncated) {
+											log.info("Max length is being exceeded, still writing [{}] characters", testTool.getMaxMessageLength() - length);
 											super.write(b, off, testTool.getMaxMessageLength() - length);
 											truncated = true;
 										}
