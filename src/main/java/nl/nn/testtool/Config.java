@@ -238,7 +238,7 @@ public class Config {
 	@Scope("prototype")
 	// Prefix with ladybug to prevent interference with other beans of the application that is using Ladybug. E.g. in
 	// F!F matrix test several combination fail with 5 scenarios failed (all JMS related)
-	TransactionManager ladybugTransactionManager(DataSource dataSource) {
+	TransactionManager ladybugTransactionManager(DataSource ladybugDataSource) {
 		OptionalJtaTransactionManager optionalJtaTransactionManager = new OptionalJtaTransactionManager();
 		optionalJtaTransactionManager.setDataSource(ladybugDataSource);
 		return optionalJtaTransactionManager;
