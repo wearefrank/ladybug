@@ -1,5 +1,5 @@
 /*
-   Copyright 2021-2023 WeAreFrank!
+   Copyright 2021-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -92,6 +92,7 @@ public class ApiAuthorizationFilter implements ContainerRequestFilter {
 		addConfigurationPart("PUT/"  + ApiServlet.LADYBUG_API_PATH + "/testtool/node-link-strategy$", observerRoles);
 		addConfigurationPart("GET/"  + ApiServlet.LADYBUG_API_PATH + "/metadata/.*$", observerRoles);
 		addConfigurationPart("GET/"  + ApiServlet.LADYBUG_API_PATH + "/report/.*$", observerRoles);
+		addConfigurationPart("POST/" + ApiServlet.LADYBUG_API_PATH + "/collector/.*$", observerRoles);
 	}
 
 	public void setDataAdminRoles(List<String> dataAdminRoles) {
