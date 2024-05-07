@@ -32,6 +32,7 @@ import java.util.List;
 
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
+import javax.sql.DataSource;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -41,6 +42,7 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementSetter;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import lombok.Getter;
@@ -72,7 +74,14 @@ import nl.nn.testtool.util.SearchUtil;
 // Without proxyTargetClass = true the test webapp will give: Bean named 'proofOfMigrationStorage' is expected to be of
 // type 'nl.nn.testtool.storage.proofofmigration.ProofOfMigrationStorage' but was actually of type 'jdk.proxy3.$Proxy26'
 @EnableTransactionManagement(proxyTargetClass = true)
-@Transactional
+// REQUIRES_NEW to prevent interference with transactions in the application using Ladybug. E.g. when an error occurs in
+// a Frank!Framework adapter the insert of the Ladybug report should not be rolled back (which happens otherwise because
+// transactions are thread bound and Ladybug runs in the same thread). With NOT_SUPPORTED PostgreSQL will complain about
+// auto-commit.
+// Although isolation = Isolation.READ_UNCOMMITTED could be considered for performance reasons it will give the
+// following error for Oracle in the Frank!Framework test matrix: READ_COMMITTED and SERIALIZABLE are the only valid
+// transaction levels.
+@Transactional(propagation = Propagation.REQUIRES_NEW)
 // @Dependent disabled for Quarkus for now because of the use of JdbcTemplate
 public class DatabaseStorage implements LogStorage, CrudStorage {
 	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
