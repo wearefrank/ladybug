@@ -84,7 +84,7 @@ public class DatabaseStorage implements LogStorage, CrudStorage {
 	protected @Setter List<String> bigValueColumns; // Columns for which to limit the number of retrieved characters to 100
 	protected @Setter Boolean storeReportXml;
 	protected @Setter Long maxStorageSize;
-	protected @Setter @Getter @Inject @Autowired JdbcTemplate jdbcTemplate;
+	protected @Setter @Getter @Inject @Autowired JdbcTemplate ladybugJdbcTemplate;
 	protected @Setter @Getter @Inject @Autowired DbmsSupport dbmsSupport;
 	protected @Setter @Getter @Inject @Autowired MetadataExtractor metadataExtractor;
 	protected String lastExceptionMessage;
@@ -200,7 +200,7 @@ public class DatabaseStorage implements LogStorage, CrudStorage {
 		}
 		query.append(")");
 		log.debug("Store report query: " + query.toString());
-		jdbcTemplate.update(query.toString(),
+		ladybugJdbcTemplate.update(query.toString(),
 				new PreparedStatementSetter() {
 					@Override
 					public void setValues(PreparedStatement ps) throws SQLException {
@@ -259,7 +259,7 @@ public class DatabaseStorage implements LogStorage, CrudStorage {
 	public Report getReport(Integer storageId) throws StorageException {
 		String query = "select report from " + getTable() + " where " + getStorageIdColumn() + " = ?";
 		log.debug("Get report query: " + query);
-		List<Report> result = jdbcTemplate.query(query, new Object[]{storageId}, new int[] {Types.INTEGER},
+		List<Report> result = ladybugJdbcTemplate.query(query, new Object[]{storageId}, new int[] {Types.INTEGER},
 				(resultSet, rowNum) -> getReport(storageId, resultSet.getBlob(1)));
 		return result.get(0);
 	}
@@ -289,7 +289,7 @@ public class DatabaseStorage implements LogStorage, CrudStorage {
 
 	private void delete(String query, int i) throws StorageException {
 		log.debug("Delete report query (with param value " + i + "): " + query);
-		jdbcTemplate.update(query,
+		ladybugJdbcTemplate.update(query,
 				new PreparedStatementSetter() {
 					@Override
 					public void setValues(PreparedStatement ps) throws SQLException {
@@ -309,7 +309,7 @@ public class DatabaseStorage implements LogStorage, CrudStorage {
 		buildSizeQuery(query);
 		log.debug("Get size query: " + query);
 		try {
-			return jdbcTemplate.queryForObject(query.toString(), Integer.class);
+			return ladybugJdbcTemplate.queryForObject(query.toString(), Integer.class);
 		} catch(DataAccessException e){
 			throw new StorageException("Could not read size", e);
 		}
@@ -324,7 +324,7 @@ public class DatabaseStorage implements LogStorage, CrudStorage {
 		String query = getStorageIdsQuery();
 		log.debug("Get storage id's query: " + query);
 		try {
-			List<Integer> storageIds = jdbcTemplate.query(query, (rs, rowNum) -> rs.getInt(1));
+			List<Integer> storageIds = ladybugJdbcTemplate.query(query, (rs, rowNum) -> rs.getInt(1));
 			return storageIds;
 		} catch(DataAccessException e){
 			throw new StorageException("Could not read storage id's", e);
@@ -378,7 +378,8 @@ public class DatabaseStorage implements LogStorage, CrudStorage {
 		}
 		List<List<Object>> metadata;
 		try {
-			metadata = jdbcTemplate.query(query.toString(), args.toArray(), argTypes.stream().mapToInt(i -> i).toArray(),
+			metadata = ladybugJdbcTemplate.query(query.toString(), args.toArray(),
+					argTypes.stream().mapToInt(i -> i).toArray(),
 					(rs, rowNum) ->
 						{
 							List<Object> row = new ArrayList<Object>();

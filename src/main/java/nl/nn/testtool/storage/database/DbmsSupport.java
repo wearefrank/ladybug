@@ -1,5 +1,5 @@
 /*
-   Copyright 2022 WeAreFrank!
+   Copyright 2022, 2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -40,12 +40,12 @@ See that most databaseProductName values are returned as-is as commonDatabaseNam
 */
 // @Singleton disabled for Quarkus for now because of the use of JdbcTemplate
 public class DbmsSupport {
-	private @Setter @Inject @Autowired JdbcTemplate jdbcTemplate;
+	private @Setter @Inject @Autowired JdbcTemplate ladybugJdbcTemplate;
 	private String commonDatabaseName;
 
 	@PostConstruct
 	public void init() throws SQLException, MetaDataAccessException {
-		String databaseProductName = JdbcUtils.extractDatabaseMetaData(jdbcTemplate.getDataSource(), (dbmd) -> dbmd.getDatabaseProductName());
+		String databaseProductName = JdbcUtils.extractDatabaseMetaData(ladybugJdbcTemplate.getDataSource(), (dbmd) -> dbmd.getDatabaseProductName());
 		commonDatabaseName = JdbcUtils.commonDatabaseName(databaseProductName);
 	}
 

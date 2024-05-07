@@ -227,7 +227,10 @@ public class Config {
 
 	@Bean
 	@Scope("singleton")
-	DataSource dataSource() {
+	// Prefix with ladybug to prevent interference with other beans of the application that is using Ladybug. E.g. in
+	// F!F when ladybug.jdbc.datasource is empty this bean should not be initialized but when it's name is dataSource
+	// it will be wired to the scheduler bean and initialized (giving error with ladybug.jdbc.datasource is empty)
+	DataSource ladybugDataSource() {
 		return new SimpleDriverDataSource();
 	}
 
@@ -237,15 +240,17 @@ public class Config {
 	// F!F matrix test several combination fail with 5 scenarios failed (all JMS related)
 	TransactionManager ladybugTransactionManager(DataSource dataSource) {
 		OptionalJtaTransactionManager optionalJtaTransactionManager = new OptionalJtaTransactionManager();
-		optionalJtaTransactionManager.setDataSource(dataSource);
+		optionalJtaTransactionManager.setDataSource(ladybugDataSource);
 		return optionalJtaTransactionManager;
 	}
 
 	@Bean
 	@Scope("prototype")
-	JdbcTemplate jdbcTemplate(DataSource dataSource) {
+	// Prefix with ladybug to prevent interference with other beans of the application that is using Ladybug as this is
+	// a commonly used class. Other classes (except the above two that are also prefixed) are Ladybug specific 
+	JdbcTemplate ladybugJdbcTemplate(DataSource ladybugDataSource) {
 		JdbcTemplate jdbcTemplate = new JdbcTemplate();
-		jdbcTemplate.setDataSource(dataSource);
+		jdbcTemplate.setDataSource(ladybugDataSource);
 		return jdbcTemplate;
 	}
 
