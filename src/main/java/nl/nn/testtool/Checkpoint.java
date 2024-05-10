@@ -168,6 +168,7 @@ public class Checkpoint implements Serializable, Cloneable {
 		// message to a value that shows that Ladybug is waiting for the stream to be read, captured and closed or any
 		// other message
 		ToStringResult toStringResult = report.getMessageEncoder().toString(message, null);
+		log.info("Executing setMessage(), message's toStringResult is [{}]", toStringResult.getString());
 		setMessage(toStringResult.getString());
 		setEncoding(toStringResult.getEncoding());
 		setMessageClassName(toStringResult.getMessageClassName());
