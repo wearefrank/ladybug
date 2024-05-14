@@ -241,6 +241,11 @@ public class TestToolApi extends ApiBase {
 			map.put("metadataLabels", getMetadataLabels(view.getMetadataNames()));
 			map.put("crudStorage", view.getDebugStorage() instanceof CrudStorage);
 			map.put("nodeLinkStrategy", view.getNodeLinkStrategy());
+			Map<String, String> metadataTypes = new HashMap<>();
+			for(String metadataName : view.getMetadataNames()) {
+				metadataTypes.put(metadataName, metadataExtractor.getType(metadataName));
+			}
+			map.put("metadataTypes", metadataTypes);
 			response.put(view.getName(), map);
 		}
 		return Response.ok(response).build();
