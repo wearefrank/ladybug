@@ -612,7 +612,7 @@
           <url>https://oss.sonatype.org/content/repositories/snapshots</url>
         </snapshotRepository>
         <site>
-          <id>www.frankframework.org</id>
+          <id>www.wearefrank.org</id>
           <url>file:target/site-deploy</url>
         </site>
       </distributionManagement>
