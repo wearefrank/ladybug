@@ -609,7 +609,7 @@
         </repository>
         <snapshotRepository>
           <id>ossrh</id>
-          <url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
+          <url>https://oss.sonatype.org/content/repositories/snapshots</url>
         </snapshotRepository>
         <site>
           <id>www.frankframework.org</id>
