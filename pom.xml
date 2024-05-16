@@ -3,7 +3,7 @@
 
   <groupId>org.ibissource</groupId>
   <artifactId>ibis-ladybug</artifactId>
-  <version>2.3-SNAPSHOT</version>
+  <version>${revision}</version>
 
   <name>Ladybug Test Tool</name>
   <description>
@@ -14,6 +14,7 @@
   <url>https://github.com/wearefrank/ladybug</url>
 
   <properties>
+    <revision>2.3-SNAPSHOT</revision>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <spring.version>5.3.34</spring.version>
     <cxf.version>3.5.5</cxf.version>
@@ -368,7 +369,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-release-plugin</artifactId>
-        <version>2.5.3</version>
+        <version>3.0.1</version>
         <configuration>
           <tagNameFormat>v@{project.version}</tagNameFormat>
           <autoVersionSubmodules>true</autoVersionSubmodules>
@@ -531,22 +532,36 @@
       </build>
     </profile>
     <profile>
-      <id>ossrh</id>
+      <id>frankframework</id>
+      <distributionManagement>
+        <repository>
+          <id>frankframework</id>
+          <url>https://nexus.frankframework.org/content/repositories/releases</url>
+        </repository>
+        <snapshotRepository>
+          <id>frankframework</id>
+          <url>https://nexus.frankframework.org/content/repositories/snapshots</url>
+        </snapshotRepository>
+        <site>
+          <id>www.frankframework.org</id>
+          <url>file:target/site-deploy</url>
+        </site>
+      </distributionManagement>
+      <repositories>
+        <repository>
+          <id>frankframework</id>
+          <url>https://nexus.frankframework.org/content/groups/public</url>
+        </repository>
+      </repositories>
+    </profile>
+    <profile>
+      <id>sign</id>
       <build>
         <plugins>
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-gpg-plugin</artifactId>
-            <version>1.6</version>
-            <executions>
-              <execution>
-                <id>sign-artifacts</id>
-                <phase>verify</phase>
-                <goals>
-                  <goal>sign</goal>
-                </goals>
-              </execution>
-            </executions>
+            <version>3.2.4</version>
             <configuration>
               <passphrase>${gpg.passphrase}</passphrase>
               <gpgArguments>
@@ -557,23 +572,27 @@
                 <arg>loopback</arg>
               </gpgArguments>
             </configuration>
+            <executions>
+              <execution>
+                <id>sign-artifacts</id>
+                <phase>verify</phase>
+                <goals>
+                  <goal>sign</goal>
+                </goals>
+              </execution>
+            </executions>
           </plugin>
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-release-plugin</artifactId>
-            <version>2.5.3</version>
-            <configuration>
-              <autoVersionSubmodules>true</autoVersionSubmodules>
-              <useReleaseProfile>false</useReleaseProfile>
-              <releaseProfiles>release</releaseProfiles>
-              <goals>deploy</goals>
-              <tagNameFormat>v@{project.version}</tagNameFormat>
-            </configuration>
-          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>ossrh</id>
+      <build>
+        <plugins>
           <plugin>
             <groupId>org.sonatype.plugins</groupId>
             <artifactId>nexus-staging-maven-plugin</artifactId>
-            <version>1.6.8</version>
+            <version>1.6.13</version>
             <extensions>true</extensions>
             <configuration>
               <serverId>ossrh</serverId>
@@ -593,24 +612,7 @@
           <url>https://oss.sonatype.org/content/repositories/snapshots</url>
         </snapshotRepository>
         <site>
-          <id>www.ibissource.org</id>
-          <url>file:target/site-deploy</url>
-        </site>
-      </distributionManagement>
-    </profile>
-    <profile>
-      <id>ibissource</id>
-      <distributionManagement>
-        <repository>
-          <id>ibissource</id>
-          <url>https://nexus.frankframework.org/content/repositories/releases</url>
-        </repository>
-        <snapshotRepository>
-          <id>ibissource</id>
-          <url>https://nexus.frankframework.org/content/repositories/snapshots</url>
-        </snapshotRepository>
-        <site>
-          <id>www.ibissource.org</id>
+          <id>www.wearefrank.org</id>
           <url>file:target/site-deploy</url>
         </site>
       </distributionManagement>
