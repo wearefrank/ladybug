@@ -532,18 +532,6 @@
       </build>
     </profile>
     <profile>
-      <id>default-modules</id><!-- Profile defaults to ON, when the property is set it will turn off -->
-      <activation>
-        <property>
-          <name>!no-default-modules</name>
-        </property>
-      </activation>
-      <modules>
-        <module>frank-doc-doclet</module>
-        <module>frank-doc-frontend</module>
-      </modules>
-    </profile>
-    <profile>
       <id>frankframework</id>
       <distributionManagement>
         <repository>
