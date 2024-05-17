@@ -282,7 +282,7 @@ public class MetadataExtractor {
 	}
 
 	public String getType(String metadataName) {
-		if(this.isInteger(metadataName)) {
+		if (this.isInteger(metadataName)) {
 			return "int";
 		}
 		if (this.isLong(metadataName)) {
