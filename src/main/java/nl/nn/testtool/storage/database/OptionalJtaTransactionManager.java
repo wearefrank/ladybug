@@ -18,6 +18,7 @@ package nl.nn.testtool.storage.database;
 import java.lang.invoke.MethodHandles;
 
 import javax.sql.DataSource;
+import javax.sql.XADataSource;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,10 +29,10 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionException;
 import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.TransactionSystemException;
 import org.springframework.transaction.jta.JtaTransactionManager;
 import org.springframework.transaction.support.AbstractPlatformTransactionManager;
 
+import lombok.Getter;
 import lombok.Setter;
 
 /**
@@ -77,30 +78,57 @@ import lombok.Setter;
  */
 public class OptionalJtaTransactionManager implements PlatformTransactionManager, InitializingBean {
 	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-	private JtaTransactionManager jtaTransactionManager;
-	private DataSourceTransactionManager dataSourceTransactionManager;
+	private PlatformTransactionManager delegate;
 	/**
 	 * Will be used when a fallback to {@link org.springframework.jdbc.datasource.DataSourceTransactionManager} is
 	 * needed (Java EE servers that provide a transaction manager will automatically link the data source to it as the
 	 * data source is also managed by the Java EE server).
 	 */
-	private @Setter DataSource dataSource;
+	private @Setter @Getter DataSource dataSource;
 
 	public OptionalJtaTransactionManager() {
-		jtaTransactionManager = new JtaTransactionManager();
-		// Copied from Frank!Framework, seems like a reasonable default
-		jtaTransactionManager.setTransactionSynchronization(
-				AbstractPlatformTransactionManager.SYNCHRONIZATION_ON_ACTUAL_TRANSACTION);
+		delegate = getJtaTransactionManager();
+		if (delegate != null) {
+			log.debug("JtaTransactionManager will be used");
+		} else {
+			DataSourceTransactionManager dataSourceTransactionManager = new DataSourceTransactionManager();
+			delegate = dataSourceTransactionManager;
+			log.debug("DataSourceTransactionManager will be used");
+		}
+	}
+
+	/**
+	 * Make it possible for an application using Ladybug to check whether JtaTransactionManager will be used. For
+	 * example Frank!Framework will configure it's PoolingDataSourceFactory to pool XA data sources only when a JTA
+	 * environment is not available. In a JTA environment the PoolingDataSourceFactory, which is configured to provide
+	 * a {@link DataSource} to Ladybug, should not pool the {@link XADataSource}
+	 * 
+	 * @return true when a JTA environment is available
+	 */
+	public static boolean isJtaAvailable() {
+		return getJtaTransactionManager() != null;
+	}
+
+	private static JtaTransactionManager getJtaTransactionManager() {
+		try {
+			JtaTransactionManager jtaTransactionManager = new JtaTransactionManager();
+			// Copied from Frank!Framework, seems like a reasonable default
+			jtaTransactionManager.setTransactionSynchronization(
+					AbstractPlatformTransactionManager.SYNCHRONIZATION_ON_ACTUAL_TRANSACTION);
+			// Method afterPropertiesSet() will thrown the IllegalStateException, hence call it here (to check whether
+			// a JTA environment is available) instead of doing it in method afterPropertiesSet() of this class
+			jtaTransactionManager.afterPropertiesSet();
+			return jtaTransactionManager;
+		} catch(IllegalStateException e) {
+			return null;
+		}
 	}
 
 	@Override
-	public void afterPropertiesSet() throws TransactionSystemException {
-		try {
-			jtaTransactionManager.afterPropertiesSet();
-			log.debug("JtaTransactionManager will be used");
-		} catch(IllegalStateException e) {
-			log.debug("DataSourceTransactionManager will be used");
-			dataSourceTransactionManager = new DataSourceTransactionManager();
+	public void afterPropertiesSet() {
+		// For JtaTransactionManager method afterPropertiesSet() is called in getJtaTransactionManager()
+		if (delegate instanceof DataSourceTransactionManager) {
+			DataSourceTransactionManager dataSourceTransactionManager = ((DataSourceTransactionManager)delegate);
 			dataSourceTransactionManager.setDataSource(dataSource);
 			dataSourceTransactionManager.afterPropertiesSet();
 		}
@@ -108,28 +136,16 @@ public class OptionalJtaTransactionManager implements PlatformTransactionManager
 
 	@Override
 	public final TransactionStatus getTransaction(@Nullable TransactionDefinition definition) throws TransactionException {
-		if (dataSourceTransactionManager != null) {
-			return dataSourceTransactionManager.getTransaction(definition);
-		} else {
-			return jtaTransactionManager.getTransaction(definition);
-		}
+		return delegate.getTransaction(definition);
 	}
 
 	@Override
 	public void commit(TransactionStatus status) throws TransactionException {
-		if (dataSourceTransactionManager != null) {
-			dataSourceTransactionManager.commit(status);
-		} else {
-			jtaTransactionManager.commit(status);
-		}
+		delegate.commit(status);
 	}
 
 	@Override
 	public void rollback(TransactionStatus status) throws TransactionException {
-		if (dataSourceTransactionManager != null) {
-			dataSourceTransactionManager.rollback(status);
-		} else {
-			jtaTransactionManager.rollback(status);
-		}
+		delegate.rollback(status);
 	}
 }
