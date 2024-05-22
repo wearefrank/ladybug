@@ -46,11 +46,6 @@ To see Ladybug in action as part of the Frank!Framework go to:
 
 - https://frank2example.frankframework.org/iaf/gui/#/testing/ladybug
 
-And in Open ZaakBrug as part of http://demodam.nl:
-
-- https://open-zaakbrug.demodam.nl/debug
-
-
 How to use Ladybug
 ==================
 
@@ -199,7 +194,7 @@ Testing frontend changes with the test webapp
 Testing frontend changes with Frank!Framework
 ---------------------------------------------
 
-The Frank!Framework incorporates Ladybug and configures is a bit different then the test webapp. It for example adds a Gray box view which you might want to test. The Frank!Framework serves the Ladybug on a different url then the test webapp so you need to configure the previously mentioned proxy a bit different and change the url in src/proxy.conf.json from http://localhost/ladybug to http://localhost/iaf/ladybug. In case you also have backend changes you can start the Frank!Framework as eplained above (with test.with.iaf=true). Otherwise it is easier to for example run Frank2Example1. See the Frank!Runner [README.md](https://github.com/wearefrank/frank-runner#frankrunner) for more information on how to start a Frank2Example1 or another Frank.
+The Frank!Framework incorporates Ladybug and configures it a bit different then the test webapp. It for example adds a Gray box view which you might want to test. The Frank!Framework serves the Ladybug on a different url then the test webapp so you need to configure the previously mentioned proxy a bit different and change the url in src/proxy.conf.json from http://localhost/ladybug to http://localhost/iaf/ladybug. In case you also have backend changes you can start the Frank!Framework as eplained above (with test.with.iaf=true). Otherwise it is easier to for example run Frank2Example1. See the Frank!Runner [README.md](https://github.com/wearefrank/frank-runner#frankrunner) for more information on how to start a Frank2Example1 or another Frank.
 
 Testing frontend changes with unit tests
 ----------------------------------------
