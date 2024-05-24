@@ -278,7 +278,19 @@ public class MetadataExtractor {
 	}
 
 	public boolean isTimestamp(String metadataName) {
-		return metadataName.equals("endTime");
+		return metadataName.equals("endTime") || metadataName.equals("startTime");
 	}
 
+	public String getType(String metadataName) {
+		if (this.isInteger(metadataName)) {
+			return "int";
+		}
+		if (this.isLong(metadataName)) {
+			return "long";
+		}
+		if (this.isTimestamp(metadataName)) {
+			return "timestamp";
+		}
+		return "string";
+	}
 }
