@@ -23,8 +23,6 @@ import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.lang.invoke.MethodHandles;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
 import javax.xml.transform.ErrorListener;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
@@ -38,6 +36,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import jakarta.annotation.PostConstruct;
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
 import lombok.Setter;
 import nl.nn.testtool.util.XmlUtil;
 

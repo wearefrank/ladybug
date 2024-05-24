@@ -21,10 +21,6 @@
     <cxf.version>4.0.4</cxf.version>
     <jackson.version>2.17.1</jackson.version>
     <logback.version>1.5.6</logback.version>
-    <!-- Create skip-replace-inject.txt (replacement is only needed in the published jar by CI/CD) (more info in nl/nn/testtool/Inject.java -->
-    <inject.replace.include>**/*.java</inject.replace.include>
-    <inject.replace.from>javax.inject</inject.replace.from>
-    <inject.replace.to>nl.nn.testtool</inject.replace.to>
   </properties>
 
   <organization>
@@ -221,7 +217,7 @@
     <dependency>
       <groupId>jakarta.enterprise</groupId>
       <artifactId>jakarta.enterprise.cdi-api</artifactId>
-      <version>2.0.2</version>
+      <version>4.0.1</version>
       <scope>provided</scope>
     </dependency>
     <!-- Resolve @JsonbTransient -->
@@ -245,31 +241,6 @@
   <build>
     <defaultGoal>install</defaultGoal>
     <plugins>
-      <plugin>
-        <groupId>com.google.code.maven-replacer-plugin</groupId>
-          <artifactId>replacer</artifactId>
-          <version>1.5.3</version>
-          <executions>
-            <execution>
-                <phase>generate-resources</phase><!-- generate-resources instead of generate-sources to run after copyright check with <phase>process-sources</phase> -->
-                <goals>
-                  <goal>replace</goal>
-                </goals>
-            </execution>
-          </executions>
-          <configuration>
-            <basedir>${basedir}</basedir>
-            <includes>
-              <include>${inject.replace.include}</include>
-            </includes>
-            <replacements>
-               <replacement>
-                 <token>import ${inject.replace.from}.Inject;</token>
-                 <value>import ${inject.replace.to}.Inject;</value>
-               </replacement>
-            </replacements>
-        </configuration>
-      </plugin>
       <!--
         Add META-INF/jandex.idx, see also:
           https://quarkus.io/guides/cdi-reference#how-to-generate-a-jandex-index
@@ -403,7 +374,7 @@
         <artifactId>maven-site-plugin</artifactId>
         <version>3.12.1</version>
         <configuration>
-          <skip>true</skip><!-- Prevent copyright check running a second time and failing because of replacements by replacer-plugin. And speed up the build in Jenkins (generated site isn't used) -->
+          <skip>true</skip><!-- Speed up the build in Jenkins (generated site isn't used) -->
         </configuration>
       </plugin>
     </plugins>
@@ -489,17 +460,6 @@
   </scm>
 
   <profiles>
-    <profile>
-      <id>skip-replace-inject</id>
-      <activation>
-        <file>
-          <exists>skip-replace-inject.txt</exists>
-        </file>
-      </activation>
-      <properties>
-        <inject.replace.include>DISABLE</inject.replace.include>
-      </properties>
-    </profile>
     <profile>
       <id>skip-copyright</id>
       <activation>

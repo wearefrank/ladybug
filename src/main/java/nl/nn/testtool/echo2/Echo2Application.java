@@ -20,9 +20,6 @@ import java.security.Principal;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.enterprise.context.Dependent;
-import javax.inject.Inject;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
@@ -32,6 +29,8 @@ import org.springframework.context.ApplicationContextAware;
 
 import echopointng.tree.DefaultMutableTreeNode;
 import jakarta.annotation.PostConstruct;
+import jakarta.enterprise.context.Dependent;
+import jakarta.inject.Inject;
 import nextapp.echo2.app.ApplicationInstance;
 import nextapp.echo2.app.Border;
 import nextapp.echo2.app.Button;

@@ -18,8 +18,6 @@ package nl.nn.testtool;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.enterprise.inject.Produces;
-import javax.inject.Singleton;
 import javax.sql.DataSource;
 
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -32,6 +30,8 @@ import org.springframework.jdbc.datasource.SimpleDriverDataSource;
 import org.springframework.transaction.TransactionManager;
 
 import io.quarkus.arc.DefaultBean;
+import jakarta.enterprise.inject.Produces;
+import jakarta.inject.Singleton;
 import nl.nn.testtool.echo2.ComparePane;
 import nl.nn.testtool.echo2.DebugPane;
 import nl.nn.testtool.echo2.Echo2Application;
