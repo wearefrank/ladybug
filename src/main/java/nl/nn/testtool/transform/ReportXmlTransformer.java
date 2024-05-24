@@ -23,7 +23,6 @@ import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.lang.invoke.MethodHandles;
 
-import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.xml.transform.ErrorListener;
@@ -38,6 +37,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import jakarta.annotation.PostConstruct;
 import lombok.Setter;
 import nl.nn.testtool.util.XmlUtil;
 

@@ -22,6 +22,7 @@ import javax.enterprise.inject.Produces;
 import javax.inject.Singleton;
 import javax.sql.DataSource;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
@@ -142,7 +143,7 @@ public class Config {
 	@DefaultBean
 	@Bean
 	@Scope("singleton")
-	Views views(View view, LogStorage debugStorage) {
+	Views views(@Qualifier("view") View view, @Qualifier("debugStorage") LogStorage debugStorage) {
 		view.setName("Default");
 		List<View> list = new ArrayList<View>();
 		list.add(view);

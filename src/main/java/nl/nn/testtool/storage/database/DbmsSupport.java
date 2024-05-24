@@ -17,7 +17,6 @@ package nl.nn.testtool.storage.database;
 
 import java.sql.SQLException;
 
-import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +24,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.JdbcUtils;
 import org.springframework.jdbc.support.MetaDataAccessException;
 
+import jakarta.annotation.PostConstruct;
 import lombok.Setter;
 
 /*

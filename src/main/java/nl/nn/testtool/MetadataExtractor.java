@@ -21,8 +21,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.annotation.PostConstruct;
-
+import jakarta.annotation.PostConstruct;
 import lombok.Getter;
 import lombok.Setter;
 import nl.nn.testtool.metadata.StatusMetadataFieldExtractor;

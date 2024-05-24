@@ -20,7 +20,6 @@ import java.security.Principal;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.annotation.PostConstruct;
 import javax.enterprise.context.Dependent;
 import javax.inject.Inject;
 
@@ -32,6 +31,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
 import echopointng.tree.DefaultMutableTreeNode;
+import jakarta.annotation.PostConstruct;
 import nextapp.echo2.app.ApplicationInstance;
 import nextapp.echo2.app.Border;
 import nextapp.echo2.app.Button;
