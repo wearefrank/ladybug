@@ -3,8 +3,15 @@ Ladybug Test Tool release notes
 
 
 
-Upcoming (2.3)
+Upcoming (3.0)
 --------------
+
+- Upgrade from javax to jakarta
+
+
+
+2.2
+---
 
 - Ignore first checkpoint when report created with other thread
 - Add Liquibase xml files (remove experimental version from test jar)

@@ -1,5 +1,5 @@
 /*
-   Copyright 2020, 2022-2023 WeAreFrank!, 2018, 2019 Nationale-Nederlanden
+   Copyright 2020, 2022-2024 WeAreFrank!, 2018, 2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,11 +18,10 @@ package nl.nn.testtool.filter;
 import java.util.List;
 import java.util.Map;
 
-import javax.enterprise.context.Dependent;
-import javax.inject.Inject;
-
 import org.springframework.beans.factory.annotation.Autowired;
 
+import jakarta.enterprise.context.Dependent;
+import jakarta.inject.Inject;
 import lombok.Getter;
 import lombok.Setter;
 import nl.nn.testtool.Checkpoint;

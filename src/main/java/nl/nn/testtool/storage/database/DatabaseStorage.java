@@ -30,8 +30,7 @@ import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.List;
 
-import javax.annotation.PostConstruct;
-import javax.inject.Inject;
+import javax.sql.DataSource;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -40,10 +39,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementSetter;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
+import jakarta.annotation.PostConstruct;
+import jakarta.inject.Inject;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;
+import nl.nn.testtool.Config;
 import nl.nn.testtool.MetadataExtractor;
 import nl.nn.testtool.MetadataFieldExtractor;
 import nl.nn.testtool.Report;
@@ -55,8 +60,28 @@ import nl.nn.testtool.util.Import;
 import nl.nn.testtool.util.SearchUtil;
 
 /**
+ * Database storage implementation for Ladybug. The configuration of a transaction manager
+ * (see {@link Config#ladybugTransactionManager(DataSource)} will disable auto-commit so PostgreSQL will not throw the following
+ * exception on insert of a report:
+ *   org.postgresql.util.PSQLException: Large Objects may not be used in auto-commit mode.
+ * It would also be possible to set auto-commit to false on Connection(Pool) or DataSource level but then still a
+ * transaction manger needs to be configured for JdbcTemplate to commit changes. Otherwise everything seems to be
+ * working fine (logging shows insert query) but no data appears in database and debug tab.
+ * 
+ * @see OptionalJtaTransactionManager
  * @author Jaco de Groot
  */
+// Without proxyTargetClass = true the test webapp will give: Bean named 'proofOfMigrationStorage' is expected to be of
+// type 'nl.nn.testtool.storage.proofofmigration.ProofOfMigrationStorage' but was actually of type 'jdk.proxy3.$Proxy26'
+@EnableTransactionManagement(proxyTargetClass = true)
+// REQUIRES_NEW to prevent interference with transactions in the application using Ladybug. E.g. when an error occurs in
+// a Frank!Framework adapter the insert of the Ladybug report should not be rolled back (which happens otherwise because
+// transactions are thread bound and Ladybug runs in the same thread). With NOT_SUPPORTED PostgreSQL will complain about
+// auto-commit.
+// Although isolation = Isolation.READ_UNCOMMITTED could be considered for performance reasons it will give the
+// following error for Oracle in the Frank!Framework test matrix: READ_COMMITTED and SERIALIZABLE are the only valid
+// transaction levels.
+@Transactional(propagation = Propagation.REQUIRES_NEW)
 // @Dependent disabled for Quarkus for now because of the use of JdbcTemplate
 public class DatabaseStorage implements LogStorage, CrudStorage {
 	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
@@ -68,7 +93,7 @@ public class DatabaseStorage implements LogStorage, CrudStorage {
 	protected @Setter List<String> bigValueColumns; // Columns for which to limit the number of retrieved characters to 100
 	protected @Setter Boolean storeReportXml;
 	protected @Setter Long maxStorageSize;
-	protected @Setter @Getter @Inject @Autowired JdbcTemplate jdbcTemplate;
+	protected @Setter @Getter @Inject @Autowired JdbcTemplate ladybugJdbcTemplate;
 	protected @Setter @Getter @Inject @Autowired DbmsSupport dbmsSupport;
 	protected @Setter @Getter @Inject @Autowired MetadataExtractor metadataExtractor;
 	protected String lastExceptionMessage;
@@ -184,7 +209,7 @@ public class DatabaseStorage implements LogStorage, CrudStorage {
 		}
 		query.append(")");
 		log.debug("Store report query: " + query.toString());
-		jdbcTemplate.update(query.toString(),
+		ladybugJdbcTemplate.update(query.toString(),
 				new PreparedStatementSetter() {
 					@Override
 					public void setValues(PreparedStatement ps) throws SQLException {
@@ -212,7 +237,7 @@ public class DatabaseStorage implements LogStorage, CrudStorage {
 				});
 		if (getMaxStorageSize() > -1) {
 			String averageQuery = "select avg(storageSize) from " + getTable();
-			int averageStorageSize = jdbcTemplate.queryForObject(averageQuery, Integer.class);
+			int averageStorageSize = ladybugJdbcTemplate.queryForObject(averageQuery, Integer.class);
 			log.debug("Get average storage size query (returned " + averageStorageSize + "): " + averageQuery);
 			int maxNrOfReports = (int)(getMaxStorageSize() / averageStorageSize);
 			String deleteQuery = "delete from " + getTable() + " where " + getStorageIdColumn()
@@ -243,7 +268,7 @@ public class DatabaseStorage implements LogStorage, CrudStorage {
 	public Report getReport(Integer storageId) throws StorageException {
 		String query = "select report from " + getTable() + " where " + getStorageIdColumn() + " = ?";
 		log.debug("Get report query: " + query);
-		List<Report> result = jdbcTemplate.query(query, new Object[]{storageId}, new int[] {Types.INTEGER},
+		List<Report> result = ladybugJdbcTemplate.query(query, new Object[]{storageId}, new int[] {Types.INTEGER},
 				(resultSet, rowNum) -> getReport(storageId, resultSet.getBlob(1)));
 		return result.get(0);
 	}
@@ -273,7 +298,7 @@ public class DatabaseStorage implements LogStorage, CrudStorage {
 
 	private void delete(String query, int i) throws StorageException {
 		log.debug("Delete report query (with param value " + i + "): " + query);
-		jdbcTemplate.update(query,
+		ladybugJdbcTemplate.update(query,
 				new PreparedStatementSetter() {
 					@Override
 					public void setValues(PreparedStatement ps) throws SQLException {
@@ -293,7 +318,7 @@ public class DatabaseStorage implements LogStorage, CrudStorage {
 		buildSizeQuery(query);
 		log.debug("Get size query: " + query);
 		try {
-			return jdbcTemplate.queryForObject(query.toString(), Integer.class);
+			return ladybugJdbcTemplate.queryForObject(query.toString(), Integer.class);
 		} catch(DataAccessException e){
 			throw new StorageException("Could not read size", e);
 		}
@@ -308,7 +333,7 @@ public class DatabaseStorage implements LogStorage, CrudStorage {
 		String query = getStorageIdsQuery();
 		log.debug("Get storage id's query: " + query);
 		try {
-			List<Integer> storageIds = jdbcTemplate.query(query, (rs, rowNum) -> rs.getInt(1));
+			List<Integer> storageIds = ladybugJdbcTemplate.query(query, (rs, rowNum) -> rs.getInt(1));
 			return storageIds;
 		} catch(DataAccessException e){
 			throw new StorageException("Could not read storage id's", e);
@@ -362,7 +387,8 @@ public class DatabaseStorage implements LogStorage, CrudStorage {
 		}
 		List<List<Object>> metadata;
 		try {
-			metadata = jdbcTemplate.query(query.toString(), args.toArray(), argTypes.stream().mapToInt(i -> i).toArray(),
+			metadata = ladybugJdbcTemplate.query(query.toString(), args.toArray(),
+					argTypes.stream().mapToInt(i -> i).toArray(),
 					(rs, rowNum) ->
 						{
 							List<Object> row = new ArrayList<Object>();

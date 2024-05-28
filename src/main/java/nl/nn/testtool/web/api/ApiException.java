@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021, 2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,12 +15,13 @@
 */
 package nl.nn.testtool.web.api;
 
+import java.io.Serializable;
+import java.lang.invoke.MethodHandles;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.WebApplicationException;
-import java.io.Serializable;
-import java.lang.invoke.MethodHandles;
+import jakarta.ws.rs.WebApplicationException;
 
 public class ApiException extends WebApplicationException implements Serializable {
 	private static final long serialVersionUID = 1L;

@@ -1,5 +1,5 @@
 /*
-   Copyright 2020, 2022-2023 WeAreFrank!, 2018-2019 Nationale-Nederlanden
+   Copyright 2020, 2022-2024 WeAreFrank!, 2018-2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,8 +21,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.annotation.PostConstruct;
-
+import jakarta.annotation.PostConstruct;
 import lombok.Getter;
 import lombok.Setter;
 import nl.nn.testtool.metadata.StatusMetadataFieldExtractor;
@@ -278,7 +277,19 @@ public class MetadataExtractor {
 	}
 
 	public boolean isTimestamp(String metadataName) {
-		return metadataName.equals("endTime");
+		return metadataName.equals("endTime") || metadataName.equals("startTime");
 	}
 
+	public String getType(String metadataName) {
+		if (this.isInteger(metadataName)) {
+			return "int";
+		}
+		if (this.isLong(metadataName)) {
+			return "long";
+		}
+		if (this.isTimestamp(metadataName)) {
+			return "timestamp";
+		}
+		return "string";
+	}
 }

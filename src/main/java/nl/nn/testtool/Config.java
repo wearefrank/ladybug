@@ -18,18 +18,20 @@ package nl.nn.testtool;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.enterprise.inject.Produces;
-import javax.inject.Singleton;
 import javax.sql.DataSource;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.context.annotation.Scope;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.SimpleDriverDataSource;
+import org.springframework.transaction.TransactionManager;
 
 import io.quarkus.arc.DefaultBean;
+import jakarta.enterprise.inject.Produces;
+import jakarta.inject.Singleton;
 import nl.nn.testtool.echo2.ComparePane;
 import nl.nn.testtool.echo2.DebugPane;
 import nl.nn.testtool.echo2.Echo2Application;
@@ -40,6 +42,7 @@ import nl.nn.testtool.filter.Views;
 import nl.nn.testtool.storage.CrudStorage;
 import nl.nn.testtool.storage.LogStorage;
 import nl.nn.testtool.storage.database.DbmsSupport;
+import nl.nn.testtool.storage.database.OptionalJtaTransactionManager;
 import nl.nn.testtool.storage.memory.Storage;
 import nl.nn.testtool.storage.proofofmigration.ProofOfMigrationErrorsStorage;
 import nl.nn.testtool.storage.proofofmigration.ProofOfMigrationErrorsView;
@@ -95,6 +98,7 @@ import nl.nn.testtool.transform.ReportXmlTransformer;
 
 @Singleton
 @Scope("singleton")
+@Lazy // Lazy init singleton beans (prototype beans are already loaded on demand)
 @Configuration
 public class Config {
 
@@ -139,7 +143,7 @@ public class Config {
 	@DefaultBean
 	@Bean
 	@Scope("singleton")
-	Views views(View view, LogStorage debugStorage) {
+	Views views(@Qualifier("view") View view, @Qualifier("debugStorage") LogStorage debugStorage) {
 		view.setName("Default");
 		List<View> list = new ArrayList<View>();
 		list.add(view);
@@ -224,21 +228,35 @@ public class Config {
 
 	@Bean
 	@Scope("singleton")
-	DataSource dataSource() {
+	// Prefix with ladybug to prevent interference with other beans of the application that is using Ladybug. E.g. in
+	// F!F when ladybug.jdbc.datasource is empty this bean should not be initialized but when it's name is dataSource
+	// it will be wired to the scheduler bean and initialized (giving error with ladybug.jdbc.datasource is empty)
+	DataSource ladybugDataSource() {
 		return new SimpleDriverDataSource();
 	}
 
 	@Bean
 	@Scope("prototype")
-	JdbcTemplate jdbcTemplate(DataSource dataSource) {
+	// Prefix with ladybug to prevent interference with other beans of the application that is using Ladybug. E.g. in
+	// F!F matrix test several combination fail with 5 scenarios failed (all JMS related)
+	TransactionManager ladybugTransactionManager(DataSource ladybugDataSource) {
+		OptionalJtaTransactionManager optionalJtaTransactionManager = new OptionalJtaTransactionManager();
+		optionalJtaTransactionManager.setDataSource(ladybugDataSource);
+		return optionalJtaTransactionManager;
+	}
+
+	@Bean
+	@Scope("prototype")
+	// Prefix with ladybug to prevent interference with other beans of the application that is using Ladybug as this is
+	// a commonly used class. Other classes (except the above two that are also prefixed) are Ladybug specific 
+	JdbcTemplate ladybugJdbcTemplate(DataSource ladybugDataSource) {
 		JdbcTemplate jdbcTemplate = new JdbcTemplate();
-		jdbcTemplate.setDataSource(dataSource);
+		jdbcTemplate.setDataSource(ladybugDataSource);
 		return jdbcTemplate;
 	}
 
 	@Bean
 	@Scope("singleton")
-	@Lazy
 	DbmsSupport dbmsSupport() {
 		return new DbmsSupport();
 	}

@@ -18,11 +18,10 @@ package nl.nn.testtool.storage.proxy;
 import java.lang.invoke.MethodHandles;
 import java.util.List;
 
-import javax.annotation.PostConstruct;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import jakarta.annotation.PostConstruct;
 import lombok.Getter;
 import lombok.Setter;
 import nl.nn.testtool.Report;

@@ -1,5 +1,5 @@
 /*
-   Copyright 2020, 2022-2023 WeAreFrank!, 2018 Nationale-Nederlanden
+   Copyright 2020, 2022-2024 WeAreFrank!, 2018 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,13 +17,12 @@ package nl.nn.testtool.echo2;
 
 import java.util.List;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.Resource;
-import javax.enterprise.context.Dependent;
-import javax.inject.Inject;
-
 import org.springframework.beans.factory.annotation.Autowired;
 
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.Resource;
+import jakarta.enterprise.context.Dependent;
+import jakarta.inject.Inject;
 import nextapp.echo2.app.Extent;
 import nextapp.echo2.app.SplitPane;
 import nextapp.echo2.extras.app.layout.TabPaneLayoutData;
