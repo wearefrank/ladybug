@@ -1,6 +1,9 @@
 package nl.nn.testtool;
 
-import java.util.Date;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -70,16 +73,17 @@ public class Span {
     }
 
     public Map<String, Object> toHashmap() {
+        String date = LocalDateTime.ofInstant(Instant.ofEpochMilli(this.timestamp / 1000), ZoneId.systemDefault()).format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss"));
         Map<String, Object> map = new HashMap<>();
-        map.put("traceId", this.traceId);
-        map.put("parentId", this.parentId);
-        map.put("id", this.id);
-        map.put("kind", this.kind);
-        map.put("name", this.name);
-        map.put("time", new Date(this.timestamp / 1000));
-        map.put("duration", this.duration);
-        map.put("localEndpoint", this.localEndpoint);
-        map.put("tags", this.tags);
+        map.put("\"traceId\"", "\"" +  this.traceId + "\"");
+        map.put("\"parentId\"", "\"" +  this.parentId + "\"");
+        map.put("\"id\"", "\"" +  this.id + "\"");
+        map.put("\"kind\"", "\"" +  this.kind + "\"");
+        map.put("\"name\"", "\"" +  this.name + "\"");
+        map.put("\"time\"", "\"" +  date + "\"");
+        map.put("\"duration\"", "\"" +  this.duration + "\"");
+        map.put("\"localEndpoint\"", "\"" +  this.localEndpoint + "\"");
+        map.put("\"tags\"", "\"" + this.tags + "\"");
 
         return map;
     }
