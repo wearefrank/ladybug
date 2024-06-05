@@ -3,7 +3,6 @@
 /wip
 /.classpath
 /.settings
-/skip-replace-inject.txt
 .idea/
 .project
 .vscode/
