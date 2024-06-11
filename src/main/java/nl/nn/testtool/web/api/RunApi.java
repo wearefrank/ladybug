@@ -16,11 +16,8 @@
 package nl.nn.testtool.web.api;
 
 import java.lang.invoke.MethodHandles;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.slf4j.Logger;
@@ -67,45 +64,39 @@ public class RunApi extends ApiBase {
 	@Consumes(MediaType.APPLICATION_JSON)
 	public Response runReport(@PathParam("storageId") int storageId, @PathParam("testStorageName") String testStorageName, @PathParam("debugStorageName") String debugStorageName) {
 		Storage testStorage = testTool.getStorage(testStorageName);
-		List<String> exceptions = new ArrayList<>();
 		ReportRunner runner = getRunner(testTool.getStorage(debugStorageName));
 		Map<String, Object> result = new HashMap<>();
-		String exception = null;
-
 		// Reran reports will allow us to keep track of old reran reports. This will later be used in replace and result.
 		HashMap<Integer, Report> reranReports = getSessionAttr("reranReports", false);
 		if (reranReports == null) {
 			reranReports = new HashMap<>();
 			setSessionAttr("reranReports", reranReports);
 		}
-
+		String errorMessage = null;
 		try {
 			Report report = testStorage.getReport(storageId);
 			if (report != null) {
 				report.setTestTool(testTool);
 				reranReports.put(storageId, report);
-				exception = runner.run(Collections.singletonList(report), true, true);
-				RunResult runResult = runner.getResults().get(storageId);
-				if (runResult.errorMessage != null) {
-					exceptions.add(runResult.errorMessage);
+				errorMessage = runner.run(Collections.singletonList(report), true, true);
+				if (errorMessage == null) {
+					RunResult runResult = runner.getResults().get(storageId);
+					if (runResult.errorMessage == null) {
+						Report runResultReport = runner.getRunResultReport(runResult.correlationId);
+						runResultReport.setTestTool(testTool);
+						result = extractRunResult(report, runResultReport, runner);
+					} else {
+						errorMessage = runResult.errorMessage;
+					}
 				}
-
-				Report runResultReport = runner.getRunResultReport(runResult.correlationId);
-				runResultReport.setTestTool(testTool);
-				result = extractRunResult(report, runResultReport, runner);
 			}
 		} catch (StorageException e) {
-			exceptions.add("Exception for report in [testStorage] with storage id [" + storageId + "] - detailed error message -  " + e + Arrays.toString(e.getStackTrace()));
-			e.printStackTrace();
+			errorMessage = "Storage exception: " + e.getMessage();
+			log.error(errorMessage, e);
 		}
-
-		if (exceptions.size() > 0) {
-			String message = "Exceptions have been thrown, causing the related reports not to run. - detailed error message - Exceptions:\n" + String.join(". \n", exceptions);
-			return Response.serverError().entity(message).build();
-		} else if (exception != null) {
-			return Response.status(Response.Status.SERVICE_UNAVAILABLE).entity("Exception has been thrown, caused the related report not to run. - detailed error message - " + exception).build();
+		if (errorMessage != null) {
+			return Response.serverError().entity(errorMessage).build();
 		}
-
 		return Response.ok(result).build();
 	}
 
