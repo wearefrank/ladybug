@@ -51,6 +51,18 @@
     </developer>
   </developers>
 
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>io.opentelemetry</groupId>
+        <artifactId>opentelemetry-bom</artifactId>
+        <version>1.39.0</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
   <dependencies>
     <!--
     https://www.npmjs.com/package/@wearefrank/ladybug
@@ -226,6 +238,40 @@
       <artifactId>javax.json.bind-api</artifactId>
       <version>1.0</version>
       <scope>provided</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>io.opentelemetry</groupId>
+      <artifactId>opentelemetry-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.opentelemetry</groupId>
+      <artifactId>opentelemetry-sdk</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.opentelemetry</groupId>
+      <artifactId>opentelemetry-exporter-logging</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.opentelemetry.semconv</groupId>
+      <artifactId>opentelemetry-semconv</artifactId>
+      <version>1.25.0-alpha</version>
+    </dependency>
+    <dependency>
+      <groupId>io.opentelemetry</groupId>
+      <artifactId>opentelemetry-sdk-extension-autoconfigure</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.opentelemetry</groupId>
+      <artifactId>opentelemetry-sdk-extension-autoconfigure-spi</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.opentelemetry</groupId>
+      <artifactId>opentelemetry-exporter-otlp</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.opentelemetry</groupId>
+      <artifactId>opentelemetry-exporter-zipkin</artifactId>
     </dependency>
   </dependencies>
 

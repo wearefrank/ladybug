@@ -6,6 +6,11 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
+import io.opentelemetry.api.trace.SpanKind;
+
+/**
+ * Created a Span class to map incoming telemetry data from the endpoint. There is no library available with classes to catch such telemetry data in spans.
+ */
 
 public class Span {
     private String traceId;
