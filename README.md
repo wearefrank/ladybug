@@ -240,6 +240,7 @@ Create and publish NPM package and WebJar
     - Probably you have two factor authentication for your npm account. Make sure you have an authenticator app on your mobile phone that can give you a one-time pasword (6-digit code)
 
 ### Creating and publishing an NPM package
+- Run `npm version patch` (or with `minor` or `major` depending on the size) to set the new version number of the package.
 - Run the command `yarn install --immutable`, to sync with changes done by others
 - Run the command `ng build`, to build the current project
 - In the `dist/ladybug/index.html` change the types of the three scripts on line 14 to `application/javascript` (so `type="module"` -> `type="application/javascript"`). The specific scripts are:
@@ -267,10 +268,6 @@ Create and publish NPM package and WebJar
 - Select the correct version
 - Click on the `Deploy` button to deploy the WebJar. Wait for the Deploy Log to finish (there should be a `Deployed!` somewhere).
 - You have now published the WebJar, see (after a few hours) https://repo.maven.apache.org/maven2/org/webjars/npm/wearefrank__ladybug/
-
-### Prepare for next cycle
-- Go into the file `ladybug-frontend/package.json` and increment the version number (for example `0.0.12` -> `0.0.13`)
-- Commit and push the changes in `ladybug-frontend/package.json`, with the commit message `Set version to X.Y.Z for the next development cycle`
 
 CI/CD
 =====
