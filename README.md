@@ -180,10 +180,9 @@ Frontend development
 --------------------
 
 Please do the following to set up your development environment for the front-end:
-* Install [Node.js](https://nodejs.org/en/), choose version 20. You should get executables `npm` version 10.x and `node` version 20.x. Check these versions using `npm -v` and `node -v`.
+* Install [Node.js](https://nodejs.org/en/), choose version 20. You should get executables `npm` version 10.x and `node` version 20.14.0 or later. `node` version 20.x with x < 14 is NOT ok. Check these versions using `npm -v` and `node -v`.
 * Change directory to your checkout of ladybug-frontend.
-* The Node Package Manager (npm) includes another package manager, yarn. We use that one because it is more stable. Enable it by executing the command `corepack enable`. You should do this in a command prompt that runs with administrator permissions.
-* Use `yarn -v` to check that you have the right version of yarn. The version you are using should equal the version that is asked in `package.json`. In `package.json` you have a line like: `"packageManager": "yarn@x.x.x"`.
+* The Node Package Manager (npm) includes another package manager, yarn. Check that you are using yarn version 4.1.1 with the command `yarn -v` in the checkout directory of ladybug-frontend. The yarn 4.1.1. executable has been uploaded to git.
 * Run `yarn install --immutable` to install your dependencies. The flag ensures that you get exactly the same dependencies as the other developers have. If you want to include a new dependency, update `package.json` and do `yarn install`. File `yarn.lock` will be updated, the list of all dependencies including dependencies of other dependencies. Check in `yarn.lock` to ensure that other developers will update to the same dependencies as you. If it is not your intention to introduce a new dependency, then do not check-in `yarn.lock`!. If you made an error with these installation instructions, you may have unwanted updates of the file.
 * In case you don't have a direct internet connection you might need to set HTTPS_PROXY, see https://docs.cypress.io/guides/references/proxy-configuration.
 * Run `yarn prepare` to prepare Git hooks. If you do not do this, you will not be able to commit or push in the ladybug-frontend project.
@@ -242,10 +241,6 @@ Create and publish NPM package and WebJar
 ### Creating and publishing an NPM package
 - Run the command `yarn install --immutable`, to sync with changes done by others
 - Run the command `ng build`, to build the current project
-- In the `dist/ladybug/index.html` change the types of the three scripts on line 14 to `application/javascript` (so `type="module"` -> `type="application/javascript"`). The specific scripts are:
-  - `runtime.e3a101410a4894ca.js`
-  - `polyfills.42dedf2fcdca615b.js`
-  - `main.134a36bdfc8f0ad9.js`
 - In the copied `package.json` (`dist/ladybug/package.json`) do the following:
   - Remove the contents of `dependencies` and `devDependencies`
   - Update the `prepare` script to be `cd ../.. && husky install`
