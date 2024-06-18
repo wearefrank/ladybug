@@ -33,6 +33,7 @@ import java.util.regex.Pattern;
 import javax.json.bind.annotation.JsonbTransient;
 import javax.xml.xpath.XPathExpressionException;
 
+import io.opentelemetry.api.trace.Span;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -90,6 +91,7 @@ public class Checkpoint implements Serializable, Cloneable {
 	private transient StringWriter messageCapturerWriter;
 	private transient ByteArrayOutputStream messageCapturerOutputStream;
 	private transient Map<String, Pattern> variablePatternMap;
+	Span span = null;
 
 	public Checkpoint() {
 		// Only for Java XML encoding/decoding! Use other constructor instead.
@@ -102,6 +104,14 @@ public class Checkpoint implements Serializable, Cloneable {
 		this.name = name;
 		this.type = type;
 		this.level = level;
+	}
+
+	public Span getSpan() {
+		return span;
+	}
+
+	public void setSpan(Span span) {
+		this.span = span;
 	}
 
 	// JsonIgnore is used so that Jackson will not get into an infinite loop trying to reference report,
