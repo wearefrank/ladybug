@@ -21,7 +21,6 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import lombok.Setter;
 import nl.nn.testtool.Span;
-import nl.nn.testtool.SpanKind;
 import nl.nn.testtool.TestTool;
 import nl.nn.testtool.web.ApiServlet;
 import org.slf4j.Logger;
@@ -29,8 +28,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 
 @Path("/" + ApiServlet.LADYBUG_API_PATH + "/collector")
 public class CollectorApi extends ApiBase {
