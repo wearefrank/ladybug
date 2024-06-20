@@ -22,7 +22,7 @@ reports and optionally stub certain checkpoints for regression testing.
   - [Testing frontend changes with the test webapp](#testing-frontend-changes-with-the-test-webapp)
   - [Testing frontend changes with Frank!Framework](#testing-frontend-changes-with-frankframework)
   - [Testing frontend changes with unit tests](#testing-frontend-changes-with-unit-tests)
-- [Create and publish NPM package and WebJar](#create-and-publish-npm-package-and-webjar)
+- [Publish frontend as Maven dependency for backend](#publish-frontend-as-maven-dependency-for-backend)
 - [CI/CD](#cicd)
 
 Releases
@@ -227,81 +227,48 @@ For the frontend, do the following:
  - Run `ng serve --open` or run `ng serve` and navigate to [localhost/ladybug](http://localhost/ladybug/)
  - NOTE: It is important to note that running a report in the test tab is not yet possible with Quarkus
 
-Create and publish NPM package and WebJar
-========================================
+Publish frontend as Maven dependency for backend
+================================================
 
 ### Prerequisites
-- Make sure the latest changes are committed (and preferably pushed) to the project
-- Open your terminal and navigate to your project folder (so `PATH/TO/ladybug`)
-- If this is the first time, you need to log into NPM
-    - Create an account on [NPM](https://www.npmjs.com/signup) if you don't have one yet.
-    - Ask a colleague to add your account to the WeAreFrank! organization.
-    - In the terminal run the following command `npm login`, which prompts you to log into NPM.
-    - Probably you have two factor authentication for your npm account. Make sure you have an authenticator app on your mobile phone that can give you a one-time pasword (6-digit code)
+- Make sure the latest changes are committed (and preferably pushed) to the project.
+- Make sure that you have Maven. You should have version 3.9.6 or later and it should run on Java 17 or Java 21. You can check these versions with the command `mvn -v`.
+- In the ladybug-frontend checkout, remove folders `dist` and `target` to be sure you do not mix this release with old stuff.
 
-### Creating and publishing an NPM package
-- Run the command `yarn install --immutable`, to sync with changes done by others
-- Run the command `ng build`, to build the current project
-- In the copied `package.json` (`dist/ladybug/package.json`) do the following:
-  - Remove the contents of `dependencies` and `devDependencies`
-  - Update the `prepare` script to be `cd ../.. && husky install`
-- Navigate to `dist/ladybug` in your terminal
-- Read a one-time password for your npm account from your mobile phone.
-- Run the following commands in order:
-  - `npm publish -otp xxxxxx` with the one-time password substituted for `xxxxxx`.
-  - `git tag vX.Y.Z`, with X.Y.Z being the latest version of the package, which you can find in your `package.json` (for example `0.0.12`)
-  - `git push origin vX.Y.Z`, with X.Y.Z being the version you just specified.
-    - When Chrome cannot be started because the binary is not found: set CHROME_BIN=C:\\...\\chrome.exe (in Git bash: export CHROME_BIN=C:\\\\...\\\\chrome.exe)
-    - When Chrome cannot be started (two attempts are done by the command), shut down Chrome (in which probably two tabs have been opened)
-- You have now successfully published the NPM package, see https://www.npmjs.com/package/@wearefrank/ladybug
-
-### Creating and publishing WebJar
-- Navigate to [WebJars](https://webjars.org)
-- Click on the `Add a WebJar` button
-- Select the type `NPM`
-- As package name, type in: `@wearefrank/ladybug`
-- Select the correct version
-- Click on the `Deploy` button to deploy the WebJar. Wait for the Deploy Log to finish (there should be a `Deployed!` somewhere).
-- You have now published the WebJar, see (after a few hours) https://repo.maven.apache.org/maven2/org/webjars/npm/wearefrank__ladybug/
-
-### Prepare for next cycle
-- Go into the file `ladybug-frontend/package.json` and increment the version number (for example `0.0.12` -> `0.0.13`)
-- Commit and push the changes in `ladybug-frontend/package.json`, with the commit message `Set version to X.Y.Z for the next development cycle`
+### Create frontend .jar
+- Run the command `yarn install --immutable`, to sync with changes done by others.
+- Run the command `yarn ng build`, to build the current project. This should fill the `dist` folder.
+- In `pom.xml`, check the version number you are releasing. The version number in `package.json` is not used.
+- Run `mvn clean install` if you want to create the Maven dependency (.jar file) on your development PC. This will essentially zip the data that is now in the `dist` folder. The CI/CD server does `mvn clean deploy` instead to also publish this dependency on WeAreFrank!'s Nexus server.
 
 CI/CD
 =====
 
 The preceding sections explained how to change Ladybug. This section explains the CI/CD of Ladybug, and it explains how we manage releases.
 
-First remember that ladybug is the main project. Project ladybug-frontend is a dependency of ladybug. The frontend version referenced by ladybug is specified by the ladybug `pom.xml` file. It is the value of property `frontend.version`. This property contains a version number that references a WebJar, see [Create and publish NPM package and WebJar](#create-and-publish-npm-package-and-webjar) about creating a WebJar from project ladybug-frontend. This way, a release of ladybug comes down to releasing the combination of ladybug and ladybug-frontend.
+First remember that ladybug is the main project. Project ladybug-frontend is a dependency of ladybug. The frontend version referenced by ladybug is specified by the ladybug `pom.xml` file. It is the value of property `frontend.version`. This property contains a version number that references .jar file that was built from project https://github.com/wearefrank/ladybug-frontend, see [Publish frontend as Maven dependency for backend](#publish-frontend-as-maven-dependency-for-backend). This way, a release of ladybug comes down to releasing the combination of ladybug and ladybug-frontend.
 
-WeAreFrank! has two automatic tests for Ladybug. First, our on-premise servers run a Jenkins test. This test checks the build of the ladybug project, in particular the master branch. Second, there is a GitHub actions test that lives in the ladybug-frontend project. This test does integration tests that exercise the Ladybug front-end. It has been implemented using [Cypress](https://www.cypress.io/). The test checks out ladybug-frontend, ladybug, the Frank!Runner and ladybug-test-webapp. Using these checkout directories, Ladybug can be started using the Frank!Runner and its script `specials/ladybug/restart.sh`, see [How to change and test Ladybug](#how-to-change-and-test-ladybug).
+WeAreFrank! has two automatic tests for Ladybug. First, our on-premise servers run a Jenkins test. This test checks the build of the ladybug project, in particular the master branch. Second, there is a GitHub Actions test that lives in the ladybug-frontend project. This test does integration tests that exercise the Ladybug front-end. It has been implemented using [Cypress](https://www.cypress.io/). The test checks out ladybug-frontend, ladybug, the Frank!Runner and ladybug-test-webapp. Using these checkout directories, Ladybug can be started using the Frank!Runner and its script `specials/ladybug/restart.sh`, see [How to change and test Ladybug](#how-to-change-and-test-ladybug).
 
 The Cypress test is used in two ways. First, it can be triggered if ladybug is updated. Project ladybug has a GitHub action that triggers the Cypress test of the front-end. This can happen because the Cypress test can be triggered by a `workflow_dispatch` event, see [test script](.github/workflows/start-frontend-test.yml). In this scenario, the following four inputs are provided:
 
 * frontendCommitToCheckout: ladybug-frontend commit to checkout, typically a reference to a tag.
 * backendCommitToCheckout: ladybug commit to checkout, typically a branch name.
-* useRealFrontend: `true`, because we do not want to use the checkout of ladybug-frontend, but the WebJar contained in ladybug.
+* useRealFrontend: `true`, because we do not want to use the checkout of ladybug-frontend, but the .jar contained in ladybug.
 * mergeMasterToBranch: `true`, for the backend directs the test to merge the master into the checkout. This way, a pull request of the backend is emulated.
 
 This scenario does not work on forks of the ladybug project. A fork does not have rights to trigger tests within the `wearefrank/ladybug-frontend` project. A commit on `wearefrank/ladybug` triggers the front-end test. GitHub will not show the success or failure of the front-end test. Please browse to https://github.com/wearefrank/ladybug-frontend and go to "Actions". Check the latest test run there.
 
-The second use of the Cypress test is testing the front-end. The Cypress test is triggered by every commit and every pull request update of the ladybug-frontend project. The input arguments are not set, causing the new commit (or merge commit for a PR) to be checked out for ladybug-frontend. For ladybug the master is checked out. Input `useRealFrontend` is undefined, which is equivalent to `false`. This means that the front-end comes from the checkout of ladybug-frontend; the WebJar inside ladybug is ignored. Finally, `mergeMasterToBranch` is undefined (`false`). This scenario also works on forks of `ladybug-frontend`.
+The second use of the Cypress test is testing the front-end. The Cypress test is triggered by every commit and every pull request update of the ladybug-frontend project. The input arguments are not set, causing the new commit (or merge commit for a PR) to be checked out for ladybug-frontend. For ladybug the master is checked out. Input `useRealFrontend` is undefined, which is equivalent to `false`. This means that the front-end comes from the checkout of ladybug-frontend; the .jar inside ladybug is ignored. Finally, `mergeMasterToBranch` is undefined (`false`). This scenario also works on forks of `ladybug-frontend`.
 
 Here is how to use the CI/CD of Ladybug:
 
 ### Update the backend only
 
-After a push on project `wearefrank/ladybug`, open https://github.com/wearefrank/ladybug-frontend and go to "Actions". Check the success or failure state of the latest GitHub action. The test exercises the front-end that is referenced by the backend, an integration test. The test logs which WebJar version of the front-end is used and what branch of the backend; please check these to see whether the test run corresponds to your commit.
+After a push on project `wearefrank/ladybug`, open https://github.com/wearefrank/ladybug-frontend and go to "Actions". Check the success or failure state of the latest GitHub action. The test exercises the front-end that is referenced by the backend, an integration test. The test logs which release of ladybug-frontend (included as Maven dependency in the backend) of the front-end is used and what branch of the backend; please check these to see whether the test run corresponds to your commit.
 
 When the master of wearefrank/ladybug has been changed, check the success or failure of our Jenkins test that runs on an on-premise server. That test checks the build of project ladybug.
 
 ### Update the front-end
 
 When updating the front-end, work on a branch that is allowed to live on a fork of the ladybug-frontend project. The Cypress test is executed for every commit. If you turn your work into a pull request, the success or failure status of the Cypress test will be shown in the pull request. As long as the updated front-end code is not referenced by the ladybug project, it is not part of Ladybug.
-
-### Update front-end and backend
-
-Update the front-end and the backend simultaneously on your development PC. The front-end changes will fail in CI/CD because they are tested against the master of the backend. Rely on the Cypress test on your development PC and on the Maven build of ladybug to test your work. When you trust your work, release the front-end in a WebJar as explained in [Create and publish NPM package and WebJar](#create-and-publish-npm-package-and-webjar). Please note that the released commit may live on another branch than master. Ensure that the commit and the tag are pushed to GitHub project wearefrank/ladybug-frontend. Then update `pom.xml` of ladybug to reference the new WebJar; do so on a branch pushed to wearefrank/ladybug. This update of the backend triggers the GitHub actions front-end test as explained earlier. Check that the latest run of the front-end test succeeds.
-
-At this point, you can merge your work on ladybug to its master branch. After this merge, additional pushes on your ladybug-frontend branch will succeed in CI/CD because the corresponding backend changes are in the backend master. You can merge your front-end changes to master if the GitHub actions test succeeds.
