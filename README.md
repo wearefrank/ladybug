@@ -236,10 +236,8 @@ Publish frontend as Maven dependency for backend
 - In the ladybug-frontend checkout, remove folders `dist` and `target` to be sure you do not mix this release with old stuff.
 
 ### Create frontend .jar
-- Run the command `yarn install --immutable`, to sync with changes done by others.
-- Run the command `yarn ng build`, to build the current project. This should fill the `dist` folder.
 - In `pom.xml`, check the version number you are releasing. The version number in `package.json` is not used.
-- Run `mvn clean install` if you want to create the Maven dependency (.jar file) on your development PC. This will essentially zip the data that is now in the `dist` folder. The CI/CD server does `mvn clean deploy` instead to also publish this dependency on WeAreFrank!'s Nexus server.
+- Run `mvn clean install` if you want to create the Maven dependency (.jar file) on your development PC. This essentially wraps the front-end commands to build the distribution and then zip the resulting `dist` folder. The CI/CD server does `mvn clean deploy` instead to also publish this dependency on WeAreFrank!'s Nexus server.
 
 CI/CD
 =====
