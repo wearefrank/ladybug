@@ -133,8 +133,8 @@ public class Report implements Serializable {
 	private transient boolean logMaxMemoryUsage = true;
 	private transient Map<Object, Set<Checkpoint>> streamingMessageListeners = new HashMap<>();
 	private transient Map<Object, StreamingMessageResult> streamingMessageResults = new HashMap<>();
-	private final OpenTelemetry openTelemetry;
-	private final Tracer tracer;
+	private transient final OpenTelemetry openTelemetry;
+	private transient final Tracer tracer;
 
 	@Autowired
 	Report (OpenTelemetry openTelemetry) {

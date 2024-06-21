@@ -91,7 +91,7 @@ public class Checkpoint implements Serializable, Cloneable {
 	private transient StringWriter messageCapturerWriter;
 	private transient ByteArrayOutputStream messageCapturerOutputStream;
 	private transient Map<String, Pattern> variablePatternMap;
-	Span span = null;
+	private transient Span span = null;
 
 	public Checkpoint() {
 		// Only for Java XML encoding/decoding! Use other constructor instead.
