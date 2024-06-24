@@ -309,3 +309,8 @@ When updating the front-end, work on a branch that is allowed to live on a fork 
 Update the front-end and the backend simultaneously on your development PC. The front-end changes will fail in CI/CD because they are tested against the master of the backend. Rely on the Cypress test on your development PC and on the Maven build of ladybug to test your work. When you trust your work, release the front-end in a WebJar as explained in [Create and publish NPM package and WebJar](#create-and-publish-npm-package-and-webjar). Please note that the released commit may live on another branch than master. Ensure that the commit and the tag are pushed to GitHub project wearefrank/ladybug-frontend. Then update `pom.xml` of ladybug to reference the new WebJar; do so on a branch pushed to wearefrank/ladybug. This update of the backend triggers the GitHub actions front-end test as explained earlier. Check that the latest run of the front-end test succeeds.
 
 At this point, you can merge your work on ladybug to its master branch. After this merge, additional pushes on your ladybug-frontend branch will succeed in CI/CD because the corresponding backend changes are in the backend master. You can merge your front-end changes to master if the GitHub actions test succeeds.
+
+OpenTelemetry
+=============
+
+Ladybug is able to create telemetry data from Ladybug reports and send it to telemetry-collector Zipkin. Zipkin provides an overview based on time that helps to detect latency problems. To use Zipkin, you can run the following command: `docker run --rm -d -p 9411:9411 --name zipkin openzipkin/zipkin` When a Ladybug report is created, a trace will now be sent to Zipkin.
