@@ -37,7 +37,7 @@ public class CollectorApi extends ApiBase {
     @POST
     @Path("/")
     public Response collectSpans(Span[] trace) {
-        testCollector(trace);
+        processSpans(trace);
 
         return Response.ok().build();
     }
@@ -46,12 +46,12 @@ public class CollectorApi extends ApiBase {
     @Path("/")
     @Consumes(MediaType.APPLICATION_JSON)
     public Response collectSpansJson(Span[] trace) {
-        testCollector(trace);
+        processSpans(trace);
 
         return Response.ok().build();
     }
 
-    public void testCollector(Span[] trace) {
+    private void processSpans(Span[] trace) {
         ArrayList<String> parentIds = new ArrayList<>();
         for (Span span: trace) {
             if (span.getParentId() != null && !parentIds.contains(span.getParentId())) {
