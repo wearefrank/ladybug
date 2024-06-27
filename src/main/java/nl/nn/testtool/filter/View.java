@@ -42,21 +42,13 @@ import nl.nn.testtool.storage.LogStorage;
 public class View implements BeanParent {
         protected String name;
         protected String nodeLinkStrategy;
-        private @Setter
-        @Getter
-        @Inject
-        @Autowired LogStorage debugStorage;
-        private @Setter
-        @Getter
-        @Inject
-        @Autowired List<String> metadataNames;
+        private @Setter @Getter @Inject @Autowired LogStorage debugStorage;
+        private @Setter @Getter @Inject @Autowired List<String> metadataNames;
         private Map<String, String> metadataFilter;
         private List<CheckpointMatcher> checkpointMatchers;
         private BeanParent beanParent;
         private Echo2Application echo2Application;
-        private @Setter
-        @Inject
-        @Autowired MetadataExtractor metadataExtractor;
+        private @Inject @Autowired MetadataExtractor metadataExtractor;
 
         protected enum NodeLinkStrategy {
             PATH,
