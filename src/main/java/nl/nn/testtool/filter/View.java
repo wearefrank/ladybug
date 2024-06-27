@@ -15,9 +15,13 @@
 */
 package nl.nn.testtool.filter;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.HashMap;
 
+import nl.nn.testtool.MetadataExtractor;
+import nl.nn.testtool.storage.CrudStorage;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import jakarta.enterprise.context.Dependent;
@@ -36,86 +40,122 @@ import nl.nn.testtool.storage.LogStorage;
  */
 @Dependent
 public class View implements BeanParent {
-	protected String name;
-	protected String nodeLinkStrategy;
-	private @Setter @Getter @Inject @Autowired LogStorage debugStorage;
-	private @Setter @Getter @Inject @Autowired List<String> metadataNames;
-	private Map<String, String> metadataFilter;
-	private List<CheckpointMatcher> checkpointMatchers;
-	private BeanParent beanParent;
-	private Echo2Application echo2Application;
+    protected String name;
+    protected String nodeLinkStrategy;
+    private @Setter
+    @Getter
+    @Inject
+    @Autowired LogStorage debugStorage;
+    private @Setter
+    @Getter
+    @Inject
+    @Autowired List<String> metadataNames;
+    private Map<String, String> metadataFilter;
+    private List<CheckpointMatcher> checkpointMatchers;
+    private BeanParent beanParent;
+    private Echo2Application echo2Application;
+    private @Setter
+    @Inject
+    @Autowired MetadataExtractor metadataExtractor;
 
-	protected enum NodeLinkStrategy {
-		PATH,
-		CHECKPOINT_NUMBER,
-		NONE
-	}
+    protected enum NodeLinkStrategy {
+        PATH,
+        CHECKPOINT_NUMBER,
+        NONE
+    }
 
-	public void setName(String name) {
-		this.name = name;
-	}
+    public void setName(String name) {
+        this.name = name;
+    }
 
-	public String getName() {
-		return name;
-	}
+    public String getName() {
+        return name;
+    }
 
-	public void setNodeLinkStrategy(String nodeLinkStrategy) {
-		this.nodeLinkStrategy = nodeLinkStrategy;
-	}
+    public void setNodeLinkStrategy(String nodeLinkStrategy) {
+        this.nodeLinkStrategy = nodeLinkStrategy;
+    }
 
-	public String getNodeLinkStrategy() {
-		if (nodeLinkStrategy == null) {
-			return NodeLinkStrategy.PATH.toString();
-		}
-		return nodeLinkStrategy;
-	}
+    public String getNodeLinkStrategy() {
+        if (nodeLinkStrategy == null) {
+            return NodeLinkStrategy.PATH.toString();
+        }
+        return nodeLinkStrategy;
+    }
 
-	public void setMetadataFilter(Map<String, String> metadataFilter) {
-		this.metadataFilter = metadataFilter;
-	}
+    public void setMetadataFilter(Map<String, String> metadataFilter) {
+        this.metadataFilter = metadataFilter;
+    }
 
-	public Map<String, String> getMetadataFilter() {
-		return metadataFilter;
-	}
+    public Map<String, String> getMetadataFilter() {
+        return metadataFilter;
+    }
 
-	public void setCheckpointMatchers(List<CheckpointMatcher> checkpointMatchers) {
-		this.checkpointMatchers = checkpointMatchers;
-	}
+    public void setCheckpointMatchers(List<CheckpointMatcher> checkpointMatchers) {
+        this.checkpointMatchers = checkpointMatchers;
+    }
 
-	/**
-	 * @see nl.nn.testtool.echo2.Echo2Application#initBean()
-	 */
-	public void initBean(BeanParent beanParent) {
-		this.beanParent = beanParent;
-		this.echo2Application = Echo2Application.getEcho2Application(beanParent, this);
-	}
+    /**
+     * @see nl.nn.testtool.echo2.Echo2Application#initBean()
+     */
+    public void initBean(BeanParent beanParent) {
+        this.beanParent = beanParent;
+        this.echo2Application = Echo2Application.getEcho2Application(beanParent, this);
+    }
 
-	public BeanParent getBeanParent() {
-		return beanParent;
-	}
+    public BeanParent getBeanParent() {
+        return beanParent;
+    }
 
-	public Echo2Application getEcho2Application() {
-		return echo2Application;
-	}
+    public Echo2Application getEcho2Application() {
+        return echo2Application;
+    }
 
-	public String isOpenReportAllowed(Object StorageId) {
-		return ReportsComponent.OPEN_REPORT_ALLOWED;
-	}
+    public String isOpenReportAllowed(Object StorageId) {
+        return ReportsComponent.OPEN_REPORT_ALLOWED;
+    }
 
-	public boolean showCheckpoint(Report report, Checkpoint checkpoint) {
-		boolean match = false;
-		if (checkpointMatchers == null) {
-			match = true;
-		}
-		for (int i = 0; !match && i < checkpointMatchers.size(); i++) {
-			CheckpointMatcher checkpointMatcher = checkpointMatchers.get(i);
-			match = checkpointMatcher.match(report, checkpoint);
-		}
-		return match;
-	}
+    public boolean showCheckpoint(Report report, Checkpoint checkpoint) {
+        boolean match = false;
+        if (checkpointMatchers == null) {
+            match = true;
+        }
+        for (int i = 0; !match && i < checkpointMatchers.size(); i++) {
+            CheckpointMatcher checkpointMatcher = checkpointMatchers.get(i);
+            match = checkpointMatcher.match(report, checkpoint);
+        }
+        return match;
+    }
 
-	public String toString() {
-		return getName();
-	}
+    public String toString() {
+        return getName();
+    }
+
+    public Map<String, Object> toHashMap(boolean isDefaultView) {
+        Map<String, String> metadataTypes = new HashMap<>();
+        for (String metadataName : getMetadataNames()) {
+            metadataTypes.put(metadataName, metadataExtractor.getType(metadataName));
+        }
+
+        return new HashMap<String, Object>() {{
+            put("storageName", debugStorage.getName());
+            put("defaultView", isDefaultView);
+            put("metadataNames", metadataNames);
+            put("metadataLabels", getMetadataLabels());
+            put("crudStorage", debugStorage instanceof CrudStorage);
+            put("nodeLinkStrategy", nodeLinkStrategy);
+            put("name", getName());
+            put("metadataTypes", metadataTypes);
+        }};
+    }
+
+    public List<String> getMetadataLabels() {
+        List<String> metadataLabels = new ArrayList<>();
+        for (String metadataName : getMetadataNames()) {
+            metadataLabels.add(metadataExtractor.getLabel(metadataName));
+        }
+
+        return metadataLabels;
+    }
 
 }
