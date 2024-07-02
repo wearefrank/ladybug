@@ -17,7 +17,13 @@ Ladybug is tested by [automated tests](./README.md#cicd). These automated tests 
 
 The options you have to run ladybug are described in [the readme](./README.md#how-to-change-and-test-ladybug). Here we present more detailed instructions. 
 
-    WARNING: The instructions below were mostly executed using a MinGW command prompt that emulates Linux. If you use a DOS prompt or PowerShell, please use equivalent commands that are valid in your shell instead of literally using the shown commands. The exeption is calling `restart.bat`, which you probably cannot do in a MinGW command prompt. For readability, all paths are shown with `/` as the path separator, even though a DOS prompt uses `\`.
+    WARNING: The instructions below were mostly executed using a MinGW command
+    prompt that emulates Linux. If you use a DOS prompt or PowerShell, please
+    use equivalent commands that are valid in your shell instead of literally
+    using the shown commands. The exeption is calling `restart.bat`, which you
+    probably cannot do in a MinGW command prompt. For readability, all paths
+    are shown with `/` as the path separator, even though a DOS prompt uses
+    `\`.
 
 Please do the following:
 
