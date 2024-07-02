@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 
+import io.opentelemetry.api.OpenTelemetry;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -94,6 +95,12 @@ public class TestTool {
 	private @Setter @Getter @Inject @Autowired Views views;
 	private @Setter @Getter int reportsInProgressThreshold = 300000;
 	boolean devMode = false; // See testConcurrentLastEndpointAndFirstStartpointForSameCorrelationId()
+	private final OpenTelemetry openTelemetry;
+
+	@Autowired
+	TestTool (OpenTelemetry openTelemetry) {
+		this.openTelemetry = openTelemetry;
+	}
 
 	@PostConstruct
 	public void init() {
@@ -348,7 +355,7 @@ public class TestTool {
 		Report report = null;
 		if (checkpointType == Checkpoint.TYPE_STARTPOINT) {
 			log.debug("Create new report for '" + correlationId + "'");
-			report = new Report();
+			report = new Report(openTelemetry);
 			report.setStartTime(System.currentTimeMillis());
 			report.setTestTool(this);
 			report.setCorrelationId(correlationId);
