@@ -41,7 +41,6 @@ Please do the following:
 
   * The ladybug backend version is in `work/frankframework/ladybug/pom.xml`, the line `<ladybug.version>...</ladybug.version>` under `<properties>`. That value should be the artifact version mentioned in `work/ladybug/pom.xml`.
   * The ladybug-frontend you checked out should be compatible with the ladybug version you checked out. There does not have to be a match for the version numbers.
-* Create file `ladybug/skip-replace-inject.txt`. It can have arbitrary contents and you can also leave it empty.
 
 ### Configure Frank!Runner to run backend
 
