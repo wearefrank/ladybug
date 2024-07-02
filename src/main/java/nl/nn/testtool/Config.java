@@ -18,10 +18,9 @@ package nl.nn.testtool;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.enterprise.inject.Produces;
-import javax.inject.Singleton;
 import javax.sql.DataSource;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
@@ -31,6 +30,8 @@ import org.springframework.jdbc.datasource.SimpleDriverDataSource;
 import org.springframework.transaction.TransactionManager;
 
 import io.quarkus.arc.DefaultBean;
+import jakarta.enterprise.inject.Produces;
+import jakarta.inject.Singleton;
 import nl.nn.testtool.echo2.ComparePane;
 import nl.nn.testtool.echo2.DebugPane;
 import nl.nn.testtool.echo2.Echo2Application;
@@ -142,7 +143,7 @@ public class Config {
 	@DefaultBean
 	@Bean
 	@Scope("singleton")
-	Views views(View view, LogStorage debugStorage) {
+	Views views(@Qualifier("view") View view, @Qualifier("debugStorage") LogStorage debugStorage) {
 		view.setName("Default");
 		List<View> list = new ArrayList<View>();
 		list.add(view);

@@ -14,19 +14,13 @@
   <url>https://github.com/wearefrank/ladybug</url>
 
   <properties>
-    <revision>2.3-SNAPSHOT</revision>
+    <revision>3.0-SNAPSHOT</revision>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <spring.version>5.3.34</spring.version>
-    <cxf.version>3.5.5</cxf.version>
-    <!-- The line below is parsed by the GitHub actions test that triggers the ladybug-frontend Cypress test -->
-
-    <frontend.version>0.0.54</frontend.version>
-    <!-- Logback 1.3 requires slf4j-api 2.0. Logback is used with scope test so ignore https://github.com/wearefrank/ladybug/security/dependabot until Frank!Framework starts using slf4j-api 2.0 -->
-    <logback.version>1.2.13</logback.version>
-    <!-- Create skip-replace-inject.txt (replacement is only needed in the published jar by CI/CD) (more info in nl/nn/testtool/Inject.java -->
-    <inject.replace.include>**/*.java</inject.replace.include>
-    <inject.replace.from>javax.inject</inject.replace.from>
-    <inject.replace.to>nl.nn.testtool</inject.replace.to>
+    <frontend.version>0.0.57</frontend.version><!-- Is parsed by the GitHub actions test that triggers the ladybug-frontend Cypress test -->
+    <spring.version>6.1.7</spring.version>
+    <cxf.version>4.0.4</cxf.version>
+    <jackson.version>2.17.1</jackson.version>
+    <logback.version>1.5.6</logback.version>
   </properties>
 
   <organization>
@@ -74,32 +68,30 @@
       <version>${cxf.version}</version>
     </dependency>
     <dependency>
-      <groupId>com.fasterxml.jackson.jaxrs</groupId>
-      <artifactId>jackson-jaxrs-json-provider</artifactId>
-      <version>2.13.4</version>
-      <exclusions>
-        <!-- Copied exclusion from iaf-core/pom.xml -->
-        <exclusion>
-          <groupId>jakarta.activation</groupId>
-          <artifactId>jakarta.activation-api</artifactId>
-        </exclusion>
-      </exclusions>
+      <groupId>org.apache.cxf</groupId>
+      <artifactId>cxf-rt-features-logging</artifactId>
+      <version>${cxf.version}</version>
     </dependency>
     <dependency>
-      <groupId>javax.servlet</groupId>
-      <artifactId>javax.servlet-api</artifactId>
-      <version>3.1.0</version>
+      <groupId>com.fasterxml.jackson.jakarta.rs</groupId>
+      <artifactId>jackson-jakarta-rs-json-provider</artifactId>
+      <version>${jackson.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>jakarta.servlet</groupId>
+      <artifactId>jakarta.servlet-api</artifactId>
+      <version>6.0.0</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.ibissource</groupId>
       <artifactId>ibis-echo2</artifactId>
-      <version>2.0.5-20240507.172631</version>
+      <version>2.0.5-20240524.095615</version>
     </dependency>
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
-      <version>1.7.36</version>
+      <version>2.0.13</version>
     </dependency>
     <dependency>
       <groupId>org.apache.commons</groupId>
@@ -202,6 +194,12 @@
       <scope>test</scope>
     </dependency>
     <dependency>
+      <groupId>jakarta.transaction</groupId>
+      <artifactId>jakarta.transaction-api</artifactId>
+      <version>2.0.1</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <groupId>io.quarkus.arc</groupId>
       <artifactId>arc</artifactId>
       <version>1.13.4.Final</version><!-- 2.7.0.Final doesn't compile with Java 8 -->
@@ -219,7 +217,7 @@
     <dependency>
       <groupId>jakarta.enterprise</groupId>
       <artifactId>jakarta.enterprise.cdi-api</artifactId>
-      <version>2.0.2</version>
+      <version>4.0.1</version>
       <scope>provided</scope>
     </dependency>
     <!-- Resolve @JsonbTransient -->
@@ -243,31 +241,6 @@
   <build>
     <defaultGoal>install</defaultGoal>
     <plugins>
-      <plugin>
-        <groupId>com.google.code.maven-replacer-plugin</groupId>
-          <artifactId>replacer</artifactId>
-          <version>1.5.3</version>
-          <executions>
-            <execution>
-                <phase>generate-resources</phase><!-- generate-resources instead of generate-sources to run after copyright check with <phase>process-sources</phase> -->
-                <goals>
-                  <goal>replace</goal>
-                </goals>
-            </execution>
-          </executions>
-          <configuration>
-            <basedir>${basedir}</basedir>
-            <includes>
-              <include>${inject.replace.include}</include>
-            </includes>
-            <replacements>
-               <replacement>
-                 <token>import ${inject.replace.from}.Inject;</token>
-                 <value>import ${inject.replace.to}.Inject;</value>
-               </replacement>
-            </replacements>
-        </configuration>
-      </plugin>
       <!--
         Add META-INF/jandex.idx, see also:
           https://quarkus.io/guides/cdi-reference#how-to-generate-a-jandex-index
@@ -401,7 +374,7 @@
         <artifactId>maven-site-plugin</artifactId>
         <version>3.12.1</version>
         <configuration>
-          <skip>true</skip><!-- Prevent copyright check running a second time and failing because of replacements by replacer-plugin. And speed up the build in Jenkins (generated site isn't used) -->
+          <skip>true</skip><!-- Speed up the build in Jenkins (generated site isn't used) -->
         </configuration>
       </plugin>
     </plugins>
@@ -487,17 +460,6 @@
   </scm>
 
   <profiles>
-    <profile>
-      <id>skip-replace-inject</id>
-      <activation>
-        <file>
-          <exists>skip-replace-inject.txt</exists>
-        </file>
-      </activation>
-      <properties>
-        <inject.replace.include>DISABLE</inject.replace.include>
-      </properties>
-    </profile>
     <profile>
       <id>skip-copyright</id>
       <activation>

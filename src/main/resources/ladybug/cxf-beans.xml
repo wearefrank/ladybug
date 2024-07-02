@@ -2,7 +2,6 @@
 <beans
 	xmlns="http://www.springframework.org/schema/beans"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xmlns:cxf="http://cxf.apache.org/core"
 	xmlns:jaxrs="http://cxf.apache.org/jaxrs"
 	xsi:schemaLocation="
 		http://cxf.apache.org/core http://cxf.apache.org/schemas/core.xsd
@@ -17,11 +16,11 @@
 
 	<jaxrs:server id="Ladybug-Api" bus="ladybug-api-bus" address="/" basePackages="nl.nn.testtool.web.api">
 		<jaxrs:providers>
-			<bean id="jsonProvider" class="com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider"/>
+			<bean id="jsonProvider" class="com.fasterxml.jackson.jakarta.rs.json.JacksonJsonProvider"/>
 			<bean id="apiAuthorizationFilter" class="nl.nn.testtool.web.ApiAuthorizationFilter" autowire="byName"/>
 		</jaxrs:providers>
 		<jaxrs:features>
-			<cxf:logging/>
+			<bean class="org.apache.cxf.ext.logging.LoggingFeature"/>
 		</jaxrs:features>
 	</jaxrs:server>
 </beans>

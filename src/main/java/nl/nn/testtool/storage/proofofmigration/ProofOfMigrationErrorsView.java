@@ -1,5 +1,5 @@
 /*
-   Copyright 2022 WeAreFrank!
+   Copyright 2022, 2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,10 +17,9 @@ package nl.nn.testtool.storage.proofofmigration;
 
 import java.util.List;
 
-import javax.inject.Inject;
-
 import org.springframework.beans.factory.annotation.Autowired;
 
+import jakarta.inject.Inject;
 import lombok.Setter;
 import nl.nn.testtool.filter.View;
 import nl.nn.testtool.storage.LogStorage;

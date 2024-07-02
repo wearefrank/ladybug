@@ -15,17 +15,18 @@
 */
 package nl.nn.testtool.web;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 
-import javax.servlet.RequestDispatcher;
-import javax.servlet.ServletException;
-import javax.servlet.ServletOutputStream;
-import javax.servlet.WriteListener;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletRequestWrapper;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpServletResponseWrapper;
+import jakarta.servlet.RequestDispatcher;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletOutputStream;
+import jakarta.servlet.WriteListener;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequestWrapper;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponseWrapper;
 
 /**
  * <p>
@@ -85,23 +86,7 @@ public class AngularServlet extends HttpServlet {
 	@Override
 	protected void doGet(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
-		HttpServletResponseWrapper responseWrapper = new HttpServletResponseWrapper(response) {
-			@Override
-			public void sendError(int sc) throws IOException {
-				if (sc == HttpServletResponse.SC_NOT_FOUND) {
-					try {
-						// Write index.html when resource not found
-						includeWebJarAsset(request, response, true);
-					} catch (ServletException e) {
-						super.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-								"Got exception reading index.html for " + artifactId + ": " + e.getMessage());
-					}
-				} else {
-					super.sendError(sc);
-				}
-			}
-		};
-		includeWebJarAsset(request, responseWrapper, false);
+		includeWebJarAsset(request, response, false);
 	}
 
 	private void includeWebJarAsset(HttpServletRequest request, HttpServletResponse response, boolean forceIndexHtml)
@@ -140,7 +125,7 @@ public class AngularServlet extends HttpServlet {
 			webJarsRequestURI = webJarsBase + artifactId + version + pathInfo;
 		}
 		// When Servlet 3 method (see https://www.webjars.org/documentation#servlet3) is used the Content-Type header
-		// isn't set (tested with Tomcat 9.0.60) which will cause problems when X-Content-Type-Options: nosniff is begin
+		// isn't set (tested with Tomcat 9.0.60) which will cause problems when X-Content-Type-Options: nosniff is being
 		// used. Hence set the header like it is done by WebJars Servlet 2
 		// (https://www.webjars.org/documentation#servlet2)
 		String[] tokens = webJarsRequestURI.split("/");
@@ -157,8 +142,13 @@ public class AngularServlet extends HttpServlet {
 				return webJarsRequestURI;
 			}
 		};
-		RequestDispatcher requestDispatcher = request.getRequestDispatcher(webJarsRequestURI);
-		requestDispatcher.include(requestWrapper, response);
+		try {
+			RequestDispatcher requestDispatcher = request.getRequestDispatcher(webJarsRequestURI);
+			requestDispatcher.include(requestWrapper, response);
+		} catch(FileNotFoundException e) {
+			// Serve index.html when a resource is not found
+			includeWebJarAsset(request, response, true);
+		}
 	}
 }
 

@@ -1,5 +1,5 @@
 /*
-   Copyright 2022 WeAreFrank!
+   Copyright 2022, 2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,10 +15,9 @@
 */
 package nl.nn.testtool.web;
 
-import javax.inject.Inject;
-
 import org.springframework.beans.factory.annotation.Autowired;
 
+import jakarta.inject.Inject;
 import nextapp.echo2.app.ApplicationInstance;
 import nextapp.echo2.webcontainer.WebContainerServlet;
 import nl.nn.testtool.echo2.Echo2Application;
