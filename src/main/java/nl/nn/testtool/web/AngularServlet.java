@@ -146,10 +146,16 @@ public class AngularServlet extends HttpServlet {
 			RequestDispatcher requestDispatcher = request.getRequestDispatcher(webJarsRequestURI);
 			requestDispatcher.include(requestWrapper, response);
 		} catch(FileNotFoundException e) {
-			// Serve index.html when a resource is not found
-			includeWebJarAsset(request, response, true);
+			if (forceIndexHtml) {
+				// Prevent recursion when index.html is not found
+				throw e;
+			} else {
+				// Serve index.html when a resource is not found
+				includeWebJarAsset(request, response, true);
+			}
 		}
 	}
+
 }
 
 class BaseRewritingServletOutputStream extends ServletOutputStream {
