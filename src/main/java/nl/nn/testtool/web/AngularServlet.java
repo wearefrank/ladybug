@@ -17,6 +17,7 @@ package nl.nn.testtool.web;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 
 import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.ServletException;
@@ -62,6 +63,7 @@ public class AngularServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 	private String artifactId;
 	private String version = "";
+	private boolean useRequestDispatcher = false;
 
 	/**
 	 * Set artifactId of WebJars jar that contains the Angular app to be served. In case of a Maven project the pom.xml
@@ -81,6 +83,18 @@ public class AngularServlet extends HttpServlet {
 	 */
 	public void setVersion(String version) {
 		this.version = "/" + version;
+	}
+
+	/**
+	 * The servlet 3 specification allows static resources from /META-INF/resources to be served by the application
+	 * server. For Tomcat this means that the JarScanner should not be configured to skip the WebJar (see also
+	 * https://www.webjars.org/documentation#servlet3). Hence useRequestDispatcher is false by default (works in all
+	 * situations).
+	 * 
+	 * @param useRequestDispatcher  set to true to dispatch requests and make the application server serve the resources
+	 */
+	public void setUseRequestDispatcher(boolean useRequestDispatcher) {
+		this.useRequestDispatcher = useRequestDispatcher;
 	}
 
 	@Override
@@ -124,32 +138,57 @@ public class AngularServlet extends HttpServlet {
 		} else {
 			webJarsRequestURI = webJarsBase + artifactId + version + pathInfo;
 		}
-		// When Servlet 3 method (see https://www.webjars.org/documentation#servlet3) is used the Content-Type header
-		// isn't set (tested with Tomcat 9.0.60) which will cause problems when X-Content-Type-Options: nosniff is being
-		// used. Hence set the header like it is done by WebJars Servlet 2
-		// (https://www.webjars.org/documentation#servlet2)
+		// Set Content-Type header to prevent problems when X-Content-Type-Options: nosniff is being used.
+		// Copied from WebJars Servlet 2. Would maybe be nice to set caching related headers also.
+		// https://www.webjars.org/documentation#servlet2
+		// https://github.com/webjars/webjars-servlet-2.x/blob/master/src/main/java/org/webjars/servlet/WebjarsServlet.java
 		String[] tokens = webJarsRequestURI.split("/");
 		String filename = tokens[tokens.length - 1];
 		String mimeType = getServletContext().getMimeType(filename);
 		response.setContentType(mimeType != null ? mimeType : "application/octet-stream");
-		HttpServletRequestWrapper requestWrapper = new HttpServletRequestWrapper(request) {
-			@Override
-			public String getServletPath() {
-				return webJarsBase;
+		if (!useRequestDispatcher) {
+			String resourceName = "/META-INF/resources" + webJarsRequestURI;
+			try (InputStream inputStream = this.getClass().getResourceAsStream(resourceName)) {
+				if (inputStream != null) {
+					inputStream.transferTo(response.getOutputStream());
+				} else {
+					if (forceIndexHtml) {
+						// Prevent infinite recursion when index.html is not found
+						throw new FileNotFoundException("The requested resource [" + webJarsRequestURI + "] is not available");
+					} else {
+						// Serve index.html when a resource is not found
+						includeWebJarAsset(request, response, true);
+					}
+				}
 			}
-			@Override
-			public String getRequestURI() {
-				return webJarsRequestURI;
+		} else {
+			HttpServletRequestWrapper requestWrapper = new HttpServletRequestWrapper(request) {
+				@Override
+				public String getServletPath() {
+					return webJarsBase;
+				}
+				@Override
+				public String getRequestURI() {
+					return webJarsRequestURI;
+				}
+			};
+			try {
+				RequestDispatcher requestDispatcher = request.getRequestDispatcher(webJarsRequestURI);
+				// Using forward instead of include would set Content-Type and caching related headers but doesn't
+				// throw an exception when resource is not found (allowing for index.html to be served)
+				requestDispatcher.include(requestWrapper, response);
+			} catch(RuntimeException e) {
+				if (forceIndexHtml) {
+					// Prevent infinite recursion when index.html is not found
+					throw e;
+				} else {
+					// Serve index.html when a resource is not found
+					includeWebJarAsset(request, response, true);
+				}
 			}
-		};
-		try {
-			RequestDispatcher requestDispatcher = request.getRequestDispatcher(webJarsRequestURI);
-			requestDispatcher.include(requestWrapper, response);
-		} catch(FileNotFoundException e) {
-			// Serve index.html when a resource is not found
-			includeWebJarAsset(request, response, true);
 		}
 	}
+
 }
 
 class BaseRewritingServletOutputStream extends ServletOutputStream {
