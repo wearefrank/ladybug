@@ -27,6 +27,7 @@ import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.exporter.logging.SystemOutLogRecordExporter;
 import io.opentelemetry.exporter.zipkin.ZipkinSpanExporter;
+import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import io.opentelemetry.sdk.logs.export.BatchLogRecordProcessor;
@@ -119,9 +120,11 @@ public class Config {
 	OpenTelemetry openTelemetry() {
 		Resource resource = Resource.getDefault().toBuilder().put(ServiceAttributes.SERVICE_NAME, "ladybug").put(ServiceAttributes.SERVICE_VERSION, "1.0.0").build();
 		String endpointZipkin = "http://localhost:9411/api/v2/spans";
+		ZipkinSpanExporter zipkinExporter = ZipkinSpanExporter.builder().setEndpoint(endpointZipkin).build();
+		OtlpGrpcSpanExporter jaegerExporter = OtlpGrpcSpanExporter.builder().build();
 
 		SdkTracerProvider sdkTracerProvider = SdkTracerProvider.builder()
-				.addSpanProcessor(BatchSpanProcessor.builder(ZipkinSpanExporter.builder().setEndpoint(endpointZipkin).build()).build())
+				.addSpanProcessor(BatchSpanProcessor.builder(zipkinExporter).build())
 				.setResource(resource)
 				.build();
 
