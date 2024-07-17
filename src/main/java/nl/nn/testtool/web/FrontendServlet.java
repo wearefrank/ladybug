@@ -41,10 +41,10 @@ public class FrontendServlet extends AngularServlet {
 
 	@Override
 	public void init() throws ServletException {
-		String artifactId = "wearefrank__ladybug";
+		String artifactId = "ladybug-frontend";
 		setArtifactId(artifactId);
 		try {
-			String resource = "/META-INF/maven/org.webjars.npm/" + artifactId + "/pom.properties";
+			String resource = "/META-INF/maven/org.wearefrank/" + artifactId + "/pom.properties";
 			InputStream inputStream = this.getClass().getResourceAsStream(resource);
 			if (inputStream != null) {
 				Properties properties = new Properties();
