@@ -191,7 +191,7 @@ Testing frontend changes with the test webapp
 ---------------------------------------------
 
 * Start the backend using `frank-runner/specials/ladybug` as explained at [Backend development](#backend-development). Wait until Tomcat is up and running.
-* Execute command `ng serve` from within the `ladybug-frontend` checkout. This wil make Node.js serve the Ladybug frontend files and proxy the Ladybug backend api as the src folder contains a proxy.conf.json (this will circumvent CORS related problems as the frontend served by Node.js on port 4200 would call the api on port 80). It is now possible to use both the real frontend that is eventually seen by end users (on port 80) and the Ladybug frontend served by Node.js (on port 4200). The page on the following url (also mentioned above) contains links to both frontends: `http://localhost`.
+* Execute command `pnpm ng serve` from within the `ladybug-frontend` checkout. This wil make Node.js serve the Ladybug frontend files and proxy the Ladybug backend api as the src folder contains a proxy.conf.json (this will circumvent CORS related problems as the frontend served by Node.js on port 4200 would call the api on port 80). It is now possible to use both the real frontend that is eventually seen by end users (on port 80) and the Ladybug frontend served by Node.js (on port 4200). The page on the following url (also mentioned above) contains links to both frontends: `http://localhost`.
 
 Testing frontend changes with Frank!Framework
 ---------------------------------------------
@@ -221,7 +221,7 @@ When the tests are running, you will see the ladybug GUI. The GUI will show the 
 How the frontend is published
 =============================
 
-Customers do not start the frontend using `ng serve`. They have access to the frontend because it is a Maven dependency of the backend, the project you are currently looking at. The backend `pom.xml` references the frontend as follows:
+Customers do not start the frontend using `pnpm ng serve`. They have access to the frontend because it is a Maven dependency of the backend, the project you are currently looking at. The backend `pom.xml` references the frontend as follows:
 
 ```
 <dependency>
