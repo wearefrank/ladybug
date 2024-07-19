@@ -236,7 +236,7 @@ At the start of the backend `pom.xml`, the frontend version to use is configured
 The GitHub project of the frontend, https://github.com/wearefrank/ladybug-frontend has a `pom.xml` file that lets you build this artifact. The maintainers of Ladybug have a Jenkins server that automatically runs the Maven build when a commit is pushed on the master branch. This build publishes a new version at a proprietary Nexus repository https://nexus.frankframework.org/.
 
 > [!NOTE]  
-> The Maven build uses the Angular build to transpile the Typescript code and in then zips the result into a .jar file.
+> The Maven build uses the Angular build to transpile the Typescript code and then zips the result into a .jar file.
 
 What version number will be published by the Jenkins server? In the frontend `pom.xml` the version number should be a SNAPSHOT version, e.g. `0.1.0-SNAPSHOT` (value of property `revision` as defined in the frontend `pom.xml`). The build on Jenkins will replace the word `SNAPSHOT` by a timestamp. If the frontend `pom.xml` has version `0.1.0-SNAPSHOT` and if the Jenkins build starts at July 1 2024, 15:00:00, the published version will be `0.1.0-20240701.150000`. If you want to use that code as the official frontend of ladybug, update the backend `pom.xml` to reference that version.
 
