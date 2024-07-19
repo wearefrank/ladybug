@@ -5,6 +5,9 @@
         <Receiver>
             <JavaListener name="IngestDocument" />
         </Receiver>
+        <Receiver>
+            <ApiListener uriPattern="ingestDocument" method="POST" />
+        </Receiver>
         <Pipeline>
             <Exits>
                 <Exit name="success" state="SUCCESS" />
