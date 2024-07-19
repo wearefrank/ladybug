@@ -157,7 +157,7 @@ build and run the test webapp with Ladybug. When Tomcat has been started by the 
 This should display a page with links to the various resources available like the Ladybug frontend and API.
 
 To speed up the build copy `build-example.properties` in folder `frank-runner/specials/ladybug` to `build.properties` and enable the relevant
-properties as describes in the comments in this file. If you uncomment `test.with.iaf=true`, you will also build the Frank!Framework,
+properties as describes in the comments in this file. If you uncomment `test.with.iaf=true` as explained in the next section [Testing backend changes with Frank!Framework](#testing-backend-changes-with-frankframework), you will also build the Frank!Framework,
 by default using the ANT script of `frank-runner/specials/iaf-webapp`. You can speed up the build of the FF! by copying
 `build-example.properties` in folder `frank-runner/specials/iaf-webapp` to `build.properties` and by then editing that
 `build.properties`.
@@ -173,7 +173,7 @@ Testing backend changes with Frank!Framework
 To test your Ladybug changes with the Frank!Framework enable `test.with.iaf=true`. By default, it will test with the webapp
 module of the Frank!Framework. This can be changed with the `iaf.module` property. The `frank-runner/specials` folder
 contains a folder per module that can have it's own `build.properties` with custom properties. To see possible values, copy from
-the corresponding `build-example.properties`.
+the corresponding `build-example.properties` as explained in the previous section [Backend development](#backend-development).
 
 Frontend development
 --------------------
