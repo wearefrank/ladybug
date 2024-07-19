@@ -149,7 +149,7 @@ Backend development
 -------------------
 
 Read the Frank!Runner [README.md](https://github.com/wearefrank/frank-runner#frankrunner) to learn how to integrate it
-with your IDE but you can also just start the restart.bat in the frank-runner/specials/ladybug folder. This should
+with your IDE but you can also just start the restart.bat in the `frank-runner/specials/ladybug` folder. This should
 build and run the test webapp with Ladybug. When Tomcat has been started by the Frank!Runner browse to:
 
 - http://localhost
