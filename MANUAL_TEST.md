@@ -12,6 +12,7 @@ Ladybug is tested by [automated tests](./README.md#cicd). These automated tests 
   - [Start up](#start-up)
 - [Tests](#tests)
   - [Test 10: Debug tab tree view, layout of checkpoints](#test-10-debug-tab-tree-view-layout-of-checkpoints)
+  - [Test 20: Views in the debug tree](#test-20-views-in-the-debug-tree)
 
 # Preparations
 
