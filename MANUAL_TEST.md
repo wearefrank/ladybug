@@ -6,9 +6,9 @@ Ladybug is tested by [automated tests](./README.md#cicd). These automated tests 
 # Contents
 
 - [Preparations](#preparations)
+  - [Bruno](#bruno)
   - [Checkout](#checkout)
   - [Configure Frank!Runner to run backend](#configure-frankrunner-to-run-backend)
-  - [Configure checked out ladybug-frontend](#configure-checked-out-ladybug-frontend)
   - [Start up](#start-up)
 - [Tests](#tests)
   - [Test 10: Debug tab tree view, layout of checkpoints](#test-10-debug-tab-tree-view-layout-of-checkpoints)
@@ -43,11 +43,7 @@ description. Get it from https://www.usebruno.com/.
   * `git clone https://github.com/wearefrank/frank-runner`.
   * `git clone https://github.com/frankframework/frankframework`.
   * `git clone https://github.com/wearefrank/ladybug`.
-  * `git clone https://github.com/wearefrank/ladybug-frontend`.
-* Check out the versions you want for the F!F, ladybug and ladybug-frontend. You can not choose arbitrarily what vesions to combine. A combination of versions is viable if:
-
-  * The ladybug backend version is in `work/frankframework/ladybug/pom.xml`, the line `<ladybug.version>...</ladybug.version>` under `<properties>`. That value should be the artifact version mentioned in `work/ladybug/pom.xml`.
-  * The ladybug-frontend you checked out should be compatible with the ladybug version you checked out. There does not have to be a match for the version numbers.
+* Check out the versions you want for the F!F and ladybug. You can not choose arbitrarily what vesions to combine. The ladybug backend version used by the FF! is in `work/frankframework/ladybug/pom.xml`, the line `<ladybug.version>...</ladybug.version>` under `<properties>`. That value should be the artifact version mentioned in `work/ladybug/pom.xml`.
 
 ### Configure Frank!Runner to run backend
 
@@ -57,10 +53,6 @@ description. Get it from https://www.usebruno.com/.
 * Copy `build-example.properties` to `build.properties`.
 * Search for the line `# configurations.dir=...`. Replace it by `configurations.dir=<path-to-ladybug-checkout-with-this-test-description>/manual-test/configurations`.
 * Uncomment some lines of `build.properties` to speed up the build of the FF!.
-
-### Configure checked out ladybug-frontend
-
-* Change directory to `work/ladybug-frontend/src`. Copy `proxy.ff.conf.json` to `proxy.conf.json`.
 
 ### Start up
 
