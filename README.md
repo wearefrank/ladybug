@@ -292,8 +292,6 @@ This scenario does not work on forks of the ladybug project. A fork does not hav
 
 The second use of the Cypress test is testing the front-end. The Cypress test is triggered by every commit and every pull request update of the ladybug-frontend project. The input arguments are not set, causing the new commit (or merge commit for a PR) to be checked out for ladybug-frontend. For ladybug the master is checked out. Input `useRealFrontend` is undefined, which is equivalent to `false`. This means that the front-end comes from the checkout of ladybug-frontend; the WebJar inside ladybug is ignored. Finally, `mergeMasterToBranch` is undefined (`false`). This scenario also works on forks of `ladybug-frontend`.
 
-Before you make a release of the ladybug (backend) or ladybug-frontend, please perform the [manual tests](./MANUAL_TEST.md). The automatic tests do not cover all Ladybug functionality.
-
 Here is how to use the CI/CD of Ladybug:
 
 ### Update the backend only
@@ -308,6 +306,6 @@ When updating the front-end, work on a branch that is allowed to live on a fork 
 
 ### Update front-end and backend
 
-Update the front-end and the backend simultaneously on your development PC. The front-end changes will fail in CI/CD because they are tested against the master of the backend. Rely on the Cypress test on your development PC and on the Maven build of ladybug to test your work. When you trust your work, merge your work into the master branch and release your work in a WebJar as explained in [Create and publish NPM package and WebJar](#create-and-publish-npm-package-and-webjar). Then update `pom.xml` of ladybug to reference the new WebJar. This update of the backend triggers the GitHub actions front-end test as explained earlier. Check that the latest run of the front-end test succeeds.
+Update the front-end and the backend simultaneously on your development PC. The front-end changes will fail in CI/CD because they are tested against the master of the backend. Rely on the Cypress test on your development PC and on the Maven build of ladybug to test your work. When you trust your work, release the front-end in a WebJar as explained in [Create and publish NPM package and WebJar](#create-and-publish-npm-package-and-webjar). Please note that the released commit may live on another branch than master. Ensure that the commit and the tag are pushed to GitHub project wearefrank/ladybug-frontend. Then update `pom.xml` of ladybug to reference the new WebJar; do so on a branch pushed to wearefrank/ladybug. This update of the backend triggers the GitHub actions front-end test as explained earlier. Check that the latest run of the front-end test succeeds.
 
 At this point, you can merge your work on ladybug to its master branch. After this merge, additional pushes on your ladybug-frontend branch will succeed in CI/CD because the corresponding backend changes are in the backend master. You can merge your front-end changes to master if the GitHub actions test succeeds.
