@@ -135,7 +135,13 @@ The result should be as shown:
 
 **Step 40:** Open the most recent report from the table (top row) in the debug tree by clicking.
 
-**Step 50:** Check that there is a node for every pipeline, every pipe, for session keys and for node "Sender sendToMundo" within "Pipe sendToMundo".
+**Step 50:** Check that there is:
+
+* a root node with "Pipeline" in the name;
+* another "Pipeline" start node for the pipeline;
+* a start node for every pipe;
+* input and output points for the session keys;
+* a start point for node "Sender sendToMundo" within "Pipe sendToMundo".
 
 **Step 60:** In Ladybug select view "Black box".
 
