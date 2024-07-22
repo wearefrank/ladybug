@@ -1,0 +1,88 @@
+{
+  "name": "ladybug-manual-test",
+  "version": "1",
+  "items": [
+    {
+      "type": "http",
+      "name": "Conclusion - bad request",
+      "seq": 4,
+      "request": {
+        "url": "http://localhost/api/ingestDocument",
+        "method": "POST",
+        "headers": [],
+        "params": [],
+        "body": {
+          "mode": "text",
+          "text": "xxx",
+          "formUrlEncoded": [],
+          "multipartForm": []
+        },
+        "script": {},
+        "vars": {},
+        "assertions": [],
+        "tests": "",
+        "auth": {
+          "mode": "none"
+        }
+      }
+    },
+    {
+      "type": "http",
+      "name": "Conclusion - negative response",
+      "seq": 3,
+      "request": {
+        "url": "http://localhost/api/ingestDocument",
+        "method": "POST",
+        "headers": [],
+        "params": [],
+        "body": {
+          "mode": "text",
+          "text": "C:\\Users\\martijn\\git\\ladybug-with-manual-tests\\manual-test\\configurations\\Conclusion\\exampleInputs\\negativeResponse",
+          "formUrlEncoded": [],
+          "multipartForm": []
+        },
+        "script": {},
+        "vars": {},
+        "assertions": [],
+        "tests": "",
+        "auth": {
+          "mode": "none"
+        }
+      }
+    },
+    {
+      "type": "http",
+      "name": "Conclusion - valid",
+      "seq": 2,
+      "request": {
+        "url": "http://localhost/api/ingestDocument",
+        "method": "POST",
+        "headers": [],
+        "params": [],
+        "body": {
+          "mode": "text",
+          "text": "C:\\Users\\martijn\\git\\ladybug-with-manual-tests\\manual-test\\configurations\\Conclusion\\exampleInputs\\valid",
+          "formUrlEncoded": [],
+          "multipartForm": []
+        },
+        "script": {},
+        "vars": {},
+        "assertions": [],
+        "tests": "",
+        "auth": {
+          "mode": "none"
+        }
+      }
+    }
+  ],
+  "environments": [],
+  "brunoConfig": {
+    "version": "1",
+    "name": "ladybug-manual-test",
+    "type": "collection",
+    "ignore": [
+      "node_modules",
+      ".git"
+    ]
+  }
+}

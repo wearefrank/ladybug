@@ -17,15 +17,22 @@ Ladybug is tested by [automated tests](./README.md#cicd). These automated tests 
 
 The options you have to run ladybug are described in [the readme](./README.md#how-to-change-and-test-ladybug). Here we present more detailed instructions. 
 
-    WARNING: The instructions below were mostly executed using a MinGW command
-    prompt that emulates Linux. If you use a DOS prompt or PowerShell, please
-    use equivalent commands that are valid in your shell instead of literally
-    using the shown commands. The exeption is calling `restart.bat`, which you
-    probably cannot do in a MinGW command prompt. For readability, all paths
-    are shown with `/` as the path separator, even though a DOS prompt uses
-    `\`.
+> [!WARNING]
+> The instructions below were mostly executed using a MinGW command
+> prompt that emulates Linux. If you use a DOS prompt or PowerShell, please
+> use equivalent commands that are valid in your shell instead of literally
+> using the shown commands. The exeption is calling `restart.bat`, which you
+> probably cannot do in a MinGW command prompt. For readability, all paths
+> are shown with `/` as the path separator, even though a DOS prompt uses
+> `\`.
 
 Please do the following:
+
+### Bruno
+
+Please install HTTP client Bruno. You need it to issue HTTP requests to Frank
+configs. The requests to issue have been prepared along with this test
+description. Get it from https://www.usebruno.com/.
 
 ### Checkout
 
@@ -48,9 +55,8 @@ Please do the following:
 * Uncomment line `test.with.iaf=true` in the `build.properties` you created in the previous step. Uncomment some other lines if you want to speed up the build.
 * Change directory to `work/frank-runner/specials/iaf-webapp`.
 * Copy `build-example.properties` to `build.properties`.
-* Search for the line `# configurations.dir=...`. Replace it by `configurations.dir=../../frankframework/webapp/src/main/resources/configurations`.
+* Search for the line `# configurations.dir=...`. Replace it by `configurations.dir=<path-to-ladybug-checkout-with-this-test-description>/manual-test/configurations`.
 * Uncomment some lines of `build.properties` to speed up the build of the FF!.
-* Copy the input configurations that belong to this test: Change directory to `work/ladybug/manual-test` and do `cp -r configurations ~/testLadybug/frankframework/webapp/src/main/resources/`. We choose to have all Frank configuration files together.
 
 ### Configure checked out ladybug-frontend
 
@@ -59,10 +65,6 @@ Please do the following:
 ### Start up
 
 * Change directory to `work/frank-runner/specials/ladybug`. Run the command `./restart.bat`.
-* Change directory to `work/ladybug-frontend`. Run the command `yarn install --immutable`.
-* Execute the command `yarn ng serve`.
-* To see ladybug, browse to `http://localhost:4200/`.
-* To see the Frank!Framework, browse to `http://localhost`.
 
 # Tests
 
@@ -121,3 +123,31 @@ Please do the following:
 **Step 120:** Collapse and expand the nodes. Does this look good?
 
 **Step 130:** Click each node and check its value as shown in the pane to the right of the tree. Does each node have a meaningful value?
+
+### Test 20: Views in the debug tree
+
+**Step 10:** Open Bruno and import the prepared requests as shown. The directory to select is in the checkout of this test description.
+
+![Bruno open](./manual-test/brunoOpen.jpg)
+
+![Bruno select](./manual-test/brunoSelect.jpg)
+
+The result should be as shown:
+
+![Bruno after open](./manual-test/brunoAfterOpen.jpg)
+
+**Step 20:** Apply the request named "Conclusion - valid".
+
+**Step 30:** Go to ladybug and press refresh.
+
+**Step 40:** Open the most recent report from the table (top row) in the debug tree by clicking.
+
+**Step 50:** Check that there is a node for every pipeline, every pipe, for session keys and for node "Sender sendToMundo" within "Pipe sendToMundo".
+
+**Step 60:** In Ladybug select view "Black box".
+
+**Step 70:** Check that only the following nodes are left:
+
+TODO: Add screen capture, to be made when the black box view works.
+
+TODO: Then continue writing this test.
