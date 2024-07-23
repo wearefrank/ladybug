@@ -132,11 +132,12 @@ public class AngularServlet extends HttpServlet {
 			};
 		}
 		final String webJarsBase = "/webjars/";
+		final String angular_18_directory_browser = "/browser";
 		final String webJarsRequestURI;
 		if (pathInfo.startsWith(webJarsBase)) {
 			webJarsRequestURI = pathInfo;
 		} else {
-			webJarsRequestURI = webJarsBase + artifactId + version + pathInfo;
+			webJarsRequestURI = webJarsBase + artifactId + version + angular_18_directory_browser + pathInfo;
 		}
 		// Set Content-Type header to prevent problems when X-Content-Type-Options: nosniff is being used.
 		// Copied from WebJars Servlet 2. Would maybe be nice to set caching related headers also.
