@@ -150,3 +150,14 @@ The result should be as shown:
 TODO: Add screen capture, to be made when the black box view works.
 
 TODO: Then continue writing this test.
+
+**Step 200:** Stop the FF!. Under Windows you can do this by pressing Ctrl-C in the Tomcat window.
+
+**Step 210:** Restart the FF! with another springIbisTestTool that is dedicated to testing views. In a command prompt in directory `work/frank-runner/specials/ladybug`, run `./restart.bat -Dcustom=TestLadybugReportTableDifferentViewsDifferentColumns`. This adds a view named `White box view with less metadata`. This view has only the following metadata columns: "storageId", "name" and "correlationId".
+
+**Step 220:** Switch between the views. Check that the columns in the report table change according to the selected view.
+
+**Step 230:** Play with setting filters and adjusting the selected views. Are you able to manipulate reports into the table that do not agree with the shown filter? Do the different indicators of the applied filter remain in sync?
+
+> [!NOTE]
+> You can apply a filter on a column that exists in the white box view but not in the white box view with less metadata. When you apply such a filter and then switch to the view with less metadata, the filter is allowed to remain. This is OK when there is a clear indicator that the filter is still applied and if it is possible (for example with the clear button) to remove all filters.
