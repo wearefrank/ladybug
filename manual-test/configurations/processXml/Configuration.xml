@@ -19,6 +19,11 @@
 		</Receiver>
 		<Pipeline>
 			<XsltPipe name="applyXslt" styleSheetName="./getName.xsl" />
+			<XmlIfPipe name="checkForError" expressionValue="error">
+				<Forward name="then" path="throwException" />
+				<Forward name="else" path="READY" />
+			</XmlIfPipe>
+			<ExceptionPipe name="throwException"></ExceptionPipe>
 		</Pipeline>
 	</Adapter>
 </Configuration>
