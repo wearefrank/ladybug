@@ -1,0 +1,29 @@
+<Configuration
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:noNamespaceSchemaLocation="../FrankConfig.xsd"
+	>
+	<Adapter name="processXml">
+		<Receiver>
+			<JavaListener name="processXml" />
+		</Receiver>
+		<Pipeline>
+			<XmlValidatorPipe name="validate" root="person" noNamespaceSchemaLocation="schema.xsd" throwException="true"></XmlValidatorPipe>
+			<SenderPipe name="getPersonNamePipe">
+				<IbisLocalSender name="getPersonNameSender" javaListener="getPersonName"></IbisLocalSender>
+			</SenderPipe>
+		</Pipeline>
+	</Adapter>
+	<Adapter name="getPersonName">
+		<Receiver>
+			<JavaListener name="getPersonName" />
+		</Receiver>
+		<Pipeline>
+			<XsltPipe name="applyXslt" styleSheetName="./getName.xsl" />
+			<XmlIfPipe name="checkForError" expressionValue="error">
+				<Forward name="then" path="throwException" />
+				<Forward name="else" path="READY" />
+			</XmlIfPipe>
+			<ExceptionPipe name="throwException"></ExceptionPipe>
+		</Pipeline>
+	</Adapter>
+</Configuration>
