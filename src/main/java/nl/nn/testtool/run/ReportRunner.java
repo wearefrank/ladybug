@@ -1,5 +1,5 @@
 /*
-   Copyright 2020, 2022-2023 WeAreFrank!, 2018-2019 Nationale-Nederlanden
+   Copyright 2020, 2022-2024 WeAreFrank!, 2018-2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -123,6 +123,10 @@ public class ReportRunner implements Runnable {
 	}
 
 	public static String getRunResultInfo(Report report, Report runResultReport) {
+		String timeOrig = report.getEndTime() == Report.TIME_NOT_SET_VALUE ? "n/a" : ""
+				+ (report.getEndTime() - report.getStartTime());
+		String timeResult = runResultReport.getEndTime() == Report.TIME_NOT_SET_VALUE ? "n/a" : ""
+				+ (runResultReport.getEndTime() - runResultReport.getStartTime());
 		int stubbedOrig = 0;
 		int stubsNotFoundOrig = 0;
 		for (Checkpoint checkpoint : report.getCheckpoints()) {
@@ -158,8 +162,7 @@ public class ReportRunner implements Runnable {
 		}
 		int totalOrig = report.getCheckpoints().size();
 		int totalResult = runResultReport.getCheckpoints().size();
-		String info = "(" + (report.getEndTime() - report.getStartTime()) + " >> "
-				+ (runResultReport.getEndTime() - runResultReport.getStartTime()) + " ms)"
+		String info = "(" + timeOrig + " >> "	+ timeResult + " ms)"
 				+ " (" + stubbedOrig + "/" + totalOrig + " >> " + stubbedResult + "/" + totalResult + " stubbed)";
 		if (stubsNotFoundOrig > 0 || stubsNotFoundResult > 0) {
 			info = info + " (" + stubsNotFoundOrig + "/" + totalOrig + " >> " + stubsNotFoundResult + "/" + totalResult
