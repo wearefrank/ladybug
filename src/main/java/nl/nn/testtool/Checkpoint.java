@@ -16,6 +16,7 @@
 package nl.nn.testtool;
 
 import java.beans.ExceptionListener;
+import java.beans.Transient;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
@@ -33,6 +34,7 @@ import java.util.regex.Pattern;
 import javax.json.bind.annotation.JsonbTransient;
 import javax.xml.xpath.XPathExpressionException;
 
+import io.opentelemetry.api.trace.Span;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -90,6 +92,7 @@ public class Checkpoint implements Serializable, Cloneable {
 	private transient StringWriter messageCapturerWriter;
 	private transient ByteArrayOutputStream messageCapturerOutputStream;
 	private transient Map<String, Pattern> variablePatternMap;
+	private transient Span span = null;
 
 	public Checkpoint() {
 		// Only for Java XML encoding/decoding! Use other constructor instead.
@@ -657,6 +660,18 @@ public class Checkpoint implements Serializable, Cloneable {
 			}
 		}
 		return isVariablesUpdated;
+	}
+
+	@Transient
+	@JsonIgnore
+	public void setSpan(Span span) {
+		this.span = span;
+	}
+
+	@Transient
+	@JsonIgnore
+	public Span getSpan() {
+		return span;
 	}
 }
 

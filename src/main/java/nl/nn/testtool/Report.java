@@ -30,6 +30,11 @@ import java.util.Map;
 import java.util.Scanner;
 import java.util.Set;
 
+import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.SpanBuilder;
+import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.context.Context;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -47,6 +52,7 @@ import nl.nn.testtool.transform.ReportXmlTransformer;
 import nl.nn.testtool.util.CsvUtil;
 import nl.nn.testtool.util.EscapeUtil;
 import nl.nn.testtool.util.XmlUtil;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * @author Jaco de Groot
@@ -504,6 +510,17 @@ public class Report implements Serializable {
 			StubableCode stubableCode, StubableCodeThrowsException stubableCodeThrowsException,
 			Set<String> matchingStubStrategies, int checkpointType, Integer index, Integer level) {
 		Checkpoint checkpoint = new Checkpoint(this, threadName, sourceClassName, name, checkpointType, level);
+		SpanBuilder checkpointSpanBuilder = testTool.getOpenTelemetryTracer().spanBuilder("checkpoint - " + name);
+		for (Checkpoint checkpointInList: checkpoints) {
+			if (checkpointInList.getType() == 1 && checkpointInList.getLevel() == checkpoint.getLevel() - 1) {
+				checkpointSpanBuilder.setParent(Context.current().with(checkpointInList.getSpan()));
+			}
+		}
+		Span checkpointSpan = checkpointSpanBuilder.startSpan();
+		checkpointSpan.setAttribute("checkpointType", checkpointType);
+		checkpointSpan.setAttribute("checkpointTypeAsString", checkpoint.getTypeAsString());
+		checkpointSpan.setAttribute("checkpointLevel", checkpoint.getLevel());
+		checkpoint.setSpan(checkpointSpan);
 		boolean stub = false;
 		if (originalReport != null) {
 			Path path = checkpoint.getPath(true);
@@ -583,6 +600,17 @@ public class Report implements Serializable {
 		if (log.isDebugEnabled()) {
 			log.debug("Added checkpoint " + getCheckpointLogDescription(name, checkpointType, level));
 		}
+		if (checkpointType != 1) {
+			checkpoint.getSpan().end();
+		}
+		if (checkpointType == 2) {
+			for (Checkpoint checkpointInList: checkpoints) {
+				if (checkpointInList.getType() == 1 && checkpointInList.getLevel() == checkpoint.getLevel() - 1) {
+					checkpointInList.getSpan().end();
+				}
+			}
+		}
+
 		return message;
 	}
 

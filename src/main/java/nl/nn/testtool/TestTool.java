@@ -15,6 +15,7 @@
 */
 package nl.nn.testtool;
 
+import java.beans.Transient;
 import java.lang.invoke.MethodHandles;
 import java.rmi.server.UID;
 import java.util.ArrayList;
@@ -25,6 +26,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.trace.Tracer;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -94,6 +98,12 @@ public class TestTool {
 	private @Setter @Getter @Inject @Autowired Views views;
 	private @Setter @Getter int reportsInProgressThreshold = 300000;
 	boolean devMode = false; // See testConcurrentLastEndpointAndFirstStartpointForSameCorrelationId()
+	private transient final Tracer tracer;
+
+	@Autowired
+	TestTool (OpenTelemetry openTelemetry) {
+		this.tracer = openTelemetry.getTracer(Report.class.getName(), "0.1.0");
+	}
 
 	@PostConstruct
 	public void init() {
@@ -291,6 +301,12 @@ public class TestTool {
 	 */
 	public void setCloseMessageCapturers(boolean closeMessageCapturers) {
 		this.closeMessageCapturers = closeMessageCapturers;
+	}
+
+	@Transient
+	@JsonIgnore
+	public Tracer getOpenTelemetryTracer() {
+		return this.tracer;
 	}
 
 	private <T> T checkpoint(String correlationId, String childThreadId, String sourceClassName, String name,

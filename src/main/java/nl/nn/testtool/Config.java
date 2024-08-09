@@ -20,6 +20,21 @@ import java.util.List;
 
 import javax.sql.DataSource;
 
+import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.baggage.propagation.W3CBaggagePropagator;
+import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
+import io.opentelemetry.context.propagation.ContextPropagators;
+import io.opentelemetry.context.propagation.TextMapPropagator;
+import io.opentelemetry.exporter.logging.SystemOutLogRecordExporter;
+import io.opentelemetry.exporter.zipkin.ZipkinSpanExporter;
+import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter;
+import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.sdk.logs.SdkLoggerProvider;
+import io.opentelemetry.sdk.logs.export.BatchLogRecordProcessor;
+import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.trace.SdkTracerProvider;
+import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
+import io.opentelemetry.semconv.ServiceAttributes;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -101,6 +116,25 @@ import nl.nn.testtool.transform.ReportXmlTransformer;
 @Lazy // Lazy init singleton beans (prototype beans are already loaded on demand)
 @Configuration
 public class Config {
+	@Bean
+	OpenTelemetry openTelemetry() {
+		Resource resource = Resource.getDefault().toBuilder().put(ServiceAttributes.SERVICE_NAME, "ladybug").put(ServiceAttributes.SERVICE_VERSION, "1.0.0").build();
+		String endpointZipkin = "http://localhost:9411/api/v2/spans";
+		ZipkinSpanExporter zipkinExporter = ZipkinSpanExporter.builder().setEndpoint(endpointZipkin).build();
+		OtlpGrpcSpanExporter jaegerExporter = OtlpGrpcSpanExporter.builder().build();
+
+		SdkTracerProvider sdkTracerProvider = SdkTracerProvider.builder()
+				.addSpanProcessor(BatchSpanProcessor.builder(zipkinExporter).build())
+				.setResource(resource)
+				.build();
+
+		OpenTelemetry openTelemetry = OpenTelemetrySdk.builder()
+				.setTracerProvider(sdkTracerProvider)
+				.setPropagators(ContextPropagators.create(TextMapPropagator.composite(W3CTraceContextPropagator.getInstance(), W3CBaggagePropagator.getInstance())))
+				.buildAndRegisterGlobal();
+
+		return openTelemetry;
+	}
 
 	@Bean
 	@Scope("prototype") // Echo2Application needs to be unique per user (not per JVM)
