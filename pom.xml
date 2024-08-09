@@ -245,6 +245,12 @@
       <version>1.0</version>
       <scope>provided</scope>
     </dependency>
+
+    <dependency>
+      <groupId>io.opentelemetry</groupId>
+      <artifactId>opentelemetry-api</artifactId>
+      <version>1.39.0</version>
+    </dependency>
   </dependencies>
 
   <repositories>
