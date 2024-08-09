@@ -52,18 +52,6 @@
     </developer>
   </developers>
 
-  <dependencyManagement>
-    <dependencies>
-      <dependency>
-        <groupId>io.opentelemetry</groupId>
-        <artifactId>opentelemetry-bom</artifactId>
-        <version>1.39.0</version>
-        <type>pom</type>
-        <scope>import</scope>
-      </dependency>
-    </dependencies>
-  </dependencyManagement>
-
   <dependencies>
     <!--
     https://www.npmjs.com/package/@wearefrank/ladybug
@@ -261,10 +249,12 @@
     <dependency>
       <groupId>io.opentelemetry</groupId>
       <artifactId>opentelemetry-api</artifactId>
+      <version>1.39.0</version>
     </dependency>
     <dependency>
       <groupId>io.opentelemetry</groupId>
       <artifactId>opentelemetry-exporter-logging</artifactId>
+      <version>1.39.0</version>
     </dependency>
     <dependency>
       <groupId>io.opentelemetry.semconv</groupId>
@@ -274,10 +264,12 @@
     <dependency>
       <groupId>io.opentelemetry</groupId>
       <artifactId>opentelemetry-exporter-zipkin</artifactId>
+      <version>1.39.0</version>
     </dependency>
     <dependency>
       <groupId>io.opentelemetry</groupId>
       <artifactId>opentelemetry-exporter-otlp</artifactId>
+      <version>1.39.0</version>
     </dependency>
   </dependencies>
 

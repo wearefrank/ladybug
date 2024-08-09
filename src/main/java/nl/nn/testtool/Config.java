@@ -128,14 +128,8 @@ public class Config {
 				.setResource(resource)
 				.build();
 
-		SdkLoggerProvider sdkLoggerProvider = SdkLoggerProvider.builder()
-				.addLogRecordProcessor(BatchLogRecordProcessor.builder(SystemOutLogRecordExporter.create()).build())
-				.setResource(resource)
-				.build();
-
 		OpenTelemetry openTelemetry = OpenTelemetrySdk.builder()
 				.setTracerProvider(sdkTracerProvider)
-				.setLoggerProvider(sdkLoggerProvider)
 				.setPropagators(ContextPropagators.create(TextMapPropagator.composite(W3CTraceContextPropagator.getInstance(), W3CBaggagePropagator.getInstance())))
 				.buildAndRegisterGlobal();
 

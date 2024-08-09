@@ -16,6 +16,7 @@
 package nl.nn.testtool;
 
 import java.beans.ExceptionListener;
+import java.beans.Transient;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
@@ -104,14 +105,6 @@ public class Checkpoint implements Serializable, Cloneable {
 		this.name = name;
 		this.type = type;
 		this.level = level;
-	}
-
-	public Span getSpan() {
-		return span;
-	}
-
-	public void setSpan(Span span) {
-		this.span = span;
 	}
 
 	// JsonIgnore is used so that Jackson will not get into an infinite loop trying to reference report,
@@ -667,6 +660,18 @@ public class Checkpoint implements Serializable, Cloneable {
 			}
 		}
 		return isVariablesUpdated;
+	}
+
+	@Transient
+	@JsonIgnore
+	public void setSpan(Span span) {
+		this.span = span;
+	}
+
+	@Transient
+	@JsonIgnore
+	public Span getSpan() {
+		return span;
 	}
 }
 

@@ -249,3 +249,5 @@ OpenTelemetry
 =============
 
 Ladybug is able to create telemetry data from Ladybug reports and send it to telemetry-collector Zipkin. Zipkin provides an overview based on time that helps to detect latency problems. To use Zipkin, you can run the following command: `docker run --rm -d -p 9411:9411 --name zipkin openzipkin/zipkin` When a Ladybug report is created, a trace will now be sent to Zipkin.
+
+It is also possible to send the telemetry data to another tracing tool instead of Zipkin, namely Jaeger. To work with Jaeger instead of Zipkin, you have to use the Jaeger exporter in the Config class instead of the Zipkin exporter and run the following command: `docker run --rm -e COLLECTOR_ZIPKIN_HOST_PORT=:9411 -p 16686:16686 -p 4317:4317 -p 4318:4318 -p 9411:9411 jaegertracing/all-in-one:latest`.
