@@ -3,6 +3,8 @@
 /wip
 /.classpath
 /.settings
+/skip-replace-inject.txt
+FrankConfig.xsd
 .idea/
 .project
 .vscode/
