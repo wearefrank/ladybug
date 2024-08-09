@@ -15,6 +15,7 @@
 */
 package nl.nn.testtool;
 
+import java.beans.Transient;
 import java.lang.invoke.MethodHandles;
 import java.rmi.server.UID;
 import java.util.ArrayList;
@@ -25,7 +26,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.trace.Tracer;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -95,11 +98,11 @@ public class TestTool {
 	private @Setter @Getter @Inject @Autowired Views views;
 	private @Setter @Getter int reportsInProgressThreshold = 300000;
 	boolean devMode = false; // See testConcurrentLastEndpointAndFirstStartpointForSameCorrelationId()
-	private final OpenTelemetry openTelemetry;
+	private transient final Tracer tracer;
 
 	@Autowired
 	TestTool (OpenTelemetry openTelemetry) {
-		this.openTelemetry = openTelemetry;
+		this.tracer = openTelemetry.getTracer(Report.class.getName(), "0.1.0");
 	}
 
 	@PostConstruct
@@ -300,6 +303,12 @@ public class TestTool {
 		this.closeMessageCapturers = closeMessageCapturers;
 	}
 
+	@Transient
+	@JsonIgnore
+	public Tracer getOpenTelemetryTracer() {
+		return this.tracer;
+	}
+
 	private <T> T checkpoint(String correlationId, String childThreadId, String sourceClassName, String name,
 			T message, StubableCode stubableCode, StubableCodeThrowsException stubableCodeThrowsException,
 			Set<String> matchingStubStrategies, int checkpointType, int levelChangeNextCheckpoint) {
@@ -355,7 +364,7 @@ public class TestTool {
 		Report report = null;
 		if (checkpointType == Checkpoint.TYPE_STARTPOINT) {
 			log.debug("Create new report for '" + correlationId + "'");
-			report = new Report(openTelemetry);
+			report = new Report();
 			report.setStartTime(System.currentTimeMillis());
 			report.setTestTool(this);
 			report.setCorrelationId(correlationId);

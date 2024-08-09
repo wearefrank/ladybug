@@ -133,14 +133,6 @@ public class Report implements Serializable {
 	private transient boolean logMaxMemoryUsage = true;
 	private transient Map<Object, Set<Checkpoint>> streamingMessageListeners = new HashMap<>();
 	private transient Map<Object, StreamingMessageResult> streamingMessageResults = new HashMap<>();
-	private transient final OpenTelemetry openTelemetry;
-	private transient final Tracer tracer;
-
-	@Autowired
-	Report (OpenTelemetry openTelemetry) {
-		this.openTelemetry = openTelemetry;
-		this.tracer = openTelemetry.getTracer(Report.class.getName(), "0.1.0");
-	}
 
 	@Transient
 	@JsonIgnore
@@ -518,7 +510,7 @@ public class Report implements Serializable {
 			StubableCode stubableCode, StubableCodeThrowsException stubableCodeThrowsException,
 			Set<String> matchingStubStrategies, int checkpointType, Integer index, Integer level) {
 		Checkpoint checkpoint = new Checkpoint(this, threadName, sourceClassName, name, checkpointType, level);
-		SpanBuilder checkpointSpanBuilder = tracer.spanBuilder("checkpoint - " + name);
+		SpanBuilder checkpointSpanBuilder = testTool.getOpenTelemetryTracer().spanBuilder("checkpoint - " + name);
 		for (Checkpoint checkpointInList: checkpoints) {
 			if (checkpointInList.getType() == 1 && checkpointInList.getLevel() == checkpoint.getLevel() - 1) {
 				checkpointSpanBuilder.setParent(Context.current().with(checkpointInList.getSpan()));
@@ -895,7 +887,7 @@ public class Report implements Serializable {
 
 	@Override
 	public Report clone() throws CloneNotSupportedException {
-		Report report = new Report(openTelemetry);
+		Report report = new Report();
 		report.setTestTool(testTool);
 		report.setStartTime(startTime);
 		report.setEndTime(endTime);
