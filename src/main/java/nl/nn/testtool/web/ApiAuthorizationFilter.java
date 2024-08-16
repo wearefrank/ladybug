@@ -71,6 +71,7 @@ public class ApiAuthorizationFilter implements ContainerRequestFilter {
 		setObserverRoles(null);
 		setDataAdminRoles(null);
 		setTesterRoles(null);
+		setWebServiceRoles(null);
 		constructorDone = true;
 	}
 
@@ -91,7 +92,6 @@ public class ApiAuthorizationFilter implements ContainerRequestFilter {
 		addConfigurationPart("PUT/"  + ApiServlet.LADYBUG_API_PATH + "/testtool/node-link-strategy$", observerRoles);
 		addConfigurationPart("GET/"  + ApiServlet.LADYBUG_API_PATH + "/metadata/.*$", observerRoles);
 		addConfigurationPart("GET/"  + ApiServlet.LADYBUG_API_PATH + "/report/.*$", observerRoles);
-		addConfigurationPart("POST/" + ApiServlet.LADYBUG_API_PATH + "/collector/.*$", observerRoles);
 	}
 
 	public void setDataAdminRoles(List<String> dataAdminRoles) {
@@ -114,6 +114,11 @@ public class ApiAuthorizationFilter implements ContainerRequestFilter {
 	public void setTesterRoles(List<String> testerRoles) {
 		if (constructorDone) log.info("Set tester roles");
 		addConfigurationPart("POST/" + ApiServlet.LADYBUG_API_PATH + "/runner/run/.*", testerRoles);
+	}
+
+	public void setWebServiceRoles(List<String> webServiceRoles) {
+		if (constructorDone) log.info("Set web service roles");
+		addConfigurationPart("POST/" + ApiServlet.LADYBUG_API_PATH + "/collector/.*$", webServiceRoles);
 	}
 
 	public void setLadybugApiRoles(Map<String, List<String>> ladybugApiRoles) {
