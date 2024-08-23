@@ -322,4 +322,9 @@ public class Config {
 		return new ProofOfMigrationErrorsView();
 	}
 
+	@Bean
+	String openTelemetryCollector() {
+		return "";
+	}
+
 }
