@@ -15,9 +15,13 @@
 */
 package nl.nn.testtool.filter;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.HashMap;
 
+import nl.nn.testtool.MetadataExtractor;
+import nl.nn.testtool.storage.CrudStorage;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import jakarta.enterprise.context.Dependent;
@@ -44,6 +48,7 @@ public class View implements BeanParent {
 	private List<CheckpointMatcher> checkpointMatchers;
 	private BeanParent beanParent;
 	private Echo2Application echo2Application;
+	private @Inject @Autowired MetadataExtractor metadataExtractor;
 
 	protected enum NodeLinkStrategy {
 		PATH,
@@ -118,4 +123,30 @@ public class View implements BeanParent {
 		return getName();
 	}
 
+	public Map<String, Object> toMap(boolean isDefaultView) {
+		Map<String, String> metadataTypes = new HashMap<>();
+		for (String metadataName : getMetadataNames()) {
+			metadataTypes.put(metadataName, metadataExtractor.getType(metadataName));
+		}
+
+		return new HashMap<String, Object>() {{
+			put("storageName", debugStorage.getName());
+			put("defaultView", isDefaultView);
+			put("metadataNames", metadataNames);
+			put("metadataLabels", getMetadataLabels());
+			put("crudStorage", debugStorage instanceof CrudStorage);
+			put("nodeLinkStrategy", nodeLinkStrategy);
+			put("name", getName());
+			put("metadataTypes", metadataTypes);
+		}};
+	}
+
+	public List<String> getMetadataLabels() {
+		List<String> metadataLabels = new ArrayList<>();
+		for (String metadataName : getMetadataNames()) {
+			metadataLabels.add(metadataExtractor.getLabel(metadataName));
+		}
+
+		return metadataLabels;
+	}
 }
