@@ -517,7 +517,7 @@ public class Report implements Serializable {
 			}
 		}
 		Span checkpointSpan = checkpointSpanBuilder.startSpan();
-		checkpointSpan.setAttribute("checkpointType", checkpointType);
+		checkpointSpan.setAttribute("checkpointType", checkpoint.getType());
 		checkpointSpan.setAttribute("checkpointTypeAsString", checkpoint.getTypeAsString());
 		checkpointSpan.setAttribute("checkpointLevel", checkpoint.getLevel());
 		checkpoint.setSpan(checkpointSpan);

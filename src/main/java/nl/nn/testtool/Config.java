@@ -25,12 +25,9 @@ import io.opentelemetry.api.baggage.propagation.W3CBaggagePropagator;
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.context.propagation.TextMapPropagator;
-import io.opentelemetry.exporter.logging.SystemOutLogRecordExporter;
 import io.opentelemetry.exporter.zipkin.ZipkinSpanExporter;
 import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
-import io.opentelemetry.sdk.logs.SdkLoggerProvider;
-import io.opentelemetry.sdk.logs.export.BatchLogRecordProcessor;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
@@ -117,16 +114,22 @@ import nl.nn.testtool.transform.ReportXmlTransformer;
 @Configuration
 public class Config {
 	@Bean
-	OpenTelemetry openTelemetry() {
+	OpenTelemetry openTelemetry(@Qualifier("openTelemetryCollector") String openTelemetryCollector) {
 		Resource resource = Resource.getDefault().toBuilder().put(ServiceAttributes.SERVICE_NAME, "ladybug").put(ServiceAttributes.SERVICE_VERSION, "1.0.0").build();
-		String endpointZipkin = "http://localhost:9411/api/v2/spans";
-		ZipkinSpanExporter zipkinExporter = ZipkinSpanExporter.builder().setEndpoint(endpointZipkin).build();
-		OtlpGrpcSpanExporter jaegerExporter = OtlpGrpcSpanExporter.builder().build();
-
-		SdkTracerProvider sdkTracerProvider = SdkTracerProvider.builder()
-				.addSpanProcessor(BatchSpanProcessor.builder(zipkinExporter).build())
-				.setResource(resource)
-				.build();
+		SdkTracerProvider sdkTracerProvider;
+		if (openTelemetryCollector.contains("9411")) {
+			sdkTracerProvider = SdkTracerProvider.builder()
+					.addSpanProcessor(BatchSpanProcessor.builder(ZipkinSpanExporter.builder().setEndpoint(openTelemetryCollector).build()).build())
+					.setResource(resource)
+					.build();
+		} else if (openTelemetryCollector.equals("jaeger")) {
+			sdkTracerProvider = SdkTracerProvider.builder()
+					.addSpanProcessor(BatchSpanProcessor.builder(OtlpGrpcSpanExporter.builder().build()).build())
+					.setResource(resource)
+					.build();
+		} else {
+			return OpenTelemetry.noop();
+		}
 
 		OpenTelemetry openTelemetry = OpenTelemetrySdk.builder()
 				.setTracerProvider(sdkTracerProvider)
