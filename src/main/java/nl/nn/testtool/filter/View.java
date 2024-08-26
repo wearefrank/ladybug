@@ -123,14 +123,14 @@ public class View implements BeanParent {
 		return getName();
 	}
 
-	public Map<String, Object> toMap(boolean isDefaultView) {
+	public Map<String, Object> toMap(boolean isDefaultView, String storageName) {
 		Map<String, String> metadataTypes = new HashMap<>();
 		for (String metadataName : getMetadataNames()) {
 			metadataTypes.put(metadataName, metadataExtractor.getType(metadataName));
 		}
 
 		return new HashMap<String, Object>() {{
-			put("storageName", debugStorage.getName());
+			put("storageName", storageName);
 			put("defaultView", isDefaultView);
 			put("metadataNames", metadataNames);
 			put("metadataLabels", getMetadataLabels());
