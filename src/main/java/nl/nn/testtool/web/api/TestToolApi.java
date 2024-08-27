@@ -233,7 +233,20 @@ public class TestToolApi extends ApiBase {
 		// ExtendedBeanInfo isn't used anymore with newer CXF versions)
 		Map<String, Map<String, Object>> response = new LinkedHashMap<>();
 		for (View view : views) {
-			response.put(view.getName(), view.toMap(view == views.getDefaultView()));
+			Map<String, Object> map = new HashMap<>();
+			map.put("name", view.getName());
+			map.put("storageName", view.getDebugStorage().getName());
+			map.put("defaultView", view == views.getDefaultView());
+			map.put("metadataNames", view.getMetadataNames());
+			map.put("metadataLabels", view.getMetadataLabels());
+			map.put("crudStorage", view.getDebugStorage() instanceof CrudStorage);
+			map.put("nodeLinkStrategy", view.getNodeLinkStrategy());
+			Map<String, String> metadataTypes = new HashMap<>();
+			for (String metadataName : view.getMetadataNames()) {
+				metadataTypes.put(metadataName, metadataExtractor.getType(metadataName));
+			}
+			map.put("metadataTypes", metadataTypes);
+			response.put(view.getName(), map);
 		}
 		return Response.ok(response).build();
 	}
