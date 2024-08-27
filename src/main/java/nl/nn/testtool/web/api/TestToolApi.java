@@ -167,17 +167,17 @@ public class TestToolApi extends ApiBase {
 		}
 	}
 
-    /**
-     * Gets the report in progress warning threshold time
-     *
-     * @return Response containing the time it will take before ladybug shows a warning that a report is still in progress
-     * */
-    @GET
-    @Path("/in-progress/threshold-time")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response getReportsInProgressWarningThreshold(){
-        return Response.ok(testTool.getReportsInProgressThreshold()).build();
-    }
+	/**
+	 * Gets the report in progress warning threshold time
+	 *
+	 * @return Response containing the time it will take before ladybug shows a warning that a report is still in progress
+	 */
+	@GET
+	@Path("/in-progress/threshold-time")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response getReportsInProgressWarningThreshold() {
+		return Response.ok(testTool.getReportsInProgressThreshold()).build();
+	}
 
 	/**
 	 * Change the default transformation.
@@ -231,39 +231,18 @@ public class TestToolApi extends ApiBase {
 		// Starting from CXF 3.2.0 the setViews() will not be called by Spring when the name of this method is
 		// getViews() instead of getViewsResponse() (with CXF 3.1.18 this was not the case) (maybe Spring's
 		// ExtendedBeanInfo isn't used anymore with newer CXF versions)
-		Map<String, Map<String, Object>> response = new LinkedHashMap<String, Map<String, Object>>();
+		Map<String, Map<String, Object>> response = new LinkedHashMap<>();
 		for (View view : views) {
-			Map<String, Object> map = new HashMap<String, Object>();
-			map.put("storageName", view.getDebugStorage().getName());
-			map.put("defaultView", view == views.getDefaultView());
-			map.put("metadataNames", view.getMetadataNames());
-			map.put("metadataLabels", getMetadataLabels(view.getMetadataNames()));
-			map.put("crudStorage", view.getDebugStorage() instanceof CrudStorage);
-			map.put("nodeLinkStrategy", view.getNodeLinkStrategy());
-			Map<String, String> metadataTypes = new HashMap<>();
-			for(String metadataName : view.getMetadataNames()) {
-				metadataTypes.put(metadataName, metadataExtractor.getType(metadataName));
-			}
-			map.put("metadataTypes", metadataTypes);
-			response.put(view.getName(), map);
+			response.put(view.getName(), view.toMap(view == views.getDefaultView()));
 		}
 		return Response.ok(response).build();
-	}
-
-	public List<String> getMetadataLabels(List<String> metadataNames) {
-		List<String> metadataLabels = new ArrayList<>();
-		for (String metadataName : metadataNames) {
-			metadataLabels.add(metadataExtractor.getLabel(metadataName));
-		}
-
-		return metadataLabels;
 	}
 
 	@PUT
 	@Path("/node-link-strategy")
 	@Consumes(MediaType.APPLICATION_JSON)
 	public Response changeNodeLinkStrategy(@QueryParam("nodeLinkStrategy") String nodeLinkStrategy, @QueryParam("viewName") String viewName) {
-		for (View view: views) {
+		for (View view : views) {
 			if (viewName.equals(view.getName())) {
 				setSessionAttr(view.getName() + ".NodeLinkStrategy", nodeLinkStrategy);
 				break;

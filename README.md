@@ -23,6 +23,8 @@ reports and optionally stub certain checkpoints for regression testing.
   - [Testing frontend changes with Frank!Framework](#testing-frontend-changes-with-frankframework)
   - [Testing frontend changes with unit tests](#testing-frontend-changes-with-unit-tests)
 - [How the frontend is published](#how-the-frontend-is-published)
+- [Collecting OpenTelemetry data](#collecting-openTelemetry-data)
+
 
 Releases
 ========
@@ -251,3 +253,17 @@ OpenTelemetry
 Ladybug is able to create telemetry data from Ladybug reports and send it to telemetry-collector Zipkin. Zipkin provides an overview based on time that helps to detect latency problems. To use Zipkin, you can run the following command: `docker run --rm -d -p 9411:9411 --name zipkin openzipkin/zipkin` When a Ladybug report is created, a trace will now be sent to Zipkin.
 
 It is also possible to send the telemetry data to another tracing tool instead of Zipkin, namely Jaeger. To work with Jaeger instead of Zipkin, you have to use the Jaeger exporter in the Config class instead of the Zipkin exporter and run the following command: `docker run --rm -e COLLECTOR_ZIPKIN_HOST_PORT=:9411 -p 16686:16686 -p 4317:4317 -p 4318:4318 -p 9411:9411 jaegertracing/all-in-one:latest`.
+
+Collecting OpenTelemetry data
+=============================
+
+In Ladybug, there is also an API available to gather telemetry data from OpenTelemetry. When code is instrumented with the OpenTelemetry library, it is possible to use the endpoint from this API to gather it in Ladybug. For a manual OpenTelemetry-instrumentation, you can configure the Zipkin exporter and make use of the endpoint to Ladybug. See code example below:
+
+```
+SdkTracerProvider sdkTracerProvider = SdkTracerProvider.builder()
+.addSpanProcessor(BatchSpanProcessor.builder(ZipkinSpanExporter.builder().setEndpoint("http://localhost/ladybug/api/collector/").build()).build())
+.setResource(resource)
+.build();
+```
+
+For more info about OpenTelemetry, see https://opentelemetry.io/
