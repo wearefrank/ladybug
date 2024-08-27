@@ -23,6 +23,8 @@ reports and optionally stub certain checkpoints for regression testing.
   - [Testing frontend changes with Frank!Framework](#testing-frontend-changes-with-frankframework)
   - [Testing frontend changes with unit tests](#testing-frontend-changes-with-unit-tests)
 - [How the frontend is published](#how-the-frontend-is-published)
+- [Collecting OpenTelemetry data](#collecting-openTelemetry-data)
+
 
 Releases
 ========
@@ -244,3 +246,17 @@ You can also test your frontend code as Maven artifact before merging your code 
 
 > [!WARNING]  
 > When you run the Maven build on your development device, it will update `package.json`. Please do not check in that change. Otherwise, the build will not work for other developers anymore.
+
+Collecting OpenTelemetry data
+=============================
+
+In Ladybug, there is also an API available to gather telemetry data from OpenTelemetry. When code is instrumented with the OpenTelemetry library, it is possible to use the endpoint from this API to gather it in Ladybug. For a manual OpenTelemetry-instrumentation, you can configure the Zipkin exporter and make use of the endpoint to Ladybug. See code example below:
+
+```
+SdkTracerProvider sdkTracerProvider = SdkTracerProvider.builder()
+.addSpanProcessor(BatchSpanProcessor.builder(ZipkinSpanExporter.builder().setEndpoint("http://localhost/ladybug/api/collector/").build()).build())
+.setResource(resource)
+.build();
+```
+
+For more info about OpenTelemetry, see https://opentelemetry.io/
