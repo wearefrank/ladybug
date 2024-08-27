@@ -294,7 +294,7 @@ public class ReportApi extends ApiBase {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response updateReport(@PathParam("storage") String storageName, @PathParam("storageId") int storageId, Map<String, String> map) {
-		String[] fields = new String[]{"name", "path", "variables", "description", "transformation", "checkpointId", "checkpointMessage", "stub"};
+		String[] fields = new String[]{"name", "path", "variables", "description", "transformation", "checkpointId", "checkpointMessage", "stub", "stubStrategy"};
 		if (map.isEmpty() || !mapContainsOnly(map, null, fields))
 			return Response.status(Response.Status.BAD_REQUEST).entity("No new values or incorrect values have been given for report with storageId [" + storageId + "] - detailed error message - Values given are:\n" + map).build();
 
@@ -314,6 +314,9 @@ public class ReportApi extends ApiBase {
 
 			if (StringUtils.isNotEmpty(map.get("transformation")))
 				report.setTransformation(map.get("transformation"));
+
+			if (StringUtils.isNotEmpty(map.get("stubStrategy")))
+				report.setStubStrategy(map.get("stubStrategy"));
 
 			String variables = map.get("variables");
 			if (variables != null && !variables.equals(report.getVariableCsv())) {
