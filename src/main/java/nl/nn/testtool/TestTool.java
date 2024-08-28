@@ -98,12 +98,9 @@ public class TestTool {
 	private @Setter @Getter @Inject @Autowired Views views;
 	private @Setter @Getter int reportsInProgressThreshold = 300000;
 	boolean devMode = false; // See testConcurrentLastEndpointAndFirstStartpointForSameCorrelationId()
-	private transient final Tracer tracer;
-
-	@Autowired
-	TestTool (OpenTelemetry openTelemetry) {
-		this.tracer = openTelemetry.getTracer(Report.class.getName(), "0.1.0");
-	}
+	private @Autowired String openTelemetryCollector;
+	private @Autowired OpenTelemetry openTelemetry;
+	private transient Tracer tracer;
 
 	@PostConstruct
 	public void init() {
@@ -306,7 +303,13 @@ public class TestTool {
 	@Transient
 	@JsonIgnore
 	public Tracer getOpenTelemetryTracer() {
-		return this.tracer;
+		if (openTelemetryCollector.contains("9411") || openTelemetryCollector.equals("jaeger")) {
+			if (this.tracer == null) {
+				this.tracer = this.openTelemetry.getTracer(Report.class.getName(), "0.1.0");
+			}
+			return this.tracer;
+		}
+		return null;
 	}
 
 	private <T> T checkpoint(String correlationId, String childThreadId, String sourceClassName, String name,
