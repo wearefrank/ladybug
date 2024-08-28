@@ -30,10 +30,8 @@ import java.util.Map;
 import java.util.Scanner;
 import java.util.Set;
 
-import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanBuilder;
-import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Context;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
@@ -52,7 +50,6 @@ import nl.nn.testtool.transform.ReportXmlTransformer;
 import nl.nn.testtool.util.CsvUtil;
 import nl.nn.testtool.util.EscapeUtil;
 import nl.nn.testtool.util.XmlUtil;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * @author Jaco de Groot

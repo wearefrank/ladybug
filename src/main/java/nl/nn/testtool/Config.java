@@ -114,32 +114,6 @@ import nl.nn.testtool.transform.ReportXmlTransformer;
 @Configuration
 public class Config {
 	@Bean
-	OpenTelemetry openTelemetry(@Qualifier("openTelemetryCollector") String openTelemetryCollector) {
-		Resource resource = Resource.getDefault().toBuilder().put(ServiceAttributes.SERVICE_NAME, "ladybug").put(ServiceAttributes.SERVICE_VERSION, "1.0.0").build();
-		SdkTracerProvider sdkTracerProvider;
-		if (openTelemetryCollector.contains("9411")) {
-			sdkTracerProvider = SdkTracerProvider.builder()
-					.addSpanProcessor(BatchSpanProcessor.builder(ZipkinSpanExporter.builder().setEndpoint(openTelemetryCollector).build()).build())
-					.setResource(resource)
-					.build();
-		} else if (openTelemetryCollector.equals("jaeger")) {
-			sdkTracerProvider = SdkTracerProvider.builder()
-					.addSpanProcessor(BatchSpanProcessor.builder(OtlpGrpcSpanExporter.builder().build()).build())
-					.setResource(resource)
-					.build();
-		} else {
-			return OpenTelemetry.noop();
-		}
-
-		OpenTelemetry openTelemetry = OpenTelemetrySdk.builder()
-				.setTracerProvider(sdkTracerProvider)
-				.setPropagators(ContextPropagators.create(TextMapPropagator.composite(W3CTraceContextPropagator.getInstance(), W3CBaggagePropagator.getInstance())))
-				.buildAndRegisterGlobal();
-
-		return openTelemetry;
-	}
-
-	@Bean
 	@Scope("prototype") // Echo2Application needs to be unique per user (not per JVM)
 	Echo2Application echo2Application() {
 		return new Echo2Application();
@@ -325,6 +299,32 @@ public class Config {
 	@Bean
 	String openTelemetryCollector() {
 		return "";
+	}
+
+	@Bean
+	OpenTelemetry openTelemetry(@Qualifier("openTelemetryCollector") String openTelemetryCollector) {
+		Resource resource = Resource.getDefault().toBuilder().put(ServiceAttributes.SERVICE_NAME, "ladybug").put(ServiceAttributes.SERVICE_VERSION, "1.0.0").build();
+		SdkTracerProvider sdkTracerProvider;
+		if (openTelemetryCollector.contains("9411")) {
+			sdkTracerProvider = SdkTracerProvider.builder()
+					.addSpanProcessor(BatchSpanProcessor.builder(ZipkinSpanExporter.builder().setEndpoint(openTelemetryCollector).build()).build())
+					.setResource(resource)
+					.build();
+		} else if (openTelemetryCollector.equals("jaeger")) {
+			sdkTracerProvider = SdkTracerProvider.builder()
+					.addSpanProcessor(BatchSpanProcessor.builder(OtlpGrpcSpanExporter.builder().build()).build())
+					.setResource(resource)
+					.build();
+		} else {
+			return OpenTelemetry.noop();
+		}
+
+		OpenTelemetry openTelemetry = OpenTelemetrySdk.builder()
+				.setTracerProvider(sdkTracerProvider)
+				.setPropagators(ContextPropagators.create(TextMapPropagator.composite(W3CTraceContextPropagator.getInstance(), W3CBaggagePropagator.getInstance())))
+				.buildAndRegisterGlobal();
+
+		return openTelemetry;
 	}
 
 }
