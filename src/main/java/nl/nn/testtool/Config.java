@@ -317,15 +317,13 @@ public class Config {
 					.setResource(resource)
 					.build();
 		} else {
-			return OpenTelemetry.noop();
+			return null;
 		}
 
-		OpenTelemetry openTelemetry = OpenTelemetrySdk.builder()
+		return OpenTelemetrySdk.builder()
 				.setTracerProvider(sdkTracerProvider)
 				.setPropagators(ContextPropagators.create(TextMapPropagator.composite(W3CTraceContextPropagator.getInstance(), W3CBaggagePropagator.getInstance())))
 				.buildAndRegisterGlobal();
-
-		return openTelemetry;
 	}
 
 }
