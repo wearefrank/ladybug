@@ -265,4 +265,12 @@ public class TestToolApi extends ApiBase {
 		return Response.ok().build();
 	}
 
+	@GET
+	@Path("/stub-strategies")
+	@Consumes(MediaType.APPLICATION_JSON)
+	public Response getPossibleStubStrategies() {
+		var strategies = testTool.getStubStrategies();
+		return Response.ok(strategies).build();
+	}
+
 }
