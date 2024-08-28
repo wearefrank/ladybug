@@ -113,6 +113,7 @@ import nl.nn.testtool.transform.ReportXmlTransformer;
 @Lazy // Lazy init singleton beans (prototype beans are already loaded on demand)
 @Configuration
 public class Config {
+
 	@Bean
 	@Scope("prototype") // Echo2Application needs to be unique per user (not per JVM)
 	Echo2Application echo2Application() {
