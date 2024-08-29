@@ -30,6 +30,9 @@ import java.util.Map;
 import java.util.Scanner;
 import java.util.Set;
 
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.SpanBuilder;
+import io.opentelemetry.context.Context;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -504,6 +507,19 @@ public class Report implements Serializable {
 			StubableCode stubableCode, StubableCodeThrowsException stubableCodeThrowsException,
 			Set<String> matchingStubStrategies, int checkpointType, Integer index, Integer level) {
 		Checkpoint checkpoint = new Checkpoint(this, threadName, sourceClassName, name, checkpointType, level);
+		if (testTool.getOpenTelemetryTracer() != null) {
+			SpanBuilder checkpointSpanBuilder = testTool.getOpenTelemetryTracer().spanBuilder("checkpoint - " + name);
+			for (Checkpoint checkpointInList: checkpoints) {
+				if (checkpointInList.getType() == 1 && checkpointInList.getLevel() == checkpoint.getLevel() - 1) {
+					checkpointSpanBuilder.setParent(Context.current().with(checkpointInList.getSpan()));
+				}
+			}
+			Span checkpointSpan = checkpointSpanBuilder.startSpan();
+			checkpointSpan.setAttribute("checkpointType", checkpoint.getType());
+			checkpointSpan.setAttribute("checkpointTypeAsString", checkpoint.getTypeAsString());
+			checkpointSpan.setAttribute("checkpointLevel", checkpoint.getLevel());
+			checkpoint.setSpan(checkpointSpan);
+		}
 		boolean stub = false;
 		if (originalReport != null) {
 			Path path = checkpoint.getPath(true);
@@ -583,6 +599,19 @@ public class Report implements Serializable {
 		if (log.isDebugEnabled()) {
 			log.debug("Added checkpoint " + getCheckpointLogDescription(name, checkpointType, level));
 		}
+		if (testTool.getOpenTelemetryTracer() != null) {
+			if (checkpointType != 1) {
+				checkpoint.getSpan().end();
+			}
+			if (checkpointType == 2) {
+				for (Checkpoint checkpointInList: checkpoints) {
+					if (checkpointInList.getType() == 1 && checkpointInList.getLevel() == checkpoint.getLevel() - 1) {
+						checkpointInList.getSpan().end();
+					}
+				}
+			}
+		}
+
 		return message;
 	}
 

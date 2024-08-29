@@ -247,6 +247,25 @@ You can also test your frontend code as Maven artifact before merging your code 
 > [!WARNING]  
 > When you run the Maven build on your development device, it will update `package.json`. Please do not check in that change. Otherwise, the build will not work for other developers anymore.
 
+OpenTelemetry
+=============
+
+Ladybug is able to create telemetry data from Ladybug reports and send it to a telemetry-collector. A telemetry-collector provides an overview based on time that helps to detect latency problems. There are two collectors available to send the data to: Zipkin and Jaeger. To use Zipkin, you can run the following command: 
+
+`docker run --rm -d -p 9411:9411 --name zipkin openzipkin/zipkin`
+
+To work with Jaeger, you can run the following command: 
+
+`docker run --rm -e COLLECTOR_ZIPKIN_HOST_PORT=:9411 -p 16686:16686 -p 4317:4317 -p 4318:4318 -p 9411:9411 jaegertracing/all-in-one:latest`
+
+To choose between one of the collectors in the Ladybug application, there is a bean available to make your choice. You have to add the following and change the string value of this bean to the collector you want to use. For Zipkin, enter the endpoint in the string value. For Jaeger (which doesn't use a endpoint), you can just enter "jaeger":
+```
+<bean name="openTelemetryCollector" class="java.lang.String">
+		<constructor-arg value=""/>
+</bean>
+```
+You can add this bean in the springTestToolWebApp.xml file in the ladybug-test-webapp project. This is a simple webapp to test the Ladybug application. See https://github.com/wearefrank/ladybug-test-webapp. When a Ladybug report is created, a trace will now be sent to the chosen collector.
+
 Collecting OpenTelemetry data
 =============================
 
