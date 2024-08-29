@@ -131,4 +131,8 @@ public class View implements BeanParent {
 
 		return metadataLabels;
 	}
+
+	public boolean hasCheckpointMatchers() {
+		return this.checkpointMatchers != null && !this.checkpointMatchers.isEmpty();
+	}
 }
