@@ -255,19 +255,19 @@
       <groupId>io.opentelemetry.semconv</groupId>
       <artifactId>opentelemetry-semconv</artifactId>
       <version>1.25.0-alpha</version>
-      <scope>provided</scope>
+      <!-- <scope>provided</scope> -->
     </dependency>
     <dependency>
       <groupId>io.opentelemetry</groupId>
       <artifactId>opentelemetry-exporter-zipkin</artifactId>
       <version>1.39.0</version>
-      <scope>provided</scope>
+      <!-- <scope>provided</scope> -->
     </dependency>
     <dependency>
       <groupId>io.opentelemetry</groupId>
       <artifactId>opentelemetry-exporter-otlp</artifactId>
       <version>1.39.0</version>
-      <scope>provided</scope>
+      <!-- <scope>provided</scope> -->
     </dependency>
   </dependencies>
 
