@@ -90,8 +90,11 @@ description. Get it from https://www.usebruno.com/.
             * Information `Pipe applyXslt`.
             * Information `./getName.xsl`.
             * Left arrow `Pipe applyXslt`.
-          * right arrow `exit state`.
-          * right arrow `Pipeline getPersonName`.
+          * Pipe `Pipe checkForError`.
+            * Information `Pipe checkForError`.
+            * Left arrow `Pipe checkForError`.
+          * Left arrow `exit state`.
+          * Left arrow `Pipeline getPersonName`.
         * Left arrow `getPersonNameSender`.
       * Left arrow `getPersonNamePipe`.
     * Left arrow `Pipeline processXml`.
