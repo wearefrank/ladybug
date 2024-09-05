@@ -23,7 +23,7 @@ reports and optionally stub certain checkpoints for regression testing.
   - [Testing frontend changes with Frank!Framework](#testing-frontend-changes-with-frankframework)
   - [Testing frontend changes with unit tests](#testing-frontend-changes-with-unit-tests)
 - [How the frontend is published](#how-the-frontend-is-published)
-- [Collecting OpenTelemetry data](#collecting-openTelemetry-data)
+- [OpenTelemetry](#opentelemetry)
 
 
 Releases

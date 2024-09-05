@@ -245,12 +245,12 @@
       <version>1.0</version>
       <scope>provided</scope>
     </dependency>
-
     <dependency>
       <groupId>io.opentelemetry</groupId>
       <artifactId>opentelemetry-api</artifactId>
       <version>1.39.0</version>
     </dependency>
+    <!-- Scope provided for now for OpenTelemetry dependencies other then opentelemetry-api (keep transitive dependencies caused by Ladybug to a minimum) -->
     <dependency>
       <groupId>io.opentelemetry.semconv</groupId>
       <artifactId>opentelemetry-semconv</artifactId>
