@@ -15,6 +15,7 @@
 */
 package nl.nn.testtool;
 
+import java.beans.Transient;
 import java.lang.invoke.MethodHandles;
 import java.rmi.server.UID;
 import java.util.ArrayList;
@@ -25,15 +26,17 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 
-import javax.annotation.PostConstruct;
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
-
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.trace.Tracer;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import jakarta.annotation.PostConstruct;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;
@@ -95,6 +98,8 @@ public class TestTool {
 	private @Setter @Getter @Inject @Autowired Views views;
 	private @Setter @Getter int reportsInProgressThreshold = 300000;
 	boolean devMode = false; // See testConcurrentLastEndpointAndFirstStartpointForSameCorrelationId()
+	private @Autowired(required = false) OpenTelemetry openTelemetry;
+	private transient Tracer tracer;
 
 	@PostConstruct
 	public void init() {
@@ -292,6 +297,18 @@ public class TestTool {
 	 */
 	public void setCloseMessageCapturers(boolean closeMessageCapturers) {
 		this.closeMessageCapturers = closeMessageCapturers;
+	}
+
+	@Transient
+	@JsonIgnore
+	public Tracer getOpenTelemetryTracer() {
+		if (this.openTelemetry != null) {
+			if (this.tracer == null) {
+				this.tracer = this.openTelemetry.getTracer(Report.class.getName(), "0.1.0");
+			}
+			return this.tracer;
+		}
+		return null;
 	}
 
 	private <T> T checkpoint(String correlationId, String childThreadId, String sourceClassName, String name,

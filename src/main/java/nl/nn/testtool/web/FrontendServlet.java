@@ -1,5 +1,5 @@
 /*
-   Copyright 2021-2022 WeAreFrank!
+   Copyright 2021-2022, 2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,10 +20,10 @@ import java.io.InputStream;
 import java.lang.invoke.MethodHandles;
 import java.util.Properties;
 
-import javax.servlet.ServletException;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import jakarta.servlet.ServletException;
 
 public class FrontendServlet extends AngularServlet {
 	private static final long serialVersionUID = 1L;
@@ -41,10 +41,10 @@ public class FrontendServlet extends AngularServlet {
 
 	@Override
 	public void init() throws ServletException {
-		String artifactId = "wearefrank__ladybug";
+		String artifactId = "ladybug-frontend";
 		setArtifactId(artifactId);
 		try {
-			String resource = "/META-INF/maven/org.webjars.npm/" + artifactId + "/pom.properties";
+			String resource = "/META-INF/maven/org.wearefrank/" + artifactId + "/pom.properties";
 			InputStream inputStream = this.getClass().getResourceAsStream(resource);
 			if (inputStream != null) {
 				Properties properties = new Properties();

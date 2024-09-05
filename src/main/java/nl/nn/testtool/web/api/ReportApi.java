@@ -27,21 +27,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 
-import javax.inject.Inject;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.DefaultValue;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-
-import nl.nn.testtool.storage.LogStorage;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.cxf.jaxrs.ext.multipart.Attachment;
 import org.apache.cxf.jaxrs.ext.multipart.Multipart;
@@ -49,6 +34,19 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import jakarta.inject.Inject;
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.DELETE;
+import jakarta.ws.rs.DefaultValue;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.PUT;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 import lombok.Setter;
 import nl.nn.testtool.Checkpoint;
 import nl.nn.testtool.MetadataExtractor;
@@ -59,6 +57,7 @@ import nl.nn.testtool.echo2.util.Upload;
 import nl.nn.testtool.filter.View;
 import nl.nn.testtool.filter.Views;
 import nl.nn.testtool.storage.CrudStorage;
+import nl.nn.testtool.storage.LogStorage;
 import nl.nn.testtool.storage.Storage;
 import nl.nn.testtool.storage.StorageException;
 import nl.nn.testtool.transform.ReportXmlTransformer;
@@ -295,7 +294,7 @@ public class ReportApi extends ApiBase {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response updateReport(@PathParam("storage") String storageName, @PathParam("storageId") int storageId, Map<String, String> map) {
-		String[] fields = new String[]{"name", "path", "variables", "description", "transformation", "checkpointId", "checkpointMessage", "stub"};
+		String[] fields = new String[]{"name", "path", "variables", "description", "transformation", "checkpointId", "checkpointMessage", "stub", "stubStrategy"};
 		if (map.isEmpty() || !mapContainsOnly(map, null, fields))
 			return Response.status(Response.Status.BAD_REQUEST).entity("No new values or incorrect values have been given for report with storageId [" + storageId + "] - detailed error message - Values given are:\n" + map).build();
 
@@ -315,6 +314,9 @@ public class ReportApi extends ApiBase {
 
 			if (StringUtils.isNotEmpty(map.get("transformation")))
 				report.setTransformation(map.get("transformation"));
+
+			if (StringUtils.isNotEmpty(map.get("stubStrategy")))
+				report.setStubStrategy(map.get("stubStrategy"));
 
 			String variables = map.get("variables");
 			if (variables != null && !variables.equals(report.getVariableCsv())) {

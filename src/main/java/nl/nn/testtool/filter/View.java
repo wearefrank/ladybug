@@ -1,5 +1,5 @@
 /*
-   Copyright 2020, 2022-2023 WeAreFrank!, 2018, 2019 Nationale-Nederlanden
+   Copyright 2020, 2022-2024 WeAreFrank!, 2018, 2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,14 +15,17 @@
 */
 package nl.nn.testtool.filter;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.HashMap;
 
-import javax.enterprise.context.Dependent;
-import javax.inject.Inject;
-
+import nl.nn.testtool.MetadataExtractor;
+import nl.nn.testtool.storage.CrudStorage;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import jakarta.enterprise.context.Dependent;
+import jakarta.inject.Inject;
 import lombok.Getter;
 import lombok.Setter;
 import nl.nn.testtool.Checkpoint;
@@ -45,6 +48,7 @@ public class View implements BeanParent {
 	private List<CheckpointMatcher> checkpointMatchers;
 	private BeanParent beanParent;
 	private Echo2Application echo2Application;
+	private @Inject @Autowired MetadataExtractor metadataExtractor;
 
 	protected enum NodeLinkStrategy {
 		PATH,
@@ -119,4 +123,16 @@ public class View implements BeanParent {
 		return getName();
 	}
 
+	public List<String> getMetadataLabels() {
+		List<String> metadataLabels = new ArrayList<>();
+		for (String metadataName : getMetadataNames()) {
+			metadataLabels.add(metadataExtractor.getLabel(metadataName));
+		}
+
+		return metadataLabels;
+	}
+
+	public boolean hasCheckpointMatchers() {
+		return this.checkpointMatchers != null && !this.checkpointMatchers.isEmpty();
+	}
 }

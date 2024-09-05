@@ -1,5 +1,5 @@
 /*
-   Copyright 2021-2023 WeAreFrank!
+   Copyright 2021-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -26,16 +26,15 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-import javax.annotation.PostConstruct;
-import javax.ws.rs.container.ContainerRequestContext;
-import javax.ws.rs.container.ContainerRequestFilter;
-import javax.ws.rs.container.PreMatching;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.ext.Provider;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import jakarta.annotation.PostConstruct;
+import jakarta.ws.rs.container.ContainerRequestContext;
+import jakarta.ws.rs.container.ContainerRequestFilter;
+import jakarta.ws.rs.container.PreMatching;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.ext.Provider;
 import lombok.Getter;
 
 /**
@@ -72,6 +71,7 @@ public class ApiAuthorizationFilter implements ContainerRequestFilter {
 		setObserverRoles(null);
 		setDataAdminRoles(null);
 		setTesterRoles(null);
+		setWebServiceRoles(null);
 		constructorDone = true;
 	}
 
@@ -114,6 +114,11 @@ public class ApiAuthorizationFilter implements ContainerRequestFilter {
 	public void setTesterRoles(List<String> testerRoles) {
 		if (constructorDone) log.info("Set tester roles");
 		addConfigurationPart("POST/" + ApiServlet.LADYBUG_API_PATH + "/runner/run/.*", testerRoles);
+	}
+
+	public void setWebServiceRoles(List<String> webServiceRoles) {
+		if (constructorDone) log.info("Set web service roles");
+		addConfigurationPart("POST/" + ApiServlet.LADYBUG_API_PATH + "/collector/.*$", webServiceRoles);
 	}
 
 	public void setLadybugApiRoles(Map<String, List<String>> ladybugApiRoles) {
