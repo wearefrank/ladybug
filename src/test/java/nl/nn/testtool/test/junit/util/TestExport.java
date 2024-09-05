@@ -1,5 +1,5 @@
 /*
-   Copyright 2021, 2023 WeAreFrank!
+   Copyright 2021, 2023-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -46,15 +46,15 @@ public class TestExport {
 	public static final String RESOURCE_PATH = "nl/nn/testtool/test/junit/util/";
 
 	@Test
-	public void testExport() throws IllegalAccessException, IllegalArgumentException, InvocationTargetException, IOException, StorageException {
-		Report report = new Report();
+	public void testExport() throws IllegalAccessException, IllegalArgumentException, InvocationTargetException,
+			IOException, StorageException {
 		// Find all bean properties and change default values to test that transient properties are not added to the
 		// XMLEncoder xml (properties with default values will never be added to the xml by XMLEncoder)
+		Report report = new Report();
 		Map<String, Method> setMethods = new HashMap<>();
 		getBeanProperties(report.getClass(), "set", setMethods);
-		Map<String, Method> getMethods;
-    getMethods = new HashMap<>();
-    getBeanProperties(report.getClass(), "get", getMethods);
+		Map<String, Method> getMethods = new HashMap<>();
+		getBeanProperties(report.getClass(), "get", getMethods);
 		Map<String, Method> isMethods = new HashMap<>();
 		getBeanProperties(report.getClass(), "is", isMethods);
 		for (String name : setMethods.keySet()) {
@@ -96,7 +96,7 @@ public class TestExport {
 					// No need to test this for a memory storage.
 					method.invoke(report, Common.CONTEXT_FILE_STORAGE.getBean(name));
 				} else if (name.equals("checkpoints")) {
-					// Ignore, done manually
+					// Ignore, this is done hardcoded below (search for "report.setCheckpoints(checkpoints)")
 				} else {
 					assertNull("Method not handled: " + name);
 				}
@@ -127,8 +127,10 @@ public class TestExport {
 					}
 				} else if (method.getParameters()[0].getType() == String.class) {
 					method.invoke(checkpoint, name);
+				} else if (name.equals("span")) {
+					checkpoint.setSpan(new Span());
 				} else if (name.equals("report")) {
-					// Ignore, done manually
+					// Ignore, this is done hardcoded above (search for "checkpoint.setReport(report)")
 				} else {
 					assertNull("Method not handled: " + name);
 				}
