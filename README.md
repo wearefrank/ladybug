@@ -260,11 +260,11 @@ To work with Jaeger, you can run the following command:
 
 To choose between one of the collectors in the Ladybug application, there is a bean available to make your choice. You have to add the following and change the string value of this bean to the collector you want to use. For Zipkin, enter the endpoint in the string value. For Jaeger (which doesn't use a endpoint), you can just enter "jaeger":
 ```
-<bean name="openTelemetryCollector" class="java.lang.String">
+<bean name="openTelemetryEndpoint" class="java.lang.String">
 		<constructor-arg value=""/>
 </bean>
 ```
-You can add this bean in the springTestToolWebApp.xml file in the ladybug-test-webapp project. This is a simple webapp to test the Ladybug application. See https://github.com/wearefrank/ladybug-test-webapp. When a Ladybug report is created, a trace will now be sent to the chosen collector.
+You can enable this bean in the springTestToolWebApp.xml file in the ladybug-test-webapp project. This is a simple webapp to test the Ladybug application. See https://github.com/wearefrank/ladybug-test-webapp. When a Ladybug report is created, a trace will now be sent to the chosen collector.
 
 Collecting OpenTelemetry data
 =============================
