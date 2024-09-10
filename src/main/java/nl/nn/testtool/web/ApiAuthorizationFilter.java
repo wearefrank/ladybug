@@ -88,7 +88,7 @@ public class ApiAuthorizationFilter implements ContainerRequestFilter {
 	public void setObserverRoles(List<String> observerRoles) {
 		if (constructorDone) log.info("Set observer roles");
 		addConfigurationPart("GET/"  + ApiServlet.LADYBUG_API_PATH + "/testtool.*$", observerRoles);
-		addConfigurationPart("POST/" + ApiServlet.LADYBUG_API_PATH + "/testtool/transformation[/]?$", observerRoles); // [/]? because frontend is currently not using a slash at the end
+		addConfigurationPart("POST/" + ApiServlet.LADYBUG_API_PATH + "/testtool/transformation$", observerRoles);
 		addConfigurationPart("PUT/"  + ApiServlet.LADYBUG_API_PATH + "/testtool/node-link-strategy$", observerRoles);
 		addConfigurationPart("GET/"  + ApiServlet.LADYBUG_API_PATH + "/metadata/.*$", observerRoles);
 		addConfigurationPart("GET/"  + ApiServlet.LADYBUG_API_PATH + "/report/.*$", observerRoles);
