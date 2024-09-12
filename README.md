@@ -31,14 +31,12 @@ Releases
 
 See [release notes](RELEASES.md).
 
-
 Feedback
 ========
 
 For bug reports and feature requests create a new issue at <https://github.com/wearefrank/ladybug/issues>. Ladybug
-is developed and maintained by [WeAreFrank!](https://wearefrank.nl/). Contact us at <https://wearefrank.nl/contact>
-(is in Dutch) or email to info@wearefrank.nl.
-
+is developed and maintained by [WeAreFrank!](https://wearefrank.nl/). Contact us at <https://wearefrank.nl/en/contact>
+or email to info@wearefrank.nl.
 
 Ladybug online demo
 ===================
