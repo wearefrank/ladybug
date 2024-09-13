@@ -24,6 +24,7 @@ import nl.nn.testtool.MetadataExtractor;
 import nl.nn.testtool.storage.CrudStorage;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import jakarta.annotation.Resource;
 import jakarta.enterprise.context.Dependent;
 import jakarta.inject.Inject;
 import lombok.Getter;
@@ -43,7 +44,7 @@ public class View implements BeanParent {
 	protected String name;
 	protected String nodeLinkStrategy;
 	private @Setter @Getter @Inject @Autowired LogStorage debugStorage;
-	private @Setter @Getter @Inject @Autowired List<String> metadataNames;
+	private @Setter @Getter @Inject @Resource(name="metadataNames") List<String> metadataNames;
 	private Map<String, String> metadataFilter;
 	private List<CheckpointMatcher> checkpointMatchers;
 	private BeanParent beanParent;

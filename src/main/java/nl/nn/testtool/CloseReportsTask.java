@@ -15,6 +15,9 @@
 */
 package nl.nn.testtool;
 
+import org.springframework.beans.factory.annotation.Autowired;
+
+import jakarta.inject.Inject;
 import lombok.Setter;
 
 /**
@@ -30,7 +33,7 @@ import lombok.Setter;
  * @author Jaco de Groot
  */
 public class CloseReportsTask {
-	private @Setter TestTool testTool;
+	private @Setter @Inject @Autowired TestTool testTool;
 	private @Setter long threadsTime = 60 * 1000;
 	private @Setter long messageCapturersTime = 60 * 1000;
 	private @Setter boolean waitForMainThreadToFinish = true;

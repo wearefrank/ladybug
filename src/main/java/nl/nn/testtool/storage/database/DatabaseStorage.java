@@ -44,6 +44,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import jakarta.annotation.PostConstruct;
+import jakarta.annotation.Resource;
 import jakarta.inject.Inject;
 import lombok.Getter;
 import lombok.Setter;
@@ -88,7 +89,7 @@ public class DatabaseStorage implements LogStorage, CrudStorage {
 	protected static final String TIMESTAMP_PATTERN = "yyyy-MM-dd'T'HH:mm:ss.SSS";
 	protected @Setter @Getter String name;
 	protected @Setter String table;
-	protected @Setter @Inject @Autowired List<String> metadataNames; // Used as column names in this storage
+	protected @Setter @Inject @Resource(name="metadataNames") List<String> metadataNames; // Used as column names in this storage
 	protected @Setter String storageIdColumn;
 	protected @Setter List<String> bigValueColumns; // Columns for which to limit the number of retrieved characters to 100
 	protected @Setter Boolean storeReportXml;

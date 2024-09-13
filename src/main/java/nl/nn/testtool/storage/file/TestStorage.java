@@ -75,6 +75,8 @@ public class TestStorage implements nl.nn.testtool.storage.CrudStorage {
 		writer[1].setMetadataFilename(metadataFilename + ".b");
 	}
 
+	@Inject
+	@Autowired
 	public void setMetadataExtractor(MetadataExtractor metadataExtractor) {
 		reader[0].setMetadataExtractor(metadataExtractor);
 		reader[1].setMetadataExtractor(metadataExtractor);

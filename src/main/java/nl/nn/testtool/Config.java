@@ -57,11 +57,19 @@ import nl.nn.testtool.transform.ReportXmlTransformer;
  * </p>
  * 
  * <p>
- * For classes with <code>@Inject</code>, <code>@Autowired</code> and/or <code>@PostConstruct</code> annotations add
- * <code>@Bean</code> methods to this class for Spring with <code>@Scope("singleton")</code> or
- * <code>@Scope("prototype")</code> and for Quarkus add <code>@Produces</code> and optionally <code>@Singleton</code> to
- * this class or add <code>@Dependent</code> or <code>@Singleton</code> to the classes with <code>@Inject</code>,
- * <code>@Autowired</code> and/or <code>@PostConstruct</code> annotations.
+ * For classes with <code>@Inject</code>, <code>@Autowired</code>, <code>@Resource</code> and/or
+ * <code>@PostConstruct</code> annotations:
+ * <ul>
+ *   <li>
+ *     For Spring: Add <code>@Bean</code> methods to this class for with <code>@Scope("singleton")</code> or
+ *     <code>@Scope("prototype")</code>
+ *   </li>
+ *   <li>
+ *     For Quarkus: Add <code>@Produces</code> and optionally <code>@Singleton</code> to this class. Or add
+ *     <code>@Dependent</code> or <code>@Singleton</code> to the classes with <code>@Inject</code>,
+ *     <code>@Autowired</code>, <code>@Resource</code> and/or <code>@PostConstruct</code> annotations.
+ *   </li>
+ * </ul>
  * </p>
  * 
  * <p>
@@ -72,25 +80,47 @@ import nl.nn.testtool.transform.ReportXmlTransformer;
  * Spring related:
  * 
  * <ul>
- *   <li>Enable component scanning, e.g.: &lt;context:component-scan base-package="nl.nn.testtool"/&gt;</li>
- *   <li>Use <code>@Autowired</code> also where <code>@Inject</code> is being used to get the same behavior whether or
- *   not Spring is able to find the Inject class on the classpath. See also the explanation of
- *   SpringBeanAutowiringInterceptor at
- *   https://stackoverflow.com/questions/37592743/configuring-spring-to-ignore-dependencies-annotated-with-inject</li>
- *   <li>The <code>@PostConstruct</code> annotation is part of Java SE 8 and supported by Spring, see also
- *   https://docs.spring.io/spring-framework/docs/3.2.x/spring-framework-reference/html/beans.html#beans-postconstruct-and-predestroy-annotations</li>
- *   <li>Spring will wire and init beans returned by the <code>@Bean</code> methods (as far as those beans have the
- *   needed <code>@Inject</code>, <code>@Autowired</code> and <code>@PostConstruct</code> annotations</li>
- *   <li>Spring XML configuration can be used to override the defaults as specified by the annotations</li>
+ *   <li>
+ *     Enable component scanning, e.g.: &lt;context:component-scan base-package="nl.nn.testtool"/&gt;
+ *   </li>
+ *   <li>
+ *     Use <code>@Autowired</code> also where <code>@Inject</code> is being used to get the same behavior whether or not
+ *     Spring is able to find the Inject class on the classpath. See also the explanation of
+ *     SpringBeanAutowiringInterceptor at
+ *     https://stackoverflow.com/questions/37592743/configuring-spring-to-ignore-dependencies-annotated-with-inject
+ *   </li>
+ *   <li>
+ *     Use <code>@Resource(name="beanName")</code> instead of <code>@Autowired</code> for lists of strings otherwise all
+ *     String beans (e.g. the beans in Spring xml with class="java.lang.String") are added to a list and wired instead
+ *     (see also https://stackoverflow.com/a/1363435/17193564). This doesn't happen when autowire="byName" is used in
+ *     the Spring xml but the idea is to keep the Spring xml as small and simple as possible (and not use
+ *     autowire="byName").
+ *   </li>
+ *   <li>
+ *     The <code>@PostConstruct</code> annotation is part of Java SE 8 and supported by Spring, see also
+ *     https://docs.spring.io/spring-framework/docs/3.2.x/spring-framework-reference/html/beans.html#beans-postconstruct-and-predestroy-annotations
+ *   </li>
+ *   <li>
+ *     Spring will wire and init beans returned by the <code>@Bean</code> methods (as far as those beans have the
+ *     needed <code>@Inject</code>, <code>@Autowired</code>, <code>@Resource</code> and <code>@PostConstruct</code>
+ *     annotations)
+ *   </li>
+ *   <li>
+ *     Spring XML configuration can be used to override the defaults as specified by the annotations
+ *   </li>
  * </ul>
  * 
  * Quarkus related:
  * 
  * <ul>
- *   <li>Quarkus doesn't wire and init beans returned by the methods in this class but will do it for beans created
- *   based on classes that contain <code>@Dependent</code> or <code>@Singleton</code></li>
- *   <li>Default wiring using <code>@DefaultBean</code> (https://quarkus.io/guides/cdi-reference#default_beans) can be
- *   overridden in an application using Ladybug as a library.</li>
+ *   <li>
+ *     Quarkus doesn't wire and init beans returned by the methods in this class but will do it for beans created
+ *     based on classes that contain <code>@Dependent</code> or <code>@Singleton</code>
+ *   </li>
+ *   <li>
+ *     Default wiring using <code>@DefaultBean</code> (https://quarkus.io/guides/cdi-reference#default_beans) can be
+ *     overridden in an application using Ladybug as a library.
+ *   </li>
  * </ul>
  * 
  * @author Jaco de Groot

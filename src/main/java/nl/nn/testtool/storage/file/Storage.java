@@ -80,6 +80,8 @@ public class Storage implements nl.nn.testtool.storage.LogStorage {
 		writer.setFreeSpaceMinimum(freeSpaceMinimum);
 	}
 
+	@Inject
+	@Autowired
 	public void setMetadataExtractor(MetadataExtractor metadataExtractor) {
 		reader.setMetadataExtractor(metadataExtractor);
 		writer.setMetadataExtractor(metadataExtractor);

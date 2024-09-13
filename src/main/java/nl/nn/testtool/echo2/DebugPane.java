@@ -53,9 +53,6 @@ public class DebugPane extends Tab implements BeanParent {
 	private @Inject @Autowired CrudStorage testStorage;
 	private @Inject @Autowired MetadataExtractor metadataExtractor;
 	private @Inject @Autowired ReportXmlTransformer reportXmlTransformer;
-	// With @Autowired all String beans (e.g. the beans in Spring xml with class="java.lang.String") are added to a
-	// list and wired instead of the specified dataAdminRoles (e.g. <util:list id="dataAdminRoles">). Hence use
-	// @Resource instead. See also https://stackoverflow.com/a/1363435/17193564
 	private @Inject @Resource(name="dataAdminRoles") List<String> dataAdminRoles;
 	private ReportsListPane reportsListPane;
 	private ReportsComponent reportsComponent;
