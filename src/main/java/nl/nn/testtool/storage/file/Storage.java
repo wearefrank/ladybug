@@ -20,6 +20,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import jakarta.annotation.PostConstruct;
+import jakarta.annotation.Resource;
 import jakarta.inject.Inject;
 import nl.nn.testtool.MetadataExtractor;
 import nl.nn.testtool.Report;
@@ -111,7 +112,7 @@ public class Storage implements nl.nn.testtool.storage.LogStorage {
 	 * @param metadataNames ...
 	 */
 	@Inject
-	@Autowired
+	@Resource(name="metadataNames")
 	public void setMetadataNames(List<String> metadataNames) {
 		if (writer.getPersistentMetadata() == null) {
 			writer.setPersistentMetadata(metadataNames);
