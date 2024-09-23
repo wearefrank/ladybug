@@ -69,7 +69,10 @@ public class MessageEncoderImpl implements MessageEncoder {
 		} else if (message instanceof String) {
 			toStringResult = new ToStringResult((String)message, null);
 		} else {
-			if (message instanceof byte[]) {
+			if (message instanceof Boolean) {
+				toStringResult = new ToStringResult(Boolean.toString((Boolean) message), null, Boolean.class.getName());
+			}
+			else if (message instanceof byte[]) {
 				String encoding;
 				if (charset == null) {
 					charset = "UTF-8";
@@ -147,6 +150,11 @@ public class MessageEncoderImpl implements MessageEncoder {
 		} else {
 			String message = originalCheckpoint.getMessage();
 			String encoding = originalCheckpoint.getEncoding();
+			String messageClassName = originalCheckpoint.getMessageClassName();
+			if (messageClassName.equals(Boolean.class.getName())) {
+				Object rawResult = Boolean.valueOf(message);
+				return (T) rawResult;
+			}
 			if (encoding == null) {
 				if (originalCheckpoint.getStreaming() == null) {
 					return (T)message;
