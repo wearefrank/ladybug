@@ -155,7 +155,7 @@ public class MessageEncoderImpl implements MessageEncoder {
 			String message = originalCheckpoint.getMessage();
 			String encoding = originalCheckpoint.getEncoding();
 			String messageClassName = originalCheckpoint.getMessageClassName();
-			if (messageClassName.equals(Boolean.class.getName())) {
+			if ( (messageClassName != null) && (messageClassName.equals(Boolean.class.getName())) ) {
 				try {
 					Object rawResult = Boolean.valueOf(message);
 					return (T) rawResult;
