@@ -26,6 +26,7 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
+import java.lang.invoke.MethodHandles;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.CharacterCodingException;
@@ -35,6 +36,8 @@ import java.nio.charset.CharsetEncoder;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Node;
 
 import lombok.SneakyThrows;
@@ -48,6 +51,7 @@ import nl.nn.xmldecoder.XMLDecoder;
  * @author Jaco de Groot
  */
 public class MessageEncoderImpl implements MessageEncoder {
+	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 	public static final String XML_ENCODER = "XMLEncoder";
 	public static final String UTF8_ENCODER = "UTF-8";
 	public static final String CHARSET_ENCODER_PREFIX = "CHARSET-";
@@ -152,8 +156,17 @@ public class MessageEncoderImpl implements MessageEncoder {
 			String encoding = originalCheckpoint.getEncoding();
 			String messageClassName = originalCheckpoint.getMessageClassName();
 			if (messageClassName.equals(Boolean.class.getName())) {
-				Object rawResult = Boolean.valueOf(message);
-				return (T) rawResult;
+				try {
+					Object rawResult = Boolean.valueOf(message);
+					return (T) rawResult;
+				} catch(ClassCastException e) {
+					if (messageToStub == null) {
+						log.error("Could not parse message [{}] to generic type T", message);
+					} else {
+						log.error("Could not parse message [{}] to [{}]", message, messageToStub.getClass().getName());
+					}
+					return null;
+				}
 			}
 			if (encoding == null) {
 				if (originalCheckpoint.getStreaming() == null) {
