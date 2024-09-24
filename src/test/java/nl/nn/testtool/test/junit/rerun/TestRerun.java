@@ -1,5 +1,5 @@
 /*
-   Copyright 2021, 2023 WeAreFrank!
+   Copyright 2021, 2023-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import lombok.SneakyThrows;
+import nl.nn.testtool.Checkpoint;
 import nl.nn.testtool.Report;
 import nl.nn.testtool.Rerunner;
 import nl.nn.testtool.SecurityContext;
