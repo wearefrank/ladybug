@@ -69,7 +69,7 @@ public class DbmsSupport {
 	}
 
 	public String getRowNumber(String order, String sort) {
-		if ("Oracle".equals(commonDatabaseName) || "Microsoft SQL Server".equals(commonDatabaseName)) {
+		if ("Oracle".equals(commonDatabaseName)) {
 			return "row_number() over (order by "+order+(sort==null?"":" "+sort)+") "+getRowNumberShortName();
 		}
 		return "";
