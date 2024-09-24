@@ -19,20 +19,13 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collection;
 
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TestName;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameter;
-import org.junit.runners.Parameterized.Parameters;
 
 import lombok.SneakyThrows;
-import nl.nn.testtool.Checkpoint;
 import nl.nn.testtool.Report;
 import nl.nn.testtool.Rerunner;
 import nl.nn.testtool.SecurityContext;
@@ -40,40 +33,19 @@ import nl.nn.testtool.TestTool;
 import nl.nn.testtool.run.ReportRunner;
 import nl.nn.testtool.storage.Storage;
 import nl.nn.testtool.storage.StorageException;
-import nl.nn.testtool.test.junit.Common;
 import nl.nn.testtool.test.junit.ReportRelatedTestCase;
 
 /**
  * @author Jaco de Groot
  */
 @RunWith(Parameterized.class)
-public class TestRerun {
-	@Parameters(name = "{0}")
-	public static Collection<Object[]> data() {
-		return Arrays.asList(new Object[][] {
-			{"File storage", (TestTool) Common.CONTEXT_FILE_STORAGE.getBean("testTool")},
-			{"Memory storage", (TestTool) Common.CONTEXT_MEM_STORAGE.getBean("testTool")},
-			{"Database storage", (TestTool) Common.CONTEXT_DB_STORAGE.getBean("testTool")}
-		});
-	}
-
-	@Parameter(0)
-	public String storageDescription;
-
-	@Parameter(1)
-	public TestTool testTool;
-
-	private String reportName;
-
+public class TestRerun extends ReportRelatedTestCase {
 	public static final String RESOURCE_PATH = "nl/nn/testtool/test/junit/rerun/";
 	private static Integer i;
 
-	@Rule
-	public TestName name = new TestName();
-
 	@Before
 	public void setUp() {
-		reportName = Common.methodNameWithoutTestParameter(name.getMethodName());
+		super.setUp();
 		i = 0;
 	}
 
