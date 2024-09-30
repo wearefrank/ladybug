@@ -19,7 +19,6 @@ import java.io.ByteArrayInputStream;
 import java.io.StringReader;
 import java.lang.invoke.MethodHandles;
 import java.math.BigDecimal;
-import java.sql.Blob;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -39,7 +38,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementSetter;
-import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -74,7 +72,7 @@ import nl.nn.testtool.util.SearchUtil;
  */
 // Without proxyTargetClass = true the test webapp will give: Bean named 'proofOfMigrationStorage' is expected to be of
 // type 'nl.nn.testtool.storage.proofofmigration.ProofOfMigrationStorage' but was actually of type 'jdk.proxy3.$Proxy26'
-@EnableTransactionManagement(proxyTargetClass = true)
+// @EnableTransactionManagement(proxyTargetClass = true)
 // REQUIRES_NEW to prevent interference with transactions in the application using Ladybug. E.g. when an error occurs in
 // a Frank!Framework adapter the insert of the Ladybug report should not be rolled back (which happens otherwise because
 // transactions are thread bound and Ladybug runs in the same thread). With NOT_SUPPORTED PostgreSQL will complain about
@@ -229,7 +227,7 @@ public class DatabaseStorage implements LogStorage, CrudStorage {
 								i++;
 							}
 						}
-						ps.setBlob(i, new ByteArrayInputStream(reportBytes));
+						ps.setBytes(i, reportBytes);
 						i++;
 						if (isStoreReportXml()) {
 							ps.setClob(i, new StringReader(reportXml));
@@ -270,15 +268,15 @@ public class DatabaseStorage implements LogStorage, CrudStorage {
 		String query = "select report from " + getTable() + " where " + getStorageIdColumn() + " = ?";
 		log.debug("Get report query: " + query);
 		List<Report> result = ladybugJdbcTemplate.query(query, new Object[]{storageId}, new int[] {Types.INTEGER},
-				(resultSet, rowNum) -> getReport(storageId, resultSet.getBlob(1)));
+				(resultSet, rowNum) -> getReport(storageId, resultSet.getBytes(1)));
 		return result.get(0);
 	}
 
 	// StorageException is allowed by Storage.getReport(), hence no need to handle it in the lambda expression that will
 	// call this method
 	@SneakyThrows
-	private static Report getReport(Integer storageId, Blob blob) {
-		return Import.getReport(blob.getBinaryStream(), storageId, blob.length(), log);
+	private static Report getReport(Integer storageId, byte[] blob) {
+		return Import.getReport(new ByteArrayInputStream(blob), storageId, (long) blob.length, log);
 	}
 
 	@Override
