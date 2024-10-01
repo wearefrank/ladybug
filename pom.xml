@@ -503,6 +503,11 @@
 
   <profiles>
     <profile>
+      <!-- The name is confusing, because this profile configures how to do the copyright check.
+           When the profile is disabled, then the copyright check is not done.
+           Property maven.skip.copyright is the way to skip/allow copyright checking.
+           That property name explains itself properly.
+      -->
       <id>skip-copyright</id>
       <activation>
         <property>
