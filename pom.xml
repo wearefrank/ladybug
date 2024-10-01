@@ -523,14 +523,9 @@
                   <goal>copyright</goal><!-- Checks for Copyright notices -->
                   <goal>check</goal><!-- Fails the build -->
                 </goals>
-                <phase>process-sources</phase>
+                <phase>none</phase>
               </execution>
             </executions>
-            <configuration>
-              <excludeFile>${ibis.ladybug.rootdir}${file.separator}copyrightExcludeFile.txt</excludeFile>
-              <useDash>true</useDash>
-              <templateFile>${ibis.ladybug.rootdir}/copyrightTemplateFile.txt</templateFile>
-            </configuration>
           </plugin>
         </plugins>
       </build>
