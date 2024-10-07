@@ -171,6 +171,11 @@ public class TestTool {
 	}
 
 	public void setRerunner(Rerunner rerunner) {
+		if (rerunner == null) {
+			log.warn("TestTool.setRerunner() is called with null argument");
+		} else {
+			log.debug("TestTool.setRerunner() is called with non-null argument");
+		}
 		this.rerunner = rerunner;
 	}
 	
@@ -1000,8 +1005,10 @@ public class TestTool {
 		String errorMessage = null;
 		if (rerunner == null && debugger == null) {
 			errorMessage = "No rerunner or debugger configured";
+			log.error("No rerunner or debugger configured");
 		} else if (rerunner != null && debugger != null) {
 			errorMessage = "Both rerunner and debugger configured";
+			log.error("Both rerunner and debugger configured");
 		} else {
 			boolean reportGeneratorEnabled = isReportGeneratorEnabled();
 			if (reportGeneratorEnabled) {
