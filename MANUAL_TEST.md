@@ -13,6 +13,7 @@ Ladybug is tested by [automated tests](./README.md#cicd). These automated tests 
 - [Tests](#tests)
   - [Test 10: Debug tab tree view, layout of checkpoints](#test-10-debug-tab-tree-view-layout-of-checkpoints)
   - [Test 20: Views in the debug tree](#test-20-views-in-the-debug-tree)
+  - [Test 30: Authorization](#test-30-authorization)
 
 # Preparations
 
@@ -164,3 +165,21 @@ TODO: Then continue writing this test.
 
 > [!NOTE]
 > You can apply a filter on a column that exists in the white box view but not in the white box view with less metadata. When you apply such a filter and then switch to the view with less metadata, the filter is allowed to remain. This is OK when there is a clear indicator that the filter is still applied and if it is possible (for example with the clear button) to remove all filters.
+
+### Test 30: Authorization
+
+**Step 10:** This test starts with the situation of test 10.
+
+**Step 20:** In the Frank!Runner checkpoint, add the following to `build/<Apache Tomcat dir>/conf/catalina.properties`:
+
+    application.security.testtool.authentication.type=IN_MEMORY
+    application.security.testtool.authentication.username=Admin
+    application.security.testtool.authentication.password=Nimda
+
+**Step 30:** Start the Frank!Framework.
+
+**Step 40:** Browse to the Frank!Console. You should be allowed to view this without logging in.
+
+**Step 50:** Browse to Ladybug. You should see a login dialog to enter the credentials. After providing these, you should have access to Ladybug.
+
+**Step 60:** Rerun a report. Check that rerunning is allowed and that rerunning succeeds for a report that succeeded when created.
