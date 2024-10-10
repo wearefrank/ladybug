@@ -5,9 +5,6 @@
         <Receiver>
             <JavaListener name="IngestDocument" />
         </Receiver>
-        <Receiver>
-            <ApiListener uriPattern="ingestDocument" method="POST" />
-        </Receiver>
         <Pipeline>
             <Exits>
                 <Exit name="success" state="SUCCESS" />
@@ -48,9 +45,9 @@
                 <Forward name="success" path="success" />
                 <Forward name="exception" path="serverError" />
             </SenderPipe>
-            <FixedResultPipe name="answerBadRequest" returnString="bad request">
+            <EchoPipe name="answerBadRequest" getInputFromFixedValue="bad request">
                 <Forward name="success" path="badRequest" />
-            </FixedResultPipe>
+            </EchoPipe>
         </Pipeline>
     </Adapter>
 </Configuration>
