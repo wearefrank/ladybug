@@ -17,6 +17,8 @@ package nl.nn.testtool.test.junit;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -24,8 +26,10 @@ import java.util.Date;
 
 import javax.xml.parsers.ParserConfigurationException;
 
+import nl.nn.testtool.MessageEncoder;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
 import org.junit.rules.TestName;
 import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
@@ -45,6 +49,40 @@ public class TestMessageEncoder {
 
 	@Rule
 	public TestName name = new TestName();
+
+	@Test
+	public void encode_and_decode_boolean_true() {
+		MessageEncoder instance = new MessageEncoderImpl();
+		MessageEncoder.ToStringResult encoded = instance.toString(true, null);
+		Assertions.assertEquals("true", encoded.getString());
+		Assertions.assertEquals("java.lang.Boolean", encoded.getMessageClassName());
+		Checkpoint checkpoint = new Checkpoint();
+		checkpoint.setMessage(encoded.getString());
+		checkpoint.setEncoding(encoded.getEncoding());
+		checkpoint.setMessageClassName(encoded.getMessageClassName());
+		Object back = instance.toObject(checkpoint);
+		if(! (back instanceof Boolean)) {
+			fail("Expected to get back Boolean");
+		}
+		Assertions.assertTrue((Boolean) back);
+	}
+
+	@Test
+	public void encode_decode_boolean_false() {
+		MessageEncoder instance = new MessageEncoderImpl();
+		MessageEncoder.ToStringResult encoded = instance.toString(false, null);
+		Assertions.assertEquals("false", encoded.getString());
+		Assertions.assertEquals("java.lang.Boolean", encoded.getMessageClassName());
+		Checkpoint checkpoint = new Checkpoint();
+		checkpoint.setMessage(encoded.getString());
+		checkpoint.setEncoding(encoded.getEncoding());
+		checkpoint.setMessageClassName(encoded.getMessageClassName());
+		Object back = instance.toObject(checkpoint);
+		if(! (back instanceof Boolean)) {
+			fail("Expected to get back Boolean");
+		}
+		assertFalse((Boolean) back);
+	}
 
 	@Test
 	public void testToString() throws SAXException, IOException, ParserConfigurationException, StorageException {
