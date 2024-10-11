@@ -8,16 +8,25 @@ Ladybug is tested by [automated tests](./README.md#cicd). These automated tests 
 - [Preparations](#preparations)
   - [Bruno](#bruno)
   - [Checkout](#checkout)
-  - [Configure Frank!Runner to run backend](#configure-frankrunner-to-run-backend)
-  - [Start up](#start-up)
+  - [Configure Frank!Runner to run backend - latest code](#configure-frankrunner-to-run-backend-latest-code)
+  - [Start up - latest code](#start-up-latest-code)
+  - [Configure Frank!Runner to run backend - Nexus release](#configure-frankrunner-to-run-backend-nexus-release)
+  - [Start up - Nexus release](#start-up-nexus-release)
 - [Tests](#tests)
   - [Test 10: Debug tab tree view, layout of checkpoints](#test-10-debug-tab-tree-view-layout-of-checkpoints)
   - [Test 20: Views in the debug tree](#test-20-views-in-the-debug-tree)
   - [Test 30: Authorization](#test-30-authorization)
+  - [Test 40: Stubbing](#test-40-stubbing)
 
 # Preparations
 
-The options you have to run ladybug are described in [the readme](./README.md#how-to-change-and-test-ladybug). Here we present more detailed instructions. 
+The options you have to run ladybug are described in [the readme](./README.md#how-to-change-and-test-ladybug). Here we present more detailed instructions. You some different options about what code you want to test:
+
+* You can test the Nexus release of the Frank!Framework and the ladybug that is included in that release.
+* You can test the latest code of the Frank!Framework, ladybug and ladybug-frontend.
+* You can test the latest code of the Frank!Framework and ladybug, but use the Nexus release of ladybug-frontend that is referenced in the `pom.xml` of the ladybug backend.
+
+The instructions below make clear what to do for each of these choices.
 
 > [!WARNING]
 > The instructions below were mostly executed using a MinGW command
@@ -43,11 +52,17 @@ description. Get it from https://www.usebruno.com/.
 * Clone the Frank!Runner, the Frank!Framework, ladybug and ladybug-frontend with the following commands:
 
   * `git clone https://github.com/wearefrank/frank-runner`.
-  * `git clone https://github.com/frankframework/frankframework`.
-  * `git clone https://github.com/wearefrank/ladybug`.
-* Check out the versions you want for the F!F and ladybug. You can not choose arbitrarily what vesions to combine. The ladybug backend version used by the FF! is in `work/frankframework/ladybug/pom.xml`, the line `<ladybug.version>...</ladybug.version>` under `<properties>`. That value should be the artifact version mentioned in `work/ladybug/pom.xml`.
+  * `git clone https://github.com/frankframework/frankframework` (not needed to test Nexus release of FF!).
+  * `git clone https://github.com/wearefrank/ladybug` (not needed to test Nexus release of FF!).
+  * `git clone https://github.com/wearefrank/ladybug-frontend` (only needed if latest code of ladybug-frontend is tested).
+* You should have a different clone of https://github.com/wearefrank/ladybug to read this test description from and to reference test configurations from. We refer to it as `ladybug-test`.
+* In directory `work`, check out the versions you want for the F!F and ladybug. You can not choose arbitrarily what vesions to combine. The ladybug backend version used by the FF! is in `work/frankframework/ladybug/pom.xml`, the line `<ladybug.version>...</ladybug.version>` under `<properties>`. That value should be the artifact version mentioned in `work/ladybug/pom.xml`. You can omit this step for now if you want to test the latest ladybug-frontend code.
+* If you test the latest code of ladybug-frontend, do the following:
+  * Check out the version of ladybug-frontend you want.
+  * File `work/ladybug/pom.xml` should be updated to reference the SNAPSHOT version that is in `work/ladybug-frontend/pom.xml`. You can do all updates of `pom.xml` files by running a single ANT script. See `work/frank-runner/specials/util/syncPomVersions/`. If you run this script, no additional manual manipulations of `pom.xml` files are needed.
+  * Manually run the Maven build of `work/ladybug-frontend`.
 
-### Configure Frank!Runner to run backend
+### Configure Frank!Runner to run backend (latest code)
 
 * Change directory to `work/frank-runner/specials/ladybug`.Copy `build-example.properties` to `build.properties`.
 * Uncomment line `test.with.iaf=true` in the `build.properties` you created in the previous step. Uncomment some other lines if you want to speed up the build.
@@ -56,9 +71,23 @@ description. Get it from https://www.usebruno.com/.
 * Search for the line `# configurations.dir=...`. Replace it by `configurations.dir=<path-to-ladybug-checkout-with-this-test-description>/manual-test/configurations`.
 * Uncomment some lines of `build.properties` to speed up the build of the FF!.
 
-### Start up
+### Start up (latest code)
 
 * Change directory to `work/frank-runner/specials/ladybug`. Run the command `./restart.bat`.
+
+### Configure Frank!Runner to run backend (Nexus release)
+
+In this case, the `build.properties` files you have in subdirectories of `work/frank-runner/specials` are not used. Create `work/frank-runner/build.properties` with the following contents:
+
+    # Use this one to allow relative path for project.dir
+    # Path given is itself relative to work/frank-runner
+    projects.dir=..
+
+    project.dir=<ladybug-test>/manual-test
+
+### Start up (Nexus release)
+
+* Change directory to `work/frank-runner`. Run command `./restart.bat`.
 
 # Tests
 
@@ -183,3 +212,19 @@ TODO: Then continue writing this test.
 **Step 50:** Browse to Ladybug. You should see a login dialog to enter the credentials. After providing these, you should have access to Ladybug.
 
 **Step 60:** Rerun a report. Check that rerunning is allowed and that rerunning succeeds for a report that succeeded when created.
+
+### Test 40: Stubbing
+
+**Step 10:** Open Test a Pipeline. Run adapter `processXml` with input message `<person>Jan Smit</person>`. Check that this produces SUCCESS.
+
+**Step 20:** Go to Ladybug and find the report produced by the previous step. Open it in the debug tree.
+
+**Step 30:** Create two copies in the Test tab. One with Stub Senders, the other with Never. Give the two copies meaningful descriptions to distinguish them. See picture below to locate that control:
+
+![Stub senders control](./manual-test/stubSendersControl.jpg)
+
+**Step 40:** Stop the Frank!Framework. Update file `<ladybug-test>/manual-test/configurations/processXml/getName.xsl` so that an extra string is added to the output. Edit line `<xsl:value-of select="." />`. The aim is to change the result of the `processXml` adapter.
+
+**Step 50:** Restart the FF! and rerun the two reports. The one with stubbed senders should succeed. The one without stubbing should fail.
+
+**Step 60:** Stop the FF! and undo the change to `<ladybug-test>/manual-test/configurations/processXml/getName.xsl`.
