@@ -254,3 +254,15 @@ TODO: Then continue writing this test.
 **Step 70:** For each selection of nodes, check that the corresponding values are shown to the bottom. Check that if the values on both sides are different, the differences are highlighted.
 
 **Step 80:** Change the node comparison algorithm to "None". Select nodes to the left and to the right. Check that selecting a node on one side does not affect the other side.
+
+### Test 70: Error should be shown if there is a low-level error
+
+This test should be executed with the ladybug test webapp. The maintainers of Ladybug know how to start this, so documenting the required preparations is postponed.
+
+**Step 10:** Start the ladybug test webapp and create a report.
+
+**Step 20:** Stop ladybug.
+
+**Step 30:** Locate the directory that holds the stored ladybug reports (should be a subdir of `data`). Rename it.
+
+**Step 30:** Restart ladybug. Check that an error message is shown.
