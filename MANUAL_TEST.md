@@ -228,3 +228,29 @@ TODO: Then continue writing this test.
 **Step 50:** Restart the FF! and rerun the two reports. The one with stubbed senders should succeed. The one without stubbing should fail.
 
 **Step 60:** Stop the FF! and undo the change to `<ladybug-test>/manual-test/configurations/processXml/getName.xsl`.
+
+### Test 50: Toast messages
+
+**Step 10:** Go to the debug tab and select a report. Press the delete button.
+
+**Step 20:** There should appear a toast message to the bottom right saying "data loaded!". Click that toast message before it disappears.
+
+**Step 30:** A larger window should appear with the toast message in it and possibly more detailed information.
+
+### Test 60: Rerun and compare
+
+**Step 10:** Run Adapter1a. Copy the resulting report to the test tab. Press edit. Change the message of the last checkpoint. Save.
+
+**Step 20:** In the test tab, rerun the edited report. It should produce a negative result (red message to the right).
+
+**Step 30:** Press compare.
+
+**Step 40:** There should be two tree views, one to the left and one to the right. At both sides, all nodes except the last should be black. The last node at both sides should be red.
+
+**Step 50:** Check that the node comparison algorithm is "Path".
+
+**Step 60:** Select nodes on the left and on the right. Each time a node is selected on one side, the corresponding node should be selected on the other side.
+
+**Step 70:** For each selection of nodes, check that the corresponding values are shown to the bottom. Check that if the values on both sides are different, the differences are highlighted.
+
+**Step 80:** Change the node comparison algorithm to "None". Select nodes to the left and to the right. Check that selecting a node on one side does not affect the other side.
