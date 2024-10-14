@@ -17,6 +17,9 @@ Ladybug is tested by [automated tests](./README.md#cicd). These automated tests 
   - [Test 20: Views in the debug tree](#test-20-views-in-the-debug-tree)
   - [Test 30: Authorization](#test-30-authorization)
   - [Test 40: Stubbing](#test-40-stubbing)
+  - [Test 50: Toast messages](#test-50-toast-messages)
+  - [Test 60: Rerun and compare](#test-60-rerun-and-compare)
+  - [Test 70: Low-level error should be shown](#test-70-low-level-error-should-be-shown)
 
 # Preparations
 
@@ -255,7 +258,7 @@ TODO: Then continue writing this test.
 
 **Step 80:** Change the node comparison algorithm to "None". Select nodes to the left and to the right. Check that selecting a node on one side does not affect the other side.
 
-### Test 70: Error should be shown if there is a low-level error
+### Test 70: Low-level error should be shown
 
 This test should be executed with the ladybug test webapp. The maintainers of Ladybug know how to start this, so documenting the required preparations is postponed.
 
