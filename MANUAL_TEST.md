@@ -13,6 +13,7 @@ Ladybug is tested by [automated tests](./README.md#cicd). These automated tests 
   - [Configure Frank!Runner to run backend - Nexus release](#configure-frankrunner-to-run-backend-nexus-release)
   - [Start up - Nexus release](#start-up-nexus-release)
 - [Tests](#tests)
+  - [Test 5: Version numbers](#test-5-version-numbers)
   - [Test 10: Debug tab tree view, layout of checkpoints](#test-10-debug-tab-tree-view-layout-of-checkpoints)
   - [Test 20: Views in the debug tree](#test-20-views-in-the-debug-tree)
   - [Test 30: Authorization](#test-30-authorization)
@@ -94,6 +95,10 @@ In this case, the `build.properties` files you have in subdirectories of `work/f
 
 # Tests
 
+### Test 5: Version numbers
+
+**Step 10:** Open ladybug. Check whether the version numbers of the ladybug backend and the ladybug frontend are shown somewhere.
+
 ### Test 10: Debug tab tree view, layout of checkpoints
 
 **Step 10:** In the Frank!Framework, use "Test a Pipeline" to run adapter "processXml" with input message `<person>Jan Smit</person>
@@ -102,16 +107,20 @@ In this case, the `build.properties` files you have in subdirectories of `work/f
 **Step 20:** In the Frank!Framework, use "Test a Pipeline" to run adapter "processXml" with input message `<person2>Jan Smit</person2>
 `.
 
-**Step 30:** In Ladybug (on port 4200), go to the Debug tab. Press the refresh button to refresh the table of reports. Check that the following are true:
+**Step 30:** In Ladybug, go to the Debug tab. Press the refresh button to refresh the table of reports. Check that the following are true:
 
 * The last two reports have in their "Name" column the value `Pipeline processXml`.
 * The second-last report is green to indicate success.
 * The last report is red to indicate failure.
 
-**Step 40:** Open the second-last report (the successful one). It should appear in the tree view below the table. Check that at least the following nodes exist with the shown indentation:
+**Step 40:** Open the second-last report (the successful one). It should appear in the tree view below the table.
+
+**Step 43:** Check that not the root node of the report but the child node right below that is selected by default.
+
+**Step 46:** Check that at least the following nodes exist with the shown indentation:
 
 * Directory icon `Pipeline processXml`.
-  * Right arrow `Pipeline processXml`.
+  * Right arrow `Pipeline processXml` (selected by default, **step 43**).
     * Right arrow `Pipe validate`.
       * Information `Pipe validate`.
       * Left arrow `Pipe validate`.
