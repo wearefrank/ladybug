@@ -274,4 +274,10 @@ public class TestToolApi extends ApiBase {
 		return Response.ok(strategies).build();
 	}
 
+	@GET
+	@Path("/version")
+	@Consumes(MediaType.APPLICATION_JSON)
+	public Response getVersion() {
+		return Response.ok(testTool.getVersion()).build();
+	}
 }
