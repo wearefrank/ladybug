@@ -31,7 +31,7 @@ import nl.nn.testtool.Checkpoint;
 import nl.nn.testtool.Report;
 import nl.nn.testtool.TestTool;
 import nl.nn.testtool.storage.StorageException;
-import nl.nn.testtool.storage.database.DatabaseStorage;
+import nl.nn.testtool.storage.database.DatabaseLogStorage;
 
 /**
  * Utilize the proof of migration storage to use the Ladybug as a front-end for the proof of migration table. When
@@ -45,7 +45,7 @@ import nl.nn.testtool.storage.database.DatabaseStorage;
  * @author Jaco de Groot
  */
 //@Dependent disabled for Quarkus for now because of the use of JdbcTemplate
-public class ProofOfMigrationStorage extends DatabaseStorage {
+public class ProofOfMigrationStorage extends DatabaseLogStorage {
 	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 	// Use i. (instead of m.) to help the query optimizer to start with the IDS table instead of the MESSAGES table
 	private static final String GROUP_BY = "group by COMPONENT, i.CORRELATION_ID";
@@ -252,16 +252,6 @@ public class ProofOfMigrationStorage extends DatabaseStorage {
 
 	@Override
 	public void store(Report report) throws StorageException {
-		throw new StorageException("Not implemented!");
-	}
-
-	@Override
-	public void update(Report report) throws StorageException {
-		throw new StorageException("Not implemented!");
-	}
-
-	@Override
-	public void delete(Report report) throws StorageException {
 		throw new StorageException("Not implemented!");
 	}
 
