@@ -1,5 +1,5 @@
 /*
-   Copyright 2020, 2022 WeAreFrank!, 2018 Nationale-Nederlanden
+   Copyright 2020, 2022, 2024 WeAreFrank!, 2018 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,11 +15,18 @@
 */
 package nl.nn.testtool.storage;
 
+import nl.nn.testtool.Config;
+import nl.nn.testtool.MetadataExtractor;
 import nl.nn.testtool.Report;
 
 /**
- * Storage (optimized) for logging. Targeted at minimizing the overhead on the
- * process being logged (minimal delay and interruptions).
+ * Storage (optimized) for (secure) logging storing data for a time or size limited period. This storage is targeted at
+ * minimizing the overhead on the process being logged (minimal delay and interruptions) and being secure in the sense
+ * that it should not be possible for a user to change the data that has been logged by the system (so malicious persons
+ * cannot change their trails). Hence for production systems it is strongly advisable to use a storage that does not
+ * implement {@link CrudStorage} as {@link Config#debugStorage(MetadataExtractor metadataExtractor) debug storage}.
+ * Although the Debug tab does support a CrudStorage (in which case reports can be changed) this is for specific use
+ * cases where people don't expect the Debug tab to tell the "truth" about what has happened in a system.
  * 
  * @author Jaco de Groot
  */

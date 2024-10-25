@@ -18,10 +18,7 @@ package nl.nn.testtool.filter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.HashMap;
 
-import nl.nn.testtool.MetadataExtractor;
-import nl.nn.testtool.storage.CrudStorage;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import jakarta.annotation.Resource;
@@ -30,11 +27,12 @@ import jakarta.inject.Inject;
 import lombok.Getter;
 import lombok.Setter;
 import nl.nn.testtool.Checkpoint;
+import nl.nn.testtool.MetadataExtractor;
 import nl.nn.testtool.Report;
 import nl.nn.testtool.echo2.BeanParent;
 import nl.nn.testtool.echo2.Echo2Application;
 import nl.nn.testtool.echo2.reports.ReportsComponent;
-import nl.nn.testtool.storage.LogStorage;
+import nl.nn.testtool.storage.Storage;
 
 /**
  * @author Jaco de Groot
@@ -43,7 +41,7 @@ import nl.nn.testtool.storage.LogStorage;
 public class View implements BeanParent {
 	protected String name;
 	protected String nodeLinkStrategy;
-	private @Setter @Getter @Inject @Autowired LogStorage debugStorage;
+	private @Setter @Getter @Inject @Autowired Storage debugStorage;
 	private @Setter @Getter @Inject @Resource(name="metadataNames") List<String> metadataNames;
 	private Map<String, String> metadataFilter;
 	private List<CheckpointMatcher> checkpointMatchers;

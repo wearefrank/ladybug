@@ -19,10 +19,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import jakarta.annotation.PostConstruct;
-import nl.nn.testtool.storage.StorageException;
-
-public class DatabaseTestStorage extends DatabaseStorage {
+public class DatabaseTestStorage extends DatabaseCrudStorage {
 
 	@Override
 	public String getTable() {
@@ -36,17 +33,6 @@ public class DatabaseTestStorage extends DatabaseStorage {
 	@Override
 	public List<String> getMetadataNames() {
 		return new ArrayList<String>(Arrays.asList("storageId", "path", "name", "description"));
-	}
-
-	@Override
-	public long getMaxStorageSize() {
-		return -1L;
-	}
-
-	@Override
-	@PostConstruct
-	public void init() throws StorageException {
-		super.init();
 	}
 
 }

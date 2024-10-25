@@ -1,5 +1,5 @@
 /*
-   Copyright 2020-2023 WeAreFrank!, 2018-2019 Nationale-Nederlanden
+   Copyright 2020-2024 WeAreFrank!, 2018-2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -809,8 +809,10 @@ public class ReportsComponent extends BaseComponent implements BeanParent, Actio
 		if (testTool.warnMessageCapturerWaitingForClose()) {
 			displayError("One or more reports are finished but waiting for more than 30 seconds for one or more message capturers to close");
 		}
-		LogStorage storage = getSelectedView().getDebugStorage();
-		displayError(storage.getWarningsAndErrors());
+		Storage storage = getSelectedView().getDebugStorage();
+		if (storage instanceof LogStorage) {
+			displayError(((LogStorage)storage).getWarningsAndErrors());
+		}
 		try {
 			numberOfMetadataRecords.setText("/ " + storage.getSize());
 		} catch(StorageException storageException) {

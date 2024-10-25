@@ -22,7 +22,7 @@
 
 	<bean
 		name="debugStorage"
-		class="nl.nn.testtool.storage.database.DatabaseStorage" autowire="byName" depends-on="ladybugDatabaseChangelog">
+		class="nl.nn.testtool.storage.database.DatabaseLogStorage" autowire="byName" depends-on="ladybugDatabaseChangelog">
 		<property name="table" value="LADYBUG"/>
 		<property name="metadataExtractor" ref="metadataExtractor"/>
 	</bean>

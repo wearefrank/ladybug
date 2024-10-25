@@ -51,8 +51,7 @@ import nl.nn.testtool.Config;
 import nl.nn.testtool.MetadataExtractor;
 import nl.nn.testtool.MetadataFieldExtractor;
 import nl.nn.testtool.Report;
-import nl.nn.testtool.storage.CrudStorage;
-import nl.nn.testtool.storage.LogStorage;
+import nl.nn.testtool.storage.Storage;
 import nl.nn.testtool.storage.StorageException;
 import nl.nn.testtool.util.Export;
 import nl.nn.testtool.util.Import;
@@ -82,7 +81,7 @@ import nl.nn.testtool.util.SearchUtil;
 // transaction levels.
 @Transactional(propagation = Propagation.REQUIRES_NEW)
 // @Dependent disabled for Quarkus for now because of the use of JdbcTemplate
-public class DatabaseStorage implements LogStorage, CrudStorage {
+public class DatabaseStorage implements Storage {
 	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 	protected static final String TIMESTAMP_PATTERN = "yyyy-MM-dd'T'HH:mm:ss.SSS";
 	protected @Setter @Getter String name;
@@ -164,7 +163,6 @@ public class DatabaseStorage implements LogStorage, CrudStorage {
 		}
 	}
 
-	@Override
 	public void store(Report report) throws StorageException {
 		byte[] reportBytes = Export.getReportBytes(report);
 		String reportXml = report.toXml();
@@ -246,24 +244,6 @@ public class DatabaseStorage implements LogStorage, CrudStorage {
 	}
 
 	@Override
-	public void storeWithoutException(Report report) {
-		try {
-			store(report);
-		} catch(Throwable throwable) {
-			lastExceptionMessage = throwable.getMessage();
-			// When StorageException is should already be logged
-			if (!(throwable instanceof StorageException)) {
-				log.error("Caught unexpected throwable storing report", throwable);
-			}
-		}
-	}
-
-	@Override
-	public String getWarningsAndErrors() {
-		return lastExceptionMessage;
-	}
-
-	@Override
 	public Report getReport(Integer storageId) throws StorageException {
 		String query = "select report from " + getTable() + " where " + getStorageIdColumn() + " = ?";
 		log.debug("Get report query: " + query);
@@ -279,23 +259,7 @@ public class DatabaseStorage implements LogStorage, CrudStorage {
 		return Import.getReport(new ByteArrayInputStream(blob), storageId, (long) blob.length, log);
 	}
 
-	@Override
-	public void update(Report report) throws StorageException {
-		delete(report.getStorageId());
-		store(report);
-	}
-
-	@Override
-	public void delete(Report report) throws StorageException {
-		delete(report.getStorageId());
-	}
-
-	private void delete(Integer storageId) throws StorageException {
-		String query = "delete from " + getTable() + " where " + getStorageIdColumn() + " = ?";
-		delete(query, storageId);
-	}
-
-	private void delete(String query, int i) throws StorageException {
+	protected void delete(String query, int i) throws StorageException {
 		log.debug("Delete report query (with param value " + i + "): " + query);
 		ladybugJdbcTemplate.update(query,
 				new PreparedStatementSetter() {
