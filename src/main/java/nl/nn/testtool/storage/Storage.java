@@ -1,5 +1,5 @@
 /*
-   Copyright 2020-2022 WeAreFrank!, 2018 Nationale-Nederlanden
+   Copyright 2020-2022, 2024 WeAreFrank!, 2018 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -51,7 +51,7 @@ public interface Storage {
 
 	/**
 	 * Get a report with the specified id. Returns null when the report could not be found. The report returned should
-	 * always be a new object so different calls for the same storageId will not get a reference to the same object* and
+	 * always be a new object so different calls for the same storageId will not get a reference to the same object and
 	 * interfere with each other when they change the returned report. 
 	 * 
 	 * @param storageId ...

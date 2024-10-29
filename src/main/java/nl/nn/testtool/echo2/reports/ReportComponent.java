@@ -1,5 +1,5 @@
 /*
-   Copyright 2018-2023 WeAreFrank!
+   Copyright 2018-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -380,6 +380,8 @@ public class ReportComponent extends MessageComponent {
 		report.flushCachedXml();
 		if (report.getStorage() instanceof CrudStorage) {
 			displayAndLogError(Echo2Application.update((CrudStorage)report.getStorage(), report));
+		} else {
+			displayError("Storage with name " + report.getStorage().getName() + " is not a CrudStorage");
 		}
 		messageTextArea.setText(report.toXml());
 		nameTextField.setText(report.getName());
