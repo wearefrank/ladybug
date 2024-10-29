@@ -35,6 +35,10 @@ public interface Storage {
 
 	public List getStorageIds() throws StorageException;
 
+	default boolean isCrudStorage() {
+		return this instanceof CrudStorage;
+	}
+
 	/**
 	 * Get a list of metadata records. A metadata record is also a list and
 	 * contains the metadata for a specific report.
