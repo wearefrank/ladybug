@@ -249,7 +249,9 @@ public class DatabaseStorage implements Storage {
 		log.debug("Get report query: " + query);
 		List<Report> result = ladybugJdbcTemplate.query(query, new Object[]{storageId}, new int[] {Types.INTEGER},
 				(resultSet, rowNum) -> getReport(storageId, resultSet.getBytes(1)));
-		return result.get(0);
+		Report report = result.get(0);
+		report.setStorage(this);
+		return report;
 	}
 
 	// StorageException is allowed by Storage.getReport(), hence no need to handle it in the lambda expression that will

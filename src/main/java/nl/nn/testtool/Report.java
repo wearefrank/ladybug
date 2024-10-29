@@ -168,7 +168,7 @@ public class Report implements Serializable {
 	}
 
 	public boolean isCrudStorage() {
-		return this.storage.isCrudStorage();
+		return storage.isCrudStorage();
 	}
 
 	public void setStorageId(Integer storageId) {
