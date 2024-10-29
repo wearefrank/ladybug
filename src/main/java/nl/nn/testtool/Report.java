@@ -167,6 +167,10 @@ public class Report implements Serializable {
 		return storage;
 	}
 
+	public boolean isCrudStorage() {
+		return storage.isCrudStorage();
+	}
+
 	public void setStorageId(Integer storageId) {
 		transientStorageId = storageId;
 	}

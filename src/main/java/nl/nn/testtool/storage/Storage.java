@@ -69,4 +69,8 @@ public interface Storage {
 	public List getFilterValues(String column) throws StorageException;
 
 	public String getUserHelp(String column);
+
+	default boolean isCrudStorage() {
+		return this instanceof CrudStorage;
+	}
 }
