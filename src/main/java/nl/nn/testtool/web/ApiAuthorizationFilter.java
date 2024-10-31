@@ -97,7 +97,7 @@ public class ApiAuthorizationFilter implements ContainerRequestFilter {
 	public void setDataAdminRoles(List<String> dataAdminRoles) {
 		if (constructorDone) log.info("Set data admin roles");
 		addConfigurationPart("POST/"   + ApiServlet.LADYBUG_API_PATH + "/testtool$", dataAdminRoles);
-		addConfigurationPart("DELETE/" + ApiServlet.LADYBUG_API_PATH + "/in-progress/.*$", dataAdminRoles);
+		addConfigurationPart("DELETE/" + ApiServlet.LADYBUG_API_PATH + "/testtool/in-progress/.*$", dataAdminRoles);
 		addConfigurationPart("DELETE/" + ApiServlet.LADYBUG_API_PATH + "/report/.*$", dataAdminRoles);
 		addConfigurationPart("PUT/"    + ApiServlet.LADYBUG_API_PATH + "/report/.*$", dataAdminRoles);
 		addConfigurationPart("POST/"   + ApiServlet.LADYBUG_API_PATH + "/report/.*$", dataAdminRoles);
