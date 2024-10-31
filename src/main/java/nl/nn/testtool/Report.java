@@ -167,8 +167,20 @@ public class Report implements Serializable {
 		return storage;
 	}
 
+	/**
+	 * Convenient method (for the frontend) to check (without calling {@link #getStorage()}) whether the underlying
+	 * storage of this report is a {@link CrudStorage}. Based on this the frontend determines whether it should be
+	 * possible to edit the report or not.
+	 * 
+	 * @return true when underlying storage is a {@link CrudStorage}, false otherwise
+	 */
 	public boolean isCrudStorage() {
-		return storage.isCrudStorage();
+		// Storage is null for reports in progress
+		if (storage == null) {
+			return false;
+		} else {
+			return storage.isCrudStorage();
+		}
 	}
 
 	public void setStorageId(Integer storageId) {
