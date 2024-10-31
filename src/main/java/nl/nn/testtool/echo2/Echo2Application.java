@@ -240,7 +240,7 @@ public class Echo2Application extends ApplicationInstance implements Application
 		return report;
 	}
 
-	public void openReport(Report report, String isOpenReportAllowed) {
+	public void openReport(Report report, String isOpenReportAllowed, boolean showCheckpointIds) {
 //		tabPane.setActiveTabIndex(0);
 //		reportsComponent.openReport(report, false);
 
@@ -319,6 +319,10 @@ public class Echo2Application extends ApplicationInstance implements Application
 				report.setGlobalReportXmlTransformer(reportXmlTransformer);
 				treePane.addReport(report, views.getDefaultView(), false);
 			}
+
+			// After init
+
+			treePane.getReportsTreeCellRenderer().setShowReportAndCheckpointIds(showCheckpointIds);
 		}
 	}
 

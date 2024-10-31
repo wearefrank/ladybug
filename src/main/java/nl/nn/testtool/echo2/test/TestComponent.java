@@ -692,13 +692,11 @@ public class TestComponent extends BaseComponent implements BeanParent, ActionLi
 			refresh();
 		} else if (e.getActionCommand().equals("ToggleCheckpointIds")) {
 			showCheckpointIds = showCheckpointIdsCheckbox.isSelected();
-			treePane.getReportsTreeCellRenderer().setShowReportAndCheckpointIds(showCheckpointIds);
 		} else if (e.getActionCommand().equals("RestoreDefaults")) {
 			showReportStorageIds = false;
 			showReportStorageIdsCheckbox.setSelected(false);
 			showCheckpointIds = false;
 			showCheckpointIdsCheckbox.setSelected(false);
-			treePane.getReportsTreeCellRenderer().setShowReportAndCheckpointIds(showCheckpointIds);
 			refresh();
 		} else if (e.getActionCommand().equals("DeleteSelected")) {
 			if (minimalOneSelected()) {
@@ -843,7 +841,7 @@ public class TestComponent extends BaseComponent implements BeanParent, ActionLi
 			Integer storageId = new Integer(row.getId());
 			RunResult runResult = reportRunner.getResults().get(storageId);
 			if (e.getActionCommand().equals("Open")) {
-				echo2Application.openReport(report, ReportsComponent.OPEN_REPORT_ALLOWED);
+				echo2Application.openReport(report, ReportsComponent.OPEN_REPORT_ALLOWED, showCheckpointIds);
 			} else {
 				Report runResultReport = getRunResultReport(runResult.correlationId);
 				if (runResultReport != null) {
