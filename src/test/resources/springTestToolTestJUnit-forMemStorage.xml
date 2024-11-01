@@ -20,7 +20,7 @@
 		</property>
 	</bean>
 
-	<bean name="debugStorage" class="nl.nn.testtool.storage.memory.Storage" autowire="byName">
+	<bean name="debugStorage" class="nl.nn.testtool.storage.memory.MemoryLogStorage" autowire="byName">
 		<property name="initialStorageId">
 			<value>2514</value>
 		</property>
