@@ -1,5 +1,5 @@
 /*
-   Copyright 2021, 2023 WeAreFrank!
+   Copyright 2021, 2023-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -114,7 +114,7 @@ public class ReportRelatedTestCase {
 	}
 
 	@After
-	public void tearDown() {
+	public void tearDown() throws StorageException {
 		if (testTool.getNumberOfReportsInProgress() > 0) {
 			Report report = testTool.getReportInProgress(0);
 			log.error("Checkpoints of report in progress '" + report.getName() + "':");

@@ -28,9 +28,10 @@ import java.util.List;
 import jakarta.annotation.PostConstruct;
 import nl.nn.testtool.Report;
 import nl.nn.testtool.storage.StorageException;
+import nl.nn.testtool.storage.memory.MemoryCrudStorage;
 
-// TODO of gewoon onderdeel van memory.Storage class maken (als filename gezet dan lezen en schrijven naar bestand)?
-public class Storage extends nl.nn.testtool.storage.memory.Storage {
+// TODO of gewoon onderdeel van memory storage maken (als filename gezet dan lezen en schrijven naar bestand)?
+public class Storage extends MemoryCrudStorage {
 	private String reportsDirectory;
 
 	public void setReportsDirectory(String reportsDirectory) {
@@ -54,11 +55,6 @@ public class Storage extends nl.nn.testtool.storage.memory.Storage {
 
 	public void delete(Report report) throws StorageException {
 		super.delete(report);
-		writeReports();
-	}
-
-	public void storeWithoutException(Report report) {
-		super.storeWithoutException(report);
 		writeReports();
 	}
 

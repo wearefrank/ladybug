@@ -26,8 +26,9 @@ import java.util.zip.ZipOutputStream;
 
 import nl.nn.testtool.Report;
 import nl.nn.testtool.storage.StorageException;
+import nl.nn.testtool.storage.memory.MemoryStorage;
 
-public class Storage extends nl.nn.testtool.storage.memory.Storage {
+public class Storage extends MemoryStorage {
 	private File file = new File("C:\\Temp\\tt.zip");
 
 	@Override

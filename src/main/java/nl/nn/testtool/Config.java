@@ -43,7 +43,8 @@ import nl.nn.testtool.storage.CrudStorage;
 import nl.nn.testtool.storage.LogStorage;
 import nl.nn.testtool.storage.database.DbmsSupport;
 import nl.nn.testtool.storage.database.OptionalJtaTransactionManager;
-import nl.nn.testtool.storage.memory.Storage;
+import nl.nn.testtool.storage.memory.MemoryCrudStorage;
+import nl.nn.testtool.storage.memory.MemoryLogStorage;
 import nl.nn.testtool.storage.proofofmigration.ProofOfMigrationErrorsStorage;
 import nl.nn.testtool.storage.proofofmigration.ProofOfMigrationErrorsView;
 import nl.nn.testtool.storage.proofofmigration.ProofOfMigrationStorage;
@@ -193,9 +194,8 @@ public class Config {
 	@DefaultBean
 	@Bean
 	@Scope("singleton")
-	// When CrudStorage is also implemented by the returned storage it's reports can be deleted in the debug tab
 	LogStorage debugStorage(MetadataExtractor metadataExtractor) {
-		Storage storage = new Storage(); // Memory storage which also implements CrudStorage
+		MemoryLogStorage storage = new MemoryLogStorage();
 		storage.setName("Debug");
 		storage.setMetadataExtractor(metadataExtractor);
 		return storage;
@@ -207,7 +207,7 @@ public class Config {
 	@Bean
 	@Scope("singleton")
 	CrudStorage testStorage(MetadataExtractor metadataExtractor) {
-		Storage storage = new Storage();
+		MemoryCrudStorage storage = new MemoryCrudStorage();
 		storage.setName("Test");
 		storage.setMetadataExtractor(metadataExtractor);
 		return storage;

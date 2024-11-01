@@ -44,6 +44,8 @@ import nl.nn.testtool.run.ReportRunner;
 import nl.nn.testtool.storage.CrudStorage;
 import nl.nn.testtool.storage.LogStorage;
 import nl.nn.testtool.storage.Storage;
+import nl.nn.testtool.storage.StorageException;
+import nl.nn.testtool.storage.memory.MemoryLogStorage;
 import nl.nn.testtool.transform.MessageTransformer;
 import nl.nn.testtool.util.OpenTelemetryUtil;
 
@@ -1079,19 +1081,12 @@ public class TestTool {
 		}
 	}
 
-	public Report getReportInProgress(int index) {
-		Report reportClone = null;
-		synchronized(reportsInProgress) {
-			if (index > -1 && index < reportsInProgress.size()) {
-				Report report = reportsInProgress.get(index);
-				try {
-					reportClone = report.clone();
-				} catch (CloneNotSupportedException e) {
-					log.error("Unable to clone report in progress", e);
-				}
-			}
+	public Report getReportInProgress(int index) throws StorageException {
+		Storage storage = getStorage("InProgress");
+		if (storage != null) {
+			return storage.getReport(index);
 		}
-		return reportClone;
+		return null;
 	}
 
 	public Report removeReportInProgress(int index) {
@@ -1130,6 +1125,22 @@ public class TestTool {
 		// frontend is using hardcoded storage name Test for test tab)
 		if (name.equals("Test")) {
 			return getTestStorage();
+		}
+		if (name.equals("InProgress")) {
+			// Enable the frontend to handle reports in progress with the same api endpoints as other reports (e.g. to
+			// open a report, download a report or to copy a report to the Test tab). 
+			// LogStorage instead of CrudStorage will make the frontend disable the possibility to edit the report.
+			LogStorage storage = new MemoryLogStorage();
+			synchronized(reportsInProgress) {
+				for (Report report : reportsInProgress) {
+					try {
+						storage.storeWithoutException(report.clone());
+					} catch (CloneNotSupportedException e) {
+						log.error("Could not clone report in progress", e);
+					}
+				}
+			}
+			return storage;
 		}
 		return null;
 	}

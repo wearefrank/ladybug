@@ -64,9 +64,11 @@ import nl.nn.testtool.echo2.TransformationWindow;
 import nl.nn.testtool.echo2.util.Download;
 import nl.nn.testtool.filter.View;
 import nl.nn.testtool.filter.Views;
+import nl.nn.testtool.storage.CrudStorage;
 import nl.nn.testtool.storage.LogStorage;
 import nl.nn.testtool.storage.Storage;
 import nl.nn.testtool.storage.StorageException;
+import nl.nn.testtool.storage.memory.MemoryCrudStorage;
 import nl.nn.testtool.transform.ReportXmlTransformer;
 
 /**
@@ -564,7 +566,7 @@ public class ReportsComponent extends BaseComponent implements BeanParent, Actio
 			try {
 				View view = getSelectedView();
 				Storage storage = view.getDebugStorage();
-				nl.nn.testtool.storage.memory.Storage memStorage = new nl.nn.testtool.storage.memory.Storage();
+				CrudStorage memStorage = new MemoryCrudStorage();
 				for (int i = 0; i < metadataSortableTableModel.getRowCount(); i++) {
 					Integer storageId = (Integer)metadataSortableTableModel.getValueAt(0, i);
 					String isOpenReportAllowed = view.isOpenReportAllowed(storageId);
@@ -660,7 +662,12 @@ public class ReportsComponent extends BaseComponent implements BeanParent, Actio
 				}
 			}
 		} else if (e.getActionCommand().equals("OpenReportInProgress")) {
-			Report report = (Report)testTool.getReportInProgress(integerFieldOpenReportInProgress.getValue() - 1);
+			Report report = null;
+			try {
+				report = (Report)testTool.getReportInProgress(integerFieldOpenReportInProgress.getValue() - 1);
+			} catch(StorageException storageException) {
+				displayAndLogError(storageException);
+			}
 			if (report != null) {
 				View view = getSelectedView();
 				String isOpenReportAllowed = view.isOpenReportAllowed(null);

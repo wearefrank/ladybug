@@ -60,6 +60,7 @@ import nl.nn.testtool.storage.CrudStorage;
 import nl.nn.testtool.storage.LogStorage;
 import nl.nn.testtool.storage.Storage;
 import nl.nn.testtool.storage.StorageException;
+import nl.nn.testtool.storage.memory.MemoryCrudStorage;
 import nl.nn.testtool.transform.ReportXmlTransformer;
 import nl.nn.testtool.util.Export;
 import nl.nn.testtool.util.ExportResult;
@@ -451,7 +452,7 @@ public class ReportApi extends ApiBase {
 	@Produces(MediaType.APPLICATION_JSON)
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
 	public Response getFileReport(@Multipart("file") Attachment attachment) {
-		CrudStorage storage = new nl.nn.testtool.storage.memory.Storage();
+		CrudStorage storage = new MemoryCrudStorage();
 		String filename = attachment.getContentDisposition().getParameter("filename");
 		InputStream in = attachment.getObject(InputStream.class);
 		String errorMessage = Upload.upload(filename, in, storage, log);

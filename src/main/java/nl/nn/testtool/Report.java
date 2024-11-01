@@ -44,6 +44,7 @@ import lombok.Data;
 import lombok.SneakyThrows;
 import nl.nn.testtool.MessageEncoder.ToStringResult;
 import nl.nn.testtool.run.ReportRunner;
+import nl.nn.testtool.storage.CrudStorage;
 import nl.nn.testtool.storage.Storage;
 import nl.nn.testtool.transform.MessageTransformer;
 import nl.nn.testtool.transform.ReportXmlTransformer;
@@ -175,12 +176,7 @@ public class Report implements Serializable {
 	 * @return true when underlying storage is a {@link CrudStorage}, false otherwise
 	 */
 	public boolean isCrudStorage() {
-		// Storage is null for reports in progress
-		if (storage == null) {
-			return false;
-		} else {
-			return storage.isCrudStorage();
-		}
+		return storage.isCrudStorage();
 	}
 
 	public void setStorageId(Integer storageId) {

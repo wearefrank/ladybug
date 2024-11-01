@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021, 2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -26,7 +26,7 @@ import org.junit.Test;
 
 import nl.nn.testtool.Report;
 import nl.nn.testtool.storage.StorageException;
-import nl.nn.testtool.storage.memory.Storage;
+import nl.nn.testtool.storage.memory.MemoryCrudStorage;
 import nl.nn.testtool.test.junit.ReportRelatedTestCase;
 import nl.nn.testtool.util.Import;
 import nl.nn.testtool.util.ImportResult;
@@ -52,7 +52,7 @@ public class TestImport {
 		gzipOutputStream.write(string.getBytes(ReportRelatedTestCase.DEFAULT_CHARSET));
 		gzipOutputStream.close();
 		ByteArrayInputStream inputStream = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
-		Storage storage = new Storage();
+		MemoryCrudStorage storage = new MemoryCrudStorage();
 		ImportResult result = Import.importTtr(inputStream, storage, null);
 		assertNull(result.getErrorMessage());
 		Report report = storage.getReport(result.getNewStorageId());

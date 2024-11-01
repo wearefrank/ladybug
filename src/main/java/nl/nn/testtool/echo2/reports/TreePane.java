@@ -38,6 +38,7 @@ import nl.nn.testtool.filter.View;
 import nl.nn.testtool.storage.CrudStorage;
 import nl.nn.testtool.storage.Storage;
 import nl.nn.testtool.storage.StorageException;
+import nl.nn.testtool.storage.memory.MemoryCrudStorage;
 
 /**
  * Jaco de Groot
@@ -351,7 +352,7 @@ public class TreePane extends ContentPane implements TreeSelectionListener {
     }
 
 	public Storage getStorage() throws StorageException {
-		CrudStorage storage = new nl.nn.testtool.storage.memory.Storage();
+		CrudStorage storage = new MemoryCrudStorage();
 		for (int i = 0; i < rootNode.getChildCount(); i++) {
 			DefaultMutableTreeNode node = (DefaultMutableTreeNode)rootNode.getChildAt(i);
 			storage.store((Report)node.getUserObject());

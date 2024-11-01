@@ -28,6 +28,7 @@ import nl.nn.testtool.echo2.test.TestComponent;
 import nl.nn.testtool.echo2.util.Upload;
 import nl.nn.testtool.storage.CrudStorage;
 import nl.nn.testtool.storage.StorageException;
+import nl.nn.testtool.storage.memory.MemoryCrudStorage;
 
 /**
  * @author Jaco de Groot
@@ -75,7 +76,7 @@ public class ReportUploadListener implements UploadListener {
 			// TODO in reportsComponent memory storage bijhouden en gebruiken
 			// voor download en upload (niet telkens nieuwe aanmaken maar
 			// synchroon houden met open reports)?
-			storage = new nl.nn.testtool.storage.memory.Storage();
+			storage = new MemoryCrudStorage();
 		}
 		if (testComponent != null) {
 			storage = this.storage;

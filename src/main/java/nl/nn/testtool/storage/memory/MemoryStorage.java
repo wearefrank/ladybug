@@ -27,15 +27,14 @@ import jakarta.annotation.PostConstruct;
 import jakarta.inject.Inject;
 import nl.nn.testtool.MetadataExtractor;
 import nl.nn.testtool.Report;
-import nl.nn.testtool.storage.CrudStorage;
-import nl.nn.testtool.storage.LogStorage;
+import nl.nn.testtool.storage.Storage;
 import nl.nn.testtool.storage.StorageException;
 import nl.nn.testtool.util.SearchUtil;
 
 /**
  * @author Jaco de Groot
  */
-public class Storage implements CrudStorage, LogStorage {
+public class MemoryStorage implements Storage {
 	protected String name;
 	protected Map<Integer, Report> reports;
 	protected List<Integer> storageIds;
@@ -44,7 +43,7 @@ public class Storage implements CrudStorage, LogStorage {
 	protected int storageId;
 	protected @Inject @Autowired MetadataExtractor metadataExtractor;
 	
-	public Storage() {
+	public MemoryStorage() {
 		reports = new HashMap<Integer, Report>();
 		storageIds = new ArrayList<Integer>();
 		metadata = new HashMap<Integer, Map<Integer, Map<String, Object>>>();
@@ -66,7 +65,7 @@ public class Storage implements CrudStorage, LogStorage {
 	public void setName(String name) {
 		this.name = name;
 	}
-	
+
 	@Override
 	public String getName() {
 		return name;
@@ -76,30 +75,11 @@ public class Storage implements CrudStorage, LogStorage {
 		this.metadataExtractor = metadataExtractor;
 	}
 
-	@Override
 	public synchronized void store(Report report) {
 		report.setStorage(this);
 		report.setStorageId(storageId++);
 		reports.put(report.getStorageId(), report);
 		storageIds.add(report.getStorageId());
-	}
-
-	@Override
-	public void update(Report report) throws StorageException {
-		reports.put(report.getStorageId(), report);
-		metadata.remove(report.getStorageId());
-	}
-
-	@Override
-	public void delete(Report report) throws StorageException {
-		reports.remove(report.getStorageId());
-		storageIds.remove(report.getStorageId());
-		metadata.remove(report.getStorageId());
-	}
-
-	@Override
-	public void storeWithoutException(Report report) {
-		store(report);
 	}
 
 	@Override
@@ -190,8 +170,4 @@ public class Storage implements CrudStorage, LogStorage {
 		return SearchUtil.getUserHelp();
 	}
 
-	@Override
-	public String getWarningsAndErrors() {
-		return null;
-	}
 }

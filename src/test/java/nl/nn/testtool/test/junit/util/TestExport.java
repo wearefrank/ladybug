@@ -33,7 +33,7 @@ import org.junit.Test;
 import nl.nn.testtool.Checkpoint;
 import nl.nn.testtool.Report;
 import nl.nn.testtool.storage.StorageException;
-import nl.nn.testtool.storage.memory.Storage;
+import nl.nn.testtool.storage.memory.MemoryStorage;
 import nl.nn.testtool.test.junit.Common;
 import nl.nn.testtool.test.junit.ReportRelatedTestCase;
 import nl.nn.testtool.transform.ReportXmlTransformer;
@@ -85,7 +85,7 @@ public class TestExport {
 						method.invoke(report, name);
 					}
 				} else if (name.equals("storage")) {
-					report.setStorage(new Storage());
+					report.setStorage(new MemoryStorage());
 				} else if (name.equals("originalReport")) {
 					report.setOriginalReport(new Report());
 				} else if (name.equals("reportXmlTransformer")) {
