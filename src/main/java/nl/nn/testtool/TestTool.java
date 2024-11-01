@@ -1081,6 +1081,37 @@ public class TestTool {
 		}
 	}
 
+	public Storage getStorage(String name) {
+		for (View view : views) {
+			Storage storage = view.getDebugStorage();
+			if (name.equals(storage.getName())) {
+				return storage;
+			}
+		}
+		// TODO: Introduce views for test tab also and replace getViews() in TestToolApi with getTabs() (for now the
+		// frontend is using hardcoded storage name Test for test tab)
+		if (name.equals("Test")) {
+			return getTestStorage();
+		}
+		if (name.equals("InProgress")) {
+			// Enable the frontend to handle reports in progress with the same api endpoints as other reports (e.g. to
+			// open a report, download a report or to copy a report to the Test tab). 
+			// LogStorage instead of CrudStorage will make the frontend disable the possibility to edit the report.
+			LogStorage storage = new MemoryLogStorage();
+			synchronized(reportsInProgress) {
+				for (Report report : reportsInProgress) {
+					try {
+						storage.storeWithoutException(report.clone());
+					} catch (CloneNotSupportedException e) {
+						log.error("Could not clone report in progress", e);
+					}
+				}
+			}
+			return storage;
+		}
+		return null;
+	}
+
 	public Report getReportInProgress(int index) throws StorageException {
 		Storage storage = getStorage("InProgress");
 		if (storage != null) {
@@ -1112,37 +1143,6 @@ public class TestTool {
 			}
 		}
 		return reportsInProgressEstimatedMemoryUsage;
-	}
-
-	public Storage getStorage(String name) {
-		for (View view : views) {
-			Storage storage = view.getDebugStorage();
-			if (name.equals(storage.getName())) {
-				return storage;
-			}
-		}
-		// TODO: Introduce views for test tab also and replace getViews() in TestToolApi with getTabs() (for now the
-		// frontend is using hardcoded storage name Test for test tab)
-		if (name.equals("Test")) {
-			return getTestStorage();
-		}
-		if (name.equals("InProgress")) {
-			// Enable the frontend to handle reports in progress with the same api endpoints as other reports (e.g. to
-			// open a report, download a report or to copy a report to the Test tab). 
-			// LogStorage instead of CrudStorage will make the frontend disable the possibility to edit the report.
-			LogStorage storage = new MemoryLogStorage();
-			synchronized(reportsInProgress) {
-				for (Report report : reportsInProgress) {
-					try {
-						storage.storeWithoutException(report.clone());
-					} catch (CloneNotSupportedException e) {
-						log.error("Could not clone report in progress", e);
-					}
-				}
-			}
-			return storage;
-		}
-		return null;
 	}
 
 	public static String getName() {
