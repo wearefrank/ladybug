@@ -25,9 +25,9 @@ jobs:
             workflow_id: 'testing.js.yml',
             ref: 'master',
             inputs: {
-              frontendCommitToCheckout: 'master',
               backendCommitToCheckout: '${{ github.ref_name }}',
-              mergeMasterToBranch: 'true'
+              mergeMasterToBranch: 'true',
+              useRealFrontend: 'true'
             }
           })
           
