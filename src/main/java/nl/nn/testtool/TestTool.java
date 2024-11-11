@@ -93,6 +93,7 @@ public class TestTool {
 		}
 	public static final String DEFAULT_STUB_MESSAGE =
 			"Default Ladybug stub message (counterpart checkpoint in original report not found?)";
+	private @Setter @Getter String defaultLinkMethod = LinkMethodType.PATH_AND_TYPE.toString();
 	private @Getter boolean closeThreads = false;
 	private @Getter boolean closeNewThreadsOnly = false;
 	private @Getter boolean closeMessageCapturers = false;
@@ -262,6 +263,14 @@ public class TestTool {
 		return matchingStubStrategiesForExternalConnectionCode;
 	}
 
+	public List<String> getLinkMethods() {
+		List<String> result = new ArrayList<String>();
+		for (int i = 0; i < LinkMethodType.values().length; i++) {
+			result.add(LinkMethodType.values()[i].toString());
+		}
+		return result;
+	}
+
 	/**
 	 * Close child threads when main thread is finished (top level endpoint has been called) to prevent threads from
 	 * keeping reports in progress in case they call checkpoints that aren't properly surrounded with a try/catch, see
@@ -360,7 +369,7 @@ public class TestTool {
 
 	private Report createReport(String correlationId, String name, int checkpointType) {
 		Report report = null;
-		if (checkpointType == Checkpoint.TYPE_STARTPOINT) {
+		if (checkpointType == CheckpointType.STARTPOINT.toInt()) {
 			log.debug("Create new report for '" + correlationId + "'");
 			report = new Report();
 			report.setStartTime(System.currentTimeMillis());
@@ -382,8 +391,10 @@ public class TestTool {
 			}
 			if (originalReport == null) {
 				report.setStubStrategy(getDefaultStubStrategy());
+				report.setLinkMethod(getDefaultLinkMethod());
 			} else {
 				report.setStubStrategy(originalReport.getStubStrategy());
+				report.setLinkMethod(originalReport.getLinkMethod());
 				report.setOriginalReport(originalReport);
 			}
 			report.init();
@@ -486,19 +497,19 @@ public class TestTool {
 
 	public <T> T startpoint(String correlationId, String sourceClassName, String name, T message) {
 		return checkpoint(correlationId, null, sourceClassName, name, message, null, null, null,
-				Checkpoint.TYPE_STARTPOINT, 1);
+				CheckpointType.STARTPOINT.toInt(), 1);
 	}
 
 	public <T> T startpoint(String correlationId, String sourceClassName, String name, T message,
 			Set<String> matchingStubStrategies) {
 		return checkpoint(correlationId, null, sourceClassName, name, message, null, null, matchingStubStrategies,
-				Checkpoint.TYPE_STARTPOINT, 1);
+				CheckpointType.STARTPOINT.toInt(), 1);
 	}
 
 	public <T> T startpoint(String correlationId, String sourceClassName, String name, StubableCode stubableCode,
 			Set<String> matchingStubStrategies) {
 		return checkpoint(correlationId, null, sourceClassName, name, null, stubableCode, null, matchingStubStrategies,
-				Checkpoint.TYPE_STARTPOINT, 1);
+				CheckpointType.STARTPOINT.toInt(), 1);
 	}
 
 	/**
@@ -520,24 +531,24 @@ public class TestTool {
 			StubableCodeThrowsException stubableCodeThrowsException, Set<String> matchingStubStrategies,
 			E throwsException) throws E {
 		return checkpoint(correlationId, null, sourceClassName, name, null, null, stubableCodeThrowsException,
-				matchingStubStrategies, Checkpoint.TYPE_STARTPOINT, 1);
+				matchingStubStrategies, CheckpointType.STARTPOINT.toInt(), 1);
 	}
 
 	public <T> T endpoint(String correlationId, String sourceClassName, String name, T message) {
 		return checkpoint(correlationId, null, sourceClassName, name, message, null, null, null,
-				Checkpoint.TYPE_ENDPOINT, -1);
+				CheckpointType.ENDPOINT.toInt(), -1);
 	}
 
 	public <T> T endpoint(String correlationId, String sourceClassName, String name, T message,
 			Set<String> matchingStubStrategies) {
 		return checkpoint(correlationId, null, sourceClassName, name, message, null, null, matchingStubStrategies,
-				Checkpoint.TYPE_ENDPOINT, -1);
+				CheckpointType.ENDPOINT.toInt(), -1);
 	}
 
 	public <T> T endpoint(String correlationId, String sourceClassName, String name,
 			StubableCode stubableCode, Set<String> matchingStubStrategies) {
 		return checkpoint(correlationId, null, sourceClassName, name, null, stubableCode, null, matchingStubStrategies,
-				Checkpoint.TYPE_ENDPOINT, -1);
+				CheckpointType.ENDPOINT.toInt(), -1);
 	}
 
 	/**
@@ -558,7 +569,7 @@ public class TestTool {
 			StubableCodeThrowsException stubableCodeThrowsException, Set<String> matchingStubStrategies,
 			E throwsException) throws E {
 		return checkpoint(correlationId, null, sourceClassName, name, null, null, stubableCodeThrowsException,
-				matchingStubStrategies, Checkpoint.TYPE_ENDPOINT, -1);
+				matchingStubStrategies, CheckpointType.ENDPOINT.toInt(), -1);
 	}
 
 	/**
@@ -575,7 +586,7 @@ public class TestTool {
 	public <T> T endpoint(String correlationId, String sourceClassName, String name,
 			ExternalConnectionCode externalConnectionCode) {
 		return checkpoint(correlationId, null, sourceClassName, name, null, externalConnectionCode, null,
-				matchingStubStrategiesForExternalConnectionCode, Checkpoint.TYPE_ENDPOINT, -1);
+				matchingStubStrategiesForExternalConnectionCode, CheckpointType.ENDPOINT.toInt(), -1);
 	}
 
 	/**
@@ -597,24 +608,24 @@ public class TestTool {
 	public <T, E extends Exception> T endpoint(String correlationId, String sourceClassName, String name,
 			ExternalConnectionCodeThrowsException externalConnectionCodeThrowsException, E throwsException) throws E {
 		return checkpoint(correlationId, null, sourceClassName, name, null, null, externalConnectionCodeThrowsException,
-				matchingStubStrategiesForExternalConnectionCode, Checkpoint.TYPE_ENDPOINT, -1);
+				matchingStubStrategiesForExternalConnectionCode, CheckpointType.ENDPOINT.toInt(), -1);
 	}
 
 	public <T> T inputpoint(String correlationId, String sourceClassName, String name, T message) {
 		return checkpoint(correlationId, null, sourceClassName, name, message, null, null, null,
-				Checkpoint.TYPE_INPUTPOINT, 0);
+				CheckpointType.INPUTPOINT.toInt(), 0);
 	}
 
 	public <T> T inputpoint(String correlationId, String sourceClassName, String name, T message,
 			Set<String> matchingStubStrategies) {
 		return checkpoint(correlationId, null, sourceClassName, name, message, null, null, matchingStubStrategies,
-				Checkpoint.TYPE_INPUTPOINT, 0);
+				CheckpointType.INPUTPOINT.toInt(), 0);
 	}
 
 	public <T> T inputpoint(String correlationId, String sourceClassName, String name,
 			StubableCode stubableCode, Set<String> matchingStubStrategies) {
 		return checkpoint(correlationId, null, sourceClassName, name, null, stubableCode, null, matchingStubStrategies,
-				Checkpoint.TYPE_INPUTPOINT, 0);
+				CheckpointType.INPUTPOINT.toInt(), 0);
 	}
 
 	/**
@@ -635,24 +646,24 @@ public class TestTool {
 			String name, StubableCodeThrowsException stubableCodeThrowsException, Set<String> matchingStubStrategies,
 			E throwsException) throws E {
 		return checkpoint(correlationId, null, sourceClassName, name, null, null, stubableCodeThrowsException,
-				matchingStubStrategies, Checkpoint.TYPE_INPUTPOINT, 0);
+				matchingStubStrategies, CheckpointType.INPUTPOINT.toInt(), 0);
 	}
 
 	public <T> T outputpoint(String correlationId, String sourceClassName, String name, T message) {
 		return checkpoint(correlationId, null, sourceClassName, name, message, null, null, null,
-				Checkpoint.TYPE_OUTPUTPOINT, 0);
+				CheckpointType.OUTPUTPOINT.toInt(), 0);
 	}
 
 	public <T> T outputpoint(String correlationId, String sourceClassName, String name, T message,
 			Set<String> matchingStubStrategies) {
 		return checkpoint(correlationId, null, sourceClassName, name, message, null, null, matchingStubStrategies,
-				Checkpoint.TYPE_OUTPUTPOINT, 0);
+				CheckpointType.OUTPUTPOINT.toInt(), 0);
 	}
 
 	public <T> T outputpoint(String correlationId, String sourceClassName, String name,
 			StubableCode stubableCode, Set<String> matchingStubStrategies) {
 		return checkpoint(correlationId, null, sourceClassName, name, null, stubableCode, null, matchingStubStrategies,
-				Checkpoint.TYPE_OUTPUTPOINT, 0);
+				CheckpointType.OUTPUTPOINT.toInt(), 0);
 	}
 
 	/**
@@ -673,7 +684,7 @@ public class TestTool {
 			String name, StubableCodeThrowsException stubableCodeThrowsException, Set<String> matchingStubStrategies,
 			E throwsException) throws E {
 		return checkpoint(correlationId, null, sourceClassName, name, null, null, stubableCodeThrowsException,
-				matchingStubStrategies, Checkpoint.TYPE_OUTPUTPOINT, 0);
+				matchingStubStrategies, CheckpointType.OUTPUTPOINT.toInt(), 0);
 	}
 
 	/**
@@ -690,7 +701,7 @@ public class TestTool {
 	public <T> T outputpoint(String correlationId, String sourceClassName, String name,
 			ExternalConnectionCode externalConnectionCode) {
 		return checkpoint(correlationId, null, sourceClassName, name, null, externalConnectionCode, null,
-				matchingStubStrategiesForExternalConnectionCode, Checkpoint.TYPE_OUTPUTPOINT, 0);
+				matchingStubStrategiesForExternalConnectionCode, CheckpointType.OUTPUTPOINT.toInt(), 0);
 	}
 
 	/**
@@ -713,12 +724,12 @@ public class TestTool {
 			String name, ExternalConnectionCodeThrowsException externalConnectionCodeThrowsException, E throwsException
 			) throws E {
 		return checkpoint(correlationId, null, sourceClassName, name, null, null, externalConnectionCodeThrowsException,
-				matchingStubStrategiesForExternalConnectionCode, Checkpoint.TYPE_OUTPUTPOINT, 0);
+				matchingStubStrategiesForExternalConnectionCode, CheckpointType.OUTPUTPOINT.toInt(), 0);
 	}
 
 	public <T> T infopoint(String correlationId, String sourceClassName, String name, T message) {
 		return checkpoint(correlationId, null, sourceClassName, name, message, null, null, null,
-				Checkpoint.TYPE_INFOPOINT, 0);
+				CheckpointType.INFOPOINT.toInt(), 0);
 	}
 
 	/**
@@ -734,7 +745,7 @@ public class TestTool {
 	 */
 	public <T> T abortpoint(String correlationId, String sourceClassName, String name, T message) {
 		return checkpoint(correlationId, null, sourceClassName, name, message, null, null, null,
-				Checkpoint.TYPE_ABORTPOINT, -1);
+				CheckpointType.ABORTPOINT.toInt(), -1);
 	}
 
 	/**
@@ -748,7 +759,7 @@ public class TestTool {
 	 */
 	public void threadCreatepoint(String correlationId, String childThreadId) {
 		checkpoint(correlationId, childThreadId, null, null, null, null, null, null,
-				Checkpoint.TYPE_THREADCREATEPOINT, 0);
+				CheckpointType.THREAD_CREATEPOINT.toInt(), 0);
 	}
 
 	/**
@@ -766,7 +777,7 @@ public class TestTool {
 	public <T> T threadStartpoint(String correlationId, String childThreadId, String sourceClassName,
 			String name, T message) {
 		return checkpoint(correlationId, childThreadId, sourceClassName, name, message, null, null, null,
-				Checkpoint.TYPE_THREADSTARTPOINT, 1);
+				CheckpointType.THREAD_STARTPOINT.toInt(), 1);
 	}
 
 	/**
@@ -786,7 +797,7 @@ public class TestTool {
 
 	public <T> T threadEndpoint(String correlationId, String sourceClassName, String name, T message) {
 		return checkpoint(correlationId, null, sourceClassName, name, message, null, null, null,
-				Checkpoint.TYPE_THREADENDPOINT, -1);
+				CheckpointType.THREAD_ENDPOINT.toInt(), -1);
 	}
 
 	/**
@@ -1063,7 +1074,7 @@ public class TestTool {
 
 	/**
 	 * Check whether the checkpoint should be stubbed for the given stub strategy in case no matchingStubStrategies for
-	 * the checkpoint is known
+	 * the checkpoint are known
 	 * 
 	 * @param checkpoint ...
 	 * @param strategy ...

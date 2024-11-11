@@ -6,6 +6,7 @@ Ladybug Test Tool release notes
 Upcoming (3.0)
 --------------
 
+- Support running human editable report xml file
 - Upgrade from javax to jakarta
 
 

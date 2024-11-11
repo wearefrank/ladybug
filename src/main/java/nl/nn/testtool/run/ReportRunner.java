@@ -122,29 +122,35 @@ public class ReportRunner implements Runnable {
 		return report;
 	}
 
-	public static String getRunResultInfo(Report report, Report runResultReport) {
-		String timeOrig = report.getEndTime() == Report.TIME_NOT_SET_VALUE ? "n/a" : ""
-				+ (report.getEndTime() - report.getStartTime());
-		String timeResult = runResultReport.getEndTime() == Report.TIME_NOT_SET_VALUE ? "n/a" : ""
-				+ (runResultReport.getEndTime() - runResultReport.getStartTime());
+	public static String getRunResultInfo(Report reportOrig, Report reportResult) {
+		int totalOrig = reportOrig.getCheckpoints().size();
+		int totalResult = reportResult.getCheckpoints().size();
+		String info = "(" + totalOrig + " >> "	+ totalResult + " checkpoints)";
+
 		int stubbedOrig = 0;
 		int stubsNotFoundOrig = 0;
-		for (Checkpoint checkpoint : report.getCheckpoints()) {
+		int counterpartsNotFoundOrig = 0;
+		for (Checkpoint checkpoint : reportOrig.getCheckpoints()) {
 			if (checkpoint.isStubbed()) {
 				stubbedOrig++;
+				if (checkpoint.getStubNotFound() != null) {
+					stubsNotFoundOrig++;
+				}
 			}
 			if (checkpoint.getStubNotFound() != null) {
-				stubsNotFoundOrig++;
+				counterpartsNotFoundOrig++;
 			}
 		}
 		int stubbedResult = 0;
 		int stubsNotFoundResult = 0;
+		int counterpartsNotFoundResult = 0;
 		String alternativeStubInfo = "";
 		int alternativeStubSkipped = 0;
-		for (Checkpoint checkpoint : runResultReport.getCheckpoints()) {
+		for (Checkpoint checkpoint : reportResult.getCheckpoints()) {
 			if (checkpoint.isStubbed()) {
 				stubbedResult++;
 				if (checkpoint.getStubNotFound() != null) {
+					stubsNotFoundResult++;
 					if (alternativeStubInfo.length() == 0) {
 						alternativeStubInfo = " (Alternative stub used for: "
 								+ checkpoint.getStubNotFound();
@@ -157,24 +163,37 @@ public class ReportRunner implements Runnable {
 				}
 			}
 			if (checkpoint.getStubNotFound() != null) {
-				stubsNotFoundResult++;
+				counterpartsNotFoundResult++;
 			}
 		}
-		int totalOrig = report.getCheckpoints().size();
-		int totalResult = runResultReport.getCheckpoints().size();
-		String info = "(" + timeOrig + " >> "	+ timeResult + " ms)"
-				+ " (" + stubbedOrig + "/" + totalOrig + " >> " + stubbedResult + "/" + totalResult + " stubbed)";
+		boolean isExecutedOrig = reportOrig.getEndTime() != Report.TIME_NOT_SET_VALUE;
+		boolean isExecutedResult = reportResult.getEndTime() != Report.TIME_NOT_SET_VALUE;
+		if ((counterpartsNotFoundOrig > 0 || counterpartsNotFoundResult > 0)
+				// When orig has less checkpoints (could be handwritten test) ignore when counterparts found in result
+				// is equal to number of checkpoint in orig
+				&& totalOrig != totalResult - counterpartsNotFoundResult) {
+			info += " (" + (isExecutedOrig ? counterpartsNotFoundOrig : "n/a")
+					+ " >> " + (isExecutedResult ? counterpartsNotFoundResult : "n/a") + " counterparts not found)";
+		}
+		info += " (" + (isExecutedOrig ? (stubbedOrig + "/" + totalOrig) : "n/a")
+				+ " >> " + (isExecutedResult ? (stubbedResult + "/" + totalResult) : "n/a") + " stubbed)";
 		if (stubsNotFoundOrig > 0 || stubsNotFoundResult > 0) {
-			info = info + " (" + stubsNotFoundOrig + "/" + totalOrig + " >> " + stubsNotFoundResult + "/" + totalResult
+			info += " (" + (isExecutedOrig ? (stubsNotFoundOrig + "/" + stubbedOrig) : "n/a")
+					+ " >> " + (isExecutedResult ? (stubsNotFoundResult + "/" + stubbedResult) : "n/a")
 					+ " stubs not found)";
 		}
 		if (alternativeStubInfo.length() > 0) {
-			info = info + alternativeStubInfo;
+			info += alternativeStubInfo;
 			if (alternativeStubSkipped > 0) {
-				info = info + " and " + alternativeStubSkipped + " more";
+				info += " and " + alternativeStubSkipped + " more";
 			}
-			info = info + ")";
+			info += ")";
 		}
+
+		String timeOrig = isExecutedOrig ? "" + (reportOrig.getEndTime() - reportOrig.getStartTime()) :  "n/a";
+		String timeResult = isExecutedResult ? "" + (reportResult.getEndTime() - reportResult.getStartTime()) : "n/a";
+		info += " (" + timeOrig + " >> "	+ timeResult + " ms)";
+
 		return info;
 	}
 

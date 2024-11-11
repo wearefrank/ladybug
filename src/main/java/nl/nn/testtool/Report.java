@@ -27,12 +27,10 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Scanner;
 import java.util.Set;
 
-import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.api.trace.SpanBuilder;
-import io.opentelemetry.context.Context;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -40,7 +38,12 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.SpanBuilder;
+import io.opentelemetry.context.Context;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.SneakyThrows;
 import nl.nn.testtool.MessageEncoder.ToStringResult;
 import nl.nn.testtool.run.ReportRunner;
@@ -68,17 +71,18 @@ public class Report implements Serializable {
 	public static final long TIME_NOT_SET_VALUE = Long.MIN_VALUE;
 	// Please note that the set method should return void for XmlEncoder to
 	// store the property (hence the setVariableCsvWithoutException method)
-	private long startTime;
-	private long endTime = TIME_NOT_SET_VALUE;
-	private String correlationId;
-	private String name;
-	private String description;
-	private String path;
-	private String stubStrategy;
+	private @Setter @Getter long startTime;
+	private @Setter @Getter long endTime = TIME_NOT_SET_VALUE;
+	private @Setter @Getter String correlationId;
+	private @Setter @Getter String name;
+	private @Setter @Getter String description;
+	private @Setter @Getter String path;
+	private @Setter @Getter String stubStrategy;
+	private @Setter @Getter String linkMethod;
 	// See Checkpoint also for properties that will be stored by XmlEncoder and
 	// serialization / ObjectOutputStream
 	private List<Checkpoint> checkpoints = new ArrayList<Checkpoint>();
-	private String transformation;
+	private @Setter @Getter String transformation;
 	private String variableCsv;
 	// Please note that the get and set methods need @Transient annotation for XmlEncoder to not store the property.
 	// This is in contrast to serialization / ObjectOutputStream that is using variables (and doesn't look at get and
@@ -198,22 +202,6 @@ public class Report implements Serializable {
 	public Long getStorageSize() {
 		return storageSize;
 	}
-	
-	public void setStartTime(long startTime) {
-		this.startTime = startTime;
-	}
-
-	public long getStartTime() {
-		return startTime;
-	}
-
-	public void setEndTime(long endTime) {
-		this.endTime = endTime;
-	}
-
-	public long getEndTime() {
-		return endTime;
-	}
 
 	@Transient
 	@JsonIgnore
@@ -227,56 +215,8 @@ public class Report implements Serializable {
 		return mainThreadFinishedTime;
 	}
 
-	public void setCorrelationId(String correlationId) {
-		this.correlationId = correlationId;
-	}
-	
-	public String getCorrelationId() {
-		return correlationId;
-	}
-
-	public void setName(String name) {
-		this.name = name;
-	}
-
-	public String getName() {
-		return name;
-	}
-
-	public void setDescription(String description) {
-		this.description = description;
-	}
-
-	public String getDescription() {
-		return description;
-	}
-
-	public void setPath(String path) {
-		this.path = path;
-	}
-
-	public String getPath() {
-		return path;
-	}
-
 	public String getFullPath() {
 		return (StringUtils.isNotEmpty(getPath()) ? getPath() : "/") + getName();
-	}
-	
-	public void setStubStrategy(String stubStrategy) {
-		this.stubStrategy = stubStrategy;
-	}
-
-	public String getStubStrategy() {
-		return stubStrategy;
-	}
-
-	public void setTransformation(String transformation) {
-		this.transformation = transformation;
-	}
-
-	public String getTransformation() {
-		return transformation;
 	}
 
 	@Transient
@@ -336,7 +276,7 @@ public class Report implements Serializable {
 	protected <T> T checkpoint(String childThreadId, String sourceClassName, String name, T message,
 			StubableCode stubableCode, StubableCodeThrowsException stubableCodeThrowsException,
 			Set<String> matchingStubStrategies, int checkpointType, int levelChangeNextCheckpoint) {
-		if (checkpointType == Checkpoint.TYPE_THREADCREATEPOINT) {
+		if (checkpointType == CheckpointType.THREAD_CREATEPOINT.toInt()) {
 			String parentThreadName = Thread.currentThread().getName();
 			if (!threads.contains(parentThreadName)) {
 				log.warn("Unknown parent thread '" + parentThreadName + "' for child thread '" + childThreadId
@@ -347,7 +287,7 @@ public class Report implements Serializable {
 				threadsWithThreadCreatepoint.add(childThreadId);
 			}
 		} else {
-			if (checkpointType == Checkpoint.TYPE_THREADSTARTPOINT && !threads.contains(childThreadId)) {
+			if (checkpointType == CheckpointType.THREAD_STARTPOINT.toInt() && !threads.contains(childThreadId)) {
 				if (threads.size() == 0) {
 					// This can happen when a report is still open because not all message capturers are closed while
 					// all threads are finished
@@ -358,9 +298,9 @@ public class Report implements Serializable {
 					threadCreatepoint(parentThreadName, childThreadId);
 					warnNewChildThreadDetected(childThreadId, parentThreadName, false, name, checkpointType, false);
 				}
-			} else if (checkpointType == Checkpoint.TYPE_STARTPOINT
+			} else if (checkpointType == CheckpointType.STARTPOINT.toInt()
 					&& !threads.contains(Thread.currentThread().getName())) {
-				checkpointType = Checkpoint.TYPE_THREADSTARTPOINT;
+				checkpointType = CheckpointType.THREAD_STARTPOINT.toInt();
 				childThreadId = Thread.currentThread().getName();
 				if (threads.size() == 0 || checkpoints.size() == 0) {
 					// No threads can happen when a report is still open because not all message capturers are closed
@@ -439,7 +379,7 @@ public class Report implements Serializable {
 		String threadName = Thread.currentThread().getName();
 		Integer index = threadCheckpointIndex.get(threadName);
 		Integer level = threadLevel.get(threadName);
-		if (checkpointType == Checkpoint.TYPE_THREADSTARTPOINT) {
+		if (checkpointType == CheckpointType.THREAD_STARTPOINT.toInt()) {
 			// At this point index will already be != null when name of the child thread was used as childThreadId
 			// when calling threadCreatepoint() (no rename of child thread id in the relevant maps needed in that case)
 			if (index == null) {
@@ -534,17 +474,8 @@ public class Report implements Serializable {
 		}
 		boolean stub = false;
 		if (originalReport != null) {
-			Path path = checkpoint.getPath(true);
-			Checkpoint originalCheckpoint = originalReport.getCheckpoint(path);
-			if (originalCheckpoint == null || originalCheckpoint.getType() != checkpoint.getType()) {
-				String stubNotFoundMessage = path.toString() + " of type " + checkpoint.getTypeAsString();
-				if (originalCheckpoint != null) {
-					stubNotFoundMessage = stubNotFoundMessage + " which doesn't match type "
-							+ originalCheckpoint.getTypeAsString() + " in original report";
-				}
-				checkpoint.setStubNotFound(stubNotFoundMessage);
-				// Make null so message encoder will return default stub message
-				originalCheckpoint = null;
+			Checkpoint originalCheckpoint = originalReport.getCheckpoint(checkpoint, linkMethod, true);
+			if (originalCheckpoint == null) {
 				if (matchingStubStrategies != null) {
 					if (matchingStubStrategies.contains(originalReport.getStubStrategy())) {
 						stub = true;
@@ -552,9 +483,14 @@ public class Report implements Serializable {
 				} else {
 					stub = testTool.stub(checkpoint, originalReport.getStubStrategy());
 				}
+				if (stub) {
+					checkpoint.setStubNotFound("Could not find stub message with link method " + linkMethod);
+				} else {
+					checkpoint.setStubNotFound("Counterpart not found with link method " + linkMethod);
+				}
 			} else {
 				checkpoint.setStub(originalCheckpoint.getStub());
-				if (originalCheckpoint.getStub() == Checkpoint.STUB_FOLLOW_REPORT_STRATEGY) {
+				if (originalCheckpoint.getStub() == StubType.FOLLOW_REPORT_STRATEGY.toInt()) {
 					if (matchingStubStrategies != null) {
 						if (matchingStubStrategies.contains(originalReport.getStubStrategy())) {
 							stub = true;
@@ -562,9 +498,9 @@ public class Report implements Serializable {
 					} else {
 						stub = testTool.stub(originalCheckpoint, originalReport.getStubStrategy());
 					}
-				} else if (originalCheckpoint.getStub() == Checkpoint.STUB_NO) {
+				} else if (originalCheckpoint.getStub() == StubType.NO.toInt()) {
 					stub = false;
-				} else if (originalCheckpoint.getStub() == Checkpoint.STUB_YES) {
+				} else if (originalCheckpoint.getStub() == StubType.YES.toInt()) {
 					stub = true;
 				}
 			}
@@ -592,7 +528,7 @@ public class Report implements Serializable {
 					+ getThreadInfo();
 			log.warn(warning);
 			Checkpoint warningCheckpoint = new Checkpoint(this, threadName, this.getClass().getCanonicalName(),
-					"WARNING", Checkpoint.TYPE_INFOPOINT, level);
+					"WARNING", CheckpointType.INFOPOINT.toInt(), level);
 			warningCheckpoint.setMessage(warning);
 			threadCheckpointIndex.put(threadName, checkpoints.size());
 			index = checkpoints.size() - 1;
@@ -667,14 +603,14 @@ public class Report implements Serializable {
 			Checkpoint checkpoint = originalReport.getCheckpoint(lastCheckpoint.getPath());
 			if (checkpoint != null) {
 				int i = originalReport.checkpoints.indexOf(checkpoint) + 1;
-				while (checkpoint.getType() != Checkpoint.TYPE_ENDPOINT
-						&& checkpoint.getType() != Checkpoint.TYPE_ABORTPOINT
+				while (checkpoint.getType() != CheckpointType.ENDPOINT.toInt()
+						&& checkpoint.getType() != CheckpointType.ABORTPOINT.toInt()
 						&& i < originalReport.checkpoints.size()) {
 					checkpoint = (Checkpoint)originalReport.checkpoints.get(i);
 					i++;
 				}
-				if (checkpoint.getType() == Checkpoint.TYPE_ENDPOINT
-						|| checkpoint.getType() == Checkpoint.TYPE_ABORTPOINT) {
+				if (checkpoint.getType() == CheckpointType.ENDPOINT.toInt()
+						|| checkpoint.getType() == CheckpointType.ABORTPOINT.toInt()) {
 					result = checkpoint;
 				}
 			}
@@ -827,6 +763,54 @@ public class Report implements Serializable {
 		return result;
 	}
 
+	public Checkpoint getCheckpoint(Checkpoint counterpartCheckpoint) {
+		return getCheckpoint(counterpartCheckpoint, linkMethod, false);
+	}
+
+	public Checkpoint getCheckpoint(Checkpoint counterpartCheckpoint, String linkMethod) {
+		return getCheckpoint(counterpartCheckpoint, linkMethod, false);
+	}
+
+	public Checkpoint getCheckpoint(Checkpoint counterpartCheckpoint, String linkMethod,
+			boolean counterpartCheckpointInProgress) {
+		if (linkMethod.equals(LinkMethodType.PATH_AND_TYPE.toString())) {
+			Path path = counterpartCheckpoint.getPath(counterpartCheckpointInProgress);
+			Checkpoint checkpoint = getCheckpoint(path);
+			if (checkpoint != null && counterpartCheckpoint.getType() == checkpoint.getType()) {
+				return checkpoint;
+			}
+		} else if (linkMethod.equals(LinkMethodType.CHECKPOINT_NR.toString())) {
+			int i = counterpartCheckpoint.getIndex();
+			if (i == -1 && counterpartCheckpointInProgress) {
+				// Checkpoint constructed but not added to list of checkpoints yet
+				i = counterpartCheckpoint.getReport().getCheckpoints().size();
+			}
+			return checkpoints.get(i);
+		} else if (linkMethod.equals(LinkMethodType.NTH_NAME_AND_TYPE.toString())) {
+			int counterpartCount = 0;
+			for (Checkpoint checkpoint : counterpartCheckpoint.getReport().getCheckpoints()) {
+				if (Objects.equals(counterpartCheckpoint.getName(), checkpoint.getName())
+						&& counterpartCheckpoint.getType() == checkpoint.getType()) {
+					counterpartCount++;
+				}
+			}
+			if (counterpartCheckpointInProgress) {
+				counterpartCount++;
+			}
+			int count = 0;
+			for (Checkpoint checkpoint : checkpoints) {
+				if (Objects.equals(counterpartCheckpoint.getName(), checkpoint.getName())
+						&& counterpartCheckpoint.getType() == checkpoint.getType()) {
+					count++;
+				}
+				if (counterpartCount == count) {
+					return checkpoint;
+				}
+			}
+		}
+		return null;
+	}
+
 	public void setCheckpoints(List<Checkpoint> checkpoints) {
 		this.checkpoints = checkpoints;
 	}
@@ -909,6 +893,7 @@ public class Report implements Serializable {
 		report.setDescription(description);
 		report.setPath(path);
 		report.setStubStrategy(stubStrategy);
+		report.setLinkMethod(linkMethod);
 		report.setTransformation(transformation);
 		report.setVariableCsv(variableCsv);
 		List<Checkpoint> checkpoints = new ArrayList<Checkpoint>();
@@ -972,7 +957,7 @@ public class Report implements Serializable {
 				if (checkpoint.isWaitingForStream()) {
 					builder.append(" WaitingForStream=\"" + checkpoint.isWaitingForStream() + "\"");
 				}
-				if (checkpoint.getStub() != Checkpoint.STUB_FOLLOW_REPORT_STRATEGY) {
+				if (checkpoint.getStub() != StubType.FOLLOW_REPORT_STRATEGY.toInt()) {
 					builder.append(" Stub=\"" + checkpoint.getStub() + "\"");
 				}
 				if (checkpoint.isStubbed()) {
@@ -1029,7 +1014,7 @@ public class Report implements Serializable {
 	}
 
 	protected static String getCheckpointLogDescription(String name, int type, Integer level, String correlationId) {
-		return "(name: " + name + ", type: " + Checkpoint.getTypeAsString(type) + ", level: " + level
+		return "(name: " + name + ", type: " + CheckpointType.toString(type) + ", level: " + level
 				+ ", correlationId: " + correlationId + ")";
 	}
 

@@ -28,6 +28,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import jakarta.inject.Inject;
 import lombok.Setter;
 import nl.nn.testtool.Checkpoint;
+import nl.nn.testtool.CheckpointType;
 import nl.nn.testtool.Report;
 import nl.nn.testtool.TestTool;
 import nl.nn.testtool.storage.StorageException;
@@ -224,11 +225,11 @@ public class ProofOfMigrationStorage extends DatabaseLogStorage {
 		List<Checkpoint> checkpoints = new ArrayList<Checkpoint>();
 		Checkpoint checkpoint;
 		for (List<Object> list : result) {
-			int checkpointType = Checkpoint.TYPE_ABORTPOINT;
+			int checkpointType = CheckpointType.ABORTPOINT.toInt();
 			if ("request".equals(list.get(4))) {
-				checkpointType = Checkpoint.TYPE_STARTPOINT;
+				checkpointType = CheckpointType.STARTPOINT.toInt();
 			} else if ("response".equals(list.get(4))) {
-				checkpointType = Checkpoint.TYPE_ENDPOINT;
+				checkpointType = CheckpointType.ENDPOINT.toInt();
 			}
 			checkpoint = new Checkpoint(report, null, null, list.get(2) + ". " + list.get(3), checkpointType, level);
 			checkpoint.setMessage(list.get(5));
@@ -239,7 +240,7 @@ public class ProofOfMigrationStorage extends DatabaseLogStorage {
 				level--;
 			}
 		}
-		checkpoint = new Checkpoint(report, null, null, "Timestamps", Checkpoint.TYPE_INFOPOINT, 0);
+		checkpoint = new Checkpoint(report, null, null, "Timestamps", CheckpointType.INFOPOINT.toInt(), 0);
 		StringBuilder message = new StringBuilder();
 		for (List<Object> list : result) {
 			message.append(list.get(2) + ". " + list.get(6) + "\n");

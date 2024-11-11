@@ -8,20 +8,21 @@ import java.util.List;
 import org.junit.Test;
 
 import nl.nn.testtool.Checkpoint;
+import nl.nn.testtool.CheckpointType;
 import nl.nn.testtool.Report;
 import nl.nn.testtool.TestTool;
 
 public class StatusMetadataFieldExtractorTest {
 	@Test
 	public void testSuccessStatus() {
-		Report report = getReport(Checkpoint.TYPE_ENDPOINT);
+		Report report = getReport(CheckpointType.ENDPOINT.toInt());
 		StatusMetadataFieldExtractor instance = new StatusMetadataFieldExtractor();
 		assertEquals("Success", instance.extractMetadata(report));
 	}
 
 	@Test
 	public void testSuccessStatusWithOtherSuccessLabel() {
-		Report report = getReport(Checkpoint.TYPE_ENDPOINT);
+		Report report = getReport(CheckpointType.ENDPOINT.toInt());
 		StatusMetadataFieldExtractor instance = new StatusMetadataFieldExtractor();
 		instance.setSuccessLabel("OK");
 		assertEquals("OK", instance.extractMetadata(report));
@@ -29,14 +30,14 @@ public class StatusMetadataFieldExtractorTest {
 
 	@Test
 	public void testErrorStatus() {
-		Report report = getReport(Checkpoint.TYPE_ABORTPOINT);
+		Report report = getReport(CheckpointType.ABORTPOINT.toInt());
 		StatusMetadataFieldExtractor instance = new StatusMetadataFieldExtractor();
 		assertEquals("Error", instance.extractMetadata(report));
 	}
 
 	@Test
 	public void whenSuccessStatusAndHaveOtherLabelThenStillSuccess() {
-		Report report = getReport(Checkpoint.TYPE_ENDPOINT);
+		Report report = getReport(CheckpointType.ENDPOINT.toInt());
 		StatusMetadataFieldExtractor instance = new StatusMetadataFieldExtractor();
 		instance.setErrorLabel("Aborted");
 		assertEquals("Success", instance.extractMetadata(report));
@@ -44,7 +45,7 @@ public class StatusMetadataFieldExtractorTest {
 
 	@Test
 	public void whenErrorStatusAndHaveOtherLabelThenOtherLabelReturned() {
-		Report report = getReport(Checkpoint.TYPE_ABORTPOINT);
+		Report report = getReport(CheckpointType.ABORTPOINT.toInt());
 		StatusMetadataFieldExtractor instance = new StatusMetadataFieldExtractor();
 		instance.setErrorLabel("Aborted");
 		assertEquals("Aborted", instance.extractMetadata(report));
@@ -56,7 +57,7 @@ public class StatusMetadataFieldExtractorTest {
 		delegate.setSessionKey("anotherKey");
 		StatusMetadataFieldExtractor instance = new StatusMetadataFieldExtractor();
 		instance.setDelegate(delegate);
-		Report report = getReport(Checkpoint.TYPE_ENDPOINT);
+		Report report = getReport(CheckpointType.ENDPOINT.toInt());
 		assertEquals("Some message", instance.extractMetadata(report));
 	}
 
@@ -66,24 +67,24 @@ public class StatusMetadataFieldExtractorTest {
 		delegate.setSessionKey("anotherKey");
 		StatusMetadataFieldExtractor instance = new StatusMetadataFieldExtractor();
 		instance.setDelegate(delegate);
-		Report report = getReport(Checkpoint.TYPE_ABORTPOINT);
-		assertEquals("Error", instance.extractMetadata(report));		
+		Report report = getReport(CheckpointType.ABORTPOINT.toInt());
+		assertEquals("Error", instance.extractMetadata(report));
 	}
 
 	@Test
 	public void whenStatusLengthExceedsMaxLengthThenTruncated() {
-		Report report = getReport(Checkpoint.TYPE_ENDPOINT);
+		Report report = getReport(CheckpointType.ENDPOINT.toInt());
 		StatusMetadataFieldExtractor instance = new StatusMetadataFieldExtractor();
 		instance.setMaxLength(2);
-		assertEquals("Su", instance.extractMetadata(report));		
+		assertEquals("Su", instance.extractMetadata(report));
 	}
 
 	@Test
 	public void whenStatusLengthNotAboveMaxThenNotTruncated() {
-		Report report = getReport(Checkpoint.TYPE_ENDPOINT);
+		Report report = getReport(CheckpointType.ENDPOINT.toInt());
 		StatusMetadataFieldExtractor instance = new StatusMetadataFieldExtractor();
 		instance.setMaxLength("Success".length());
-		assertEquals("Success", instance.extractMetadata(report));				
+		assertEquals("Success", instance.extractMetadata(report));
 	}
 	
 	private Report getReport(int typeOfLastCheckpoint) {
@@ -96,7 +97,7 @@ public class StatusMetadataFieldExtractorTest {
 		checkpoint.setReport(report);
 		checkpoint.setName("SessionKey anotherKey");
 		checkpoint.setMessage("Some message");
-		checkpoint.setType(Checkpoint.TYPE_STARTPOINT);
+		checkpoint.setType(CheckpointType.STARTPOINT.toInt());
 		checkpoint = new Checkpoint();
 		checkpoints.add(checkpoint);
 		checkpoint.setReport(report);

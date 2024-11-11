@@ -34,13 +34,13 @@ import java.util.regex.Pattern;
 import javax.json.bind.annotation.JsonbTransient;
 import javax.xml.xpath.XPathExpressionException;
 
-import io.opentelemetry.api.trace.Span;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import io.opentelemetry.api.trace.Span;
 import nl.nn.testtool.MessageCapturer.StreamingType;
 import nl.nn.testtool.MessageEncoder.ToStringResult;
 import nl.nn.testtool.run.ReportRunner;
@@ -59,19 +59,6 @@ public class Checkpoint implements Serializable, Cloneable {
 	private static final Pattern GENERIC_VARIABLE_PATTERN = Pattern.compile("\\$\\{.*?\\}");
 	private static final Pattern EXTERNAL_VARIABLE_PATTERN = Pattern.compile("\\$\\{checkpoint\\(([0-9]+#[0-9]+)\\)(\\.xpath\\((.*?)\\)|)\\}");
 
-	public static final int TYPE_STARTPOINT = 1;
-	public static final int TYPE_ENDPOINT = 2;
-	public static final int TYPE_ABORTPOINT = 3;
-	public static final int TYPE_INPUTPOINT = 4;
-	public static final int TYPE_OUTPUTPOINT = 5;
-	public static final int TYPE_INFOPOINT = 6;
-	public static final int TYPE_THREADCREATEPOINT = 7;
-	public static final int TYPE_THREADSTARTPOINT = 8;
-	public static final int TYPE_THREADENDPOINT = 9;
-	public static final int STUB_FOLLOW_REPORT_STRATEGY = -1;
-	public static final int STUB_NO = 0;
-	public static final int STUB_YES = 1;
-
 	private Report report;
 	private String threadName;
 	private String sourceClassName;
@@ -84,7 +71,7 @@ public class Checkpoint implements Serializable, Cloneable {
 	private boolean noCloseReceivedForStream = false;
 	private int type;
 	private int level = 0;
-	private int stub = STUB_FOLLOW_REPORT_STRATEGY;
+	private int stub = StubType.FOLLOW_REPORT_STRATEGY.toInt();
 	private boolean stubbed = false;
 	private String stubNotFound;
 	private int preTruncatedMessageLength = -1;
@@ -400,23 +387,7 @@ public class Checkpoint implements Serializable, Cloneable {
 	}
 
 	public String getTypeAsString() {
-		return getTypeAsString(getType());
-	}
-
-	public static String getTypeAsString(int type) {
-		String typeAsString = null;
-		switch (type) {
-			case TYPE_STARTPOINT : typeAsString = "Startpoint"; break;
-			case TYPE_ENDPOINT : typeAsString = "Endpoint"; break;
-			case TYPE_ABORTPOINT : typeAsString = "Abortpoint"; break;
-			case TYPE_INPUTPOINT : typeAsString = "Inputpoint"; break;
-			case TYPE_OUTPUTPOINT : typeAsString = "Outputpoint"; break;
-			case TYPE_INFOPOINT : typeAsString = "Infopoint"; break;
-			case TYPE_THREADCREATEPOINT : typeAsString = "ThreadCreatepoint"; break;
-			case TYPE_THREADSTARTPOINT : typeAsString = "ThreadStartpoint"; break;
-			case TYPE_THREADENDPOINT : typeAsString = "ThreadEndpoint"; break;
-		}
-		return typeAsString;
+		return CheckpointType.toString(getType());
 	}
 
 	public void setLevel(int level) {
@@ -472,7 +443,7 @@ public class Checkpoint implements Serializable, Cloneable {
 		}
 		i--;
 		for ( ; i >= 0; i--) {
-			Checkpoint currentCheckpoint = (Checkpoint)report.getCheckpoints().get(i);
+			Checkpoint currentCheckpoint = report.getCheckpoints().get(i);
 			String nextName = currentCheckpoint.getName();
 			if (currentCheckpoint.getLevel() == currentLevel &&
 					((nextName == null && currentName == null) || nextName.equals(currentName))) {

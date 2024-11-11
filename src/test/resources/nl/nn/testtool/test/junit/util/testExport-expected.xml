@@ -65,6 +65,9 @@
   <void property="endTime">
    <long>-9223372036854775801</long>
   </void>
+  <void property="linkMethod">
+   <string>linkMethod</string>
+  </void>
   <void property="name">
    <string>name</string>
   </void>

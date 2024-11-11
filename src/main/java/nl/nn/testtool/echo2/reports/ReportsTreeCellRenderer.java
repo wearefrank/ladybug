@@ -23,6 +23,7 @@ import nextapp.echo2.app.Extent;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.ResourceImageReference;
 import nl.nn.testtool.Checkpoint;
+import nl.nn.testtool.CheckpointType;
 import nl.nn.testtool.MessageEncoderImpl;
 import nl.nn.testtool.Report;
 import nl.nn.testtool.echo2.Echo2Application;
@@ -74,56 +75,56 @@ public class ReportsTreeCellRenderer extends DefaultTreeCellRenderer {
 						|| checkpoint.isWaitingForStream() || checkpoint.getLevel() < 0) {
 					error = "-error";
 				}
-				if (checkpoint.getType() == Checkpoint.TYPE_STARTPOINT) {
+				if (checkpoint.getType() == CheckpointType.STARTPOINT.toInt()) {
 					if (defaultMutableTreeNode.getLevel() % 2 == 0) {
 						label.setIcon(new ResourceImageReference(path + "startpoint" + error + "-even.gif"));
 					} else {
 						label.setIcon(new ResourceImageReference(path + "startpoint" + error + "-odd.gif"));
 					}
-				} else if (checkpoint.getType() == Checkpoint.TYPE_ENDPOINT) {
+				} else if (checkpoint.getType() == CheckpointType.ENDPOINT.toInt()) {
 					if (defaultMutableTreeNode.getLevel() % 2 == 0) {
 						label.setIcon(new ResourceImageReference(path + "endpoint" + error + "-odd.gif"));
 					} else {
 						label.setIcon(new ResourceImageReference(path + "endpoint" + error + "-even.gif"));
 					}
-				} else if (checkpoint.getType() == Checkpoint.TYPE_ABORTPOINT) {
+				} else if (checkpoint.getType() == CheckpointType.ABORTPOINT.toInt()) {
 					if (defaultMutableTreeNode.getLevel() % 2 == 0) {
 						label.setIcon(new ResourceImageReference(path + "abortpoint-odd.gif"));
 					} else {
 						label.setIcon(new ResourceImageReference(path + "abortpoint-even.gif"));
 					}
-				} else if (checkpoint.getType() == Checkpoint.TYPE_INPUTPOINT) {
+				} else if (checkpoint.getType() == CheckpointType.INPUTPOINT.toInt()) {
 					if (defaultMutableTreeNode.getLevel() % 2 == 0) {
 						label.setIcon(new ResourceImageReference(path + "inputpoint" + error + "-even.gif"));
 					} else {
 						label.setIcon(new ResourceImageReference(path + "inputpoint" + error + "-odd.gif"));
 					}
-				} else if (checkpoint.getType() == Checkpoint.TYPE_OUTPUTPOINT) {
+				} else if (checkpoint.getType() == CheckpointType.OUTPUTPOINT.toInt()) {
 					if (defaultMutableTreeNode.getLevel() % 2 == 0) {
 						label.setIcon(new ResourceImageReference(path + "outputpoint" + error + "-even.gif"));
 					} else {
 						label.setIcon(new ResourceImageReference(path + "outputpoint" + error + "-odd.gif"));
 					}
-				} else if (checkpoint.getType() == Checkpoint.TYPE_INFOPOINT) {
+				} else if (checkpoint.getType() == CheckpointType.INFOPOINT.toInt()) {
 					if (defaultMutableTreeNode.getLevel() % 2 == 0) {
 						label.setIcon(new ResourceImageReference(path + "infopoint" + error + "-even.gif"));
 					} else {
 						label.setIcon(new ResourceImageReference(path + "infopoint" + error + "-odd.gif"));
 					}
-				} else if (checkpoint.getType() == Checkpoint.TYPE_THREADCREATEPOINT) {
+				} else if (checkpoint.getType() == CheckpointType.THREAD_CREATEPOINT.toInt()) {
 					// Visualize as an error, see Report.removeThreadCreatepoint()
 					if (defaultMutableTreeNode.getLevel() % 2 == 0) {
 						label.setIcon(new ResourceImageReference(path + "threadStartpoint-error-even.gif"));
 					} else {
 						label.setIcon(new ResourceImageReference(path + "threadStartpoint-error-odd.gif"));
 					}
-				} else if (checkpoint.getType() == Checkpoint.TYPE_THREADSTARTPOINT) {
+				} else if (checkpoint.getType() == CheckpointType.THREAD_STARTPOINT.toInt()) {
 					if (defaultMutableTreeNode.getLevel() % 2 == 0) {
 						label.setIcon(new ResourceImageReference(path + "threadStartpoint" + error + "-even.gif"));
 					} else {
 						label.setIcon(new ResourceImageReference(path + "threadStartpoint" + error + "-odd.gif"));
 					}
-				} else if (checkpoint.getType() == Checkpoint.TYPE_THREADENDPOINT) {
+				} else if (checkpoint.getType() == CheckpointType.THREAD_ENDPOINT.toInt()) {
 					if (defaultMutableTreeNode.getLevel() % 2 == 0) {
 						label.setIcon(new ResourceImageReference(path + "threadEndpoint" + error + "-odd.gif"));
 					} else {

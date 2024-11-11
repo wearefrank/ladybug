@@ -33,6 +33,7 @@ import echopointng.tree.TreeSelectionModel;
 import nextapp.echo2.app.Column;
 import nextapp.echo2.app.ContentPane;
 import nl.nn.testtool.Checkpoint;
+import nl.nn.testtool.CheckpointType;
 import nl.nn.testtool.Report;
 import nl.nn.testtool.filter.View;
 import nl.nn.testtool.storage.CrudStorage;
@@ -113,20 +114,25 @@ public class TreePane extends ContentPane implements TreeSelectionListener {
 		return selectedCheckpoint;
 	}
 
-	public DefaultMutableTreeNode findNodeWithEqualCheckpointPath(
-			DefaultMutableTreeNode reportNode, Checkpoint checkpoint) {
+	public DefaultMutableTreeNode findCounterpartCheckpointNode(DefaultMutableTreeNode counterpartReportNode,
+			Checkpoint checkpoint) {
 		DefaultMutableTreeNode resultNode = null;
-		if (reportNode.getChildCount() > 0) {
-			DefaultMutableTreeNode checkpointRootNode = (DefaultMutableTreeNode)reportNode.getChildAt(0);
-			Enumeration enumeration = checkpointRootNode.depthFirstEnumeration();
-			while (resultNode == null && enumeration.hasMoreElements()) {
-				DefaultMutableTreeNode currentNode = (DefaultMutableTreeNode)enumeration.nextElement();
-				Checkpoint currentCheckpoint = (Checkpoint)currentNode.getUserObject();
-				if (currentCheckpoint.getPath().equals(checkpoint.getPath())
-						&& currentCheckpoint.getType() == checkpoint.getType()) {
-					resultNode = currentNode;
+		if (counterpartReportNode.getChildCount() > 0) {
+			Report counterpartReport = (Report)counterpartReportNode.getUserObject();
+			Checkpoint counterpartCheckpoint = counterpartReport.getCheckpoint(checkpoint);
+			if (counterpartCheckpoint != null) {
+				DefaultMutableTreeNode counterpartCheckpointRootNode =
+						(DefaultMutableTreeNode)counterpartReportNode.getChildAt(0);
+				Enumeration enumeration = counterpartCheckpointRootNode.depthFirstEnumeration();
+				while (resultNode == null && enumeration.hasMoreElements()) {
+					DefaultMutableTreeNode currentCounterpartNode = (DefaultMutableTreeNode)enumeration.nextElement();
+					Checkpoint currentCounterpartCheckpoint = (Checkpoint)currentCounterpartNode.getUserObject();
+					if (currentCounterpartCheckpoint.getIndex() == counterpartCheckpoint.getIndex()) {
+						resultNode = currentCounterpartNode;
+					}
 				}
 			}
+			
 		}
 		return resultNode;
 	}
@@ -146,7 +152,8 @@ public class TreePane extends ContentPane implements TreeSelectionListener {
 						counterpartNode = counterpartReportNode;
 					} else {
 						Checkpoint checkpoint = (Checkpoint)node.getUserObject();
-						counterpartNode = treePaneCounterpart.findNodeWithEqualCheckpointPath(counterpartReportNode, checkpoint);
+						counterpartNode =
+								treePaneCounterpart.findCounterpartCheckpointNode(counterpartReportNode, checkpoint);
 					}
 				}
 				if (counterpartNode != null) {
@@ -373,7 +380,7 @@ public class TreePane extends ContentPane implements TreeSelectionListener {
 			if (selectedReportNode != null) {
 				DefaultMutableTreeNode nodeToSelect = null;
 				if (selectedCheckpoint != null) {
-					nodeToSelect = findNodeWithEqualCheckpointPath(selectedReportNode, selectedCheckpoint);
+					nodeToSelect = findCounterpartCheckpointNode(selectedReportNode, selectedCheckpoint);
 					if (nodeToSelect != null) {
 						expandOnlyChilds(nodeToSelect);
 					}
@@ -403,8 +410,8 @@ public class TreePane extends ContentPane implements TreeSelectionListener {
 	}
 
 	private boolean isStartpoint(int type) {
-		if (type == Checkpoint.TYPE_STARTPOINT
-				|| type == Checkpoint.TYPE_THREADSTARTPOINT) {
+		if (type == CheckpointType.STARTPOINT.toInt()
+				|| type == CheckpointType.THREAD_STARTPOINT.toInt()) {
 			return true;
 		} else {
 			return false;

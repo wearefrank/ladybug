@@ -149,14 +149,21 @@ public class TestExport {
 			if (methods[i].getName().startsWith(verb)) {
 				String name = methods[i].getName().substring(verb.length(), verb.length() + 1).toLowerCase()
 						+ methods[i].getName().substring(verb.length() + 1);
-				if (verb.equals("set") && name.equals("message") && methods[i].getParameters()[0].getType() == Object.class) {
+				if (clazz.equals(Checkpoint.class) && verb.equals("set") && name.equals("message")
+						&& methods[i].getParameters()[0].getType() == Object.class) {
 					// Ignore Checkpoint.setMessage(Object), use Checkpoint.setMessage(String)
-				} else if (verb.equals("get") && name.equals("typeAsString") && methods[i].getParameters().length > 0) {
+				} else if (clazz.equals(Checkpoint.class) && verb.equals("get") && name.equals("typeAsString")
+						&& methods[i].getParameters().length > 0) {
 					// Ignore Checkpoint.getTypeAsString(int)
-				} else if (verb.equals("get") && name.equals("messageAsObject") && methods[i].getParameters().length > 0) {
+				} else if (clazz.equals(Checkpoint.class) && verb.equals("get") && name.equals("messageAsObject")
+						&& methods[i].getParameters().length > 0) {
 					// Ignore Checkpoint.getMessageAsObject(T)
+				} else if (clazz.equals(Report.class) && verb.equals("get") && name.equals("checkpoint")
+						&& methods[i].getParameters().length > 0) {
+					// Ignore all Report.getCheckpoint() methods (which wouldn't pass the assertNull below)
 				} else {
-					assertNull(beanProperties.get(name));
+					assertNull("More than one " + verb + " " + name + " method found on " + clazz,
+							beanProperties.get(name));
 					beanProperties.put(name, methods[i]);
 				}
 			}

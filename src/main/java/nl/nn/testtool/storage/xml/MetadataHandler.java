@@ -72,7 +72,7 @@ public class MetadataHandler {
 	}
 
 	/**
-	 * Builds the metadata by searching through folders in the given directly.
+	 * Builds the metadata by searching through folders in the given directory.
 	 *
 	 * @param dir           Directory to be searched.
 	 * @param searchSubDirs True, if subdirectories should also be searched. False, otherwise.
@@ -91,7 +91,7 @@ public class MetadataHandler {
 
 			if (file.isFile() && file.getName().endsWith(XmlStorage.FILE_EXTENSION)) {
 				try {
-					Report report = storage.readReportFromFile(file);
+					Report report = storage.readReportFromFile(file, this);
 					HashMap<File, Report> reportsForStorageId = reports.computeIfAbsent(report.getStorageId(), k -> new HashMap<>());
 					reportsForStorageId.put(file, report);
 				} catch (StorageException exception) {
@@ -359,7 +359,7 @@ public class MetadataHandler {
 			Metadata m = map.remove(path);
 			if (m == null || m.lastModified < file.lastModified()) {
 				try {
-					Report report = storage.readReportFromFile(file);
+					Report report = storage.readReportFromFile(file, this);
 					if (report == null) {
 						map.put(path, m);
 						continue;
@@ -370,7 +370,7 @@ public class MetadataHandler {
 					if (oldMetadata != null && !oldMetadata.equals(m)) {
 						String oldPath = storage.resolvePath(storageId);
 						if (StringUtils.isNotEmpty(oldPath) && !oldPath.equalsIgnoreCase(file.getPath())) {
-							Report oldReport = storage.readReportFromFile(new File(oldPath));
+							Report oldReport = storage.readReportFromFile(new File(oldPath), this);
 							if (oldReport != null && report.getStorageId().equals(oldReport.getStorageId())) {
 								while (metadataMap.containsKey(storageId))
 									storageId = getNextStorageId();

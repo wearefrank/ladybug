@@ -1,5 +1,5 @@
 /*
-   Copyright 2020-2023 WeAreFrank!
+   Copyright 2020-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package nl.nn.testtool.metadata;
 import java.util.List;
 
 import nl.nn.testtool.Checkpoint;
+import nl.nn.testtool.CheckpointType;
 import nl.nn.testtool.MetadataFieldExtractor;
 import nl.nn.testtool.Report;
 
@@ -61,7 +62,7 @@ public class StatusMetadataFieldExtractor extends DefaultValueMetadataFieldExtra
 		List<Checkpoint> checkpoints = report.getCheckpoints();
 		if (checkpoints.size() > 0) {
 			Checkpoint lastCheckpoint = (Checkpoint)checkpoints.get(checkpoints.size() - 1);
-			if (lastCheckpoint.getType() == Checkpoint.TYPE_ABORTPOINT) {
+			if (lastCheckpoint.getType() == CheckpointType.ABORTPOINT.toInt()) {
 				status = errorLabel;
 			} else if(delegate != null) {
 				status = (String) delegate.extractMetadata(report);

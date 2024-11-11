@@ -24,17 +24,29 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
+import java.util.ArrayList;
 import java.util.List;
+
+import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 
 import jakarta.annotation.PostConstruct;
+import nl.nn.testtool.Checkpoint;
+import nl.nn.testtool.CheckpointType;
+import nl.nn.testtool.LinkMethodType;
 import nl.nn.testtool.Report;
+import nl.nn.testtool.StubType;
 import nl.nn.testtool.storage.CrudStorage;
 import nl.nn.testtool.storage.StorageException;
 import nl.nn.testtool.util.SearchUtil;
+import nl.nn.testtool.util.XmlUtil;
 
 /**
  * Handles report storage for ladybug.
@@ -139,18 +151,19 @@ public class XmlStorage implements CrudStorage {
 			} else {
 				reportFile = new File(resolvePath(report.getStorageId()));
 			}
-
-			if (addNew || report.getStorageId() == null || metadataHandler.contains(report.getStorageId())) {
-				int storageId = metadataHandler.getNextStorageId();
-				while (metadataHandler.contains(storageId))
-					storageId = metadataHandler.getNextStorageId();
-				report.setStorageId(storageId);
+			if (!reportFile.exists() || XmlUtil.isJavaBeansXml(reportFile)) {
+				if (addNew || report.getStorageId() == null || metadataHandler.contains(report.getStorageId())) {
+					int storageId = metadataHandler.getNextStorageId();
+					while (metadataHandler.contains(storageId))
+						storageId = metadataHandler.getNextStorageId();
+					report.setStorageId(storageId);
+				}
+				store(report, reportFile);
+				metadata = Metadata.fromReport(report, reportFile, reportsFolder);
+				metadataHandler.add(metadata);
+			} else {
+				throw new StorageException("Storing human editable report xml file not supported yet");
 			}
-
-			store(report, reportFile);
-			metadata = Metadata.fromReport(report, reportFile, reportsFolder);
-			metadataHandler.add(metadata);
-
 		} catch (IOException e) {
 			throw new StorageException("Error while writing the report!", e);
 		}
@@ -170,7 +183,7 @@ public class XmlStorage implements CrudStorage {
 			log.warn("Given report path does not resolve to a file.");
 			return null;
 		}
-		Report report = readReportFromFile(reportFile);
+		Report report = readReportFromFile(reportFile, metadataHandler);
 		if (report.getStorageId() != m.storageId)
 			report.setStorageId(storageId);
 		return report;
@@ -199,14 +212,17 @@ public class XmlStorage implements CrudStorage {
 			}
 			// Delete file
 			File file = new File(path);
-			if (!file.delete())
-				throw new StorageException("Could not delete report with storage id [" + report.getStorageId() + "] correlation id [" + report.getCorrelationId() + "] at [" + path + "]");
-
-			// Delete all parent folders which are empty.
-			file = file.getParentFile();
-			while (file.delete())
+			if (!file.exists() || XmlUtil.isJavaBeansXml(file)) {
+				if (!file.delete())
+					throw new StorageException("Could not delete report with storage id [" + report.getStorageId() + "] correlation id [" + report.getCorrelationId() + "] at [" + path + "]");
+				// Delete all parent folders which are empty.
 				file = file.getParentFile();
-			metadataHandler.delete(report);
+				while (file.delete())
+					file = file.getParentFile();
+				metadataHandler.delete(report);
+			} else {
+				throw new StorageException("Deleting human editable report xml file not supported yet");
+			}
 		} catch (IOException e) {
 			throw new StorageException("Error while deleting the report with storage id [" + report.getStorageId() + "] correlation id [" + report.getCorrelationId() + "]", e);
 		}
@@ -276,35 +292,126 @@ public class XmlStorage implements CrudStorage {
 	 * @throws StorageException ...
 	 * @return Report generated from the given file.
 	 */
-	protected Report readReportFromFile(File file) throws StorageException {
-		if (file == null || !file.isFile() || !file.getName().endsWith(XmlStorage.FILE_EXTENSION))
-			return null;
-
-		log.debug("Reading from a new file: " + file.getPath());
-		FileInputStream inputStream = null;
-		XMLDecoder decoder = null;
-		try {
-			inputStream = new FileInputStream(file);
-			decoder = new XMLDecoder(new BufferedInputStream(inputStream));
-
-			Report report = (Report) decoder.readObject();
-			report.setStorage(this);
-
-			decoder.close();
-			inputStream.close();
-			return report;
-		} catch (Exception e) {
-			if (decoder != null)
+	protected Report readReportFromFile(File file, MetadataHandler metadataHandler) throws StorageException {
+		if (file == null || !file.isFile() || !file.getName().endsWith(XmlStorage.FILE_EXTENSION)) return null;
+		if (XmlUtil.isJavaBeansXml(file)) {
+			log.debug("Read java bean report xml file: " + file.getPath());
+			FileInputStream inputStream = null;
+			XMLDecoder decoder = null;
+			try {
+				inputStream = new FileInputStream(file);
+				decoder = new XMLDecoder(new BufferedInputStream(inputStream));
+	
+				Report report = (Report) decoder.readObject();
+				report.setStorage(this);
+	
 				decoder.close();
-			if (inputStream != null) {
-				try {
-					inputStream.close();
-				} catch (Exception ignored) {
-					log.error("Could not close the xml file.", ignored);
+				inputStream.close();
+				return report;
+			} catch (Exception e) {
+				if (decoder != null)
+					decoder.close();
+				if (inputStream != null) {
+					try {
+						inputStream.close();
+					} catch (Exception ignored) {
+						log.error("Could not close the xml file.", ignored);
+					}
+				}
+				throw new StorageException("Exception while deserializing data from report file.", e);
+			}
+		} else {
+			log.debug("Read human editable report xml file: " + file.getPath());
+			Node reportXml;
+			try {
+				reportXml = XmlUtil.fileToNode(file);
+			} catch (SAXException | IOException | ParserConfigurationException e) {
+				throw new StorageException("Exception while reading human editable report xml file.", e);
+			}
+			Report report = new Report();
+			report.setStorage(this);
+			NamedNodeMap attributes = reportXml.getAttributes();
+			if (attributes != null) {
+				Node nameNode = attributes.getNamedItem("Name");
+				if (nameNode != null) {
+					report.setName(nameNode.getTextContent());
+				}
+				Node descriptionNode = attributes.getNamedItem("Description");
+				if (descriptionNode != null) {
+					report.setDescription(descriptionNode.getTextContent());
+				}
+				Node stubStrategyNode = attributes.getNamedItem("StubStrategy");
+				if (stubStrategyNode != null) {
+					report.setStubStrategy(stubStrategyNode.getTextContent());
+				}
+				Node linkMethodNode = attributes.getNamedItem("LinkMethod");
+				if (linkMethodNode != null) {
+					report.setLinkMethod(linkMethodNode.getTextContent());
+				} else {
+					report.setLinkMethod(LinkMethodType.NTH_NAME_AND_TYPE.toString());
 				}
 			}
-			throw new StorageException("Exception while deserializing data from report file.", e);
+			// XmlStorage/MetadataHandler has been built with the idea that the storageId can be stored in the report
+			// and saved to disk and retrieved from the report when read from disk again but for now the following seems
+			// to work.
+			report.setStorageId(metadataHandler.getNextStorageId());
+			report.setName(file.getName().substring(0, file.getName().length() - FILE_EXTENSION.length()));
+			List<Checkpoint> checkpoints = new ArrayList<Checkpoint>();
+			int level = 0;
+			for (int i = 0; i < reportXml.getChildNodes().getLength(); i++) {
+				Node reportChildNode = reportXml.getChildNodes().item(i);
+				if ("Checkpoint".equals(reportChildNode.getNodeName())) {
+					attributes = reportChildNode.getAttributes();
+					if (attributes != null) {
+						Node nameNode = attributes.getNamedItem("Name");
+						if (nameNode != null) {
+							String name = nameNode.getTextContent();
+							int type = -1;
+							Node typeNode = attributes.getNamedItem("Type");
+							if (typeNode != null) {
+								type = CheckpointType.valueOfString(typeNode.getTextContent()).toInt();
+							}
+							if (type != -1) {
+								Checkpoint checkpoint = new Checkpoint(null, null, null, name, type, level);
+								checkpoint.setMessage(nodeContentToString(reportChildNode));
+								checkpoint.setReport(report);
+								checkpoints.add(checkpoint);
+								if (type == CheckpointType.STARTPOINT.toInt()) {
+									level++;
+								} else if (type == CheckpointType.ENDPOINT.toInt()
+										|| type == CheckpointType.ABORTPOINT.toInt()) {
+									level--;
+								}
+								Node stubNode = attributes.getNamedItem("Stub");
+								if (stubNode != null) {
+									checkpoint.setStub(StubType.valueOfString(stubNode.getTextContent()).toInt());
+								}
+							}
+						}
+					}
+				} else if ("Transformation".equals(reportChildNode.getNodeName())) {
+					report.setTransformation(nodeContentToString(reportChildNode));
+				}
+			}
+			report.setCheckpoints(checkpoints);
+			return report;
 		}
+	}
+
+	private String nodeContentToString(Node node) {
+		StringBuffer message = new StringBuffer();
+		NodeList nodes = node.getChildNodes();
+		for (int j = 0; j < nodes.getLength(); j++) {
+			// Ignore whitespace at the beginning and end
+			if ((j > 0 && j < nodes.getLength() - 1) || isNonWhiteSpace(nodes.item(j))) {
+				message.append(XmlUtil.nodeToString(nodes.item(j)));
+			}
+		}
+		return message.toString();
+	}
+
+	private boolean isNonWhiteSpace(Node node) {
+		return !(node.getNodeType() == Node.TEXT_NODE && StringUtils.isBlank(node.getNodeValue()));
 	}
 
 	/**

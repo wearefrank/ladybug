@@ -15,17 +15,18 @@
 */
 package nl.nn.testtool.storage.xml;
 
-import nl.nn.testtool.Checkpoint;
-import nl.nn.testtool.MetadataExtractor;
-import nl.nn.testtool.Report;
-import org.apache.commons.lang3.StringEscapeUtils;
-import org.apache.commons.lang3.StringUtils;
-
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
+
+import org.apache.commons.lang3.StringEscapeUtils;
+import org.apache.commons.lang3.StringUtils;
+
+import nl.nn.testtool.CheckpointType;
+import nl.nn.testtool.MetadataExtractor;
+import nl.nn.testtool.Report;
 
 public class Metadata {
 	protected int storageId, nrChpts;
@@ -101,7 +102,8 @@ public class Metadata {
 	public static Metadata fromReport(Report report, File file, File root) {
 		String status = "Success";
 		if (report.getCheckpoints() != null && report.getCheckpoints().size() > 0) {
-			if (report.getCheckpoints().get(report.getCheckpoints().size() - 1).getType() == Checkpoint.TYPE_ABORTPOINT)
+			if (report.getCheckpoints().get(
+					report.getCheckpoints().size() - 1).getType() == CheckpointType.ABORTPOINT.toInt())
 				status = "Error";
 		}
 

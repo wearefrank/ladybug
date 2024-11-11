@@ -246,6 +246,9 @@
   <void property="endTime">
    <long>IGNORE-END-TIME</long>
   </void>
+  <void property="linkMethod">
+   <string>Path and type</string>
+  </void>
   <void property="name">
    <string>testStreamsWithWriterAndOutputStream</string>
   </void>

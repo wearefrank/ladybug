@@ -26,8 +26,10 @@ import nextapp.echo2.app.Row;
 import nextapp.echo2.app.button.ButtonGroup;
 import nextapp.echo2.app.event.ActionEvent;
 import nl.nn.testtool.Checkpoint;
+import nl.nn.testtool.CheckpointType;
 import nl.nn.testtool.MessageEncoderImpl;
 import nl.nn.testtool.Report;
+import nl.nn.testtool.StubType;
 import nl.nn.testtool.echo2.Echo2Application;
 import nl.nn.testtool.echo2.util.Download;
 import nl.nn.testtool.storage.CrudStorage;
@@ -220,11 +222,11 @@ public class CheckpointComponent extends MessageComponent {
 		this.node = node;
 		this.report = report;
 		this.checkpoint = checkpoint;
-		if (checkpoint.getStub() == Checkpoint.STUB_FOLLOW_REPORT_STRATEGY) {
+		if (checkpoint.getStub() == StubType.FOLLOW_REPORT_STRATEGY.toInt()) {
 			radioButtonStubOptionFollowReportStrategy.setSelected(true);
-		} else if (checkpoint.getStub() == Checkpoint.STUB_NO) {
+		} else if (checkpoint.getStub() == StubType.NO.toInt()) {
 			radioButtonStubOptionNo.setSelected(true);
-		} else if (checkpoint.getStub() == Checkpoint.STUB_YES) {
+		} else if (checkpoint.getStub() == StubType.YES.toInt()) {
 			radioButtonStubOptionYes.setSelected(true);
 		} else {
 			radioButtonStubOptionFollowReportStrategy.setSelected(false);
@@ -233,7 +235,7 @@ public class CheckpointComponent extends MessageComponent {
 		}
 		messageIsStubbedLabel.setVisible(checkpoint.isStubbed());
 		if (checkpoint.getStubNotFound() != null) {
-			messageStubNotFoundLabel.setText("Could not find stub message for " + checkpoint.getStubNotFound());
+			messageStubNotFoundLabel.setText(checkpoint.getStubNotFound());
 			messageStubNotFoundLabel.setVisible(true);
 		} else {
 			messageStubNotFoundLabel.setVisible(false);
@@ -302,7 +304,7 @@ public class CheckpointComponent extends MessageComponent {
 			setMessage(message);
 		}
 		namePropertyLabel.setText("Name: " + checkpoint.getName());
-		typePropertyLabel.setText("Type: " + Checkpoint.getTypeAsString(checkpoint.getType()));
+		typePropertyLabel.setText("Type: " + CheckpointType.toString(checkpoint.getType()));
 		threadNamePropertyLabel.setText("Thread name: " + checkpoint.getThreadName());
 		sourceClassNamePropertyLabel.setText("Source class name: " + checkpoint.getSourceClassName());
 		String messageClassName = checkpoint.getMessageClassName();
@@ -336,11 +338,11 @@ public class CheckpointComponent extends MessageComponent {
 	public void actionPerformed(ActionEvent e) {
 		super.actionPerformed(e);
 		if (radioButtonStubOptionFollowReportStrategy == e.getSource()) {
-			checkpoint.setStub(Checkpoint.STUB_FOLLOW_REPORT_STRATEGY);
+			checkpoint.setStub(StubType.FOLLOW_REPORT_STRATEGY.toInt());
 		} else if (radioButtonStubOptionNo == e.getSource()) {
-			checkpoint.setStub(Checkpoint.STUB_NO);
+			checkpoint.setStub(StubType.NO.toInt());
 		} else if (radioButtonStubOptionYes == e.getSource()) {
-			checkpoint.setStub(Checkpoint.STUB_YES);
+			checkpoint.setStub(StubType.YES.toInt());
 		} else if (e.getActionCommand().equals("ToggleBase64")) {
 			if (toggleBase64Button.getText().equals("Base64")) {
 				toggleBase64Button.setText("UTF-8");

@@ -51,6 +51,7 @@ public class ReportComponent extends MessageComponent {
 	private Label storageIdLabel;
 	private Label storageLabel;
 	private SelectField stubStrategySelectField;
+	private SelectField linkMethodSelectField;
 	private SelectField copyToSelectField;
 	private Label estimatedMemoryUsageLabel;
 	private Label correlationIdLabel;
@@ -125,6 +126,11 @@ public class ReportComponent extends MessageComponent {
 		stubStrategySelectField.addActionListener(this);
 		optionsRow.add(new Label("Stub strategy:"));
 		optionsRow.add(stubStrategySelectField);
+
+		linkMethodSelectField = new SelectField(testTool.getLinkMethods().toArray());
+		linkMethodSelectField.addActionListener(this);
+		optionsRow.add(new Label("Link method:"));
+		optionsRow.add(linkMethodSelectField);
 
 		// TODO werkend maken
 		copyToSelectField = new SelectField(new String[]{testStorage.getName()});
@@ -296,6 +302,7 @@ public class ReportComponent extends MessageComponent {
 		this.node = node;
 		this.report = report;
 		stubStrategySelectField.setSelectedItem(report.getStubStrategy());
+		linkMethodSelectField.setSelectedItem(report.getLinkMethod());
 		String reportXml = report.toXml();
 		if (compare) {
 			String reportCompareXml = null;
@@ -323,6 +330,8 @@ public class ReportComponent extends MessageComponent {
 		super.actionPerformed(e);
 		if (stubStrategySelectField == e.getSource()) {
 			report.setStubStrategy((String)stubStrategySelectField.getSelectedItem());
+		} else if (linkMethodSelectField == e.getSource()) {
+			report.setLinkMethod((String)linkMethodSelectField.getSelectedItem());
 		} else if (e.getActionCommand().equals("Download")) {
 			if ("Both".equals(downloadSelectField.getSelectedItem())) {
 				displayAndLogError(Download.download(report, true, true));

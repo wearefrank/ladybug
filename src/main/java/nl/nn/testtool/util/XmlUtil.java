@@ -1,5 +1,5 @@
 /*
-   Copyright 2020-2022 WeAreFrank!, 2018 Nationale-Nederlanden
+   Copyright 2020-2022, 2024 WeAreFrank!, 2018 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,7 +15,11 @@
 */
 package nl.nn.testtool.util;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileReader;
 import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -44,6 +48,7 @@ import org.xml.sax.helpers.DefaultHandler;
 import lombok.SneakyThrows;
 import net.sf.saxon.Configuration;
 import net.sf.saxon.xpath.XPathEvaluator;
+import nl.nn.testtool.storage.StorageException;
 
 public class XmlUtil {
 	private static final XPathEvaluator xpathEvaluator = new XPathEvaluator();
@@ -78,6 +83,28 @@ public class XmlUtil {
 		return true;
 	}
 
+	public static boolean isJavaBeansXml(File file) throws StorageException {
+		String line;
+		try (FileReader fileReader = new FileReader(file);
+				BufferedReader bufferedReader = new BufferedReader(fileReader)) {
+			line = bufferedReader.readLine();
+			if (line != null) {
+				String firstLine = line;
+				line = bufferedReader.readLine();
+				if (line != null) {
+					if (firstLine.startsWith("<?xml version=\"1.0\" encoding=\"UTF-8\"?>")
+							&& line.startsWith("<java version=\"")) {
+						return true;
+					}
+				}
+			}
+		} catch (IOException e) {
+			throw new StorageException("IOException while trying to determine whether '" + file.getName() +
+					"' is a JavaBeans XML file", e);
+		}
+		return false;
+	}
+
 	public static TransformerFactory getTransformerFactory() {
 		return new net.sf.saxon.TransformerFactoryImpl();
 	}
@@ -92,16 +119,25 @@ public class XmlUtil {
 
 	@SneakyThrows
 	public static String nodeToString(Node node) {
-		Transformer transformer = getTransformerFactory().newTransformer();
-		transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
-		StringWriter stringWriter = new StringWriter();
-		transformer.transform(new DOMSource(node), new StreamResult(stringWriter));
-		return stringWriter.toString();
+		if (node.getNodeType() == Node.CDATA_SECTION_NODE || node.getNodeType() == Node.TEXT_NODE) {
+			return node.getNodeValue();
+		} else {
+			Transformer transformer = getTransformerFactory().newTransformer();
+			transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+			StringWriter stringWriter = new StringWriter();
+			transformer.transform(new DOMSource(node), new StreamResult(stringWriter));
+			return stringWriter.toString();
+		}
 	}
 
 	public static Node stringToNode(String string) throws SAXException, IOException, ParserConfigurationException {
 		return getDocumentBuilderFactory().newDocumentBuilder()
 				.parse(new ByteArrayInputStream(string.getBytes())).getDocumentElement();
+	}
+
+	public static Node fileToNode(File file) throws SAXException, IOException, ParserConfigurationException {
+		return getDocumentBuilderFactory().newDocumentBuilder()
+				.parse(new FileInputStream(file)).getDocumentElement();
 	}
 }
 

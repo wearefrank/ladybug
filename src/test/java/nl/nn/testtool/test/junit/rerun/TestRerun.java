@@ -30,6 +30,7 @@ import nl.nn.testtool.Checkpoint;
 import nl.nn.testtool.Report;
 import nl.nn.testtool.Rerunner;
 import nl.nn.testtool.SecurityContext;
+import nl.nn.testtool.StubType;
 import nl.nn.testtool.TestTool;
 import nl.nn.testtool.run.ReportRunner;
 import nl.nn.testtool.storage.Storage;
@@ -71,7 +72,7 @@ public class TestRerun extends ReportRelatedTestCase {
 		Storage storage = testTool.getDebugStorage();
 		Report report = ReportRelatedTestCase.findAndGetReport(testTool, storage, correlationId);
 		report.setTestTool(testTool);
-		report.getCheckpoints().get(1).setStub(Checkpoint.STUB_YES);
+		report.getCheckpoints().get(1).setStub(StubType.YES.toInt());
 		String actual = report.toXml();
 		actual = ReportRelatedTestCase.applyToXmlIgnores(actual, report);
 		actual = ReportRelatedTestCase.applyXmlEncoderIgnores(actual);

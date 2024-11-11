@@ -8,6 +8,7 @@ import java.util.List;
 import org.junit.Test;
 
 import nl.nn.testtool.Checkpoint;
+import nl.nn.testtool.CheckpointType;
 import nl.nn.testtool.Report;
 import nl.nn.testtool.TestTool;
 
@@ -85,13 +86,13 @@ public class XpathMetadataFieldExtractorTest {
 		checkpoint.setReport(report);
 		checkpoint.setName("SessionKey anotherKey");
 		checkpoint.setMessage("<one><two>My value</two></one>");
-		checkpoint.setType(Checkpoint.TYPE_STARTPOINT);
+		checkpoint.setType(CheckpointType.STARTPOINT.toInt());
 		checkpoint = new Checkpoint();
 		checkpoints.add(checkpoint);
 		checkpoint.setReport(report);
 		checkpoint.setName("SessionKey mySessionKey");
 		checkpoint.setMessage("<one><two>My second value</two></one>");
-		checkpoint.setType(Checkpoint.TYPE_ENDPOINT);
+		checkpoint.setType(CheckpointType.ENDPOINT.toInt());
 		report.setCheckpoints(checkpoints);
 		return report;
 	}
@@ -106,13 +107,13 @@ public class XpathMetadataFieldExtractorTest {
 		checkpoint.setReport(report);
 		checkpoint.setName("SessionKey anotherKey");
 		checkpoint.setMessage("<one><two></two></one>");
-		checkpoint.setType(Checkpoint.TYPE_STARTPOINT);
+		checkpoint.setType(CheckpointType.STARTPOINT.toInt());
 		checkpoint = new Checkpoint();
 		checkpoints.add(checkpoint);
 		checkpoint.setReport(report);
 		checkpoint.setName("SessionKey mySessionKey");
 		checkpoint.setMessage("<one><two>My second value</two></one>");
-		checkpoint.setType(Checkpoint.TYPE_ENDPOINT);
+		checkpoint.setType(CheckpointType.ENDPOINT.toInt());
 		report.setCheckpoints(checkpoints);
 		return report;
 	}
