@@ -115,8 +115,8 @@ public class XmlStorage implements CrudStorage {
 	@Override
 	public void store(Report report) throws StorageException {
 		try {
-			// Storage uses the clone to save, because it changes reports name,
-			// and it can cause unwanted side-effects on report names.
+			// Storage uses the clone to save, because it changes reports name, and it can cause unwanted side-effects
+			// on report names. The clone will not have a storageId.
 			Report copy = report.clone();
 			store(copy, true);
 		} catch (ClassCastException | CloneNotSupportedException e) {
@@ -183,8 +183,8 @@ public class XmlStorage implements CrudStorage {
 			log.warn("Given report path does not resolve to a file.");
 			return null;
 		}
-		Report report = readReportFromFile(reportFile, metadataHandler);
-		if (report.getStorageId() != m.storageId)
+		Report report = readReportFromFile(reportFile);
+		if (report.getStorageId() == null || report.getStorageId() != m.storageId)
 			report.setStorageId(storageId);
 		return report;
 	}
@@ -292,7 +292,7 @@ public class XmlStorage implements CrudStorage {
 	 * @throws StorageException ...
 	 * @return Report generated from the given file.
 	 */
-	protected Report readReportFromFile(File file, MetadataHandler metadataHandler) throws StorageException {
+	protected Report readReportFromFile(File file) throws StorageException {
 		if (file == null || !file.isFile() || !file.getName().endsWith(XmlStorage.FILE_EXTENSION)) return null;
 		if (XmlUtil.isJavaBeansXml(file)) {
 			log.debug("Read java bean report xml file: " + file.getPath());
@@ -301,10 +301,10 @@ public class XmlStorage implements CrudStorage {
 			try {
 				inputStream = new FileInputStream(file);
 				decoder = new XMLDecoder(new BufferedInputStream(inputStream));
-	
+
 				Report report = (Report) decoder.readObject();
 				report.setStorage(this);
-	
+
 				decoder.close();
 				inputStream.close();
 				return report;
@@ -332,6 +332,10 @@ public class XmlStorage implements CrudStorage {
 			report.setStorage(this);
 			NamedNodeMap attributes = reportXml.getAttributes();
 			if (attributes != null) {
+				Node storageIdNode = attributes.getNamedItem("StorageId");
+				if (storageIdNode != null) {
+					report.setStorageId(Integer.valueOf(storageIdNode.getTextContent()));
+				}
 				Node nameNode = attributes.getNamedItem("Name");
 				if (nameNode != null) {
 					report.setName(nameNode.getTextContent());
@@ -351,10 +355,6 @@ public class XmlStorage implements CrudStorage {
 					report.setLinkMethod(LinkMethodType.NTH_NAME_AND_TYPE.toString());
 				}
 			}
-			// XmlStorage/MetadataHandler has been built with the idea that the storageId can be stored in the report
-			// and saved to disk and retrieved from the report when read from disk again but for now the following seems
-			// to work.
-			report.setStorageId(metadataHandler.getNextStorageId());
 			report.setName(file.getName().substring(0, file.getName().length() - FILE_EXTENSION.length()));
 			List<Checkpoint> checkpoints = new ArrayList<Checkpoint>();
 			int level = 0;

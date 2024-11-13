@@ -15,12 +15,6 @@
 */
 package nl.nn.testtool.storage.xml;
 
-import nl.nn.testtool.Report;
-import nl.nn.testtool.storage.StorageException;
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
@@ -35,6 +29,13 @@ import java.util.Scanner;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import nl.nn.testtool.Report;
+import nl.nn.testtool.storage.StorageException;
+
 /**
  * Handles metadata for {@link XmlStorage}.
  */
@@ -43,7 +44,10 @@ public class MetadataHandler {
 	private XmlStorage storage;
 	private HashMap<Integer, Metadata> metadataMap;
 	protected File metadataFile;
-	private int lastStorageId = 1;
+	// Reserve lower storage id numbers for human editable report xml (e.g. a user can use a variable
+	// ${checkpoint(287#13)} in report A and attribute StorageId="287" in report B to use data in report A from
+	// checkpoint number 13 of report B)
+	private int lastStorageId = 1000000;
 	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
 	/**
@@ -91,7 +95,8 @@ public class MetadataHandler {
 
 			if (file.isFile() && file.getName().endsWith(XmlStorage.FILE_EXTENSION)) {
 				try {
-					Report report = storage.readReportFromFile(file, this);
+					Report report = storage.readReportFromFile(file);
+					setStorageIdIfNull(report);
 					HashMap<File, Report> reportsForStorageId = reports.computeIfAbsent(report.getStorageId(), k -> new HashMap<>());
 					reportsForStorageId.put(file, report);
 				} catch (StorageException exception) {
@@ -168,6 +173,17 @@ public class MetadataHandler {
 
 	public int getNextStorageId() {
 		return ++lastStorageId;
+	}
+
+	/**
+	 * Storage id can be absent in human editable xml, set it if null after read report from file.
+	 * 
+	 * @param report ...
+	 */
+	private void setStorageIdIfNull(Report report) {
+		if (report.getStorageId() == null) {
+			report.setStorageId(getNextStorageId());
+		}
 	}
 
 	public Metadata getMetadata(String correlationId) {
@@ -359,7 +375,8 @@ public class MetadataHandler {
 			Metadata m = map.remove(path);
 			if (m == null || m.lastModified < file.lastModified()) {
 				try {
-					Report report = storage.readReportFromFile(file, this);
+					Report report = storage.readReportFromFile(file);
+					setStorageIdIfNull(report);
 					if (report == null) {
 						map.put(path, m);
 						continue;
@@ -370,7 +387,7 @@ public class MetadataHandler {
 					if (oldMetadata != null && !oldMetadata.equals(m)) {
 						String oldPath = storage.resolvePath(storageId);
 						if (StringUtils.isNotEmpty(oldPath) && !oldPath.equalsIgnoreCase(file.getPath())) {
-							Report oldReport = storage.readReportFromFile(new File(oldPath), this);
+							Report oldReport = storage.readReportFromFile(new File(oldPath));
 							if (oldReport != null && report.getStorageId().equals(oldReport.getStorageId())) {
 								while (metadataMap.containsKey(storageId))
 									storageId = getNextStorageId();
