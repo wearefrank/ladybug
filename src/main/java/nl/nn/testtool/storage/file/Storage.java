@@ -163,6 +163,7 @@ public class Storage implements nl.nn.testtool.storage.LogStorage {
 	@Override
 	public void clear() throws StorageException {
 		writer.clear();
+		reader.clear();
 	}
 
 	@Override
