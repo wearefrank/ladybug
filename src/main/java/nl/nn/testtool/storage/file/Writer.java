@@ -223,14 +223,29 @@ public class Writer {
 	}
 
 	protected void clear() throws StorageException {
-		closeFiles();
-		
-		openFiles(false);
-		writeMetadataHeader();
-		reportsFileLength = 0;
-		
-		latestStorageId = 1;
-		metadataFileLastModified = System.currentTimeMillis();
+		synchronized(synchronizeStore) {
+			closeFiles();
+
+			synchronized(synchronizeRotate) {
+				for (int i = 1; i <= maximumBackupIndex; i++) {
+					File reportsFile = new File(reportsFilename + "." + i);
+					if (reportsFile.exists()) {
+						deleteFile(reportsFile);
+					}
+					File metadataFile = new File(metadataFilename + "." + i);
+					if (metadataFile.exists()) {
+						deleteFile(metadataFile);
+					}
+				}
+			}
+
+			openFiles(false);
+			writeMetadataHeader();
+			reportsFileLength = 0;
+
+			latestStorageId = 1;
+			metadataFileLastModified = System.currentTimeMillis();
+		}
 	}
 
 	protected void close() {
