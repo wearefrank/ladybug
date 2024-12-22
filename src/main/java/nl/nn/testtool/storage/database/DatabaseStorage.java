@@ -83,7 +83,6 @@ import nl.nn.testtool.util.SearchUtil;
 // @Dependent disabled for Quarkus for now because of the use of JdbcTemplate
 public class DatabaseStorage implements Storage {
 	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-	protected static final String TIMESTAMP_PATTERN = "yyyy-MM-dd'T'HH:mm:ss.SSS";
 	protected @Setter @Getter String name;
 	protected @Setter String table;
 	protected @Setter @Inject @Resource(name="metadataNames") List<String> metadataNames; // Used as column names in this storage
@@ -434,16 +433,16 @@ public class DatabaseStorage implements Storage {
 							searchValue.length() - 1);
 					if (StringUtils.isNotEmpty(searchValueLeft)) {
 						if (isInteger(column) || isLong(column)) {
-							addNumberExpression(query, args, argTypes, column, ">=", searchValueLeft);
+							addNumberExpression(query, args, argTypes, column, ">=", searchValueLeft.trim());
 						} else if (isTimestamp(column)) {
-							addTimestampExpression(query, args, argTypes, column, ">=", searchValueLeft);
+							addTimestampExpression(query, args, argTypes, column, ">=", searchValueLeft.trim());
 						}
 					}
 					if (StringUtils.isNotEmpty(searchValueRight)) {
 						if (isInteger(column) || isLong(column)) {
-							addNumberExpression(query, args, argTypes, column, "<=", searchValueRight);
+							addNumberExpression(query, args, argTypes, column, "<=", searchValueRight.trim());
 						} else if (isTimestamp(column)) {
-							addTimestampExpression(query, args, argTypes, column, "<=", searchValueRight);
+							addTimestampExpression(query, args, argTypes, column, "<=", searchValueRight.trim());
 						}
 					}
 				} else {
@@ -459,9 +458,9 @@ public class DatabaseStorage implements Storage {
 					if (searchValue.equals("null")) {
 						addExpression(query, column + " is null");
 					} else if (isInteger(column)) {
-						addNumberExpression(query, args, argTypes, column, "<=", searchValue);
+						addNumberExpression(query, args, argTypes, column, "<=", searchValue.trim());
 					} else if (isTimestamp(column)) {
-						addTimestampExpression(query, args, argTypes, column, "<=", searchValue);
+						addTimestampExpression(query, args, argTypes, column, "<=", searchValue.trim());
 					} else {
 						addLikeOrEqualsExpression(query, args, argTypes, column, searchValue);
 					}
@@ -545,9 +544,19 @@ public class DatabaseStorage implements Storage {
 		String searchValueToParse;
 		if (searchValue.length() < 23) {
 			if (">=".equals(operator)) {
-				searchValueToParse = searchValue + "0000-00-00T00:00:00.000".substring(searchValue.length());
+				searchValueToParse = searchValue
+						+ MetadataExtractor.DATE_TIME_RANGE_START_SUFFIX.substring(searchValue.length());
 			} else {
-				searchValueToParse = searchValue + "9999-12-31T23:59:59.999".substring(searchValue.length());
+				searchValueToParse = searchValue
+						+ MetadataExtractor.DATE_TIME_RANGE_END_SUFFIX.substring(searchValue.length());
+				for (int i = 0; i < MetadataExtractor.DATE_TIME_RANGE_END_SPECIALS.length; i++) {
+					String s = MetadataExtractor.DATE_TIME_RANGE_END_SPECIALS[i];
+					if (searchValue.length() == s.length()
+							&& searchValue.charAt(s.length() - 1) == s.charAt(s.length() - 1)) {
+						searchValueToParse = searchValueToParse.substring(0, s.length()) + "9"
+							+ searchValueToParse.substring(s.length() + 1);
+					}
+				}
 			}
 			int year = -1;
 			int month = -1;
@@ -566,7 +575,7 @@ public class DatabaseStorage implements Storage {
 			if (searchValueToParse.charAt(4) != '-'
 					|| searchValueToParse.charAt(7) != '-'
 					|| searchValueToParse.charAt(7) != '-'
-					|| searchValueToParse.charAt(10) != 'T'
+					|| searchValueToParse.charAt(10) != ' '
 					|| searchValueToParse.charAt(13) != ':'
 					|| searchValueToParse.charAt(16) != ':'
 					|| searchValueToParse.charAt(19) != '.') {
@@ -582,14 +591,15 @@ public class DatabaseStorage implements Storage {
 		} else {
 			searchValueToParse = searchValue;
 		}
-		long l = (Long)metadataExtractor.fromStringtoObject(column, searchValueToParse);
+		long l = (long)metadataExtractor.fromGUIToObject(column, searchValueToParse);
 		args.add(new Timestamp(l));
 		argTypes.add(Types.TIMESTAMP);
 		addExpression(query, column + " " + operator + " ?");
 	}
 
 	private void throwExceptionOnInvalidTimestamp(String searchValue) throws StorageException {
-		throw new StorageException("Search value '" + searchValue + "' doesn't comply with (the beginning of) pattern " + TIMESTAMP_PATTERN);
+		throw new StorageException("Search value '" + searchValue + "' doesn't comply with (the beginning of) pattern "
+				+ MetadataExtractor.DATE_TIME_PATTERN);
 	}
 
 	private void addExpression(StringBuilder query, String expression) {
@@ -627,16 +637,26 @@ public class DatabaseStorage implements Storage {
 	}
 
 	public String getUserHelp(String column) {
-		String userHelpBase = SearchUtil.getUserHelpWildcards();
-		String userHelpBaseNonString = "Search all rows which are less than or equal to the search value.";
-		if (isInteger(column) || isLong(column)) {
-			userHelpBase = userHelpBaseNonString
-					+ " When the search value starts with < and ends with > a range search is done between and including the specified values separated by |.";
-		} else if (isTimestamp(column)) {
-			userHelpBase = userHelpBaseNonString
-				+ " When the search value only complies with the beginning of pattern yyyy-MM-dd'T'HH:mm:ss.SSS, it will be supplemented with the end of 9999-12-31T23:59:59.999";
+		String userHelp = SearchUtil.getUserHelpWildcards();
+		if (isInteger(column) || isLong(column) || isTimestamp(column)) {
+			userHelp = "Search all rows which are";
+			if (isTimestamp(column)) {
+				userHelp = userHelp + " before";
+			} else {
+				userHelp = userHelp + " less than";
+			}
+			userHelp = userHelp + " or equal to the search value."
+					+ " When the search value starts with < and ends with > a range search is done between and"
+					+ " including the specified values separated by |.";
 		}
-		return userHelpBase + SearchUtil.getUserHelpRegex() + SearchUtil.getUserHelpNullAndEmpty();
+		if (isTimestamp(column)) {
+			userHelp = userHelp
+				+ " When the search value only complies with the beginning of pattern "
+				+ MetadataExtractor.DATE_TIME_PATTERN + ", it will be supplemented with the end of "
+				+ MetadataExtractor.DATE_TIME_RANGE_END_SUFFIX + " or "
+				+ MetadataExtractor.DATE_TIME_RANGE_START_SUFFIX + " when it's the beginning of a range.";
+		}
+		return userHelp + SearchUtil.getUserHelpRegex() + SearchUtil.getUserHelpNullAndEmpty();
 	}
 
 }
