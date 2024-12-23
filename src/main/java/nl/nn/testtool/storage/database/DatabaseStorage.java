@@ -651,10 +651,12 @@ public class DatabaseStorage implements Storage {
 		}
 		if (isTimestamp(column)) {
 			userHelp = userHelp
-				+ " When the search value only complies with the beginning of pattern "
-				+ MetadataExtractor.DATE_TIME_PATTERN + ", it will be supplemented with the end of "
-				+ MetadataExtractor.DATE_TIME_RANGE_END_SUFFIX + " or "
-				+ MetadataExtractor.DATE_TIME_RANGE_START_SUFFIX + " when it's the beginning of a range.";
+				+ " If the provided search value only matches the beginning portion of a timestamp (in the format '"
+				+ MetadataExtractor.DATE_TIME_PATTERN
+				+ "'), the system will autocomplete the missing information with the end of latest possible timestamp '"
+				+ MetadataExtractor.DATE_TIME_RANGE_END_SUFFIX
+				+ "'. In case of the first value of a range it is autocompleted with the end of '"
+				+ MetadataExtractor.DATE_TIME_RANGE_START_SUFFIX + "'.";
 		}
 		return userHelp + SearchUtil.getUserHelpRegex() + SearchUtil.getUserHelpNullAndEmpty();
 	}
