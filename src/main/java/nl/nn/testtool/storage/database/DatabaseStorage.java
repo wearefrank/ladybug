@@ -85,11 +85,13 @@ public class DatabaseStorage implements Storage {
 	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 	protected @Setter @Getter String name;
 	protected @Setter String table;
+	protected @Setter String dateColumn;
 	protected @Setter @Inject @Resource(name="metadataNames") List<String> metadataNames; // Used as column names in this storage
 	protected @Setter String storageIdColumn;
 	protected @Setter List<String> bigValueColumns; // Columns for which to limit the number of retrieved characters to 100
 	protected @Setter Boolean storeReportXml;
 	protected @Setter Long maxStorageSize;
+	protected @Setter Long maxReportRetentionDays;
 	protected @Setter @Getter @Inject @Autowired JdbcTemplate ladybugJdbcTemplate;
 	protected @Setter @Getter @Inject @Autowired DbmsSupport dbmsSupport;
 	protected @Setter @Getter @Inject @Autowired MetadataExtractor metadataExtractor;
@@ -103,6 +105,14 @@ public class DatabaseStorage implements Storage {
 			return "LADYBUG";
 		} else {
 			return table;
+		}
+	}
+
+	public String getDateColumn() {
+		if (dateColumn == null) {
+			return "ENDTIME";
+		} else {
+			return dateColumn;
 		}
 	}
 
@@ -151,6 +161,14 @@ public class DatabaseStorage implements Storage {
 			return 100 * 1024 * 1024;
 		} else {
 			return maxStorageSize;
+		}
+	}
+
+	public long getMaxReportRetentionDays() {
+		if (maxReportRetentionDays == null) {
+			return -1;
+		} else {
+			return maxReportRetentionDays;
 		}
 	}
 
@@ -239,6 +257,17 @@ public class DatabaseStorage implements Storage {
 			String deleteQuery = "delete from " + getTable() + " where " + getStorageIdColumn()
 					+ " <= ((select max(" + getStorageIdColumn() + ") from " + getTable() + ") - ?)";
 			delete(deleteQuery, maxNrOfReports);
+		}
+		if (getMaxReportRetentionDays() > -1) {
+			String maxReportsToKeepQuery = "select count(*) from " + getTable()
+					+ " where " + getDateColumn() + " >= current_date - interval '" + getMaxReportRetentionDays()
+					+ " days'";
+			int maxReportsToKeep = ladybugJdbcTemplate.queryForObject(maxReportsToKeepQuery, Integer.class);
+			log.debug("Calculated max reports to keep (returned " + maxReportsToKeep + "): " + maxReportsToKeepQuery);
+
+			String deleteQuery = "delete from " + getTable() + " where " + getStorageIdColumn()
+					+ " <= ((select max(" + getStorageIdColumn() + ") from " + getTable() + ") - ?)";
+			delete(deleteQuery, maxReportsToKeep);
 		}
 	}
 
