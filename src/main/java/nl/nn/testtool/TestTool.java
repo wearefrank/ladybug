@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2024 WeAreFrank!, 2018 Nationale-Nederlanden
+   Copyright 2019-2025 WeAreFrank!, 2018 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -1096,6 +1096,13 @@ public class TestTool {
 		for (View view : views) {
 			Storage storage = view.getDebugStorage();
 			if (name.equals(storage.getName())) {
+				return storage;
+			}
+		}
+		String nameWithPossibleSpaces = name.replace("_", " ");
+		for (View view : views) {
+			Storage storage = view.getDebugStorage();
+			if (nameWithPossibleSpaces.equals(storage.getName())) {
 				return storage;
 			}
 		}
