@@ -1,5 +1,5 @@
 /*
-   Copyright 2020, 2022-2024 WeAreFrank!, 2018-2019 Nationale-Nederlanden
+   Copyright 2020, 2022-2025 WeAreFrank!, 2018-2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -211,19 +211,19 @@ public class MetadataExtractor {
 			return report.getCorrelationId();
 		}
 		if (metadataName.equals("startTime")) {
-			return new Long(report.getStartTime());
+			return Long.valueOf(report.getStartTime());
 		}
 		if (metadataName.equals("endTime")) {
-			return new Long(report.getEndTime());
+			return Long.valueOf(report.getEndTime());
 		}
 		if (metadataName.equals("estimatedMemoryUsage")) {
-			return new Long(report.getEstimatedMemoryUsage());
+			return Long.valueOf(report.getEstimatedMemoryUsage());
 		}
 		if (metadataName.equals("numberOfCheckpoints")) {
-			return new Integer(report.getNumberOfCheckpoints());
+			return Integer.valueOf(report.getNumberOfCheckpoints());
 		}
 		if (metadataName.equals("duration")) {
-			return new Long(report.getEndTime() - report.getStartTime());
+			return Long.valueOf(report.getEndTime() - report.getStartTime());
 		}
 		if (metadataName.equals("variableCsv")) {
 			return report.getVariableCsv();
@@ -269,22 +269,22 @@ public class MetadataExtractor {
 
 	public Object fromStringtoObject(String metadataName, String metadataValue) {
 		if (metadataName.equals("storageId")) {
-			return new Integer(metadataValue);
+			return Integer.valueOf(metadataValue);
 		}
 		if (metadataName.equals("storageSize")) {
-			return new Long(metadataValue);
+			return Long.valueOf(metadataValue);
 		}
 		if (metadataName.equals("startTime")) {
-			return new Long(metadataValue);
+			return Long.valueOf(metadataValue);
 		}
 		if (metadataName.equals("endTime")) {
-			return new Long(metadataValue);
+			return Long.valueOf(metadataValue);
 		}
 		if (metadataName.equals("estimatedMemoryUsage")) {
-			return new Long(metadataValue);
+			return Long.valueOf(metadataValue);
 		}
 		if (metadataName.equals("numberOfCheckpoints")) {
-			return new Integer(metadataValue);
+			return Integer.valueOf(metadataValue);
 		}
 		return metadataValue;
 	}
