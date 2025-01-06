@@ -1,5 +1,5 @@
 /*
-   Copyright 2020, 2022-2024 WeAreFrank!, 2018-2019 Nationale-Nederlanden
+   Copyright 2020, 2022-2025 WeAreFrank!, 2018-2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 package nl.nn.testtool;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -33,7 +34,27 @@ public class MetadataExtractor {
 	public static final int VALUE_TYPE_OBJECT = 0;
 	public static final int VALUE_TYPE_STRING = 1;
 	public static final int VALUE_TYPE_GUI = 2;
-	private static final DateTimeFormatter FORMAT_DATE_TIME = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS").withZone(ZoneId.systemDefault());
+	public static final String DATE_TIME_PATTERN;
+	public static final String DATE_TIME_RANGE_START_SUFFIX;
+	public static final String DATE_TIME_RANGE_END_SUFFIX;
+	public static final String[] DATE_TIME_RANGE_END_SPECIALS = new String[4];
+	static {
+		DATE_TIME_PATTERN               = "yyyy-MM-dd HH:mm:ss.SSS";
+		DATE_TIME_RANGE_START_SUFFIX    = "0000-00-00 00:00:00.000";
+		DATE_TIME_RANGE_END_SUFFIX      = "9999-12-31 23:59:59.999";
+		DATE_TIME_RANGE_END_SPECIALS[0] = "     0";
+		DATE_TIME_RANGE_END_SPECIALS[1] = "        1";
+		DATE_TIME_RANGE_END_SPECIALS[2] = "        2";
+		DATE_TIME_RANGE_END_SPECIALS[3] = "           1";
+		// Examples of special cases:
+		//   2024-0 should not become 2024-02 but 2024-09
+		//   2024-10-1 should not become 2024-10-11 but 2024-10-19
+		//   2024-10-2 should not become 2024-10-21 but 2024-10-29
+		//   2024-10-25 1 should not become 2024-10-25 13 but 2024-10-25 19
+	}
+	public static final String DATE_TIME_RANGE_END_SPECIAL2 = "        3";
+	public static final String DATE_TIME_RANGE_END_SPECIAL3 = "           2";
+	private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern(DATE_TIME_PATTERN).withZone(ZoneId.systemDefault());
 	private List<MetadataFieldExtractor> metadataFieldExtractors;
 	/**
 	 * Add extra fields or override standard fields (e.g. replace standard status field with application specific status
@@ -190,19 +211,19 @@ public class MetadataExtractor {
 			return report.getCorrelationId();
 		}
 		if (metadataName.equals("startTime")) {
-			return new Long(report.getStartTime());
+			return Long.valueOf(report.getStartTime());
 		}
 		if (metadataName.equals("endTime")) {
-			return new Long(report.getEndTime());
+			return Long.valueOf(report.getEndTime());
 		}
 		if (metadataName.equals("estimatedMemoryUsage")) {
-			return new Long(report.getEstimatedMemoryUsage());
+			return Long.valueOf(report.getEstimatedMemoryUsage());
 		}
 		if (metadataName.equals("numberOfCheckpoints")) {
-			return new Integer(report.getNumberOfCheckpoints());
+			return Integer.valueOf(report.getNumberOfCheckpoints());
 		}
 		if (metadataName.equals("duration")) {
-			return new Long(report.getEndTime() - report.getStartTime());
+			return Long.valueOf(report.getEndTime() - report.getStartTime());
 		}
 		if (metadataName.equals("variableCsv")) {
 			return report.getVariableCsv();
@@ -230,9 +251,9 @@ public class MetadataExtractor {
 
 	public Object fromObjectToGUI(String metadataName, Object metadataValue) {
 		if (metadataName.equals("startTime") || metadataName.equals("endTime")) {
-			return FORMAT_DATE_TIME.format(Instant.ofEpochMilli((Long)metadataValue));
+			return DATE_TIME_FORMATTER.format(Instant.ofEpochMilli((Long)metadataValue));
 		}
-		return metadataValue;
+		return fromObjectToString(metadataName, metadataValue);
 	}
 
 	public Object fromStringToMetadataValueType(String metadataName, String metadataValue, int metadataValueType) {
@@ -248,24 +269,32 @@ public class MetadataExtractor {
 
 	public Object fromStringtoObject(String metadataName, String metadataValue) {
 		if (metadataName.equals("storageId")) {
-			return new Integer(metadataValue);
+			return Integer.valueOf(metadataValue);
 		}
 		if (metadataName.equals("storageSize")) {
-			return new Long(metadataValue);
+			return Long.valueOf(metadataValue);
 		}
 		if (metadataName.equals("startTime")) {
-			return new Long(metadataValue);
+			return Long.valueOf(metadataValue);
 		}
 		if (metadataName.equals("endTime")) {
-			return new Long(metadataValue);
+			return Long.valueOf(metadataValue);
 		}
 		if (metadataName.equals("estimatedMemoryUsage")) {
-			return new Long(metadataValue);
+			return Long.valueOf(metadataValue);
 		}
 		if (metadataName.equals("numberOfCheckpoints")) {
-			return new Integer(metadataValue);
+			return Integer.valueOf(metadataValue);
 		}
 		return metadataValue;
+	}
+
+	public Object fromGUIToObject(String metadataName, String metadataValue) {
+		if (metadataName.equals("startTime") || metadataName.equals("endTime")) {
+			return LocalDateTime.parse(metadataValue, DATE_TIME_FORMATTER).atZone(
+					ZoneId.systemDefault()).toInstant().toEpochMilli();
+		}
+		return fromStringtoObject(metadataName, metadataValue);
 	}
 
 	public boolean isInteger(String metadataName) {
@@ -273,7 +302,8 @@ public class MetadataExtractor {
 	}
 
 	public boolean isLong(String metadataName) {
-		return metadataName.equals("duration") || metadataName.equals("estimatedMemoryUsage") || metadataName.equals("storageSize");
+		return metadataName.equals("duration") || metadataName.equals("estimatedMemoryUsage")
+				|| metadataName.equals("storageSize");
 	}
 
 	public boolean isTimestamp(String metadataName) {
