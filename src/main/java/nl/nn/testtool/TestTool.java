@@ -1099,13 +1099,6 @@ public class TestTool {
 				return storage;
 			}
 		}
-		String nameWithPossibleSpaces = name.replace("_", " ");
-		for (View view : views) {
-			Storage storage = view.getDebugStorage();
-			if (nameWithPossibleSpaces.equals(storage.getName())) {
-				return storage;
-			}
-		}
 		// TODO: Introduce views for test tab also and replace getViews() in TestToolApi with getTabs() (for now the
 		// frontend is using hardcoded storage name Test for test tab)
 		if (name.equals("Test")) {
