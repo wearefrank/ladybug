@@ -1,5 +1,5 @@
 /*
-   Copyright 2020-2024 WeAreFrank!, 2018-2019 Nationale-Nederlanden
+   Copyright 2020-2025 WeAreFrank!, 2018-2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -116,7 +116,7 @@ public class ReportsComponent extends BaseComponent implements BeanParent, Actio
 	private TransformationWindow transformationWindow;
 	private WindowPane uploadWindow;
 	private UploadSelect uploadSelect;
-	private Object firstValueOfLastSelectedRow;
+	private String firstValueOfLastSelectedRow;
 	private SelectField downloadSelectField;
 	private BeanParent beanParent;
 	private Echo2Application echo2Application;
@@ -588,8 +588,8 @@ public class ReportsComponent extends BaseComponent implements BeanParent, Actio
 			View view = getSelectedView();
 			Table table = (Table)e.getSource();
 			int selectedIndex = table.getSelectionModel().getMinSelectedIndex();
-			firstValueOfLastSelectedRow = metadataSortableTableModel.getValueAt(0, selectedIndex);
-			openReport(view, (Integer)firstValueOfLastSelectedRow);
+			firstValueOfLastSelectedRow = (String)metadataSortableTableModel.getValueAt(0, selectedIndex);
+			openReport(view, Integer.valueOf(firstValueOfLastSelectedRow));
 		} else if (e.getActionCommand().equals("OpenAll")) {
 			View view = getSelectedView();
 			for (int i = 0; i < metadataSortableTableModel.getRowCount(); i++) {

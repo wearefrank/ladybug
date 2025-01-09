@@ -305,7 +305,9 @@ public class DatabaseStorage implements Storage {
 
 	@Override
 	public void clear() throws StorageException {
-		throw new StorageException("Clear method is not implemented yet...");
+		String query = "delete from " + getTable();
+		log.debug("Delete all reports with query: " + query);
+		ladybugJdbcTemplate.update(query);
 	}
 
 	@Override
