@@ -94,6 +94,9 @@ public class MetadataExtractor {
 			if (metadataName.equals("path")) {
 				return "Path";
 			}
+			if (metadataName.equals("fullpath")) {
+				return "Full path";
+			}
 			if (metadataName.equals("correlationId")) {
 				return "Correlation Id";
 			}
@@ -148,6 +151,9 @@ public class MetadataExtractor {
 			}
 			if (metadataName.equals("path")) {
 				return "Path";
+			}
+			if (metadataName.equals("fullpath")) {
+				return "FullPath";
 			}
 			if (metadataName.equals("correlationId")) {
 				return "CorrelationId";
@@ -207,6 +213,9 @@ public class MetadataExtractor {
 		if (metadataName.equals("path")) {
 			return report.getPath();
 		}
+		if (metadataName.equals("fullpath")) {
+			return report.getFullPath();
+		}
 		if (metadataName.equals("correlationId")) {
 			return report.getCorrelationId();
 		}
@@ -246,7 +255,11 @@ public class MetadataExtractor {
 	}
 
 	public String fromObjectToString(String metadataName, Object metadataValue) {
-		return "" + metadataValue;
+		if (metadataValue == null) {
+			return null;
+		} else {
+			return metadataValue.toString();
+		}
 	}
 
 	public Object fromObjectToGUI(String metadataName, Object metadataValue) {
