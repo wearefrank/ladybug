@@ -60,7 +60,7 @@ public class SessionKeyMetadataFieldExtractor extends
 			.map(this::extractValueFromCheckpoint)
 			.filter(value -> value != null)
 			.findFirst()
-			.orElse(null);
+			.orElse(defaultValue);
 	}
 	
 	/**
