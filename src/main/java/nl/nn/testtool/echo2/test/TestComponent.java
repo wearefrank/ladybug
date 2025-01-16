@@ -1,5 +1,5 @@
 /*
-   Copyright 2020-2024 WeAreFrank!, 2018-2019 Nationale-Nederlanden
+   Copyright 2020-2025 WeAreFrank!, 2018-2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -466,7 +466,7 @@ public class TestComponent extends BaseComponent implements BeanParent, ActionLi
 				} else {
 					selected = true;
 				}
-				displayReport(metadataRecord, selected);
+				displayReport((String)metadataRecord.get(0), selected);
 				directChildReportsPresent = true;
 			}
 		}
@@ -482,7 +482,7 @@ public class TestComponent extends BaseComponent implements BeanParent, ActionLi
 				} else {
 					selected = !directChildReportsPresent;
 				}
-				displayReport(metadataRecord, selected);
+				displayReport((String)metadataRecord.get(0), selected);
 			}
 		}
 		pathTextField.setText(path);
@@ -491,15 +491,7 @@ public class TestComponent extends BaseComponent implements BeanParent, ActionLi
 		updateProgressBar();
 	}
 
-	private void displayReport(List<Object> metadataRecord, boolean selected) {
-		String storageId = (String)metadataRecord.get(0);
-		String path = (String)metadataRecord.get(1);
-		String name = (String)metadataRecord.get(2);
-		String description = (String)metadataRecord.get(3);
-		displayReport(storageId, path, name, description, selected);
-	}
-
-	private void displayReport(String storageId, String path, String name, String description, boolean selected) {
+	private void displayReport(String storageId, boolean selected) {
 		Row row = Echo2Application.getNewRow();
 		row.setId(storageId);
 		row.setInsets(new Insets(0, 5, 0, 0));
@@ -589,8 +581,8 @@ public class TestComponent extends BaseComponent implements BeanParent, ActionLi
 
 		add(row);
 
-		// TODO testStorage.getMetadata geeft blijkbaar "null" terug, fixen
-		if (description != null && !"".equals(description) && !"null".equals(description)) {
+		String description = report.getDescription();
+		if (description != null && !"".equals(description)) {
 			Column descriptionColumn = new Column();
 			descriptionColumn.setInsets(new Insets(0, 5, 0, 0));
 			MessageComponent.updateMessageColumn(description, descriptionColumn);
