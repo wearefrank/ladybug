@@ -60,4 +60,13 @@ public class SessionKeyMetadataFieldExtractorTest {
 		Object extracted = extractor.extractMetadata(report);
 		assertEquals("myDefaultValue", extracted);	
 	}
+
+	@Test
+	public void noRegexMatchWithoutDefaultValue() {
+		SessionKeyMetadataFieldExtractor extractor = new SessionKeyMetadataFieldExtractor();
+		extractor.setSessionKey("mySessionKey");
+		extractor.setRegex("(?!x)x");
+		Object extracted = extractor.extractMetadata(report);
+		assertEquals(null, extracted);	
+	}
 }
