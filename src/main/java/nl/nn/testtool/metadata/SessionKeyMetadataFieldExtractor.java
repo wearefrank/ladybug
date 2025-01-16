@@ -49,10 +49,10 @@ public class SessionKeyMetadataFieldExtractor extends
      * <p>
      * The method filters checkpoints based on the session key and applies the regex pattern to extract a value
      * from the message of the first relevant checkpoint it finds.
-     * If no match is found, the method returns <code>null</code>.
+     * If no match is found, the method returns <code>defaultValue</code>.
      *
      * @param report the report containing checkpoints to extract metadata from
-     * @return the extracted metadata value or <code>null</code> if no relevant value is found
+     * @return the extracted metadata value or <code>defaultValue</code> if no relevant value is found
      */
 	public Object extractMetadata(Report report) {
 		return report.getCheckpoints().stream()
