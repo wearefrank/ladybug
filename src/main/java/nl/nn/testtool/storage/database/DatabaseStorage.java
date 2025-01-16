@@ -259,18 +259,11 @@ public class DatabaseStorage implements Storage {
 			delete(deleteQuery, maxNrOfReports);
 		}
 		if (getMaxStorageDays() > -1) {
-			if (log.isDebugEnabled()) {
-				String expiredReportsQuery = "select count(*) from " + getTable() + " where " + getEndTimeColum()
-						+ " < now() - interval '" + getMaxStorageDays() + " days'";
-
-				int numberOfExpiredReports = ladybugJdbcTemplate.queryForObject(expiredReportsQuery, Integer.class);
-				log.debug("Checked for reports older than " + getMaxStorageDays() + " days: "
-						+ numberOfExpiredReports + " reports found for deletion.");
-			}
 			String deleteQuery = "delete from " + getTable() + " where " + getEndTimeColum()
 					+ " < now() - interval '" + getMaxStorageDays() + " days'";
-			
-			ladybugJdbcTemplate.update(deleteQuery);
+			int nrOfDeletedReports = ladybugJdbcTemplate.update(deleteQuery);
+			log.debug("Checked for reports older than " + getMaxStorageDays() + " days: "
+					+ nrOfDeletedReports + " reports deleted.");
 		}
 	}
 
