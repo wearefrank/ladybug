@@ -85,13 +85,13 @@ public class DatabaseStorage implements Storage {
 	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 	protected @Setter @Getter String name;
 	protected @Setter String table;
-	protected @Setter String dateColumn;
 	protected @Setter @Inject @Resource(name="metadataNames") List<String> metadataNames; // Used as column names in this storage
 	protected @Setter String storageIdColumn;
+	protected @Setter String endTimeColumn;
 	protected @Setter List<String> bigValueColumns; // Columns for which to limit the number of retrieved characters to 100
 	protected @Setter Boolean storeReportXml;
 	protected @Setter Long maxStorageSize;
-	protected @Setter Long maxReportRetentionDays;
+	protected @Setter Long maxStorageDays;
 	protected @Setter @Getter @Inject @Autowired JdbcTemplate ladybugJdbcTemplate;
 	protected @Setter @Getter @Inject @Autowired DbmsSupport dbmsSupport;
 	protected @Setter @Getter @Inject @Autowired MetadataExtractor metadataExtractor;
@@ -108,11 +108,11 @@ public class DatabaseStorage implements Storage {
 		}
 	}
 
-	public String getDateColumn() {
-		if (dateColumn == null) {
+	public String getEndTimeColum() {
+		if (endTimeColumn == null) {
 			return "ENDTIME";
 		} else {
-			return dateColumn;
+			return endTimeColumn;
 		}
 	}
 
@@ -164,11 +164,11 @@ public class DatabaseStorage implements Storage {
 		}
 	}
 
-	public long getMaxReportRetentionDays() {
-		if (maxReportRetentionDays == null) {
+	public long getMaxStorageDays() {
+		if (maxStorageDays == null) {
 			return -1;
 		} else {
-			return maxReportRetentionDays;
+			return maxStorageDays;
 		}
 	}
 
@@ -258,14 +258,17 @@ public class DatabaseStorage implements Storage {
 					+ " <= ((select max(" + getStorageIdColumn() + ") from " + getTable() + ") - ?)";
 			delete(deleteQuery, maxNrOfReports);
 		}
-		if (getMaxReportRetentionDays() > -1) {
-			String expiredReportsQuery = "select count(*) from " + getTable() + " where " + getDateColumn()
-					+ " < now() - interval '" + getMaxReportRetentionDays() + " days'";
-			int numberOfExpiredReports = ladybugJdbcTemplate.queryForObject(expiredReportsQuery, Integer.class);
-			log.debug("Checked for reports older than " + getMaxReportRetentionDays() + " days: "
-					+ numberOfExpiredReports + " reports found for deletion.");
-			String deleteQuery = "delete from " + getTable() + " where " + getDateColumn()
-					+ " < now() - interval '" + getMaxReportRetentionDays() + " days'";
+		if (getMaxStorageDays() > -1) {
+			if (log.isDebugEnabled()) {
+				String expiredReportsQuery = "select count(*) from " + getTable() + " where " + getEndTimeColum()
+						+ " < now() - interval '" + getMaxStorageDays() + " days'";
+
+				int numberOfExpiredReports = ladybugJdbcTemplate.queryForObject(expiredReportsQuery, Integer.class);
+				log.debug("Checked for reports older than " + getMaxStorageDays() + " days: "
+						+ numberOfExpiredReports + " reports found for deletion.");
+			}
+			String deleteQuery = "delete from " + getTable() + " where " + getEndTimeColum()
+					+ " < now() - interval '" + getMaxStorageDays() + " days'";
 			
 			ladybugJdbcTemplate.update(deleteQuery);
 		}
