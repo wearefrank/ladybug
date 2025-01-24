@@ -237,6 +237,9 @@ public class MetadataExtractor {
 		if (metadataName.equals("variableCsv")) {
 			return report.getVariableCsv();
 		}
+		if (metadataName.equals("variableMap")) {
+			return report.getVariablesAsMap();
+		}
 		for (MetadataFieldExtractor metadataFieldExtractor : metadataFieldExtractors) {
 			if (metadataFieldExtractor.getName().equals(metadataName)) {
 				return metadataFieldExtractor.extractMetadata(report);
