@@ -284,25 +284,17 @@ public class MetadataExtractor {
 	}
 
 	public Object fromStringtoObject(String metadataName, String metadataValue) {
-		if (metadataName.equals("storageId")) {
-			return Integer.valueOf(metadataValue);
-		}
-		if (metadataName.equals("storageSize")) {
-			return Long.valueOf(metadataValue);
-		}
-		if (metadataName.equals("startTime")) {
-			return Long.valueOf(metadataValue);
-		}
-		if (metadataName.equals("endTime")) {
-			return Long.valueOf(metadataValue);
-		}
-		if (metadataName.equals("estimatedMemoryUsage")) {
-			return Long.valueOf(metadataValue);
-		}
-		if (metadataName.equals("numberOfCheckpoints")) {
-			return Integer.valueOf(metadataValue);
-		}
-		return metadataValue;
+        switch (metadataName) {
+            case "storageId":
+            case "numberOfCheckpoints":
+                return Integer.valueOf(metadataValue);
+            case "storageSize":
+            case "startTime":
+            case "endTime":
+            case "estimatedMemoryUsage":
+                return Long.valueOf(metadataValue);
+        }
+        return metadataValue;
 	}
 
 	public Object fromGUIToObject(String metadataName, String metadataValue) {
