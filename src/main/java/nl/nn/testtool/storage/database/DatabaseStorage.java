@@ -1,5 +1,5 @@
 /*
-   Copyright 2022-2024 WeAreFrank!
+   Copyright 2022-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -87,9 +87,11 @@ public class DatabaseStorage implements Storage {
 	protected @Setter String table;
 	protected @Setter @Inject @Resource(name="metadataNames") List<String> metadataNames; // Used as column names in this storage
 	protected @Setter String storageIdColumn;
+	protected @Setter String endTimeColumn;
 	protected @Setter List<String> bigValueColumns; // Columns for which to limit the number of retrieved characters to 100
 	protected @Setter Boolean storeReportXml;
 	protected @Setter Long maxStorageSize;
+	protected @Setter Long maxStorageDays;
 	protected @Setter @Getter @Inject @Autowired JdbcTemplate ladybugJdbcTemplate;
 	protected @Setter @Getter @Inject @Autowired DbmsSupport dbmsSupport;
 	protected @Setter @Getter @Inject @Autowired MetadataExtractor metadataExtractor;
@@ -103,6 +105,14 @@ public class DatabaseStorage implements Storage {
 			return "LADYBUG";
 		} else {
 			return table;
+		}
+	}
+
+	public String getEndTimeColum() {
+		if (endTimeColumn == null) {
+			return "ENDTIME";
+		} else {
+			return endTimeColumn;
 		}
 	}
 
@@ -151,6 +161,14 @@ public class DatabaseStorage implements Storage {
 			return 100 * 1024 * 1024;
 		} else {
 			return maxStorageSize;
+		}
+	}
+
+	public long getMaxStorageDays() {
+		if (maxStorageDays == null) {
+			return -1;
+		} else {
+			return maxStorageDays;
 		}
 	}
 
@@ -239,6 +257,13 @@ public class DatabaseStorage implements Storage {
 			String deleteQuery = "delete from " + getTable() + " where " + getStorageIdColumn()
 					+ " <= ((select max(" + getStorageIdColumn() + ") from " + getTable() + ") - ?)";
 			delete(deleteQuery, maxNrOfReports);
+		}
+		if (getMaxStorageDays() > -1) {
+			String deleteQuery = "delete from " + getTable() + " where " + getEndTimeColum()
+					+ " < now() - interval '" + getMaxStorageDays() + " days'";
+			int nrOfDeletedReports = ladybugJdbcTemplate.update(deleteQuery);
+			log.debug("Checked for reports older than " + getMaxStorageDays() + " days: "
+					+ nrOfDeletedReports + " reports deleted.");
 		}
 	}
 
