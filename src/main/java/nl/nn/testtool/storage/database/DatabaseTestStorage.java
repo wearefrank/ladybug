@@ -1,5 +1,5 @@
 /*
-   Copyright 2023-2024 WeAreFrank!
+   Copyright 2023-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -32,6 +32,9 @@ public class DatabaseTestStorage extends DatabaseCrudStorage {
 
 	@Override
 	public List<String> getMetadataNames() {
+		// All fields queried by the frontend through the metadata api need to be present. Typically the following URL
+		// is called by the frontend:
+		// /api/metadata/Test/?metadataNames=storageId&metadataNames=name&metadataNames=path&metadataNames=description
 		return new ArrayList<String>(Arrays.asList("storageId", "path", "name", "description"));
 	}
 

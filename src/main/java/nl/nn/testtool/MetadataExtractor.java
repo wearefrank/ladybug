@@ -94,9 +94,6 @@ public class MetadataExtractor {
 			if (metadataName.equals("path")) {
 				return "Path";
 			}
-			if (metadataName.equals("fullpath")) {
-				return "Full path";
-			}
 			if (metadataName.equals("correlationId")) {
 				return "Correlation Id";
 			}
@@ -151,9 +148,6 @@ public class MetadataExtractor {
 			}
 			if (metadataName.equals("path")) {
 				return "Path";
-			}
-			if (metadataName.equals("fullpath")) {
-				return "FullPath";
 			}
 			if (metadataName.equals("correlationId")) {
 				return "CorrelationId";
@@ -212,9 +206,6 @@ public class MetadataExtractor {
 		}
 		if (metadataName.equals("path")) {
 			return report.getPath();
-		}
-		if (metadataName.equals("fullpath")) {
-			return report.getFullPath();
 		}
 		if (metadataName.equals("correlationId")) {
 			return report.getCorrelationId();
