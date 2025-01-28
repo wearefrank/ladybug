@@ -1,5 +1,5 @@
 /*
-   Copyright 2018-2024 WeAreFrank!
+   Copyright 2018-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -1048,6 +1048,12 @@ public class Report implements Serializable {
 		}
 	}
 
+	/**
+	 * Get a map with the column names from the header of the csv as keys and the first line of values from the csv as
+	 * values. The GUI will prevent the user from adding more then one line of values to the csv.
+	 * 
+	 * @return ...
+	 */
 	public Map<String, String> getVariablesAsMap() {
 		if(StringUtils.isEmpty(variableCsv)) {
 			return null;
@@ -1062,10 +1068,11 @@ public class Report implements Serializable {
 			}
 		}
 		scanner.close();
-		
-		List<String> params = Arrays.asList(lines.get(0).split(";"));
-		for(String key : params) {
-			String value = lines.get(1).split(";")[params.indexOf(key)];
+		// For each column name from the header of the csv
+		List<String> columns = Arrays.asList(lines.get(0).split(";"));
+		for(String key : columns) {
+			// Read the value from the first line of values
+			String value = lines.get(1).split(";")[columns.indexOf(key)];
 			variableMap.put(key, value);
 		}
 		return variableMap;
