@@ -193,7 +193,11 @@ public class TestToolApi extends ApiBase {
 		if (StringUtils.isEmpty(transformation)) {
 			return Response.status(Response.Status.BAD_REQUEST).entity("No transformation has been provided").build();
 		}
-		reportXmlTransformer.updateXslt(transformation);
+		String errorMessage = reportXmlTransformer.updateXslt(transformation);
+		if (errorMessage != null) {
+			// Without "- detailed error message -" the message is not shown in the toaster
+			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(errorMessage + " - detailed error message - No detailed error message available").build();
+		}
 		return Response.ok().build();
 	}
 
