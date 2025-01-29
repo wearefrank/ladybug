@@ -1,5 +1,5 @@
 /*
-   Copyright 2020-2024 WeAreFrank!
+   Copyright 2020-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -83,7 +83,7 @@ public class Metadata {
 				"    <Status>%s</Status>\n" +
 				"    <NrChpts>%d</NrChpts>\n" +
 				"    <EstMemUsage>%d</EstMemUsage>\n" +
-				"    <StroageSize>%d</StroageSize>\n" +
+				"    <StorageSize>%d</StorageSize>\n" +
 				"    <Path>%s</Path>\n" +
 				"    <LastModified>%d</LastModified>\n" +
 				"    <Description>%s</Description>\n" +
@@ -140,7 +140,7 @@ public class Metadata {
 		long duration = safeParse(extractTagValue(xml, "Duration"), -1);
 		long nrChpts = safeParse(extractTagValue(xml, "NrChpts"), -1);
 		long estMemUsage = safeParse(extractTagValue(xml, "EstMemUsage"), -1);
-		long stroageSize = safeParse(extractTagValue(xml, "StroageSize"), -1);
+		long storageSize = safeParse(extractTagValue(xml, "StorageSize"), -1);
 		long endTime = safeParse(extractTagValue(xml, "EndTime"), -1);
 		long lastModified = safeParse(extractTagValue(xml, "LastModified"), -1);
 		String name = extractTagValue(xml, "Name");
@@ -149,7 +149,7 @@ public class Metadata {
 		String path = extractTagValue(xml, "Path");
 		String description = extractTagValue(xml, "Description");
 
-		return new Metadata(((Long) storageId).intValue(), duration, ((Long) nrChpts).intValue(), estMemUsage, stroageSize, endTime, name, correlationId, status, path, description, lastModified);
+		return new Metadata(((Long) storageId).intValue(), duration, ((Long) nrChpts).intValue(), estMemUsage, storageSize, endTime, name, correlationId, status, path, description, lastModified);
 	}
 
 	/**
