@@ -1,5 +1,5 @@
 /*
-   Copyright 2021-2024 WeAreFrank!
+   Copyright 2021-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -190,10 +190,10 @@ public class TestToolApi extends ApiBase {
 	@Consumes(MediaType.APPLICATION_JSON)
 	public Response updateReportTransformation(Map<String, String> map) {
 		String transformation = map.get("transformation");
-		if (StringUtils.isEmpty(transformation))
+		if (StringUtils.isEmpty(transformation)) {
 			return Response.status(Response.Status.BAD_REQUEST).entity("No transformation has been provided").build();
-
-		reportXmlTransformer.setXslt(transformation);
+		}
+		reportXmlTransformer.updateXslt(transformation);
 		return Response.ok().build();
 	}
 
