@@ -1,5 +1,5 @@
 /*
-   Copyright 2020, 2022-2024 WeAreFrank!, 2018 Nationale-Nederlanden
+   Copyright 2020, 2022-2025 WeAreFrank!, 2018 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -44,30 +44,52 @@ public class SessionKeyMetadataFieldExtractor extends
 		}
 	}
 
+	/**
+     * Extracts metadata from the given report by searching through its checkpoints.
+     * <p>
+     * The method filters checkpoints based on the session key and applies the regex pattern to extract a value
+     * from the message of the first relevant checkpoint it finds.
+     * If no match is found, the method returns <code>defaultValue</code>.
+     *
+     * @param report the report containing checkpoints to extract metadata from
+     * @return the extracted metadata value or <code>defaultValue</code> if no relevant value is found
+     */
 	public Object extractMetadata(Report report) {
-		String value = null;
-		Iterator iterator = report.getCheckpoints().iterator();
-		while (value == null && iterator.hasNext()) {
-			Checkpoint checkpoint = (Checkpoint) iterator.next();
-			String checkpointName = checkpoint.getName();
-			if (checkpointName.startsWith("SessionKey ")) {
-				String sessionKeyName = checkpointName.substring("SessionKey "
-						.length());
-				if (sessionKeyName.equals(sessionKey)) {
-					value = checkpoint.getMessage();
-					if((value != null) && (pattern != null)) {
-						Matcher matcher = pattern.matcher(value);
-						if (matcher.find()) {
-							value = matcher.group(matcher.groupCount());
-						}
-					}
-				}
-			}
-		}
-		if (value == null) {
-			value = defaultValue;
-		}
-		return value;
+		return report.getCheckpoints().stream()
+			.filter(this::isRelevantCheckpoint)
+			.map(this::extractValueFromCheckpoint)
+			.filter(value -> value != null)
+			.findFirst()
+			.orElse(defaultValue);
 	}
-
+	
+	/**
+     * Determines whether the given checkpoint is relevant based on the session key.
+     * A checkpoint is considered relevant if its name starts with "SessionKey " followed by the session key.
+     *
+     * @param checkpoint the checkpoint to check
+     * @return <code>true</code> if the checkpoint's name matches the session key, <code>false</code> otherwise
+     */
+	private boolean isRelevantCheckpoint(Checkpoint checkpoint) {
+		String checkpointName = checkpoint.getName();
+		return checkpointName.startsWith("SessionKey ") 
+			   && checkpointName.substring("SessionKey ".length()).equals(sessionKey);
+	}
+	
+	/**
+     * Extracts the value from a checkpoint's message using the set regular expression.
+     * If the message matches the pattern, the matched value is returned.
+     * If no match is found, <code>null</code> is returned.
+     * 
+     * @param checkpoint the checkpoint from which to extract the value
+     * @return the extracted value, or <code>null</code> if no match is found or if the message or pattern is <code>null</code>
+     */
+	private String extractValueFromCheckpoint(Checkpoint checkpoint) {
+		String message = checkpoint.getMessage();
+		if (message == null || pattern == null) {
+			return message;
+		}
+		Matcher matcher = pattern.matcher(message);
+		return matcher.find() ? matcher.group(matcher.groupCount()) : null;
+	}
 }

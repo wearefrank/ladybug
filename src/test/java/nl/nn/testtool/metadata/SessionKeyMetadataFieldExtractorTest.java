@@ -50,4 +50,23 @@ public class SessionKeyMetadataFieldExtractorTest {
 		String extracted = (String) extractor.extractMetadata(report);
 		assertEquals("creeerZaak", extracted);
 	}
+
+	@Test
+	public void failToMatchRegex() {
+		SessionKeyMetadataFieldExtractor extractor = new SessionKeyMetadataFieldExtractor();
+		extractor.setDefaultValue("myDefaultValue");
+		extractor.setSessionKey("mySessionKey");
+		extractor.setRegex("(?!x)x");
+		Object extracted = extractor.extractMetadata(report);
+		assertEquals("myDefaultValue", extracted);	
+	}
+
+	@Test
+	public void noRegexMatchWithoutDefaultValue() {
+		SessionKeyMetadataFieldExtractor extractor = new SessionKeyMetadataFieldExtractor();
+		extractor.setSessionKey("mySessionKey");
+		extractor.setRegex("(?!x)x");
+		Object extracted = extractor.extractMetadata(report);
+		assertEquals(null, extracted);	
+	}
 }
