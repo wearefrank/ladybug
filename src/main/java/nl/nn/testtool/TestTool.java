@@ -319,6 +319,14 @@ public class TestTool {
 	private <T> T checkpoint(String correlationId, String childThreadId, String sourceClassName, String name,
 			T message, StubableCode stubableCode, StubableCodeThrowsException stubableCodeThrowsException,
 			Set<String> matchingStubStrategies, int checkpointType, int levelChangeNextCheckpoint) {
+		return checkpoint(correlationId, childThreadId, sourceClassName, name,
+				message, null, stubableCode, stubableCodeThrowsException,
+				matchingStubStrategies, checkpointType, levelChangeNextCheckpoint);
+	}
+
+	private <T> T checkpoint(String correlationId, String childThreadId, String sourceClassName, String name,
+			T message, Map<String, Object> messageContext, StubableCode stubableCode, StubableCodeThrowsException stubableCodeThrowsException,
+			Set<String> matchingStubStrategies, int checkpointType, int levelChangeNextCheckpoint) {
 		boolean executeStubableCode = true;
 		if (reportGeneratorEnabled) {
 			Report report;
@@ -353,7 +361,7 @@ public class TestTool {
 						continue;
 					}
 					executeStubableCode = false;
-					message = report.checkpoint(childThreadId, sourceClassName, name, message, stubableCode,
+					message = report.checkpoint(childThreadId, sourceClassName, name, message, messageContext, stubableCode,
 							stubableCodeThrowsException, matchingStubStrategies, checkpointType,
 							levelChangeNextCheckpoint);
 					closeReportIfFinished(report);
@@ -500,9 +508,20 @@ public class TestTool {
 				CheckpointType.STARTPOINT.toInt(), 1);
 	}
 
+	public <T> T startpoint(String correlationId, String sourceClassName, String name, T message, Map<String, Object> messageContext) {
+		return checkpoint(correlationId, null, sourceClassName, name, message, messageContext, null, null, null,
+				CheckpointType.STARTPOINT.toInt(), 1);
+	}
+
 	public <T> T startpoint(String correlationId, String sourceClassName, String name, T message,
 			Set<String> matchingStubStrategies) {
 		return checkpoint(correlationId, null, sourceClassName, name, message, null, null, matchingStubStrategies,
+				CheckpointType.STARTPOINT.toInt(), 1);
+	}
+
+	public <T> T startpoint(String correlationId, String sourceClassName, String name, T message, Map<String, Object> messageContext,
+			Set<String> matchingStubStrategies) {
+		return checkpoint(correlationId, null, sourceClassName, name, message, messageContext, null, null, matchingStubStrategies,
 				CheckpointType.STARTPOINT.toInt(), 1);
 	}
 
@@ -538,10 +557,20 @@ public class TestTool {
 		return checkpoint(correlationId, null, sourceClassName, name, message, null, null, null,
 				CheckpointType.ENDPOINT.toInt(), -1);
 	}
+	
+	public <T> T endpoint(String correlationId, String sourceClassName, String name, T message, Map<String, Object> messageContext) {
+		return checkpoint(correlationId, null, sourceClassName, name, message, messageContext, null, null, null,
+				CheckpointType.ENDPOINT.toInt(), -1);
+	}
 
 	public <T> T endpoint(String correlationId, String sourceClassName, String name, T message,
 			Set<String> matchingStubStrategies) {
 		return checkpoint(correlationId, null, sourceClassName, name, message, null, null, matchingStubStrategies,
+				CheckpointType.ENDPOINT.toInt(), -1);
+	}
+	public <T> T endpoint(String correlationId, String sourceClassName, String name, T message, Map<String, Object> messageContext,
+			Set<String> matchingStubStrategies) {
+		return checkpoint(correlationId, null, sourceClassName, name, message, messageContext, null, null, matchingStubStrategies,
 				CheckpointType.ENDPOINT.toInt(), -1);
 	}
 
@@ -615,10 +644,19 @@ public class TestTool {
 		return checkpoint(correlationId, null, sourceClassName, name, message, null, null, null,
 				CheckpointType.INPUTPOINT.toInt(), 0);
 	}
+	public <T> T inputpoint(String correlationId, String sourceClassName, String name, T message, Map<String, Object> messageContext) {
+		return checkpoint(correlationId, null, sourceClassName, name, message, messageContext, null, null, null,
+				CheckpointType.INPUTPOINT.toInt(), 0);
+	}
 
 	public <T> T inputpoint(String correlationId, String sourceClassName, String name, T message,
 			Set<String> matchingStubStrategies) {
 		return checkpoint(correlationId, null, sourceClassName, name, message, null, null, matchingStubStrategies,
+				CheckpointType.INPUTPOINT.toInt(), 0);
+	}
+	public <T> T inputpoint(String correlationId, String sourceClassName, String name, T message, Map<String, Object> messageContext,
+			Set<String> matchingStubStrategies) {
+		return checkpoint(correlationId, null, sourceClassName, name, message, messageContext, null, null, matchingStubStrategies,
 				CheckpointType.INPUTPOINT.toInt(), 0);
 	}
 
@@ -653,10 +691,19 @@ public class TestTool {
 		return checkpoint(correlationId, null, sourceClassName, name, message, null, null, null,
 				CheckpointType.OUTPUTPOINT.toInt(), 0);
 	}
+	public <T> T outputpoint(String correlationId, String sourceClassName, String name, T message, Map<String, Object> messageContext) {
+		return checkpoint(correlationId, null, sourceClassName, name, message, messageContext, null, null, null,
+				CheckpointType.OUTPUTPOINT.toInt(), 0);
+	}
 
 	public <T> T outputpoint(String correlationId, String sourceClassName, String name, T message,
 			Set<String> matchingStubStrategies) {
 		return checkpoint(correlationId, null, sourceClassName, name, message, null, null, matchingStubStrategies,
+				CheckpointType.OUTPUTPOINT.toInt(), 0);
+	}
+	public <T> T outputpoint(String correlationId, String sourceClassName, String name, T message, Map<String, Object> messageContext,
+			Set<String> matchingStubStrategies) {
+		return checkpoint(correlationId, null, sourceClassName, name, message, messageContext, null, null, matchingStubStrategies,
 				CheckpointType.OUTPUTPOINT.toInt(), 0);
 	}
 
@@ -731,6 +778,10 @@ public class TestTool {
 		return checkpoint(correlationId, null, sourceClassName, name, message, null, null, null,
 				CheckpointType.INFOPOINT.toInt(), 0);
 	}
+	public <T> T infopoint(String correlationId, String sourceClassName, String name, T message, Map<String, Object> messageContext) {
+		return checkpoint(correlationId, null, sourceClassName, name, message, messageContext, null, null, null,
+				CheckpointType.INFOPOINT.toInt(), 0);
+	}
 
 	/**
 	 * Use abortpoint instead of endpoint in case an exception is thrown after a startpoint. The exception object can
@@ -745,6 +796,10 @@ public class TestTool {
 	 */
 	public <T> T abortpoint(String correlationId, String sourceClassName, String name, T message) {
 		return checkpoint(correlationId, null, sourceClassName, name, message, null, null, null,
+				CheckpointType.ABORTPOINT.toInt(), -1);
+	}
+	public <T> T abortpoint(String correlationId, String sourceClassName, String name, T message, Map<String, Object> messageContext) {
+		return checkpoint(correlationId, null, sourceClassName, name, message, messageContext, null, null, null,
 				CheckpointType.ABORTPOINT.toInt(), -1);
 	}
 
@@ -779,6 +834,11 @@ public class TestTool {
 		return checkpoint(correlationId, childThreadId, sourceClassName, name, message, null, null, null,
 				CheckpointType.THREAD_STARTPOINT.toInt(), 1);
 	}
+	public <T> T threadStartpoint(String correlationId, String childThreadId, String sourceClassName,
+			String name, T message, Map<String, Object> messageContext) {
+		return checkpoint(correlationId, childThreadId, sourceClassName, name, message, messageContext, null, null, null,
+				CheckpointType.THREAD_STARTPOINT.toInt(), 1);
+	}
 
 	/**
 	 * Startpoint for a child thread. This method can be used when the name of
@@ -794,9 +854,16 @@ public class TestTool {
 	public <T> T threadStartpoint(String correlationId, String sourceClassName, String name, T message) {
 		return threadStartpoint(correlationId, Thread.currentThread().getName(), sourceClassName, name, message);
 	}
+	public <T> T threadStartpoint(String correlationId, String sourceClassName, String name, T message, Map<String, Object> messageContext) {
+		return threadStartpoint(correlationId, Thread.currentThread().getName(), sourceClassName, name, message, messageContext);
+	}
 
 	public <T> T threadEndpoint(String correlationId, String sourceClassName, String name, T message) {
 		return checkpoint(correlationId, null, sourceClassName, name, message, null, null, null,
+				CheckpointType.THREAD_ENDPOINT.toInt(), -1);
+	}
+	public <T> T threadEndpoint(String correlationId, String sourceClassName, String name, T message, Map<String, Object> messageContext) {
+		return checkpoint(correlationId, null, sourceClassName, name, message, messageContext, null, null, null,
 				CheckpointType.THREAD_ENDPOINT.toInt(), -1);
 	}
 
