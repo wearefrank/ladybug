@@ -96,6 +96,28 @@ public class ReportExtractorTest {
 		assertEquals("My value", extractor.extractMetadata(report));
 	}
 
+	@Test
+	public void xpathAndRegex() throws XPathExpressionException {
+		Report report = getReport();
+		ReportExtractor extractor = new ReportExtractor();
+		extractor.setXpathExpression("/one/two");
+		extractor.setRegexPattern("([^\\s]+)");
+		extractor.setIsSessionKey(true);
+		extractor.setCheckpointName("anotherKey");
+		assertEquals("My", extractor.extractMetadata(report));
+	}
+
+	@Test
+	public void xpathAndRegexWrongOrder() throws XPathExpressionException {
+		Report report = getReport();
+		ReportExtractor extractor = new ReportExtractor();
+		extractor.setRegexPattern("([^\\s]+)");
+		extractor.setXpathExpression("/one/two");
+		extractor.setIsSessionKey(true);
+		extractor.setCheckpointName("anotherKey");
+		assertNull(extractor.extractMetadata(report));
+	}
+
 	private Report getReport() {
 		TestTool testTool = new TestTool();
 		Report report = new Report();
