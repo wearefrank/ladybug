@@ -273,7 +273,7 @@ public class Report implements Serializable {
 		threadsActiveCount++;
 	}
 
-	protected <T> T checkpoint(String childThreadId, String sourceClassName, String name, T message,
+	protected <T> T checkpoint(String childThreadId, String sourceClassName, String name, T message, Map<String, Object> messageContext,
 			StubableCode stubableCode, StubableCodeThrowsException stubableCodeThrowsException,
 			Set<String> matchingStubStrategies, int checkpointType, int levelChangeNextCheckpoint) {
 		if (checkpointType == CheckpointType.THREAD_CREATEPOINT.toInt()) {
@@ -317,7 +317,7 @@ public class Report implements Serializable {
 				}
 			}
 		}
-		message = addCheckpoint(childThreadId, sourceClassName, name, message, stubableCode, stubableCodeThrowsException,
+		message = addCheckpoint(childThreadId, sourceClassName, name, message, messageContext, stubableCode, stubableCodeThrowsException,
 				matchingStubStrategies, checkpointType, levelChangeNextCheckpoint);
 		return message;
 	}
@@ -373,7 +373,7 @@ public class Report implements Serializable {
 		}
 	}
 
-	private  <T> T addCheckpoint(String childThreadId, String sourceClassName, String name, T message,
+	private  <T> T addCheckpoint(String childThreadId, String sourceClassName, String name, T message, Map<String, Object> messageContext,
 			StubableCode stubableCode, StubableCodeThrowsException stubableCodeThrowsException,
 			Set<String> matchingStubStrategies, int checkpointType, int levelChangeNextCheckpoint) {
 		String threadName = Thread.currentThread().getName();
@@ -440,7 +440,7 @@ public class Report implements Serializable {
 					logMaxMemoryUsage = false;
 				}
 			} else {
-				message = addCheckpoint(threadName, sourceClassName, name, message, stubableCode,
+				message = addCheckpoint(threadName, sourceClassName, name, message, messageContext, stubableCode,
 						stubableCodeThrowsException, matchingStubStrategies, checkpointType, index, level);
 			}
 			Integer newLevel = level + levelChangeNextCheckpoint;
@@ -455,10 +455,11 @@ public class Report implements Serializable {
 	}
 
 	@SneakyThrows
-	private  <T> T addCheckpoint(String threadName, String sourceClassName, String name, T message,
+	private  <T> T addCheckpoint(String threadName, String sourceClassName, String name, T message, Map<String, Object> messageContext,
 			StubableCode stubableCode, StubableCodeThrowsException stubableCodeThrowsException,
 			Set<String> matchingStubStrategies, int checkpointType, Integer index, Integer level) {
 		Checkpoint checkpoint = new Checkpoint(this, threadName, sourceClassName, name, checkpointType, level);
+		checkpoint.setMessageContext(messageContext);
 		if (testTool.getOpenTelemetryTracer() != null) {
 			SpanBuilder checkpointSpanBuilder = testTool.getOpenTelemetryTracer().spanBuilder("checkpoint - " + name);
 			for (Checkpoint checkpointInList: checkpoints) {

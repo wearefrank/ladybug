@@ -65,6 +65,7 @@ public class Checkpoint implements Serializable, Cloneable {
 	private String messageClassName;
 	private String name;
 	private String message;
+	private Map<String, Object> messageContext;
 	private String encoding;
 	private String streaming;
 	private boolean waitingForStream = false;
@@ -309,6 +310,14 @@ public class Checkpoint implements Serializable, Cloneable {
 
 	public String getMessage() {
 		return message;
+	}
+
+	public void setMessageContext(Map<String, Object> messageContext) {
+		this.messageContext = messageContext;
+	}
+
+	public Map<String, Object> getMessageContext() {
+		return messageContext;
 	}
 
 	public void closeMessageCapturer() {
