@@ -1,5 +1,5 @@
 /*
-   Copyright 2021, 2023-2024 WeAreFrank!
+   Copyright 2021, 2023-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -127,10 +127,14 @@ public class TestExport {
 					}
 				} else if (method.getParameters()[0].getType() == String.class) {
 					method.invoke(checkpoint, name);
-				} else if (name.equals("span")) {
-					checkpoint.setSpan(new Span());
 				} else if (name.equals("report")) {
 					// Ignore, this is done hardcoded above (search for "checkpoint.setReport(report)")
+				} else if (name.equals("messageContext")) {
+					Map<String, Object> messageContext = new HashMap<String, Object>();
+					messageContext.put("test", 1000);
+					checkpoint.setMessageContext(messageContext);
+				} else if (name.equals("span")) {
+					checkpoint.setSpan(new Span());
 				} else {
 					assertNull("Method not handled: " + name);
 				}
