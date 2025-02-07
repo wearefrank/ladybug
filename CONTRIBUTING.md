@@ -1,6 +1,6 @@
 # How to contribute to Ladybug
 
-This document helps you to contribute to Ladybug. It focuses on how to start and test Ladybug. Ladybug is related to many different GitHub projects. There are multiple ways to start Ladybug that each have their own benefits for testing. Finally, it is explained what automated tests exist and how to maintain them.
+This document helps you to contribute to Ladybug. It focuses on how to start and test Ladybug. Ladybug is related to many different GitHub projects. There are multiple ways to start Ladybug that each have their own benefits for testing. Finally, the CI/CD arount Ladybug is explained.
 
 # Overview of Ladybug and GitHub projects
 
@@ -11,6 +11,8 @@ Ladybug is treated as a stand-alone product that can be used by any Java applica
 The next choice for starting Ladybug has to do with the front-end. The project you are looking at, the Ladybug backend, includes a front-end based on library Echo2. This library is end-of-life, so a new front-end, GitHub project ladybug-frontend, is being developed that is based on Angular. This is project https://github.com/wearefrank/ladybug-frontend. Ladybug is shipped with ladybug-frontend included (as Maven dependency). For testing purposes, it is often useful to start a separate instance of ladybug-frontend using NodeJS. This instance updates dynamically when the source code of ladybug-frontend is changed, allowing for fast development. This can be done both for Ladybug without Frank!Framework as for Ladybug as part of the Frank!Framework. In the latter case, the ladybug-frontend is shown *popped-out*, without the main menu of the Frank!Framework next to it.
 
 The next choice has to do with fine-tuning the Frank!Framework. The Frank!Framework uses Spring to configure Ladybug. Users of the Frank!Framework change this configuration, for example to add columns to the table in the debug tab. We use another test project, ladybug-ff-test-webapp (https://github.com/wearefrank/ladybug-ff-test-webapp), to test alternative Spring configurations. This is small Java project that has the Frank!Framework as a Maven dependency.
+
+Choosing Spring profiles also applies to running Ladybug without the Frank!Framework using ladybug-test-webapp.
 
 Finally, there is the choice whether to build the code locally or to use pre-built artifacts from the Nexus server managed by the maintainers of the Frank!Framework (or the Nexus server Maven Central for official releases of the Frank!Framework). Local builds are typically SNAPSHOT versions while Nexus releases do not. Nightly builds have a timestamp in their version number while official releases are of the form x.y.z without SNAPSHOT and without a timestamp.
 
@@ -41,19 +43,19 @@ Setups without ladybug-ff-test-webapp of Ladybug and/or Frank!Framework require 
 1. Ensure that the `pom.xml` files of the projects reference each other. The only exception is a ladybug-frontend instance starting separately with NodeJS. Not relevant if a pre-built Frank!Framework version is used.
 2. Configure the Frank!Runner to properly do the Maven build and to properly start Apache Tomcat.
 3. Run the Maven build of ladybug-frontend separately (is not automated by the Frank!Runner) if applicable.
-4. Start the appropriate `restart.bat` script to build and run the Frank!Framework.
+4. Start the appropriate `restart.bat` script to build and run the Frank!Framework or ladybug-test-webapp.
 5. If applicable, configure and start the separate ladybug-frontend.
 
 Setups with ladybug-ff-test-webapp should be run as follows:
 
-1. Use steps 1-3 to of the previous list to build the Frank!Framework (if no pre-built version).
+1. Use steps 1-4 to of the previous list to build the Frank!Framework (if no pre-built version).
 2. Update the `pom.xml` of ladybug-ff-test-webapp to reference the right Frank!Framework version.
 3. Configure the build of ladybug-ff-test-webapp.
 4. Run its `restart.bat` file to start it (delegates to the Frank!Runner to deploy the executable in Apache Tomcat).
 
 ### Adjusting `pom.xml`
 
-This step has been partly automated. See directory `frank-runner/specials/util/syncPomVersions`. This directory holds an ANT script. There are `.sh` and `.bat` scripts to execute the goals of this ANT script. For example, under Linux (or MinGW) you can execute `run.sh` to adjust your checkouts of Ladybug and the Frank!Framework. It causes the `pom.xml` of your Ladybug checkout to reference your checkout of ladybug-frontend. It also adjusts `frankframework/ladybug/pom.xml` so that your checkout of the Frank!Framework references your checkout of ladybug.
+This step has been partly automated. See directory `frank-runner/specials/util/syncPomVersions`. This directory holds an ANT script. There are `.sh` and `.bat` scripts to execute the goals of this ANT script. For example, under Linux (or MinGW) you can execute `run.sh` to adjust your checkouts of Ladybug and the Frank!Framework. It causes the `pom.xml` of your Ladybug checkout to reference your checkout of ladybug-frontend. It also adjusts `frankframework/ladybug/pom.xml` so that your checkout of the Frank!Framework references your checkout of ladybug. By choosing the right script, you can choose which of the `pom.xml` files are adjusted and which ones are left alone.
 
 ### Configuring the Frank!Runner
 
@@ -65,5 +67,37 @@ The ANT script of `frank-runner/specials/iaf-webapp` runs the Maven build of the
 
 Both ANT scripts can be configured by `build.properties` files that you put in `frank-runner/specials/ladybug` and `frank-runner/specials/iaf-webapp`. Examples of these `build.properties` files are provided in `build-example.properties` files. These files provide clear documentation of the properties you can configure and their meaning. Please copy each `build-example.properties` to the corresponding `build.properties` and use the comments to finish these files.
 
-For `frank-runner/specials/iaf-webapp`, there is an important option that is not yet documented in `build-example.properties`. If you put `skip.start=true`, the ANT script does not delegate to the root directory of the Frank!Runner and hence only the Nexus artifact of the local checkout of the Frank!Framework is built. This is very useful if you want to run ladybug-ff-test-webapp.
+For `frank-runner/specials/iaf-webapp`, there is an important option that is not yet documented in `build-example.properties`. If you put `skip.start=true`, the ANT script does not delegate to the root directory of the Frank!Runner and hence only the Maven artifact of the local checkout of the Frank!Framework is built. This is very useful if you want to run ladybug-ff-test-webapp. Project ladybug-ff-test-webapp has its own `build-example.properties` that you should copy to `build.properties` and it has `restart.sh` and `restart.bat` scripts to start it.
 
+### Starting ladybug-frontend with NodeJS
+
+You are referred to the build scripts in `package.json`. They show the arious options to start ladybug-frontend and/or its Cypress tests.
+
+Please note that the right version of `proxy.conf.json` has to be used. This file redirect HTTP calls done by ladybug-frontend so that the backend is reached on the right URL. For working with ladybug-test-webapp, file `ladybug-frontend/src/proxy.conf.json` works fine. If Ladybug is used as part of the Frank!Framework, then use `ladybug-frontend/src/proxy.ff.conf.json`. This has been taken care of in the startup scripts of `package.json`. Yet another version of `proxy.conf.json` is used in the CI/CD, because a different port is used then.
+
+Finally note that NodeJS serves the ladybug-frontend it starts at port 4200. The ladybug-frontend packaged in the Ladybug backend typically runs on port 80. This allows the version run by NodeJS and the version coming from the backend to run next to each other.
+
+# CI / CD
+
+The maintainers of the Frank!Framework manage a Nexus server that holds Maven artifacts for ladybug-frontend, ladybug and the Frank!Framework. These artifacts are put there by a Jenkins server. Please contact the maintainers of the Frank!Framework for URLs and accounts if you need them.
+
+The Jenkins server runs unit tests of the Ladybug backend and the Frank!Framework.
+
+### Cypress tests
+
+There are Cypress tests that can be executed on development computers and on GitHub Actions. These are:
+
+* The Cypress tests of ladybug-frontend. These test Ladybug as a stand-alone project.
+* The tests in project ladybug-ff-cypress-test. These test Ladybug as part of the Frank!Framework.
+
+To run these tests locally, please start the desired backend as explained before and use a script in `package.json` to run the tests.
+
+In GitHub Actions, tests ladybug-frontend and ladybug-ff-cypress-test have in their YAML descriptions an `on` object and inside of that a `workflow_dispatch` object. This allows these tests to be triggered from the console of GitHub Actions. For both of these tests, input arguments can be provided to choose how the test is run. Please see the descriptions for these inputs to understand their meaning.
+
+The YAML files of these tests also define multiple jobs that are executed in parallel. Each job tests a different configuration of Ladybug. Please look under `strategy` and `matrix` to see which configurations are tested.
+
+### How Cypress tests are triggered
+
+The Ladybug backend project has a GitHub Actions job to trigger the ladybug-frontend test. After pushing something on the ladybug backend project, please navigate to the ladybug-frontend GitHub Actions runs to check whether the ladybug-frontend still works with the backend change.
+
+Test ladybug-ff-cypress-test is automatically triggered when a new build of the Frank!Framework is written to Nexus. It is wise to regularly check the GitHub Actions results of ladybug-ff-cypress-test to check whether Ladybug still cooperates correctly with the Frank!Framework.
