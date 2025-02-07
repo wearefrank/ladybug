@@ -17,6 +17,14 @@
      <void property="messageClassName">
       <string>messageClassName</string>
      </void>
+     <void property="messageContext">
+      <object class="java.util.HashMap">
+       <void method="put">
+        <string>test</string>
+        <int>1000</int>
+       </void>
+      </object>
+     </void>
      <void property="name">
       <string>name</string>
      </void>
