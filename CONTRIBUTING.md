@@ -1,6 +1,6 @@
 # How to contribute to Ladybug
 
-This document helps you to contribute to Ladybug. It focuses on how to start and test Ladybug. Ladybug is related to many different GitHub projects. There are multiple ways to start Ladybug that each have their own benefits for testing. Finally, the CI/CD arount Ladybug is explained.
+This document helps you to contribute to Ladybug. It focuses on how to start and test Ladybug. Ladybug is related to many different GitHub projects. There are multiple ways to start Ladybug that each have their own benefits for testing. The CI/CD around Ladybug is also explained. The logic of the tests is complicated, so this document ends with guidelines to protect the quality of the test code.
 
 # Overview of Ladybug and GitHub projects
 
@@ -101,3 +101,14 @@ The YAML files of these tests also define multiple jobs that are executed in par
 The Ladybug backend project has a GitHub Actions job to trigger the ladybug-frontend test. After pushing something on the ladybug backend project, please navigate to the ladybug-frontend GitHub Actions runs to check whether the ladybug-frontend still works with the backend change.
 
 Test ladybug-ff-cypress-test is automatically triggered when a new build of the Frank!Framework is written to Nexus. It is wise to regularly check the GitHub Actions results of ladybug-ff-cypress-test to check whether Ladybug still cooperates correctly with the Frank!Framework.
+
+# Guidelines for code quality
+
+The GitHub Actions code has many steps that are executed conditionally. This is easier to read when the keys within each step have a fixed sequence. The sequence is:
+
+* name
+* if
+* working-directory
+* run or uses
+
+The tests of ladybug-ff-cypress-test produce information that you can use to check the test code. Look at the videos produced by the tests.
