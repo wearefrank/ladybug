@@ -111,4 +111,10 @@ The GitHub Actions code has many steps that are executed conditionally. This is 
 * working-directory
 * run or uses
 
-The tests of ladybug-ff-cypress-test produce information that you can use to check the test code. Look at the videos produced by the tests.
+The tests of ladybug-ff-cypress-test produce information that you can use to check the test code. Look at the videos produced by the tests. Test `ladybug-ff-cypress-test\cypress\e2e\cypress\common-over-test-envs\show-test-environment.cy.ts` shows the ladybug-frontend version in the Cypress log to the left of the screen, see below:
+
+![How ladybug-frontend version is shown](./contributing-pictures/how-test-shows-ladybug-frontend-version.jpg)
+
+To the right of the screen, the UI of ladybug-frontend is shown. The properties `ibistesttool.custom` and `configurations.dir` are shown, which allows you to check whether the right Spring profile and the right Frank configurations are used.
+
+Both the folder `ladybug-ff-cypress-test\cypress\e2e\cypress\default` and `ladybug-ff-cypress-test\cypress\e2e\cypress\with-ladybug-ff-test-webapp` have a file `check-test-environment.cy.ts`. In folder `with-ladybug-ff-test-webapp`, it checks that the extra view introduced for testing is present. In folder `default`, it checks that that extra view is NOT present.
