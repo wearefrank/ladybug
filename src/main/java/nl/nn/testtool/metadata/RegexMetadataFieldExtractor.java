@@ -54,20 +54,21 @@ public class RegexMetadataFieldExtractor extends DefaultValueMetadataFieldExtrac
 		Iterator iterator = report.getCheckpoints().iterator();
 		while (value == null && iterator.hasNext()) {
 			Checkpoint checkpoint = (Checkpoint) iterator.next();
-			// Skip if checkpoint is not relevant
-			if (checkpointName != null && !checkpointName.equals(checkpoint.getName())) {
-				continue;
-			}
 
-			String message = Objects.toString(checkpoint.getMessage(), "");
-			Matcher matcher = pattern.matcher(message);
-			if (matcher.find()) {
-				value = matcher.group(matcher.groupCount());
-			}
-			
-			// Stop after first relevant checkpoint, if configured
-			if (extractFromFirstCheckpointOnly) {
-				break;
+			if (checkpointName != null && checkpointName.equals(checkpoint.getName())) {
+				if (regex == null) {
+					return checkpoint.getMessage();
+				}
+
+				String message = Objects.toString(checkpoint.getMessage(), "");
+				Matcher matcher = pattern.matcher(message);
+				if (matcher.find()) {
+					value = matcher.group(matcher.groupCount());
+				}
+
+				if (extractFromFirstCheckpointOnly) {
+					break;
+				}
 			}
 		}
 		if (value == null) {
