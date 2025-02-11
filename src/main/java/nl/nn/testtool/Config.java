@@ -1,5 +1,5 @@
 /*
-   Copyright 2022-2024 WeAreFrank!
+   Copyright 2022-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -108,6 +108,11 @@ import nl.nn.testtool.transform.ReportXmlTransformer;
  *   </li>
  *   <li>
  *     Spring XML configuration can be used to override the defaults as specified by the annotations
+ *   </li>
+ *   <li>
+ *     Spring XML configuration needs a setter method / <code>@Setter</code> annotation to set a property
+ *     (<code>@Inject</code> and <code>@Autowired</code> don't need / call the setter method, see
+ *     https://stackoverflow.com/questions/74061160/do-we-have-to-write-setter-method-to-use-inject-annotation)
  *   </li>
  * </ul>
  * 
