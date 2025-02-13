@@ -41,27 +41,27 @@ To let all mentioned projects cooperate, please check them out in a common paren
 Setups without ladybug-ff-test-webapp of Ladybug and/or Frank!Framework require the following steps to run:
 
 1. Ensure that the `pom.xml` files of the projects reference each other. The only exception is a ladybug-frontend instance starting separately with NodeJS. Not relevant if a pre-built Frank!Framework version is used.
-2. Configure the Frank!Runner to properly do the Maven build and to properly start Apache Tomcat.
+2. Configure the Frank!Runner to properly do the Maven build and to properly start Apache Tomcat. This is explained below.
 3. Run the Maven build of ladybug-frontend separately (is not automated by the Frank!Runner) if applicable.
 4. Start the appropriate `restart.bat` script to build and run the Frank!Framework or ladybug-test-webapp.
 5. If applicable, configure and start the separate ladybug-frontend running with NodeJS.
 
 Setups with ladybug-ff-test-webapp should be run as follows:
 
-1. Use steps 1-4 to of the previous list to build the Frank!Framework (if no pre-built version).
-2. Update the `pom.xml` of ladybug-ff-test-webapp to reference the right Frank!Framework version.
-3. Configure the build of ladybug-ff-test-webapp.
-4. Run its `restart.bat` file to start it (delegates to the Frank!Runner to deploy the executable in Apache Tomcat).
+6. Use steps 1-4 to of the previous list to build the Frank!Framework (if no pre-built version).
+7. Update the `pom.xml` of ladybug-ff-test-webapp to reference the right Frank!Framework version.
+8. Configure the build of ladybug-ff-test-webapp.
+9. Run its `restart.bat` file to start it (delegates to the Frank!Runner to deploy the executable in Apache Tomcat).
 
-### Adjusting `pom.xml`
+### Adjusting `pom.xml` (steps 1 and 7)
 
 This step has been partly automated. See directory `frank-runner/specials/util/syncPomVersions`. This directory holds an ANT script. There are `.sh` and `.bat` scripts to execute the goals of this ANT script. For example, under Linux (or MinGW) you can execute `run.sh` to adjust your checkouts of Ladybug and the Frank!Framework. It causes the `pom.xml` of your Ladybug checkout to reference your checkout of ladybug-frontend. It also adjusts `frankframework/ladybug/pom.xml` so that your checkout of the Frank!Framework references your checkout of ladybug. By choosing the right script, you can choose which of the `pom.xml` files are adjusted and which ones are left alone.
 
-### Configuring the Frank!Runner
+### Configuring the Frank!Runner (steps 2 and 8)
 
-To start a pre-existing build of the Frank!Framework (available as local Maven artifact or on a Nexus server), use the ANT script in the root directory of the Frank!Runner. That script loads properties from a file `build.properties` that should be placed in the root directory of the Frank!Runner. You can configure `projects.dir` and `project.dir` to reference to your Frank application. See the Frank!Runner README for details: https://github.com/wearefrank/frank-runner/blob/master/README.md.
+To start a pre-existing build of the Frank!Framework (available as local Maven artifact or on a Nexus server), use the ANT script in the root directory of the Frank!Runner. That script loads properties from a file `build.properties` that should be placed in the root directory of the Frank!Runner. You can configure `projects.dir` and `project.dir` to reference to your Frank application. See the Frank!Runner README for details: https://github.com/wearefrank/frank-runner/blob/master/README.md. If you want to run the Frank!Framework or ladybug-test-webapp on a different port, set `tomcat.connector.port`.
 
-To build Ladybug and the Frank!Framework locally, you have to work with folders `frank-runner/specials/ladybug` and `frank-runner/specials/iaf-webapp`. Both of these directories hold and ANT scripts that can be executed on the command line by `.bat` and `.sh` scripts. `frank-runner/specials/ladybug` runs the Maven build of the Ladybug checkout and applies options you provide in a file `build.properties`, see below. Then it delegates to `frank-runner/specials/iaf-webapp` in case the Frank!Framework participates in your test.
+To build Ladybug and the Frank!Framework locally, you have to work with folders `frank-runner/specials/ladybug` and `frank-runner/specials/iaf-webapp`. Both of these directories contain ANT scripts that can be executed on the command line by `.bat` and `.sh` scripts. `frank-runner/specials/ladybug` runs the Maven build of the Ladybug checkout and applies options you provide in a file `build.properties`, see below. Then it delegates to `frank-runner/specials/iaf-webapp` in case the Frank!Framework participates in your test.
 
 The ANT script of `frank-runner/specials/iaf-webapp` runs the Maven build of the Frank!Framework and applies options you provide in a file `build.properties`, see below. After this, it delegates to the root directory of the Frank!Runner to deploy the Frank!Framework to Apache Tomcat and to start it.
 
@@ -69,7 +69,7 @@ Both ANT scripts can be configured by `build.properties` files that you put in `
 
 For `frank-runner/specials/iaf-webapp`, there is an important option that is not yet documented in `build-example.properties`. If you put `skip.start=true`, the ANT script does not delegate to the root directory of the Frank!Runner and hence only the Maven artifact of the local checkout of the Frank!Framework is built. This is very useful if you want to run ladybug-ff-test-webapp. Project ladybug-ff-test-webapp has its own `build-example.properties` that you should copy to `build.properties` and it has `restart.sh` and `restart.bat` scripts to start it.
 
-### Starting ladybug-frontend with NodeJS
+### Starting ladybug-frontend with NodeJS (step 5)
 
 You are referred to the build scripts in `package.json`. They show the various options to start ladybug-frontend and/or its Cypress tests.
 
