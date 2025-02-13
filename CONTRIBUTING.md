@@ -94,7 +94,7 @@ There are Cypress tests that can be executed on development computers and on Git
 * The Cypress tests of ladybug-frontend. These test Ladybug as a stand-alone project.
 * The tests in project ladybug-ff-cypress-test. These test Ladybug as part of the Frank!Framework.
 
-To run these tests locally, please start the desired backend as explained before and use a script in `package.json` to run the tests.
+To run these tests locally, please start the desired backend as explained before and use a script in `package.json` to run the tests. Note that step 5 in the instructions of starting Ladybug merges with starting Cypress. There are build scripts in `package.json` that both start ladybug-frontend with NodeJS *and* start Cypress.
 
 In GitHub Actions, tests ladybug-frontend and ladybug-ff-cypress-test have in their YAML descriptions an `on` object and inside of that a `workflow_dispatch` object. This allows these tests to be triggered from the console of GitHub Actions. For both of these tests, input arguments can be provided to choose how the test is run. Please see the descriptions for these inputs to understand their meaning.
 
