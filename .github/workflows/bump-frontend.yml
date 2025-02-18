@@ -41,6 +41,6 @@ jobs:
       - name: Push it
         run: git push origin ${{ steps.makeBranchName.outputs.branchName }}
       - name: Make the PR
-        run: gh pr create --body "Automatically created to bump ladybug-frontend to ${{ inputs.frontendVersion }}"
+        run: gh pr create --title "Bump ladybug-frontend to ${{ inputs.frontendVersion }}" --body "Automatically created to bump ladybug-frontend to ${{ inputs.frontendVersion }}"
         env:
           GH_TOKEN: ${{ github.token }}
