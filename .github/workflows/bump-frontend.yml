@@ -21,7 +21,7 @@ jobs:
         run: git checkout -b ${{ steps.makeBranchName.outputs.branchName }} master
       - name: Get original text of frontend version
         id: getOriginalText
-        run: grep "<frontend.version>" pom.xml | xargs > originalText; echo "originalText=$(cat originaltext)" >> $GITHUB_OUTPUT
+        run: grep "<frontend.version>" pom.xml | xargs > originalText; echo "originalText=$(cat originalText)" >> $GITHUB_OUTPUT
       - name: Update referred ladybug-frontend version
         run: sed -i "s|${{ steps.getOriginalText.outputs.originalText }}|<frontend.version>${{ inputs.frontendVersion }}</frontend.version>|g" pom.xml
       - name: Add updated pom.xml to index
