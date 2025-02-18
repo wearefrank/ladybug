@@ -18,6 +18,10 @@ jobs:
         run: git checkout --track origin/master
       - name: Show what branches we have
         run: git branch -l
+      - name: Set email to author PR being generated
+        run: git config --global user.email "martijn@wearefrank.nl"
+      - name: Set author name of PR being generated
+        run: git config --global user.name "Martijn Dirkse (automated)"
       - name: Make up branch name
         id: makeBranchName
         run: date +bump-ladybug-frontend-20%y%m%d-%H%M%S > branchName; echo "branchName=$(cat branchName)" >> $GITHUB_OUTPUT
