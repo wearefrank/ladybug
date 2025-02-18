@@ -12,6 +12,10 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
+      - name: Fetch master
+        run: git fetch origin master
+      - name: Checkout master
+        run: git checkout --track origin/master
       - name: Show what branches we have
         run: git branch -l
       - name: Make up branch name
