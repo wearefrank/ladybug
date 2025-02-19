@@ -7,13 +7,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout
-      uses: actions/checkout@v2
-    - name: Get referenced front-end version
-      run: /bin/bash ./.github/workflows/getFrontendVersion.sh pom.xml frontendVersion.txt
-    - name: Capture referenced front-end version
-      id: get_frontendVersion
-      run: echo "::set-output name=frontendVersion::$(cat frontendVersion.txt)"
     - name: Push repository_dispatch event to ladybug-frontend - no PR
       uses: actions/github-script@v6
       with:
