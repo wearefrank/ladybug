@@ -1,0 +1,35 @@
+name: Bump ladybug-frontend
+on:
+  workflow_dispatch:
+    inputs:
+      frontendVersion:
+        description: Frontend version to start using
+        required: true
+jobs:
+  bump:
+    name: Use ladybug-frontend version ${{ inputs.frontendVersion }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      - name: Make up branch name
+        id: makeBranchName
+        run: date +bump-ladybug-frontend-20%y%m%d-%H%M%S > branchName; echo "branchName=$(cat branchName)" >> $GITHUB_OUTPUT
+      - name: Show branchName
+        run: echo "Branch name will be ${{ steps.makeBranchName.outputs.branchName }}"
+      - name: Create the branch
+        run: git checkout -b ${{ steps.makeBranchName.outputs.branchName }} master
+      - name: Get original text of frontend version
+        id: getOriginalText
+        run: grep "<frontend.version>" pom.xml | xargs > originalText; echo "originalText=$(cat originaltext)" >> $GITHUB_OUTPUT
+      - name: Update referred ladybug-frontend version
+        run: sed -i "s|${{ steps.getOriginalText.outputs.originalText }}|<frontend.version>${{ inputs.frontendVersion }}</frontend.version>|g" pom.xml
+      - name: Add updated pom.xml to index
+        run: git add pom.xml
+      - name: Commit it
+        run: git commit -m "Bump ladybug-frontend to ${{ inputs.frontendVersion }}"
+      - name: Push it
+        run: git push origin ${{ steps.makeBranchName.outputs.branchName }}
+      - name: Make the PR
+        run: gh pr create --body "Automatically created to bump ladybug-frontend to ${{ inputs.frontendVersion }}"
+
