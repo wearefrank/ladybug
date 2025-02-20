@@ -12,10 +12,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
-      - name: Fetch master
-        run: git fetch origin master
-      - name: Checkout master
-        run: git checkout --track origin/master
+        with:
+          ref: master
       - name: Show what branches we have
         run: git branch -l
       - name: Set email to author PR being generated
