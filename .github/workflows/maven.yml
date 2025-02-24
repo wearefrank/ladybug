@@ -25,7 +25,7 @@ jobs:
 
     - name: Publish Test Report
       if: always()
-      uses: scacap/action-surefire-report@v1
+      uses: scacap/action-surefire-report@v1.9.0
       with:
         check_name: Java CI with Maven test report
 
