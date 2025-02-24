@@ -33,7 +33,9 @@ public class TestStorages extends ReportRelatedTestCase {
     public void testClearStorage() throws Exception {
         createReport();
         createReport();
+        // Check what happens if the test fails - enough information?
         assertEquals(2, storage.getSize());
+        assertEquals(100, storage.getSize());
         storage.clear();
         assertEquals(0, storage.getSize());
     }
