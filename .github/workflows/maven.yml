@@ -23,6 +23,8 @@ jobs:
     - name: Build with Maven
       run: mvn -B package
 
+    # The results are reported with the wrong job name. See issue of this GitHub Action:
+    # https://github.com/ScaCap/action-surefire-report/issues/39
     - name: Publish Test Report
       if: always()
       uses: scacap/action-surefire-report@v1.9.0
