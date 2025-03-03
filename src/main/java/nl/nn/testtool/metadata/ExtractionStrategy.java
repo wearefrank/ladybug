@@ -25,6 +25,10 @@ public interface ExtractionStrategy {
 class RegexExtractionStrategy implements ExtractionStrategy {
     private Pattern pattern;
 
+    public RegexExtractionStrategy(String regex) {
+        setRegex(regex);
+    }
+
     public void setRegex(String regex) {
         pattern = (regex == null || regex.isEmpty()) ? null : Pattern.compile(regex);
     }
@@ -40,13 +44,6 @@ class RegexExtractionStrategy implements ExtractionStrategy {
             return Optional.ofNullable(matcher.groupCount() > 0 ? matcher.group(1) : matcher.group(0));
         }
         return Optional.empty();
-    }
-}
-
-class SessionKeyExtractionStrategy implements ExtractionStrategy {
-    @Override
-    public Optional<String> extract(String message) {
-        return Optional.ofNullable(message); // Keeps the original message if present
     }
 }
 
