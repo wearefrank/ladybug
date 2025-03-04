@@ -60,7 +60,6 @@ public class XmlStorage implements CrudStorage {
 	private MetadataHandler metadataHandler;
 	private File reportsFolder;
 	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-	private Map<Integer, Integer> storageIdMap = new HashMap<>();
 
 	/**
 	 * Initializes the storage. Creating necessary folders and metadata file.
