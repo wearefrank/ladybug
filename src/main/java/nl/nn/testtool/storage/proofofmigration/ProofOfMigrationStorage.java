@@ -252,7 +252,7 @@ public class ProofOfMigrationStorage extends DatabaseLogStorage {
 	}
 
 	@Override
-	public void store(Report report) throws StorageException {
+	public Report store(Report report) throws StorageException {
 		throw new StorageException("Not implemented!");
 	}
 

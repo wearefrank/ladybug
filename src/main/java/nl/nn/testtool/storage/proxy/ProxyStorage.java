@@ -60,8 +60,9 @@ public class ProxyStorage implements CrudStorage, LogStorage {
 	}
 
 	@Override
-	public synchronized void store(Report report) throws StorageException {
+	public synchronized Report store(Report report) throws StorageException {
 		((CrudStorage)destination).store(report);
+		return report;
 	}
 
 	@Override

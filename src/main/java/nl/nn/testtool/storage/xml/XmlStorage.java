@@ -25,7 +25,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.xml.parsers.ParserConfigurationException;
 
@@ -58,6 +60,7 @@ public class XmlStorage implements CrudStorage {
 	private MetadataHandler metadataHandler;
 	private File reportsFolder;
 	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+	private Map<Integer, Integer> storageIdMap = new HashMap<>();
 
 	/**
 	 * Initializes the storage. Creating necessary folders and metadata file.
@@ -113,12 +116,13 @@ public class XmlStorage implements CrudStorage {
 	}
 
 	@Override
-	public void store(Report report) throws StorageException {
+	public Report store(Report report) throws StorageException {
 		try {
 			// Storage uses the clone to save, because it changes reports name, and it can cause unwanted side-effects
 			// on report names. The clone will not have a storageId.
 			Report copy = report.clone();
 			store(copy, true);
+			return copy;
 		} catch (ClassCastException | CloneNotSupportedException e) {
 			throw new StorageException("Could not clone the report for new storage.", e);
 		}

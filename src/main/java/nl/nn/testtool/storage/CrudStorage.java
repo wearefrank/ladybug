@@ -24,7 +24,7 @@ import nl.nn.testtool.Report;
  * @author Jaco de Groot
  */
 public interface CrudStorage extends Storage {
-	public void store(Report report) throws StorageException;
+	public Report store(Report report) throws StorageException;
 
 	public void update(Report report) throws StorageException;
 

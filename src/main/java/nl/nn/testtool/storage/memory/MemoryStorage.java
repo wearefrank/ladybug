@@ -75,11 +75,12 @@ public class MemoryStorage implements Storage {
 		this.metadataExtractor = metadataExtractor;
 	}
 
-	public synchronized void store(Report report) {
+	public synchronized Report store(Report report) {
 		report.setStorage(this);
 		report.setStorageId(storageId++);
 		reports.put(report.getStorageId(), report);
 		storageIds.add(report.getStorageId());
+		return report;
 	}
 
 	@Override

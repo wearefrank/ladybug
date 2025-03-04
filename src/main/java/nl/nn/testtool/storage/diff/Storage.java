@@ -43,9 +43,10 @@ public class Storage extends MemoryCrudStorage {
 		readReports();
 	}
 
-	public synchronized void store(Report report) {
+	public synchronized Report store(Report report) {
 		super.store(report);
 		writeReports();
+		return report;
 	}
 
 	public void update(Report report) throws StorageException {

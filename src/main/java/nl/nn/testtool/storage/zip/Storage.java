@@ -32,7 +32,7 @@ public class Storage extends MemoryStorage {
 	private File file = new File("C:\\Temp\\tt.zip");
 
 	@Override
-	public synchronized void store(Report report) {
+	public synchronized Report store(Report report) {
 		ZipEntry zipEntry = new ZipEntry(report.getStorageId().toString());
 		ZipOutputStream zipOutputStream = null;
 		try {
@@ -48,6 +48,7 @@ public class Storage extends MemoryStorage {
 			e.printStackTrace();
 		}
 		super.store(report);
+		return report;
 	}
 
 	public void update(Report report) throws StorageException {
