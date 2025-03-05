@@ -1,0 +1,44 @@
+name: Bump ladybug-frontend
+on:
+  workflow_dispatch:
+    inputs:
+      frontendVersion:
+        description: Frontend version to start using
+        required: true
+jobs:
+  bump:
+    name: Use ladybug-frontend version ${{ inputs.frontendVersion }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          ref: master
+      - name: Show what branches we have
+        run: git branch -l
+      - name: Set email to author PR being generated
+        run: git config --global user.email "martijn@wearefrank.nl"
+      - name: Set author name of PR being generated
+        run: git config --global user.name "Martijn Dirkse (automated)"
+      - name: Make up branch name
+        id: makeBranchName
+        run: date +bump-ladybug-frontend-20%y%m%d-%H%M%S > branchName; echo "branchName=$(cat branchName)" >> $GITHUB_OUTPUT
+      - name: Show branchName
+        run: echo "Branch name will be ${{ steps.makeBranchName.outputs.branchName }}"
+      - name: Create the branch
+        run: git checkout -b ${{ steps.makeBranchName.outputs.branchName }} master
+      - name: Get original text of frontend version
+        id: getOriginalText
+        run: grep "<frontend.version>" pom.xml | xargs > originalText; echo "originalText=$(cat originalText)" >> $GITHUB_OUTPUT
+      - name: Update referred ladybug-frontend version
+        run: sed -i "s|${{ steps.getOriginalText.outputs.originalText }}|<frontend.version>${{ inputs.frontendVersion }}</frontend.version>|g" pom.xml
+      - name: Add updated pom.xml to index
+        run: git add pom.xml
+      - name: Commit it
+        run: git commit -m "Bump ladybug-frontend to ${{ inputs.frontendVersion }}"
+      - name: Push it
+        run: git push origin ${{ steps.makeBranchName.outputs.branchName }}
+      - name: Make the PR
+        run: gh pr create --title "Bump ladybug-frontend to ${{ inputs.frontendVersion }}" --body "Automatically created to bump ladybug-frontend to ${{ inputs.frontendVersion }}"
+        env:
+          GH_TOKEN: ${{ github.token }}
