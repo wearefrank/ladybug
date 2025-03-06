@@ -55,7 +55,7 @@ public class RegexMetadataFieldExtractor extends DefaultValueMetadataFieldExtrac
 		while (value == null && iterator.hasNext()) {
 			Checkpoint checkpoint = (Checkpoint) iterator.next();
 
-			if (checkpointName != null && checkpointName.equals(checkpoint.getName())) {
+			if (checkpointName == null || checkpointName.equals(checkpoint.getName())) {
 				if (regex == null) {
 					return checkpoint.getMessage();
 				}
