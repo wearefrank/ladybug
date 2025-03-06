@@ -307,25 +307,12 @@ public class ReportApi extends ApiBase {
 			Report report = getReport(storage, storageId);
 			if (report == null)
 				return Response.status(Response.Status.NOT_FOUND).entity("Could not find report with storageId [" + storageId + "]").build();
-			if (StringUtils.isNotEmpty(map.get("name")))
-				report.setName(map.get("name"));
-
-			if (StringUtils.isNotEmpty(map.get("path")))
-				report.setPath(TestComponent.normalizePath(map.get("path")));
-
-			if (StringUtils.isNotEmpty(map.get("description")))
-				report.setDescription(map.get("description"));
-
-			if (StringUtils.isNotEmpty(map.get("transformation")))
-				report.setTransformation(map.get("transformation"));
-
-			if (StringUtils.isNotEmpty(map.get("stubStrategy")))
-				report.setStubStrategy(map.get("stubStrategy"));
-
-			String variables = map.get("variables");
-			if (variables != null && !variables.equals(report.getVariableCsv())) {
-				report.setVariableCsv(variables);
-			}
+			report.setName(map.get("name"));
+			report.setPath(TestComponent.normalizePath(map.get("path")));
+			report.setDescription(map.get("description"));
+			report.setTransformation(map.get("transformation"));
+			report.setStubStrategy(map.get("stubStrategy"));
+			report.setVariablesCsv(map.get("variables"));
 
 			if (StringUtils.isNotEmpty(map.get("checkpointId"))) {
 				if (StringUtils.isNotEmpty(map.get("stub"))) {
@@ -595,11 +582,11 @@ public class ReportApi extends ApiBase {
 				try {
 					if (originalSet) {
 						Report clone = original.clone();
-						clone.setVariableCsvWithoutException(firstLine + "\n" + nextLine);
+						clone.setVariablesCsv(firstLine + "\n" + nextLine);
 						storage.store(clone);
 					} else {
 						originalSet = true;
-						original.setVariableCsvWithoutException(firstLine + "\n" + nextLine);
+						original.setVariablesCsv(firstLine + "\n" + nextLine);
 						storage.update(original);
 					}
 				} catch (CloneNotSupportedException | StorageException e) {

@@ -79,7 +79,7 @@ public class TestExport {
 						method.invoke(report, true);
 					}
 				} else if (method.getParameters()[0].getType() == String.class) {
-					if (name.equals("variableCsv")) {
+					if (name.equals("variablesCsv")) {
 						method.invoke(report, name + "\n" + name);
 					} else {
 						method.invoke(report, name);
@@ -92,11 +92,13 @@ public class TestExport {
 					report.setReportXmlTransformer(new ReportXmlTransformer());
 				} else if (name.equals("globalReportXmlTransformer")) {
 					report.setGlobalReportXmlTransformer(new ReportXmlTransformer());
+				} else if (name.equals("variables")) {
+					report.setVariables(new HashMap<String, String>());
 				} else if (!name.equals("storageId") && !name.equals("checkpoints")) {
-					// No need to test this for a memory storage.
+					// No need to test with multiple storages so CONTEXT_FILE_STORAGE will do.
 					method.invoke(report, Common.CONTEXT_FILE_STORAGE.getBean(name));
 				} else if (name.equals("checkpoints")) {
-					// Ignore, this is done hardcoded below (search for "report.setCheckpoints(checkpoints)")
+					// Ignore, this is done hard coded below (search for "report.setCheckpoints(checkpoints)")
 				} else {
 					assertNull("Method not handled: " + name);
 				}

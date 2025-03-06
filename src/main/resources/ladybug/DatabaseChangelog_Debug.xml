@@ -23,4 +23,5 @@
 		</createTable>
 		<createSequence sequenceName="SEQ_LADYBUG"/><!-- To auto increment STORAGEID on Oracle -->
 	</changeSet>
+
 </databaseChangeLog>
