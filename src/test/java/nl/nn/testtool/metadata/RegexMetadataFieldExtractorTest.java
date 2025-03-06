@@ -48,6 +48,13 @@ public class RegexMetadataFieldExtractorTest {
 	}
 
 	@Test
+	public void getWithoutCheckpointName() {
+		RegexMetadataFieldExtractor extractor = new RegexMetadataFieldExtractor();
+		String extracted = (String) extractor.extractMetadata(report);
+		assertEquals("Some message", extracted);
+	}
+
+	@Test
 	public void getCheckpointAndApplyRegex() {
 		RegexMetadataFieldExtractor extractor = new RegexMetadataFieldExtractor();
 		extractor.setCheckpointName("SessionKey mySessionKey");
