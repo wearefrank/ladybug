@@ -19,7 +19,7 @@
     <maven.compiler.release>11</maven.compiler.release>
     <frontend.version>0.1.0-20250305.161424</frontend.version>
     <spring.version>6.1.14</spring.version>
-    <cxf.version>4.0.4</cxf.version>
+    <cxf.version>4.0.6</cxf.version>
     <jackson.version>2.17.1</jackson.version>
     <logback.version>1.5.13</logback.version>
   </properties>
