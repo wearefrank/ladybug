@@ -225,11 +225,8 @@ public class MetadataExtractor {
 		if (metadataName.equals("duration")) {
 			return Long.valueOf(report.getEndTime() - report.getStartTime());
 		}
-		if (metadataName.equals("variableCsv")) {
-			return report.getVariableCsv();
-		}
-		if (metadataName.equals("variableMap")) {
-			return report.getVariablesAsMap();
+		if (metadataName.equals("variables")) {
+			return report.getVariables();
 		}
 		for (MetadataFieldExtractor metadataFieldExtractor : metadataFieldExtractors) {
 			if (metadataFieldExtractor.getName().equals(metadataName)) {

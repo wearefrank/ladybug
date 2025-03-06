@@ -94,9 +94,13 @@
   <void property="transformation">
    <string>transformation</string>
   </void>
-  <void property="variableCsv">
-   <string>variableCsv
-variableCsv</string>
+  <void property="variables">
+   <object class="java.util.LinkedHashMap">
+    <void method="put">
+     <string>variablesCsv</string>
+     <string>variablesCsv</string>
+    </void>
+   </object>
   </void>
  </object>
 </java>
