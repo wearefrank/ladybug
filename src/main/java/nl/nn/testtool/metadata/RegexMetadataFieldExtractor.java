@@ -1,5 +1,5 @@
 /*
-   Copyright 2020, 2023 WeAreFrank!, 2018 Nationale-Nederlanden
+   Copyright 2020, 2023, 2025 WeAreFrank!, 2018 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 package nl.nn.testtool.metadata;
 
 import java.util.Iterator;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -53,20 +54,26 @@ public class RegexMetadataFieldExtractor extends DefaultValueMetadataFieldExtrac
 		Iterator iterator = report.getCheckpoints().iterator();
 		while (value == null && iterator.hasNext()) {
 			Checkpoint checkpoint = (Checkpoint) iterator.next();
-			if(checkpointName == null || checkpointName.equals(checkpoint.getName())) {
-				Matcher matcher = pattern.matcher(checkpoint.getMessage());
+
+			if (checkpointName == null || checkpointName.equals(checkpoint.getName())) {
+				if (regex == null) {
+					return checkpoint.getMessage();
+				}
+
+				String message = Objects.toString(checkpoint.getMessage(), "");
+				Matcher matcher = pattern.matcher(message);
 				if (matcher.find()) {
 					value = matcher.group(matcher.groupCount());
 				}
+
 				if (extractFromFirstCheckpointOnly) {
 					break;
 				}
 			}
 		}
 		if (value == null) {
-			value = defaultValue;
+			return defaultValue;
 		}
 		return value;
 	}
-
 }
