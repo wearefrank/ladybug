@@ -261,7 +261,7 @@ public class TestComponent extends BaseComponent implements BeanParent, ActionLi
 		prepareUploadButton.addActionListener(this);
 		buttonRow.add(prepareUploadButton);
 
-		if (customReportAction != null) {
+		if (customReportAction != null && StringUtils.isNotEmpty(customReportAction.getButtonText())) {
 			Button customReportActionButton = new Button(customReportAction.getButtonText());
 			customReportActionButton.setActionCommand("CustomReportAction");
 			Echo2Application.decorateButton(customReportActionButton);
