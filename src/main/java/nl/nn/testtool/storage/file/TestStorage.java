@@ -145,9 +145,10 @@ public class TestStorage implements nl.nn.testtool.storage.CrudStorage {
 	}
 
 	@Override
-	public void store(Report report) throws StorageException {
+	public Report store(Report report) throws StorageException {
 		report.setStorage(this);
 		writer[active].store(report, false);
+		return report;
 	}
 
 	@Override

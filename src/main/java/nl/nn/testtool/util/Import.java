@@ -1,5 +1,5 @@
 /*
-   Copyright 2020-2022 WeAreFrank!, 2018 Nationale-Nederlanden
+   Copyright 2020-2022, 2025 WeAreFrank!, 2018 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -101,6 +101,7 @@ public class Import {
 		XMLDecoder xmlDecoder = null;
 		String version = null;
 		Report report = null;
+		Report clone = null;
 		ImportResult importResult = new ImportResult();
 		try {
 			gzipInputStream = new GZIPInputStream(inputStream);
@@ -113,7 +114,7 @@ public class Import {
 			// compatible with older Test Tool versions that wrote more than one
 			// report to a ttr. See comment at the code using the XMLEncoder.
 			while (report != null) {
-				storage.store(report);
+				clone = storage.store(report);
 				report = (Report)xmlDecoder.readObject();
 				if (log != null) log.debug("Decoded report: " + report.getName());
 			}
@@ -126,8 +127,8 @@ public class Import {
 					+ ": " + t.getMessage();
 			if (log != null) log.error(importResult.errorMessage, t);
 		} finally {
-			if (report != null) {
-				importResult.newStorageId = report.getStorageId();
+			if (clone != null) {
+				importResult.newStorageId = clone.getStorageId();
 			}
 			if (xmlDecoder != null) {
 				xmlDecoder.close();
