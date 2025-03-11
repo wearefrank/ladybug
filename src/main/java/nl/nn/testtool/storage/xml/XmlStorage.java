@@ -113,16 +113,8 @@ public class XmlStorage implements CrudStorage {
 	}
 
 	@Override
-	public Report store(Report report) throws StorageException {
-		try {
-			// Storage uses the clone to save, because it changes reports name, and it can cause unwanted side-effects
-			// on report names. The clone will not have a storageId.
-			Report copy = report.clone();
-			store(copy, true);
-			return copy;
-		} catch (ClassCastException | CloneNotSupportedException e) {
-			throw new StorageException("Could not clone the report for new storage.", e);
-		}
+	public void store(Report report) throws StorageException {
+		store(report, true);
 	}
 
 	/**

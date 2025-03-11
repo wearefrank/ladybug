@@ -1,5 +1,5 @@
 /*
-   Copyright 2022-2025 WeAreFrank!
+   Copyright 2022-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -252,7 +252,7 @@ public class ProofOfMigrationStorage extends DatabaseLogStorage {
 	}
 
 	@Override
-	public Report store(Report report) throws StorageException {
+	public void store(Report report) throws StorageException {
 		throw new StorageException("Not implemented!");
 	}
 

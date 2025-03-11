@@ -180,7 +180,7 @@ public class DatabaseStorage implements Storage {
 		}
 	}
 
-	public Report store(Report report) throws StorageException {
+	public void store(Report report) throws StorageException {
 		byte[] reportBytes = Export.getReportBytes(report);
 		String reportXml = report.toXml();
 		long storageSize = reportBytes.length;
@@ -265,7 +265,6 @@ public class DatabaseStorage implements Storage {
 			log.debug("Checked for reports older than " + getMaxStorageDays() + " days: "
 					+ nrOfDeletedReports + " reports deleted.");
 		}
-		return report;
 	}
 
 	@Override

@@ -1,5 +1,5 @@
 /*
-   Copyright 2020-2025 WeAreFrank!, 2018 Nationale-Nederlanden
+   Copyright 2020-2024 WeAreFrank!, 2018 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -32,7 +32,7 @@ public class Storage extends MemoryStorage {
 	private File file = new File("C:\\Temp\\tt.zip");
 
 	@Override
-	public synchronized Report store(Report report) {
+	public synchronized void store(Report report) {
 		ZipEntry zipEntry = new ZipEntry(report.getStorageId().toString());
 		ZipOutputStream zipOutputStream = null;
 		try {
@@ -48,7 +48,6 @@ public class Storage extends MemoryStorage {
 			e.printStackTrace();
 		}
 		super.store(report);
-		return report;
 	}
 
 	public void update(Report report) throws StorageException {

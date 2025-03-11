@@ -1,5 +1,5 @@
 /*
-   Copyright 2020-2025 WeAreFrank!, 2018 Nationale-Nederlanden
+   Copyright 2020-2024 WeAreFrank!, 2018 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -75,12 +75,11 @@ public class MemoryStorage implements Storage {
 		this.metadataExtractor = metadataExtractor;
 	}
 
-	public synchronized Report store(Report report) {
+	public synchronized void store(Report report) {
 		report.setStorage(this);
 		report.setStorageId(storageId++);
 		reports.put(report.getStorageId(), report);
 		storageIds.add(report.getStorageId());
-		return report;
 	}
 
 	@Override
