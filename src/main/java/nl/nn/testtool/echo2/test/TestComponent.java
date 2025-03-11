@@ -261,7 +261,7 @@ public class TestComponent extends BaseComponent implements BeanParent, ActionLi
 		prepareUploadButton.addActionListener(this);
 		buttonRow.add(prepareUploadButton);
 
-		if (customReportAction != null) {
+		if (customReportAction != null && StringUtils.isNotEmpty(customReportAction.getButtonText())) {
 			Button customReportActionButton = new Button(customReportAction.getButtonText());
 			customReportActionButton.setActionCommand("CustomReportAction");
 			Echo2Application.decorateButton(customReportActionButton);
@@ -313,7 +313,7 @@ public class TestComponent extends BaseComponent implements BeanParent, ActionLi
 		cloneGenerationColumn.add(row);
 
 		Label cloneGenerationCsvLabel = Echo2Application.createInfoLabel();
-		cloneGenerationCsvLabel.setText("Variable CSV:");
+		cloneGenerationCsvLabel.setText("Variables CSV:");
 		row = Echo2Application.getNewRow();
 		row.add(cloneGenerationCsvLabel);
 		cloneGenerationColumn.add(row);
@@ -576,8 +576,7 @@ public class TestComponent extends BaseComponent implements BeanParent, ActionLi
 		}
 		row.add(resultLabel, INDEX_RESULT_LABEL);
 
-		Label dynamicVarLabel = newDynamicVariableLabel(report);
-		row.add(dynamicVarLabel, INDEX_DYNAMIC_VAR_LABEL);
+		row.add(newDynamicVariablesLabel(report), INDEX_DYNAMIC_VAR_LABEL);
 
 		add(row);
 
@@ -590,13 +589,13 @@ public class TestComponent extends BaseComponent implements BeanParent, ActionLi
 		}
 	}
 
-	private Label newDynamicVariableLabel(Report report) {
+	private Label newDynamicVariablesLabel(Report report) {
 		Label label = new Label();
 		label.setForeground(Echo2Application.getButtonRolloverBackgroundColor());
-		if(report.getVariableCsv() != null) {
+		if(report.getVariables() != null) {
 			String labelText = "[";
 			boolean tooManyChars = false;
-			for(Entry<String, String> entry : report.getVariablesAsMap().entrySet()) {
+			for(Entry<String, String> entry : report.getVariables().entrySet()) {
 				if(labelText.length() + entry.getValue().length() < 50) {
 					labelText += entry.getKey()+"="+entry.getValue()+", ";
 				} else {
@@ -872,7 +871,7 @@ public class TestComponent extends BaseComponent implements BeanParent, ActionLi
 				runResultReport.setPath(report.getPath());
 				runResultReport.setTransformation(report.getTransformation());
 				runResultReport.setReportXmlTransformer(report.getReportXmlTransformer());
-				runResultReport.setVariableCsvWithoutException(report.getVariableCsv());
+				runResultReport.setVariables(report.getVariables());
 				runResultReport.setStorageId(report.getStorageId());
 				String errorMessage = Echo2Application.update(testStorage, runResultReport);
 				if (errorMessage == null) {
@@ -907,12 +906,12 @@ public class TestComponent extends BaseComponent implements BeanParent, ActionLi
 		scanner.close();
 		
 		try {
-			reportToClone.setVariableCsvWithoutException(lines.get(0)+"\n"+lines.get(1));
+			reportToClone.setVariablesCsv(lines.get(0)+"\n"+lines.get(1));
 			displayAndLogError(Echo2Application.update(testStorage, reportToClone));
 			if(lines.size() > 2) {
 				for(int i = 2; i < lines.size(); i++) {
 					Report cloneReport = reportToClone.clone();
-					cloneReport.setVariableCsvWithoutException(lines.get(0)+"\n"+lines.get(i));
+					cloneReport.setVariablesCsv(lines.get(0)+"\n"+lines.get(i));
 					displayAndLogError(Echo2Application.store(testStorage, cloneReport));
 				}
 			}

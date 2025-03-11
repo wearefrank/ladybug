@@ -1,5 +1,5 @@
 /*
-   Copyright 2018-2024 WeAreFrank!
+   Copyright 2018-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -63,9 +63,9 @@ public class ReportComponent extends MessageComponent {
 	private TextArea transformationTextArea;
 	private WindowPane deleteWarningWindow;
 	private Label deleteIdLabel;
-	private Label variableLabel;
-	private Column variableColumn;
-	private TextArea variableTextArea;
+	private Label variablesLabel;
+	private Column variablesColumn;
+	private TextArea variablesTextArea;
 	private Label variableErrorMessageLabel;
 
 	public ReportComponent() {
@@ -212,29 +212,29 @@ public class ReportComponent extends MessageComponent {
 		transformationTextArea.setVisible(false);
 		add(transformationTextArea);
 		
-		Row variableRow = Echo2Application.getNewRow();
-		variableRow.setInsets(new Insets(0, 5, 0 ,0));
-		add(variableRow);
+		Row variablesRow = Echo2Application.getNewRow();
+		variablesRow.setInsets(new Insets(0, 5, 0 ,0));
+		add(variablesRow);
 		
-		variableLabel = Echo2Application.createInfoLabel();
-		variableLabel.setText("Variables:");
-		variableLabel.setVisible(false);
-		variableLabel.setToolTipText("A map of variables to be written in CSV-format with delimiter ';'. "
+		variablesLabel = Echo2Application.createInfoLabel();
+		variablesLabel.setText("Variables:");
+		variablesLabel.setVisible(false);
+		variablesLabel.setToolTipText("A map of variables to be written in CSV-format with delimiter ';'. "
 				+ "These variables can be referred to in this report's input message by referring to their ${key}. "
 				+ "Example:\n\n"
 				+ "id;firstname;location\n"
 				+ "3;jaco;de groot\n\n"
 				+ "In this case, any occurences of ${firstname} in the report's input message "
 				+ "will be replaced with \"jaco\" at runtime.");
-		variableRow.add(variableLabel);
+		variablesRow.add(variablesLabel);
 		
-		variableColumn = new Column();
-		variableColumn.setInsets(new Insets(0, 5, 0 ,0));
-		variableTextArea = new TextArea();
-		variableTextArea.setWidth(new Extent(50, Extent.PERCENT));
-		variableTextArea.setHeight(new Extent(32));
-		variableTextArea.setVisible(false);
-		add(variableTextArea);
+		variablesColumn = new Column();
+		variablesColumn.setInsets(new Insets(0, 5, 0 ,0));
+		variablesTextArea = new TextArea();
+		variablesTextArea.setWidth(new Extent(50, Extent.PERCENT));
+		variablesTextArea.setHeight(new Extent(32));
+		variablesTextArea.setVisible(false);
+		add(variablesTextArea);
 
 		storageIdLabel = Echo2Application.createInfoLabelWithColumnLayoutData();
 		add(storageIdLabel);
@@ -384,7 +384,7 @@ public class ReportComponent extends MessageComponent {
 		report.setName(nameTextField.getText());
 		report.setDescription(descriptionTextArea.getText());
 		saveReportPathChanges();
-		saveReportVariableChanges();
+		saveReportVariablesChanges();
 		report.setTransformation(transformationTextArea.getText());
 		report.flushCachedXml();
 		if (report.getStorage() instanceof CrudStorage) {
@@ -406,17 +406,13 @@ public class ReportComponent extends MessageComponent {
 		report.setPath(input);
 	}
 
-	private void saveReportVariableChanges() {
-		if(!variableTextArea.getText().equals(report.getVariableCsv())) {
-			String errorMessage = report.setVariableCsvWithoutException(variableTextArea.getText());
-			if(errorMessage == null) {
-				variableErrorMessageLabel.setVisible(false);
-			} else {
-				variableErrorMessageLabel.setText("[Variables] "+errorMessage);
-				variableErrorMessageLabel.setVisible(true);
-			}
-		} else {
+	private void saveReportVariablesChanges() {
+		String errorMessage = report.setVariablesCsv(variablesTextArea.getText());
+		if(errorMessage == null) {
 			variableErrorMessageLabel.setVisible(false);
+		} else {
+			variableErrorMessageLabel.setText("[Variables] "+errorMessage);
+			variableErrorMessageLabel.setVisible(true);
 		}
 	}
 
@@ -491,19 +487,19 @@ public class ReportComponent extends MessageComponent {
 
 	private void updateVariableLabelAndTextArea() {
 		if (infoPane.edit()) {
-			variableColumn.setVisible(false);
-			variableLabel.setVisible(true);
-			variableTextArea.setVisible(true);
+			variablesColumn.setVisible(false);
+			variablesLabel.setVisible(true);
+			variablesTextArea.setVisible(true);
 		} else {
-			variableColumn.setVisible(true);
-			variableLabel.setVisible(false);
-			variableTextArea.setVisible(false);
+			variablesColumn.setVisible(true);
+			variablesLabel.setVisible(false);
+			variablesTextArea.setVisible(false);
 		}
-		updateMessageColumn(report.getVariableCsv(), variableColumn);
+		updateMessageColumn(report.getVariablesCsv(), variablesColumn);
 		if (infoPane.showLineNumbers()) {
-			addLineNumbers(variableColumn);
+			addLineNumbers(variablesColumn);
 		}
-		variableTextArea.setText(report.getVariableCsv());
+		variablesTextArea.setText(report.getVariablesCsv());
 	}
 
 	@Override

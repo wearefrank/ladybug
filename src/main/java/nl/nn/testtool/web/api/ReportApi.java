@@ -1,5 +1,5 @@
 /*
-   Copyright 2021-2024 WeAreFrank!
+   Copyright 2021-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -54,6 +54,8 @@ import nl.nn.testtool.Report;
 import nl.nn.testtool.TestTool;
 import nl.nn.testtool.echo2.test.TestComponent;
 import nl.nn.testtool.echo2.util.Upload;
+import nl.nn.testtool.extensions.CustomReportAction;
+import nl.nn.testtool.extensions.CustomReportActionResult;
 import nl.nn.testtool.filter.View;
 import nl.nn.testtool.filter.Views;
 import nl.nn.testtool.storage.CrudStorage;
@@ -72,6 +74,7 @@ public class ReportApi extends ApiBase {
 	private @Setter @Inject @Autowired TestTool testTool;
 	private @Setter @Inject @Autowired ReportXmlTransformer reportXmlTransformer;
 	private @Setter @Inject @Autowired Views views;
+	private @Setter @Inject @Autowired CustomReportAction customReportAction;
 
 	/**
 	 * Returns the report details for the given storage and id.
@@ -304,25 +307,12 @@ public class ReportApi extends ApiBase {
 			Report report = getReport(storage, storageId);
 			if (report == null)
 				return Response.status(Response.Status.NOT_FOUND).entity("Could not find report with storageId [" + storageId + "]").build();
-			if (StringUtils.isNotEmpty(map.get("name")))
-				report.setName(map.get("name"));
-
-			if (StringUtils.isNotEmpty(map.get("path")))
-				report.setPath(TestComponent.normalizePath(map.get("path")));
-
-			if (StringUtils.isNotEmpty(map.get("description")))
-				report.setDescription(map.get("description"));
-
-			if (StringUtils.isNotEmpty(map.get("transformation")))
-				report.setTransformation(map.get("transformation"));
-
-			if (StringUtils.isNotEmpty(map.get("stubStrategy")))
-				report.setStubStrategy(map.get("stubStrategy"));
-
-			String variables = map.get("variables");
-			if (variables != null && !variables.equals(report.getVariableCsv())) {
-				report.setVariableCsv(variables);
-			}
+			report.setName(map.get("name"));
+			report.setPath(TestComponent.normalizePath(map.get("path")));
+			report.setDescription(map.get("description"));
+			report.setTransformation(map.get("transformation"));
+			report.setStubStrategy(map.get("stubStrategy"));
+			report.setVariablesCsv(map.get("variables"));
 
 			if (StringUtils.isNotEmpty(map.get("checkpointId"))) {
 				if (StringUtils.isNotEmpty(map.get("stub"))) {
@@ -592,11 +582,11 @@ public class ReportApi extends ApiBase {
 				try {
 					if (originalSet) {
 						Report clone = original.clone();
-						clone.setVariableCsvWithoutException(firstLine + "\n" + nextLine);
+						clone.setVariablesCsv(firstLine + "\n" + nextLine);
 						storage.store(clone);
 					} else {
 						originalSet = true;
-						original.setVariableCsvWithoutException(firstLine + "\n" + nextLine);
+						original.setVariablesCsv(firstLine + "\n" + nextLine);
 						storage.update(original);
 					}
 				} catch (CloneNotSupportedException | StorageException e) {
@@ -637,5 +627,36 @@ public class ReportApi extends ApiBase {
 				.status(Response.Status.OK)
 				.entity(storage.getWarningsAndErrors())
 				.build();
+	}
+
+	@POST
+	@Path("/customreportaction")
+	public Response processCustomReportAction(@QueryParam("storage") String storageName, List<Integer> reportIds) {
+		Storage storage = testTool.getStorage(storageName);
+		List<Report> reports = new ArrayList<>();
+		for (int storageId : reportIds) {
+			try {
+				Report report = getReport(storage, storageId);
+				if (report == null)
+					return Response.status(Response.Status.NOT_FOUND).entity("Could not find report with storage id [" + storageId + "]").build();
+				reports.add(report);
+			} catch (StorageException e) {
+				e.printStackTrace();
+			}
+		}
+		CustomReportActionResult customReportActionResult = customReportAction.handleReports(reports);
+		Map<String, String> response = new HashMap<>();
+		response.put("success", customReportActionResult.getSuccessMessage());
+		response.put("error", customReportActionResult.getErrorMessage());
+		return Response.ok(response).build();
+	}
+
+	@GET
+	@Path("/variables")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response fetchVariables() {
+		Map<String, String> variables = new HashMap<>();
+		variables.put("customReportActionButtonText", customReportAction.getButtonText());
+		return Response.ok(variables).build();
 	}
 }

@@ -237,7 +237,7 @@ public class DatabaseStorage implements Storage {
 								} else if (isTimestamp(column)) {
 									ps.setTimestamp(i, new Timestamp((Long)metadataExtractor.getMetadata(report, column, MetadataExtractor.VALUE_TYPE_OBJECT)));
 								} else {
-									ps.setString(i, (String)metadataExtractor.getMetadata(report, column, MetadataExtractor.VALUE_TYPE_OBJECT));
+									ps.setString(i, (String)metadataExtractor.getMetadata(report, column, MetadataExtractor.VALUE_TYPE_STRING));
 								}
 								i++;
 							}

@@ -79,7 +79,7 @@ public class Checkpoint implements Serializable, Cloneable {
 	// For transient fields see comment above the first transient field in class Report
 	private transient StringWriter messageCapturerWriter;
 	private transient ByteArrayOutputStream messageCapturerOutputStream;
-	private transient Map<String, Pattern> variablePatternMap;
+	private transient Map<String, Pattern> variablesPatternMap;
 	private transient Span span = null;
 
 	public Checkpoint() {
@@ -572,11 +572,11 @@ public class Checkpoint implements Serializable, Cloneable {
 				}
 			}
 			// 2. Parse local variables
-			if(StringUtils.isNotEmpty(report.getVariableCsv())) {
-				Map<String, String> variableMap = report.getVariablesAsMap();
-				Map<String, Pattern> variablePatternMap = getVariablePatternMap(variableMap);
-				for(Entry<String, String> entry : variableMap.entrySet()) {
-					Matcher m = variablePatternMap.get(entry.getKey()).matcher(getMessage());
+			if(report.getVariables() != null) {
+				Map<String, String> variablesMap = report.getVariables();
+				Map<String, Pattern> variablesPatternMap = getVariablePatternMap(variablesMap);
+				for(Entry<String, String> entry : variablesMap.entrySet()) {
+					Matcher m = variablesPatternMap.get(entry.getKey()).matcher(getMessage());
 					while(m.find()) {
 						result = result.replaceAll(Pattern.quote(m.group()), entry.getValue());
 					}
@@ -596,13 +596,13 @@ public class Checkpoint implements Serializable, Cloneable {
 	}
 
 	protected Map<String, Pattern> getVariablePatternMap(Map<String, String> variableMap) {
-		if(variablePatternMap == null) {
-			variablePatternMap = new HashMap<String, Pattern>();
+		if(variablesPatternMap == null) {
+			variablesPatternMap = new HashMap<String, Pattern>();
 			for(Entry<String, String> entry : variableMap.entrySet()) {
-				variablePatternMap.put(entry.getKey(), Pattern.compile("\\$\\{"+entry.getKey()+"\\}"));
+				variablesPatternMap.put(entry.getKey(), Pattern.compile("\\$\\{"+entry.getKey()+"\\}"));
 			}
 		}
-		return variablePatternMap;
+		return variablesPatternMap;
 	}
 
 	public int getIndex() {

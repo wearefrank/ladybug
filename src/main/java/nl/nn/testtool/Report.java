@@ -69,8 +69,7 @@ public class Report implements Serializable {
 	private static final long serialVersionUID = 5;
 	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 	public static final long TIME_NOT_SET_VALUE = Long.MIN_VALUE;
-	// Please note that the set method should return void for XmlEncoder to
-	// store the property (hence the setVariableCsvWithoutException method)
+	// Please note that the set method should return void for XmlEncoder to store the property
 	private @Setter @Getter long startTime;
 	private @Setter @Getter long endTime = TIME_NOT_SET_VALUE;
 	private @Setter @Getter String correlationId;
@@ -83,7 +82,7 @@ public class Report implements Serializable {
 	// serialization / ObjectOutputStream
 	private List<Checkpoint> checkpoints = new ArrayList<Checkpoint>();
 	private @Setter @Getter String transformation;
-	private String variableCsv;
+	private Map<String, String> variables;
 	// Please note that the get and set methods need @Transient annotation for XmlEncoder to not store the property.
 	// This is in contrast to serialization / ObjectOutputStream that is using variables (and doesn't look at get and
 	// set methods) and needs a variable to be declared transient to not store the field.
@@ -896,7 +895,11 @@ public class Report implements Serializable {
 		report.setStubStrategy(stubStrategy);
 		report.setLinkMethod(linkMethod);
 		report.setTransformation(transformation);
-		report.setVariableCsv(variableCsv);
+		if (getVariables() != null) {
+			Map<String, String> variables = new LinkedHashMap<String, String>();
+			variables.putAll(getVariables());
+			report.setVariables(variables);
+		}
 		List<Checkpoint> checkpoints = new ArrayList<Checkpoint>();
 		for (Checkpoint checkpoint : this.checkpoints) {
 			checkpoint = checkpoint.clone();
@@ -1023,44 +1026,31 @@ public class Report implements Serializable {
 		return "(next checkpoints for this report will be ignored without any logging)";
 	}
 
-	public String getVariableCsv() {
-		return variableCsv;
+	public Map<String, String> getVariables() {
+		return variables;
 	}
 
-	// XMLEncoder requires a void setter function.
-	public void setVariableCsv(String variableCsv) {
-		if (StringUtils.isEmpty(variableCsv)) {
-			this.variableCsv = null;
-			return;
-		}
-		String errorMessage = CsvUtil.validateCsv(variableCsv, ";", 2);
-		if (errorMessage != null) {
-			throw new IllegalArgumentException(errorMessage);
-		}
-		this.variableCsv = variableCsv;
-	}
-
-	public String setVariableCsvWithoutException(String variableCsv) {
-		try {
-			setVariableCsv(variableCsv);
-			return null;
-		} catch (IllegalArgumentException e) {
-			return e.getMessage();
-		}
+	public void setVariables(Map<String, String> variables) {
+		this.variables = variables;
 	}
 
 	/**
-	 * Get a map with the column names from the header of the csv as keys and the first line of values from the csv as
-	 * values. The GUI will prevent the user from adding more then one line of values to the csv.
-	 * 
-	 * @return ...
+	 * Fill variables map with the header of the csv as keys and the first line of values from the csv as values. The
+	 * GUI will prevent the user from adding more then one line of values to the csv.
 	 */
-	public Map<String, String> getVariablesAsMap() {
-		if(StringUtils.isEmpty(variableCsv)) {
+	@Transient
+	@JsonIgnore
+	public String setVariablesCsv(String variablesCsv) {
+		if (StringUtils.isEmpty(variablesCsv)) {
+			variables = null;
 			return null;
 		}
-		Map<String, String> variableMap = new LinkedHashMap<String, String>();
-		Scanner scanner = new Scanner(variableCsv);
+		String errorMessage = CsvUtil.validateCsv(variablesCsv, ";", 2);
+		if (errorMessage != null) {
+			return errorMessage;
+		}
+		variables = new LinkedHashMap<String, String>();
+		Scanner scanner = new Scanner(variablesCsv);
 		List<String> lines = new ArrayList<String>();
 		while(scanner.hasNextLine()) {
 			String nextLine = scanner.nextLine();
@@ -1074,9 +1064,28 @@ public class Report implements Serializable {
 		for(String key : columns) {
 			// Read the value from the first line of values
 			String value = lines.get(1).split(";")[columns.indexOf(key)];
-			variableMap.put(key, value);
+			variables.put(key, value);
 		}
-		return variableMap;
+		return null;
+	}
+
+	@Transient
+	@JsonIgnore
+	public String getVariablesCsv() {
+		if (variables == null) {
+			return "";
+		}
+		String csv = "";
+		for (String key : variables.keySet()) {
+			csv = csv + key + ";";
+		}
+		csv = csv.substring(0, csv.length() - 1);
+		csv = csv + "\n";
+		for (String key : variables.keySet()) {
+			csv = csv + variables.get(key) + ";";
+		}
+		csv = csv.substring(0, csv.length() - 1);
+		return csv;
 	}
 }
 

@@ -17,4 +17,12 @@
 		</createTable>
 		<createSequence sequenceName="SEQ_LADYBUGTEST"/><!-- To auto increment STORAGEID on Oracle -->
 	</changeSet>
+
+	<changeSet id="LadybugTest:2" author="Jaco de Groot">
+		<comment>Add column VARIABLES</comment>
+		<addColumn tableName="LADYBUGTEST">
+			<column name="VARIABLES" type="CLOB"/>
+		</addColumn>
+	</changeSet>
+
 </databaseChangeLog>

@@ -34,8 +34,8 @@ public class DatabaseTestStorage extends DatabaseCrudStorage {
 	public List<String> getMetadataNames() {
 		// All fields queried by the frontend through the metadata api need to be present. Typically the following URL
 		// is called by the frontend:
-		// /api/metadata/Test/?metadataNames=storageId&metadataNames=name&metadataNames=path&metadataNames=description
-		return new ArrayList<String>(Arrays.asList("storageId", "path", "name", "description"));
+		// /api/metadata/Test/?metadataNames=storageId&metadataNames=name&metadataNames=path&metadataNames=description&metadataNames=variables
+		return new ArrayList<String>(Arrays.asList("storageId", "path", "name", "description", "variables"));
 	}
 
 }
