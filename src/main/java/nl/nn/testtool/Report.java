@@ -773,20 +773,21 @@ public class Report implements Serializable {
 
 	public Checkpoint getCheckpoint(Checkpoint counterpartCheckpoint, String linkMethod,
 			boolean counterpartCheckpointInProgress) {
-		if (linkMethod.equals(LinkMethodType.PATH_AND_TYPE.toString())) {
+		// linkMethod is null when report has been created with a Ladybug version before link method was introduced
+		if (LinkMethodType.PATH_AND_TYPE.toString().equals(linkMethod)) {
 			Path path = counterpartCheckpoint.getPath(counterpartCheckpointInProgress);
 			Checkpoint checkpoint = getCheckpoint(path);
 			if (checkpoint != null && counterpartCheckpoint.getType() == checkpoint.getType()) {
 				return checkpoint;
 			}
-		} else if (linkMethod.equals(LinkMethodType.CHECKPOINT_NR.toString())) {
+		} else if (LinkMethodType.CHECKPOINT_NR.toString().equals(linkMethod)) {
 			int i = counterpartCheckpoint.getIndex();
 			if (i == -1 && counterpartCheckpointInProgress) {
 				// Checkpoint constructed but not added to list of checkpoints yet
 				i = counterpartCheckpoint.getReport().getCheckpoints().size();
 			}
 			return checkpoints.get(i);
-		} else if (linkMethod.equals(LinkMethodType.NTH_NAME_AND_TYPE.toString())) {
+		} else if (LinkMethodType.NTH_NAME_AND_TYPE.toString().equals(linkMethod)) {
 			int counterpartCount = 0;
 			for (Checkpoint checkpoint : counterpartCheckpoint.getReport().getCheckpoints()) {
 				if (Objects.equals(counterpartCheckpoint.getName(), checkpoint.getName())
