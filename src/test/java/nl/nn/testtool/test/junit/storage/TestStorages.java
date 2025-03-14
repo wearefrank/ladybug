@@ -33,6 +33,7 @@ public class TestStorages extends ReportRelatedTestCase {
     public void testClearStorage() throws Exception {
         createReport();
         createReport();
+        assertEquals(0, testTool.getNumberOfReportsInProgress());
         assertEquals(2, storage.getSize());
         storage.clear();
         assertEquals(0, storage.getSize());
