@@ -17,7 +17,7 @@
     <revision>3.0-SNAPSHOT</revision>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.release>11</maven.compiler.release>
-    <frontend.version>0.1.0-20250313.191950</frontend.version>
+    <frontend.version>0.1.0-20250317.102159</frontend.version>
     <spring.version>6.1.14</spring.version>
     <cxf.version>4.0.6</cxf.version>
     <jackson.version>2.17.1</jackson.version>
