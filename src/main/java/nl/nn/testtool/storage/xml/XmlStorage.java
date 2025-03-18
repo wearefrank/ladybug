@@ -1,5 +1,5 @@
 /*
-   Copyright 2020-2024 WeAreFrank!
+   Copyright 2020-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -114,14 +114,7 @@ public class XmlStorage implements CrudStorage {
 
 	@Override
 	public void store(Report report) throws StorageException {
-		try {
-			// Storage uses the clone to save, because it changes reports name, and it can cause unwanted side-effects
-			// on report names. The clone will not have a storageId.
-			Report copy = report.clone();
-			store(copy, true);
-		} catch (ClassCastException | CloneNotSupportedException e) {
-			throw new StorageException("Could not clone the report for new storage.", e);
-		}
+		store(report, true);
 	}
 
 	/**
