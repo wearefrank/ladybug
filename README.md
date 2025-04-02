@@ -183,7 +183,7 @@ Please do the following to set up your development environment for the front-end
 * Change directory to your checkout of ladybug-frontend.
 * The Node Package Manager (npm) includes another package manager, pnpm. We use that one because it is more stable. Enable it by executing the command `corepack enable`. You should do this in a command prompt that runs with administrator permissions.
 * Use `pnpm -v` to check that you have the right version of pnpm. The version you are using should equal the version that is asked in `package.json`. In `package.json` you have a line like: `"packageManager": "pnpm@x.x.x"`.
-* Run `pnpm install --frozen-lock` to install your dependencies. The flag ensures that you get exactly the same dependencies as the other developers have. If you want to include a new dependency, update `package.json` and do `pnpm install`. File `pnpm-lock.yaml` will be updated, the list of all dependencies including dependencies of other dependencies. Check in `pnpm-lock.yaml` to ensure that other developers will update to the same dependencies as you. If it is not your intention to introduce a new dependency, then do not check-in `pnpm-lock.yaml`!. If you made an error with these installation instructions, you may have unwanted updates of the file.
+* Run `pnpm install --frozen-lockfile` to install your dependencies. The flag ensures that you get exactly the same dependencies as the other developers have. If you want to include a new dependency, update `package.json` and do `pnpm install`. File `pnpm-lock.yaml` will be updated, the list of all dependencies including dependencies of other dependencies. Check in `pnpm-lock.yaml` to ensure that other developers will update to the same dependencies as you. If it is not your intention to introduce a new dependency, then do not check-in `pnpm-lock.yaml`!. If you made an error with these installation instructions, you may have unwanted updates of the file.
 * In case you don't have a direct internet connection you might need to set HTTPS_PROXY, see https://docs.cypress.io/guides/references/proxy-configuration.
 * Run `pnpm prepare` to prepare Git hooks. If you do not do this, you will not be able to commit or push in the ladybug-frontend project.
 
@@ -209,7 +209,7 @@ pnpm ng test
 
 At the time of writing, there are no unit tests but there are end-to-end tests.
 
-End-to-end testing is done using [Cypress](https://www.cypress.io/). Cypress is a dependency configured in `package.json`, so it should have been installed when you did ``pnpm install --frozen-lock``. You have the following options for running the tests:
+End-to-end testing is done using [Cypress](https://www.cypress.io/). Cypress is a dependency configured in `package.json`, so it should have been installed when you did ``pnpm install --frozen-lockfile``. You have the following options for running the tests:
 * `pnpm run e2e`. This runs the end-to-end tests headless and without user interaction.
 * `pnpm run e2e-interactive`. This opens a Window from which you can choose what tests to start. You can select the webbrowser you want to test with.
 
