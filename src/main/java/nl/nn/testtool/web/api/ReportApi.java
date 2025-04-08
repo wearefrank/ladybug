@@ -644,6 +644,11 @@ public class ReportApi extends ApiBase {
 				e.printStackTrace();
 			}
 		}
+		if (customReportAction == null) {
+			Map<String, String> errorResponse = new HashMap<>();
+			errorResponse.put("error", "No custom report action defined.");
+			return Response.status(Response.Status.BAD_REQUEST).entity(errorResponse).build();
+		}
 		CustomReportActionResult customReportActionResult = customReportAction.handleReports(reports);
 		Map<String, String> response = new HashMap<>();
 		response.put("success", customReportActionResult.getSuccessMessage());
@@ -656,7 +661,8 @@ public class ReportApi extends ApiBase {
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response fetchVariables() {
 		Map<String, String> variables = new HashMap<>();
-		variables.put("customReportActionButtonText", customReportAction.getButtonText());
+		String buttonText = (customReportAction != null) ? customReportAction.getButtonText() : null;
+		variables.put("customReportActionButtonText", buttonText);
 		return Response.ok(variables).build();
 	}
 }
