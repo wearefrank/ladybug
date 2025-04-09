@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Scanner;
 
 import org.apache.commons.lang3.StringUtils;
@@ -74,7 +75,7 @@ public class ReportApi extends ApiBase {
 	private @Setter @Inject @Autowired TestTool testTool;
 	private @Setter @Inject @Autowired ReportXmlTransformer reportXmlTransformer;
 	private @Setter @Inject @Autowired Views views;
-	private @Setter @Inject @Autowired CustomReportAction customReportAction;
+	private @Setter @Inject @Autowired Optional<CustomReportAction> customReportAction;
 
 	/**
 	 * Returns the report details for the given storage and id.
@@ -649,7 +650,7 @@ public class ReportApi extends ApiBase {
 			errorResponse.put("error", "No custom report action defined.");
 			return Response.status(Response.Status.BAD_REQUEST).entity(errorResponse).build();
 		}
-		CustomReportActionResult customReportActionResult = customReportAction.handleReports(reports);
+		CustomReportActionResult customReportActionResult = customReportAction.get().handleReports(reports);
 		Map<String, String> response = new HashMap<>();
 		response.put("success", customReportActionResult.getSuccessMessage());
 		response.put("error", customReportActionResult.getErrorMessage());
@@ -661,7 +662,7 @@ public class ReportApi extends ApiBase {
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response fetchVariables() {
 		Map<String, String> variables = new HashMap<>();
-		String buttonText = (customReportAction != null) ? customReportAction.getButtonText() : null;
+		String buttonText = (customReportAction.orElse(null) != null) ? customReportAction.get().getButtonText() : null;
 		variables.put("customReportActionButtonText", buttonText);
 		return Response.ok(variables).build();
 	}
