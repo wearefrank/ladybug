@@ -174,6 +174,12 @@
       <version>5.10.2</version>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>org.awaitility</groupId>
+      <artifactId>awaitility</artifactId>
+      <version>4.3.0</version>
+      <scope>test</scope>
+    </dependency>
     <!-- https://junit.org/junit5/docs/current/user-guide/#migrating-from-junit4 -->
     <dependency>
       <groupId>org.junit.vintage</groupId>

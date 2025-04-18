@@ -2,12 +2,16 @@ package nl.nn.testtool.test.junit.storage;
 
 import nl.nn.testtool.storage.Storage;
 import nl.nn.testtool.test.junit.ReportRelatedTestCase;
+
+import org.awaitility.Awaitility;
+import org.hamcrest.core.IsEqual;
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.invoke.MethodHandles;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -17,6 +21,7 @@ public class TestStorages extends ReportRelatedTestCase {
     private Storage storage;
 
     @Before
+    @Override
     public void setUp() {
         super.setUp();
         storage = testTool.getDebugStorage();
@@ -33,10 +38,20 @@ public class TestStorages extends ReportRelatedTestCase {
     public void testClearStorage() throws Exception {
         createReport();
         createReport();
-        assertEquals(0, testTool.getNumberOfReportsInProgress());
-        assertEquals(2, storage.getSize());
+
+        Awaitility.await()
+            .atMost(1500, TimeUnit.MILLISECONDS)
+            .until(testTool::getNumberOfReportsInProgress, IsEqual.equalTo(0L));
+
+        Awaitility.await()
+            .atMost(1500, TimeUnit.MILLISECONDS)
+            .until(storage::getSize, IsEqual.equalTo(2));
+
         storage.clear();
-        assertEquals(0, storage.getSize());
+
+        Awaitility.await()
+            .atMost(1500, TimeUnit.MILLISECONDS)
+            .until(storage::getSize, IsEqual.equalTo(0));
     }
 
     private void createReport() {
