@@ -1,5 +1,5 @@
 /*
-   Copyright 2020-2024 WeAreFrank!, 2018 Nationale-Nederlanden
+   Copyright 2020-2025 WeAreFrank!, 2018 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -63,7 +63,7 @@ public class Writer {
 	// TODO private maken en via een methode doen?
 	protected int latestStorageId = 1;
 	private long reportsFileLength;
-	private long metadataFileLastModified;
+	private long metadataFileModifiedCounter;
 	private SimpleDateFormat freeSpaceDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");
 	private String lastExceptionMessage;
 
@@ -112,7 +112,7 @@ public class Writer {
 			latestStorageId = id.intValue();
 			latestStorageId++;
 		}
-		metadataFileLastModified = System.currentTimeMillis();
+		metadataFileModifiedCounter = 0;
 		if (freeSpaceMinimum == -1) {
 			freeSpaceMinimum = maximumFileSize * (maximumBackupIndex + 1) * 10;
 		}
@@ -214,8 +214,8 @@ public class Writer {
 		}
 	}
 
-	protected long getMetadataFileLastModified() {
-		return metadataFileLastModified;
+	protected long getMetadataModifiedCounter() {
+		return metadataFileModifiedCounter;
 	}
 
 	protected String getSynchronizeRotate() {
@@ -244,7 +244,7 @@ public class Writer {
 			reportsFileLength = 0;
 
 			latestStorageId = 1;
-			metadataFileLastModified = System.currentTimeMillis();
+			metadataFileModifiedCounter++;
 		}
 	}
 
@@ -305,7 +305,7 @@ public class Writer {
 		} catch(IOException ioException) {
 			Export.logAndThrow(log, ioException, "IOException writing metadata header to file '" + metadataFile.getAbsolutePath() + "'");
 		}
-		metadataFileLastModified = System.currentTimeMillis();
+		metadataFileModifiedCounter++;
 	}
 
 	private void writeReportAndMetadata(byte[] reportBytes, String metadataCsvRecord) throws StorageException {
@@ -323,7 +323,7 @@ public class Writer {
 		} catch(IOException e) {
 			Export.logAndThrow(log, e, "IOException writing metadata to file '" + metadataFile.getAbsolutePath() + "'");
 		}
-		metadataFileLastModified = System.currentTimeMillis();
+		metadataFileModifiedCounter++;
 	}
 
 	private void closeFiles() {

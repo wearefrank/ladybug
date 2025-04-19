@@ -1,5 +1,5 @@
 /*
-   Copyright 2020-2024 WeAreFrank!, 2018-2019 Nationale-Nederlanden
+   Copyright 2020-2025 WeAreFrank!, 2018-2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -48,7 +48,7 @@ public class Reader {
 	private File reportsFile;
 	private File metadataFile;
 	private int maximumBackupIndex;
-	private long metadataFileLastModifiedByWriter = Long.MIN_VALUE;
+	private long metadataFileModifiedCounter = -1;
 	private long metadataFileLastModifiedByOthers = Long.MIN_VALUE;
 	private List metadataCacheReadOnly = new ArrayList();
 	private List metadataCacheReadOnlyPerFile = new ArrayList();
@@ -79,12 +79,12 @@ public class Reader {
 		metadataFile = new File(metadataFilename);
 	}
 
-	protected List getStorageIds(long metadataFileLastModifiedByWriter, String synchronizeRotate)
+	protected List getStorageIds(long metadataFileModifiedCounter, String synchronizeRotate)
 			throws StorageException {
 		List result = new ArrayList();
 		List metadata = getMetadata(-1, METADATA_NAMES_STORAGE_ID, null,
 				MetadataExtractor.VALUE_TYPE_OBJECT,
-				metadataFileLastModifiedByWriter, synchronizeRotate);
+				metadataFileModifiedCounter, synchronizeRotate);
 		Iterator iterator = metadata.iterator();
 		while (iterator.hasNext()) {
 			List record = (List)iterator.next();
@@ -95,18 +95,18 @@ public class Reader {
 
 	protected List getMetadata(int maxNumberOfRecords, List metadataNames,
 			List searchValues, int metadataValueType,
-			long metadataFileLastModifiedByWriter, String synchronizeRotate) throws StorageException {
+			long metadataFileModifiedCounter, String synchronizeRotate) throws StorageException {
 		List metadataReadOnly;
 		synchronized(metadataCacheReadOnly) {
 			synchronized(synchronizeRotate) {
-				// The last modified time of a file isn't updated until the file
-				// output stream is closed (at least with WSAD on Windows XP). As
-				// the writer class doesn't close the file the writer class must
-				// pass this info to this class. In case the metadata file was
-				// edited by hand it should also be detected.
-				if (metadataFileLastModifiedByWriter != this.metadataFileLastModifiedByWriter
+				// Check whether metadata file was changed by the Writer class. In case the metadata file was edited by
+				// hand it should also be detected. The last modified time of a file isn't sufficient to detect changes
+				// as it isn't updated until the file output stream is closed (at least with WSAD on Windows XP) and
+				// files can be changed more than once within a millisecond (testClearStorage() failed from time to time
+				// in CI/CD when metadataFileLastModifiedByWriter was used instead of metadataFileModifiedCounter).
+				if (metadataFileModifiedCounter != this.metadataFileModifiedCounter
 						|| metadataFile.lastModified() != this.metadataFileLastModifiedByOthers) {
-					this.metadataFileLastModifiedByWriter = metadataFileLastModifiedByWriter;
+					this.metadataFileModifiedCounter = metadataFileModifiedCounter;
 					metadataFileLastModifiedByOthers = metadataFile.lastModified();
 					List newMetadataCacheReadOnly = new ArrayList();
 					for (int i = maximumBackupIndex; i >= 0; i--) {

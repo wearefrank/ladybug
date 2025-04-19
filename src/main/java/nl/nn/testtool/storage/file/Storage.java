@@ -1,5 +1,5 @@
 /*
-   Copyright 2020-2022, 2024 WeAreFrank!, 2018 Nationale-Nederlanden
+   Copyright 2020-2022, 2024-2025 WeAreFrank!, 2018 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -122,7 +122,7 @@ public class Storage implements nl.nn.testtool.storage.LogStorage {
 	@PostConstruct
 	public void init() throws StorageException {
 		reader.init();
-		writer.init(reader.getStorageIds(writer.getMetadataFileLastModified(), writer.getSynchronizeRotate()));
+		writer.init(reader.getStorageIds(writer.getMetadataModifiedCounter(), writer.getSynchronizeRotate()));
 	}
 
 	@Override
@@ -143,14 +143,14 @@ public class Storage implements nl.nn.testtool.storage.LogStorage {
 
 	@Override
 	public List getStorageIds() throws StorageException {
-		return reader.getStorageIds(writer.getMetadataFileLastModified(), writer.getSynchronizeRotate());
+		return reader.getStorageIds(writer.getMetadataModifiedCounter(), writer.getSynchronizeRotate());
 	}
 
 	@Override
 	public List getMetadata(int maxNumberOfRecords, List metadataNames,
 			List searchValues, int metadataValueType) throws StorageException {
 		return reader.getMetadata(maxNumberOfRecords, metadataNames, searchValues,
-				metadataValueType, writer.getMetadataFileLastModified(), writer.getSynchronizeRotate());
+				metadataValueType, writer.getMetadataModifiedCounter(), writer.getSynchronizeRotate());
 	}
 
 	@Override

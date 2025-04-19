@@ -129,13 +129,13 @@ public class TestStorage implements nl.nn.testtool.storage.CrudStorage {
 	public void init() throws StorageException {
 		reader[0].init();
 		reader[1].init();
-		writer[0].init(reader[0].getStorageIds(writer[0].getMetadataFileLastModified(),
+		writer[0].init(reader[0].getStorageIds(writer[0].getMetadataModifiedCounter(),
 				writer[0].getSynchronizeRotate()));
-		writer[1].init(reader[1].getStorageIds(writer[1].getMetadataFileLastModified(),
+		writer[1].init(reader[1].getStorageIds(writer[1].getMetadataModifiedCounter(),
 				writer[1].getSynchronizeRotate()));
-		int size0 = reader[0].getStorageIds(writer[0].getMetadataFileLastModified(), writer[0].getSynchronizeRotate())
+		int size0 = reader[0].getStorageIds(writer[0].getMetadataModifiedCounter(), writer[0].getSynchronizeRotate())
 				.size();
-		int size1 = reader[1].getStorageIds(writer[1].getMetadataFileLastModified(), writer[1].getSynchronizeRotate())
+		int size1 = reader[1].getStorageIds(writer[1].getMetadataModifiedCounter(), writer[1].getSynchronizeRotate())
 				.size();
 		if (size1 > size0) {
 			active = 1;
@@ -158,7 +158,7 @@ public class TestStorage implements nl.nn.testtool.storage.CrudStorage {
 
 	@Override
 	public List getStorageIds() throws StorageException {
-		return reader[active].getStorageIds(writer[active].getMetadataFileLastModified(),
+		return reader[active].getStorageIds(writer[active].getMetadataModifiedCounter(),
 				writer[active].getSynchronizeRotate());
 	}
 
@@ -180,7 +180,7 @@ public class TestStorage implements nl.nn.testtool.storage.CrudStorage {
 		} else {
 			destination = 0;
 		}
-		List storageIds = reader[source].getStorageIds(writer[source].getMetadataFileLastModified(),
+		List storageIds = reader[source].getStorageIds(writer[source].getMetadataModifiedCounter(),
 				writer[source].getSynchronizeRotate());
 		Collections.sort(storageIds);
 		Iterator iterator = storageIds.iterator();
@@ -202,7 +202,7 @@ public class TestStorage implements nl.nn.testtool.storage.CrudStorage {
 				List metadata = reader[source].getMetadata(-1,
 						persistentMetadata, searchValues ,
 						MetadataExtractor.VALUE_TYPE_STRING,
-						writer[source].getMetadataFileLastModified(),
+						writer[source].getMetadataModifiedCounter(),
 						writer[source].getSynchronizeRotate());
 				writer[destination].store(report.getName(), reportBytes, (List)metadata.get(0));
 			}
@@ -217,7 +217,7 @@ public class TestStorage implements nl.nn.testtool.storage.CrudStorage {
 	public List getMetadata(int maxNumberOfRecords, List metadataNames,
 			List searchValues, int metadataValueType) throws StorageException {
 		return reader[active].getMetadata(maxNumberOfRecords, metadataNames, searchValues,
-				metadataValueType, writer[active].getMetadataFileLastModified(), writer[active].getSynchronizeRotate());
+				metadataValueType, writer[active].getMetadataModifiedCounter(), writer[active].getSynchronizeRotate());
 	}
 
 	@Override
