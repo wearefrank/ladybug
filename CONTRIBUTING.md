@@ -14,6 +14,10 @@ The next choice has to do with fine-tuning the Frank!Framework. The Frank!Framew
 
 Choosing Spring profiles also applies to running Ladybug without the Frank!Framework using ladybug-test-webapp.
 
+The next choice is the way Ladybug has to save reports. Are reports saved on the local file system or in a database? This can be configured using properties in case the Frank!Framework is being used, see https://frank-manual.readthedocs.io/en/latest/testing/ladybug/storages/storages.html.
+
+If Ladybug is being combined with the Frank!Framework, choosing `dtap.stage` is important. With `dtap.stage=LOC`, no authorization is required to access the Frank!Framework and Ladybug. When you want to test authorization, choose another DTAP stage and configure authorization as explained in the Frank!Manual, see https://frank-manual.readthedocs.io/en/latest/advancedDevelopment/authorization/authorization.html.
+
 Finally, there is the choice whether to build the code locally or to use pre-built artifacts from the Nexus server managed by the maintainers of the Frank!Framework (or the Nexus server Maven Central for official releases of the Frank!Framework). Local builds are typically SNAPSHOT versions while Nexus releases are not. Nightly builds have a timestamp in their version number while official releases are of the form x.y.z without SNAPSHOT and without a timestamp.
 
 Apart from the GitHub projects introduced so far, we have ladybug-ff-cypress-test (https://github.com/wearefrank/ladybug-ff-cypress-test). This project holds Cypress tests that test Ladybug as a part of the Frank!Framework. Project ladybug-frontend, the Angular frontend of Ladybug, has Cypress tests that test Ladybug as a standalone product.
@@ -41,28 +45,32 @@ To let all mentioned projects cooperate, please check them out in a common paren
 Setups without ladybug-ff-test-webapp of Ladybug and/or Frank!Framework require the following steps to run:
 
 1. Ensure that the `pom.xml` files of the projects reference each other. The only exception is a ladybug-frontend instance starting separately with NodeJS. Not relevant if a pre-built Frank!Framework version is used.
-2. Configure the Frank!Runner to properly do the Maven build and to properly start Apache Tomcat. This is explained below.
-3. Run the Maven build of ladybug-frontend separately (is not automated by the Frank!Runner) if applicable.
-4. Start the appropriate `restart.bat` script to build and run the Frank!Framework or ladybug-test-webapp.
-5. If applicable, configure and start the separate ladybug-frontend running with NodeJS.
+2. Configure whether Ladybug should store reports in a database. This depends on properties `jdbc.migrator.active` and `ladybug.jdbc.datasource`, which you cannot set by configuring the Frank!Runner. See https://frank-manual.readthedocs.io/en/latest/testing/ladybug/storages/storages.html.
+3. Configure the Frank!Runner to properly do the Maven build and to properly start Apache Tomcat. This is explained below.
+4. Run the Maven build of ladybug-frontend separately (is not automated by the Frank!Runner) if applicable.
+5. Start the appropriate `restart.bat` script to build and run the Frank!Framework or ladybug-test-webapp.
+6. If applicable, configure and start the separate ladybug-frontend running with NodeJS.
 
 Setups with ladybug-ff-test-webapp should be run as follows:
 
-6. Use steps 1-4 to of the previous list to build the Frank!Framework (if no pre-built version).
-7. Update the `pom.xml` of ladybug-ff-test-webapp to reference the right Frank!Framework version.
-8. Configure the build of ladybug-ff-test-webapp.
-9. Run its `restart.bat` file to start it (delegates to the Frank!Runner to deploy the executable in Apache Tomcat).
+7. Use steps 1-5 to of the previous list to build the Frank!Framework (if no pre-built version).
+8. Update the `pom.xml` of ladybug-ff-test-webapp to reference the right Frank!Framework version.
+9. Configure the build of ladybug-ff-test-webapp.
+10. Run its `restart.bat` file to start it (delegates to the Frank!Runner to deploy the executable in Apache Tomcat).
 
-### Adjusting `pom.xml` (steps 1 and 7)
+### Adjusting `pom.xml` (steps 1 and 8)
 
 Step 1 has been partly automated. See directory `frank-runner/specials/util/syncPomVersions`. This directory holds an ANT script. There are `.sh` and `.bat` scripts to execute the goals of this ANT script. For example, under Linux (or MinGW) you can execute `run.sh` to adjust your checkouts of Ladybug and the Frank!Framework. It causes the `pom.xml` of your Ladybug checkout to reference your checkout of ladybug-frontend. It also adjusts `frankframework/ladybug/pom.xml` so that your checkout of the Frank!Framework references your checkout of ladybug. By choosing the right script, you can choose which of the `pom.xml` files are adjusted and which ones are left alone.
 
-### Configuring the Frank!Runner (steps 2 and 8)
+### Configuring the Frank!Runner (steps 3 and 9)
 
 To start a pre-existing build of the Frank!Framework (available as local Maven artifact or on a Nexus server), use the ANT script in the root directory of the Frank!Runner. That script loads properties from a file `build.properties` that should be placed in the root directory of the Frank!Runner. You can configure `projects.dir` and `project.dir` to reference to your Frank application. See the Frank!Runner README for details: https://github.com/wearefrank/frank-runner/blob/master/README.md. If you want to run the Frank!Framework or ladybug-test-webapp on a different port, set `tomcat.connector.port`.
 
 > [!WARNING]
-> Properties `projects.dir` and `project.dir` only apply if you are running the plain Frank!Framework. Do not use if you run ladybug-test-webapp or ladybug-ff-test-webapp. In contrast, property `tomcat.connector.port` can be applied in every test setup.
+> Properties `projects.dir` and `project.dir` only apply if you are running the plain Frank!Framework. Do not use if you run ladybug-test-webapp or ladybug-ff-test-webapp. In contrast, property `tomcat.connector.port` and `dtap.stage` can be applied in every test setup.
+
+> [!NOTE]
+> If you set `dtap.stage` to a value different from `LOC` then you have to configure authorization. For example, ladybug-ff-cypress-test configures YAML authorization. The test adds file `localUsers.yml` to the Frank application to list the available users, their passwords and their roles. See https://frank-manual.readthedocs.io/en/latest/advancedDevelopment/authorization/authorizationMethodsAndRoles.html.
 
 To build Ladybug and the Frank!Framework locally, you have to work with folders `frank-runner/specials/ladybug` and `frank-runner/specials/iaf-webapp`. Both of these directories contain ANT scripts that can be executed on the command line by `.bat` and `.sh` scripts. `frank-runner/specials/ladybug` runs the Maven build of the Ladybug checkout and applies options you provide in a file `build.properties`, see below. Then it delegates to `frank-runner/specials/iaf-webapp` in case the Frank!Framework participates in your test.
 
@@ -70,9 +78,9 @@ The ANT script of `frank-runner/specials/iaf-webapp` runs the Maven build of the
 
 Both ANT scripts can be configured by `build.properties` files that you put in `frank-runner/specials/ladybug` and `frank-runner/specials/iaf-webapp`. Examples of these `build.properties` files are provided in `build-example.properties` files. These files provide clear documentation of the properties you can configure and their meaning. Please copy each `build-example.properties` to the corresponding `build.properties` and use the comments to finish these files.
 
-For `frank-runner/specials/iaf-webapp`, there is an important option that is not yet documented in `build-example.properties`. If you put `skip.start=true`, the ANT script does not delegate to the root directory of the Frank!Runner and hence only the Maven artifact of the local checkout of the Frank!Framework is built. This is very useful if you want to run ladybug-ff-test-webapp. Project ladybug-ff-test-webapp has its own `build-example.properties` that you should copy to `build.properties` and it has `restart.sh` and `restart.bat` scripts to start it.
+For `frank-runner/specials/iaf-webapp`, there is an important option that requires attention here. If you put `skip.start=true` in `build.properties`, the ANT script does not delegate to the root directory of the Frank!Runner and hence only the Maven artifact of the local checkout of the Frank!Framework is built. This is very useful if you want to run ladybug-ff-test-webapp. Project ladybug-ff-test-webapp has its own `build-example.properties` that you should copy to `build.properties` and it has `restart.sh` and `restart.bat` scripts to start it.
 
-### Starting ladybug-frontend with NodeJS (step 5)
+### Starting ladybug-frontend with NodeJS (step 6)
 
 You are referred to the build scripts in `package.json`. They show the various options to start ladybug-frontend and/or its Cypress tests.
 
@@ -93,7 +101,7 @@ There are Cypress tests that can be executed on development computers and on Git
 * The Cypress tests of ladybug-frontend. These test Ladybug as a stand-alone project.
 * The tests in project ladybug-ff-cypress-test. These test Ladybug as part of the Frank!Framework.
 
-To run these tests locally, please start the desired backend as explained before and use a script in `package.json` to run the tests. Note that step 5 in the instructions of starting Ladybug merges with starting Cypress. There are build scripts in `package.json` that both start ladybug-frontend with NodeJS *and* start Cypress.
+To run these tests locally, please start the desired backend as explained before and use a script in `package.json` to run the tests. Note that step 6 in the instructions of starting Ladybug merges with starting Cypress. There are build scripts in `package.json` that both start ladybug-frontend with NodeJS *and* start Cypress.
 
 In GitHub Actions, tests ladybug-frontend and ladybug-ff-cypress-test have in their YAML descriptions an `on` object and inside of that a `workflow_dispatch` object. This allows these tests to be triggered from the console of GitHub Actions. For both of these tests, input arguments can be provided to choose how the test is run. Please see the descriptions for these inputs to understand their meaning.
 
