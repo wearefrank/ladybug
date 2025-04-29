@@ -396,27 +396,6 @@
         </configuration>
       </plugin>
       <plugin>
-        <groupId>org.commonjava.maven.plugins</groupId>
-        <artifactId>directory-maven-plugin</artifactId>
-        <version>1.0</version>
-        <executions>
-          <execution>
-            <id>find-project-root-directory</id>
-            <goals>
-              <goal>directory-of</goal>
-            </goals>
-            <phase>initialize</phase>
-            <configuration>
-              <property>ibis.ladybug.rootdir</property>
-              <project>
-                <groupId>org.ibissource</groupId>
-                <artifactId>ibis-ladybug</artifactId>
-              </project>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-site-plugin</artifactId>
         <version>3.12.1</version>
@@ -442,19 +421,6 @@
                     <goals>
                       <goal>check</goal>
                       <goal>copyright</goal>
-                    </goals>
-                  </pluginExecutionFilter>
-                  <action>
-                    <ignore />
-                  </action>
-                </pluginExecution>
-                <pluginExecution>
-                  <pluginExecutionFilter>
-                    <groupId>org.commonjava.maven.plugins</groupId>
-                    <artifactId>directory-maven-plugin</artifactId>
-                    <versionRange>[1.0,)</versionRange>
-                    <goals>
-                      <goal>directory-of</goal>
                     </goals>
                   </pluginExecutionFilter>
                   <action>
@@ -537,9 +503,9 @@
               </execution>
             </executions>
             <configuration>
-              <excludeFile>${ibis.ladybug.rootdir}${file.separator}copyrightExcludeFile.txt</excludeFile>
+              <excludeFile>copyrightExcludeFile.txt</excludeFile>
               <useDash>true</useDash>
-              <templateFile>${ibis.ladybug.rootdir}/copyrightTemplateFile.txt</templateFile>
+              <templateFile>copyrightTemplateFile.txt</templateFile>
             </configuration>
           </plugin>
         </plugins>
