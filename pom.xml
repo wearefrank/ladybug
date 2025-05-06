@@ -21,7 +21,7 @@
     <maven.compiler.target>11</maven.compiler.target>
     <maven.compiler.source>11</maven.compiler.source>
 
-    <frontend.version>0.1.0-20250428.135405</frontend.version>
+    <frontend.version>0.1.0-20250506.115755</frontend.version>
 
     <spring.version>6.1.14</spring.version>
     <cxf.version>4.0.6</cxf.version>
