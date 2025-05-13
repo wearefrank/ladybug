@@ -21,6 +21,7 @@ import java.lang.invoke.MethodHandles;
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.sql.Timestamp;
 import java.sql.Types;
 import java.util.ArrayList;
@@ -38,6 +39,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementSetter;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -223,32 +226,32 @@ public class DatabaseStorage implements Storage {
 		}
 		query.append(")");
 		log.debug("Store report query: " + query.toString());
-		ladybugJdbcTemplate.update(query.toString(),
-				new PreparedStatementSetter() {
-					@Override
-					public void setValues(PreparedStatement ps) throws SQLException {
-						int i = 1;
-						for (String column : getMetadataNames()) {
-							if (!column.equals(getStorageIdColumn())) {
-								if (isInteger(column)) {
-									ps.setInt(i, (Integer)metadataExtractor.getMetadata(report, column, MetadataExtractor.VALUE_TYPE_OBJECT));
-								} else if (isLong(column)) {
-									ps.setLong(i, (Long)metadataExtractor.getMetadata(report, column, MetadataExtractor.VALUE_TYPE_OBJECT));
-								} else if (isTimestamp(column)) {
-									ps.setTimestamp(i, new Timestamp((Long)metadataExtractor.getMetadata(report, column, MetadataExtractor.VALUE_TYPE_OBJECT)));
-								} else {
-									ps.setString(i, (String)metadataExtractor.getMetadata(report, column, MetadataExtractor.VALUE_TYPE_STRING));
-								}
-								i++;
-							}
-						}
-						ps.setBytes(i, reportBytes);
-						i++;
-						if (isStoreReportXml()) {
-							ps.setClob(i, new StringReader(reportXml));
-						}
+		KeyHolder keyHolder = new GeneratedKeyHolder();
+		ladybugJdbcTemplate.update(connection -> {
+			PreparedStatement ps = connection.prepareStatement(query.toString(), Statement.RETURN_GENERATED_KEYS);
+			int i = 1;
+			for (String column : getMetadataNames()) {
+				if (!column.equals(getStorageIdColumn())) {
+					if (isInteger(column)) {
+						ps.setInt(i, (Integer)metadataExtractor.getMetadata(report, column, MetadataExtractor.VALUE_TYPE_OBJECT));
+					} else if (isLong(column)) {
+						ps.setLong(i, (Long)metadataExtractor.getMetadata(report, column, MetadataExtractor.VALUE_TYPE_OBJECT));
+					} else if (isTimestamp(column)) {
+						ps.setTimestamp(i, new Timestamp((Long)metadataExtractor.getMetadata(report, column, MetadataExtractor.VALUE_TYPE_OBJECT)));
+					} else {
+						ps.setString(i, (String)metadataExtractor.getMetadata(report, column, MetadataExtractor.VALUE_TYPE_STRING));
 					}
-				});
+					i++;
+				}
+			}
+			ps.setBytes(i, reportBytes);
+			i++;
+			if (isStoreReportXml()) {
+				ps.setClob(i, new StringReader(reportXml));
+			}
+			return ps;
+		}, keyHolder);
+		report.setStorageId(keyHolder.getKey().intValue());
 		if (getMaxStorageSize() > -1) {
 			String averageQuery = "select avg(storageSize) from " + getTable();
 			int averageStorageSize = ladybugJdbcTemplate.queryForObject(averageQuery, Integer.class);
