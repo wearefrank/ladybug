@@ -551,7 +551,7 @@ public class ReportApi extends ApiBase {
 	@Path("/move/{storageName}/{storageId}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response cloneReport(@QueryParam("storageId") int storageId, @QueryParam("storageName") String storageName, Map<String, String> map) {
+	public Response cloneReport(@PathParam("storageId") int storageId, @PathParam("storageName") String storageName, Map<String, String> map) {
 		CrudStorage storage = (CrudStorage) testTool.getStorage(storageName);
 		Report original;
 		try {
