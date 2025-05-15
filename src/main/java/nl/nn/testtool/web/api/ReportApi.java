@@ -542,8 +542,8 @@ public class ReportApi extends ApiBase {
 	/**
 	 * Cloning the reports with the given parameters.
 	 *
-	 * @param storageId Storage id of the report to be cloned.
-	 * @param storageName Name of the target storage.
+	 * @param storageName Storage id of the report to be cloned.
+	 * @param storageId Name of the target storage.
 	 * @param map Map containing csv for cloning.
 	 * @return The response of cloning the report.
 	 */
@@ -551,7 +551,7 @@ public class ReportApi extends ApiBase {
 	@Path("/move/{storageName}/{storageId}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response cloneReport(@PathParam("storageId") int storageId, @PathParam("storageName") String storageName, Map<String, String> map) {
+	public Response cloneReport(@PathParam("storageName") String storageName, @PathParam("storageId") int storageId, Map<String, String> map) {
 		CrudStorage storage = (CrudStorage) testTool.getStorage(storageName);
 		Report original;
 		try {
