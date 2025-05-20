@@ -226,7 +226,7 @@ public class MetadataExtractor {
 			return Long.valueOf(report.getEndTime() - report.getStartTime());
 		}
 		if (metadataName.equals("variables")) {
-			return report.getVariablesJson();
+			return report.getVariables();
 		}
 		for (MetadataFieldExtractor metadataFieldExtractor : metadataFieldExtractors) {
 			if (metadataFieldExtractor.getName().equals(metadataName)) {

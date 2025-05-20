@@ -37,8 +37,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanBuilder;
@@ -1089,21 +1087,6 @@ public class Report implements Serializable {
 		}
 		csv = csv.substring(0, csv.length() - 1);
 		return csv;
-	}
-
-	@Transient
-	@JsonIgnore
-	public String getVariablesJson() {
-		if (variables == null) {
-			return "{}";
-		}
-		ObjectMapper mapper = new ObjectMapper();
-		try {
-			return mapper.writeValueAsString(variables);
-		} catch (JsonProcessingException e) {
-			log.debug("Could not serialize variables to json: " + e.getMessage());
-		}
-		return "{}";
 	}
 }
 
