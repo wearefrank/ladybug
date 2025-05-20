@@ -35,6 +35,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import jakarta.inject.Inject;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
@@ -313,7 +317,14 @@ public class ReportApi extends ApiBase {
 			report.setDescription(map.get("description"));
 			report.setTransformation(map.get("transformation"));
 			report.setStubStrategy(map.get("stubStrategy"));
-			report.setVariablesCsv(map.get("variables"));
+
+			String variablesJson = map.get("variables");
+			Map<String, String> variablesMap = new HashMap<>();
+			if (variablesJson != null && !variablesJson.isEmpty()) {
+				ObjectMapper mapper = new ObjectMapper();
+				variablesMap = mapper.readValue(variablesJson, new TypeReference<Map<String, String>>() { });
+			}
+			report.setVariables(variablesMap);
 
 			if (StringUtils.isNotEmpty(map.get("checkpointId"))) {
 				if (StringUtils.isNotEmpty(map.get("stub"))) {
@@ -339,7 +350,7 @@ public class ReportApi extends ApiBase {
 			result.put("storageUpdated", storageUpdated);
 			result.put("report", report);
 			return Response.ok(result).build();
-		} catch (StorageException e) {
+		} catch (StorageException | JsonProcessingException e) {
 			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Could not apply transformation to report with storageId [" + storageId + "] - detailed error message - " + e + Arrays.toString(e.getStackTrace())).build();
 		}
 	}
