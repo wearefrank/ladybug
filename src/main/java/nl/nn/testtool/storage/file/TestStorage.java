@@ -157,7 +157,7 @@ public class TestStorage implements nl.nn.testtool.storage.CrudStorage {
 	}
 
 	@Override
-	public List getStorageIds() throws StorageException {
+	public List<Integer> getStorageIds() throws StorageException {
 		return reader[active].getStorageIds(writer[active].getMetadataModifiedCounter(),
 				writer[active].getSynchronizeRotate());
 	}

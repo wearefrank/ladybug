@@ -1,5 +1,5 @@
 /*
-   Copyright 2020-2024 WeAreFrank!, 2018 Nationale-Nederlanden
+   Copyright 2020-2025 WeAreFrank!, 2018 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -23,8 +23,9 @@ import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
-import jakarta.annotation.PostConstruct;
 import jakarta.inject.Inject;
+import lombok.Getter;
+import lombok.Setter;
 import nl.nn.testtool.MetadataExtractor;
 import nl.nn.testtool.Report;
 import nl.nn.testtool.storage.Storage;
@@ -35,51 +36,45 @@ import nl.nn.testtool.util.SearchUtil;
  * @author Jaco de Groot
  */
 public class MemoryStorage implements Storage {
-	protected String name;
+	protected @Setter @Getter String name;
 	protected Map<Integer, Report> reports;
 	protected List<Integer> storageIds;
 	protected Map<Integer, Map<Integer, Map<String, Object>>> metadata;
-	private int initialStorageId = 0;
-	protected int storageId;
-	protected @Inject @Autowired MetadataExtractor metadataExtractor;
-	
+	protected @Setter @Getter Integer initialStorageId = 0;
+	protected @Setter @Inject @Autowired MetadataExtractor metadataExtractor;
+
 	public MemoryStorage() {
+		// Initialize variables in the constructor for places where MemoryStorage is used without being initialized by
+		// Spring or Quarkus. Use a separate reset() method as a convenient way for child classes to reset the variables.
+		this.reset();
+	}
+
+	protected void reset() {
 		reports = new HashMap<Integer, Report>();
 		storageIds = new ArrayList<Integer>();
 		metadata = new HashMap<Integer, Map<Integer, Map<String, Object>>>();
 	}
 
-	/**
-	 * Allows test code to use large storage ids, distinguishing storage ids from values with another meaning
-	 */
-	@PostConstruct
-	private void setInitialStorageId() {
-		storageId = initialStorageId;
-	}
-
-	public void setInitialStorageId(int value) {
-		this.initialStorageId = value;
-	}
-
-	@Override
-	public void setName(String name) {
-		this.name = name;
-	}
-
-	@Override
-	public String getName() {
-		return name;
-	}
-
-	public void setMetadataExtractor(MetadataExtractor metadataExtractor) {
-		this.metadataExtractor = metadataExtractor;
-	}
-
-	public synchronized void store(Report report) {
+	public synchronized void store(Report report) throws StorageException {
 		report.setStorage(this);
-		report.setStorageId(storageId++);
+		report.setStorageId(getNewStorageId());
 		reports.put(report.getStorageId(), report);
 		storageIds.add(report.getStorageId());
+	}
+
+	@Override
+	public synchronized Report getReport(Integer storageId) throws StorageException {
+		Report report = reports.get(storageId);
+		if (report != null) {
+			try {
+				report = report.clone();
+				report.setStorageId(storageId);
+				report.setStorage(this);
+			} catch (CloneNotSupportedException e) {
+				throw new StorageException("Could not clone report", e);
+			}
+		}
+		return report;
 	}
 
 	@Override
@@ -93,9 +88,9 @@ public class MemoryStorage implements Storage {
 	}
 
 	@Override
-	public synchronized List getMetadata(int maxNumberOfRecords, List metadataNames,
-			List searchValues, int metadataValueType) throws StorageException {
-		List<Object> result = new ArrayList<Object>();
+	public synchronized List<List<Object>> getMetadata(int maxNumberOfRecords, List<String> metadataNames,
+			List<String> searchValues, int metadataValueType) throws StorageException {
+		List<List<Object>> result = new ArrayList<List<Object>>();
 		for (int i = 0; i < storageIds.size() && (maxNumberOfRecords == -1 || i < maxNumberOfRecords); i++) {
 			Map<Integer, Map<String, Object>> metadataRecordPerType = metadata.get(storageIds.get(i));
 			if (metadataRecordPerType == null) {
@@ -114,8 +109,7 @@ public class MemoryStorage implements Storage {
 				Object metadataValue;
 				if (!metadataRecord.keySet().contains(metadataName)) {
 					Report report = getReport((Integer)storageIds.get(i));
-					metadataValue = metadataExtractor.getMetadata(report,
-							metadataName, metadataValueType);
+					metadataValue = metadataExtractor.getMetadata(report, metadataName, metadataValueType);
 					metadataRecord.put(metadataName, metadataValue);
 				} else {
 					metadataValue = metadataRecord.get(metadataName);
@@ -127,21 +121,6 @@ public class MemoryStorage implements Storage {
 			}
 		}
 		return result;
-	}
-
-	@Override
-	public synchronized Report getReport(Integer storageId) throws StorageException {
-		Report report = (Report)reports.get(storageId);
-		if (report != null) {
-			try {
-				report = report.clone();
-				report.setStorageId(storageId);
-				report.setStorage(this);
-			} catch (CloneNotSupportedException e) {
-				throw new StorageException("Could not clone report", e);
-			}
-		}
-		return report;
 	}
 
 	@Override
@@ -168,6 +147,17 @@ public class MemoryStorage implements Storage {
 	@Override
 	public String getUserHelp(String column) {
 		return SearchUtil.getUserHelp();
+	}
+
+	protected int getNewStorageId() throws StorageException {
+		int newStorageId = getInitialStorageId();
+		for (Integer storageId : getStorageIds()) {
+			if (storageId > newStorageId) {
+				newStorageId = storageId;
+			}
+		}
+		newStorageId++;
+		return newStorageId;
 	}
 
 }

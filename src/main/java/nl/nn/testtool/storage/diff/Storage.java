@@ -1,5 +1,5 @@
 /*
-   Copyright 2020, 2022-2024 WeAreFrank!, 2018 Nationale-Nederlanden
+   Copyright 2020, 2022-2025 WeAreFrank!, 2018 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -43,7 +43,7 @@ public class Storage extends MemoryCrudStorage {
 		readReports();
 	}
 
-	public synchronized void store(Report report) {
+	public synchronized void store(Report report) throws StorageException {
 		super.store(report);
 		writeReports();
 	}
@@ -58,7 +58,7 @@ public class Storage extends MemoryCrudStorage {
 		writeReports();
 	}
 
-	private void readReports() {
+	private void readReports() throws StorageException {
 		File directory = new File(reportsDirectory);
 		File[] files = directory.listFiles(
 			new FilenameFilter() {
@@ -85,7 +85,7 @@ public class Storage extends MemoryCrudStorage {
 			// TODO checken op errorMessage?
 			Report report = (Report)reportsList.get(0);
 			report.setStorage(this);
-			report.setStorageId(storageId++);
+			report.setStorageId(getNewStorageId());
 			storageIds.add(report.getStorageId());
 			reports.put(report.getStorageId(), report);
 		}

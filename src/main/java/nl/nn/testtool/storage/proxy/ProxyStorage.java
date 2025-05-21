@@ -1,5 +1,5 @@
 /*
-   Copyright 2022-2024 WeAreFrank!
+   Copyright 2022-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -85,7 +85,7 @@ public class ProxyStorage implements CrudStorage, LogStorage {
 	}
 
 	@Override
-	public synchronized List getStorageIds() throws StorageException {
+	public synchronized List<Integer> getStorageIds() throws StorageException {
 		return destination.getStorageIds();
 	}
 

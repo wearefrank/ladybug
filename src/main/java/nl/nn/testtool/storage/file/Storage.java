@@ -142,7 +142,7 @@ public class Storage implements nl.nn.testtool.storage.LogStorage {
 	}
 
 	@Override
-	public List getStorageIds() throws StorageException {
+	public List<Integer> getStorageIds() throws StorageException {
 		return reader.getStorageIds(writer.getMetadataModifiedCounter(), writer.getSynchronizeRotate());
 	}
 

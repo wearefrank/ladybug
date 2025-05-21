@@ -79,22 +79,20 @@ public class Reader {
 		metadataFile = new File(metadataFilename);
 	}
 
-	protected List getStorageIds(long metadataFileModifiedCounter, String synchronizeRotate)
+	protected List<Integer> getStorageIds(long metadataFileModifiedCounter, String synchronizeRotate)
 			throws StorageException {
-		List result = new ArrayList();
+		List<Integer> result = new ArrayList<Integer>();
 		List metadata = getMetadata(-1, METADATA_NAMES_STORAGE_ID, null,
 				MetadataExtractor.VALUE_TYPE_OBJECT,
 				metadataFileModifiedCounter, synchronizeRotate);
 		Iterator iterator = metadata.iterator();
 		while (iterator.hasNext()) {
 			List record = (List)iterator.next();
-			result.add(record.get(0));
+			result.add((Integer)record.get(0));
 		}
 		return result;
 	}
-
-	protected List getMetadata(int maxNumberOfRecords, List metadataNames,
-			List searchValues, int metadataValueType,
+	protected List getMetadata(int maxNumberOfRecords, List metadataNames, List searchValues, int metadataValueType,
 			long metadataFileModifiedCounter, String synchronizeRotate) throws StorageException {
 		List metadataReadOnly;
 		synchronized(metadataCacheReadOnly) {

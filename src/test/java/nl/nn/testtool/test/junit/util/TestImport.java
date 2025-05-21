@@ -1,5 +1,5 @@
 /*
-   Copyright 2021, 2024 WeAreFrank!
+   Copyright 2021, 2024-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,9 +20,12 @@ import static org.junit.Assert.assertNull;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.lang.invoke.MethodHandles;
 import java.util.zip.GZIPOutputStream;
 
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import nl.nn.testtool.Report;
 import nl.nn.testtool.storage.StorageException;
@@ -35,6 +38,7 @@ import nl.nn.testtool.util.ImportResult;
  * @author Jaco de Groot
  */
 public class TestImport {
+	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
 	@Test
 	public void testImport() throws StorageException, IOException {
@@ -53,7 +57,7 @@ public class TestImport {
 		gzipOutputStream.close();
 		ByteArrayInputStream inputStream = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
 		MemoryCrudStorage storage = new MemoryCrudStorage();
-		ImportResult result = Import.importTtr(inputStream, storage, null);
+		ImportResult result = Import.importTtr(inputStream, storage, log);
 		assertNull(result.getErrorMessage());
 		Report report = storage.getReport(result.getNewStorageId());
 		ReportRelatedTestCase.assertReport(report, resourcePath, testCaseName + "Import");

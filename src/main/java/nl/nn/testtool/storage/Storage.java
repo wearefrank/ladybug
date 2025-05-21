@@ -1,5 +1,5 @@
 /*
-   Copyright 2020-2022, 2024 WeAreFrank!, 2018 Nationale-Nederlanden
+   Copyright 2020-2022, 2024-2025 WeAreFrank!, 2018 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -24,16 +24,27 @@ import nl.nn.testtool.util.SearchUtil;
  * @author Jaco de Groot
  */
 public interface Storage {
-    public static final int FILTER_RESET = 0;
-    public static final int FILTER_SELECT = 1;
+	public static final int FILTER_RESET = 0;
+	public static final int FILTER_SELECT = 1;
 
 	public void setName(String name);
 
 	public String getName();
 
+	/**
+	 * Get a report with the specified id. Returns null when the report could not be found. The report returned should
+	 * always be a new object so different calls for the same storageId will not get a reference to the same object and
+	 * interfere with each other when they change the returned report. 
+	 * 
+	 * @param storageId ...
+	 * @throws StorageException ...
+	 * @return ...
+	 */
+	public Report getReport(Integer storageId) throws StorageException;
+
 	public int getSize() throws StorageException;
 
-	public List getStorageIds() throws StorageException;
+	public List<Integer> getStorageIds() throws StorageException;
 
 	/**
 	 * Get a list of metadata records. A metadata record is also a list and
@@ -48,17 +59,6 @@ public interface Storage {
 	 */
 	public List<List<Object>> getMetadata(int maxNumberOfRecords, List<String> metadataNames,
 			List<String> searchValues, int metadataValueType) throws StorageException;
-
-	/**
-	 * Get a report with the specified id. Returns null when the report could not be found. The report returned should
-	 * always be a new object so different calls for the same storageId will not get a reference to the same object and
-	 * interfere with each other when they change the returned report. 
-	 * 
-	 * @param storageId ...
-	 * @throws StorageException ...
-	 * @return ...
-	 */
-	public Report getReport(Integer storageId) throws StorageException;
 
 	public void clear() throws StorageException;
 
