@@ -313,7 +313,9 @@ public class ReportApi extends ApiBase {
 			if (report == null)
 				return Response.status(Response.Status.NOT_FOUND).entity("Could not find report with storageId [" + storageId + "]").build();
 			report.setName(map.get("name"));
-			report.setPath(TestComponent.normalizePath(map.get("path")));
+			if (map.get("path") != null) {
+				report.setPath(TestComponent.normalizePath(map.get("path")));
+			}
 			report.setDescription(map.get("description"));
 			report.setTransformation(map.get("transformation"));
 			report.setStubStrategy(map.get("stubStrategy"));
