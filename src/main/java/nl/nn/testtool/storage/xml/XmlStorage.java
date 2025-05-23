@@ -76,9 +76,9 @@ public class XmlStorage extends MemoryCrudStorage {
 		if (reportsFolder == null) {
 			throw new StorageException("Reports folder not set");
 		}
-		if (!new File(reportsFolder).isDirectory()) {
-			throw new StorageException("Report folder is not a directory: " + reportsFolder);
-		}
+		// Not checking whether reports folder exists. Store method will try to create it when it doesn't exist. In case
+		// of Frank!Framework in DTAP environment it will point to ${log.dir}/testtool which will then only be created
+		// when necessary.
 	}
 
 	@Override
@@ -196,32 +196,34 @@ public class XmlStorage extends MemoryCrudStorage {
 
 	private static void readReports(File dir, Map<Integer, Report> reports, List<Integer> storageIds,
 			List<Long> lastModifieds, Storage storage) {
-		for (File file : dir.listFiles()) {
-			if (file.isDirectory()) {
-				readReports(file, reports, storageIds, lastModifieds, storage);
-			}
-			if (file.isFile() && file.getName().endsWith(XmlStorage.FILE_EXTENSION)) {
-				if (lastModifieds != null) {
-					lastModifieds.add(file.lastModified());
+		if (dir.isDirectory()) {
+			for (File file : dir.listFiles()) {
+				if (file.isDirectory()) {
+					readReports(file, reports, storageIds, lastModifieds, storage);
 				}
-				if (reports != null) {
-					try {
-						Report report = readReportFromFile(file, storage);
-						if (report.getStorageId() == null) {
-							// Can be null for human editable report xml file, prevent npe's in code using getStorageId()
-							int newStorageId = 0;
-							for (Integer storageId : storageIds) {
-								if (storageId < newStorageId) {
-									newStorageId = storageId;
+				if (file.isFile() && file.getName().endsWith(XmlStorage.FILE_EXTENSION)) {
+					if (lastModifieds != null) {
+						lastModifieds.add(file.lastModified());
+					}
+					if (reports != null) {
+						try {
+							Report report = readReportFromFile(file, storage);
+							if (report.getStorageId() == null) {
+								// Can be null for human editable report xml file, prevent npe's in code using getStorageId()
+								int newStorageId = 0;
+								for (Integer storageId : storageIds) {
+									if (storageId < newStorageId) {
+										newStorageId = storageId;
+									}
 								}
+								newStorageId--;
+								report.setStorageId(newStorageId);
 							}
-							newStorageId--;
-							report.setStorageId(newStorageId);
+							reports.put(report.getStorageId(), report);
+							storageIds.add(report.getStorageId());
+						} catch (StorageException exception) {
+							log.warn("Exception while reading report [" + file.getPath() + "] during build from directory.");
 						}
-						reports.put(report.getStorageId(), report);
-						storageIds.add(report.getStorageId());
-					} catch (StorageException exception) {
-						log.warn("Exception while reading report [" + file.getPath() + "] during build from directory.");
 					}
 				}
 			}
