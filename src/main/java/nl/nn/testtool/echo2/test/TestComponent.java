@@ -988,6 +988,9 @@ public class TestComponent extends BaseComponent implements BeanParent, ActionLi
 	}
 
 	public static String normalizePath(String path) {
+		if (path == null) {
+			return null;
+		}
 		for (int i = 0; i < path.length(); i++) {
 			// Be on the safe side for now
 			if (!Character.isLetterOrDigit(path.charAt(i)) && "/ -_.()".indexOf(path.charAt(i)) == -1) {
