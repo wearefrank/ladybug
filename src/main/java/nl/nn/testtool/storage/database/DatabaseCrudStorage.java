@@ -1,5 +1,5 @@
 /*
-   Copyright 2024 WeAreFrank!
+   Copyright 2024-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,14 +15,28 @@
 */
 package nl.nn.testtool.storage.database;
 
+
+import java.io.StringReader;
+import java.lang.invoke.MethodHandles;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.jdbc.core.PreparedStatementSetter;
+
+import nl.nn.testtool.MetadataExtractor;
 import nl.nn.testtool.Report;
 import nl.nn.testtool.storage.CrudStorage;
 import nl.nn.testtool.storage.StorageException;
+import nl.nn.testtool.util.Export;
 
 /**
  * Special use case database storage that can be used as debug storage IS DT ZO? MOET HIJ DAN NIET OOK LOG STOAGE IMPLEMENTEREN? 
  */
 public class DatabaseCrudStorage extends DatabaseStorage implements CrudStorage {
+	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
 	@Override
 	public long getMaxStorageSize() {
@@ -31,8 +45,60 @@ public class DatabaseCrudStorage extends DatabaseStorage implements CrudStorage 
 
 	@Override
 	public void update(Report report) throws StorageException {
-		delete(report.getStorageId());
-		store(report);
+		byte[] reportBytes = Export.getReportBytes(report);
+		String reportXml = report.toXml();
+		long storageSize = reportBytes.length;
+		if (isStoreReportXml()) {
+			storageSize = storageSize + reportXml.length();
+		}
+		report.setStorageSize(storageSize);
+
+		StringBuilder query = new StringBuilder("update " + getTable() + " set ");
+		boolean first = true;
+		for (String column : getMetadataNames()) {
+			if (!column.equals(getStorageIdColumn())) {
+				if (!first) {
+					query.append(", ");
+				}
+				query.append(column).append(" = ?");
+				first = false;
+			}
+		}
+		query.append(", report = ?");
+		if (isStoreReportXml()) {
+			query.append(", reportxml = ?");
+		}
+		query.append(" where " + getStorageIdColumn() + " = ?");
+
+		log.debug("Update report query: " + query.toString());
+
+		ladybugJdbcTemplate.update(query.toString(), new PreparedStatementSetter() {
+			@Override
+			public void setValues(PreparedStatement ps) throws SQLException {
+				int i = 1;
+				for (String column : getMetadataNames()) {
+					if (!column.equals(getStorageIdColumn())) {
+						if (isInteger(column)) {
+							ps.setInt(i, (Integer) metadataExtractor.getMetadata(report, column, MetadataExtractor.VALUE_TYPE_OBJECT));
+						} else if (isLong(column)) {
+							ps.setLong(i, (Long) metadataExtractor.getMetadata(report, column, MetadataExtractor.VALUE_TYPE_OBJECT));
+						} else if (isTimestamp(column)) {
+							ps.setTimestamp(i, new Timestamp((Long) metadataExtractor.getMetadata(report, column, MetadataExtractor.VALUE_TYPE_OBJECT)));
+						} else {
+							ps.setString(i, (String) metadataExtractor.getMetadata(report, column, MetadataExtractor.VALUE_TYPE_STRING));
+						}
+						i++;
+					}
+				}
+				ps.setBytes(i, reportBytes);
+				i++;
+				if (isStoreReportXml()) {
+					ps.setClob(i, new StringReader(reportXml));
+					i++;
+				}
+				ps.setInt(i, report.getStorageId());
+			}
+		});
 	}
 
 	@Override
