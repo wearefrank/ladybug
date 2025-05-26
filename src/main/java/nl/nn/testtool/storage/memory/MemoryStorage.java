@@ -152,11 +152,10 @@ public class MemoryStorage implements Storage {
 	protected int getNewStorageId() throws StorageException {
 		int newStorageId = getInitialStorageId();
 		for (Integer storageId : getStorageIds()) {
-			if (storageId > newStorageId) {
-				newStorageId = storageId;
+			if (storageId >= newStorageId) {
+				newStorageId = storageId + 1;
 			}
 		}
-		newStorageId++;
 		return newStorageId;
 	}
 
