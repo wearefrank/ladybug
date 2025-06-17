@@ -23,7 +23,7 @@
 
     <frontend.version>0.1.0-20250616.113317</frontend.version>
 
-    <spring.version>6.1.14</spring.version>
+    <spring.version>6.1.20</spring.version>
     <cxf.version>4.0.6</cxf.version>
     <jackson.version>2.17.1</jackson.version>
     <logback.version>1.5.13</logback.version>
