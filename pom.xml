@@ -236,7 +236,7 @@
         </exclusion>
       </exclusions>
     </dependency>
-    <!-- Normal dependency instead of a transitive dependency of Quarkus arc (Spring is using the cdi-api annotations also) -->
+    <!-- Normal dependency instead of a transitive dependency from Quarkus arc (Spring is using the cdi-api annotations also) -->
     <dependency>
       <groupId>jakarta.enterprise</groupId>
       <artifactId>jakarta.enterprise.cdi-api</artifactId>
