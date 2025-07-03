@@ -56,7 +56,7 @@ public class MetadataApi extends ApiBase {
 	 */
 	@GetMapping(value = "/{storage}/", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> getMetadataList(@PathVariable("storage") String storageName,
-											 @RequestParam("metadataNames") List<String> metadataNames,
+											 @RequestParam(name = "metadataNames") List<String> metadataNames,
 											 @RequestParam(defaultValue = "-1") int limit,
 											 @RequestParam(name = "filterHeader") List<String> filterHeaders,
 											 @RequestParam(name = "filter") List<String> filterParams) {
