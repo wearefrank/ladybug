@@ -1,5 +1,5 @@
 /*
-   Copyright 2021-2022, 2024 WeAreFrank!
+   Copyright 2021-2022, 2024-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,13 +22,18 @@ import java.util.Map;
 import org.springframework.context.ApplicationContext;
 
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.ws.rs.core.Context;
 import nl.nn.testtool.SecurityContext;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 public abstract class ApiBase implements SecurityContext {
 	protected static ApplicationContext applicationContext;
-	@Context
-	protected HttpServletRequest httpRequest;
+
+	private static HttpServletRequest getHttpServletRequest() {
+		ServletRequestAttributes requestAttributes =
+				(ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+		return requestAttributes.getRequest();
+	}
 
 	protected Object getBeanObject(String beanName) {
 		if (applicationContext == null)
@@ -49,7 +54,7 @@ public abstract class ApiBase implements SecurityContext {
 	}
 
 	protected void setSessionAttr(String key, Object value) {
-		httpRequest.getSession().setAttribute(key, value);
+		getHttpServletRequest().getSession().setAttribute(key, value);
 	}
 
 	protected <T> T getSessionAttr(String key) {
@@ -57,7 +62,7 @@ public abstract class ApiBase implements SecurityContext {
 	}
 
 	protected <T> T getSessionAttr(String key, boolean throwException) {
-		T object = (T) httpRequest.getSession().getAttribute(key);
+		T object = (T) getHttpServletRequest().getSession().getAttribute(key);
 		if (object == null && throwException)
 			throw new ApiException("No session attribute with name [" + key + "] found.");
 		return object;
@@ -65,7 +70,7 @@ public abstract class ApiBase implements SecurityContext {
 
 	@Override
 	public Principal getUserPrincipal() {
-		return httpRequest.getUserPrincipal();
+		return getHttpServletRequest().getUserPrincipal();
 	}
 
 	@Override
@@ -78,7 +83,7 @@ public abstract class ApiBase implements SecurityContext {
 			return true;
 		}
 		for (String role : roles) {
-			if (httpRequest.isUserInRole(role))
+			if (getHttpServletRequest().isUserInRole(role))
 				return true;
 		}
 		return false;
