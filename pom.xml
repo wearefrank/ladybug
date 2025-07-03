@@ -24,7 +24,6 @@
     <frontend.version>0.1.0-20250623.171422</frontend.version>
 
     <spring.version>6.2.8</spring.version>
-    <cxf.version>4.0.6</cxf.version>
     <jackson.version>2.17.1</jackson.version>
     <logback.version>1.5.13</logback.version>
   </properties>
@@ -77,16 +76,6 @@
       <groupId>org.springframework</groupId>
       <artifactId>spring-webmvc</artifactId>
       <version>${spring.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.cxf</groupId>
-      <artifactId>cxf-rt-rs-client</artifactId>
-      <version>${cxf.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.cxf</groupId>
-      <artifactId>cxf-rt-features-logging</artifactId>
-      <version>${cxf.version}</version>
     </dependency>
     <dependency>
       <groupId>com.fasterxml.jackson.jakarta.rs</groupId>
