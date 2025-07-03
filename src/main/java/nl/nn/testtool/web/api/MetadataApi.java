@@ -1,5 +1,5 @@
 /*
-   Copyright 2021-2024 WeAreFrank!
+   Copyright 2021-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -25,23 +25,21 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import jakarta.inject.Inject;
-import jakarta.ws.rs.DefaultValue;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.PathParam;
-import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.QueryParam;
-import jakarta.ws.rs.core.Context;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.UriInfo;
 import lombok.Setter;
 import nl.nn.testtool.MetadataExtractor;
 import nl.nn.testtool.TestTool;
 import nl.nn.testtool.storage.Storage;
 import nl.nn.testtool.web.ApiServlet;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.MediaType;
 
-@Path("/" + ApiServlet.LADYBUG_API_PATH + "/metadata")
+@RestController
+@RequestMapping("/" + ApiServlet.LADYBUG_API_PATH + "/metadata")
 public class MetadataApi extends ApiBase {
 	private @Setter @Inject @Autowired TestTool testTool;
 
@@ -52,20 +50,16 @@ public class MetadataApi extends ApiBase {
 	 * @param metadataNames The metadata names to return.
 	 * @param limit Maximum number of results to return.
 	 * @param filterHeaders The headers on which we filter.
-	 * @param uriInfo Query parameters for search.
 	 * @param filterParams The regex on which the report names will be filtered
 	 * @return Response containing fields [List[String]] and values [List[List[Object]]].
 	 * @throws ApiException If an exception occurs during metadata search in storage.
 	 */
-	@GET
-	@Path("/{storage}/")
-	@Produces(MediaType.APPLICATION_JSON)
-	public Response getMetadataList(@PathParam("storage") String storageName,
-									@QueryParam("metadataNames") List<String> metadataNames,
-									@DefaultValue("-1") @QueryParam("limit") int limit,
-									@QueryParam("filterHeader") List<String> filterHeaders,
-									@QueryParam("filter") List<String> filterParams ,
-									@Context UriInfo uriInfo) {
+	@GetMapping(value = "/{storage}/", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<?> getMetadataList(@PathVariable("storage") String storageName,
+											 @RequestParam("metadataNames") List<String> metadataNames,
+											 @RequestParam(defaultValue = "-1") int limit,
+											 @RequestParam(name = "filterHeader") List<String> filterHeaders,
+											 @RequestParam(name = "filter") List<String> filterParams) {
 		List<String> searchValues = new ArrayList<>();
 		for(String field : metadataNames) {
 			boolean changed = false;
@@ -98,9 +92,9 @@ public class MetadataApi extends ApiBase {
 				metadata.add(metadataItem);
 			}
 
-			return Response.ok().entity(metadata).build();
+			return ResponseEntity.ok(metadata);
 		} catch (Exception e) {
-			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Could not find metadata with limit " + limit + " and filter [" + filterParams + "] - detailed error message - " + e + Arrays.toString(e.getStackTrace())).build();
+			return ResponseEntity.internalServerError().body("Could not find metadata with limit " + limit + " and filter [" + filterParams + "] - detailed error message - " + e + Arrays.toString(e.getStackTrace()));
 		}
 	}
 
@@ -111,9 +105,8 @@ public class MetadataApi extends ApiBase {
 	 * @param metadataNames - the header names.
 	 * @return The user help of each filter header.
 	 */
-	@GET
-	@Path("/{storage}/userHelp")
-	public Response getUserHelp(@PathParam("storage") String storageName, @QueryParam("metadataNames") List<String> metadataNames) {
+	@GetMapping(value = "/{storage}/userHelp")
+	public ResponseEntity<?> getUserHelp(@PathVariable("storage") String storageName, @RequestParam(name = "metadataNames") List<String> metadataNames) {
 		try {
 			Map<String, String> userHelp = new LinkedHashMap<>();
 			Storage storage = testTool.getStorage(storageName);
@@ -121,9 +114,9 @@ public class MetadataApi extends ApiBase {
 				userHelp.put(field, storage.getUserHelp(field));
 			}
 
-			return Response.ok().entity(userHelp).build();
+			return ResponseEntity.ok(userHelp);
 		} catch (Exception e) {
-			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Could not find user help - detailed error message - " + e + Arrays.toString(e.getStackTrace())).build();
+			return ResponseEntity.internalServerError().body("Could not find user help - detailed error message - " + e + Arrays.toString(e.getStackTrace()));
 		}
 	}
 
@@ -133,15 +126,13 @@ public class MetadataApi extends ApiBase {
 	 * @param storageName - the storage from which the metadata records reside.
 	 * @return the metadata count.
 	 */
-	@GET
-	@Path("/{storage}/count")
-	@Produces(MediaType.APPLICATION_JSON)
-	public Response getMetadataCount(@PathParam("storage") String storageName) {
+	@GetMapping(value = "/{storage}/count", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<?> getMetadataCount(@PathVariable("storage") String storageName) {
 		try {
 			Storage storage = testTool.getStorage(storageName);
-			return Response.ok().entity(storage.getSize()).build();
+			return ResponseEntity.ok(storage.getSize());
 		} catch (Exception e) {
-			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Could not find metadata count - detailed error message - " + e + Arrays.toString(e.getStackTrace())).build();
+			return ResponseEntity.internalServerError().body("Could not find metadata count - detailed error message - " + e + Arrays.toString(e.getStackTrace()));
 		}
 	}
 }
