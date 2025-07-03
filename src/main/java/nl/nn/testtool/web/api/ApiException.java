@@ -1,5 +1,5 @@
 /*
-   Copyright 2021, 2024 WeAreFrank!
+   Copyright 2021, 2024-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,19 +21,22 @@ import java.lang.invoke.MethodHandles;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import jakarta.ws.rs.WebApplicationException;
+import org.springframework.http.HttpStatus;
 
-public class ApiException extends WebApplicationException implements Serializable {
+import org.springframework.web.bind.annotation.ResponseStatus;
+
+@ResponseStatus(value = HttpStatus.INTERNAL_SERVER_ERROR)
+public class ApiException extends RuntimeException implements Serializable {
 	private static final long serialVersionUID = 1L;
 	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
 	public ApiException(String msg, Throwable t) {
-		super(t, 500);
+		super(t);
 		log.error(msg, t);
 	}
 
 	public ApiException(String msg) {
-		super(500);
+		super();
 		log.error(msg);
 	}
 }

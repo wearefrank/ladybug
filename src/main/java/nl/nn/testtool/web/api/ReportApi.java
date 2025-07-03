@@ -15,6 +15,7 @@
 */
 package nl.nn.testtool.web.api;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.lang.invoke.MethodHandles;
@@ -28,9 +29,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Scanner;
 
+import jakarta.annotation.security.RolesAllowed;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.cxf.jaxrs.ext.multipart.Attachment;
-import org.apache.cxf.jaxrs.ext.multipart.Multipart;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,18 +40,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import jakarta.inject.Inject;
-import jakarta.ws.rs.Consumes;
-import jakarta.ws.rs.DELETE;
-import jakarta.ws.rs.DefaultValue;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.POST;
-import jakarta.ws.rs.PUT;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.PathParam;
-import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.QueryParam;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
 import lombok.Setter;
 import nl.nn.testtool.Checkpoint;
 import nl.nn.testtool.MetadataExtractor;
@@ -71,9 +59,25 @@ import nl.nn.testtool.storage.memory.MemoryCrudStorage;
 import nl.nn.testtool.transform.ReportXmlTransformer;
 import nl.nn.testtool.util.Export;
 import nl.nn.testtool.util.ExportResult;
-import nl.nn.testtool.web.ApiServlet;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.bind.annotation.RestController;
 
-@Path("/" + ApiServlet.LADYBUG_API_PATH + "/report")
+import org.springframework.http.MediaType;
+import org.springframework.web.multipart.MultipartFile;
+
+@RestController
+@RequestMapping("/report")
+@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 public class ReportApi extends ApiBase {
 	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 	private @Setter @Inject @Autowired TestTool testTool;
@@ -90,19 +94,17 @@ public class ReportApi extends ApiBase {
 	 * @param globalTransformer True if reportXmlTransformer should be set for the report.
 	 * @return A response containing serialized Report object.
 	 */
-	@GET
-	@Path("/{storage}/{storageId}")
-	@Produces(MediaType.APPLICATION_JSON)
-	public Response getReport(@PathParam("storage") String storageName,
-							  @PathParam("storageId") int storageId,
-							  @QueryParam("xml") @DefaultValue("false") boolean xml,
-							  @QueryParam("globalTransformer") @DefaultValue("false") boolean globalTransformer) {
+	@GetMapping(value = "/{storage}/{storageId}/", produces = MediaType.APPLICATION_JSON_VALUE)
+	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	public ResponseEntity<?> getReport(@PathVariable("storage") String storageName,
+									   @PathVariable("storageId") int storageId,
+									   @RequestParam(name = "xml", defaultValue = "false") boolean xml,
+									   @RequestParam(name = "globalTransformer", defaultValue = "false") boolean globalTransformer) {
 		try {
 			Storage storage = testTool.getStorage(storageName);
 			Report report = getReport(storage, storageId);
 			if (report == null)
-				return Response.status(Response.Status.NOT_FOUND).entity("Could not find report with id [" + storageId + "]").build();
-
+				return new ResponseEntity<>("Could not find report with id [" + storageId + "]", HttpStatus.NOT_FOUND);
 			if (globalTransformer) {
 				if (reportXmlTransformer != null)
 					report.setGlobalReportXmlTransformer(reportXmlTransformer);
@@ -112,10 +114,10 @@ public class ReportApi extends ApiBase {
 			map.put("report", report);
 			map.put("xml", report.toXml());
 
-			return Response.ok(map).build();
+			return ResponseEntity.ok(map);
 
 		} catch (Exception e) {
-			return Response.status(Response.Status.NOT_FOUND).entity("Exception while getting report [" + storageId + "] from storage [" + storageName + "] - detailed error message - " + e + Arrays.toString(e.getStackTrace())).build();
+			return new ResponseEntity("Exception while getting report [" + storageId + "] from storage [" + storageName + "] - detailed error message - " + e + Arrays.toString(e.getStackTrace()), HttpStatus.NOT_FOUND);
 		}
 	}
 
@@ -131,19 +133,18 @@ public class ReportApi extends ApiBase {
 	 * @param invert      when true return the checkpoints to hide and exclude the checkpoint to show
 	 * @return            ...
 	 */
-	@GET
-	@Path("/{storage}/{storageId}/checkpoints/uids")
-	@Produces(MediaType.APPLICATION_JSON)
-	public Response getCheckpointUids(	@PathParam("storage") String storageName,
-										@PathParam("storageId") int storageId,
-										@QueryParam("view") String viewName,
-										@QueryParam("invert") boolean invert
+	@GetMapping(value = "/{storage}/{storageId}/checkpoints/uids", produces = MediaType.APPLICATION_JSON_VALUE)
+	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	public ResponseEntity<?> getCheckpointUids(	@PathVariable("storage") String storageName,
+										@PathVariable("storageId") int storageId,
+										@RequestParam(name = "view") String viewName,
+										@RequestParam(name = "invert") boolean invert
 										) {
 		try {
 			Storage storage = testTool.getStorage(storageName);
 			Report report = getReport(storage, storageId);
 			if (report == null)
-				return Response.status(Response.Status.NOT_FOUND).entity("Could not find report with id [" + storageId + "]").build();
+				return new ResponseEntity<>("Could not find report with id [" + storageId + "]", HttpStatus.NOT_FOUND);
 			List<String> response = new ArrayList<String>();
 			for (View view : views) {
 				if (view.getName().equals(viewName)) {
@@ -161,9 +162,9 @@ public class ReportApi extends ApiBase {
 					break;
 				}
 			}
-			return Response.ok(response).build();
+			return ResponseEntity.ok(response);
 		} catch (Exception e) {
-			return Response.status(Response.Status.NOT_FOUND).entity("Exception while getting report [" + storageId + "] from storage [" + storageName + "] - detailed error message - " + e + Arrays.toString(e.getStackTrace())).build();
+			return new ResponseEntity("Exception while getting report [" + storageId + "] from storage [" + storageName + "] - detailed error message - " + e + Arrays.toString(e.getStackTrace()), HttpStatus.NOT_FOUND);
 		}
 	}
 
@@ -176,13 +177,12 @@ public class ReportApi extends ApiBase {
 	 * @param globalTransformer True if reportXmlTransformer should be set for the report.
 	 * @return A response containing serialized Report object.
 	 */
-	@GET
-	@Path("/{storage}/")
-	@Produces(MediaType.APPLICATION_JSON)
-	public Response getReports(@PathParam("storage") String storageName,
-							   @QueryParam("storageIds") List<Integer> storageIds,
-							   @QueryParam("xml") @DefaultValue("false") boolean xml,
-							   @QueryParam("globalTransformer") @DefaultValue("false") boolean globalTransformer) {
+	@GetMapping(value = "/{storage}/", produces = MediaType.APPLICATION_JSON_VALUE)
+	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	public ResponseEntity<?> getReports(@PathVariable("storage") String storageName,
+							   @RequestParam(name = "storageIds") List<Integer> storageIds,
+							   @RequestParam(name = "xml", defaultValue = "false") boolean xml,
+							   @RequestParam(name = "globalTransformer", defaultValue = "false") boolean globalTransformer) {
 		try {
 			Storage storage = testTool.getStorage(storageName);
 			HashMap<Integer, HashMap<String, Object>> map = new HashMap<>();
@@ -190,8 +190,7 @@ public class ReportApi extends ApiBase {
 			for (int storageId : storageIds) {
 				Report report = getReport(storage, storageId);
 				if (report == null)
-					return Response.status(Response.Status.NOT_FOUND).entity("Could not find report with id [" + storageId + "]").build();
-
+					return new ResponseEntity("Could not find report with id [" + storageId + "]", HttpStatus.NOT_FOUND);
 				if (globalTransformer) {
 					if (reportXmlTransformer != null)
 						report.setGlobalReportXmlTransformer(reportXmlTransformer);
@@ -204,10 +203,10 @@ public class ReportApi extends ApiBase {
 				map.put(storageId, reportMap);
 			}
 
-			return Response.ok(map).build();
+			return ResponseEntity.ok(map);
 
 		} catch (Exception e) {
-			return Response.status(Response.Status.NOT_FOUND).entity("Exception while getting report [" + storageIds + "] from storage [" + storageName + "] - detailed error message - " + e + Arrays.toString(e.getStackTrace())).build();
+			return new ResponseEntity<>("Exception while getting report [" + storageIds + "] from storage [" + storageName + "] - detailed error message - " + e + Arrays.toString(e.getStackTrace()), HttpStatus.NOT_FOUND);
 		}
 	}
 
@@ -218,35 +217,33 @@ public class ReportApi extends ApiBase {
 	 * @param storageIds  Storage id's of the reports to delete
 	 * @return "Ok" if deleted properly, "Not implemented" if storage does not support deletion, "Not found" if report does not exist.
 	 */
-	@DELETE
-	@Path("/{storage}/")
-	public Response deleteReport(@PathParam("storage") String storageName, @QueryParam("storageIds") List<Integer> storageIds) {
+	@DeleteMapping(value = "/{storage}")
+	public ResponseEntity<?> deleteReport(@PathVariable("storage") String storageName, @RequestParam(name = "storageIds") List<Integer> storageIds) {
 		Storage storage = testTool.getStorage(storageName);
 		if (!(storage instanceof CrudStorage)) {
 			String msg = "Given storage [" + storageName + "] does not implement delete function.";
 			log.warn(msg);
-			return Response.status(Response.Status.NOT_IMPLEMENTED).entity(msg).build();
+			return new ResponseEntity(msg, HttpStatus.NOT_IMPLEMENTED);
 		}
 		List<String> errorMessages = new ArrayList<>();
 		for (int storageId : storageIds) {
 			try {
 				Report report = getReport(storage, storageId);
 				if (report == null)
-					return Response.status(Response.Status.NOT_FOUND).entity("Could not find report with storage id [" + storageId + "]").build();
+					return new ResponseEntity<>("Could not find report with storage id [" + storageId + "]", HttpStatus.NOT_FOUND);
 				((CrudStorage) storage).delete(report);
 			} catch (StorageException e) {
 				errorMessages.add("Could not delete report with storageId [" + storageId + "] - detailed error message - " + e + Arrays.toString(e.getStackTrace()));
 			}
 		}
 		if (!errorMessages.isEmpty()) {
-			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(errorMessages).build();
+			return ResponseEntity.internalServerError().body(errorMessages);
 		}
-		return Response.ok().build();
+		return ResponseEntity.ok().build();
 	}
 
-	@DELETE
-	@Path("/all/{storage}/")
-	public Response deleteAllReports(@PathParam("storage") String storageName) {
+	@DeleteMapping(value = "/all/{storage}")
+	public ResponseEntity<?> deleteAllReports(@PathVariable("storage") String storageName) {
 		Storage storage = testTool.getStorage(storageName);
 		List<String> errorMessages = new ArrayList<>();
 		try {
@@ -256,9 +253,9 @@ public class ReportApi extends ApiBase {
 			log.error("Failed to clear storage [{}]", storage.getName(), e);
 		}
 		if (!errorMessages.isEmpty()) {
-			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(errorMessages).build();
+			return ResponseEntity.internalServerError().body(errorMessages);
 		}
-		return Response.ok().build();
+		return ResponseEntity.ok().build();
 	}
 
 	/**
@@ -268,25 +265,24 @@ public class ReportApi extends ApiBase {
 	 * @param number Number of latest reports to retrieve.
 	 * @return the n latest reports.
 	 */
-	@GET
-	@Path("/latest/{storage}/{numberOfReports}")
-	public Response getLatestReports(@PathParam("storage") String storageName, @PathParam("numberOfReports") int number) {
+	@GetMapping(value = "/latest/{storage}/{numberOfReports}")
+	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	public ResponseEntity<?> getLatestReports(@PathVariable("storage") String storageName, @PathVariable("numberOfReports") int number) {
 		try {
 			Storage storage = testTool.getStorage(storageName);
 			List<List<Object>> metadata = storage.getMetadata(-1, Arrays.asList("storageId", "endTime"),
 					Arrays.asList(null, null), MetadataExtractor.VALUE_TYPE_OBJECT);
 			int amount = Math.min(metadata.size(), number);
 			if (amount < 1)
-				return Response.status(Response.Status.BAD_REQUEST).entity("Either the number of reports requested [" + number + "] and/or the size of reports available [" + metadata.size() + "] is 0").build();
-
+				return ResponseEntity.badRequest().body("Either the number of reports requested [" + number + "] and/or the size of reports available [" + metadata.size() + "] is 0");
 			metadata.sort(Comparator.comparingLong(o -> (Long) o.get(1)));
 			ArrayList<Report> reports = new ArrayList<>(amount);
 			for (int i = 1; i <= amount; i++) {
 				reports.add(getReport(storage, (Integer) metadata.get(metadata.size() - i).get(0)));
 			}
-			return Response.ok(reports).build();
+			return ResponseEntity.ok(reports);
 		} catch (StorageException e) {
-			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Could not retrieve latest [" + number + "] reports - detailed error message - " + e + Arrays.toString(e.getStackTrace())).build();
+			return ResponseEntity.internalServerError().body("Could not retrieve latest [" + number + "] reports - detailed error message - " + e + Arrays.toString(e.getStackTrace()));
 		}
 	}
 
@@ -298,20 +294,16 @@ public class ReportApi extends ApiBase {
 	 * @param map Map containing ["name" or "path" or "variables" or "description" or "transformation" or "checkpointId and "checkpointMessage"].
 	 * @return The updated report.
 	 */
-	@POST
-	@Path("/{storage}/{storageId}")
-	@Consumes(MediaType.APPLICATION_JSON)
-	@Produces(MediaType.APPLICATION_JSON)
-	public Response updateReport(@PathParam("storage") String storageName, @PathParam("storageId") int storageId, Map<String, String> map) {
+	@PostMapping(value = "/{storage}/{storageId}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<?> updateReport(@PathVariable("storage") String storageName, @PathVariable("storageId") int storageId, Map<String, String> map) {
 		String[] fields = new String[]{"name", "path", "variables", "description", "transformation", "checkpointId", "checkpointMessage", "stub", "stubStrategy"};
 		if (map.isEmpty() || !mapContainsOnly(map, null, fields))
-			return Response.status(Response.Status.BAD_REQUEST).entity("No new values or incorrect values have been given for report with storageId [" + storageId + "] - detailed error message - Values given are:\n" + map).build();
-
+			return ResponseEntity.badRequest().body("No new values or incorrect values have been given for report with storageId [" + storageId + "] - detailed error message - Values given are:\n" + map);
 		try {
 			Storage storage = testTool.getStorage(storageName);
 			Report report = getReport(storage, storageId);
 			if (report == null)
-				return Response.status(Response.Status.NOT_FOUND).entity("Could not find report with storageId [" + storageId + "]").build();
+				return new ResponseEntity("Could not find report with storageId [" + storageId + "]", HttpStatus.NOT_FOUND);
 			report.setName(map.get("name"));
 			report.setPath(TestComponent.normalizePath(map.get("path")));
 			report.setDescription(map.get("description"));
@@ -349,9 +341,9 @@ public class ReportApi extends ApiBase {
 			result.put("xml", report.toXml());
 			result.put("storageUpdated", storageUpdated);
 			result.put("report", report);
-			return Response.ok(result).build();
+			return ResponseEntity.ok(result);
 		} catch (StorageException | JsonProcessingException e) {
-			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Could not apply transformation to report with storageId [" + storageId + "] - detailed error message - " + e + Arrays.toString(e.getStackTrace())).build();
+			return ResponseEntity.internalServerError().body("Could not apply transformation to report with storageId [" + storageId + "] - detailed error message - " + e + Arrays.toString(e.getStackTrace()));
 		}
 	}
 
@@ -362,18 +354,17 @@ public class ReportApi extends ApiBase {
 	 * @param storageId Storage id of the report.
 	 * @return Response containing a map containing transformation.
 	 */
-	@GET
-	@Path("/transformation/{storage}/{storageId}")
-	@Produces(MediaType.APPLICATION_JSON)
-	public Response getReportTransformation(@PathParam("storage") String storageName, @PathParam("storageId") int storageId) {
+	@GetMapping(value = "/transformation/{storage}/{storageId}", produces = MediaType.APPLICATION_JSON_VALUE)
+	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	public ResponseEntity<?> getReportTransformation(@PathVariable("storage") String storageName, @PathVariable("storageId") int storageId) {
 		try {
 			Storage storage = testTool.getStorage(storageName);
 			String transformation = getReport(storage, storageId).getTransformation();
 			Map<String, String> map = new HashMap<>(1);
 			map.put("transformation", transformation);
-			return Response.ok(map).build();
+			return ResponseEntity.ok(map);
 		} catch (StorageException e) {
-			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Could not retrieve transformation of report with storageId [" + storageId + "] - detailed error message - " + e + Arrays.toString(e.getStackTrace())).build();
+			return ResponseEntity.internalServerError().body("Could not retrieve transformation of report with storageId [" + storageId + "] - detailed error message - " + e + Arrays.toString(e.getStackTrace()));
 		}
 	}
 
@@ -384,11 +375,8 @@ public class ReportApi extends ApiBase {
 	 * @param sources Map [String, Integer] where keys are storage names and integers are storage ids for the reports to be copied.
 	 * @return The copied report.
 	 */
-	@PUT
-	@Path("/store/{storage}")
-	@Consumes(MediaType.APPLICATION_JSON)
-	@Produces(MediaType.APPLICATION_JSON)
-	public Response copyReport(@PathParam("storage") String storageName, Map<String, List<Integer>> sources) {
+	@PutMapping(value = "/store/{storage}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<?> copyReport(@PathVariable("storage") String storageName, @RequestBody Map<String, List<Integer>> sources) {
 		Storage target = testTool.getStorage(storageName);
 		Map<String, String> exceptions = new HashMap<>();
 		ArrayList<Report> reports = new ArrayList<>();
@@ -412,8 +400,8 @@ public class ReportApi extends ApiBase {
 		}
 		// TODO: Find a better error response code.
 		if (exceptions.size() > 0)
-			return Response.status(Response.Status.BAD_REQUEST).entity("Exceptions have been thrown when trying to copy report - detailed error message - Exceptions:\n" + exceptions).build();
-		return Response.ok(reports).build();
+			return ResponseEntity.badRequest().body("Exceptions have been thrown when trying to copy report - detailed error message - Exceptions:\n" + exceptions);
+		return ResponseEntity.ok(reports);
 	}
 
 	/**
@@ -423,24 +411,25 @@ public class ReportApi extends ApiBase {
 	 * @param attachment Attachment containing report.
 	 * @return The response of uploading a file.
 	 */
-	@POST
-	@Path("/upload/{storage}")
-	@Produces(MediaType.TEXT_HTML)
-	@Consumes(MediaType.MULTIPART_FORM_DATA)
-	public Response uploadFile(@PathParam("storage") String storageName, @Multipart("file") Attachment attachment) {
+	@PostMapping(value = "/upload/{storage}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.TEXT_HTML_VALUE)
+	public ResponseEntity<?> uploadFile(@PathVariable("storage") String storageName, @RequestPart("file") MultipartFile attachment) {
 		Storage storage = testTool.getStorage(storageName);
 		if (!(storage instanceof CrudStorage)) {
-			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Given storage [" + storage.getName() + "] is not a Crud Storage. Therefore no reports can be added externally.").build();
+			return ResponseEntity.internalServerError().body("Given storage [" + storage.getName() + "] is not a Crud Storage. Therefore no reports can be added externally.");
 		}
 		CrudStorage crudStorage = (CrudStorage) storage;
-
-		String filename = attachment.getContentDisposition().getParameter("filename");
-		InputStream in = attachment.getObject(InputStream.class);
-		String errorMessage = Upload.upload(filename, in, crudStorage, log);
-		if (StringUtils.isEmpty(errorMessage)) {
-			return Response.ok().build();
+		String filename = attachment.getName();
+		String errorMessage = null;
+		try {
+			InputStream in = attachment.getInputStream();
+			errorMessage = Upload.upload(filename, in, crudStorage, log);
+		} catch (IOException e) {
+			errorMessage = e.getMessage();
 		}
-		return Response.status(Response.Status.BAD_REQUEST).entity(errorMessage).build();
+		if (StringUtils.isEmpty(errorMessage)) {
+			return ResponseEntity.ok().build();
+		}
+		return ResponseEntity.badRequest().body(errorMessage);
 	}
 
 	/**
@@ -449,17 +438,19 @@ public class ReportApi extends ApiBase {
 	 * @param attachment Attachment containing report.
 	 * @return List of serialized report objects.
 	 */
-	@POST
-	@Path("/upload")
-	@Produces(MediaType.APPLICATION_JSON)
-	@Consumes(MediaType.MULTIPART_FORM_DATA)
-	public Response getFileReport(@Multipart("file") Attachment attachment) {
+	@PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<?> getFileReport(@RequestPart("file") MultipartFile attachment) {
 		CrudStorage storage = new MemoryCrudStorage();
-		String filename = attachment.getContentDisposition().getParameter("filename");
-		InputStream in = attachment.getObject(InputStream.class);
-		String errorMessage = Upload.upload(filename, in, storage, log);
+		String filename = attachment.getName();
+		String errorMessage = null;
+		try {
+			InputStream in = attachment.getInputStream();
+			errorMessage = Upload.upload(filename, in, storage, log);
+		} catch(IOException e) {
+			errorMessage = e.getMessage();
+		}
 		if (StringUtils.isNotEmpty(errorMessage))
-			return Response.status(Response.Status.BAD_REQUEST).entity(errorMessage).build();
+			return ResponseEntity.badRequest().body(errorMessage);
 		try {
 			Iterator storageIdsIterator = storage.getStorageIds().iterator();
 			ArrayList<Report> reports = new ArrayList<>(storage.getStorageIds().size());
@@ -467,9 +458,9 @@ public class ReportApi extends ApiBase {
 				Report report = getReport(storage, ((Integer) storageIdsIterator.next()));
 				reports.add(report);
 			}
-			return Response.ok(reports).build();
+			return ResponseEntity.ok(reports);
 		} catch (StorageException e) {
-			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Could not retrieve parsed reports from in-memory storage - detailed error message - " + e + Arrays.toString(e.getStackTrace())).build();
+			return ResponseEntity.internalServerError().body("Could not retrieve parsed reports from in-memory storage - detailed error message - " + e + Arrays.toString(e.getStackTrace()));
 		}
 	}
 
@@ -482,15 +473,13 @@ public class ReportApi extends ApiBase {
 	 * @param storageIds List of storage ids to download.
 	 * @return The response when downloading a file.
 	 */
-	@GET
-	@Path("/download/{storage}/{exportReport}/{exportReportXml}")
-	@Produces("application/octet-stream")
-	@Consumes(MediaType.APPLICATION_JSON)
-	public Response downloadFile(@PathParam("storage") String storageName, @PathParam("exportReport") String exportReportParam,
-								 @PathParam("exportReportXml") String exportReportXmlParam, @QueryParam("id") List<Integer> storageIds) {
+	@GetMapping(value = "/download/{storage}/{exportReport}/{exportReportXml}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	public ResponseEntity<?> downloadFile(@PathVariable("storage") String storageName, @PathVariable("exportReport") String exportReportParam,
+								 @PathVariable("exportReportXml") String exportReportXmlParam, @RequestParam(name = "id") List<Integer> storageIds) {
 		Storage storage = testTool.getStorage(storageName);
 		if (storageIds == null || storageIds.isEmpty())
-			return Response.status(Response.Status.BAD_REQUEST).entity("No storage ids have been provided").build();
+			return ResponseEntity.badRequest().body("No storage ids have been provided");
 		boolean exportReport = exportReportParam.equalsIgnoreCase("true") || exportReportParam.equals("1");
 		boolean exportReportXml = exportReportXmlParam.equalsIgnoreCase("true") || exportReportXmlParam.equals("1");
 		try {
@@ -501,11 +490,11 @@ public class ReportApi extends ApiBase {
 			} else {
 				export = Export.export(storage, storageIds, exportReport, exportReportXml);
 			}
-			Response.ResponseBuilder response = Response.ok(export.getTempFile(), MediaType.APPLICATION_OCTET_STREAM);
-			response.header("Content-Disposition", "attachment; filename=" + export.getSuggestedFilename());
-			return response.build();
+			ResponseEntity<?> response = ResponseEntity.ok(export.getTempFile());
+			response.getHeaders().add("Content-Disposition", "attachment; filename=" + export.getSuggestedFilename());
+			return response;
 		} catch (StorageException e) {
-			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Exception while requesting reports with ids [" + storageIds + "] from the storage. - detailed error message - " + e + Arrays.toString(e.getStackTrace())).build();
+			return ResponseEntity.internalServerError().body("Exception while requesting reports with ids [" + storageIds + "] from the storage. - detailed error message - " + e + Arrays.toString(e.getStackTrace()));
 		}
 	}
 
@@ -517,16 +506,13 @@ public class ReportApi extends ApiBase {
 	 * @param map Map containing "path" and "action". Actions could be "copy" or "move".
 	 * @return The response of updating the Path.
 	 */
-	@PUT
-	@Path("/move/{storage}")
-	@Consumes(MediaType.APPLICATION_JSON)
-	public Response updatePath(@PathParam("storage") String storageName, @QueryParam("storageIds") List<Integer> storageIds, Map<String, String> map) {
+	@PutMapping(value = "/move/{storage}", consumes = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<?> updatePath(@PathVariable("storage") String storageName, @RequestParam(name = "storageIds") List<Integer> storageIds, @RequestBody Map<String, String> map) {
 		CrudStorage storage = (CrudStorage) testTool.getStorage(storageName);
 		String path = map.get("path");
 		String action = map.get("action");
 		if (StringUtils.isEmpty(action) || StringUtils.isEmpty(path))
-			return Response.status(Response.Status.BAD_REQUEST).entity("[action] and [path] are both required in the request body.").build();
-
+			return ResponseEntity.badRequest().body("[action] and [path] are both required in the request body.");
 		for (int storageId : storageIds) {
 			try {
 				Report original = getReport(storage, storageId);
@@ -538,16 +524,16 @@ public class ReportApi extends ApiBase {
 					original.setPath(path);
 					storage.update(original);
 				} else {
-					return Response.status(Response.Status.BAD_REQUEST).entity("Action parameter can only be either [copy] or [move]").build();
+					return ResponseEntity.badRequest().body("Action parameter can only be either [copy] or [move]");
 				}
 			} catch (StorageException e) {
-				return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Storage exception with storage id [" + storageId + "] in storage [" + storageName + "] - detailed error message - " + e + Arrays.toString(e.getStackTrace())).build();
+				return ResponseEntity.internalServerError().body("Storage exception with storage id [" + storageId + "] in storage [" + storageName + "] - detailed error message - " + e + Arrays.toString(e.getStackTrace()));
 			} catch (CloneNotSupportedException e) {
-				return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Cloning exception for report with storage id [" + storageId + "] in storage [" + storageName + "] - detailed error message - " + e + Arrays.toString(e.getStackTrace())).build();
+				return ResponseEntity.internalServerError().body("Cloning exception for report with storage id [" + storageId + "] in storage [" + storageName + "] - detailed error message - " + e + Arrays.toString(e.getStackTrace()));
 			}
 		}
 
-		return Response.ok().build();
+		return ResponseEntity.ok().build();
 	}
 
 	/**
@@ -558,11 +544,8 @@ public class ReportApi extends ApiBase {
 	 * @param map Map containing csv for cloning.
 	 * @return The response of cloning the report.
 	 */
-	@POST
-	@Path("/move/{storageName}/{storageId}")
-	@Consumes(MediaType.APPLICATION_JSON)
-	@Produces(MediaType.APPLICATION_JSON)
-	public Response cloneReport(@PathParam("storageName") String storageName, @PathParam("storageId") int storageId, Map<String, String> map) {
+	@PostMapping(value = "/move/{storageName}/{storageId}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<?> cloneReport(@PathVariable("storageName") String storageName, @PathVariable("storageId") int storageId, @RequestBody Map<String, String> map) {
 		CrudStorage storage = (CrudStorage) testTool.getStorage(storageName);
 		Report original;
 		try {
@@ -573,11 +556,11 @@ public class ReportApi extends ApiBase {
 			original.getInputCheckpoint().setMessage(map.get("message"));
 			if (!original.getInputCheckpoint().containsVariables() && !force) {
 				original.getInputCheckpoint().setMessage(previousMessage);
-				return Response.status(Response.Status.BAD_REQUEST).entity("No variables found in input message; press again to confirm").build();
+				return ResponseEntity.badRequest().body("No variables found in input message; press again to confirm");
 			}
 		} catch (StorageException e) {
 			log.error("Exception while cloning the report", e);
-			return Response.status(Response.Status.BAD_REQUEST).entity("Report could not be found. - detailed error message - " + e + Arrays.toString(e.getStackTrace())).build();
+			return ResponseEntity.badRequest().body("Report could not be found. - detailed error message - " + e + Arrays.toString(e.getStackTrace()));
 		}
 
 		Scanner scanner = new Scanner(map.get("csv"));
@@ -607,7 +590,7 @@ public class ReportApi extends ApiBase {
 			}
 		}
 		scanner.close();
-		return Response.ok().entity(exceptions).build();
+		return ResponseEntity.ok(exceptions);
 	}
 
 	/**
@@ -624,33 +607,29 @@ public class ReportApi extends ApiBase {
 		return report;
 	}
 
-	@GET
-	@Path("warningsAndErrors/{storage}")
-	@Produces(MediaType.TEXT_PLAIN)
-	public Response getWarningsAndErrors(
-			@PathParam("storage") String storageName
+	@GetMapping(value = "warningsAndErrors/{storage}", produces = MediaType.TEXT_PLAIN_VALUE)
+	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	public ResponseEntity<?> getWarningsAndErrors(
+			@PathVariable("storage") String storageName
 	) {
 		Storage rawStorage = testTool.getStorage(storageName);
 		if (! (rawStorage instanceof LogStorage)) {
 			return null;
 		}
 		LogStorage storage = (LogStorage) rawStorage;
-		return Response
-				.status(Response.Status.OK)
-				.entity(storage.getWarningsAndErrors())
-				.build();
+		return ResponseEntity.ok(storage.getWarningsAndErrors());
 	}
 
-	@POST
-	@Path("/customreportaction")
-	public Response processCustomReportAction(@QueryParam("storage") String storageName, List<Integer> reportIds) {
+	@PostMapping(value = "/customreportaction")
+	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	public ResponseEntity<?> processCustomReportAction(@RequestParam(name = "storage") String storageName, List<Integer> reportIds) {
 		Storage storage = testTool.getStorage(storageName);
 		List<Report> reports = new ArrayList<>();
 		for (int storageId : reportIds) {
 			try {
 				Report report = getReport(storage, storageId);
 				if (report == null)
-					return Response.status(Response.Status.NOT_FOUND).entity("Could not find report with storage id [" + storageId + "]").build();
+					return new ResponseEntity<String>("Could not find report with storage id [" + storageId + "]", HttpStatus.NOT_FOUND);
 				reports.add(report);
 			} catch (StorageException e) {
 				e.printStackTrace();
@@ -659,22 +638,21 @@ public class ReportApi extends ApiBase {
 		if (customReportAction == null) {
 			Map<String, String> errorResponse = new HashMap<>();
 			errorResponse.put("error", "No custom report action defined.");
-			return Response.status(Response.Status.BAD_REQUEST).entity(errorResponse).build();
+			return ResponseEntity.badRequest().body(errorResponse);
 		}
 		CustomReportActionResult customReportActionResult = customReportAction.get().handleReports(reports);
 		Map<String, String> response = new HashMap<>();
 		response.put("success", customReportActionResult.getSuccessMessage());
 		response.put("error", customReportActionResult.getErrorMessage());
-		return Response.ok(response).build();
+		return ResponseEntity.ok(response);
 	}
 
-	@GET
-	@Path("/variables")
-	@Produces(MediaType.APPLICATION_JSON)
-	public Response fetchVariables() {
+	@GetMapping(value = "/variables/", produces = MediaType.APPLICATION_JSON_VALUE)
+	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	public ResponseEntity<?> fetchVariables() {
 		Map<String, String> variables = new HashMap<>();
 		String buttonText = (customReportAction.orElse(null) != null) ? customReportAction.get().getButtonText() : null;
 		variables.put("customReportActionButtonText", buttonText);
-		return Response.ok(variables).build();
+		return ResponseEntity.ok(variables);
 	}
 }

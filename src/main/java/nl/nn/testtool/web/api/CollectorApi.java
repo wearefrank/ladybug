@@ -1,5 +1,5 @@
 /*
-   Copyright 2021-2024 WeAreFrank!
+   Copyright 2021-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,10 +15,8 @@
 */
 package nl.nn.testtool.web.api;
 
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
-import jakarta.ws.rs.*;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
 import lombok.Setter;
 import nl.nn.testtool.Span;
 import nl.nn.testtool.TestTool;
@@ -26,29 +24,32 @@ import nl.nn.testtool.web.ApiServlet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.MediaType;
+
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 
-@Path("/" + ApiServlet.LADYBUG_API_PATH + "/collector")
+@RestController
+@RequestMapping("/collector")
+@RolesAllowed("IbisWebService")
 public class CollectorApi extends ApiBase {
     private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     private @Setter @Inject @Autowired TestTool testTool;
 
-    @POST
-    @Path("/")
-    public Response collectSpans(Span[] trace) {
+    @PostMapping(value = "/")
+    public ResponseEntity<Void> collectSpans(Span[] trace) {
         processSpans(trace);
-
-        return Response.ok().build();
+        return ResponseEntity.ok().build();
     }
 
-    @POST
-    @Path("/")
-    @Consumes(MediaType.APPLICATION_JSON)
-    public Response collectSpansJson(Span[] trace) {
+    @PostMapping(value = "/", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Void> collectSpansJson(Span[] trace) {
         processSpans(trace);
-
-        return Response.ok().build();
+        return ResponseEntity.ok().build();
     }
 
     private void processSpans(Span[] trace) {

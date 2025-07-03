@@ -1,5 +1,5 @@
 /*
-   Copyright 2021-2024 WeAreFrank!
+   Copyright 2021-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,18 +20,13 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import jakarta.annotation.security.RolesAllowed;
+import nl.nn.testtool.web.ApiServlet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import jakarta.inject.Inject;
-import jakarta.ws.rs.Consumes;
-import jakarta.ws.rs.POST;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.PathParam;
-import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
 import lombok.Setter;
 import nl.nn.testtool.Report;
 import nl.nn.testtool.TestTool;
@@ -39,19 +34,23 @@ import nl.nn.testtool.run.ReportRunner;
 import nl.nn.testtool.run.RunResult;
 import nl.nn.testtool.storage.StorageException;
 import nl.nn.testtool.transform.ReportXmlTransformer;
-import nl.nn.testtool.web.ApiServlet;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-@Path("/" + ApiServlet.LADYBUG_API_PATH + "/runner")
+@RestController
+@RequestMapping("/runner")
+@RolesAllowed("IbisTester")
 public class RunApi extends ApiBase {
 	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 	private @Setter @Inject @Autowired TestTool testTool;
 	private @Setter @Inject @Autowired ReportXmlTransformer reportXmlTransformer;
 
-	@POST
-	@Path("/run/{storageName}/{storageId}")
-	@Produces(MediaType.APPLICATION_JSON)
-	@Consumes(MediaType.APPLICATION_JSON)
-	public Response runReport(@PathParam("storageName") String storageName, @PathParam("storageId") int storageId) {
+	@PostMapping(value = "/run/{storageName}/{storageId}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<?> runReport(@PathVariable("storageName") String storageName, @PathVariable("storageId") int storageId) {
 		Map<String, Object> result = new HashMap<>();
 		String errorMessage = null;
 		try {
@@ -79,9 +78,9 @@ public class RunApi extends ApiBase {
 			log.error(errorMessage, e);
 		}
 		if (errorMessage != null) {
-			return Response.serverError().entity(errorMessage).build();
+			return ResponseEntity.internalServerError().body(errorMessage);
 		}
-		return Response.ok(result).build();
+		return ResponseEntity.ok(result);
 	}
 
 	private Map<String, Object> extractRunResult(Report report, Report runResultReport, ReportRunner runner) {
