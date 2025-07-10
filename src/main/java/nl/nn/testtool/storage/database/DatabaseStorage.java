@@ -21,7 +21,6 @@ import java.lang.invoke.MethodHandles;
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.sql.Timestamp;
 import java.sql.Types;
 import java.util.ArrayList;
@@ -228,7 +227,10 @@ public class DatabaseStorage implements Storage {
 		log.debug("Store report query: " + query.toString());
 		KeyHolder keyHolder = new GeneratedKeyHolder();
 		ladybugJdbcTemplate.update(connection -> {
-			PreparedStatement ps = connection.prepareStatement(query.toString(), Statement.RETURN_GENERATED_KEYS);
+			// Using Statement.RETURN_GENERATED_KEYS instead of new String[] { getStorageIdColumn() } doesn't work for
+			// Oracle. It will result in: org.springframework.dao.DataRetrievalFailureException:
+			// The generated key type is not supported. Unable to cast [oracle.sql.ROWID] to [java.lang.Number].
+			PreparedStatement ps = connection.prepareStatement(query.toString(), new String[] { getStorageIdColumn() });
 			int i = 1;
 			for (String column : getMetadataNames()) {
 				if (!column.equals(getStorageIdColumn())) {
