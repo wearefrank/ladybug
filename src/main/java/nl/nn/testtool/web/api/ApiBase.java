@@ -27,6 +27,8 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 public abstract class ApiBase implements SecurityContext {
+	public static final String LADYBUG_API_PATH = "ladybug-api"; // See comment in doRequest() method below
+
 	protected static ApplicationContext applicationContext;
 
 	private static HttpServletRequest getHttpServletRequest() {

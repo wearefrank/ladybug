@@ -15,6 +15,7 @@
 */
 package nl.nn.testtool.web.api;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.lang.invoke.MethodHandles;
@@ -28,9 +29,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Scanner;
 
+import jakarta.annotation.security.RolesAllowed;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.cxf.jaxrs.ext.multipart.Attachment;
-import org.apache.cxf.jaxrs.ext.multipart.Multipart;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,7 +59,6 @@ import nl.nn.testtool.storage.memory.MemoryCrudStorage;
 import nl.nn.testtool.transform.ReportXmlTransformer;
 import nl.nn.testtool.util.Export;
 import nl.nn.testtool.util.ExportResult;
-import nl.nn.testtool.web.ApiServlet;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -69,12 +68,15 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 
 import org.springframework.http.MediaType;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
-@RequestMapping("/" + ApiServlet.LADYBUG_API_PATH + "/report")
+@RequestMapping("/" + ApiBase.LADYBUG_API_PATH + "/report")
+@RolesAllowed({"IbisObserver", "IbisDataAdmin"})
 public class ReportApi extends ApiBase {
 	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 	private @Setter @Inject @Autowired TestTool testTool;
@@ -92,6 +94,7 @@ public class ReportApi extends ApiBase {
 	 * @return A response containing serialized Report object.
 	 */
 	@GetMapping(value = "/{storage}/{storageId}", produces = MediaType.APPLICATION_JSON_VALUE)
+	@RolesAllowed("IbisObserver")
 	public ResponseEntity<?> getReport(@PathVariable("storage") String storageName,
 									   @PathVariable("storageId") int storageId,
 									   @RequestParam(name = "xml", defaultValue = "false") boolean xml,
@@ -130,6 +133,7 @@ public class ReportApi extends ApiBase {
 	 * @return            ...
 	 */
 	@GetMapping(value = "/{storage}/{storageId}/checkpoints/uids", produces = MediaType.APPLICATION_JSON_VALUE)
+	@RolesAllowed("IbisObserver")
 	public ResponseEntity<?> getCheckpointUids(	@PathVariable("storage") String storageName,
 										@PathVariable("storageId") int storageId,
 										@RequestParam(name = "view") String viewName,
@@ -173,6 +177,7 @@ public class ReportApi extends ApiBase {
 	 * @return A response containing serialized Report object.
 	 */
 	@GetMapping(value = "/{storage}/", produces = MediaType.APPLICATION_JSON_VALUE)
+	@RolesAllowed("IbisObserver")
 	public ResponseEntity<?> getReports(@PathVariable("storage") String storageName,
 							   @RequestParam(name = "storageIds") List<Integer> storageIds,
 							   @RequestParam(name = "xml", defaultValue = "false") boolean xml,
@@ -260,6 +265,7 @@ public class ReportApi extends ApiBase {
 	 * @return the n latest reports.
 	 */
 	@GetMapping(value = "/latest/{storage}/{numberOfReports}")
+	@RolesAllowed("IbisObserver")
 	public ResponseEntity<?> getLatestReports(@PathVariable("storage") String storageName, @PathVariable("numberOfReports") int number) {
 		try {
 			Storage storage = testTool.getStorage(storageName);
@@ -348,6 +354,7 @@ public class ReportApi extends ApiBase {
 	 * @return Response containing a map containing transformation.
 	 */
 	@GetMapping(value = "/transformation/{storage}/{storageId}", produces = MediaType.APPLICATION_JSON_VALUE)
+	@RolesAllowed("IbisObserver")
 	public ResponseEntity<?> getReportTransformation(@PathVariable("storage") String storageName, @PathVariable("storageId") int storageId) {
 		try {
 			Storage storage = testTool.getStorage(storageName);
@@ -404,16 +411,20 @@ public class ReportApi extends ApiBase {
 	 * @return The response of uploading a file.
 	 */
 	@PostMapping(value = "/upload/{storage}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.TEXT_HTML_VALUE)
-	public ResponseEntity<?> uploadFile(@PathVariable("storage") String storageName, @Multipart("file") Attachment attachment) {
+	public ResponseEntity<?> uploadFile(@PathVariable("storage") String storageName, @RequestPart("file") MultipartFile attachment) {
 		Storage storage = testTool.getStorage(storageName);
 		if (!(storage instanceof CrudStorage)) {
 			return ResponseEntity.internalServerError().body("Given storage [" + storage.getName() + "] is not a Crud Storage. Therefore no reports can be added externally.");
 		}
 		CrudStorage crudStorage = (CrudStorage) storage;
-
-		String filename = attachment.getContentDisposition().getParameter("filename");
-		InputStream in = attachment.getObject(InputStream.class);
-		String errorMessage = Upload.upload(filename, in, crudStorage, log);
+		String filename = attachment.getName();
+		String errorMessage = null;
+		try {
+			InputStream in = attachment.getInputStream();
+			errorMessage = Upload.upload(filename, in, crudStorage, log);
+		} catch (IOException e) {
+			errorMessage = e.getMessage();
+		}
 		if (StringUtils.isEmpty(errorMessage)) {
 			return ResponseEntity.ok().build();
 		}
@@ -427,11 +438,16 @@ public class ReportApi extends ApiBase {
 	 * @return List of serialized report objects.
 	 */
 	@PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> getFileReport(@Multipart("file") Attachment attachment) {
+	public ResponseEntity<?> getFileReport(@RequestPart("file") MultipartFile attachment) {
 		CrudStorage storage = new MemoryCrudStorage();
-		String filename = attachment.getContentDisposition().getParameter("filename");
-		InputStream in = attachment.getObject(InputStream.class);
-		String errorMessage = Upload.upload(filename, in, storage, log);
+		String filename = attachment.getName();
+		String errorMessage = null;
+		try {
+			InputStream in = attachment.getInputStream();
+			errorMessage = Upload.upload(filename, in, storage, log);
+		} catch(IOException e) {
+			errorMessage = e.getMessage();
+		}
 		if (StringUtils.isNotEmpty(errorMessage))
 			return ResponseEntity.badRequest().body(errorMessage);
 		try {
@@ -457,6 +473,7 @@ public class ReportApi extends ApiBase {
 	 * @return The response when downloading a file.
 	 */
 	@GetMapping(value = "/download/{storage}/{exportReport}/{exportReportXml}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+	@RolesAllowed("IbisObserver")
 	public ResponseEntity<?> downloadFile(@PathVariable("storage") String storageName, @PathVariable("exportReport") String exportReportParam,
 								 @PathVariable("exportReportXml") String exportReportXmlParam, @RequestParam(name = "id") List<Integer> storageIds) {
 		Storage storage = testTool.getStorage(storageName);
@@ -590,6 +607,7 @@ public class ReportApi extends ApiBase {
 	}
 
 	@GetMapping(value = "warningsAndErrors/{storage}", produces = MediaType.TEXT_PLAIN_VALUE)
+	@RolesAllowed("IbisObserver")
 	public ResponseEntity<?> getWarningsAndErrors(
 			@PathVariable("storage") String storageName
 	) {
@@ -602,6 +620,7 @@ public class ReportApi extends ApiBase {
 	}
 
 	@PostMapping(value = "/customreportaction")
+	@RolesAllowed("IbisObserver")
 	public ResponseEntity<?> processCustomReportAction(@RequestParam(name = "storage") String storageName, List<Integer> reportIds) {
 		Storage storage = testTool.getStorage(storageName);
 		List<Report> reports = new ArrayList<>();
@@ -628,6 +647,7 @@ public class ReportApi extends ApiBase {
 	}
 
 	@GetMapping(value = "/variables", produces = MediaType.APPLICATION_JSON_VALUE)
+	@RolesAllowed("IbisObserver")
 	public ResponseEntity<?> fetchVariables() {
 		Map<String, String> variables = new HashMap<>();
 		String buttonText = (customReportAction.orElse(null) != null) ? customReportAction.get().getButtonText() : null;

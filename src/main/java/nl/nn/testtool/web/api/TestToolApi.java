@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import jakarta.annotation.security.RolesAllowed;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -33,7 +34,6 @@ import nl.nn.testtool.filter.View;
 import nl.nn.testtool.filter.Views;
 import nl.nn.testtool.storage.CrudStorage;
 import nl.nn.testtool.transform.ReportXmlTransformer;
-import nl.nn.testtool.web.ApiServlet;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -46,7 +46,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/" + ApiServlet.LADYBUG_API_PATH + "/testtool")
+@RequestMapping("/" + ApiBase.LADYBUG_API_PATH + "/testtool")
+@RolesAllowed({"IbisObserver"})
 public class TestToolApi extends ApiBase {
 	private @Setter @Inject @Autowired TestTool testTool;
 	private @Setter @Inject @Autowired MetadataExtractor metadataExtractor;
@@ -96,6 +97,7 @@ public class TestToolApi extends ApiBase {
 	 * @return The response after changing the settings.
 	 */
 	@PostMapping(value = "/", consumes = MediaType.APPLICATION_JSON_VALUE)
+	@RolesAllowed({"IbisObserver", "IbisDataAdmin"})
 	public ResponseEntity<?> updateInfo(Map<String, String> map) {
 		if (map.isEmpty()) {
 			return ResponseEntity.badRequest().body("No settings have been provided - detailed error message - The settings that have been provided are " + map);
@@ -144,6 +146,7 @@ public class TestToolApi extends ApiBase {
 	 * @return Response confirming the delete, if report is present
 	 */
 	@DeleteMapping(value = "/in-progress/{index}")
+	@RolesAllowed({"IbisObserver", "IbisDataAdmin"})
 	public ResponseEntity<?> deleteReportInProgress(@PathVariable("index") int index) {
 		if (index == 0)
 			return ResponseEntity.badRequest().body("No progresses have been queried [" + index + "] or are available [" + testTool.getNumberOfReportsInProgress() + "]");

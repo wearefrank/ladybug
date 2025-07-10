@@ -22,6 +22,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import jakarta.annotation.security.RolesAllowed;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import jakarta.inject.Inject;
@@ -29,7 +30,6 @@ import lombok.Setter;
 import nl.nn.testtool.MetadataExtractor;
 import nl.nn.testtool.TestTool;
 import nl.nn.testtool.storage.Storage;
-import nl.nn.testtool.web.ApiServlet;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -39,7 +39,8 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.http.MediaType;
 
 @RestController
-@RequestMapping("/" + ApiServlet.LADYBUG_API_PATH + "/metadata")
+@RequestMapping("/" + ApiBase.LADYBUG_API_PATH + "/metadata")
+@RolesAllowed("IbisObserver")
 public class MetadataApi extends ApiBase {
 	private @Setter @Inject @Autowired TestTool testTool;
 
