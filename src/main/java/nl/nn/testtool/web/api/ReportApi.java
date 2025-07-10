@@ -76,7 +76,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/" + ApiBase.LADYBUG_API_PATH + "/report")
-@RolesAllowed({"IbisObserver", "IbisDataAdmin"})
+@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin"})
 public class ReportApi extends ApiBase {
 	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 	private @Setter @Inject @Autowired TestTool testTool;

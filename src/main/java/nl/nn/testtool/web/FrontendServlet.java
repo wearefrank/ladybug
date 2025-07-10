@@ -30,11 +30,6 @@ public class FrontendServlet extends AngularServlet {
 	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 	private static final String FALLBACK_MESSAGE = ", will fall back to version agnostic approach";
 
-	/**
-	 * See documentation at {@link ApiServlet#getDefaultMapping()}
-	 * 
-	 * @return ...
-	 */
 	public static String getDefaultMapping() {
 		return "/ladybug/*";
 	}

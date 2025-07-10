@@ -97,7 +97,7 @@ public class TestToolApi extends ApiBase {
 	 * @return The response after changing the settings.
 	 */
 	@PostMapping(value = "/", consumes = MediaType.APPLICATION_JSON_VALUE)
-	@RolesAllowed({"IbisObserver", "IbisDataAdmin"})
+	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin"})
 	public ResponseEntity<?> updateInfo(Map<String, String> map) {
 		if (map.isEmpty()) {
 			return ResponseEntity.badRequest().body("No settings have been provided - detailed error message - The settings that have been provided are " + map);
@@ -146,7 +146,7 @@ public class TestToolApi extends ApiBase {
 	 * @return Response confirming the delete, if report is present
 	 */
 	@DeleteMapping(value = "/in-progress/{index}")
-	@RolesAllowed({"IbisObserver", "IbisDataAdmin"})
+	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin"})
 	public ResponseEntity<?> deleteReportInProgress(@PathVariable("index") int index) {
 		if (index == 0)
 			return ResponseEntity.badRequest().body("No progresses have been queried [" + index + "] or are available [" + testTool.getNumberOfReportsInProgress() + "]");

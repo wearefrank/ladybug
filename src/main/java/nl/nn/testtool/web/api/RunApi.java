@@ -42,14 +42,14 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/" + ApiBase.LADYBUG_API_PATH + "/runner")
-@RolesAllowed({"IbisObserver", "IbisDataAdmin"})
+@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin"})
 public class RunApi extends ApiBase {
 	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 	private @Setter @Inject @Autowired TestTool testTool;
 	private @Setter @Inject @Autowired ReportXmlTransformer reportXmlTransformer;
 
 	@PostMapping(value = "/run/{storageName}/{storageId}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisTester"})
+	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	public ResponseEntity<?> runReport(@PathVariable("storageName") String storageName, @PathVariable("storageId") int storageId) {
 		Map<String, Object> result = new HashMap<>();
 		String errorMessage = null;
