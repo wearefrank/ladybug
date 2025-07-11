@@ -1,5 +1,5 @@
 /*
-   Copyright 2021-2022, 2024 WeAreFrank!
+   Copyright 2021-2022, 2024-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -30,11 +30,6 @@ public class FrontendServlet extends AngularServlet {
 	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 	private static final String FALLBACK_MESSAGE = ", will fall back to version agnostic approach";
 
-	/**
-	 * See documentation at {@link ApiServlet#getDefaultMapping()}
-	 * 
-	 * @return ...
-	 */
 	public static String getDefaultMapping() {
 		return "/ladybug/*";
 	}

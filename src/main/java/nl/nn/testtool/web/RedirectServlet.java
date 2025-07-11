@@ -1,5 +1,5 @@
 /*
-   Copyright 2022, 2024 WeAreFrank!
+   Copyright 2022, 2024-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+import nl.nn.testtool.web.api.ApiBase;
 /**
  * Redirect frontend from /ladybug/api/ to /ladybug-api/ when for example running on Quarkus. When the frontend is
  * adjusted to try both /ladybug/api/ and /ladybug-api/ this isn't needed anymore

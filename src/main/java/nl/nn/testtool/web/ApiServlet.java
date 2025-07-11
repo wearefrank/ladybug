@@ -1,5 +1,5 @@
 /*
-   Copyright 2021-2024 WeAreFrank!
+   Copyright 2021-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.cxf.transport.servlet.CXFServlet;
+import jakarta.servlet.http.HttpServlet;
 import org.springframework.context.event.ContextRefreshedEvent;
 
 import jakarta.servlet.RequestDispatcher;
@@ -28,7 +28,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletRequestWrapper;
 import jakarta.servlet.http.HttpServletResponse;
 
-public class ApiServlet extends CXFServlet {
+public class ApiServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 	public static final String LADYBUG_API_PATH = "ladybug-api"; // See comment in doRequest() method below
 
@@ -150,12 +150,5 @@ public class ApiServlet extends CXFServlet {
 				super.doHead(requestWrapper, response);
 			}
 		}
-	}
-
-	@Override
-	public void onApplicationEvent(ContextRefreshedEvent event) {
-		// This event listens to all Spring refresh events.
-		// When adding new Spring contexts (with this as a parent) refresh events originating from other contexts will also trigger this method.
-		// Since we never want to reinitialize this servlet, we can ignore the 'refresh' event completely!
 	}
 }
