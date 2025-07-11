@@ -64,7 +64,7 @@ public class RedirectServlet extends HttpServlet {
 
 	private void doRequest(String method, HttpServletRequest request, HttpServletResponse response)
 		throws ServletException, IOException {
-		String pathInfo = "/" + ApiBase.LADYBUG_API_PATH + request.getPathInfo();
+		String pathInfo = "/" + ApiServlet.LADYBUG_API_PATH + request.getPathInfo();
 		String queryString = request.getQueryString();
 		if (queryString != null) {
 			pathInfo = pathInfo + "?" + queryString;

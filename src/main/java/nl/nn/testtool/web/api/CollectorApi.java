@@ -20,6 +20,7 @@ import jakarta.inject.Inject;
 import lombok.Setter;
 import nl.nn.testtool.Span;
 import nl.nn.testtool.TestTool;
+import nl.nn.testtool.web.ApiServlet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,7 +34,7 @@ import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 
 @RestController
-@RequestMapping("/" + ApiBase.LADYBUG_API_PATH + "/collector")
+@RequestMapping("/" + ApiServlet.LADYBUG_API_PATH + "/collector")
 @RolesAllowed("IbisWebService")
 public class CollectorApi extends ApiBase {
     private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());

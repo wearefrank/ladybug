@@ -21,6 +21,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import jakarta.annotation.security.RolesAllowed;
+import nl.nn.testtool.web.ApiServlet;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -46,7 +47,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/" + ApiBase.LADYBUG_API_PATH + "/testtool")
+@RequestMapping("/" + ApiServlet.LADYBUG_API_PATH + "/testtool")
 @RolesAllowed({"IbisObserver"})
 public class TestToolApi extends ApiBase {
 	private @Setter @Inject @Autowired TestTool testTool;

@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import jakarta.annotation.security.RolesAllowed;
+import nl.nn.testtool.web.ApiServlet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,7 +42,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/" + ApiBase.LADYBUG_API_PATH + "/runner")
+@RequestMapping("/" + ApiServlet.LADYBUG_API_PATH + "/runner")
 @RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin"})
 public class RunApi extends ApiBase {
 	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());

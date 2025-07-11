@@ -30,6 +30,7 @@ import java.util.Optional;
 import java.util.Scanner;
 
 import jakarta.annotation.security.RolesAllowed;
+import nl.nn.testtool.web.ApiServlet;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -75,7 +76,7 @@ import org.springframework.http.MediaType;
 import org.springframework.web.multipart.MultipartFile;
 
 @RestController
-@RequestMapping("/" + ApiBase.LADYBUG_API_PATH + "/report")
+@RequestMapping("/" + ApiServlet.LADYBUG_API_PATH + "/report")
 @RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin"})
 public class ReportApi extends ApiBase {
 	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());

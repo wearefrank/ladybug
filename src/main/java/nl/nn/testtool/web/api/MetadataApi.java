@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 
 import jakarta.annotation.security.RolesAllowed;
+import nl.nn.testtool.web.ApiServlet;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import jakarta.inject.Inject;
@@ -39,7 +40,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.http.MediaType;
 
 @RestController
-@RequestMapping("/" + ApiBase.LADYBUG_API_PATH + "/metadata")
+@RequestMapping("/" + ApiServlet.LADYBUG_API_PATH + "/metadata")
 @RolesAllowed("IbisObserver")
 public class MetadataApi extends ApiBase {
 	private @Setter @Inject @Autowired TestTool testTool;
