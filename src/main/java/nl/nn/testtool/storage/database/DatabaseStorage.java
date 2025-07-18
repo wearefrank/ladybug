@@ -227,10 +227,13 @@ public class DatabaseStorage implements Storage {
 		log.debug("Store report query: " + query.toString());
 		KeyHolder keyHolder = new GeneratedKeyHolder();
 		ladybugJdbcTemplate.update(connection -> {
-			// Using Statement.RETURN_GENERATED_KEYS instead of new String[] { getStorageIdColumn() } doesn't work for
-			// Oracle. It will result in: org.springframework.dao.DataRetrievalFailureException:
+			// Using Statement.RETURN_GENERATED_KEYS instead of new String[] { getStorageIdColumn().toLowerCase() }
+			// doesn't work for Oracle. It will result in: org.springframework.dao.DataRetrievalFailureException:
 			// The generated key type is not supported. Unable to cast [oracle.sql.ROWID] to [java.lang.Number].
-			PreparedStatement ps = connection.prepareStatement(query.toString(), new String[] { getStorageIdColumn() });
+			PreparedStatement ps = connection.prepareStatement(query.toString(),
+					// Use lowercase for PostgreSQL to avoid:
+					// org.postgresql.util.PSQLException: ERROR: column "storageId" does not exist
+					new String[] { getStorageIdColumn().toLowerCase() });
 			int i = 1;
 			for (String column : getMetadataNames()) {
 				if (!column.equals(getStorageIdColumn())) {
