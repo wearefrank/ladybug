@@ -50,7 +50,7 @@ public interface Storage {
 	 * Get a list of metadata records. A metadata record is also a list and
 	 * contains the metadata for a specific report.
 	 * 
-	 * @param maxNumberOfRecords  the maximum number of records to return
+	 * @param maxNumberOfRecords  the maximum number of records to return (-1 for no limit)
 	 * @param metadataNames ...
 	 * @param searchValues see {@link SearchUtil}
 	 * @param metadataValueType ...

@@ -1,5 +1,5 @@
 /*
-   Copyright 2022, 2024 WeAreFrank!
+   Copyright 2022, 2024-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,6 +16,8 @@
 package nl.nn.testtool.storage.database;
 
 import java.sql.SQLException;
+import java.sql.Types;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -24,7 +26,6 @@ import org.springframework.jdbc.support.MetaDataAccessException;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.inject.Inject;
-import lombok.Setter;
 
 /*
 
@@ -39,8 +40,23 @@ See that most databaseProductName values are returned as-is as commonDatabaseNam
 */
 // @Singleton disabled for Quarkus for now because of the use of JdbcTemplate
 public class DbmsSupport {
-	private @Setter @Inject @Autowired JdbcTemplate ladybugJdbcTemplate;
+	private @Inject @Autowired JdbcTemplate ladybugJdbcTemplate;
 	private String commonDatabaseName;
+
+	public enum SortOrder {
+		ASC("ASC"),
+		DESC("DESC");
+
+		private final String value;
+
+		SortOrder(String value) {
+			this.value = value;
+		}
+
+		public String getValue() {
+			return value;
+		}
+	}
 
 	@PostConstruct
 	public void init() throws SQLException, MetaDataAccessException {
@@ -48,35 +64,54 @@ public class DbmsSupport {
 		commonDatabaseName = JdbcUtils.commonDatabaseName(databaseProductName);
 	}
 
-	public String provideFirstRowsHintAfterFirstKeyword(int rowCount) {
-		String sql = "";
-		if ("Oracle".equals(commonDatabaseName)) {
-			sql += " /*+ first_rows( " + rowCount + " ) */";
-		} else if ("Microsoft SQL Server".equals(commonDatabaseName)) {
-			sql += " top( "+rowCount+" )";
-		}
-		return sql;
-	}
-
-	public String provideTrailingFirstRowsHint(int rowCount) {
-		String sql = "";
-		if (rowCount > -1) {
-			if (!"Oracle".equals(commonDatabaseName) && !"Microsoft SQL Server".equals(commonDatabaseName)) {
-				sql += " limit " + rowCount;
-			}
-		}
-		return sql;
-	}
-
-	public String getRowNumber(String order, String sort) {
-		if ("Oracle".equals(commonDatabaseName)) {
-			return "row_number() over (order by "+order+(sort==null?"":" "+sort)+") "+getRowNumberShortName();
+	public String provideLimitAfterFirstKeyword(int limit, List<Object> args, List<Integer> argTypes) {
+		if (limit > -1 && "Microsoft SQL Server".equals(commonDatabaseName)) {
+			args.add(limit);
+			argTypes.add(Types.INTEGER);
+			return " top(" + limit + ")";
 		}
 		return "";
 	}
 
-	public String getRowNumberShortName() {
-		return "rn";
+	public String provideFirstRowsHintAfterFirstKeyword(int limit) {
+		if (limit > -1 && "Oracle".equals(commonDatabaseName)) {
+			// Cannot be parameterized (int is not susceptible to SQL injection)
+			return " /*+ first_rows(" + limit + ") */ * from (select";
+		}
+		return "";
+	}
+
+	public String provideOrderWithRowNumber(int limit, String orderByColumn, SortOrder sortOrder) {
+		if (limit > -1 && "Oracle".equals(commonDatabaseName)) {
+			return " row_number() over (order by "+ orderByColumn + " " + sortOrder + ") as rn";
+		}
+		return "";
+	}
+
+	public String provideLimitWithRowNumber(int limit, List<Object> args, List<Integer> argTypes) {
+		if (limit > -1 && "Oracle".equals(commonDatabaseName)) {
+			args.add(limit);
+			argTypes.add(Types.INTEGER);
+			return ") where rn <= ?";
+		}
+		return "";
+	}
+
+	public String provideOrder(int limit, String orderByColumn, SortOrder sortOrder) {
+		if (!"Oracle".equals(commonDatabaseName) || limit < 0) {
+			return " order by " + orderByColumn + " " + sortOrder;
+		}
+		return "";
+	}
+
+	public String provideLimit(int limit, List<Object> args, List<Integer> argTypes) {
+		if (limit > -1 && !"Oracle".equals(commonDatabaseName)
+				&& !"Microsoft SQL Server".equals(commonDatabaseName)) {
+			args.add(limit);
+			argTypes.add(Types.INTEGER);
+			return " limit ?";
+		}
+		return "";
 	}
 
 	public boolean autoIncrementKeyMustBeInserted() {

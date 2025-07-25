@@ -55,6 +55,7 @@ import nl.nn.testtool.MetadataFieldExtractor;
 import nl.nn.testtool.Report;
 import nl.nn.testtool.storage.Storage;
 import nl.nn.testtool.storage.StorageException;
+import nl.nn.testtool.storage.database.DbmsSupport.SortOrder;
 import nl.nn.testtool.util.Export;
 import nl.nn.testtool.util.Import;
 import nl.nn.testtool.util.SearchUtil;
@@ -429,17 +430,16 @@ public class DatabaseStorage implements Storage {
 	protected void buildMetadataQuery(int maxNumberOfRecords, List<String> metadataNames, List<String> searchValues,
 			List<String> rangeSearchValues, StringBuilder query, List<Object> args, List<Integer> argTypes)
 			throws StorageException {
-		query.append("select" + dbmsSupport.provideFirstRowsHintAfterFirstKeyword(maxNumberOfRecords));
-		String rowNumber = dbmsSupport.getRowNumber(metadataNames.get(0), "desc");
-		if (StringUtils.isNotEmpty(rowNumber)) {
-			query.append(" * from (select");
-		}
-		boolean first = true;
+		SortOrder sortOrder = SortOrder.DESC;
+		query.append("select");
+		query.append(dbmsSupport.provideLimitAfterFirstKeyword(maxNumberOfRecords, args, argTypes));
+		query.append(dbmsSupport.provideFirstRowsHintAfterFirstKeyword(maxNumberOfRecords));
+		boolean addComma = false;
 		for (String metadataName : metadataNames) {
-			if (first) {
-				first = false;
-			} else {
+			if (addComma) {
 				query.append(",");
+			} else {
+				addComma = true;
 			}
 			if (isBigValue(metadataName)) {
 				query.append(" substr(" + metadataName + ", 1, 100)");
@@ -447,13 +447,14 @@ public class DatabaseStorage implements Storage {
 				query.append(" " + metadataName);
 			}
 		}
-		if (StringUtils.isNotEmpty(rowNumber)) {
-			if (first) {
-				first = false;
-			} else {
+		String provideOrderWithRowNumber =
+				dbmsSupport.provideOrderWithRowNumber(maxNumberOfRecords, metadataNames.get(0), sortOrder);
+		if (StringUtils.isNotEmpty(provideOrderWithRowNumber)) {
+			if (addComma) {
 				query.append(",");
 			}
-			query.append(" " + rowNumber);
+			// Add it as last column so the same columnIndex can be used for rs.get*() methods for all databases
+			query.append(provideOrderWithRowNumber);
 		}
 		query.append(" from " + getTable());
 		// where
@@ -506,15 +507,9 @@ public class DatabaseStorage implements Storage {
 			// Clean up trailing space used by addExpression() to determine to add "where" or "and"
 			query.deleteCharAt(query.length() - 1);
 		}
-		if (StringUtils.isNotEmpty(rowNumber)) {
-			// An extra select was added earlier because rowNumber is not empty
-			query.append(") where " + dbmsSupport.getRowNumberShortName() + " < ?");
-			args.add(maxNumberOfRecords + 1);
-			argTypes.add(Types.INTEGER);
-		}
-		query.append(" order by ");
-		query.append(metadataNames.get(0) + " desc");
-		query.append(dbmsSupport.provideTrailingFirstRowsHint(maxNumberOfRecords));
+		query.append(dbmsSupport.provideLimitWithRowNumber(maxNumberOfRecords, args, argTypes));
+		query.append(dbmsSupport.provideOrder(maxNumberOfRecords, metadataNames.get(0), sortOrder));
+		query.append(dbmsSupport.provideLimit(maxNumberOfRecords, args, argTypes));
 	}
 
 	/*
