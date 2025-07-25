@@ -22,6 +22,7 @@ import javax.sql.DataSource;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.context.annotation.Scope;
@@ -50,6 +51,7 @@ import nl.nn.testtool.storage.proofofmigration.ProofOfMigrationErrorsView;
 import nl.nn.testtool.storage.proofofmigration.ProofOfMigrationStorage;
 import nl.nn.testtool.storage.proofofmigration.ProofOfMigrationView;
 import nl.nn.testtool.transform.ReportXmlTransformer;
+import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
 /**
  * <p>
@@ -136,6 +138,8 @@ import nl.nn.testtool.transform.ReportXmlTransformer;
 @Scope("singleton")
 @Lazy // Lazy init singleton beans (prototype beans are already loaded on demand)
 @Configuration
+@EnableWebMvc
+@ComponentScan(basePackages = "nl.nn.testtool.web.api")
 public class Config {
 
 	@Bean
@@ -319,5 +323,4 @@ public class Config {
 	ProofOfMigrationErrorsView proofOfMigrationErrorsView() {
 		return new ProofOfMigrationErrorsView();
 	}
-
 }

@@ -40,7 +40,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.http.MediaType;
 
 @RestController
-@RequestMapping("/" + ApiServlet.LADYBUG_API_PATH + "/metadata")
+@RequestMapping("/metadata")
 @RolesAllowed("IbisObserver")
 public class MetadataApi extends ApiBase {
 	private @Setter @Inject @Autowired TestTool testTool;
@@ -59,9 +59,9 @@ public class MetadataApi extends ApiBase {
 	@GetMapping(value = "/{storage}/", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> getMetadataList(@PathVariable("storage") String storageName,
 											 @RequestParam(name = "metadataNames") List<String> metadataNames,
-											 @RequestParam(defaultValue = "-1") int limit,
-											 @RequestParam(name = "filterHeader") List<String> filterHeaders,
-											 @RequestParam(name = "filter") List<String> filterParams) {
+											 @RequestParam(name="limit", defaultValue = "-1") int limit,
+											 @RequestParam(name = "filterHeader", defaultValue = "") List<String> filterHeaders,
+											 @RequestParam(name = "filter", defaultValue = "") List<String> filterParams) {
 		List<String> searchValues = new ArrayList<>();
 		for(String field : metadataNames) {
 			boolean changed = false;

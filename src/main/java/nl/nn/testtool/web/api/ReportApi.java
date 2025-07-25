@@ -30,7 +30,6 @@ import java.util.Optional;
 import java.util.Scanner;
 
 import jakarta.annotation.security.RolesAllowed;
-import nl.nn.testtool.web.ApiServlet;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -67,6 +66,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
@@ -76,7 +76,7 @@ import org.springframework.http.MediaType;
 import org.springframework.web.multipart.MultipartFile;
 
 @RestController
-@RequestMapping("/" + ApiServlet.LADYBUG_API_PATH + "/report")
+@RequestMapping("/report")
 @RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin"})
 public class ReportApi extends ApiBase {
 	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
@@ -94,7 +94,7 @@ public class ReportApi extends ApiBase {
 	 * @param globalTransformer True if reportXmlTransformer should be set for the report.
 	 * @return A response containing serialized Report object.
 	 */
-	@GetMapping(value = "/{storage}/{storageId}", produces = MediaType.APPLICATION_JSON_VALUE)
+	@GetMapping(value = "/{storage}/{storageId}/", produces = MediaType.APPLICATION_JSON_VALUE)
 	@RolesAllowed("IbisObserver")
 	public ResponseEntity<?> getReport(@PathVariable("storage") String storageName,
 									   @PathVariable("storageId") int storageId,
@@ -138,7 +138,7 @@ public class ReportApi extends ApiBase {
 	public ResponseEntity<?> getCheckpointUids(	@PathVariable("storage") String storageName,
 										@PathVariable("storageId") int storageId,
 										@RequestParam(name = "view") String viewName,
-										@RequestParam() boolean invert
+										@RequestParam(name = "invert") boolean invert
 										) {
 		try {
 			Storage storage = testTool.getStorage(storageName);
@@ -217,7 +217,7 @@ public class ReportApi extends ApiBase {
 	 * @param storageIds  Storage id's of the reports to delete
 	 * @return "Ok" if deleted properly, "Not implemented" if storage does not support deletion, "Not found" if report does not exist.
 	 */
-	@DeleteMapping(value = "/{storage}/")
+	@DeleteMapping(value = "/{storage}")
 	public ResponseEntity<?> deleteReport(@PathVariable("storage") String storageName, @RequestParam(name = "storageIds") List<Integer> storageIds) {
 		Storage storage = testTool.getStorage(storageName);
 		if (!(storage instanceof CrudStorage)) {
@@ -242,7 +242,7 @@ public class ReportApi extends ApiBase {
 		return ResponseEntity.ok().build();
 	}
 
-	@DeleteMapping(value = "/all/{storage}/")
+	@DeleteMapping(value = "/all/{storage}")
 	public ResponseEntity<?> deleteAllReports(@PathVariable("storage") String storageName) {
 		Storage storage = testTool.getStorage(storageName);
 		List<String> errorMessages = new ArrayList<>();
@@ -376,7 +376,7 @@ public class ReportApi extends ApiBase {
 	 * @return The copied report.
 	 */
 	@PutMapping(value = "/store/{storage}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> copyReport(@PathVariable("storage") String storageName, Map<String, List<Integer>> sources) {
+	public ResponseEntity<?> copyReport(@PathVariable("storage") String storageName, @RequestBody Map<String, List<Integer>> sources) {
 		Storage target = testTool.getStorage(storageName);
 		Map<String, String> exceptions = new HashMap<>();
 		ArrayList<Report> reports = new ArrayList<>();
@@ -507,7 +507,7 @@ public class ReportApi extends ApiBase {
 	 * @return The response of updating the Path.
 	 */
 	@PutMapping(value = "/move/{storage}", consumes = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> updatePath(@PathVariable("storage") String storageName, @RequestParam(name = "storageIds") List<Integer> storageIds, Map<String, String> map) {
+	public ResponseEntity<?> updatePath(@PathVariable("storage") String storageName, @RequestParam(name = "storageIds") List<Integer> storageIds, @RequestBody Map<String, String> map) {
 		CrudStorage storage = (CrudStorage) testTool.getStorage(storageName);
 		String path = map.get("path");
 		String action = map.get("action");
@@ -545,7 +545,7 @@ public class ReportApi extends ApiBase {
 	 * @return The response of cloning the report.
 	 */
 	@PostMapping(value = "/move/{storageName}/{storageId}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> cloneReport(@PathVariable("storageName") String storageName, @PathVariable("storageId") int storageId, Map<String, String> map) {
+	public ResponseEntity<?> cloneReport(@PathVariable("storageName") String storageName, @PathVariable("storageId") int storageId, @RequestBody Map<String, String> map) {
 		CrudStorage storage = (CrudStorage) testTool.getStorage(storageName);
 		Report original;
 		try {
@@ -647,7 +647,7 @@ public class ReportApi extends ApiBase {
 		return ResponseEntity.ok(response);
 	}
 
-	@GetMapping(value = "/variables", produces = MediaType.APPLICATION_JSON_VALUE)
+	@GetMapping(value = "/variables/", produces = MediaType.APPLICATION_JSON_VALUE)
 	@RolesAllowed("IbisObserver")
 	public ResponseEntity<?> fetchVariables() {
 		Map<String, String> variables = new HashMap<>();

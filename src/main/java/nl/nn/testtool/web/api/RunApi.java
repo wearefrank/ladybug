@@ -42,7 +42,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/" + ApiServlet.LADYBUG_API_PATH + "/runner")
+@RequestMapping("/runner")
 @RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin"})
 public class RunApi extends ApiBase {
 	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());

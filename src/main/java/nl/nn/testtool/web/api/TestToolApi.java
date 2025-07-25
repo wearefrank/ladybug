@@ -21,7 +21,6 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import jakarta.annotation.security.RolesAllowed;
-import nl.nn.testtool.web.ApiServlet;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -47,7 +46,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/" + ApiServlet.LADYBUG_API_PATH + "/testtool")
+@RequestMapping("/testtool")
 @RolesAllowed({"IbisObserver"})
 public class TestToolApi extends ApiBase {
 	private @Setter @Inject @Autowired TestTool testTool;
@@ -68,7 +67,7 @@ public class TestToolApi extends ApiBase {
 	/**
 	 * @return Response containing test tool data.
 	 */
-	@GetMapping(value = "/", produces = MediaType.APPLICATION_JSON_VALUE)
+	@GetMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> getInfo() {
 		Map<String, Object> info = getTestToolInfo();
 		return ResponseEntity.ok(info);
@@ -215,7 +214,7 @@ public class TestToolApi extends ApiBase {
 	/**
 	 * @return The configured views
 	 */
-	@GetMapping(value = "/views/", produces = MediaType.APPLICATION_JSON_VALUE)
+	@GetMapping(value = "/views", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> getViewsResponse() {
 		// Starting from CXF 3.2.0 the setViews() will not be called by Spring when the name of this method is
 		// getViews() instead of getViewsResponse() (with CXF 3.1.18 this was not the case) (maybe Spring's
@@ -259,7 +258,7 @@ public class TestToolApi extends ApiBase {
 		return ResponseEntity.ok(strategies);
 	}
 
-	@GetMapping(value = "/version", consumes = MediaType.APPLICATION_JSON_VALUE)
+	@GetMapping(value = "/version", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> getVersion() {
 		return ResponseEntity.ok(testTool.getVersion());
 	}
