@@ -548,8 +548,7 @@ public class DatabaseStorage implements Storage {
 		if (searchValue.startsWith("[") && searchValue.endsWith("]")) {
 			searchValue = searchValue.substring(1, searchValue.length() - 1);
 		}
-		searchValue = searchValue.replaceAll("\\%", "\\\\%");
-		searchValue = searchValue.replaceAll("\\_", "\\\\_");
+		searchValue = dbmsSupport.escapeLikePattern(searchValue);
 		searchValue = searchValue.replaceAll("\\*", "%");
 		args.add(searchValue);
 		argTypes.add(Types.VARCHAR);

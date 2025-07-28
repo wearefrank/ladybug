@@ -128,4 +128,12 @@ public class DbmsSupport {
 		return null;
 	}
 
+	public String escapeLikePattern(String pattern) {
+		pattern = pattern.replaceAll("\\%", "\\\\%");
+		if (!"Oracle".equals(commonDatabaseName) && !"Microsoft SQL Server".equals(commonDatabaseName)) {
+			pattern = pattern.replaceAll("\\_", "\\\\_");
+		}
+		return pattern;
+	}
+
 }
