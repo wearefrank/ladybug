@@ -78,12 +78,12 @@ public class MemoryStorage implements Storage {
 	}
 
 	@Override
-	public int getSize() {
+	public int getSize() throws StorageException {
 		return storageIds.size();
 	}
 
 	@Override
-	public synchronized List<Integer> getStorageIds() {
+	public synchronized List<Integer> getStorageIds() throws StorageException {
 		return new ArrayList<Integer>(storageIds);
 	}
 

@@ -39,6 +39,7 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import jakarta.annotation.PostConstruct;
+import lombok.Getter;
 import lombok.Setter;
 import nl.nn.testtool.Checkpoint;
 import nl.nn.testtool.CheckpointType;
@@ -56,7 +57,7 @@ import nl.nn.testtool.util.XmlUtil;
 public class XmlStorage extends MemoryCrudStorage {
 	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 	public static final String FILE_EXTENSION = ".report.xml";
-	private @Setter String reportsFolder;
+	private @Setter @Getter String reportsFolder;
 	private List<Long> lastModifieds = new ArrayList<>();
 
 	@Override
@@ -128,6 +129,18 @@ public class XmlStorage extends MemoryCrudStorage {
 			List<String> searchValues, int metadataValueType) throws StorageException {
 		getReports();
 		return super.getMetadata(maxNumberOfRecords, metadataNames, searchValues, metadataValueType);
+	}
+
+	@Override
+	public synchronized List<Integer> getStorageIds() throws StorageException {
+		getReports();
+		return super.getStorageIds();
+	}
+
+	@Override
+	public int getSize() throws StorageException {
+		getReports();
+		return super.getSize();
 	}
 
 	@Override
