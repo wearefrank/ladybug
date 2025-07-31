@@ -319,4 +319,5 @@ public class Config {
 	ProofOfMigrationErrorsView proofOfMigrationErrorsView() {
 		return new ProofOfMigrationErrorsView();
 	}
+
 }
