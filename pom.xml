@@ -67,9 +67,15 @@
       <artifactId>ladybug-frontend</artifactId>
       <version>${frontend.version}</version>
     </dependency>
+    <!-- Makes spring-web a transitive dependency. That one is sufficient to
+         build this project, but the project that uses ladybug probably needs
+         spring-webmvc. If it is not included as a dependency here, it is
+         difficult to ensure that spring-web and spring-webmvc have the same
+         version
+    -->
     <dependency>
       <groupId>org.springframework</groupId>
-      <artifactId>spring-web</artifactId>
+      <artifactId>spring-webmvc</artifactId>
       <version>${spring.version}</version>
     </dependency>
 
