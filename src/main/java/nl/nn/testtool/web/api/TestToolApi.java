@@ -15,29 +15,17 @@
 */
 package nl.nn.testtool.web.api;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 
+import jakarta.annotation.security.RolesAllowed;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.inject.Inject;
-import jakarta.ws.rs.Consumes;
-import jakarta.ws.rs.DELETE;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.POST;
-import jakarta.ws.rs.PUT;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.PathParam;
-import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.QueryParam;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
 import lombok.Setter;
 import nl.nn.testtool.MetadataExtractor;
 import nl.nn.testtool.Report;
@@ -46,9 +34,20 @@ import nl.nn.testtool.filter.View;
 import nl.nn.testtool.filter.Views;
 import nl.nn.testtool.storage.CrudStorage;
 import nl.nn.testtool.transform.ReportXmlTransformer;
-import nl.nn.testtool.web.ApiServlet;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
-@Path("/" + ApiServlet.LADYBUG_API_PATH + "/testtool")
+@RestController
+@RequestMapping("/testtool")
+@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 public class TestToolApi extends ApiBase {
 	private @Setter @Inject @Autowired TestTool testTool;
 	private @Setter @Inject @Autowired MetadataExtractor metadataExtractor;
@@ -68,21 +67,18 @@ public class TestToolApi extends ApiBase {
 	/**
 	 * @return Response containing test tool data.
 	 */
-	@GET
-	@Path("/")
-	@Produces(MediaType.APPLICATION_JSON)
-	public Response getInfo() {
+	@GetMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
+	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	public ResponseEntity<?> getInfo() {
 		Map<String, Object> info = getTestToolInfo();
-		return Response.ok(info).build();
+		return ResponseEntity.ok(info);
 	}
 
-	@GET
-	@Path("/reset")
-	@Produces(MediaType.APPLICATION_JSON)
-	public Response resetInfo() {
+	@GetMapping(value = "/reset", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<?> resetInfo() {
 		testTool.reset();
 		Map<String, Object> info = getTestToolInfo();
-		return Response.ok(info).build();
+		return ResponseEntity.ok(info);
 	}
 
 	public Map<String, Object> getTestToolInfo() {
@@ -101,16 +97,14 @@ public class TestToolApi extends ApiBase {
 	 * @param map New settings that can contain (generatorEnabled, regexFilter)
 	 * @return The response after changing the settings.
 	 */
-	@POST
-	@Path("/")
-	@Consumes(MediaType.APPLICATION_JSON)
-	public Response updateInfo(Map<String, String> map) {
+	@PostMapping(value = "/", consumes = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<?> updateInfo(Map<String, String> map) {
 		if (map.isEmpty()) {
-			return Response.status(Response.Status.BAD_REQUEST).entity("No settings have been provided - detailed error message - The settings that have been provided are " + map).build();
+			return ResponseEntity.badRequest().body("No settings have been provided - detailed error message - The settings that have been provided are " + map);
 		}
 
 		if (map.size() > 2) {
-			return Response.status(Response.Status.BAD_REQUEST).entity("Too many settings have been provided - detailed error message - The settings that have been provided are " + map).build();
+			return ResponseEntity.badRequest().body("Too many settings have been provided - detailed error message - The settings that have been provided are " + map);
 		}
 		// TODO: Check user roles.
 		String generatorEnabled = map.remove("generatorEnabled");
@@ -123,7 +117,7 @@ public class TestToolApi extends ApiBase {
 		if (StringUtils.isNotEmpty(regexFilter))
 			testTool.setRegexFilter(regexFilter);
 
-		return Response.ok().build();
+		return ResponseEntity.ok().build();
 	}
 
 	/**
@@ -132,18 +126,17 @@ public class TestToolApi extends ApiBase {
 	 * @param index Index of the report to return
 	 * @return Response containing the specified report, if present.
 	 */
-	@GET
-	@Path("/in-progress/{index}")
-	@Produces(MediaType.APPLICATION_JSON)
-	public Response getReportsInProgress(@PathParam("index") int index) {
+	@GetMapping(value = "/in-progress/{index}", produces = MediaType.APPLICATION_JSON_VALUE)
+	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	public ResponseEntity<?> getReportsInProgress(@PathVariable("index") int index) {
 		if (index == 0)
-			return Response.status(Response.Status.BAD_REQUEST).entity("No progresses have been queried [" + index + "] and/or are available [" + testTool.getNumberOfReportsInProgress() + "]").build();
+			return ResponseEntity.badRequest().body("No progresses have been queried [" + index + "] and/or are available [" + testTool.getNumberOfReportsInProgress() + "]");
 
 		try {
 			Report report = testTool.getReportInProgress(index - 1);
-			return Response.ok(report).build();
+			return ResponseEntity.ok(report);
 		} catch (Exception e) {
-			return Response.status(Response.Status.BAD_REQUEST).entity("Could not find report in progress with index [" + index + "] - detailed error message - " + e + Arrays.toString(e.getStackTrace())).build();
+			return ResponseEntity.badRequest().body("Could not find report in progress with index [" + index + "] - detailed error message - " + e + Arrays.toString(e.getStackTrace()));
 		}
 	}
 
@@ -153,17 +146,16 @@ public class TestToolApi extends ApiBase {
 	 * @param index Index of the report to be deleted
 	 * @return Response confirming the delete, if report is present
 	 */
-	@DELETE
-	@Path("/in-progress/{index}")
-	public Response deleteReportInProgress(@PathParam("index") int index) {
+	@DeleteMapping(value = "/in-progress/{index}")
+	public ResponseEntity<?> deleteReportInProgress(@PathVariable("index") int index) {
 		if (index == 0)
-			return Response.status(Response.Status.BAD_REQUEST).entity("No progresses have been queried [" + index + "] or are available [" + testTool.getNumberOfReportsInProgress() + "]").build();
+			return ResponseEntity.badRequest().body("No progresses have been queried [" + index + "] or are available [" + testTool.getNumberOfReportsInProgress() + "]");
 
 		try {
 			testTool.removeReportInProgress(index - 1);
-			return Response.ok().build();
+			return ResponseEntity.ok().build();
 		} catch (Exception e) {
-			return Response.status(Response.Status.BAD_REQUEST).entity("Could not find report in progress with index [" + index + "] :: " + e + Arrays.toString(e.getStackTrace())).build();
+			return ResponseEntity.badRequest().body("Could not find report in progress with index [" + index + "] :: " + e + Arrays.toString(e.getStackTrace()));
 		}
 	}
 
@@ -172,11 +164,10 @@ public class TestToolApi extends ApiBase {
 	 *
 	 * @return Response containing the time it will take before ladybug shows a warning that a report is still in progress
 	 */
-	@GET
-	@Path("/in-progress/threshold-time")
-	@Produces(MediaType.APPLICATION_JSON)
-	public Response getReportsInProgressWarningThreshold() {
-		return Response.ok(testTool.getReportsInProgressThreshold()).build();
+	@GetMapping(value = "/in-progress/threshold-time", produces = MediaType.APPLICATION_JSON_VALUE)
+	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	public ResponseEntity<?> getReportsInProgressWarningThreshold() {
+		return ResponseEntity.ok(testTool.getReportsInProgressThreshold());
 	}
 
 	/**
@@ -185,30 +176,27 @@ public class TestToolApi extends ApiBase {
 	 * @param map Map containing key "transformation"
 	 * @return The response after changing the transformation.
 	 */
-	@POST
-	@Path("/transformation/")
-	@Consumes(MediaType.APPLICATION_JSON)
-	public Response updateReportTransformation(Map<String, String> map) {
+	@PostMapping(value = "/transformation/", consumes = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<?> updateReportTransformation(Map<String, String> map) {
 		String transformation = map.get("transformation");
 		if (StringUtils.isEmpty(transformation)) {
-			return Response.status(Response.Status.BAD_REQUEST).entity("No transformation has been provided").build();
+			return ResponseEntity.badRequest().body("No transformation has been provided");
 		}
 		String errorMessage = reportXmlTransformer.updateXslt(transformation);
 		if (errorMessage != null) {
 			// Without "- detailed error message -" the message is not shown in the toaster
-			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(errorMessage + " - detailed error message - No detailed error message available").build();
+			return ResponseEntity.internalServerError().body(errorMessage + " - detailed error message - No detailed error message available");
 		}
-		return Response.ok().build();
+		return ResponseEntity.ok().build();
 	}
 
 	/**
 	 * @param defaultTransformation Boolean to check if we need to use the default transformation
 	 * @return Response containing the current default transformation of the test tool.
 	 */
-	@GET
-	@Path("/transformation/{defaultTransformation}")
-	@Produces(MediaType.APPLICATION_JSON)
-	public Response getReportTransformation(@PathParam("defaultTransformation") boolean defaultTransformation) {
+	@GetMapping(value = "/transformation/{defaultTransformation}", produces = MediaType.APPLICATION_JSON_VALUE)
+	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	public ResponseEntity<?> getReportTransformation(@PathVariable("defaultTransformation") boolean defaultTransformation) {
 		String transformation;
 
 		if (defaultTransformation) {
@@ -218,23 +206,19 @@ public class TestToolApi extends ApiBase {
 		}
 
 		if (StringUtils.isEmpty(transformation))
-			return Response.noContent().build();
+			return ResponseEntity.noContent().build();
 
 		Map<String, String> map = new HashMap<>(1);
 		map.put("transformation", transformation);
-		return Response.ok(map).build();
+		return ResponseEntity.ok(map);
 	}
 
 	/**
 	 * @return The configured views
 	 */
-	@GET
-	@Path("/views/")
-	@Produces(MediaType.APPLICATION_JSON)
-	public Response getViewsResponse() {
-		// Starting from CXF 3.2.0 the setViews() will not be called by Spring when the name of this method is
-		// getViews() instead of getViewsResponse() (with CXF 3.1.18 this was not the case) (maybe Spring's
-		// ExtendedBeanInfo isn't used anymore with newer CXF versions)
+	@GetMapping(value = "/views", produces = MediaType.APPLICATION_JSON_VALUE)
+	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	public ResponseEntity<?> getViewsResponse() {
 		Map<String, Map<String, Object>> response = new LinkedHashMap<>();
 		for (View view : views) {
 			Map<String, Object> map = new HashMap<>();
@@ -253,13 +237,11 @@ public class TestToolApi extends ApiBase {
 			map.put("metadataTypes", metadataTypes);
 			response.put(view.getName(), map);
 		}
-		return Response.ok(response).build();
+		return ResponseEntity.ok(response);
 	}
 
-	@PUT
-	@Path("/node-link-strategy")
-	@Consumes(MediaType.APPLICATION_JSON)
-	public Response changeNodeLinkStrategy(@QueryParam("nodeLinkStrategy") String nodeLinkStrategy, @QueryParam("viewName") String viewName) {
+	@PutMapping(value = "/node-link-strategy", consumes = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<?> changeNodeLinkStrategy(@RequestParam(name = "nodeLinkStrategy") String nodeLinkStrategy, @RequestParam(name = "viewName") String viewName) {
 		for (View view : views) {
 			if (viewName.equals(view.getName())) {
 				setSessionAttr(view.getName() + ".NodeLinkStrategy", nodeLinkStrategy);
@@ -267,21 +249,19 @@ public class TestToolApi extends ApiBase {
 			}
 		}
 
-		return Response.ok().build();
+		return ResponseEntity.ok().build();
 	}
 
-	@GET
-	@Path("/stub-strategies")
-	@Consumes(MediaType.APPLICATION_JSON)
-	public Response getPossibleStubStrategies() {
+	@GetMapping(value = "/stub-strategies", consumes = MediaType.APPLICATION_JSON_VALUE)
+	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	public ResponseEntity<?> getPossibleStubStrategies() {
 		var strategies = testTool.getStubStrategies();
-		return Response.ok(strategies).build();
+		return ResponseEntity.ok(strategies);
 	}
 
-	@GET
-	@Path("/version")
-	@Consumes(MediaType.APPLICATION_JSON)
-	public Response getVersion() {
-		return Response.ok(testTool.getVersion()).build();
+	@GetMapping(value = "/version", produces = MediaType.APPLICATION_JSON_VALUE)
+	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	public ResponseEntity<?> getVersion() {
+		return ResponseEntity.ok(testTool.getVersion());
 	}
 }
