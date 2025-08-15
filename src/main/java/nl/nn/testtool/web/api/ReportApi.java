@@ -19,6 +19,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.lang.invoke.MethodHandles;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -30,6 +32,7 @@ import java.util.Optional;
 import java.util.Scanner;
 
 import jakarta.annotation.security.RolesAllowed;
+import jakarta.servlet.annotation.MultipartConfig;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,6 +62,9 @@ import nl.nn.testtool.storage.memory.MemoryCrudStorage;
 import nl.nn.testtool.transform.ReportXmlTransformer;
 import nl.nn.testtool.util.Export;
 import nl.nn.testtool.util.ExportResult;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -71,12 +77,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
-
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/report")
+@MultipartConfig
 @RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 public class ReportApi extends ApiBase {
 	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
@@ -473,7 +480,7 @@ public class ReportApi extends ApiBase {
 	 * @param storageIds List of storage ids to download.
 	 * @return The response when downloading a file.
 	 */
-	@GetMapping(value = "/download/{storage}/{exportReport}/{exportReportXml}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+	@GetMapping(value = "/download/{storage}/{exportReport}/{exportReportXml}", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	public ResponseEntity<?> downloadFile(@PathVariable("storage") String storageName, @PathVariable("exportReport") String exportReportParam,
 								 @PathVariable("exportReportXml") String exportReportXmlParam, @RequestParam(name = "id") List<Integer> storageIds) {
@@ -490,9 +497,16 @@ public class ReportApi extends ApiBase {
 			} else {
 				export = Export.export(storage, storageIds, exportReport, exportReportXml);
 			}
-			ResponseEntity<?> response = ResponseEntity.ok(export.getTempFile());
-			response.getHeaders().add("Content-Disposition", "attachment; filename=" + export.getSuggestedFilename());
-			return response;
+			HttpHeaders responseHeaders = new HttpHeaders();
+			responseHeaders.add("Content-Disposition", "attachment; filename=" + export.getSuggestedFilename());
+			Resource resource = new FileSystemResource(export.getTempFile());
+			if (!resource.exists()) {
+				throw new StorageException("Temp file did not exist: " + export.getTempFile().getName());
+			}
+			return ResponseEntity.ok()
+					.headers(responseHeaders)
+					.contentType(MediaType.APPLICATION_OCTET_STREAM)
+					.body(resource);
 		} catch (StorageException e) {
 			return ResponseEntity.internalServerError().body("Exception while requesting reports with ids [" + storageIds + "] from the storage. - detailed error message - " + e + Arrays.toString(e.getStackTrace()));
 		}
