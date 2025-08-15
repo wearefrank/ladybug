@@ -97,7 +97,7 @@ public class TestToolApi extends ApiBase {
 	 * @param map New settings that can contain (generatorEnabled, regexFilter)
 	 * @return The response after changing the settings.
 	 */
-	@PostMapping(value = "/", consumes = MediaType.APPLICATION_JSON_VALUE)
+	@PostMapping(value = "", consumes = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> updateInfo(Map<String, String> map) {
 		if (map.isEmpty()) {
 			return ResponseEntity.badRequest().body("No settings have been provided - detailed error message - The settings that have been provided are " + map);
@@ -176,7 +176,7 @@ public class TestToolApi extends ApiBase {
 	 * @param map Map containing key "transformation"
 	 * @return The response after changing the transformation.
 	 */
-	@PostMapping(value = "/transformation/", consumes = MediaType.APPLICATION_JSON_VALUE)
+	@PostMapping(value = "/transformation", consumes = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> updateReportTransformation(Map<String, String> map) {
 		String transformation = map.get("transformation");
 		if (StringUtils.isEmpty(transformation)) {
