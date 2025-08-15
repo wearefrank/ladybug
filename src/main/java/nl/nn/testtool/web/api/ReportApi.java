@@ -425,7 +425,7 @@ public class ReportApi extends ApiBase {
 			return ResponseEntity.internalServerError().body("Given storage [" + storage.getName() + "] is not a Crud Storage. Therefore no reports can be added externally.");
 		}
 		CrudStorage crudStorage = (CrudStorage) storage;
-		String filename = attachment.getName();
+		String filename = attachment.getOriginalFilename();
 		String errorMessage = null;
 		try {
 			InputStream in = attachment.getInputStream();
@@ -448,7 +448,7 @@ public class ReportApi extends ApiBase {
 	@PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> getFileReport(@RequestPart("file") MultipartFile attachment) {
 		CrudStorage storage = new MemoryCrudStorage();
-		String filename = attachment.getName();
+		String filename = attachment.getOriginalFilename();
 		String errorMessage = null;
 		try {
 			InputStream in = attachment.getInputStream();
