@@ -47,7 +47,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/testtool")
+@RequestMapping("/api/testtool")
 @RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 public class TestToolApi extends ApiBase {
 	private @Setter @Inject @Autowired TestTool testTool;

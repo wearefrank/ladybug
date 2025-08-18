@@ -40,7 +40,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.http.MediaType;
 
 @RestController
-@RequestMapping("/metadata")
+@RequestMapping("/api/metadata")
 @RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 public class MetadataApi extends ApiBase {
 	private @Setter @Inject @Autowired TestTool testTool;
