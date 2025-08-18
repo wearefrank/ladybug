@@ -34,7 +34,7 @@ import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 
 @RestController
-@RequestMapping("/api/collector")
+@RequestMapping("/collector")
 @RolesAllowed("IbisWebService")
 public class CollectorApi extends ApiBase {
     private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());

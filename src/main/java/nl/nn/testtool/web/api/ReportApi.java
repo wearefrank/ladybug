@@ -82,7 +82,7 @@ import org.springframework.http.MediaType;
 import org.springframework.web.multipart.MultipartFile;
 
 @RestController
-@RequestMapping("/api/report")
+@RequestMapping("/report")
 @MultipartConfig
 @RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 public class ReportApi extends ApiBase {
