@@ -310,23 +310,28 @@ public class ReportApi extends ApiBase {
 		try {
 			Storage storage = testTool.getStorage(storageName);
 			Report report = getReport(storage, storageId);
-			if (report == null)
-				return Response.status(Response.Status.NOT_FOUND).entity("Could not find report with storageId [" + storageId + "]").build();
-			report.setName(map.get("name"));
-			report.setPath(TestComponent.normalizePath(map.get("path")));
-			report.setDescription(map.get("description"));
-			report.setTransformation(map.get("transformation"));
-			report.setStubStrategy(map.get("stubStrategy"));
-
-			String variablesJson = map.get("variables");
-			Map<String, String> variablesMap = new HashMap<>();
-			if (variablesJson != null && !variablesJson.isEmpty()) {
-				ObjectMapper mapper = new ObjectMapper();
-				variablesMap = mapper.readValue(variablesJson, new TypeReference<Map<String, String>>() { });
+			if (report == null) {
+				return Response.status(Response.Status.NOT_FOUND).entity("Could not find report with storageId ["
+						+ storageId + "]").build();
 			}
-			report.setVariables(variablesMap);
 
-			if (StringUtils.isNotEmpty(map.get("checkpointId"))) {
+			if (map.containsKey("name")) report.setName(map.get("name"));
+			if (map.containsKey("path")) report.setPath(TestComponent.normalizePath(map.get("path")));
+			if (map.containsKey("description")) report.setDescription(map.get("description"));
+			if (map.containsKey("transformation")) report.setTransformation(map.get("transformation"));
+			if (map.containsKey("stubStrategy")) report.setStubStrategy(map.get("stubStrategy"));
+
+			if (map.containsKey("variables")) {
+				String variablesJson = map.get("variables");
+				Map<String, String> variablesMap = new HashMap<>();
+				if (variablesJson != null && !variablesJson.isEmpty()) {
+					ObjectMapper mapper = new ObjectMapper();
+					variablesMap = mapper.readValue(variablesJson, new TypeReference<Map<String, String>>() { });
+				}
+				report.setVariables(variablesMap);
+			}
+
+			if (map.containsKey("checkpointId")) {
 				if (StringUtils.isNotEmpty(map.get("stub"))) {
 					report.getCheckpoints().get(Integer.parseInt(map.get("checkpointId"))).setStub(Integer.parseInt(map.get("stub")));
 				} else {
@@ -334,7 +339,6 @@ public class ReportApi extends ApiBase {
 				}
 			}
 
-			HashMap<String, Serializable> result = new HashMap<>(3);
 			report.flushCachedXml();
 			boolean storageUpdated = false;
 			if (storage instanceof CrudStorage) {
@@ -346,12 +350,13 @@ public class ReportApi extends ApiBase {
 					report.setGlobalReportXmlTransformer(reportXmlTransformer);
 			}
 
+			HashMap<String, Serializable> result = new HashMap<>(3);
 			result.put("xml", report.toXml());
 			result.put("storageUpdated", storageUpdated);
 			result.put("report", report);
 			return Response.ok(result).build();
 		} catch (StorageException | JsonProcessingException e) {
-			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Could not apply transformation to report with storageId [" + storageId + "] - detailed error message - " + e + Arrays.toString(e.getStackTrace())).build();
+			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Could not update report with storageId [" + storageId + "] - detailed error message - " + e + Arrays.toString(e.getStackTrace())).build();
 		}
 	}
 

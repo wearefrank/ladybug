@@ -109,13 +109,19 @@ public class XmlStorage extends MemoryCrudStorage {
 
 	@Override
 	public void delete(Report report) throws StorageException {
+		getReports();
+		// Ensure that report.path() and report.name() return the current path and filename when called by getFile().
+		// This is crucial when update() calls delete() during a rename operation, as report will contain the new names
+		// instead of the current path and filename.
+		report = reports.get(report.getStorageId());
 		File file = getFile(report);
 		if (file.exists() && !XmlUtil.isJavaBeansXml(file)) {
 			throw new StorageException("Deleting human editable report xml file not supported yet");
 		}
 		// Delete file
 		if (!file.delete()) {
-			throw new StorageException("Could not delete report with storage id [" + report.getStorageId() + "] correlation id [" + report.getCorrelationId() + "] at [" + file + "]");
+			throw new StorageException("Could not delete report xml file for report with storage id "
+					+ report.getStorageId() + ": " + file);
 		}
 		// Delete all parent folders which are empty.
 		file = file.getParentFile();
