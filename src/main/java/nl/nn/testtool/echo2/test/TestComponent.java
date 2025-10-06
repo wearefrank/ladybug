@@ -592,7 +592,7 @@ public class TestComponent extends BaseComponent implements BeanParent, ActionLi
 	private Label newDynamicVariablesLabel(Report report) {
 		Label label = new Label();
 		label.setForeground(Echo2Application.getButtonRolloverBackgroundColor());
-		if(report.getVariables() != null) {
+		if(report.getVariables() != null && report.getVariables().size() > 0) {
 			String labelText = "[";
 			boolean tooManyChars = false;
 			for(Entry<String, String> entry : report.getVariables().entrySet()) {
