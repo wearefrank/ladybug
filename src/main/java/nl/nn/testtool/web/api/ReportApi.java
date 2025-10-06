@@ -328,7 +328,11 @@ public class ReportApi extends ApiBase {
 					ObjectMapper mapper = new ObjectMapper();
 					variablesMap = mapper.readValue(variablesJson, new TypeReference<Map<String, String>>() { });
 				}
-				report.setVariables(variablesMap);
+				if (variablesMap.size() > 0) {
+					report.setVariables(variablesMap);
+				} else {
+					report.setVariables(null);
+				}
 			}
 
 			if (map.containsKey("checkpointId")) {
