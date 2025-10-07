@@ -23,20 +23,6 @@ class ReportExtractor implements MetadataFieldExtractor {
     protected @Getter boolean isSessionKey;
     protected @Setter @Getter String SESSION_KEY_PREFIX = "SessionKey ";
 
-    public void setRegexPattern(String pattern) {
-        RegexExtractionStrategy regexStrategy = new RegexExtractionStrategy(pattern);
-        this.extractionStrategies.add(regexStrategy);
-    }
-
-    public void setXpathExpression(String xpath) throws XPathExpressionException {
-        XpathExtractionStrategy xpathStrategy = new XpathExtractionStrategy(xpath);
-        this.extractionStrategies.add(xpathStrategy);
-    }
-
-    public void setIsSessionKey(Boolean value) {
-        this.isSessionKey = value;
-    }
-
     @Override
     public Object extractMetadata(Report report) {
         return report.getCheckpoints().stream()
