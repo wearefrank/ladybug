@@ -20,7 +20,7 @@ class ReportExtractor implements MetadataFieldExtractor {
     protected @Setter @Getter String defaultValue;
     protected @Setter @Getter String checkpointName;
     protected @Setter @Getter List<ExtractionStrategy> extractionStrategies = new ArrayList<ExtractionStrategy>() {};
-    protected @Getter boolean isSessionKey;
+    protected @Setter @Getter boolean isSessionKey;
     protected @Setter @Getter String SESSION_KEY_PREFIX = "SessionKey ";
 
     @Override
