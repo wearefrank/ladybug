@@ -54,7 +54,7 @@ public class ReportExtractorTest {
 	}
 
 	@Test
-	public void getSessionKey() {
+	public void whenCheckpointNameIsValidThenExtractsValue() {
 		ReportExtractor extractor = new ReportExtractor();
 		extractor.setSessionKey(true);
 		extractor.setCheckpointName("mySessionKey");
@@ -63,7 +63,7 @@ public class ReportExtractorTest {
 	}
 
 	@Test
-	public void getSessionKeyAsCheckpoint() {
+	public void whenSessionKeyIsInNameThenValueIsExtracted() {
 		ReportExtractor extractor = new ReportExtractor();
 		extractor.setCheckpointName("SessionKey mySessionKey");
 		String extracted = (String) extractor.extractMetadata(report);
@@ -71,7 +71,7 @@ public class ReportExtractorTest {
 	}
 
 	@Test
-	public void applyRegexToCheckpointMessage() {
+	public void whenRegexIsSetThenValueIsTransformed() {
 		ReportExtractor extractor = new ReportExtractor();
 		extractor.setCheckpointName("mySessionKey");
         RegexExtractionStrategy regexStrategy = new RegexExtractionStrategy("\\/([^\\/_]*)_");
@@ -82,7 +82,7 @@ public class ReportExtractorTest {
 	}
 
 	@Test
-	public void checkDefaultValue() {
+	public void whenValueNotFoundThenDefaultShouldReturn() {
 		ReportExtractor extractor = new ReportExtractor();
 		extractor.setDefaultValue("myDefaultValue");
         RegexExtractionStrategy regexStrategy = new RegexExtractionStrategy("(?!x)x");
@@ -94,7 +94,7 @@ public class ReportExtractorTest {
 	}
 
 	@Test
-	public void noRegexMatchWithoutDefaultValue() {
+	public void whenNoDefaultIsSetThenNullShouldReturn() {
 		ReportExtractor extractor = new ReportExtractor();
         RegexExtractionStrategy regexStrategy = new RegexExtractionStrategy("(?!x)x");
         extractor.getExtractionStrategies().add(regexStrategy);
@@ -105,7 +105,7 @@ public class ReportExtractorTest {
 	}
 
 	@Test
-	public void xpathExtraction() throws XPathExpressionException {
+	public void whenXpathIsSetThenPathShouldBeApplied() throws XPathExpressionException {
 		Report report = getReport();
 		ReportExtractor extractor = new ReportExtractor();
         XpathExtractionStrategy xpathStrategy = new XpathExtractionStrategy("/one/two");
@@ -116,7 +116,7 @@ public class ReportExtractorTest {
 	}
 
 	@Test
-	public void xpathAndRegex() throws XPathExpressionException {
+	public void whenRegexAndXpathAreSetThenBothAreApplied() throws XPathExpressionException {
 		Report report = getReport();
 		ReportExtractor extractor = new ReportExtractor();
         XpathExtractionStrategy xpathStrategy = new XpathExtractionStrategy("/one/two");
@@ -129,7 +129,7 @@ public class ReportExtractorTest {
 	}
 
 	@Test
-	public void xpathAndRegexWrongOrder() throws XPathExpressionException {
+	public void whenExtractionOrderIsIncorrectThenExtractShouldFail() throws XPathExpressionException {
 		Report report = getReport();
 		ReportExtractor extractor = new ReportExtractor();
         RegexExtractionStrategy regexStrategy = new RegexExtractionStrategy("([^\\s]+)");
