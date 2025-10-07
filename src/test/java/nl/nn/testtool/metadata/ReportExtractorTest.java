@@ -1,3 +1,18 @@
+/*
+   Copyright 2025 WeAreFrank!
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
 package nl.nn.testtool.metadata;
 
 import static org.junit.Assert.assertEquals;
@@ -41,7 +56,7 @@ public class ReportExtractorTest {
 	@Test
 	public void getSessionKey() {
 		ReportExtractor extractor = new ReportExtractor();
-		extractor.setIsSessionKey(true);
+		extractor.setSessionKey(true);
 		extractor.setCheckpointName("mySessionKey");
 		String extracted = (String) extractor.extractMetadata(report);
 		assertEquals("http://www.egem.nl/StuF/sector/zkn/0310/creeerZaak_Lk01", extracted);
@@ -58,9 +73,10 @@ public class ReportExtractorTest {
 	@Test
 	public void applyRegexToCheckpointMessage() {
 		ReportExtractor extractor = new ReportExtractor();
-		extractor.setIsSessionKey(true);
 		extractor.setCheckpointName("mySessionKey");
-		extractor.setRegexPattern("\\/([^\\/_]*)_");
+        RegexExtractionStrategy regexStrategy = new RegexExtractionStrategy("\\/([^\\/_]*)_");
+        extractor.getExtractionStrategies().add(regexStrategy);
+		extractor.setSessionKey(true);
 		String extracted = (String) extractor.extractMetadata(report);
 		assertEquals("creeerZaak", extracted);
 	}
@@ -69,8 +85,9 @@ public class ReportExtractorTest {
 	public void checkDefaultValue() {
 		ReportExtractor extractor = new ReportExtractor();
 		extractor.setDefaultValue("myDefaultValue");
-		extractor.setRegexPattern("(?!x)x");
-		extractor.setIsSessionKey(true);
+        RegexExtractionStrategy regexStrategy = new RegexExtractionStrategy("(?!x)x");
+        extractor.getExtractionStrategies().add(regexStrategy);
+		extractor.setSessionKey(true);
 		extractor.setCheckpointName("mySessionKey");
 		Object extracted = extractor.extractMetadata(report);
 		assertEquals("myDefaultValue", extracted);	
@@ -79,8 +96,9 @@ public class ReportExtractorTest {
 	@Test
 	public void noRegexMatchWithoutDefaultValue() {
 		ReportExtractor extractor = new ReportExtractor();
-		extractor.setRegexPattern("(?!x)x");
-		extractor.setIsSessionKey(true);
+        RegexExtractionStrategy regexStrategy = new RegexExtractionStrategy("(?!x)x");
+        extractor.getExtractionStrategies().add(regexStrategy);
+		extractor.setSessionKey(true);
 		extractor.setCheckpointName("mySessionKey");
 		Object extracted = extractor.extractMetadata(report);
 		assertNull(extracted);
@@ -90,8 +108,9 @@ public class ReportExtractorTest {
 	public void xpathExtraction() throws XPathExpressionException {
 		Report report = getReport();
 		ReportExtractor extractor = new ReportExtractor();
-		extractor.setXpathExpression("/one/two");
-		extractor.setIsSessionKey(true);
+        XpathExtractionStrategy xpathStrategy = new XpathExtractionStrategy("/one/two");
+		extractor.getExtractionStrategies().add(xpathStrategy);
+		extractor.setSessionKey(true);
 		extractor.setCheckpointName("anotherKey");
 		assertEquals("My value", extractor.extractMetadata(report));
 	}
@@ -100,9 +119,11 @@ public class ReportExtractorTest {
 	public void xpathAndRegex() throws XPathExpressionException {
 		Report report = getReport();
 		ReportExtractor extractor = new ReportExtractor();
-		extractor.setXpathExpression("/one/two");
-		extractor.setRegexPattern("([^\\s]+)");
-		extractor.setIsSessionKey(true);
+        XpathExtractionStrategy xpathStrategy = new XpathExtractionStrategy("/one/two");
+        extractor.getExtractionStrategies().add(xpathStrategy);
+        RegexExtractionStrategy regexStrategy = new RegexExtractionStrategy("([^\\s]+)");
+        extractor.getExtractionStrategies().add(regexStrategy);
+		extractor.setSessionKey(true);
 		extractor.setCheckpointName("anotherKey");
 		assertEquals("My", extractor.extractMetadata(report));
 	}
@@ -111,9 +132,11 @@ public class ReportExtractorTest {
 	public void xpathAndRegexWrongOrder() throws XPathExpressionException {
 		Report report = getReport();
 		ReportExtractor extractor = new ReportExtractor();
-		extractor.setRegexPattern("([^\\s]+)");
-		extractor.setXpathExpression("/one/two");
-		extractor.setIsSessionKey(true);
+        RegexExtractionStrategy regexStrategy = new RegexExtractionStrategy("([^\\s]+)");
+        extractor.getExtractionStrategies().add(regexStrategy);
+        XpathExtractionStrategy xpathStrategy = new XpathExtractionStrategy("/one/two");
+        extractor.getExtractionStrategies().add(xpathStrategy);
+		extractor.setSessionKey(true);
 		extractor.setCheckpointName("anotherKey");
 		assertNull(extractor.extractMetadata(report));
 	}

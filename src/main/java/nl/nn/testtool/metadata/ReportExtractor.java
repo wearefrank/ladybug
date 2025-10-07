@@ -1,3 +1,18 @@
+/*
+   Copyright 2025 WeAreFrank!
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
 package nl.nn.testtool.metadata;
 
 import lombok.Getter;
@@ -6,8 +21,6 @@ import nl.nn.testtool.Checkpoint;
 import nl.nn.testtool.MetadataFieldExtractor;
 import nl.nn.testtool.Report;
 
-
-import javax.xml.xpath.XPathExpressionException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -19,7 +32,7 @@ class ReportExtractor implements MetadataFieldExtractor {
     protected @Setter @Getter String shortLabel;
     protected @Setter @Getter String defaultValue;
     protected @Setter @Getter String checkpointName;
-    protected @Setter @Getter List<ExtractionStrategy> extractionStrategies = new ArrayList<ExtractionStrategy>() {};
+    protected @Setter @Getter List<ExtractionStrategy> extractionStrategies = new ArrayList<>() {};
     protected @Setter @Getter boolean isSessionKey;
     protected @Setter @Getter String SESSION_KEY_PREFIX = "SessionKey ";
 
