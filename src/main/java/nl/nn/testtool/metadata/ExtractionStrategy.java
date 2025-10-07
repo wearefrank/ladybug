@@ -56,11 +56,11 @@ class RegexExtractionStrategy implements ExtractionStrategy {
 }
 
 class XpathExtractionStrategy implements ExtractionStrategy {
-    private @Setter @Getter XPathExpression xpathExpression;
+    private XPathExpression xpathExpression;
 
     public XpathExtractionStrategy(String xpath) throws XPathExpressionException {
         if (xpath != null) {
-            setXpathExpression(XmlUtil.createXPathExpression(xpath));
+            xpathExpression = XmlUtil.createXPathExpression(xpath);
         }
     }
 
