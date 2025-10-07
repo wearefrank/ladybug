@@ -33,11 +33,11 @@ public interface ExtractionStrategy {
 class RegexExtractionStrategy implements ExtractionStrategy {
     private Pattern pattern;
 
-    public RegexExtractionStrategy(String regex) {
-        setRegex(regex);
+    public RegexExtractionStrategy(String pattern) {
+        setRegexPattern(pattern);
     }
 
-    public void setRegex(String regex) {
+    private void setRegexPattern(String regex) {
         pattern = (regex == null || regex.isEmpty()) ? null : Pattern.compile(regex);
     }
 
