@@ -70,7 +70,11 @@ public abstract class ApiBase implements SecurityContext {
 
 	@Override
 	public Principal getUserPrincipal() {
-		return getHttpServletRequest().getUserPrincipal();
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		if(authentication != null) {
+			return authentication.getName();
+		}
+		return null;
 	}
 
 	@Override
