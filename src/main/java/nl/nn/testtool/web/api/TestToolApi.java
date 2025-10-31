@@ -245,7 +245,8 @@ public class TestToolApi extends ApiBase {
 	public ResponseEntity<?> changeNodeLinkStrategy(@RequestParam(name = "nodeLinkStrategy") String nodeLinkStrategy, @RequestParam(name = "viewName") String viewName) {
 		for (View view : views) {
 			if (viewName.equals(view.getName())) {
-				setSessionAttr(view.getName() + ".NodeLinkStrategy", nodeLinkStrategy);
+				// TODO: Was this intended to be session-specific?
+				view.setNodeLinkStrategy(nodeLinkStrategy);
 				break;
 			}
 		}

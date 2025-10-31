@@ -23,17 +23,12 @@ import org.springframework.context.ApplicationContext;
 
 import jakarta.servlet.http.HttpServletRequest;
 import nl.nn.testtool.SecurityContext;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 
 public abstract class ApiBase implements SecurityContext {
 	protected static ApplicationContext applicationContext;
-
-	private static HttpServletRequest getHttpServletRequest() {
-		ServletRequestAttributes requestAttributes =
-				(ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
-		return requestAttributes.getRequest();
-	}
 
 	protected Object getBeanObject(String beanName) {
 		if (applicationContext == null)
@@ -53,42 +48,22 @@ public abstract class ApiBase implements SecurityContext {
 		}
 	}
 
-	protected void setSessionAttr(String key, Object value) {
-		getHttpServletRequest().getSession().setAttribute(key, value);
-	}
-
-	protected <T> T getSessionAttr(String key) {
-		return getSessionAttr(key, true);
-	}
-
-	protected <T> T getSessionAttr(String key, boolean throwException) {
-		T object = (T) getHttpServletRequest().getSession().getAttribute(key);
-		if (object == null && throwException)
-			throw new ApiException("No session attribute with name [" + key + "] found.");
-		return object;
-	}
-
 	@Override
 	public Principal getUserPrincipal() {
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 		if(authentication != null) {
-			return authentication.getName();
+			return authentication;
 		}
 		return null;
 	}
 
 	@Override
 	public boolean isUserInRoles(List<String> roles) {
-		if (getUserPrincipal() == null) {
-			// The servlet container didn't authenticate the user (not
-			// configured in the web.xml or explicitly overwritten by the
-			// servlet container (e.g. when running locally in WSAD)). In this
-			// case allow everything.
-			return true;
-		}
-		for (String role : roles) {
-			if (getHttpServletRequest().isUserInRole(role))
+		for(GrantedAuthority grantedAuthority : SecurityContextHolder.getContext().getAuthentication().getAuthorities()) {
+			String authorityName = grantedAuthority.getAuthority().substring(5); // Chomp off the AuthorityAuthorizationManager#ROLE_PREFIX
+			if(roles.contains(authorityName)) {
 				return true;
+			}
 		}
 		return false;
 	}
