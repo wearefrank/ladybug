@@ -26,7 +26,7 @@
     <spring.version>6.1.20</spring.version>
     <cxf.version>4.0.6</cxf.version>
     <jackson.version>2.17.1</jackson.version>
-    <logback.version>1.5.13</logback.version>
+    <logback.version>1.5.19</logback.version>
   </properties>
 
   <organization>
