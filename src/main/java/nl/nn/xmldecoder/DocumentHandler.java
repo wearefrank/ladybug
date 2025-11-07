@@ -32,6 +32,7 @@ import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -66,14 +67,22 @@ public final class DocumentHandler extends DefaultHandler {
 
     private ElementHandler handler;
 
+    private final static List<String> SAFE_CLASSES = Arrays.asList(
+            "nl.nn.testtool.Report",
+            "nl.nn.testtool.Checkpoint",
+            "java.util.HashMap",
+            "java.util.Collections");
+
     /**
      * Creates new instance of document handler.
      */
     public DocumentHandler() {
+        // Line with findClass in JavaElementHandler is disabled
         setElementHandler("java", JavaElementHandler.class); // NON-NLS: the element name
         setElementHandler("null", NullElementHandler.class); // NON-NLS: the element name
         setElementHandler("array", ArrayElementHandler.class); // NON-NLS: the element name
-        setElementHandler("class", ClassElementHandler.class); // NON-NLS: the element name
+        // ClassElementHandler is using findClass
+        // setElementHandler("class", ClassElementHandler.class); // NON-NLS: the element name
         setElementHandler("string", StringElementHandler.class); // NON-NLS: the element name
         setElementHandler("object", ObjectElementHandler.class); // NON-NLS: the element name
 
@@ -88,11 +97,13 @@ public final class DocumentHandler extends DefaultHandler {
         setElementHandler("boolean", BooleanElementHandler.class); // NON-NLS: the element name
 
         // some handlers for new elements
-        setElementHandler("new", NewElementHandler.class); // NON-NLS: the element name
+        // NewElementHandler is using findClass
+        // setElementHandler("new", NewElementHandler.class); // NON-NLS: the element name
         setElementHandler("var", VarElementHandler.class); // NON-NLS: the element name
         setElementHandler("true", TrueElementHandler.class); // NON-NLS: the element name
         setElementHandler("false", FalseElementHandler.class); // NON-NLS: the element name
-        setElementHandler("field", FieldElementHandler.class); // NON-NLS: the element name
+        // FieldElementHandler is using findClass
+        // setElementHandler("field", FieldElementHandler.class); // NON-NLS: the element name
         setElementHandler("method", MethodElementHandler.class); // NON-NLS: the element name
         setElementHandler("property", PropertyElementHandler.class); // NON-NLS: the element name
     }
@@ -376,20 +387,24 @@ public final class DocumentHandler extends DefaultHandler {
      * @return the object that represents the class
      */
     public Class<?> findClass(String name) {
-        try {
-            if (loader != null) {
-                try {
-                    return Class.forName(name, false, loader.get());
-                } catch (ClassNotFoundException exception) {
-                    // use default class loader instead
-                } catch (SecurityException exception) {
-                    // use default class loader instead
+        if (SAFE_CLASSES.contains(name)) {
+            try {
+                if (loader != null) {
+                    try {
+                        return Class.forName(name, false, loader.get());
+                    } catch (ClassNotFoundException exception) {
+                        // use default class loader instead
+                    } catch (SecurityException exception) {
+                        // use default class loader instead
+                    }
                 }
+                return Class.forName(name);
             }
-            return Class.forName(name);
-        }
-        catch (ClassNotFoundException exception) {
-            handleException(exception);
+            catch (ClassNotFoundException exception) {
+                handleException(exception);
+                return null;
+            }
+        } else {
             return null;
         }
     }
