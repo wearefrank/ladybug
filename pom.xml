@@ -14,7 +14,7 @@
   <url>https://github.com/wearefrank/ladybug</url>
 
   <properties>
-    <revision>3.0-SNAPSHOT</revision>
+    <revision>3.0-for-ff-9.2-SNAPSHOT</revision>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
     <maven.compiler.release>11</maven.compiler.release>
