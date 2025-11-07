@@ -71,7 +71,7 @@ final class JavaElementHandler extends ElementHandler {
             // unsupported attribute
         } else if (name.equals("class")) { // NON-NLS: the attribute name
             // check class for owner
-            this.type = getOwner().findClass(value);
+//            this.type = getOwner().findClass(value);
         } else {
             super.addAttribute(name, value);
         }
