@@ -3,7 +3,7 @@
 
   <groupId>org.ibissource</groupId>
   <artifactId>ibis-ladybug</artifactId>
-  <version>2.3-SNAPSHOT</version>
+  <version>${revision}</version>
 
   <name>Ladybug Test Tool</name>
   <description>
@@ -14,6 +14,7 @@
   <url>https://ibissource.org/</url>
 
   <properties>
+    <revision>2.3-for-ff-7.9-SNAPSHOT</revision>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <spring.version>5.3.23</spring.version>
     <cxf.version>3.5.5</cxf.version>
