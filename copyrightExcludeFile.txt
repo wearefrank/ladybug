@@ -4,6 +4,8 @@
 \src\main\java\nl\nn\xmldecoder\
 /src/main/java/nl/nn/testtool/util/CSVReader.java
 \src\main\java\nl\nn\testtool\util\CSVReader.java
+/src/main/resources/templates
+\src\main\resources\templates
 /src/test/
 \src\test\
 /wip
