@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.testtool.web;
+package org.wearefrank.ladybug.web.jaxrs.api;
 
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
@@ -36,6 +36,8 @@ import jakarta.ws.rs.container.PreMatching;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.Provider;
 import lombok.Getter;
+
+import nl.nn.testtool.web.common.Constants;
 
 /**
  * Filter requests based on their permission requirements.
@@ -87,24 +89,24 @@ public class ApiAuthorizationFilter implements ContainerRequestFilter {
 
 	public void setObserverRoles(List<String> observerRoles) {
 		if (constructorDone) log.info("Set observer roles");
-		addConfigurationPart("GET/"  + ApiServlet.LADYBUG_API_PATH + "/testtool.*$", observerRoles);
-		addConfigurationPart("POST/" + ApiServlet.LADYBUG_API_PATH + "/testtool/transformation$", observerRoles);
-		addConfigurationPart("GET/"  + ApiServlet.LADYBUG_API_PATH + "/report/variables$", observerRoles);
-		addConfigurationPart("POST/" + ApiServlet.LADYBUG_API_PATH + "/report/customreportaction$", observerRoles);
-		addConfigurationPart("PUT/"  + ApiServlet.LADYBUG_API_PATH + "/testtool/node-link-strategy$", observerRoles);
-		addConfigurationPart("GET/"  + ApiServlet.LADYBUG_API_PATH + "/metadata/.*$", observerRoles);
-		addConfigurationPart("GET/"  + ApiServlet.LADYBUG_API_PATH + "/report/.*$", observerRoles);
+		addConfigurationPart("GET/"  + Constants.LADYBUG_API_PATH + "/testtool.*$", observerRoles);
+		addConfigurationPart("POST/" + Constants.LADYBUG_API_PATH + "/testtool/transformation$", observerRoles);
+		addConfigurationPart("GET/"  + Constants.LADYBUG_API_PATH + "/report/variables$", observerRoles);
+		addConfigurationPart("POST/" + Constants.LADYBUG_API_PATH + "/report/customreportaction$", observerRoles);
+		addConfigurationPart("PUT/"  + Constants.LADYBUG_API_PATH + "/testtool/node-link-strategy$", observerRoles);
+		addConfigurationPart("GET/"  + Constants.LADYBUG_API_PATH + "/metadata/.*$", observerRoles);
+		addConfigurationPart("GET/"  + Constants.LADYBUG_API_PATH + "/report/.*$", observerRoles);
 	}
 
 	public void setDataAdminRoles(List<String> dataAdminRoles) {
 		if (constructorDone) log.info("Set data admin roles");
-		addConfigurationPart("POST/"   + ApiServlet.LADYBUG_API_PATH + "/testtool$", dataAdminRoles);
-		addConfigurationPart("DELETE/" + ApiServlet.LADYBUG_API_PATH + "/testtool/in-progress/.*$", dataAdminRoles);
-		addConfigurationPart("DELETE/" + ApiServlet.LADYBUG_API_PATH + "/report/.*$", dataAdminRoles);
-		addConfigurationPart("PUT/"    + ApiServlet.LADYBUG_API_PATH + "/report/.*$", dataAdminRoles);
-		addConfigurationPart("POST/"   + ApiServlet.LADYBUG_API_PATH + "/report/.*$", dataAdminRoles);
-		addConfigurationPart("PUT/"    + ApiServlet.LADYBUG_API_PATH + "/runner/.*", dataAdminRoles);
-		addConfigurationPart("POST/"   + ApiServlet.LADYBUG_API_PATH + "/runner/.*", dataAdminRoles);
+		addConfigurationPart("POST/"   + Constants.LADYBUG_API_PATH + "/testtool$", dataAdminRoles);
+		addConfigurationPart("DELETE/" + Constants.LADYBUG_API_PATH + "/testtool/in-progress/.*$", dataAdminRoles);
+		addConfigurationPart("DELETE/" + Constants.LADYBUG_API_PATH + "/report/.*$", dataAdminRoles);
+		addConfigurationPart("PUT/"    + Constants.LADYBUG_API_PATH + "/report/.*$", dataAdminRoles);
+		addConfigurationPart("POST/"   + Constants.LADYBUG_API_PATH + "/report/.*$", dataAdminRoles);
+		addConfigurationPart("PUT/"    + Constants.LADYBUG_API_PATH + "/runner/.*", dataAdminRoles);
+		addConfigurationPart("POST/"   + Constants.LADYBUG_API_PATH + "/runner/.*", dataAdminRoles);
 	}
 
 	/**
@@ -115,12 +117,12 @@ public class ApiAuthorizationFilter implements ContainerRequestFilter {
 	 */
 	public void setTesterRoles(List<String> testerRoles) {
 		if (constructorDone) log.info("Set tester roles");
-		addConfigurationPart("POST/" + ApiServlet.LADYBUG_API_PATH + "/runner/run/.*", testerRoles);
+		addConfigurationPart("POST/" + Constants.LADYBUG_API_PATH + "/runner/run/.*", testerRoles);
 	}
 
 	public void setWebServiceRoles(List<String> webServiceRoles) {
 		if (constructorDone) log.info("Set web service roles");
-		addConfigurationPart("POST/" + ApiServlet.LADYBUG_API_PATH + "/collector/.*$", webServiceRoles);
+		addConfigurationPart("POST/" + Constants.LADYBUG_API_PATH + "/collector/.*$", webServiceRoles);
 	}
 
 	public void setLadybugApiRoles(Map<String, List<String>> ladybugApiRoles) {
@@ -143,7 +145,7 @@ public class ApiAuthorizationFilter implements ContainerRequestFilter {
 			// Remove extra / at the beginning when using Quarkus (and possible other setups)
 			path = path.substring(1);
 		}
-		if (globalFilter && !path.contains(ApiServlet.LADYBUG_API_PATH)) {
+		if (globalFilter && !path.contains(Constants.LADYBUG_API_PATH)) {
 			// Ignore everything but the Ladybug API using contains() instead of startsWith() to be on the safe side
 			// and prevent misuse of this return (e.g. by prefixing the Ladybug API path with multiple slashes)
 			return;

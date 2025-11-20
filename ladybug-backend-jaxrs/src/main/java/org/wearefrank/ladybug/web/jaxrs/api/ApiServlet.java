@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.testtool.web;
+package org.wearefrank.ladybug.web.jaxrs.api;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -28,9 +28,10 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletRequestWrapper;
 import jakarta.servlet.http.HttpServletResponse;
 
+import nl.nn.testtool.web.common.Constants;
+
 public class ApiServlet extends CXFServlet {
 	private static final long serialVersionUID = 1L;
-	public static final String LADYBUG_API_PATH = "ladybug-api"; // See comment in doRequest() method below
 
 	/**
 	 * Static method that can be used to set the default mapping when creating this servlet programmatically instead of
@@ -104,15 +105,15 @@ public class ApiServlet extends CXFServlet {
 		String pathInfo = request.getPathInfo();
 		if (pathInfo == null || pathInfo.equals("") || pathInfo.equals("/")) {
 			response.getWriter().write("This is the root of the Ladybug API");
-		} else if (!pathInfo.startsWith("/" + ApiServlet.LADYBUG_API_PATH + "/")
-				&& !pathInfo.startsWith(ApiServlet.LADYBUG_API_PATH + "/")) {
+		} else if (!pathInfo.startsWith("/" + Constants.LADYBUG_API_PATH + "/")
+				&& !pathInfo.startsWith(Constants.LADYBUG_API_PATH + "/")) {
 			// The paths in the API classes are prefixed with /ladybug-api/ to prevent the paths to interfere with the
 			// paths used by applications that use Ladybug as a library and don't use CXF / this servlet (that could
 			// prefix all API paths using a servlet url mapping), e.g. when using Quarkus. Hence, dispatch the mapped
 			// url for this servlet to /ladybug-api/ which will call this method again going to the "else" below to
 			// have the parent (CXFServlet) handle the API classes. Before using Quarkus it was not necessary to
 			// override the do* methods and dispatch the request.
-			pathInfo = ApiServlet.LADYBUG_API_PATH + pathInfo;
+			pathInfo = Constants.LADYBUG_API_PATH + pathInfo;
 			final String finalPathInof = pathInfo;
 			HttpServletRequestWrapper requestWrapper = new HttpServletRequestWrapper(request) {
 				@Override

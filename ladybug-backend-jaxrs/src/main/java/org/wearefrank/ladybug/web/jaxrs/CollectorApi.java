@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.testtool.web.api;
+package org.wearefrank.ladybug.web.jaxrs;
 
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
@@ -22,14 +22,15 @@ import jakarta.ws.rs.core.Response;
 import lombok.Setter;
 import nl.nn.testtool.Span;
 import nl.nn.testtool.TestTool;
-import nl.nn.testtool.web.ApiServlet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 
-@Path("/" + ApiServlet.LADYBUG_API_PATH + "/collector")
+import nl.nn.testtool.web.common.Constants;
+
+@Path("/" + Constants.LADYBUG_API_PATH + "/collector")
 public class CollectorApi extends ApiBase {
     private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     private @Setter @Inject @Autowired TestTool testTool;

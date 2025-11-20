@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.testtool.web;
+package org.wearefrank.ladybug.web;
 
 import java.io.IOException;
 
@@ -21,6 +21,8 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+
+import nl.nn.testtool.web.common.Constants;
 
 /**
  * Redirect frontend from /ladybug/api/ to /ladybug-api/ when for example running on Quarkus. When the frontend is
@@ -63,7 +65,8 @@ public class RedirectServlet extends HttpServlet {
 
 	private void doRequest(String method, HttpServletRequest request, HttpServletResponse response)
 		throws ServletException, IOException {
-		String pathInfo = "/" + ApiServlet.LADYBUG_API_PATH + request.getPathInfo();
+		// TODO: Re
+		String pathInfo = "/" + Constants.LADYBUG_API_PATH + request.getPathInfo();
 		String queryString = request.getQueryString();
 		if (queryString != null) {
 			pathInfo = pathInfo + "?" + queryString;

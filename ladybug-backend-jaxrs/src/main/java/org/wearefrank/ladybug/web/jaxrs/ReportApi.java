@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.testtool.web.api;
+package org.wearefrank.ladybug.web.jaxrs;
 
 import java.io.InputStream;
 import java.io.Serializable;
@@ -71,9 +71,10 @@ import nl.nn.testtool.storage.memory.MemoryCrudStorage;
 import nl.nn.testtool.transform.ReportXmlTransformer;
 import nl.nn.testtool.util.Export;
 import nl.nn.testtool.util.ExportResult;
-import nl.nn.testtool.web.ApiServlet;
 
-@Path("/" + ApiServlet.LADYBUG_API_PATH + "/report")
+import nl.nn.testtool.web.common.Constants;
+
+@Path("/" + Constants.LADYBUG_API_PATH + "/report")
 public class ReportApi extends ApiBase {
 	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 	private @Setter @Inject @Autowired TestTool testTool;

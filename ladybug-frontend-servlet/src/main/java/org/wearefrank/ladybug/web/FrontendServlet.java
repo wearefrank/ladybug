@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.testtool.web;
+package org.wearefrank.ladybug.web;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -31,7 +31,7 @@ public class FrontendServlet extends AngularServlet {
 	private static final String FALLBACK_MESSAGE = ", will fall back to version agnostic approach";
 
 	/**
-	 * See documentation at {@link ApiServlet#getDefaultMapping()}
+	 * See documentation at ApiServlet.getDefaultMapping()
 	 * 
 	 * @return ...
 	 */

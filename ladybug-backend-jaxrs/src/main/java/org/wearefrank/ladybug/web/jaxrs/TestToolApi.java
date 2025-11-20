@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.testtool.web.api;
+package org.wearefrank.ladybug.web.jaxrs;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -46,9 +46,10 @@ import nl.nn.testtool.filter.View;
 import nl.nn.testtool.filter.Views;
 import nl.nn.testtool.storage.CrudStorage;
 import nl.nn.testtool.transform.ReportXmlTransformer;
-import nl.nn.testtool.web.ApiServlet;
 
-@Path("/" + ApiServlet.LADYBUG_API_PATH + "/testtool")
+import nl.nn.testtool.web.common.Constants;
+
+@Path("/" + Constants.LADYBUG_API_PATH + "/testtool")
 public class TestToolApi extends ApiBase {
 	private @Setter @Inject @Autowired TestTool testTool;
 	private @Setter @Inject @Autowired MetadataExtractor metadataExtractor;

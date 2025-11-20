@@ -1,5 +1,5 @@
 /*
-   Copyright 2021, 2024, 2025 WeAreFrank!
+   Copyright 2022, 2024, 2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -13,27 +13,25 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.testtool.web.api;
+package org.wearefrank.ladybug.web.jaxrs.api;
 
-import java.io.Serializable;
-import java.lang.invoke.MethodHandles;
+import org.springframework.beans.factory.annotation.Autowired;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import jakarta.inject.Inject;
+import nextapp.echo2.app.ApplicationInstance;
+import nextapp.echo2.webcontainer.WebContainerServlet;
+import nl.nn.testtool.echo2.Echo2Application;
 
-import jakarta.ws.rs.WebApplicationException;
-
-public class ApiException extends WebApplicationException implements Serializable {
+/**
+ * @author Jaco de Groot
+ */
+public class Echo2Servlet extends WebContainerServlet {
 	private static final long serialVersionUID = 1L;
-	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+	private @Inject @Autowired Echo2Application echo2Application;
 
-	public ApiException(String msg, Throwable t) {
-		super(t, 500);
-		log.error(msg, t);
+	@Override
+	public ApplicationInstance newApplicationInstance() {
+		return echo2Application;
 	}
 
-	public ApiException(String msg) {
-		super(500);
-		log.error(msg);
-	}
 }

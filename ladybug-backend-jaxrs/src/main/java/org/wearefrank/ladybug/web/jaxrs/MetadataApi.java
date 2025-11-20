@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.testtool.web.api;
+package org.wearefrank.ladybug.web.jaxrs;
 
 
 import java.util.ArrayList;
@@ -39,9 +39,10 @@ import lombok.Setter;
 import nl.nn.testtool.MetadataExtractor;
 import nl.nn.testtool.TestTool;
 import nl.nn.testtool.storage.Storage;
-import nl.nn.testtool.web.ApiServlet;
 
-@Path("/" + ApiServlet.LADYBUG_API_PATH + "/metadata")
+import nl.nn.testtool.web.common.Constants;
+
+@Path("/" + Constants.LADYBUG_API_PATH + "/metadata")
 public class MetadataApi extends ApiBase {
 	private @Setter @Inject @Autowired TestTool testTool;
 

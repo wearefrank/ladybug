@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.testtool.web.api;
+package org.wearefrank.ladybug.web.jaxrs;
 
 import java.lang.invoke.MethodHandles;
 import java.util.Collections;
@@ -39,9 +39,10 @@ import nl.nn.testtool.run.ReportRunner;
 import nl.nn.testtool.run.RunResult;
 import nl.nn.testtool.storage.StorageException;
 import nl.nn.testtool.transform.ReportXmlTransformer;
-import nl.nn.testtool.web.ApiServlet;
 
-@Path("/" + ApiServlet.LADYBUG_API_PATH + "/runner")
+import nl.nn.testtool.web.common.Constants;
+
+@Path("/" + Constants.LADYBUG_API_PATH + "/runner")
 public class RunApi extends ApiBase {
 	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 	private @Setter @Inject @Autowired TestTool testTool;
