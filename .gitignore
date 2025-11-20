@@ -1,5 +1,5 @@
-/data
-/target
+ladybug-common/data
+*/target
 /wip
 /.classpath
 /.settings
