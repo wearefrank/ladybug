@@ -19,7 +19,7 @@
     <dependency>
       <groupId>org.wearefrank</groupId>
       <artifactId>ladybug-common</artifactId>
-      <version>${revision}</version>
+      <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.cxf</groupId>

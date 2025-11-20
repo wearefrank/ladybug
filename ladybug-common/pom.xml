@@ -14,16 +14,6 @@
   <name>Ladybug Test Tool</name>
 
   <dependencies>
-    <!--
-    https://www.npmjs.com/package/@wearefrank/ladybug
-    https://www.webjars.org/all (search for @wearefrank/ladybug)
-    https://search.maven.org/artifact/org.webjars.npm/wearefrank__ladybug
-    -->
-    <dependency>
-      <groupId>org.wearefrank</groupId>
-      <artifactId>ladybug-frontend</artifactId>
-      <version>${frontend.version}</version>
-    </dependency>
 <!-- Dit soort dependencies gaan gebruiken? moeten eigenlijk via transitive dependencies van frontend project meekomen?
     <dependency>
       <groupId>org.webjars.npm</groupId>

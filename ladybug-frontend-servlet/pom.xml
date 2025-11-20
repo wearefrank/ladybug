@@ -19,7 +19,12 @@
     <dependency>
       <groupId>org.wearefrank</groupId>
       <artifactId>ladybug-common</artifactId>
-      <version>${revision}</version>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.wearefrank</groupId>
+      <artifactId>ladybug-frontend</artifactId>
+      <version>${frontend.version}</version>
     </dependency>
     <dependency>
       <groupId>jakarta.servlet</groupId>
