@@ -1,33 +1,20 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>org.wearefrank</groupId>
-  <artifactId>ladybug</artifactId>
+  <artifactId>ladybug-parent</artifactId>
   <version>${revision}</version>
+  <packaging>pom</packaging>
 
-  <name>Ladybug Test Tool</name>
   <description>
   Ladybug adds message based debugging and message based unit testing and system testing to your Java application. Call
   Ladybug at certain checkpoints in you code (either directly or using AOP) to generate tree based reports. Implement a
   rerun method to be able to rerun reports and optionally stub certain checkpoints for regression testing.
   </description>
   <url>https://github.com/wearefrank/ladybug</url>
-
-  <properties>
-    <revision>3.0-SNAPSHOT</revision>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-
-    <maven.compiler.release>11</maven.compiler.release>
-    <maven.compiler.target>11</maven.compiler.target>
-    <maven.compiler.source>11</maven.compiler.source>
-
-    <frontend.version>0.1.0-20251117.143035</frontend.version>
-
-    <spring.version>6.1.20</spring.version>
-    <cxf.version>4.0.6</cxf.version>
-    <jackson.version>2.17.1</jackson.version>
-    <logback.version>1.5.13</logback.version>
-  </properties>
 
   <organization>
     <name>WeAreFrank!</name>
@@ -55,357 +42,172 @@
       <organization>WeAreFrank!</organization>
       <organizationUrl>https://wearefrank.nl</organizationUrl>
     </developer>
+    <developer>
+      <name>Martijn Dirkse</name>
+      <email>martijn@wearefrank.nl</email>
+      <organization>WeAreFrank!</organization>
+      <organizationUrl>https://wearefrank.nl</organizationUrl>
+    </developer>
   </developers>
 
-  <dependencies>
-    <!--
-    https://www.npmjs.com/package/@wearefrank/ladybug
-    https://www.webjars.org/all (search for @wearefrank/ladybug)
-    https://search.maven.org/artifact/org.webjars.npm/wearefrank__ladybug
-    -->
-    <dependency>
-      <groupId>org.wearefrank</groupId>
-      <artifactId>ladybug-frontend</artifactId>
-      <version>${frontend.version}</version>
-    </dependency>
-<!-- Dit soort dependencies gaan gebruiken? moeten eigenlijk via transitive dependencies van frontend project meekomen?
-    <dependency>
-      <groupId>org.webjars.npm</groupId>
-      <artifactId>monaco-editor</artifactId>
-      <version>0.28.1</version>
-    </dependency>
-    <dependency>
-        <groupId>org.webjars</groupId>
-        <artifactId>bootstrap</artifactId>
-        <version>3.1.0</version>
-    </dependency>
-    <dependency>
-        <groupId>org.webjars</groupId>
-        <artifactId>jquery</artifactId>
-        <version>3.6.0</version>
-    </dependency>
--->
-    <dependency>
-      <groupId>org.apache.cxf</groupId>
-      <artifactId>cxf-rt-rs-client</artifactId>
-      <version>${cxf.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.cxf</groupId>
-      <artifactId>cxf-rt-features-logging</artifactId>
-      <version>${cxf.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>com.fasterxml.jackson.jakarta.rs</groupId>
-      <artifactId>jackson-jakarta-rs-json-provider</artifactId>
-      <version>${jackson.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>jakarta.servlet</groupId>
-      <artifactId>jakarta.servlet-api</artifactId>
-      <version>6.0.0</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.ibissource</groupId>
-      <artifactId>ibis-echo2</artifactId>
-      <version>2.0.5-20250211.112303</version>
-    </dependency>
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-api</artifactId>
-      <version>2.0.13</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.commons</groupId>
-      <artifactId>commons-lang3</artifactId>
-      <version>3.18.0</version>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework</groupId>
-      <artifactId>spring-beans</artifactId>
-      <version>${spring.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework</groupId>
-      <artifactId>spring-context</artifactId>
-      <version>${spring.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework</groupId>
-      <artifactId>spring-jdbc</artifactId>
-      <version>${spring.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>net.sf.saxon</groupId>
-      <artifactId>Saxon-HE</artifactId>
-      <version>10.8</version>
-    </dependency>
-    <dependency>
-      <groupId>org.ibissource</groupId>
-      <artifactId>ibis-xerces</artifactId>
-      <version>2.12.1-xml-schema-1.1</version>
-    </dependency>
-    <!-- Add Xalan to be able to run old GUI on Java 17 and higher -->
-    <dependency>
-      <groupId>xalan</groupId>
-      <artifactId>xalan</artifactId>
-      <version>2.7.3</version>
-    </dependency>
-    <dependency>
-      <groupId>xalan</groupId>
-      <artifactId>serializer</artifactId>
-      <version>2.7.3</version>
-    </dependency>
-    <dependency>
-      <groupId>org.projectlombok</groupId>
-      <artifactId>lombok</artifactId>
-      <version>1.18.30</version>
-      <scope>provided</scope>
-    </dependency>
-    <!--
-    OptionalJtaTransactionManager implements PlatformTransactionManager having @Nullable which will make Javadoc fail with: class file for javax.annotation.meta.When not found
-    https://stackoverflow.com/questions/53326271/spring-nullable-annotation-generates-unknown-enum-constant-warning
-    -->
-    <dependency>
-      <groupId>com.google.code.findbugs</groupId>
-      <artifactId>annotations</artifactId>
-      <version>3.0.1</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.junit.jupiter</groupId>
-      <artifactId>junit-jupiter</artifactId>
-      <version>5.10.2</version>
-      <scope>test</scope>
-    </dependency>
-    <!-- https://junit.org/junit5/docs/current/user-guide/#migrating-from-junit4 -->
-    <dependency>
-      <groupId>org.junit.vintage</groupId>
-      <artifactId>junit-vintage-engine</artifactId>
-      <version>5.10.2</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>ch.qos.logback</groupId>
-      <artifactId>logback-core</artifactId>
-      <version>${logback.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>ch.qos.logback</groupId>
-      <artifactId>logback-classic</artifactId>
-      <version>${logback.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.h2database</groupId>
-      <artifactId>h2</artifactId>
-      <version>2.2.220</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.liquibase</groupId>
-      <artifactId>liquibase-core</artifactId>
-      <version>4.26.0</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.commons</groupId>
-      <artifactId>commons-dbcp2</artifactId>
-      <version>2.11.0</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>jakarta.transaction</groupId>
-      <artifactId>jakarta.transaction-api</artifactId>
-      <version>2.0.1</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>io.quarkus.arc</groupId>
-      <artifactId>arc</artifactId>
-      <version>1.13.4.Final</version><!-- 2.7.0.Final doesn't compile with Java 8 -->
-      <scope>provided</scope>
-      <exclusions>
-        <!-- Exclude quarkus-core to prevent following warning when running JUnit: SLF4J: Class path contains multiple SLF4J bindings. -->
-        <!-- And with jakarta.enterprise.cdi-api as a normal dependency all transitive dependencies can be excluded (Quarkus arc is then only needed for DefaultBean) -->
-        <exclusion>
-          <groupId>*</groupId>
-          <artifactId>*</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <!-- Normal dependency instead of a transitive dependency from Quarkus arc (Spring is using the cdi-api annotations also) -->
-    <dependency>
-      <groupId>jakarta.enterprise</groupId>
-      <artifactId>jakarta.enterprise.cdi-api</artifactId>
-      <version>4.0.1</version>
-      <scope>provided</scope>
-    </dependency>
-    <!-- Resolve @JsonbTransient -->
-    <dependency>
-      <groupId>javax.json.bind</groupId>
-      <artifactId>javax.json.bind-api</artifactId>
-      <version>1.0</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>io.opentelemetry</groupId>
-      <artifactId>opentelemetry-api</artifactId>
-      <version>1.39.0</version>
-    </dependency>
-    <!-- Scope provided for now for OpenTelemetry dependencies other then opentelemetry-api (keep transitive dependencies caused by Ladybug to a minimum) -->
-    <dependency>
-      <groupId>io.opentelemetry.semconv</groupId>
-      <artifactId>opentelemetry-semconv</artifactId>
-      <version>1.25.0-alpha</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>io.opentelemetry</groupId>
-      <artifactId>opentelemetry-exporter-zipkin</artifactId>
-      <version>1.39.0</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>io.opentelemetry</groupId>
-      <artifactId>opentelemetry-exporter-otlp</artifactId>
-      <version>1.39.0</version>
-      <scope>provided</scope>
-    </dependency>
-  </dependencies>
+  <properties>
+    <revision>3.0-SNAPSHOT</revision>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <!-- property [ladybug.rootdir] is available to get the root of the project, because of the
+    [directory-maven-plugin] -->
+    <maven.compiler.release>11</maven.compiler.release>
+    <maven.compiler.target>11</maven.compiler.target>
+    <maven.compiler.source>11</maven.compiler.source>
 
-  <repositories>
-    <!-- Enable ibis-echo2 timestamp versions -->
-    <repository>
-      <id>frankframework</id>
-      <name>Frank!Framework</name>
-      <url>https://nexus.frankframework.org/content/groups/public</url>
-    </repository>
-  </repositories>
+    <frontend.version>0.1.0-20251117.143035</frontend.version>
 
+    <spring.version>6.1.20</spring.version>
+    <cxf.version>4.0.6</cxf.version>
+    <jackson.version>2.17.1</jackson.version>
+    <logback.version>1.5.13</logback.version>
+  </properties>
   <build>
     <defaultGoal>install</defaultGoal>
     <plugins>
-      <!--
-        Add META-INF/jandex.idx, see also:
-          https://quarkus.io/guides/cdi-reference#how-to-generate-a-jandex-index
-          https://quarkus.io/guides/cdi-reference#bean_discovery
-          https://quarkus.io/guides/getting-started#working-with-multi-module-project-or-external-modules
-      -->
       <plugin>
-        <groupId>io.smallrye</groupId>
-        <artifactId>jandex-maven-plugin</artifactId>
-        <version>3.1.2</version>
+        <groupId>com.github.hazendaz.maven</groupId>
+        <artifactId>directory-maven-plugin</artifactId>
+        <version>1.2.1</version>
         <executions>
           <execution>
-            <id>make-index</id>
+            <id>find-project-root-directory</id>
             <goals>
-              <goal>jandex</goal>
+              <goal>directory-of</goal>
             </goals>
+            <phase>initialize</phase>
+            <configuration>
+              <property>ladybug.rootdir</property>
+              <project>
+                <groupId>org.wearefrank</groupId>
+                <artifactId>ladybug-parent</artifactId>
+              </project>
+            </configuration>
           </execution>
         </executions>
-      </plugin>
-      <plugin>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.10.1</version>
-        <configuration>
-          <source>${maven.compiler.source}</source>
-          <target>${maven.compiler.target}</target>
-        </configuration>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-jar-plugin</artifactId>
-        <version>3.2.2</version>
-        <configuration>
-          <archive>
-            <addMavenDescriptor>true</addMavenDescriptor>
-            <manifest>
-              <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
-              <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
-            </manifest>
-          </archive>
-        </configuration>
-        <executions><!-- Create a test jar for ibis-ladybug-test-webapp to depend on. See also https://maven.apache.org/plugins/maven-jar-plugin/examples/create-test-jar.html -->
-          <execution>
-            <goals>
-              <goal>test-jar</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-source-plugin</artifactId>
-        <version>3.2.1</version>
-        <executions>
-          <execution>
-            <id>attach-sources</id>
-            <phase>prepare-package</phase>
-            <goals>
-              <goal>jar-no-fork</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-javadoc-plugin</artifactId>
-        <version>3.6.3</version>
-        <executions>
-          <execution>
-            <id>attach-javadocs</id>
-            <goals>
-              <goal>jar</goal>
-              <goal>test-jar</goal>
-            </goals>
-          </execution>
-        </executions>
-        <configuration>
-          <!-- Prevent following warning with JDK 11 and higher: The code being documented uses modules but the packages defined in https://docs.oracle.com/javase/8/docs/api/ are in the unnamed module. -->
-          <source>1.8</source>
-          <additionalJOptions>
-            <!-- Make CI/CD fail on Javadoc warnings (Reports an error if any warnings occur, see https://docs.oracle.com/en/java/javase/21/docs/specs/man/javadoc.html) -->
-            <additionalJOption>-Xwerror</additionalJOption>
-            <!-- Prevent following warning with JDK 17 and higher: no comment (JDK 21 also gives: no main description) -->
-            <additionalJOption>-Xdoclint:-missing</additionalJOption>
-          </additionalJOptions>
-        </configuration>
-      </plugin>
-      <plugin>
-        <artifactId>maven-surefire-plugin</artifactId>
-        <version>2.22.2</version>
-        <configuration>
-          <!-- redirectTestOutputToFile>true</redirectTestOutputToFile -->
-        </configuration>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-deploy-plugin</artifactId>
-        <version>2.8.2</version>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-release-plugin</artifactId>
-        <version>3.0.1</version>
-        <configuration>
-          <tagNameFormat>v@{project.version}</tagNameFormat>
-          <autoVersionSubmodules>true</autoVersionSubmodules>
-        </configuration>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-site-plugin</artifactId>
-        <version>3.12.1</version>
-        <configuration>
-          <skip>true</skip><!-- Speed up the build in Jenkins (generated site isn't used) -->
-        </configuration>
       </plugin>
     </plugins>
     <pluginManagement>
       <plugins>
+        <plugin>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <version>3.10.1</version>
+          <configuration>
+            <source>${maven.compiler.source}</source>
+            <target>${maven.compiler.target}</target>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-jar-plugin</artifactId>
+          <version>3.2.2</version>
+          <configuration>
+            <archive>
+              <addMavenDescriptor>true</addMavenDescriptor>
+              <manifest>
+                <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
+                <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+              </manifest>
+            </archive>
+          </configuration>
+          <executions><!-- Create a test jar for ibis-ladybug-test-webapp to depend on. See also https://maven.apache.org/plugins/maven-jar-plugin/examples/create-test-jar.html -->
+            <execution>
+              <goals>
+                <goal>test-jar</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
+        <!--
+          Add META-INF/jandex.idx, see also:
+            https://quarkus.io/guides/cdi-reference#how-to-generate-a-jandex-index
+            https://quarkus.io/guides/cdi-reference#bean_discovery
+            https://quarkus.io/guides/getting-started#working-with-multi-module-project-or-external-modules
+        -->
+        <plugin>
+          <groupId>io.smallrye</groupId>
+          <artifactId>jandex-maven-plugin</artifactId>
+          <version>3.1.2</version>
+          <executions>
+            <execution>
+              <id>make-index</id>
+              <goals>
+                <goal>jandex</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-source-plugin</artifactId>
+          <version>3.2.1</version>
+          <executions>
+            <execution>
+              <id>attach-sources</id>
+              <phase>prepare-package</phase>
+              <goals>
+                <goal>jar-no-fork</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-javadoc-plugin</artifactId>
+          <version>3.6.3</version>
+          <executions>
+            <execution>
+              <id>attach-javadocs</id>
+              <goals>
+                <goal>jar</goal>
+                <goal>test-jar</goal>
+              </goals>
+            </execution>
+          </executions>
+          <configuration>
+            <!-- Prevent following warning with JDK 11 and higher: The code being documented uses modules but the packages defined in https://docs.oracle.com/javase/8/docs/api/ are in the unnamed module. -->
+            <source>1.8</source>
+            <additionalJOptions>
+              <!-- Make CI/CD fail on Javadoc warnings (Reports an error if any warnings occur, see https://docs.oracle.com/en/java/javase/21/docs/specs/man/javadoc.html) -->
+              <additionalJOption>-Xwerror</additionalJOption>
+              <!-- Prevent following warning with JDK 17 and higher: no comment (JDK 21 also gives: no main description) -->
+              <additionalJOption>-Xdoclint:-missing</additionalJOption>
+            </additionalJOptions>
+          </configuration>
+        </plugin>
+        <plugin>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <version>2.22.2</version>
+          <configuration>
+            <!-- redirectTestOutputToFile>true</redirectTestOutputToFile -->
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-deploy-plugin</artifactId>
+          <version>2.8.2</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-release-plugin</artifactId>
+          <version>3.0.1</version>
+          <configuration>
+            <tagNameFormat>v@{project.version}</tagNameFormat>
+            <autoVersionSubmodules>true</autoVersionSubmodules>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-site-plugin</artifactId>
+          <version>3.12.1</version>
+          <configuration>
+            <skip>true</skip><!-- Speed up the build in Jenkins (generated site isn't used) -->
+          </configuration>
+        </plugin>
         <plugin>
           <groupId>org.eclipse.m2e</groupId>
           <artifactId>lifecycle-mapping</artifactId>
@@ -447,7 +249,6 @@
       </plugins>
     </pluginManagement>
   </build>
-
   <reporting>
     <plugins>
       <plugin>
@@ -464,14 +265,12 @@
       </plugin>
     </plugins>
   </reporting>
-
   <scm>
     <url>https://github.com/wearefrank/ladybug</url>
     <connection>scm:git:https://github.com/wearefrank/ladybug.git</connection>
     <developerConnection>scm:git:https://github.com/wearefrank/ladybug.git</developerConnection>
     <tag>HEAD</tag>
   </scm>
-
   <profiles>
     <profile>
       <!-- The name is confusing, because this profile configures how to do the copyright check.
@@ -485,7 +284,7 @@
           <name>!maven.skip.copyright</name>
           <value>!true</value>
         </property>
-      </activation> 
+      </activation>
       <build>
         <plugins>
           <plugin>
@@ -503,9 +302,9 @@
               </execution>
             </executions>
             <configuration>
-              <excludeFile>copyrightExcludeFile.txt</excludeFile>
+              <excludeFile>${ladybug.rootdir}/copyrightExcludeFile.txt</excludeFile>
               <useDash>true</useDash>
-              <templateFile>copyrightTemplateFile.txt</templateFile>
+              <templateFile>${ladybug.rootdir}/copyrightTemplateFile.txt</templateFile>
             </configuration>
           </plugin>
         </plugins>
@@ -562,13 +361,18 @@
             <version>0.7.0</version>
             <extensions>true</extensions>
             <configuration>
-              <autoPublish>false</autoPublish><!-- Don't release the build directly after it's been published to Central (staging). -->
+              <autoPublish>false</autoPublish><!-- Don't release the build directly after it's been
+              published to Central (staging). -->
               <publishingServerId>ossrh</publishingServerId>
-              <waitUntil>validated</waitUntil><!-- Wait until the deployment bundle has been uploaded and validated. -->
+              <waitUntil>validated</waitUntil><!-- Wait until the deployment bundle has been
+              uploaded and validated. -->
             </configuration>
           </plugin>
         </plugins>
       </build>
     </profile>
   </profiles>
+  <modules>
+    <module>ladybug-common</module>
+  </modules>
 </project>
