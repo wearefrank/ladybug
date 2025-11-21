@@ -4,6 +4,7 @@ ladybug-common/data
 /.classpath
 /.settings
 /skip-replace-inject.txt
+.flattened-pom.xml
 FrankConfig.xsd
 .idea/
 .project
