@@ -38,9 +38,9 @@ import jakarta.ws.rs.core.UriInfo;
 import lombok.Setter;
 import nl.nn.testtool.MetadataExtractor;
 import nl.nn.testtool.TestTool;
-import nl.nn.testtool.storage.Storage;
+import org.wearefrank.ladybug.storage.Storage;
 
-import nl.nn.testtool.web.common.Constants;
+import org.wearefrank.ladybug.web.common.Constants;
 
 @Path("/" + Constants.LADYBUG_API_PATH + "/metadata")
 public class MetadataApi extends ApiBase {

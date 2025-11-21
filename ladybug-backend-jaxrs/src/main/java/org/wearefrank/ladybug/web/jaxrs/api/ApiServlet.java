@@ -28,7 +28,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletRequestWrapper;
 import jakarta.servlet.http.HttpServletResponse;
 
-import nl.nn.testtool.web.common.Constants;
+import org.wearefrank.ladybug.web.common.Constants;
 
 public class ApiServlet extends CXFServlet {
 	private static final long serialVersionUID = 1L;

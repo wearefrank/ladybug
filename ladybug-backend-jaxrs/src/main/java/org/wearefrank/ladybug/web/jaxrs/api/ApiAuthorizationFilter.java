@@ -37,7 +37,7 @@ import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.Provider;
 import lombok.Getter;
 
-import nl.nn.testtool.web.common.Constants;
+import org.wearefrank.ladybug.web.common.Constants;
 
 /**
  * Filter requests based on their permission requirements.

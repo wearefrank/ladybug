@@ -15,11 +15,9 @@
 */
 package org.wearefrank.ladybug.web.jaxrs;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
@@ -42,12 +40,12 @@ import lombok.Setter;
 import nl.nn.testtool.MetadataExtractor;
 import nl.nn.testtool.Report;
 import nl.nn.testtool.TestTool;
-import nl.nn.testtool.filter.View;
-import nl.nn.testtool.filter.Views;
-import nl.nn.testtool.storage.CrudStorage;
-import nl.nn.testtool.transform.ReportXmlTransformer;
+import org.wearefrank.ladybug.filter.View;
+import org.wearefrank.ladybug.filter.Views;
+import org.wearefrank.ladybug.storage.CrudStorage;
+import org.wearefrank.ladybug.transform.ReportXmlTransformer;
 
-import nl.nn.testtool.web.common.Constants;
+import org.wearefrank.ladybug.web.common.Constants;
 
 @Path("/" + Constants.LADYBUG_API_PATH + "/testtool")
 public class TestToolApi extends ApiBase {

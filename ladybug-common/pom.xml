@@ -11,7 +11,7 @@
     <version>${revision}</version>
   </parent>
 
-  <name>Ladybug Test Tool</name>
+  <name>Ladybug common</name>
 
   <dependencies>
 <!-- Dit soort dependencies gaan gebruiken? moeten eigenlijk via transitive dependencies van frontend project meekomen?

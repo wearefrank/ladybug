@@ -22,7 +22,7 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-import nl.nn.testtool.web.common.Constants;
+import org.wearefrank.ladybug.web.common.Constants;
 
 /**
  * Redirect frontend from /ladybug/api/ to /ladybug-api/ when for example running on Quarkus. When the frontend is

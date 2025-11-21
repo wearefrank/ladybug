@@ -10,22 +10,22 @@
 	default-lazy-init="true"
 	>
 
-	<context:component-scan base-package="nl.nn.testtool"/>
+	<context:component-scan base-package="org.wearefrank.ladybug"/>
 
 	<!-- Use prototype for JUnit tests to reset settings between tests and when run in parallel prevent one test -->
 	<!-- that alters a setting to influence another test -->
-	<bean name="testTool" class="nl.nn.testtool.TestTool" scope="prototype">
+	<bean name="testTool" class="org.wearefrank.ladybug.TestTool" scope="prototype">
 		<property name="debugStorage">
 			<ref bean="debugStorage"/>
 		</property>
 	</bean>
 
-	<bean name="debugStorage" class="nl.nn.testtool.storage.memory.MemoryLogStorage" autowire="byName">
+	<bean name="debugStorage" class="org.wearefrank.ladybug.storage.memory.MemoryLogStorage" autowire="byName">
 		<property name="initialStorageId">
 			<value>2514</value>
 		</property>
 		<property name="metadataExtractor">
-			<bean class="nl.nn.testtool.MetadataExtractor"/>
+			<bean class="org.wearefrank.ladybug.MetadataExtractor"/>
 		</property>
 	</bean>
 

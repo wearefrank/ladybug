@@ -28,7 +28,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 
-import nl.nn.testtool.web.common.Constants;
+import org.wearefrank.ladybug.web.common.Constants;
 
 @Path("/" + Constants.LADYBUG_API_PATH + "/collector")
 public class CollectorApi extends ApiBase {

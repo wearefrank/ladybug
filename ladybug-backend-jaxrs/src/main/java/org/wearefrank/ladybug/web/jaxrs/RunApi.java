@@ -35,12 +35,12 @@ import jakarta.ws.rs.core.Response;
 import lombok.Setter;
 import nl.nn.testtool.Report;
 import nl.nn.testtool.TestTool;
-import nl.nn.testtool.run.ReportRunner;
-import nl.nn.testtool.run.RunResult;
-import nl.nn.testtool.storage.StorageException;
-import nl.nn.testtool.transform.ReportXmlTransformer;
+import org.wearefrank.ladybug.run.ReportRunner;
+import org.wearefrank.ladybug.run.RunResult;
+import org.wearefrank.ladybug.storage.StorageException;
+import org.wearefrank.ladybug.transform.ReportXmlTransformer;
 
-import nl.nn.testtool.web.common.Constants;
+import org.wearefrank.ladybug.web.common.Constants;
 
 @Path("/" + Constants.LADYBUG_API_PATH + "/runner")
 public class RunApi extends ApiBase {

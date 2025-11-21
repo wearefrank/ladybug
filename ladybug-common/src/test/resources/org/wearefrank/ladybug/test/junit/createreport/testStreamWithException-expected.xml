@@ -1,0 +1,22 @@
+<Report Name="testStreamWithException"
+        Description=""
+        Path=""
+        CorrelationId="Original length: 36"
+        StartTime="Original length: 13"
+        EndTime="Original length: 13"
+        NumberOfCheckpoints="2"
+        EstimatedMemoryUsage="IGNORE">
+   <Checkpoint Name="testStreamWithException"
+               Type="Startpoint"
+               Level="0"
+               SourceClassName="sourceClassName"
+               MessageClassName="java.io.IOException"
+               Encoding="printStackTrace()"
+               Streaming="Byte">java.io.IOException: Notify exception
+	at org.wearefrank.ladybug.test.junit.IGNORE)
+</Checkpoint>
+   <Checkpoint Name="testStreamWithException"
+               Type="Endpoint"
+               Level="1"
+               SourceClassName="sourceClassName">endmessage</Checkpoint>
+</Report>

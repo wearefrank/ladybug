@@ -13,9 +13,9 @@
     </encoder>
   </appender>
 
-  <logger name="nl.nn.testtool.test.junit" level="debug"/>
+  <logger name="org.wearefrank.ladybug.test.junit" level="debug"/>
   <!-- JUnit tests will fail when enabled -->
-  <!-- logger name="nl.nn.testtool" level="debug"/ -->
+  <!-- logger name="org.wearefrank.ladybug" level="debug"/ -->
 
   <root level="info">
     <appender-ref ref="STDOUT" />
