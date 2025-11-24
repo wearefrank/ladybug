@@ -43,7 +43,7 @@ import org.wearefrank.ladybug.util.Export;
  * @author Jaco de Groot
  */
 public class TestExport {
-	public static final String RESOURCE_PATH = "nl/nn/testtool/test/junit/util/";
+	public static final String RESOURCE_PATH = "org/wearefrank/ladybug/test/junit/util/";
 
 	@Test
 	public void testExport() throws IllegalAccessException, IllegalArgumentException, InvocationTargetException,

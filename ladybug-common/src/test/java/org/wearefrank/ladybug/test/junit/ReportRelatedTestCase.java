@@ -316,7 +316,15 @@ public class ReportRelatedTestCase {
 			xml = xml.replaceFirst("" + report.getEndTime(), "IGNORE-END-TIME");
 			xml = xml.replaceFirst("" + report.getStartTime(), "IGNORE-START-TIME");
 		}
-		xml = xml.replaceFirst("<int>" + report.getStorageId() + "</int>", "<int>" + "IGNORE-STORAGE-ID" + "</int>");
+		int i = xml.indexOf("<void property=\"storageId\">");
+		if (i >= 0) {
+			String firstPart = xml.substring(0, i);
+			String secondPart = xml.substring(i);
+			secondPart = secondPart.replaceFirst("<int>" + report.getStorageId() + "</int>", "<int>" + "IGNORE-STORAGE-ID" + "</int>");
+			xml = firstPart + secondPart;
+		} else {
+			xml = xml.replaceFirst("<int>" + report.getStorageId() + "</int>", "<int>" + "IGNORE-STORAGE-ID" + "</int>");
+		}
 		return xml;
 	}
 

@@ -41,7 +41,7 @@ import org.wearefrank.ladybug.test.junit.ReportRelatedTestCase;
  */
 @RunWith(Parameterized.class)
 public class TestRerun extends ReportRelatedTestCase {
-	public static final String RESOURCE_PATH = "nl/nn/testtool/test/junit/rerun/";
+	public static final String RESOURCE_PATH = "org/wearefrank/ladybug/test/junit/rerun/";
 	private static Integer i;
 
 	@Before

@@ -36,8 +36,8 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
 import lombok.Setter;
-import nl.nn.testtool.MetadataExtractor;
-import nl.nn.testtool.TestTool;
+import org.wearefrank.ladybug.MetadataExtractor;
+import org.wearefrank.ladybug.TestTool;
 import org.wearefrank.ladybug.storage.Storage;
 
 import org.wearefrank.ladybug.web.common.Constants;

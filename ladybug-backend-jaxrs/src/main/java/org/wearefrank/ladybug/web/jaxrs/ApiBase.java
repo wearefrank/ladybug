@@ -23,7 +23,7 @@ import org.springframework.context.ApplicationContext;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.ws.rs.core.Context;
-import nl.nn.testtool.SecurityContext;
+import org.wearefrank.ladybug.SecurityContext;
 
 public abstract class ApiBase implements SecurityContext {
 	protected static ApplicationContext applicationContext;

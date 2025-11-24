@@ -41,7 +41,7 @@ import org.wearefrank.ladybug.util.XmlUtil;
  * @author Jaco de Groot
  */
 public class TestMessageEncoder {
-	public static final String RESOURCE_PATH = "nl/nn/testtool/test/junit/";
+	public static final String RESOURCE_PATH = "org/wearefrank/ladybug/test/junit/";
 
 	@Rule
 	public TestName name = new TestName();

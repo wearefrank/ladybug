@@ -69,7 +69,7 @@ public class ReportsTreeCellRenderer extends DefaultTreeCellRenderer {
 				} else {
 					label.setText(checkpoint.getName());
 				}
-				String path = "/nl/nn/testtool/echo2/reports/";
+				String path = "/org/wearefrank/ladybug/echo2/reports/";
 				String error = "";
 				if (MessageEncoderImpl.THROWABLE_ENCODER.equals(checkpoint.getEncoding())
 						|| checkpoint.isWaitingForStream() || checkpoint.getLevel() < 0) {
