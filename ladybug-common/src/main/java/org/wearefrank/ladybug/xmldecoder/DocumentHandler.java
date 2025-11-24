@@ -67,15 +67,16 @@ public final class DocumentHandler extends DefaultHandler {
 
     private ElementHandler handler;
 
-    // TODO: It may be wise to keep the nl.nn.testtool classes as safe classes here.
-    // TODO: We probably need a translation of nl.nn to org.wearefrank to be able to read old reports.
-    // TODO: We should write a warning if we find a class that is not in the safe list.
     private final static List<String> SAFE_CLASSES = Arrays.asList(
             "org.wearefrank.ladybug.Report",
             "org.wearefrank.ladybug.Checkpoint",
             "java.util.HashMap",
             "java.util.Collections");
 
+    private final static Map<String, String> OLD_REPORT_REPLACEMENT_CLASSES = Map.of(
+            "nl.nn.testtool.Report", "org.wearefrank.ladybug.Report",
+            "nl.nn.testtool.Checkpoint", "org.wearefrank.ladybug.Checkpoint"
+    );
     /**
      * Creates new instance of document handler.
      */
@@ -390,6 +391,9 @@ public final class DocumentHandler extends DefaultHandler {
      * @return the object that represents the class
      */
     public Class<?> findClass(String name) {
+        if (OLD_REPORT_REPLACEMENT_CLASSES.containsKey(name)) {
+            name = OLD_REPORT_REPLACEMENT_CLASSES.get(name);
+        }
         if (SAFE_CLASSES.contains(name)) {
             try {
                 if (loader != null) {
