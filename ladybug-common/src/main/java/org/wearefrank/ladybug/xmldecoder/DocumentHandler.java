@@ -394,24 +394,24 @@ public final class DocumentHandler extends DefaultHandler {
         if (OLD_REPORT_REPLACEMENT_CLASSES.containsKey(name)) {
             name = OLD_REPORT_REPLACEMENT_CLASSES.get(name);
         }
-        if (SAFE_CLASSES.contains(name)) {
-            try {
-                if (loader != null) {
-                    try {
-                        return Class.forName(name, false, loader.get());
-                    } catch (ClassNotFoundException exception) {
-                        // use default class loader instead
-                    } catch (SecurityException exception) {
-                        // use default class loader instead
-                    }
+        if (!SAFE_CLASSES.contains(name)) {
+            throw new IllegalArgumentException(String.format(
+                    "Refused to upload a malicious report, found class name: [%s]", name));
+        }
+        try {
+            if (loader != null) {
+                try {
+                    return Class.forName(name, false, loader.get());
+                } catch (ClassNotFoundException exception) {
+                    // use default class loader instead
+                } catch (SecurityException exception) {
+                    // use default class loader instead
                 }
-                return Class.forName(name);
             }
-            catch (ClassNotFoundException exception) {
-                handleException(exception);
-                return null;
-            }
-        } else {
+            return Class.forName(name);
+        }
+        catch (ClassNotFoundException exception) {
+            handleException(exception);
             return null;
         }
     }
