@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.wearefrank.ladybug.web.jaxrs;
+package org.wearefrank.ladybug.web.jaxrs.api;
 
 import java.lang.invoke.MethodHandles;
 import java.util.Collections;
@@ -41,6 +41,7 @@ import org.wearefrank.ladybug.storage.StorageException;
 import org.wearefrank.ladybug.transform.ReportXmlTransformer;
 
 import org.wearefrank.ladybug.web.common.Constants;
+import org.wearefrank.ladybug.web.jaxrs.api.ApiBase;
 
 @Path("/" + Constants.LADYBUG_API_PATH + "/runner")
 public class RunApi extends ApiBase {

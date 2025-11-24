@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.wearefrank.ladybug.web.jaxrs;
+package org.wearefrank.ladybug.web.jaxrs.api;
 
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
@@ -29,6 +29,7 @@ import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 
 import org.wearefrank.ladybug.web.common.Constants;
+import org.wearefrank.ladybug.web.jaxrs.api.ApiBase;
 
 @Path("/" + Constants.LADYBUG_API_PATH + "/collector")
 public class CollectorApi extends ApiBase {

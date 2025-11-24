@@ -21,7 +21,7 @@
 		</jaxrs:inInterceptors>
 		<jaxrs:providers>
 			<bean id="jsonProvider" class="com.fasterxml.jackson.jakarta.rs.json.JacksonJsonProvider"/>
-			<bean id="apiAuthorizationFilter" class="org.wearefrank.ladybug.web.jaxrs.api.ApiAuthorizationFilter" autowire="byName"/>
+			<bean id="apiAuthorizationFilter" class="org.wearefrank.ladybug.web.jaxrs.api.ApiException.ApiAuthorizationFilter" autowire="byName"/>
 		</jaxrs:providers>
 		<jaxrs:features>
 			<bean class="org.apache.cxf.ext.logging.LoggingFeature"/>

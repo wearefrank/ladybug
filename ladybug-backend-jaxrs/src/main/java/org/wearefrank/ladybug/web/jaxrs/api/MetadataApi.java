@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.wearefrank.ladybug.web.jaxrs;
+package org.wearefrank.ladybug.web.jaxrs.api;
 
 
 import java.util.ArrayList;
@@ -41,6 +41,8 @@ import org.wearefrank.ladybug.TestTool;
 import org.wearefrank.ladybug.storage.Storage;
 
 import org.wearefrank.ladybug.web.common.Constants;
+import org.wearefrank.ladybug.web.jaxrs.api.ApiBase;
+import org.wearefrank.ladybug.web.jaxrs.api.ApiException;
 
 @Path("/" + Constants.LADYBUG_API_PATH + "/metadata")
 public class MetadataApi extends ApiBase {

@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.wearefrank.ladybug.web.jaxrs;
+package org.wearefrank.ladybug.web.jaxrs.api;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -46,6 +46,7 @@ import org.wearefrank.ladybug.storage.CrudStorage;
 import org.wearefrank.ladybug.transform.ReportXmlTransformer;
 
 import org.wearefrank.ladybug.web.common.Constants;
+import org.wearefrank.ladybug.web.jaxrs.api.ApiBase;
 
 @Path("/" + Constants.LADYBUG_API_PATH + "/testtool")
 public class TestToolApi extends ApiBase {

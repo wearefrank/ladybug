@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.wearefrank.ladybug.web.jaxrs;
+package org.wearefrank.ladybug.web.jaxrs.api;
 
 import java.io.InputStream;
 import java.io.Serializable;
@@ -73,6 +73,8 @@ import org.wearefrank.ladybug.util.Export;
 import org.wearefrank.ladybug.util.ExportResult;
 
 import org.wearefrank.ladybug.web.common.Constants;
+import org.wearefrank.ladybug.web.jaxrs.api.ApiBase;
+import org.wearefrank.ladybug.web.jaxrs.api.ApiException;
 
 @Path("/" + Constants.LADYBUG_API_PATH + "/report")
 public class ReportApi extends ApiBase {
