@@ -18,6 +18,11 @@
   <dependencies>
     <dependency>
       <groupId>org.wearefrank</groupId>
+      <artifactId>ladybug-frontend-servlet</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.wearefrank</groupId>
       <artifactId>ladybug-common</artifactId>
       <version>${project.version}</version>
     </dependency>

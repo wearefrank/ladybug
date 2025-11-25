@@ -187,7 +187,7 @@ public final class DocumentHandler extends DefaultHandler {
     public Class<? extends ElementHandler> getElementHandler(String name) {
         Class<? extends ElementHandler> type = this.handlers.get(name);
         if (type == null) {
-            throw new IllegalArgumentException("Unsupported element: " + name);
+            throw new IllegalArgumentException("Unsupported element while parsing Ladybug report xml: " + name);
         }
         return type;
     }
@@ -396,7 +396,7 @@ public final class DocumentHandler extends DefaultHandler {
         }
         if (!SAFE_CLASSES.contains(name)) {
             throw new IllegalArgumentException(String.format(
-                    "Refused to upload a malicious report, found class name: [%s]", name));
+                    "Unsupported class while parsing Ladybug report xml: [%s]", name));
         }
         try {
             if (loader != null) {
