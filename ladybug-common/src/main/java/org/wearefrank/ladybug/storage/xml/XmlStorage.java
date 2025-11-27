@@ -15,7 +15,7 @@
 */
 package org.wearefrank.ladybug.storage.xml;
 
-import java.beans.XMLDecoder;
+import org.wearefrank.ladybug.xmldecoder.XMLDecoder;
 import java.beans.XMLEncoder;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
