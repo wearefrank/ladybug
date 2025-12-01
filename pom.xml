@@ -588,11 +588,9 @@
             <version>0.7.0</version>
             <extensions>true</extensions>
             <configuration>
-              <autoPublish>false</autoPublish><!-- Don't release the build directly after it's been
-              published to Central (staging). -->
+              <autoPublish>false</autoPublish><!-- Don't release the build directly after it's been published to Central (staging). -->
               <publishingServerId>ossrh</publishingServerId>
-              <waitUntil>validated</waitUntil><!-- Wait until the deployment bundle has been
-              uploaded and validated. -->
+              <waitUntil>validated</waitUntil><!-- Wait until the deployment bundle has been uploaded and validated. -->
             </configuration>
           </plugin>
         </plugins>
