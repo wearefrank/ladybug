@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans
+	xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:jaxrs="http://cxf.apache.org/jaxrs"
+	xsi:schemaLocation="
+		http://cxf.apache.org/core http://cxf.apache.org/schemas/core.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://cxf.apache.org/jaxrs http://cxf.apache.org/schemas/jaxrs.xsd
+	"
+	>
+
+	<bean id="ladybug-api-bus" class="org.apache.cxf.bus.spring.SpringBus" destroy-method="shutdown">
+		<property name="id" value="ladybug-api-bus"/>
+	</bean>
+	<bean id="gZipInterceptor" class="org.apache.cxf.transport.common.gzip.GZIPInInterceptor" />
+
+	<jaxrs:server id="Ladybug-Api" bus="ladybug-api-bus" address="/" basePackages="org.wearefrank.ladybug.web.jaxrs.api">
+		<jaxrs:inInterceptors>
+			<ref bean="gZipInterceptor" />
+		</jaxrs:inInterceptors>
+		<jaxrs:providers>
+			<bean id="jsonProvider" class="com.fasterxml.jackson.jakarta.rs.json.JacksonJsonProvider"/>
+			<bean id="apiAuthorizationFilter" class="org.wearefrank.ladybug.web.jaxrs.ApiAuthorizationFilter" autowire="byName"/>
+		</jaxrs:providers>
+		<jaxrs:features>
+			<bean class="org.apache.cxf.ext.logging.LoggingFeature"/>
+		</jaxrs:features>
+	</jaxrs:server>
+</beans>

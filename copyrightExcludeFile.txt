@@ -1,9 +1,9 @@
 /data
 \data
-/src/main/java/nl/nn/xmldecoder/
-\src\main\java\nl\nn\xmldecoder\
-/src/main/java/nl/nn/testtool/util/CSVReader.java
-\src\main\java\nl\nn\testtool\util\CSVReader.java
+/src/main/java/org/wearefrank/ladybug/xmldecoder/
+\src\main\java\org\wearefrank\ladybug\xmldecoder\
+/src/main/java/org/wearefrank/ladybug/util/CSVReader.java
+\src\main\java\org\wearefrank\ladybug\util\CSVReader.java
 /src/test/
 \src\test\
 /wip
