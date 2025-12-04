@@ -24,10 +24,10 @@ import java.util.List;
 
 import jakarta.annotation.PostConstruct;
 
+import org.wearefrank.ladybug.metadata.StatusMetadataFieldExtractor;
+
 import lombok.Getter;
 import lombok.Setter;
-
-import org.wearefrank.ladybug.metadata.StatusMetadataFieldExtractor;
 
 /**
  * @author Jaco de Groot

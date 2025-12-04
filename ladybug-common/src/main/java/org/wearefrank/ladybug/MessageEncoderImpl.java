@@ -36,11 +36,10 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import org.w3c.dom.Node;
-
-import lombok.SneakyThrows;
-
 import org.wearefrank.ladybug.util.XmlUtil;
 import org.wearefrank.ladybug.xmldecoder.XMLDecoder;
+
+import lombok.SneakyThrows;
 
 /**
  * Default implementation of {@link MessageEncoder} used by {@link TestTool} that provides a basic set of

@@ -15,9 +15,9 @@
 */
 package org.wearefrank.ladybug;
 
-import org.springframework.beans.factory.annotation.Autowired;
-
 import jakarta.inject.Inject;
+
+import org.springframework.beans.factory.annotation.Autowired;
 
 import lombok.Setter;
 

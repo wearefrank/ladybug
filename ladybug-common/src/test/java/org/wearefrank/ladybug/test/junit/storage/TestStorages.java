@@ -1,16 +1,16 @@
 package org.wearefrank.ladybug.test.junit.storage;
 
-import org.wearefrank.ladybug.storage.Storage;
-import org.wearefrank.ladybug.test.junit.ReportRelatedTestCase;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
+import java.lang.invoke.MethodHandles;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.lang.invoke.MethodHandles;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import org.wearefrank.ladybug.storage.Storage;
+import org.wearefrank.ladybug.test.junit.ReportRelatedTestCase;
 
 public class TestStorages extends ReportRelatedTestCase {
 	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());

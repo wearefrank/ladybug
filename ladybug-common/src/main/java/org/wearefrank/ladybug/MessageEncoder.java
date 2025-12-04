@@ -17,10 +17,10 @@ package org.wearefrank.ladybug;
 
 import java.io.Closeable;
 
+import org.wearefrank.ladybug.storage.xml.XmlStorage;
+
 import lombok.Getter;
 import lombok.Setter;
-
-import org.wearefrank.ladybug.storage.xml.XmlStorage;
 
 /**
  * Implement this interface to implement custom encoding/decoding methods to/from a string representation for message

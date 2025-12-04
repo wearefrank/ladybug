@@ -44,12 +44,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import ch.qos.logback.classic.Level;
-import ch.qos.logback.classic.spi.ILoggingEvent;
-import ch.qos.logback.core.read.ListAppender;
-import lombok.SneakyThrows;
-
 import org.wearefrank.ladybug.Checkpoint;
 import org.wearefrank.ladybug.CloseReportsTask;
 import org.wearefrank.ladybug.MessageCapturerImpl;
@@ -59,6 +53,11 @@ import org.wearefrank.ladybug.Report;
 import org.wearefrank.ladybug.storage.Storage;
 import org.wearefrank.ladybug.storage.StorageException;
 import org.wearefrank.ladybug.test.junit.ReportRelatedTestCase;
+
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.read.ListAppender;
+import lombok.SneakyThrows;
 
 /**
  * @author Jaco de Groot

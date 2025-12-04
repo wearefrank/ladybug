@@ -25,22 +25,15 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 
+import jakarta.annotation.PostConstruct;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
+
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-
-import io.opentelemetry.api.trace.Tracer;
-
-import jakarta.annotation.PostConstruct;
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.inject.Inject;
-
-import lombok.Getter;
-import lombok.Setter;
-import lombok.SneakyThrows;
-
 import org.wearefrank.ladybug.filter.View;
 import org.wearefrank.ladybug.filter.Views;
 import org.wearefrank.ladybug.run.ReportRunner;
@@ -51,6 +44,11 @@ import org.wearefrank.ladybug.storage.StorageException;
 import org.wearefrank.ladybug.storage.memory.MemoryLogStorage;
 import org.wearefrank.ladybug.transform.MessageTransformer;
 import org.wearefrank.ladybug.util.OpenTelemetryUtil;
+
+import io.opentelemetry.api.trace.Tracer;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.SneakyThrows;
 
 /**
  * @author Jaco de Groot

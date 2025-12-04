@@ -19,10 +19,10 @@ package org.wearefrank.ladybug.test.junit.createreport;
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
 
+import org.wearefrank.ladybug.TestTool;
+
 import lombok.Getter;
 import lombok.Setter;
-
-import org.wearefrank.ladybug.TestTool;
 
 class TestThread extends Thread {
 	@Setter TestTool testTool;

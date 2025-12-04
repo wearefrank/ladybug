@@ -45,10 +45,6 @@ import org.junit.runners.Parameterized.Parameters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
-
-import ch.qos.logback.classic.spi.ILoggingEvent;
-import ch.qos.logback.core.read.ListAppender;
-
 import org.wearefrank.ladybug.Checkpoint;
 import org.wearefrank.ladybug.MetadataExtractor;
 import org.wearefrank.ladybug.Report;
@@ -58,6 +54,9 @@ import org.wearefrank.ladybug.storage.StorageException;
 import org.wearefrank.ladybug.test.junit.util.TestExport;
 import org.wearefrank.ladybug.test.junit.util.TestImport;
 import org.wearefrank.ladybug.transform.ReportXmlTransformer;
+
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.read.ListAppender;
 
 /**
  * @author Jaco de Groot

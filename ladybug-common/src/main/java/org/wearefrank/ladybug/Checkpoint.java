@@ -37,11 +37,6 @@ import javax.xml.xpath.XPathExpressionException;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
-import io.opentelemetry.api.trace.Span;
-
 import org.wearefrank.ladybug.MessageCapturer.StreamingType;
 import org.wearefrank.ladybug.MessageEncoder.ToStringResult;
 import org.wearefrank.ladybug.run.ReportRunner;
@@ -49,6 +44,10 @@ import org.wearefrank.ladybug.run.RunResult;
 import org.wearefrank.ladybug.storage.StorageException;
 import org.wearefrank.ladybug.util.ImportResult;
 import org.wearefrank.ladybug.util.XmlUtil;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import io.opentelemetry.api.trace.Span;
 
 /**
  * @author Jaco de Groot

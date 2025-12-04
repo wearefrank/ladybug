@@ -20,6 +20,9 @@ import java.util.List;
 
 import javax.sql.DataSource;
 
+import jakarta.enterprise.inject.Produces;
+import jakarta.inject.Singleton;
+
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -28,12 +31,6 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.SimpleDriverDataSource;
 import org.springframework.transaction.TransactionManager;
-
-import io.quarkus.arc.DefaultBean;
-
-import jakarta.enterprise.inject.Produces;
-import jakarta.inject.Singleton;
-
 import org.wearefrank.ladybug.echo2.ComparePane;
 import org.wearefrank.ladybug.echo2.DebugPane;
 import org.wearefrank.ladybug.echo2.Echo2Application;
@@ -52,6 +49,8 @@ import org.wearefrank.ladybug.storage.proofofmigration.ProofOfMigrationErrorsVie
 import org.wearefrank.ladybug.storage.proofofmigration.ProofOfMigrationStorage;
 import org.wearefrank.ladybug.storage.proofofmigration.ProofOfMigrationView;
 import org.wearefrank.ladybug.transform.ReportXmlTransformer;
+
+import io.quarkus.arc.DefaultBean;
 
 /**
  * <p>

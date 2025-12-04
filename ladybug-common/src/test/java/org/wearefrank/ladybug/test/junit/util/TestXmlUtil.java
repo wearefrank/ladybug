@@ -23,7 +23,6 @@ import javax.xml.xpath.XPathExpressionException;
 
 import org.junit.Test;
 import org.junit.jupiter.api.function.Executable;
-
 import org.wearefrank.ladybug.util.XmlUtil;
 
 /**

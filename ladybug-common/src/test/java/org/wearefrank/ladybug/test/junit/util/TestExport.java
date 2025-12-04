@@ -29,7 +29,6 @@ import java.util.Map;
 import java.util.zip.GZIPInputStream;
 
 import org.junit.Test;
-
 import org.wearefrank.ladybug.Checkpoint;
 import org.wearefrank.ladybug.Report;
 import org.wearefrank.ladybug.storage.StorageException;

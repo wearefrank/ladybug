@@ -35,6 +35,15 @@ import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.wearefrank.ladybug.MessageEncoder.ToStringResult;
+import org.wearefrank.ladybug.run.ReportRunner;
+import org.wearefrank.ladybug.storage.CrudStorage;
+import org.wearefrank.ladybug.storage.Storage;
+import org.wearefrank.ladybug.transform.MessageTransformer;
+import org.wearefrank.ladybug.transform.ReportXmlTransformer;
+import org.wearefrank.ladybug.util.CsvUtil;
+import org.wearefrank.ladybug.util.EscapeUtil;
+import org.wearefrank.ladybug.util.XmlUtil;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -45,16 +54,6 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;
-
-import org.wearefrank.ladybug.MessageEncoder.ToStringResult;
-import org.wearefrank.ladybug.run.ReportRunner;
-import org.wearefrank.ladybug.storage.CrudStorage;
-import org.wearefrank.ladybug.storage.Storage;
-import org.wearefrank.ladybug.transform.MessageTransformer;
-import org.wearefrank.ladybug.transform.ReportXmlTransformer;
-import org.wearefrank.ladybug.util.CsvUtil;
-import org.wearefrank.ladybug.util.EscapeUtil;
-import org.wearefrank.ladybug.util.XmlUtil;
 
 /**
  * @author Jaco de Groot

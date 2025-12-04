@@ -26,7 +26,6 @@ import java.util.zip.GZIPOutputStream;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import org.wearefrank.ladybug.Report;
 import org.wearefrank.ladybug.storage.StorageException;
 import org.wearefrank.ladybug.storage.memory.MemoryCrudStorage;
