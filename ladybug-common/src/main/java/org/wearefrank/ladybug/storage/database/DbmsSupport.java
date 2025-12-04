@@ -19,13 +19,13 @@ import java.sql.SQLException;
 import java.sql.Types;
 import java.util.List;
 
+import jakarta.annotation.PostConstruct;
+import jakarta.inject.Inject;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.JdbcUtils;
 import org.springframework.jdbc.support.MetaDataAccessException;
-
-import jakarta.annotation.PostConstruct;
-import jakarta.inject.Inject;
 
 /*
 
@@ -83,7 +83,7 @@ public class DbmsSupport {
 
 	public String provideOrderWithRowNumber(int limit, String orderByColumn, SortOrder sortOrder) {
 		if (limit > -1 && "Oracle".equals(commonDatabaseName)) {
-			return " row_number() over (order by "+ orderByColumn + " " + sortOrder + ") as rn";
+			return " row_number() over (order by " + orderByColumn + " " + sortOrder + ") as rn";
 		}
 		return "";
 	}

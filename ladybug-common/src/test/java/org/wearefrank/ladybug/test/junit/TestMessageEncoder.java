@@ -28,14 +28,13 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
 import org.w3c.dom.Node;
-import org.xml.sax.SAXException;
-
 import org.wearefrank.ladybug.Checkpoint;
 import org.wearefrank.ladybug.MessageEncoderImpl;
 import org.wearefrank.ladybug.Report;
 import org.wearefrank.ladybug.TestTool;
 import org.wearefrank.ladybug.storage.StorageException;
 import org.wearefrank.ladybug.util.XmlUtil;
+import org.xml.sax.SAXException;
 
 /**
  * @author Jaco de Groot
@@ -82,7 +81,7 @@ public class TestMessageEncoder {
 		assertEquals("<test/>", actual);
 		checkpoint.setMessage(actual);
 		checkpoint.setEncoding(MessageEncoderImpl.DOM_NODE_ENCODER);
-		node = (Node)checkpoint.getMessageAsObject();
+		node = (Node) checkpoint.getMessageAsObject();
 		assertTrue(node instanceof Node);
 		assertEquals("test", node.getNodeName());
 		node = checkpoint.getMessageAsObject(XmlUtil.stringToNode("<test2/>"));

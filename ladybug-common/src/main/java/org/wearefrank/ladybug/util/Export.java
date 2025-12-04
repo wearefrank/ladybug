@@ -37,7 +37,6 @@ import java.util.zip.ZipOutputStream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import org.wearefrank.ladybug.Checkpoint;
 import org.wearefrank.ladybug.Report;
 import org.wearefrank.ladybug.TestTool;
@@ -52,20 +51,21 @@ public class Export {
 	}
 
 	public static ExportResult export(Storage storage, List storageIds, boolean exportReport,
-											boolean exportReportXml) {
+									  boolean exportReportXml) {
 		return export(storage, storageIds, null, exportReport, exportReportXml, null, null);
 	}
 
 	public static ExportResult export(Storage storage,
-			String suggestedFilenameWithoutExtension) {
+									  String suggestedFilenameWithoutExtension) {
 		return export(storage, suggestedFilenameWithoutExtension, true, false);
 	}
 
 	public static ExportResult export(Storage storage,
-			String suggestedFilenameWithoutExtension, boolean exportReport,
-			boolean exportReportXml) {
+									  String suggestedFilenameWithoutExtension, boolean exportReport,
+									  boolean exportReportXml) {
 		return export(storage, null, exportReport, exportReportXml, null,
-				suggestedFilenameWithoutExtension);
+				suggestedFilenameWithoutExtension
+		);
 	}
 
 	public static ExportResult export(Report report) {
@@ -73,9 +73,10 @@ public class Export {
 	}
 
 	public static ExportResult export(Report report, boolean exportReport,
-			boolean exportReportXml) {
+									  boolean exportReportXml) {
 		return export(null, report, exportReport, exportReportXml, null,
-				null);
+				null
+		);
 	}
 
 	public static ExportResult export(Report report, Checkpoint checkpoint) {
@@ -91,9 +92,10 @@ public class Export {
 									   Checkpoint checkpoint, String suggestedFilenameWithoutExtension) {
 		return export(storage, null, report, exportReport, exportReportXml, checkpoint, suggestedFilenameWithoutExtension);
 	}
+
 	private static ExportResult export(Storage storage, List storageIds, Report report,
-			boolean exportReport, boolean exportReportXml,
-			Checkpoint checkpoint, String suggestedFilenameWithoutExtension) {
+									   boolean exportReport, boolean exportReportXml,
+									   Checkpoint checkpoint, String suggestedFilenameWithoutExtension) {
 		ExportResult exportResult = new ExportResult();
 		FileOutputStream fileOutputStream = null;
 		ZipOutputStream zipOutputStream = null;
@@ -102,8 +104,8 @@ public class Export {
 				if (storageIds == null || storageIds.isEmpty())
 					storageIds = storage.getStorageIds();
 				if (suggestedFilenameWithoutExtension == null) {
-					suggestedFilenameWithoutExtension = "Ladybug "+storage.getName();
-					suggestedFilenameWithoutExtension += " "+new SimpleDateFormat("yyyyMMdd-HHmm").format(new Date());
+					suggestedFilenameWithoutExtension = "Ladybug " + storage.getName();
+					suggestedFilenameWithoutExtension += " " + new SimpleDateFormat("yyyyMMdd-HHmm").format(new Date());
 					int size = storageIds.size();
 					suggestedFilenameWithoutExtension += " (" + size;
 					if (size == 1) {
@@ -114,7 +116,8 @@ public class Export {
 				}
 				fileOutputStream = createTempFile(
 						suggestedFilenameWithoutExtension, ".zip",
-						exportResult);
+						exportResult
+				);
 				zipOutputStream = new ZipOutputStream(fileOutputStream);
 				Set duplicateCheck = new HashSet();
 				Iterator iterator = storageIds.iterator();
@@ -148,12 +151,14 @@ public class Export {
 				String reportXml = report.toXml();
 				fileOutputStream = createTempFile(
 						replaceSpecialCharsInFilename(report.getName()),
-						getFileExtension(reportXml), exportResult);
+						getFileExtension(reportXml), exportResult
+				);
 				fileOutputStream.write(getMessageBytes(reportXml));
 			} else if (report != null && (exportReportXml || checkpoint != null)) {
 				fileOutputStream = createTempFile(
 						replaceSpecialCharsInFilename(report.getName()), ".zip",
-						exportResult);
+						exportResult
+				);
 				zipOutputStream = new ZipOutputStream(fileOutputStream);
 				String zipEntryName;
 				// Report
@@ -173,15 +178,17 @@ public class Export {
 			} else if (report != null) {
 				fileOutputStream = createTempFile(
 						replaceSpecialCharsInFilename(report.getName()), ".ttr",
-						exportResult);
+						exportResult
+				);
 				fileOutputStream.write(getReportBytesPortable(report));
 			} else if (checkpoint != null) {
 				fileOutputStream = createTempFile(
 						replaceSpecialCharsInFilename(checkpoint.getName()),
-						getFileExtension(checkpoint.getMessage()), exportResult);
+						getFileExtension(checkpoint.getMessage()), exportResult
+				);
 				fileOutputStream.write(getMessageBytes(checkpoint.getMessage()));
 			}
-		} catch(Throwable throwable) {
+		} catch (Throwable throwable) {
 			log.error("Caught throwable creating file", throwable);
 			exportResult.setErrorMessage("Unable to create export: " + throwable.getMessage());
 			if (exportResult.getTempFile() != null) {
@@ -205,6 +212,7 @@ public class Export {
 		return new FileOutputStream(file);
 
 	}
+
 	private static String getFileExtension(String message) {
 		// TODO use a more intelligent method to determine xml type (parse the message with an xml parser or apply an xpath on the message like it is done in XpathMetadataFieldExtractor?)
 		if (message != null && message.startsWith("<")) {
@@ -245,22 +253,22 @@ public class Export {
 	}
 
 	private static void writeReport(Report report, String zipEntryName,
-			ZipOutputStream zipOutputStream) throws IOException {
+									ZipOutputStream zipOutputStream) throws IOException {
 		writeZipEntry(zipEntryName, getReportBytesPortable(report), zipOutputStream);
 	}
 
 	private static void writeReportXml(String reportXml, String zipEntryName,
-			ZipOutputStream zipOutputStream) throws IOException {
+									   ZipOutputStream zipOutputStream) throws IOException {
 		writeZipEntry(zipEntryName, getMessageBytes(reportXml), zipOutputStream);
 	}
 
 	private static void writeCheckpoint(Checkpoint checkpoint, String zipEntryName,
-			ZipOutputStream zipOutputStream) throws IOException {
+										ZipOutputStream zipOutputStream) throws IOException {
 		writeZipEntry(zipEntryName, getMessageBytes(checkpoint.getMessage()), zipOutputStream);
 	}
 
 	private static void writeZipEntry(String zipEntryName, byte[] bytes,
-			ZipOutputStream zipOutputStream) throws IOException {
+									  ZipOutputStream zipOutputStream) throws IOException {
 		zipOutputStream.putNextEntry(new ZipEntry(zipEntryName));
 		zipOutputStream.write(bytes);
 		zipOutputStream.closeEntry();
@@ -310,7 +318,7 @@ public class Export {
 			gzipOutputStream = new GZIPOutputStream(byteArrayOutputStream);
 			objectOutputStream = new ObjectOutputStream(gzipOutputStream);
 			objectOutputStream.writeObject(report);
-		} catch(IOException e) {
+		} catch (IOException e) {
 			logAndThrow(log, e, "IOException storing report");
 		} finally {
 			if (objectOutputStream != null) {
@@ -334,7 +342,7 @@ public class Export {
 		if (outputStream != null) {
 			try {
 				outputStream.close();
-			} catch(IOException e) {
+			} catch (IOException e) {
 				log.warn("IOException " + action, e);
 			}
 		}
@@ -343,7 +351,7 @@ public class Export {
 	public static void closeOutputStreamWriter(OutputStreamWriter outputStreamWriter, String action, Logger log) {
 		try {
 			outputStreamWriter.close();
-		} catch(IOException e) {
+		} catch (IOException e) {
 			log.warn("IOException " + action, e);
 		}
 	}

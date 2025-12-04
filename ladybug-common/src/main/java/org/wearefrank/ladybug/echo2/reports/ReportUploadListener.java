@@ -21,14 +21,14 @@ import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import nextapp.echo2.app.filetransfer.UploadEvent;
-import nextapp.echo2.app.filetransfer.UploadListener;
 import org.wearefrank.ladybug.echo2.test.TestComponent;
 import org.wearefrank.ladybug.echo2.util.Upload;
 import org.wearefrank.ladybug.storage.CrudStorage;
 import org.wearefrank.ladybug.storage.StorageException;
 import org.wearefrank.ladybug.storage.memory.MemoryCrudStorage;
+
+import nextapp.echo2.app.filetransfer.UploadEvent;
+import nextapp.echo2.app.filetransfer.UploadListener;
 
 /**
  * @author Jaco de Groot
@@ -86,8 +86,9 @@ public class ReportUploadListener implements UploadListener {
 			try {
 				List storageIds = storage.getStorageIds();
 				for (int i = storageIds.size() - 1; i > -1; i--) {
-					reportsComponent.openReport(storage.getReport((Integer)storageIds.get(i)),
-							ReportsComponent.OPEN_REPORT_ALLOWED, false, true);
+					reportsComponent.openReport(storage.getReport((Integer) storageIds.get(i)),
+							ReportsComponent.OPEN_REPORT_ALLOWED, false, true
+					);
 				}
 			} catch (StorageException e) {
 				// TODO iets doen, errorMessage vullen?

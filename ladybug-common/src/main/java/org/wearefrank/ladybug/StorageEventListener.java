@@ -16,10 +16,10 @@
 package org.wearefrank.ladybug;
 
 /**
- *
  * @author tleeuw
  */
 public interface StorageEventListener {
-    void onStorageAdded(String storageName);
-    void onStorageRemoved(String storageName);
+	void onStorageAdded(String storageName);
+
+	void onStorageRemoved(String storageName);
 }

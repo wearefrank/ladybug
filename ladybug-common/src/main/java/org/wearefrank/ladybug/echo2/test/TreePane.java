@@ -24,19 +24,19 @@ import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import echopointng.tree.DefaultMutableTreeNode;
-import echopointng.tree.TreePath;
-import lombok.Setter;
 import org.wearefrank.ladybug.MetadataExtractor;
 import org.wearefrank.ladybug.Report;
 import org.wearefrank.ladybug.echo2.BeanParent;
+import org.wearefrank.ladybug.echo2.Echo2Application;
 import org.wearefrank.ladybug.echo2.TestPane;
 import org.wearefrank.ladybug.filter.View;
 import org.wearefrank.ladybug.storage.CrudStorage;
 import org.wearefrank.ladybug.storage.Storage;
 import org.wearefrank.ladybug.storage.StorageException;
-import org.wearefrank.ladybug.echo2.Echo2Application;
+
+import echopointng.tree.DefaultMutableTreeNode;
+import echopointng.tree.TreePath;
+import lombok.Setter;
 
 public class TreePane extends org.wearefrank.ladybug.echo2.reports.TreePane implements BeanParent {
 	private static final long serialVersionUID = 1L;
@@ -56,7 +56,7 @@ public class TreePane extends org.wearefrank.ladybug.echo2.reports.TreePane impl
 	 */
 	public void initBean(BeanParent beanParent) {
 		this.beanParent = beanParent;
-		TestPane testPane = (TestPane)beanParent;
+		TestPane testPane = (TestPane) beanParent;
 		infoPane = testPane.getInfoPane();
 	}
 
@@ -70,7 +70,7 @@ public class TreePane extends org.wearefrank.ladybug.echo2.reports.TreePane impl
 	@Override
 	public void init() {
 		super.init();
-		redisplayReports((String)null, null);
+		redisplayReports((String) null, null);
 	}
 
 	@Override
@@ -130,8 +130,8 @@ public class TreePane extends org.wearefrank.ladybug.echo2.reports.TreePane impl
 		Iterator<List<Object>> metadataIterator = metadata.iterator();
 		while (metadataIterator.hasNext()) {
 			List<Object> metadataRecord = metadataIterator.next();
-			Integer storageId = (Integer)metadataRecord.get(0);
-			String path = (String)metadataRecord.get(1);
+			Integer storageId = (Integer) metadataRecord.get(0);
+			String path = (String) metadataRecord.get(1);
 			if (path == null || !path.equals(TestComponent.normalizePath(path))) {
 				reportsWithDirtyPaths.add(storageId);
 			} else if (path.length() > 1) {
@@ -148,11 +148,11 @@ public class TreePane extends org.wearefrank.ladybug.echo2.reports.TreePane impl
 	}
 
 	private DefaultMutableTreeNode addPaths(List<String> paths,
-			DefaultMutableTreeNode rootNode, String pathOfNodeToReturn) {
+											DefaultMutableTreeNode rootNode, String pathOfNodeToReturn) {
 		DefaultMutableTreeNode returnNode = null;
 		while (paths.size() > 0) {
 			// Add first element of every path
-			String path = (String)paths.get(0);
+			String path = (String) paths.get(0);
 			String firstElement = path.substring(1, path.indexOf('/', 1));
 			DefaultMutableTreeNode subNode = new DefaultMutableTreeNode(firstElement);
 			rootNode.add(subNode);
@@ -171,9 +171,9 @@ public class TreePane extends org.wearefrank.ladybug.echo2.reports.TreePane impl
 			List<String> subPaths = new ArrayList<String>();
 			int i = 0;
 			while (i < paths.size()) {
-				path = (String)paths.get(i);
+				path = (String) paths.get(i);
 				if (path.startsWith("/" + firstElement + "/")) {
-					String subPath = (String)paths.remove(i);
+					String subPath = (String) paths.remove(i);
 					if (subPath.length() > firstElement.length() + 2) {
 						subPath = subPath.substring(firstElement.length() + 1);
 						subPaths.add(subPath);

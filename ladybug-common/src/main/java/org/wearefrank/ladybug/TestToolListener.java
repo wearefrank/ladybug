@@ -21,7 +21,7 @@ package org.wearefrank.ladybug;
 public interface TestToolListener {
 
 	public void checkpoint(String correlationId, String name, Object message,
-			int checkpointType,	boolean startpoint, boolean endpoint,
-			int levelChange);
+						   int checkpointType, boolean startpoint, boolean endpoint,
+						   int levelChange);
 
 }

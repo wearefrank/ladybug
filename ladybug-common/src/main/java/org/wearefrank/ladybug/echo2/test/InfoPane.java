@@ -17,15 +17,16 @@ package org.wearefrank.ladybug.echo2.test;
 
 import java.util.Set;
 
-import lombok.Setter;
-import nextapp.echo2.app.ContentPane;
 import org.wearefrank.ladybug.TestTool;
 import org.wearefrank.ladybug.echo2.BeanParent;
+import org.wearefrank.ladybug.echo2.Echo2Application;
 import org.wearefrank.ladybug.extensions.CustomReportAction;
 import org.wearefrank.ladybug.storage.CrudStorage;
 import org.wearefrank.ladybug.storage.LogStorage;
 import org.wearefrank.ladybug.transform.ReportXmlTransformer;
-import org.wearefrank.ladybug.echo2.Echo2Application;
+
+import lombok.Setter;
+import nextapp.echo2.app.ContentPane;
 
 /**
  * @author Jaco de Groot

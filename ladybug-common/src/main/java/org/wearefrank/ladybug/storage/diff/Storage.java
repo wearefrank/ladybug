@@ -26,6 +26,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import jakarta.annotation.PostConstruct;
+
 import org.wearefrank.ladybug.Report;
 import org.wearefrank.ladybug.storage.StorageException;
 import org.wearefrank.ladybug.storage.memory.MemoryCrudStorage;
@@ -61,15 +62,15 @@ public class Storage extends MemoryCrudStorage {
 	private void readReports() throws StorageException {
 		File directory = new File(reportsDirectory);
 		File[] files = directory.listFiles(
-			new FilenameFilter() {
-				public boolean accept(File dir, String name) {
-					if (name.startsWith("report-") && name.endsWith(".ttr")) {
-						return true;
-					} else {
-						return false;
+				new FilenameFilter() {
+					public boolean accept(File dir, String name) {
+						if (name.startsWith("report-") && name.endsWith(".ttr")) {
+							return true;
+						} else {
+							return false;
+						}
 					}
 				}
-			}
 		);
 		for (int i = 0; i < files.length; i++) {
 			File file = files[i];
@@ -83,7 +84,7 @@ public class Storage extends MemoryCrudStorage {
 			List reportsList = new ArrayList();
 //			String errorMessage = Echo2Application.getReports(fileInputStream, reportsList, log);
 			// TODO checken op errorMessage?
-			Report report = (Report)reportsList.get(0);
+			Report report = (Report) reportsList.get(0);
 			report.setStorage(this);
 			report.setStorageId(getNewStorageId());
 			storageIds.add(report.getStorageId());
@@ -96,7 +97,7 @@ public class Storage extends MemoryCrudStorage {
 		while (iterator.hasNext()) {
 			FileOutputStream fileOutputStream = null;
 			try {
-				Integer storageId = (Integer)iterator.next();
+				Integer storageId = (Integer) iterator.next();
 				fileOutputStream = new FileOutputStream(reportsDirectory + "/report-" + storageId + ".ttr");
 //				fileOutputStream.write(Echo2Application.getReportBytes((Report)reports.get(storageId)));
 			} catch (FileNotFoundException e) {

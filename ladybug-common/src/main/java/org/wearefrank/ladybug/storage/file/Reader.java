@@ -30,7 +30,6 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import org.wearefrank.ladybug.MetadataExtractor;
 import org.wearefrank.ladybug.Report;
 import org.wearefrank.ladybug.storage.StorageException;
@@ -54,6 +53,7 @@ public class Reader {
 	private List metadataCacheReadOnlyPerFile = new ArrayList();
 	private MetadataExtractor metadataExtractor;
 	private static final List METADATA_NAMES_STORAGE_ID = new ArrayList();
+
 	static {
 		METADATA_NAMES_STORAGE_ID.add("storageId");
 	}
@@ -84,19 +84,21 @@ public class Reader {
 		List<Integer> result = new ArrayList<Integer>();
 		List metadata = getMetadata(-1, METADATA_NAMES_STORAGE_ID, null,
 				MetadataExtractor.VALUE_TYPE_OBJECT,
-				metadataFileModifiedCounter, synchronizeRotate);
+				metadataFileModifiedCounter, synchronizeRotate
+		);
 		Iterator iterator = metadata.iterator();
 		while (iterator.hasNext()) {
-			List record = (List)iterator.next();
-			result.add((Integer)record.get(0));
+			List record = (List) iterator.next();
+			result.add((Integer) record.get(0));
 		}
 		return result;
 	}
+
 	protected List getMetadata(int maxNumberOfRecords, List metadataNames, List searchValues, int metadataValueType,
-			long metadataFileModifiedCounter, String synchronizeRotate) throws StorageException {
+							   long metadataFileModifiedCounter, String synchronizeRotate) throws StorageException {
 		List metadataReadOnly;
-		synchronized(metadataCacheReadOnly) {
-			synchronized(synchronizeRotate) {
+		synchronized (metadataCacheReadOnly) {
+			synchronized (synchronizeRotate) {
 				// Check whether metadata file was changed by the Writer class. In case the metadata file was edited by
 				// hand it should also be detected. The last modified time of a file isn't sufficient to detect changes
 				// as it isn't updated until the file output stream is closed (at least with WSAD on Windows XP) and
@@ -118,10 +120,11 @@ public class Reader {
 							while (metadataCacheReadOnlyPerFile.size() <= i) {
 								metadataCacheReadOnlyPerFile.add(0, new ArrayList());
 							}
-							List oldMetadataCurrentFile = (List)metadataCacheReadOnlyPerFile.get(i);
+							List oldMetadataCurrentFile = (List) metadataCacheReadOnlyPerFile.get(i);
 							List metadataCurrentFile = new ArrayList();
 							getMetadataOrReportLocationFromFile(metadataExtractor, file, oldMetadataCurrentFile,
-										metadataCurrentFile, null);
+									metadataCurrentFile, null
+							);
 							newMetadataCacheReadOnly.addAll(0, metadataCurrentFile);
 							metadataCacheReadOnlyPerFile.set(i, metadataCurrentFile);
 						}
@@ -133,7 +136,7 @@ public class Reader {
 		}
 		List result = new ArrayList();
 		for (int i = 0; i < metadataReadOnly.size() && (maxNumberOfRecords == -1 || i < maxNumberOfRecords); i++) {
-			Map metadataRecord = (Map)metadataReadOnly.get(i);
+			Map metadataRecord = (Map) metadataReadOnly.get(i);
 			// Check whether it's already possible to exclude this record from
 			// the result (based on the search values and the already available
 			// metadata) and prevent unnecessary (possible costly) metadata
@@ -143,15 +146,16 @@ public class Reader {
 				List partialValues = new ArrayList();
 				List partialSearchValues = new ArrayList();
 				for (int j = 0; j < searchValues.size(); j++) {
-					String searchValue = (String)searchValues.get(j);
+					String searchValue = (String) searchValues.get(j);
 					if (searchValue != null) {
-						String metadataName = (String)metadataNames.get(j);
+						String metadataName = (String) metadataNames.get(j);
 						synchronized (metadataRecord) {
 							if (metadataRecord.keySet().contains(metadataName)) {
 								partialValues.add(
 										metadataExtractor.fromObjectToMetadataValueType(metadataName,
-												metadataRecord.get(metadataName), metadataValueType)
-										);
+												metadataRecord.get(metadataName), metadataValueType
+										)
+								);
 								partialSearchValues.add(searchValue);
 							}
 						}
@@ -169,7 +173,7 @@ public class Reader {
 				List resultRecord = new ArrayList();
 				Iterator metadataNamesIterator = metadataNames.iterator();
 				while (metadataNamesIterator.hasNext()) {
-					String metadataName = (String)metadataNamesIterator.next();
+					String metadataName = (String) metadataNamesIterator.next();
 					Object metadataValue;
 					boolean metadataRecordContainsMetadataName;
 					synchronized (metadataRecord) {
@@ -178,7 +182,7 @@ public class Reader {
 					if (!metadataRecordContainsMetadataName) {
 						Integer storageId;
 						synchronized (metadataRecord) {
-							storageId = (Integer)metadataRecord.get("storageId");
+							storageId = (Integer) metadataRecord.get("storageId");
 						}
 						if (report == null) {
 							report = getReportWithoutException(storageId, synchronizeRotate);
@@ -192,7 +196,8 @@ public class Reader {
 							}
 							metadataValue = metadataExtractor.getMetadata(
 									report, metadataName,
-									MetadataExtractor.VALUE_TYPE_OBJECT);
+									MetadataExtractor.VALUE_TYPE_OBJECT
+							);
 							synchronized (metadataRecord) {
 								metadataRecord.put(metadataName, metadataValue);
 							}
@@ -216,7 +221,7 @@ public class Reader {
 		Report report = null;
 		try {
 			report = getReport(storageId, synchronizeRotate);
-		} catch(Throwable throwable) {
+		} catch (Throwable throwable) {
 			if (!(throwable instanceof StorageException)) {
 				log.error("Caught unexpected throwable reading report from file", throwable);
 			}
@@ -228,7 +233,7 @@ public class Reader {
 		byte[] reportBytes = null;
 		ReportLocation reportLocation = null;
 		int foundInIndex = -1;
-		synchronized(synchronizeRotate) {
+		synchronized (synchronizeRotate) {
 			for (int i = maximumBackupIndex; i >= 0 && foundInIndex == -1; i--) {
 				File file;
 				if (i == 0) {
@@ -244,7 +249,7 @@ public class Reader {
 					}
 				}
 			}
-			if (foundInIndex != -1 ) {
+			if (foundInIndex != -1) {
 				File file;
 				if (foundInIndex == 0) {
 					file = reportsFile;
@@ -257,7 +262,7 @@ public class Reader {
 					fileInputStream.skip(reportLocation.offset);
 					reportBytes = new byte[reportLocation.size.intValue()];
 					fileInputStream.read(reportBytes, 0, reportBytes.length);
-				} catch(IOException e) {
+				} catch (IOException e) {
 					Import.logAndThrow(log, e, "IOException reading report " + storageId + " from file " + file.getAbsolutePath());
 				} finally {
 					if (fileInputStream != null) {
@@ -266,7 +271,7 @@ public class Reader {
 				}
 			}
 		}
-		return reportBytes;	
+		return reportBytes;
 	}
 
 	protected Report getReport(Integer storageId, String synchronizeRotate) throws StorageException {
@@ -295,7 +300,7 @@ public class Reader {
 	private ReportLocation getMetadataOrReportLocationFromFile(
 			MetadataExtractor metadataExtractor, File metadataFile,
 			List oldMetadata, List metadata, Integer storageIdOfReportToLocate
-			) throws StorageException {
+	) throws StorageException {
 		CSVReader csvReader = null;
 		FileInputStream fileInputStream = null;
 		InputStreamReader inputStreamReader = null;
@@ -329,9 +334,9 @@ public class Reader {
 						Integer storageId;
 						Integer storageSize = null;
 						try {
-							storageId = new Integer((String)list.get(storageIdIndex));
-							storageSize = new Integer((String)list.get(storageSizeIndex));
-						} catch(NumberFormatException e) {
+							storageId = new Integer((String) list.get(storageIdIndex));
+							storageSize = new Integer((String) list.get(storageSizeIndex));
+						} catch (NumberFormatException e) {
 							storageId = null;
 						}
 						if (storageId != null) {
@@ -347,7 +352,7 @@ public class Reader {
 							} else {
 								Map oldMetadataRecord = null;
 								if (oldMetadataIndex > -1) {
-									oldMetadataRecord = (Map)oldMetadata.get(oldMetadataIndex);
+									oldMetadataRecord = (Map) oldMetadata.get(oldMetadataIndex);
 									if (storageId.equals(oldMetadataRecord.get("storageId"))) {
 										oldMetadataIndex--;
 									} else {
@@ -360,12 +365,13 @@ public class Reader {
 									}
 									Map metadataRecord = new HashMap();
 									for (int i = 0; i < metadataHeaderParsed.size(); i++) {
-										String metadataName = (String)metadataHeaderParsed.get(i);
+										String metadataName = (String) metadataHeaderParsed.get(i);
 										Object metadataValue = list.get(i);
 										metadataValue = metadataExtractor.fromStringToMetadataValueType(
 												metadataName,
-												(String)metadataValue,
-												MetadataExtractor.VALUE_TYPE_OBJECT);
+												(String) metadataValue,
+												MetadataExtractor.VALUE_TYPE_OBJECT
+										);
 										metadataRecord.put(metadataName, metadataValue);
 									}
 									metadata.add(0, metadataRecord);
@@ -386,7 +392,7 @@ public class Reader {
 			} else {
 				log.warn("Invalid header in metadata file '" + metadataFile.getAbsolutePath() + "'");
 			}
-		} catch(IOException e) {
+		} catch (IOException e) {
 			Import.logAndThrow(log, e, "IOException reading metadata from file '" + metadataFile.getAbsolutePath() + "'");
 		} finally {
 			if (csvReader != null) {

@@ -24,9 +24,8 @@ import org.wearefrank.ladybug.Checkpoint;
  * transformers linked together and exposed as one message transformer. The
  * {@link MessageTransformer#transform(Checkpoint, String)} method of every {@link MessageTransformer} in a specified
  * list of {@link MessageTransformer}'s will be called.
- * 
- * @author Jaco de Groot
  *
+ * @author Jaco de Groot
  */
 public class LinkingMessageTransformer implements MessageTransformer {
 	private List<MessageTransformer> messageTransformers;

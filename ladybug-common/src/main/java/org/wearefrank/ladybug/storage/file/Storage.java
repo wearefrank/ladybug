@@ -17,16 +17,16 @@ package org.wearefrank.ladybug.storage.file;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
-
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.Resource;
 import jakarta.inject.Inject;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.wearefrank.ladybug.MetadataExtractor;
 import org.wearefrank.ladybug.Report;
+import org.wearefrank.ladybug.storage.LogStorage;
 import org.wearefrank.ladybug.storage.StorageException;
 import org.wearefrank.ladybug.util.SearchUtil;
-import org.wearefrank.ladybug.storage.LogStorage;
 
 /**
  * @author Jaco de Groot
@@ -39,7 +39,7 @@ public class Storage implements LogStorage {
 	private Writer writer = new Writer();
 
 
-//	TODO als je public weg laat, krijg je deze bij Download all bij Reports pane (zie ook constructor bij TestStorage) (vreemd dat je deze melding zo vaak krijgt als het aantal reports dat je download):
+	//	TODO als je public weg laat, krijg je deze bij Download all bij Reports pane (zie ook constructor bij TestStorage) (vreemd dat je deze melding zo vaak krijgt als het aantal reports dat je download):
 //	java.lang.IllegalAccessException: Class sun.reflect.misc.Trampoline can not access a member of class nl.nn.testtool.storage.file.Storage with modifiers ""
 //	Continuing ...
 //	java.lang.RuntimeException: failed to evaluate: <unbound>=Class.new();
@@ -100,7 +100,7 @@ public class Storage implements LogStorage {
 	 * generation time don't make metadata persistent that takes a lot of
 	 * performance to extract from the report. For better performance when the
 	 * metadata is read you could do the opposite.
-	 * 
+	 *
 	 * @param metadataNames ...
 	 */
 	public void setPersistentMetadata(List<String> metadataNames) {
@@ -109,11 +109,11 @@ public class Storage implements LogStorage {
 
 	/**
 	 * The metadataNames to be shown in the debug tab are usually a good default for persistent metadata
-	 * 
+	 *
 	 * @param metadataNames ...
 	 */
 	@Inject
-	@Resource(name="metadataNames")
+	@Resource(name = "metadataNames")
 	public void setMetadataNames(List<String> metadataNames) {
 		if (writer.getPersistentMetadata() == null) {
 			writer.setPersistentMetadata(metadataNames);
@@ -149,9 +149,10 @@ public class Storage implements LogStorage {
 
 	@Override
 	public List getMetadata(int maxNumberOfRecords, List metadataNames,
-			List searchValues, int metadataValueType) throws StorageException {
+							List searchValues, int metadataValueType) throws StorageException {
 		return reader.getMetadata(maxNumberOfRecords, metadataNames, searchValues,
-				metadataValueType, writer.getMetadataModifiedCounter(), writer.getSynchronizeRotate());
+				metadataValueType, writer.getMetadataModifiedCounter(), writer.getSynchronizeRotate()
+		);
 	}
 
 	@Override

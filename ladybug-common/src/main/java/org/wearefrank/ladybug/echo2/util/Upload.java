@@ -18,7 +18,6 @@ package org.wearefrank.ladybug.echo2.util;
 import java.io.InputStream;
 
 import org.slf4j.Logger;
-
 import org.wearefrank.ladybug.storage.CrudStorage;
 import org.wearefrank.ladybug.util.Import;
 

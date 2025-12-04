@@ -15,6 +15,12 @@
 */
 package org.wearefrank.ladybug.echo2.reports;
 
+import org.wearefrank.ladybug.Checkpoint;
+import org.wearefrank.ladybug.CheckpointType;
+import org.wearefrank.ladybug.MessageEncoderImpl;
+import org.wearefrank.ladybug.Report;
+import org.wearefrank.ladybug.echo2.Echo2Application;
+
 import echopointng.Tree;
 import echopointng.tree.DefaultMutableTreeNode;
 import echopointng.tree.DefaultTreeCellRenderer;
@@ -22,11 +28,6 @@ import nextapp.echo2.app.Color;
 import nextapp.echo2.app.Extent;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.ResourceImageReference;
-import org.wearefrank.ladybug.Checkpoint;
-import org.wearefrank.ladybug.CheckpointType;
-import org.wearefrank.ladybug.MessageEncoderImpl;
-import org.wearefrank.ladybug.Report;
-import org.wearefrank.ladybug.echo2.Echo2Application;
 
 /**
  * @author Jaco de Groot
@@ -42,13 +43,13 @@ public class ReportsTreeCellRenderer extends DefaultTreeCellRenderer {
 		Label label = null;
 		// When checkpoint, create custom label
 		if (node != null) {
-			DefaultMutableTreeNode defaultMutableTreeNode = (DefaultMutableTreeNode)node;
+			DefaultMutableTreeNode defaultMutableTreeNode = (DefaultMutableTreeNode) node;
 			Object userObject = defaultMutableTreeNode.getUserObject();
 			if (userObject instanceof Report) {
 				label = super.getTreeCellRendererText(tree, node, selected, expanded, leaf);
-				Report report = (Report)userObject;
-				if(showReportAndCheckpointIds) {
-					label.setText("["+report.getStorageId()+"] "+report.getName());
+				Report report = (Report) userObject;
+				if (showReportAndCheckpointIds) {
+					label.setText("[" + report.getStorageId() + "] " + report.getName());
 				}
 				if (report.isDifferenceChecked()) {
 					if (report.isDifferenceFound()) {
@@ -60,12 +61,12 @@ public class ReportsTreeCellRenderer extends DefaultTreeCellRenderer {
 					}
 				}
 			} else if (userObject instanceof Checkpoint) {
-				Checkpoint checkpoint = (Checkpoint)userObject;
+				Checkpoint checkpoint = (Checkpoint) userObject;
 				label = new Label();
 				label.setIconTextMargin(new Extent(0));
 				label.setFont(DefaultTreeCellRenderer.DEFAULT_FONT);
-				if(showReportAndCheckpointIds) {
-					label.setText(checkpoint.getIndex()+". "+checkpoint.getName());
+				if (showReportAndCheckpointIds) {
+					label.setText(checkpoint.getIndex() + ". " + checkpoint.getName());
 				} else {
 					label.setText(checkpoint.getName());
 				}
@@ -154,7 +155,7 @@ public class ReportsTreeCellRenderer extends DefaultTreeCellRenderer {
 		}
 		return label;
 	}
-	
+
 	public void setShowReportAndCheckpointIds(boolean showReportAndCheckpointIds) {
 		this.showReportAndCheckpointIds = showReportAndCheckpointIds;
 	}

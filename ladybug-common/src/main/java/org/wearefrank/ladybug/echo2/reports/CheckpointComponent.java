@@ -17,14 +17,6 @@ package org.wearefrank.ladybug.echo2.reports;
 
 import java.io.UnsupportedEncodingException;
 
-import echopointng.tree.DefaultMutableTreeNode;
-import nextapp.echo2.app.Button;
-import nextapp.echo2.app.Insets;
-import nextapp.echo2.app.Label;
-import nextapp.echo2.app.RadioButton;
-import nextapp.echo2.app.Row;
-import nextapp.echo2.app.button.ButtonGroup;
-import nextapp.echo2.app.event.ActionEvent;
 import org.wearefrank.ladybug.Checkpoint;
 import org.wearefrank.ladybug.CheckpointType;
 import org.wearefrank.ladybug.MessageEncoderImpl;
@@ -33,6 +25,15 @@ import org.wearefrank.ladybug.StubType;
 import org.wearefrank.ladybug.echo2.Echo2Application;
 import org.wearefrank.ladybug.echo2.util.Download;
 import org.wearefrank.ladybug.storage.CrudStorage;
+
+import echopointng.tree.DefaultMutableTreeNode;
+import nextapp.echo2.app.Button;
+import nextapp.echo2.app.Insets;
+import nextapp.echo2.app.Label;
+import nextapp.echo2.app.RadioButton;
+import nextapp.echo2.app.Row;
+import nextapp.echo2.app.button.ButtonGroup;
+import nextapp.echo2.app.event.ActionEvent;
 
 /**
  * @author Jaco de Groot
@@ -89,13 +90,13 @@ public class CheckpointComponent extends MessageComponent {
 		Echo2Application.decorateButton(downloadButton);
 		buttonRow.add(downloadButton);
 
-		Button expandAll  = new Button("Expand all");
+		Button expandAll = new Button("Expand all");
 		expandAll.setActionCommand("ExpandAll");
 		Echo2Application.decorateButton(expandAll);
 		expandAll.addActionListener(this);
 		buttonRow.add(expandAll);
 
-		Button collapseAll  = new Button("Collapse all");
+		Button collapseAll = new Button("Collapse all");
 		collapseAll.setActionCommand("CollapseAll");
 		Echo2Application.decorateButton(collapseAll);
 		collapseAll.addActionListener(this);
@@ -218,7 +219,7 @@ public class CheckpointComponent extends MessageComponent {
 	}
 
 	public void displayCheckpoint(DefaultMutableTreeNode node, Report report, Checkpoint checkpoint,
-			Checkpoint checkpointCompare, boolean compare) {
+								  Checkpoint checkpointCompare, boolean compare) {
 		this.node = node;
 		this.report = report;
 		this.checkpoint = checkpoint;
@@ -261,7 +262,7 @@ public class CheckpointComponent extends MessageComponent {
 			if (checkpoint.isWaitingForStream()) {
 				waiting = "Waiting for message to be";
 			}
-			messageStreamingLabel.setText(waiting  + " captured asynchronously from a "
+			messageStreamingLabel.setText(waiting + " captured asynchronously from a "
 					+ checkpoint.getStreaming().toLowerCase() + " stream");
 			messageStreamingLabel.setVisible(true);
 		} else {
@@ -313,10 +314,10 @@ public class CheckpointComponent extends MessageComponent {
 		}
 		messageClassNamePropertyLabel.setText("Message class name: " + messageClassName);
 		pathPropertyLabel.setText("Path: " + checkpoint.getPath());
-		checkpointUIDPropertyLabel.setText("Checkpoint UID: "+checkpoint.getUid());
+		checkpointUIDPropertyLabel.setText("Checkpoint UID: " + checkpoint.getUid());
 		levelLabel.setText("Level: " + checkpoint.getLevel());
-		encodingPropertyLabel.setText("Encoding: "+checkpoint.getEncoding());
-		numberOfCharactersPropertyLabel.setText("Number of characters: "+(checkpoint.getMessage() != null ? checkpoint.getMessage().length() : "0"));
+		encodingPropertyLabel.setText("Encoding: " + checkpoint.getEncoding());
+		numberOfCharactersPropertyLabel.setText("Number of characters: " + (checkpoint.getMessage() != null ? checkpoint.getMessage().length() : "0"));
 		estimatedMemoryUsagePropertyLabel.setText("EstimatedMemoryUsage: " + checkpoint.getEstimatedMemoryUsage() + " bytes");
 		hideMessages();
 	}
@@ -364,7 +365,7 @@ public class CheckpointComponent extends MessageComponent {
 		super.save();
 		checkpoint.setMessage(messageTextArea.getText());
 		if (report.getStorage() instanceof CrudStorage) {
-			displayAndLogError(Echo2Application.update((CrudStorage)report.getStorage(), report));
+			displayAndLogError(Echo2Application.update((CrudStorage) report.getStorage(), report));
 		} else {
 			displayError("Storage with name " + report.getStorage().getName() + " is not a CrudStorage");
 		}

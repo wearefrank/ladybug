@@ -21,6 +21,15 @@ import java.util.Iterator;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.wearefrank.ladybug.Checkpoint;
+import org.wearefrank.ladybug.CheckpointType;
+import org.wearefrank.ladybug.Report;
+import org.wearefrank.ladybug.echo2.Echo2Application;
+import org.wearefrank.ladybug.filter.View;
+import org.wearefrank.ladybug.storage.CrudStorage;
+import org.wearefrank.ladybug.storage.Storage;
+import org.wearefrank.ladybug.storage.StorageException;
+import org.wearefrank.ladybug.storage.memory.MemoryCrudStorage;
 
 import echopointng.Tree;
 import echopointng.tree.DefaultMutableTreeNode;
@@ -32,15 +41,6 @@ import echopointng.tree.TreeSelectionListener;
 import echopointng.tree.TreeSelectionModel;
 import nextapp.echo2.app.Column;
 import nextapp.echo2.app.ContentPane;
-import org.wearefrank.ladybug.Checkpoint;
-import org.wearefrank.ladybug.CheckpointType;
-import org.wearefrank.ladybug.Report;
-import org.wearefrank.ladybug.filter.View;
-import org.wearefrank.ladybug.storage.CrudStorage;
-import org.wearefrank.ladybug.storage.Storage;
-import org.wearefrank.ladybug.storage.StorageException;
-import org.wearefrank.ladybug.storage.memory.MemoryCrudStorage;
-import org.wearefrank.ladybug.echo2.Echo2Application;
 
 /**
  * Jaco de Groot
@@ -78,7 +78,7 @@ public class TreePane extends ContentPane implements TreeSelectionListener {
 		DefaultTreeModel defaultTreeModel = new DefaultTreeModel(rootNode);
 		tree = new Tree(defaultTreeModel);
 		tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
-		tree.setCellRenderer(reportsTreeCellRenderer); 
+		tree.setCellRenderer(reportsTreeCellRenderer);
 		tree.addTreeSelectionListener(this);
 		layoutColumn.add(tree);
 	}
@@ -98,7 +98,7 @@ public class TreePane extends ContentPane implements TreeSelectionListener {
 	public DefaultMutableTreeNode getReportNode(int reportIndex) {
 		DefaultMutableTreeNode reportNode = null;
 		if (reportIndex < rootNode.getChildCount()) {
-			reportNode = (DefaultMutableTreeNode)rootNode.getChildAt(reportIndex);
+			reportNode = (DefaultMutableTreeNode) rootNode.getChildAt(reportIndex);
 		}
 		return reportNode;
 	}
@@ -109,31 +109,31 @@ public class TreePane extends ContentPane implements TreeSelectionListener {
 		if (selectionPath != null) {
 			Object[] path = selectionPath.getPath();
 			if (path.length > 2) {
-				selectedCheckpoint = (Checkpoint)((DefaultMutableTreeNode)tree.getSelectionPath().getLastPathComponent()).getUserObject();
+				selectedCheckpoint = (Checkpoint) ((DefaultMutableTreeNode) tree.getSelectionPath().getLastPathComponent()).getUserObject();
 			}
 		}
 		return selectedCheckpoint;
 	}
 
 	public DefaultMutableTreeNode findCounterpartCheckpointNode(DefaultMutableTreeNode counterpartReportNode,
-			Checkpoint checkpoint) {
+																Checkpoint checkpoint) {
 		DefaultMutableTreeNode resultNode = null;
 		if (counterpartReportNode.getChildCount() > 0) {
-			Report counterpartReport = (Report)counterpartReportNode.getUserObject();
+			Report counterpartReport = (Report) counterpartReportNode.getUserObject();
 			Checkpoint counterpartCheckpoint = counterpartReport.getCheckpoint(checkpoint);
 			if (counterpartCheckpoint != null) {
 				DefaultMutableTreeNode counterpartCheckpointRootNode =
-						(DefaultMutableTreeNode)counterpartReportNode.getChildAt(0);
+						(DefaultMutableTreeNode) counterpartReportNode.getChildAt(0);
 				Enumeration enumeration = counterpartCheckpointRootNode.depthFirstEnumeration();
 				while (resultNode == null && enumeration.hasMoreElements()) {
-					DefaultMutableTreeNode currentCounterpartNode = (DefaultMutableTreeNode)enumeration.nextElement();
-					Checkpoint currentCounterpartCheckpoint = (Checkpoint)currentCounterpartNode.getUserObject();
+					DefaultMutableTreeNode currentCounterpartNode = (DefaultMutableTreeNode) enumeration.nextElement();
+					Checkpoint currentCounterpartCheckpoint = (Checkpoint) currentCounterpartNode.getUserObject();
 					if (currentCounterpartCheckpoint.getIndex() == counterpartCheckpoint.getIndex()) {
 						resultNode = currentCounterpartNode;
 					}
 				}
 			}
-			
+
 		}
 		return resultNode;
 	}
@@ -152,7 +152,7 @@ public class TreePane extends ContentPane implements TreeSelectionListener {
 					if (node.getPath().length == 2) {
 						counterpartNode = counterpartReportNode;
 					} else {
-						Checkpoint checkpoint = (Checkpoint)node.getUserObject();
+						Checkpoint checkpoint = (Checkpoint) node.getUserObject();
 						counterpartNode =
 								treePaneCounterpart.findCounterpartCheckpointNode(counterpartReportNode, checkpoint);
 					}
@@ -168,25 +168,25 @@ public class TreePane extends ContentPane implements TreeSelectionListener {
 	}
 
 	protected void selectNode(DefaultMutableTreeNode node,
-			DefaultMutableTreeNode nodeFromOtherTree, boolean compare) {
+							  DefaultMutableTreeNode nodeFromOtherTree, boolean compare) {
 		if (node != null) {
 			Object userObject = node.getUserObject();
 			TreePath treePath = new TreePath(node.getPath());
 			tree.setSelectionPath(treePath);
 			if (userObject instanceof Report) {
-				Report report = (Report)node.getUserObject();
+				Report report = (Report) node.getUserObject();
 				Report reportFromOtherTree = null;
 				if (nodeFromOtherTree != null) {
-					reportFromOtherTree = (Report)nodeFromOtherTree.getUserObject();
+					reportFromOtherTree = (Report) nodeFromOtherTree.getUserObject();
 				}
 				log.debug("Display report: " + report.getName());
 				infoPane.displayReport(tree, treePath, node, report, reportFromOtherTree, compare);
 			} else if (node.getUserObject() instanceof Checkpoint) {
 				Report report = getReportParent(node);
-				Checkpoint checkpoint = (Checkpoint)userObject;
+				Checkpoint checkpoint = (Checkpoint) userObject;
 				Checkpoint checkpointFromOtherTree = null;
 				if (nodeFromOtherTree != null) {
-					checkpointFromOtherTree = (Checkpoint)nodeFromOtherTree.getUserObject();
+					checkpointFromOtherTree = (Checkpoint) nodeFromOtherTree.getUserObject();
 				}
 				log.debug("Display checkpoint: " + checkpoint.getName());
 				infoPane.displayCheckpoint(tree, treePath, node, report, checkpoint, checkpointFromOtherTree, compare);
@@ -197,7 +197,7 @@ public class TreePane extends ContentPane implements TreeSelectionListener {
 					infoPane.displayReports();
 				} else {
 					log.debug("Display path: " + name);
-					infoPane.displayPath(tree, treePath, node, (String)userObject);
+					infoPane.displayPath(tree, treePath, node, (String) userObject);
 				}
 			} else {
 				log.debug("Display nothing");
@@ -222,7 +222,7 @@ public class TreePane extends ContentPane implements TreeSelectionListener {
 		tree.expandPath(new TreePath(node.getPath()));
 		Enumeration enumeration = node.depthFirstEnumeration();
 		while (enumeration.hasMoreElements()) {
-			node = (DefaultMutableTreeNode)enumeration.nextElement();
+			node = (DefaultMutableTreeNode) enumeration.nextElement();
 			tree.expandPath(new TreePath(node.getPath()));
 		}
 	}
@@ -235,7 +235,7 @@ public class TreePane extends ContentPane implements TreeSelectionListener {
 		tree.collapsePath(new TreePath(node.getPath()));
 		Enumeration enumeration = node.depthFirstEnumeration();
 		while (enumeration.hasMoreElements()) {
-			node = (DefaultMutableTreeNode)enumeration.nextElement();
+			node = (DefaultMutableTreeNode) enumeration.nextElement();
 			tree.collapsePath(new TreePath(node.getPath()));
 		}
 	}
@@ -246,8 +246,8 @@ public class TreePane extends ContentPane implements TreeSelectionListener {
 		if (sortReports) {
 			insertPosition = -1;
 			for (int i = rootNode.getChildCount() - 1; i > -1 && insertPosition == -1; i--) {
-				DefaultMutableTreeNode currentReportNode = (DefaultMutableTreeNode)rootNode.getChildAt(i);
-				Report currentReport = (Report)currentReportNode.getUserObject();
+				DefaultMutableTreeNode currentReportNode = (DefaultMutableTreeNode) rootNode.getChildAt(i);
+				Report currentReport = (Report) currentReportNode.getUserObject();
 				if (report.toXml().compareTo(currentReport.toXml()) > 0) {
 					insertPosition = i + 1;
 				}
@@ -267,19 +267,19 @@ public class TreePane extends ContentPane implements TreeSelectionListener {
 	public DefaultMutableTreeNode expandOnlyChilds(DefaultMutableTreeNode node) {
 		DefaultMutableTreeNode nodeToExpandTo = node;
 		while (nodeToExpandTo.getChildCount() == 1
-					&& isStartpoint(((Checkpoint)((DefaultMutableTreeNode)nodeToExpandTo.getFirstChild()).getUserObject()).getType())) {
+				&& isStartpoint(((Checkpoint) ((DefaultMutableTreeNode) nodeToExpandTo.getFirstChild()).getUserObject()).getType())) {
 			tree.expandPath(new TreePath(nodeToExpandTo.getPath()));
-			nodeToExpandTo = (DefaultMutableTreeNode)nodeToExpandTo.getFirstChild();
+			nodeToExpandTo = (DefaultMutableTreeNode) nodeToExpandTo.getFirstChild();
 		}
 		tree.expandPath(new TreePath(nodeToExpandTo.getPath()));
 		return nodeToExpandTo;
 	}
 
 	public void addCheckpoints(DefaultMutableTreeNode reportNode, View view) {
-		Report report = (Report)reportNode.getUserObject();
+		Report report = (Report) reportNode.getUserObject();
 		Iterator checkpointsIterator = report.getCheckpoints().iterator();
 		while (checkpointsIterator.hasNext()) {
-			Checkpoint checkpoint = (Checkpoint)checkpointsIterator.next();
+			Checkpoint checkpoint = (Checkpoint) checkpointsIterator.next();
 			if (view.showCheckpoint(report, checkpoint)) {
 				reportNode = addCheckpoint(reportNode, checkpoint);
 			}
@@ -288,15 +288,15 @@ public class TreePane extends ContentPane implements TreeSelectionListener {
 
 	public DefaultMutableTreeNode addCheckpoint(DefaultMutableTreeNode parentNode, Checkpoint checkpoint) {
 		if (parentNode.getChildCount() > 0) {
-			int lastChildLevel = ((Checkpoint)((DefaultMutableTreeNode)parentNode.getLastChild()).getUserObject()).getLevel();
+			int lastChildLevel = ((Checkpoint) ((DefaultMutableTreeNode) parentNode.getLastChild()).getUserObject()).getLevel();
 			if (checkpoint.getLevel() < 0) {
 				// Ignore. See also INVALID LEVEL in Checkpoint.getPath(boolean checkpointInProgress)
 			} else if (checkpoint.getLevel() > lastChildLevel) {
 				// Increase level
-				parentNode = (DefaultMutableTreeNode)parentNode.getLastChild();
+				parentNode = (DefaultMutableTreeNode) parentNode.getLastChild();
 			} else if (checkpoint.getLevel() < lastChildLevel) {
 				// Decrease level
-				parentNode = (DefaultMutableTreeNode)parentNode.getParent();
+				parentNode = (DefaultMutableTreeNode) parentNode.getParent();
 			}
 		}
 		DefaultMutableTreeNode node = new DefaultMutableTreeNode(checkpoint);
@@ -307,7 +307,7 @@ public class TreePane extends ContentPane implements TreeSelectionListener {
 	public void closeReport(Report report) {
 		int childToSelect = -1;
 		for (int i = 0; i < rootNode.getChildCount(); i++) {
-			DefaultMutableTreeNode reportNode = (DefaultMutableTreeNode)rootNode.getChildAt(i);
+			DefaultMutableTreeNode reportNode = (DefaultMutableTreeNode) rootNode.getChildAt(i);
 			// TODO is dit wel een goede check?
 			if (report.toString().equals(reportNode.getUserObject().toString())) {
 				rootNode.remove(i);
@@ -341,29 +341,29 @@ public class TreePane extends ContentPane implements TreeSelectionListener {
 				unselect();
 			} else {
 				TreePath treePath = e.getNewLeadSelectionPath();
-				DefaultMutableTreeNode node = (DefaultMutableTreeNode)treePath.getLastPathComponent();
+				DefaultMutableTreeNode node = (DefaultMutableTreeNode) treePath.getLastPathComponent();
 				selectNode(node);
 			}
 		}
 	}
 
 	private Report getReportParent(DefaultMutableTreeNode node) {
-        Object o = node.getUserObject();
-        TreeNode parent = node.getParent();
-        if (o instanceof Report) {
-            return (Report) o;
-        } else if (parent == null || !(parent instanceof DefaultMutableTreeNode)) {
-            return null;
-        } else {
-            return getReportParent((DefaultMutableTreeNode) parent);
-        }
-    }
+		Object o = node.getUserObject();
+		TreeNode parent = node.getParent();
+		if (o instanceof Report) {
+			return (Report) o;
+		} else if (parent == null || !(parent instanceof DefaultMutableTreeNode)) {
+			return null;
+		} else {
+			return getReportParent((DefaultMutableTreeNode) parent);
+		}
+	}
 
 	public Storage getStorage() throws StorageException {
 		CrudStorage storage = new MemoryCrudStorage();
 		for (int i = 0; i < rootNode.getChildCount(); i++) {
-			DefaultMutableTreeNode node = (DefaultMutableTreeNode)rootNode.getChildAt(i);
-			storage.store((Report)node.getUserObject());
+			DefaultMutableTreeNode node = (DefaultMutableTreeNode) rootNode.getChildAt(i);
+			storage.store((Report) node.getUserObject());
 		}
 		return storage;
 	}
@@ -373,7 +373,7 @@ public class TreePane extends ContentPane implements TreeSelectionListener {
 			DefaultMutableTreeNode selectedReportNode = getReportNodeFromSelectionPath();
 			Checkpoint selectedCheckpoint = getSelectedCheckpoint();
 			for (int i = 0; i < rootNode.getChildCount(); i++) {
-				DefaultMutableTreeNode reportNode = (DefaultMutableTreeNode)rootNode.getChildAt(i);
+				DefaultMutableTreeNode reportNode = (DefaultMutableTreeNode) rootNode.getChildAt(i);
 				reportNode.removeAllChildren();
 				addCheckpoints(reportNode, view);
 				expandOnlyChilds(reportNode);
@@ -400,7 +400,7 @@ public class TreePane extends ContentPane implements TreeSelectionListener {
 		if (selectionPath != null) {
 			Object[] path = selectionPath.getPath();
 			if (path.length > 1) {
-				reportNodeFromSelectionPath = (DefaultMutableTreeNode)path[1];
+				reportNodeFromSelectionPath = (DefaultMutableTreeNode) path[1];
 			}
 		}
 		return reportNodeFromSelectionPath;

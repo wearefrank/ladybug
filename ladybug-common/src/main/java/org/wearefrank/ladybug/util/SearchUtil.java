@@ -27,7 +27,7 @@ public class SearchUtil {
 		if (searchValues != null) {
 			for (int i = 0; i < values.size(); i++) {
 				Object value = values.get(i);
-				String searchValue = (String)searchValues.get(i);
+				String searchValue = (String) searchValues.get(i);
 				if (!matches(value, searchValue)) {
 					return false;
 				}
@@ -42,18 +42,18 @@ public class SearchUtil {
 
 	public static String getUserHelpWildcards() {
 		return "Search case insensitive using * as the wildcard character."
-			+ " Wildcards are automatically added at the beginning and the end unless the search value starts with [ and ends with ] or already starts or ends with the wildcard."
-			+ " The search is done case sensitive when the search value starts with [[ and ends with ]].";
+				+ " Wildcards are automatically added at the beginning and the end unless the search value starts with [ and ends with ] or already starts or ends with the wildcard."
+				+ " The search is done case sensitive when the search value starts with [[ and ends with ]].";
 	}
 
 	public static String getUserHelpRegex() {
 		return " A regular expression search is done when the search value starts with ( and ends with )."
-			+ " In regular expression mode the null object is the same as the empty string.";
+				+ " In regular expression mode the null object is the same as the empty string.";
 	}
 
 	public static String getUserHelpNullAndEmpty() {
 		return " When the search value consists of the 4 characters null it will match when the object searched for is null."
-			+ " Use [] to match the empty string and [null] to match the string of the 4 characters null.";
+				+ " Use [] to match the empty string and [null] to match the string of the 4 characters null.";
 	}
 
 	public static boolean matches(Object value, String query) {
@@ -81,7 +81,7 @@ public class SearchUtil {
 						caseInsensitive = false;
 					} else if (query.startsWith("[") && query.endsWith("]")) {
 						query = query.substring(1, query.length() - 1);
-					} else if (!(query.startsWith("*") || query.endsWith("*"))){
+					} else if (!(query.startsWith("*") || query.endsWith("*"))) {
 						query = "*" + query + "*";
 					}
 					String valueAsString;

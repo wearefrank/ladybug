@@ -33,7 +33,7 @@ public class CheckpointSearcher implements CheckpointMatcher {
 	public void setNameSearch(String nameSearch) {
 		this.nameSearch = nameSearch;
 	}
-	
+
 	public boolean match(Report report, Checkpoint checkpoint) {
 		if (type != -1 && type != checkpoint.getType()) {
 			return false;

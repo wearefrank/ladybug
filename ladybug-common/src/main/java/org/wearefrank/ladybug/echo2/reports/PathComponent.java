@@ -15,6 +15,8 @@
 */
 package org.wearefrank.ladybug.echo2.reports;
 
+import org.wearefrank.ladybug.echo2.Echo2Application;
+
 import echopointng.tree.DefaultMutableTreeNode;
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Column;
@@ -23,7 +25,6 @@ import nextapp.echo2.app.Label;
 import nextapp.echo2.app.Row;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
-import org.wearefrank.ladybug.echo2.Echo2Application;
 
 /**
  * @author Jaco de Groot
@@ -37,11 +38,11 @@ public class PathComponent extends Column implements ActionListener {
 	public PathComponent() {
 		super();
 	}
-	
+
 	public void setTreePane(TreePane treePane) {
 		this.treePane = treePane;
 	}
-	
+
 	/**
 	 * @see Echo2Application#initBean()
 	 */
@@ -50,13 +51,13 @@ public class PathComponent extends Column implements ActionListener {
 		Row buttonRow = Echo2Application.getNewRow();
 		add(buttonRow);
 
-		Button expandAll  = new Button("Expand all");
+		Button expandAll = new Button("Expand all");
 		expandAll.setActionCommand("ExpandAll");
 		Echo2Application.decorateButton(expandAll);
 		expandAll.addActionListener(this);
 		buttonRow.add(expandAll);
 
-		Button collapseAll  = new Button("Collapse all");
+		Button collapseAll = new Button("Collapse all");
 		collapseAll.setActionCommand("CollapseAll");
 		Echo2Application.decorateButton(collapseAll);
 		collapseAll.addActionListener(this);

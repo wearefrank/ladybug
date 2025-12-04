@@ -15,12 +15,13 @@
 */
 package org.wearefrank.ladybug.web.jaxrs;
 
-import org.springframework.beans.factory.annotation.Autowired;
-
 import jakarta.inject.Inject;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.wearefrank.ladybug.echo2.Echo2Application;
+
 import nextapp.echo2.app.ApplicationInstance;
 import nextapp.echo2.webcontainer.WebContainerServlet;
-import org.wearefrank.ladybug.echo2.Echo2Application;
 
 /**
  * @author Jaco de Groot

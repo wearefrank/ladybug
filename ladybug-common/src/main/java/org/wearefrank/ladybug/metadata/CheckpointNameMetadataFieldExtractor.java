@@ -16,38 +16,39 @@
 
 package org.wearefrank.ladybug.metadata;
 
-import org.wearefrank.ladybug.Checkpoint;
-import org.wearefrank.ladybug.Report;
 import java.util.Iterator;
 
+import org.wearefrank.ladybug.Checkpoint;
+import org.wearefrank.ladybug.Report;
+
 public class CheckpointNameMetadataFieldExtractor extends DefaultValueMetadataFieldExtractor {
-    protected String checkpointName;
-    protected boolean extractFromFirstCheckpointOnly = true;
+	protected String checkpointName;
+	protected boolean extractFromFirstCheckpointOnly = true;
 
-    public void setExtractFromFirstCheckpointOnly(boolean extractFromFirstCheckpointOnly) {
-        this.extractFromFirstCheckpointOnly = extractFromFirstCheckpointOnly;
-    }
+	public void setExtractFromFirstCheckpointOnly(boolean extractFromFirstCheckpointOnly) {
+		this.extractFromFirstCheckpointOnly = extractFromFirstCheckpointOnly;
+	}
 
-    public void setCheckpointName(String checkpointName) {
-        this.checkpointName = checkpointName;
-    }
+	public void setCheckpointName(String checkpointName) {
+		this.checkpointName = checkpointName;
+	}
 
-    public Object extractMetadata(Report report) {
-        StringBuilder value = new StringBuilder();
-        Iterator iterator = report.getCheckpoints().iterator();
-        while (iterator.hasNext()) {
-            Checkpoint checkpoint = (Checkpoint) iterator.next();
-            String currentCheckpointName = checkpoint.getName();
-            if (currentCheckpointName.equals(checkpointName)) {
-                value.append(checkpoint.getMessage());
-                if (extractFromFirstCheckpointOnly) {
-                    break;
-                }
-            }
-        }
-        if (value.length() == 0 && defaultValue != null) {
-            value = new StringBuilder(defaultValue);
-        }
-        return value.toString();
-    }
+	public Object extractMetadata(Report report) {
+		StringBuilder value = new StringBuilder();
+		Iterator iterator = report.getCheckpoints().iterator();
+		while (iterator.hasNext()) {
+			Checkpoint checkpoint = (Checkpoint) iterator.next();
+			String currentCheckpointName = checkpoint.getName();
+			if (currentCheckpointName.equals(checkpointName)) {
+				value.append(checkpoint.getMessage());
+				if (extractFromFirstCheckpointOnly) {
+					break;
+				}
+			}
+		}
+		if (value.length() == 0 && defaultValue != null) {
+			value = new StringBuilder(defaultValue);
+		}
+		return value.toString();
+	}
 }

@@ -26,7 +26,6 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 import org.slf4j.Logger;
-
 import org.wearefrank.ladybug.Report;
 import org.wearefrank.ladybug.storage.CrudStorage;
 import org.wearefrank.ladybug.storage.StorageException;
@@ -71,15 +70,15 @@ public class Import {
 			if (counter < 1) {
 				errorMessage = "No ttr files found in zip";
 			}
-			for(ImportResult importResult : importResults) {
+			for (ImportResult importResult : importResults) {
 				if (importResult.newStorageId != null) {
 					Report report = storage.getReport(importResult.newStorageId);
-					if(report.getInputCheckpoint().containsVariables()) {
-						if(report.getInputCheckpoint().updateVariables(importResults)) {
+					if (report.getInputCheckpoint().containsVariables()) {
+						if (report.getInputCheckpoint().updateVariables(importResults)) {
 							storage.update(report);
-							log.debug("Updated report ["+report.getFullPath()+"]'s input variable(s) with target report's updated storageId(s)");
+							log.debug("Updated report [" + report.getFullPath() + "]'s input variable(s) with target report's updated storageId(s)");
 						} else {
-							log.warn("Could not update report ["+report.getFullPath()+"]'s input variables on uploading - please review manually");
+							log.warn("Could not update report [" + report.getFullPath() + "]'s input variables on uploading - please review manually");
 						}
 					}
 				}
@@ -105,19 +104,19 @@ public class Import {
 		try {
 			gzipInputStream = new GZIPInputStream(inputStream);
 			xmlDecoder = new XMLDecoder(gzipInputStream);
-			version = (String)xmlDecoder.readObject();
+			version = (String) xmlDecoder.readObject();
 			if (log != null) log.debug("Decoded version: " + version);
-			report = (Report)xmlDecoder.readObject();
+			report = (Report) xmlDecoder.readObject();
 			importResult.oldStorageId = report.getStorageId();
 			// Check for more than one report in the stream to be backwards
 			// compatible with older Test Tool versions that wrote more than one
 			// report to a ttr. See comment at the code using the XMLEncoder.
 			while (report != null) {
 				storage.store(report);
-				report = (Report)xmlDecoder.readObject();
+				report = (Report) xmlDecoder.readObject();
 				if (log != null) log.debug("Decoded report: " + report.getName());
 			}
-		} catch(ArrayIndexOutOfBoundsException e) {
+		} catch (ArrayIndexOutOfBoundsException e) {
 			// This happens to be the way in which it ends for the
 			// XML Object Decoder
 			if (log != null) log.debug("Last report in file read");
@@ -149,12 +148,12 @@ public class Import {
 		try {
 			gzipInputStream = new GZIPInputStream(inputStream);
 			objectInputStream = new ObjectInputStream(gzipInputStream);
-			report = (Report)objectInputStream.readObject();
+			report = (Report) objectInputStream.readObject();
 			report.setStorageId(storageId);
 			report.setStorageSize(storageSize);
-		} catch(IOException e) {
+		} catch (IOException e) {
 			logAndThrow(log, e, "IOException reading report " + storageId + " from bytes");
-		} catch(ClassNotFoundException e) {
+		} catch (ClassNotFoundException e) {
 			logAndThrow(log, e, "ClassNotFoundException reading report " + storageId + " from file");
 		} finally {
 			if (objectInputStream != null) {
@@ -170,7 +169,7 @@ public class Import {
 	public static void closeInputStream(InputStream inputStream, String action, Logger log) {
 		try {
 			inputStream.close();
-		} catch(IOException e) {
+		} catch (IOException e) {
 			if (log != null) log.warn("IOException " + action, e);
 		}
 	}
@@ -178,7 +177,7 @@ public class Import {
 	public static void closeReader(java.io.Reader reader, String action, Logger log) {
 		try {
 			reader.close();
-		} catch(IOException e) {
+		} catch (IOException e) {
 			log.warn("IOException " + action, e);
 		}
 	}
@@ -186,7 +185,7 @@ public class Import {
 	public static void closeCSVReader(CSVReader csvReader, String action, Logger log) {
 		try {
 			csvReader.close();
-		} catch(IOException e) {
+		} catch (IOException e) {
 			log.warn("IOException " + action, e);
 		}
 	}

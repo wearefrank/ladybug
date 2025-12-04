@@ -15,30 +15,13 @@
 */
 package org.wearefrank.ladybug.web.jaxrs.api;
 
-import java.io.IOException;
 import java.io.Serializable;
 import java.lang.invoke.MethodHandles;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.regex.Pattern;
-
-import jakarta.annotation.PostConstruct;
-import jakarta.ws.rs.container.ContainerRequestContext;
-import jakarta.ws.rs.container.ContainerRequestFilter;
-import jakarta.ws.rs.container.PreMatching;
-import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.ext.Provider;
-import lombok.Getter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import jakarta.ws.rs.WebApplicationException;
-import org.wearefrank.ladybug.web.common.Constants;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ApiException extends WebApplicationException implements Serializable {
 	private static final long serialVersionUID = 1L;

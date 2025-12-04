@@ -15,12 +15,13 @@
 */
 package org.wearefrank.ladybug.echo2;
 
-import nextapp.echo2.app.ContentPane;
-import nextapp.echo2.app.Extent;
-import nextapp.echo2.app.SplitPane;
 import org.wearefrank.ladybug.Report;
 import org.wearefrank.ladybug.echo2.reports.InfoPane;
 import org.wearefrank.ladybug.echo2.reports.TreePane;
+
+import nextapp.echo2.app.ContentPane;
+import nextapp.echo2.app.Extent;
+import nextapp.echo2.app.SplitPane;
 
 public class ReportPane extends ContentPane {
 	private static final long serialVersionUID = 1L;

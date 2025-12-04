@@ -25,7 +25,6 @@ import java.sql.Timestamp;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.PreparedStatementSetter;
-
 import org.wearefrank.ladybug.MetadataExtractor;
 import org.wearefrank.ladybug.Report;
 import org.wearefrank.ladybug.storage.CrudStorage;
@@ -33,7 +32,7 @@ import org.wearefrank.ladybug.storage.StorageException;
 import org.wearefrank.ladybug.util.Export;
 
 /**
- * Special use case database storage that can be used as debug storage IS DT ZO? MOET HIJ DAN NIET OOK LOG STOAGE IMPLEMENTEREN? 
+ * Special use case database storage that can be used as debug storage IS DT ZO? MOET HIJ DAN NIET OOK LOG STOAGE IMPLEMENTEREN?
  */
 public class DatabaseCrudStorage extends DatabaseStorage implements CrudStorage {
 	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());

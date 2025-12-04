@@ -20,9 +20,6 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import jakarta.annotation.PostConstruct;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.Consumes;
@@ -36,7 +33,9 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import lombok.Setter;
+
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.wearefrank.ladybug.MetadataExtractor;
 import org.wearefrank.ladybug.Report;
 import org.wearefrank.ladybug.TestTool;
@@ -44,9 +43,9 @@ import org.wearefrank.ladybug.filter.View;
 import org.wearefrank.ladybug.filter.Views;
 import org.wearefrank.ladybug.storage.CrudStorage;
 import org.wearefrank.ladybug.transform.ReportXmlTransformer;
-
 import org.wearefrank.ladybug.web.common.Constants;
-import org.wearefrank.ladybug.web.jaxrs.api.ApiBase;
+
+import lombok.Setter;
 
 @Path("/" + Constants.LADYBUG_API_PATH + "/testtool")
 public class TestToolApi extends ApiBase {
@@ -106,11 +105,15 @@ public class TestToolApi extends ApiBase {
 	@Consumes(MediaType.APPLICATION_JSON)
 	public Response updateInfo(Map<String, String> map) {
 		if (map.isEmpty()) {
-			return Response.status(Response.Status.BAD_REQUEST).entity("No settings have been provided - detailed error message - The settings that have been provided are " + map).build();
+			return Response.status(Response.Status.BAD_REQUEST)
+					.entity("No settings have been provided - detailed error message - The settings that have been provided are " + map)
+					.build();
 		}
 
 		if (map.size() > 2) {
-			return Response.status(Response.Status.BAD_REQUEST).entity("Too many settings have been provided - detailed error message - The settings that have been provided are " + map).build();
+			return Response.status(Response.Status.BAD_REQUEST)
+					.entity("Too many settings have been provided - detailed error message - The settings that have been provided are " + map)
+					.build();
 		}
 		// TODO: Check user roles.
 		String generatorEnabled = map.remove("generatorEnabled");
@@ -137,13 +140,17 @@ public class TestToolApi extends ApiBase {
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getReportsInProgress(@PathParam("index") int index) {
 		if (index == 0)
-			return Response.status(Response.Status.BAD_REQUEST).entity("No progresses have been queried [" + index + "] and/or are available [" + testTool.getNumberOfReportsInProgress() + "]").build();
+			return Response.status(Response.Status.BAD_REQUEST)
+					.entity("No progresses have been queried [" + index + "] and/or are available [" + testTool.getNumberOfReportsInProgress() + "]")
+					.build();
 
 		try {
 			Report report = testTool.getReportInProgress(index - 1);
 			return Response.ok(report).build();
 		} catch (Exception e) {
-			return Response.status(Response.Status.BAD_REQUEST).entity("Could not find report in progress with index [" + index + "] - detailed error message - " + e + Arrays.toString(e.getStackTrace())).build();
+			return Response.status(Response.Status.BAD_REQUEST)
+					.entity("Could not find report in progress with index [" + index + "] - detailed error message - " + e + Arrays.toString(e.getStackTrace()))
+					.build();
 		}
 	}
 
@@ -157,13 +164,17 @@ public class TestToolApi extends ApiBase {
 	@Path("/in-progress/{index}")
 	public Response deleteReportInProgress(@PathParam("index") int index) {
 		if (index == 0)
-			return Response.status(Response.Status.BAD_REQUEST).entity("No progresses have been queried [" + index + "] or are available [" + testTool.getNumberOfReportsInProgress() + "]").build();
+			return Response.status(Response.Status.BAD_REQUEST)
+					.entity("No progresses have been queried [" + index + "] or are available [" + testTool.getNumberOfReportsInProgress() + "]")
+					.build();
 
 		try {
 			testTool.removeReportInProgress(index - 1);
 			return Response.ok().build();
 		} catch (Exception e) {
-			return Response.status(Response.Status.BAD_REQUEST).entity("Could not find report in progress with index [" + index + "] :: " + e + Arrays.toString(e.getStackTrace())).build();
+			return Response.status(Response.Status.BAD_REQUEST)
+					.entity("Could not find report in progress with index [" + index + "] :: " + e + Arrays.toString(e.getStackTrace()))
+					.build();
 		}
 	}
 
@@ -196,7 +207,9 @@ public class TestToolApi extends ApiBase {
 		String errorMessage = reportXmlTransformer.updateXslt(transformation);
 		if (errorMessage != null) {
 			// Without "- detailed error message -" the message is not shown in the toaster
-			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(errorMessage + " - detailed error message - No detailed error message available").build();
+			return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+					.entity(errorMessage + " - detailed error message - No detailed error message available")
+					.build();
 		}
 		return Response.ok().build();
 	}

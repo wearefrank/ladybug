@@ -17,13 +17,14 @@ package org.wearefrank.ladybug.echo2.reports;
 
 import java.util.List;
 
+import org.wearefrank.ladybug.MetadataExtractor;
+import org.wearefrank.ladybug.echo2.Echo2Application;
+
+import echopointng.table.SortableTableHeaderRenderer;
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Insets;
 import nextapp.echo2.app.Table;
-import org.wearefrank.ladybug.MetadataExtractor;
-import org.wearefrank.ladybug.echo2.Echo2Application;
-import echopointng.table.SortableTableHeaderRenderer;
 
 public class MetadataTableHeaderRenderer extends SortableTableHeaderRenderer {
 	private static final long serialVersionUID = 1L;
@@ -39,11 +40,11 @@ public class MetadataTableHeaderRenderer extends SortableTableHeaderRenderer {
 	}
 
 	public Component getTableCellRendererComponent(Table table, Object value, int column, int row) {
-		Button button = (Button)super.getTableCellRendererComponent(table, value, column, row);
+		Button button = (Button) super.getTableCellRendererComponent(table, value, column, row);
 		Echo2Application.decorateButton(button);
 		button.setInsets(new Insets(0, 0, 0, 0));
-		button.setText(metadataExtractor.getShortLabel((String)metadataNames.get(column)));
-		button.setToolTipText(metadataExtractor.getLabel((String)metadataNames.get(column)));
+		button.setText(metadataExtractor.getShortLabel((String) metadataNames.get(column)));
+		button.setToolTipText(metadataExtractor.getLabel((String) metadataNames.get(column)));
 		return button;
 	}
 

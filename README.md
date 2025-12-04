@@ -6,7 +6,6 @@ unit testing, system testing and regression testing to your Java application. Ca
 your code (either directly or using AOP) to generate tree based reports. Implement a rerun method to be able to rerun
 reports and optionally stub certain checkpoints for regression testing.
 
-
 # Contents
 
 - [Releases](#releases)
@@ -15,16 +14,15 @@ reports and optionally stub certain checkpoints for regression testing.
 - [How to use Ladybug](#how-to-use-ladybug)
 - [How to incorporate Ladybug into your application or framework](#how-to-incorporate-ladybug-into-your-application-or-framework)
 - [How to change and test Ladybug](#how-to-change-and-test-ladybug)
-  - [General setup](#general-setup)
-  - [Backend development](#backend-development)
-  - [Testing backend changes with Frank!Framework](#testing-backend-changes-with-frankframework)
-  - [Frontend development](#frontend-development)
-  - [Testing frontend changes with the test webapp](#testing-frontend-changes-with-the-test-webapp)
-  - [Testing frontend changes with Frank!Framework](#testing-frontend-changes-with-frankframework)
-  - [Testing frontend changes with unit tests](#testing-frontend-changes-with-unit-tests)
+	- [General setup](#general-setup)
+	- [Backend development](#backend-development)
+	- [Testing backend changes with Frank!Framework](#testing-backend-changes-with-frankframework)
+	- [Frontend development](#frontend-development)
+	- [Testing frontend changes with the test webapp](#testing-frontend-changes-with-the-test-webapp)
+	- [Testing frontend changes with Frank!Framework](#testing-frontend-changes-with-frankframework)
+	- [Testing frontend changes with unit tests](#testing-frontend-changes-with-unit-tests)
 - [How the frontend is published](#how-the-frontend-is-published)
 - [OpenTelemetry](#opentelemetry)
-
 
 Releases
 ========
@@ -56,7 +54,6 @@ introduction to Ladybug, read:
 For a detailed explanation please read (which will also explain the use of Ladybug as a test tool):
 
 - https://frank-manual.readthedocs.io/en/latest/testing/ladybug/ladybug.html
-
 
 How to incorporate Ladybug into your application or framework
 =============================================================
@@ -93,7 +90,7 @@ logger.
 ```
 
 The second area to consider while integrating Ladybug into your project is the Spring configuration and enabling of the
-servlets needed to serve the Ladybug frontend. This can basically be done in two ways (direct and using 
+servlets needed to serve the Ladybug frontend. This can basically be done in two ways (direct and using
 [AOP](https://docs.spring.io/spring-framework/docs/5.3.x/reference/html/core.html#spring-core)). We hope that the
 following examples for both methods are enough to get you running. If not, don't hesitate to [contact us](#feedback) for
 help.
@@ -179,6 +176,7 @@ Frontend development
 --------------------
 
 Please do the following to set up your development environment for the front-end:
+
 * Install [Node.js](https://nodejs.org/en/), choose version 20. You should get executables `npm` version 10.x and `node` version 20.x. Check these versions using `npm -v` and `node -v`.
 * Change directory to your checkout of ladybug-frontend.
 * The Node Package Manager (npm) includes another package manager, pnpm. We use that one because it is more stable. Enable it by executing the command `corepack enable`. You should do this in a command prompt that runs with administrator permissions.
@@ -210,6 +208,7 @@ pnpm ng test
 At the time of writing, there are no unit tests but there are end-to-end tests.
 
 End-to-end testing is done using [Cypress](https://www.cypress.io/). Cypress is a dependency configured in `package.json`, so it should have been installed when you did ``pnpm install --frozen-lockfile``. You have the following options for running the tests:
+
 * `pnpm run e2e`. This runs the end-to-end tests headless and without user interaction.
 * `pnpm run e2e-interactive`. This opens a Window from which you can choose what tests to start. You can select the webbrowser you want to test with.
 
@@ -248,20 +247,22 @@ You can also test your frontend code as Maven artifact before merging your code 
 OpenTelemetry
 =============
 
-Ladybug is able to create telemetry data from Ladybug reports and send it to a telemetry-collector. A telemetry-collector provides an overview based on time that helps to detect latency problems. There are two collectors available to send the data to: Zipkin and Jaeger. To use Zipkin, you can run the following command: 
+Ladybug is able to create telemetry data from Ladybug reports and send it to a telemetry-collector. A telemetry-collector provides an overview based on time that helps to detect latency problems. There are two collectors available to send the data to: Zipkin and Jaeger. To use Zipkin, you can run the following command:
 
 `docker run --rm -d -p 9411:9411 --name zipkin openzipkin/zipkin`
 
-To work with Jaeger, you can run the following command: 
+To work with Jaeger, you can run the following command:
 
 `docker run --rm -e COLLECTOR_ZIPKIN_HOST_PORT=:9411 -p 16686:16686 -p 4317:4317 -p 4318:4318 -p 9411:9411 jaegertracing/all-in-one:latest`
 
 To choose between one of the collectors in the Ladybug application, there is a bean available to make your choice. You have to add the following and change the string value of this bean to the collector you want to use. For Zipkin, enter the endpoint in the string value. For Jaeger (which doesn't use a endpoint), you can just enter "jaeger":
+
 ```
 <bean name="openTelemetryEndpoint" class="java.lang.String">
 		<constructor-arg value=""/>
 </bean>
 ```
+
 You can enable this bean in the springTestToolWebApp.xml file in the ladybug-test-webapp project. This is a simple webapp to test the Ladybug application. See https://github.com/wearefrank/ladybug-test-webapp. When a Ladybug report is created, a trace will now be sent to the chosen collector.
 
 Collecting OpenTelemetry data

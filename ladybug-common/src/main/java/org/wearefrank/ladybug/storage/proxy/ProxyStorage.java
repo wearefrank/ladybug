@@ -18,24 +18,25 @@ package org.wearefrank.ladybug.storage.proxy;
 import java.lang.invoke.MethodHandles;
 import java.util.List;
 
+import jakarta.annotation.PostConstruct;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import jakarta.annotation.PostConstruct;
-import lombok.Getter;
-import lombok.Setter;
 import org.wearefrank.ladybug.Report;
 import org.wearefrank.ladybug.storage.CrudStorage;
 import org.wearefrank.ladybug.storage.LogStorage;
 import org.wearefrank.ladybug.storage.Storage;
 import org.wearefrank.ladybug.storage.StorageException;
 
+import lombok.Getter;
+import lombok.Setter;
+
 /**
  * Storage proxy class than can help Spring XML configuration to become more flexible (e.g. see #{testStorageActive} in
  * Frank!Framework's springIbisTestTool.xml) and use an alternative storage when getSize() on the preferred storage
  * throws an exception. This can for example be used to check whether the Ladybug tables are available and if not use
  * file storage instead of database storage (see proxy storage usage in Frank!Framework's springIbisTestTool.xml).
- * 
+ *
  * @author Jaco de Groot
  */
 public class ProxyStorage implements CrudStorage, LogStorage {
@@ -48,7 +49,7 @@ public class ProxyStorage implements CrudStorage, LogStorage {
 	public void init() throws StorageException {
 		try {
 			destination.getSize();
-		} catch(StorageException e) {
+		} catch (StorageException e) {
 			if (alternativeDestination != null) {
 				log.debug("Could not init " + destination.getName() + " will use " + alternativeDestination.getName()
 						+ " instead");
@@ -61,22 +62,22 @@ public class ProxyStorage implements CrudStorage, LogStorage {
 
 	@Override
 	public synchronized void store(Report report) throws StorageException {
-		((CrudStorage)destination).store(report);
+		((CrudStorage) destination).store(report);
 	}
 
 	@Override
 	public void update(Report report) throws StorageException {
-		((CrudStorage)destination).update(report);
+		((CrudStorage) destination).update(report);
 	}
 
 	@Override
 	public void delete(Report report) throws StorageException {
-		((CrudStorage)destination).delete(report);
+		((CrudStorage) destination).delete(report);
 	}
 
 	@Override
 	public void storeWithoutException(Report report) {
-		((LogStorage)destination).storeWithoutException(report);
+		((LogStorage) destination).storeWithoutException(report);
 	}
 
 	@Override
@@ -91,7 +92,7 @@ public class ProxyStorage implements CrudStorage, LogStorage {
 
 	@Override
 	public synchronized List getMetadata(int maxNumberOfRecords, List metadataNames,
-			List searchValues, int metadataValueType) throws StorageException {
+										 List searchValues, int metadataValueType) throws StorageException {
 		return destination.getMetadata(maxNumberOfRecords, metadataNames, searchValues, metadataValueType);
 	}
 
@@ -127,6 +128,6 @@ public class ProxyStorage implements CrudStorage, LogStorage {
 
 	@Override
 	public String getWarningsAndErrors() {
-		return ((LogStorage)destination).getWarningsAndErrors();
+		return ((LogStorage) destination).getWarningsAndErrors();
 	}
 }

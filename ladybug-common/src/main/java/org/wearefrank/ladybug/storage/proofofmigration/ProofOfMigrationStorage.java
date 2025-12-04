@@ -21,18 +21,19 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import jakarta.inject.Inject;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import jakarta.inject.Inject;
-import lombok.Setter;
 import org.wearefrank.ladybug.Checkpoint;
 import org.wearefrank.ladybug.CheckpointType;
 import org.wearefrank.ladybug.Report;
 import org.wearefrank.ladybug.TestTool;
 import org.wearefrank.ladybug.storage.StorageException;
 import org.wearefrank.ladybug.storage.database.DatabaseLogStorage;
+
+import lombok.Setter;
 
 /**
  * Utilize the proof of migration storage to use the Ladybug as a front-end for the proof of migration table. When
@@ -42,7 +43,7 @@ import org.wearefrank.ladybug.storage.database.DatabaseLogStorage;
  * COMPONENT and CORRELATION_ID. Hence in the metadata table one record will be shown for the old component and one
  * record will be shown for the new component. When the values of the STATUS column for both records are not Success
  * their color will be red and the user can select both records and compare them.
- * 
+ *
  * @author Jaco de Groot
  */
 //@Dependent disabled for Quarkus for now because of the use of JdbcTemplate
@@ -141,10 +142,11 @@ public class ProofOfMigrationStorage extends DatabaseLogStorage {
 
 	@Override
 	protected void buildMetadataQuery(int maxNumberOfRecords, List<String> metadataNames, List<String> searchValues,
-			List<String> rangeSearchValues, StringBuilder query, List<Object> args, List<Integer> argTypes)
+									  List<String> rangeSearchValues, StringBuilder query, List<Object> args, List<Integer> argTypes)
 			throws StorageException {
 		super.buildMetadataQuery(maxNumberOfRecords, metadataNames, searchValues, rangeSearchValues, query, args,
-				argTypes);
+				argTypes
+		);
 		if (log.isDebugEnabled()) {
 			log.debug("Get metadata original query: " + query.toString());
 			// E.g.: select ID, TIMESTAMP, COMPONENT, ENDPOINT_NAME, CONVERSATION_ID, CORRELATION_ID, NR OF CHECKPOINTS, STATUS from MESSAGES order by ID desc limit 10
@@ -172,9 +174,9 @@ public class ProofOfMigrationStorage extends DatabaseLogStorage {
 		// 'order by i.TIMESTAMP'. This will also make sure the record for the old component and the record for the new
 		// component (that have the same correlation id) are displayed directly below each other (the extra order on
 		// i.CORRELATION_ID will make this 100% waterproof)
-		replace(query, "order by ID desc" , GROUP_BY + " order by i.TIMESTAMP desc, i.CORRELATION_ID");
+		replace(query, "order by ID desc", GROUP_BY + " order by i.TIMESTAMP desc, i.CORRELATION_ID");
 		if (isShowErrorsOnly()) {
-			replace(query, "group by" , "and m.STATUS != 'Success' group by");
+			replace(query, "group by", "and m.STATUS != 'Success' group by");
 		}
 	}
 
@@ -195,15 +197,15 @@ public class ProofOfMigrationStorage extends DatabaseLogStorage {
 	public Report getReport(Integer storageId) throws StorageException {
 		String query =
 				"select CORRELATION_ID, COMPONENT, CHECKPOINT_NR, ENDPOINT_NAME, ACTION, MESSAGE, TIMESTAMP from "
-				+ getTable() + " where CORRELATION_ID = (select CORRELATION_ID from " + getTable() + " where "
-				+ getStorageIdColumn() + " = ?) and COMPONENT = (select COMPONENT from " + getTable() + " where "
-				+ getStorageIdColumn() + " = ?) order by CHECKPOINT_NR";
+						+ getTable() + " where CORRELATION_ID = (select CORRELATION_ID from " + getTable() + " where "
+						+ getStorageIdColumn() + " = ?) and COMPONENT = (select COMPONENT from " + getTable() + " where "
+						+ getStorageIdColumn() + " = ?) order by CHECKPOINT_NR";
 		List<Object> args = new ArrayList<Object>();
 		args.add(storageId);
 		args.add(storageId);
 		log.debug("Get report query (with arguments: " + args + "): " + query);
 		List<List<Object>> result = getLadybugJdbcTemplate().query(query, args.toArray(),
-				new int[] {Types.INTEGER, Types.INTEGER},
+				new int[]{ Types.INTEGER, Types.INTEGER },
 				(resultSet, rowNum) -> {
 					List<Object> list = new ArrayList<Object>();
 					list.add(resultSet.getString(1));
@@ -214,13 +216,14 @@ public class ProofOfMigrationStorage extends DatabaseLogStorage {
 					list.add(resultSet.getString(6));
 					list.add(resultSet.getString(7));
 					return list;
-				});
+				}
+		);
 		Report report = new Report();
 		report.setTestTool(testTool);
 		report.setStorage(this);
 		report.setStorageId(storageId);
-		report.setName((String)result.get(0).get(1));
-		report.setCorrelationId((String)result.get(0).get(0));
+		report.setName((String) result.get(0).get(1));
+		report.setCorrelationId((String) result.get(0).get(0));
 		int level = 0;
 		List<Checkpoint> checkpoints = new ArrayList<Checkpoint>();
 		Checkpoint checkpoint;

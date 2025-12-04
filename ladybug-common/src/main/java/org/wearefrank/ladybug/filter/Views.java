@@ -41,7 +41,7 @@ public class Views extends ArrayList<View> implements BeanParent {
 	public View setDefaultView(String defaultView) {
 		Iterator iterator = iterator();
 		while (iterator.hasNext()) {
-			View view = (View)iterator.next();
+			View view = (View) iterator.next();
 			if (defaultView.equals(view.toString())) {
 				this.defaultView = view;
 				return view;

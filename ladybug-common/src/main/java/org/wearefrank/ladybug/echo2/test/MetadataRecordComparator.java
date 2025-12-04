@@ -28,21 +28,21 @@ public class MetadataRecordComparator implements Comparator<List<Object>> {
 	}
 
 	public int compare(List<Object> arg0, List<Object> arg1) {
-		String string0 = (String)arg0.get(pathPosition);
+		String string0 = (String) arg0.get(pathPosition);
 		if (namePosition > -1) {
-			string0 = string0 + (String)arg0.get(2);
+			string0 = string0 + (String) arg0.get(2);
 		}
 		if (string0 == null) {
 			string0 = "/";
 		}
-		String string1 = (String)arg1.get(pathPosition);
+		String string1 = (String) arg1.get(pathPosition);
 		if (namePosition > -1) {
-			string1 = string1 + (String)arg1.get(2);
+			string1 = string1 + (String) arg1.get(2);
 		}
 		if (string1 == null) {
 			string1 = "/";
 		}
 		return string0.compareTo(string1);
 	}
-	
+
 }

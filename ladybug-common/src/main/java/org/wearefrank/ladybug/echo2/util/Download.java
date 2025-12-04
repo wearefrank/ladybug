@@ -34,9 +34,10 @@ public class Download {
 	}
 
 	public static String download(Storage storage, String filename,
-			boolean exportReport, boolean exportReportXml) {
+								  boolean exportReport, boolean exportReportXml) {
 		return download(Export.export(storage, filename, exportReport,
-				exportReportXml));
+				exportReportXml
+		));
 	}
 
 	public static String download(Report report) {
@@ -44,7 +45,7 @@ public class Download {
 	}
 
 	public static String download(Report report, boolean exportReport,
-			boolean exportReportXml) {
+								  boolean exportReportXml) {
 		return download(Export.export(report, exportReport, exportReportXml));
 	}
 
@@ -59,15 +60,16 @@ public class Download {
 	private static String download(ExportResult exportResult) {
 		String errorMessage = exportResult.getErrorMessage();
 		if (errorMessage == null) {
-				FileDownloadProvider fileDownloadProvider = new FileDownloadProvider(
-						exportResult.getTempFile(),
-						exportResult.getSuggestedFilename());
-				nextapp.echo2.app.filetransfer.Download download = new nextapp.echo2.app.filetransfer.Download();
-				download.setProvider(fileDownloadProvider);
-				download.setActive(true);
-				Echo2Application echo2Application = (Echo2Application)Echo2Application.getActive();
-				echo2Application.enqueueCommand(download);
-				// TODO file nog deleten? kan pas als ie is gedownload? blijven die nu allemaal ergens op de server aanwezig tot herstart? checken?
+			FileDownloadProvider fileDownloadProvider = new FileDownloadProvider(
+					exportResult.getTempFile(),
+					exportResult.getSuggestedFilename()
+			);
+			nextapp.echo2.app.filetransfer.Download download = new nextapp.echo2.app.filetransfer.Download();
+			download.setProvider(fileDownloadProvider);
+			download.setActive(true);
+			Echo2Application echo2Application = (Echo2Application) Echo2Application.getActive();
+			echo2Application.enqueueCommand(download);
+			// TODO file nog deleten? kan pas als ie is gedownload? blijven die nu allemaal ergens op de server aanwezig tot herstart? checken?
 		}
 		return errorMessage;
 	}

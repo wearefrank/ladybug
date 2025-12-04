@@ -23,7 +23,6 @@ import javax.xml.xpath.XPathExpressionException;
 
 import org.junit.Test;
 import org.junit.jupiter.api.function.Executable;
-
 import org.wearefrank.ladybug.util.XmlUtil;
 
 /**
@@ -35,15 +34,15 @@ public class TestXmlUtil {
 	public void testXpath() throws XPathExpressionException {
 		// Plain xml
 		XPathExpression xpathExpression = XmlUtil.createXPathExpression("/root/b");
-		String value =  xpathExpression.evaluate(XmlUtil.createXmlSourceFromString("<root><a>11</a><b>22</b></root>"));
+		String value = xpathExpression.evaluate(XmlUtil.createXmlSourceFromString("<root><a>11</a><b>22</b></root>"));
 		assertEquals("22", value);
 		// SOAP
 		xpathExpression = XmlUtil.createXPathExpression("local-name(/*[local-name()='Envelope']/*[local-name()='Body']/*)");
-		value =  xpathExpression.evaluate(XmlUtil.createXmlSourceFromString(
+		value = xpathExpression.evaluate(XmlUtil.createXmlSourceFromString(
 				"<soap:Envelope xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:ns=\"uri:test\">"
-				+ "  <soap:Header/>"
-				+ "  <soap:Body><Payload/></soap:Body>"
-				+ "</soap:Envelope>"));
+						+ "  <soap:Header/>"
+						+ "  <soap:Body><Payload/></soap:Body>"
+						+ "</soap:Envelope>"));
 		assertEquals("Payload", value);
 		// Invalid xml
 		XPathExpression finalXPathExpression = xpathExpression;

@@ -15,7 +15,6 @@
 */
 package org.wearefrank.ladybug.storage.xml;
 
-import org.wearefrank.ladybug.xmldecoder.XMLDecoder;
 import java.beans.XMLEncoder;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -30,26 +29,28 @@ import java.util.Map;
 
 import javax.xml.parsers.ParserConfigurationException;
 
+import jakarta.annotation.PostConstruct;
+
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.wearefrank.ladybug.storage.Storage;
-import org.wearefrank.ladybug.storage.StorageException;
-import org.wearefrank.ladybug.storage.memory.MemoryCrudStorage;
-import org.xml.sax.SAXException;
-
-import jakarta.annotation.PostConstruct;
-import lombok.Getter;
-import lombok.Setter;
 import org.wearefrank.ladybug.Checkpoint;
 import org.wearefrank.ladybug.CheckpointType;
 import org.wearefrank.ladybug.LinkMethodType;
 import org.wearefrank.ladybug.Report;
 import org.wearefrank.ladybug.StubType;
+import org.wearefrank.ladybug.storage.Storage;
+import org.wearefrank.ladybug.storage.StorageException;
+import org.wearefrank.ladybug.storage.memory.MemoryCrudStorage;
 import org.wearefrank.ladybug.util.XmlUtil;
+import org.wearefrank.ladybug.xmldecoder.XMLDecoder;
+import org.xml.sax.SAXException;
+
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  * Store reports in xml format on the file system.
@@ -132,7 +133,7 @@ public class XmlStorage extends MemoryCrudStorage {
 
 	@Override
 	public synchronized List<List<Object>> getMetadata(int maxNumberOfRecords, List<String> metadataNames,
-			List<String> searchValues, int metadataValueType) throws StorageException {
+													   List<String> searchValues, int metadataValueType) throws StorageException {
 		getReports();
 		return super.getMetadata(maxNumberOfRecords, metadataNames, searchValues, metadataValueType);
 	}
@@ -214,7 +215,7 @@ public class XmlStorage extends MemoryCrudStorage {
 	}
 
 	private static void readReports(File dir, Map<Integer, Report> reports, List<Integer> storageIds,
-			List<Long> lastModifieds, Storage storage) {
+									List<Long> lastModifieds, Storage storage) {
 		if (dir.isDirectory()) {
 			for (File file : dir.listFiles()) {
 				if (file.isDirectory()) {
@@ -252,10 +253,10 @@ public class XmlStorage extends MemoryCrudStorage {
 	/**
 	 * Reads the report from the given file.
 	 *
-	 * @param file File to be read from.
+	 * @param file    File to be read from.
 	 * @param storage Storage to associate with the report.
-	 * @throws StorageException ...
 	 * @return Report generated from the given file.
+	 * @throws StorageException ...
 	 */
 	protected static Report readReportFromFile(File file, Storage storage) throws StorageException {
 		if (file == null || !file.isFile() || !file.getName().endsWith(XmlStorage.FILE_EXTENSION)) return null;
@@ -266,7 +267,7 @@ public class XmlStorage extends MemoryCrudStorage {
 			try {
 				inputStream = new FileInputStream(file);
 				decoder = new XMLDecoder(new BufferedInputStream(inputStream));
-				Report report = (Report)decoder.readObject();
+				Report report = (Report) decoder.readObject();
 				report.setStorage(storage);
 				decoder.close();
 				inputStream.close();

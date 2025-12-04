@@ -32,7 +32,7 @@ import java.util.function.Consumer;
  * listens for characters or bytes in the message object stream and then write those characters or bytes to the writer
  * or output stream received as a parameter of toWriter() or toOutputStream() while also reading or writing the
  * characters or bytes to the original message object stream.
- * 
+ *
  * @author Jaco de Groot
  */
 public class MessageCapturerImpl implements MessageCapturer {
@@ -53,7 +53,7 @@ public class MessageCapturerImpl implements MessageCapturer {
 	public <T> T toWriter(T message, Writer writer, Consumer<Throwable> exceptionNotifier) {
 		if (message instanceof Reader) {
 
-			return (T) new BufferedReader((Reader)message) {
+			return (T) new BufferedReader((Reader) message) {
 
 				@Override
 				public int read() throws IOException {
@@ -81,7 +81,7 @@ public class MessageCapturerImpl implements MessageCapturer {
 
 		} else {
 
-			return (T) new BufferedWriter((Writer)message) {
+			return (T) new BufferedWriter((Writer) message) {
 
 				@Override
 				public void write(String str, int off, int len) throws IOException {
@@ -100,7 +100,7 @@ public class MessageCapturerImpl implements MessageCapturer {
 					writer.write(cbuf, off, len);
 					super.write(cbuf, off, len);
 				}
-				
+
 
 				@Override
 				public void close() throws IOException {
@@ -116,10 +116,10 @@ public class MessageCapturerImpl implements MessageCapturer {
 	@SuppressWarnings("unchecked")
 	@Override
 	public <T> T toOutputStream(T message, OutputStream outputStream, Consumer<String> charsetNotifier,
-			Consumer<Throwable> exceptionNotifier) {
+								Consumer<Throwable> exceptionNotifier) {
 		if (message instanceof InputStream) {
 
-			return (T) new BufferedInputStream((InputStream)message) {
+			return (T) new BufferedInputStream((InputStream) message) {
 
 				@Override
 				public synchronized int read() throws IOException {
@@ -147,7 +147,7 @@ public class MessageCapturerImpl implements MessageCapturer {
 
 		} else {
 
-			return (T) new BufferedOutputStream((OutputStream)message) {
+			return (T) new BufferedOutputStream((OutputStream) message) {
 
 				@Override
 				public synchronized void write(int b) throws IOException {

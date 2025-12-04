@@ -16,7 +16,8 @@
 package org.wearefrank.ladybug.web.common;
 
 public final class Constants {
-	private Constants() {}
+	private Constants() {
+	}
 
 	public static final String LADYBUG_API_PATH = "ladybug-api";
 }

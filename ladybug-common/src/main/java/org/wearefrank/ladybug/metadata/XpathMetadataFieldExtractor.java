@@ -26,7 +26,6 @@ import javax.xml.xpath.XPathExpressionException;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import org.wearefrank.ladybug.Checkpoint;
 import org.wearefrank.ladybug.MetadataFieldExtractor;
 import org.wearefrank.ladybug.Report;
@@ -57,7 +56,7 @@ public class XpathMetadataFieldExtractor extends DefaultValueMetadataFieldExtrac
 
 	/**
 	 * If there was no abort then calculate the status from the delegate MetadataFieldextractor.
-	 * 
+	 *
 	 * @param delegate ...
 	 */
 	public void setDelegate(MetadataFieldExtractor delegate) {
@@ -81,14 +80,14 @@ public class XpathMetadataFieldExtractor extends DefaultValueMetadataFieldExtrac
 		}
 		Iterator iterator = extractFromList.iterator();
 		while (StringUtils.isBlank(value) && iterator.hasNext()) {
-			String message = ((Checkpoint)iterator.next()).getMessage();
+			String message = ((Checkpoint) iterator.next()).getMessage();
 			if (message != null) {
-				try { 
+				try {
 					value = xpathExpression.evaluate(XmlUtil.createXmlSourceFromString(message));
-					if(StringUtils.isBlank(value) && (delegate != null)) {
+					if (StringUtils.isBlank(value) && (delegate != null)) {
 						value = (String) delegate.extractMetadata(report);
 					}
-					if(StringUtils.isBlank(value) && (defaultValue != null)) {
+					if (StringUtils.isBlank(value) && (defaultValue != null)) {
 						value = defaultValue;
 					}
 				} catch (XPathExpressionException e) {

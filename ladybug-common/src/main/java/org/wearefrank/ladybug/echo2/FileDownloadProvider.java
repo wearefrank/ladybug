@@ -48,7 +48,7 @@ public class FileDownloadProvider implements DownloadProvider {
 	}
 
 	public int getSize() {
-		return (int)file.length();
+		return (int) file.length();
 	}
 
 	public void writeFile(OutputStream outputStream) throws IOException {
@@ -62,7 +62,7 @@ public class FileDownloadProvider implements DownloadProvider {
 				outputStream.write(buffer, 0, i);
 				i = fileInputStream.read(buffer);
 			}
-		} catch(IOException e) {
+		} catch (IOException e) {
 			// Log exception.
 			log.error("IOException during download", e);
 			// Throw exception as it is allowed by the method signature.
@@ -72,7 +72,7 @@ public class FileDownloadProvider implements DownloadProvider {
 				outputStream.close();
 				fileInputStream.close();
 				file.delete();
-			} catch(IOException e) {
+			} catch (IOException e) {
 				// Log exception.
 				log.error("IOException closing streams", e);
 				// Throw exception as it is allowed by the method signature.

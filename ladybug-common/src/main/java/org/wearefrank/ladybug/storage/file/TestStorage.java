@@ -20,28 +20,28 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
-
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.Resource;
 import jakarta.inject.Inject;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.wearefrank.ladybug.MetadataExtractor;
 import org.wearefrank.ladybug.Report;
+import org.wearefrank.ladybug.storage.CrudStorage;
 import org.wearefrank.ladybug.storage.StorageException;
 import org.wearefrank.ladybug.util.SearchUtil;
-import org.wearefrank.ladybug.storage.CrudStorage;
 
 /**
  * @author Jaco de Groot
  */
 public class TestStorage implements CrudStorage {
-//TODO TestStorage -> CrudStorage?
+	//TODO TestStorage -> CrudStorage?
 	private String name;
 	private Reader reader[] = new Reader[2];
 	private Writer writer[] = new Writer[2];
 	private short active;
 
-// TODO als je public weg laat, krijg je deze bij Download all in run pane en volgens mail van Peter bij openen van een rapport (zie ook constructor Storage):
+	// TODO als je public weg laat, krijg je deze bij Download all in run pane en volgens mail van Peter bij openen van een rapport (zie ook constructor Storage):
 //	java.lang.IllegalAccessException: Class sun.reflect.misc.Trampoline can not access a member of class nl.nn.testtool.storage.file.TestStorage with modifiers ""
 //	Continuing ...
 //	java.lang.RuntimeException: failed to evaluate: <unbound>=Class.new();
@@ -97,7 +97,7 @@ public class TestStorage implements CrudStorage {
 	 * generation time don't make metadata persistent that takes a lot of
 	 * performance to extract from the report. For better performance when the
 	 * metadata is read you could do the opposite.
-	 * 
+	 *
 	 * @param metadataNames ...
 	 */
 	public void setPersistentMetadata(List<String> metadataNames) {
@@ -108,11 +108,11 @@ public class TestStorage implements CrudStorage {
 	/**
 	 * The metadataNames to be shown in the debug tab are usually not a good default for persistent metadata of the test
 	 * storage but when injected it gives a chance to set the proper defaults
-	 * 
+	 *
 	 * @param metadataNames ...
 	 */
 	@Inject
-	@Resource(name="metadataNames")
+	@Resource(name = "metadataNames")
 	public void setMetadataNames(List<String> metadataNames) {
 		if (writer[0].getPersistentMetadata() == null) {
 			metadataNames = new ArrayList<>();
@@ -130,10 +130,14 @@ public class TestStorage implements CrudStorage {
 	public void init() throws StorageException {
 		reader[0].init();
 		reader[1].init();
-		writer[0].init(reader[0].getStorageIds(writer[0].getMetadataModifiedCounter(),
-				writer[0].getSynchronizeRotate()));
-		writer[1].init(reader[1].getStorageIds(writer[1].getMetadataModifiedCounter(),
-				writer[1].getSynchronizeRotate()));
+		writer[0].init(reader[0].getStorageIds(
+				writer[0].getMetadataModifiedCounter(),
+				writer[0].getSynchronizeRotate()
+		));
+		writer[1].init(reader[1].getStorageIds(
+				writer[1].getMetadataModifiedCounter(),
+				writer[1].getSynchronizeRotate()
+		));
 		int size0 = reader[0].getStorageIds(writer[0].getMetadataModifiedCounter(), writer[0].getSynchronizeRotate())
 				.size();
 		int size1 = reader[1].getStorageIds(writer[1].getMetadataModifiedCounter(), writer[1].getSynchronizeRotate())
@@ -159,8 +163,10 @@ public class TestStorage implements CrudStorage {
 
 	@Override
 	public List<Integer> getStorageIds() throws StorageException {
-		return reader[active].getStorageIds(writer[active].getMetadataModifiedCounter(),
-				writer[active].getSynchronizeRotate());
+		return reader[active].getStorageIds(
+				writer[active].getMetadataModifiedCounter(),
+				writer[active].getSynchronizeRotate()
+		);
 	}
 
 	@Override
@@ -181,12 +187,14 @@ public class TestStorage implements CrudStorage {
 		} else {
 			destination = 0;
 		}
-		List storageIds = reader[source].getStorageIds(writer[source].getMetadataModifiedCounter(),
-				writer[source].getSynchronizeRotate());
+		List storageIds = reader[source].getStorageIds(
+				writer[source].getMetadataModifiedCounter(),
+				writer[source].getSynchronizeRotate()
+		);
 		Collections.sort(storageIds);
 		Iterator iterator = storageIds.iterator();
 		while (iterator.hasNext()) {
-			Integer storageId = (Integer)iterator.next();
+			Integer storageId = (Integer) iterator.next();
 			if (storageId.equals(report.getStorageId())) {
 				if (!delete) {
 					writer[destination].store(report, true);
@@ -201,11 +209,12 @@ public class TestStorage implements CrudStorage {
 				}
 // TODO als je maxNumberOfRecords op 1 zet krijg je geen resultaat, klopt dat wel?
 				List metadata = reader[source].getMetadata(-1,
-						persistentMetadata, searchValues ,
+						persistentMetadata, searchValues,
 						MetadataExtractor.VALUE_TYPE_STRING,
 						writer[source].getMetadataModifiedCounter(),
-						writer[source].getSynchronizeRotate());
-				writer[destination].store(report.getName(), reportBytes, (List)metadata.get(0));
+						writer[source].getSynchronizeRotate()
+				);
+				writer[destination].store(report.getName(), reportBytes, (List) metadata.get(0));
 			}
 		}
 		writer[destination].latestStorageId = writer[source].latestStorageId;
@@ -216,9 +225,10 @@ public class TestStorage implements CrudStorage {
 
 	@Override
 	public List getMetadata(int maxNumberOfRecords, List metadataNames,
-			List searchValues, int metadataValueType) throws StorageException {
+							List searchValues, int metadataValueType) throws StorageException {
 		return reader[active].getMetadata(maxNumberOfRecords, metadataNames, searchValues,
-				metadataValueType, writer[active].getMetadataModifiedCounter(), writer[active].getSynchronizeRotate());
+				metadataValueType, writer[active].getMetadataModifiedCounter(), writer[active].getSynchronizeRotate()
+		);
 	}
 
 	@Override

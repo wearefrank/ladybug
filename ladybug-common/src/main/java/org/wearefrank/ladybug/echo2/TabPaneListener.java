@@ -29,7 +29,7 @@ public class TabPaneListener implements PropertyChangeListener {
 	@Override
 	public void propertyChange(PropertyChangeEvent event) {
 		if (event.getPropertyName().equals("activeTabIndex")) {
-			echo2Application.addToActiveTabIndexHistory((Integer)event.getNewValue());
+			echo2Application.addToActiveTabIndexHistory((Integer) event.getNewValue());
 		}
 	}
 

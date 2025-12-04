@@ -26,16 +26,16 @@ public interface Rerunner {
 	 * Rerun a previous generated report. This method should at least trigger
 	 * the same first checkpoint as has been triggered when the original report
 	 * was created.
-	 *  
+	 *
 	 * @param correlationId   the correlationId to be used so the report of the rerun will have this correlationId and
 	 *                        can be linked to the original report so stub strategy can be copied and stubbing can be
 	 *                        applied
 	 * @param originalReport  the original report that should be rerun
 	 * @param securityContext ...
 	 * @param reportRunner    ...
-	 * @return                an error message when an error occurred 
+	 * @return an error message when an error occurred
 	 */
 	public String rerun(String correlationId, Report originalReport, SecurityContext securityContext,
-			ReportRunner reportRunner);
+						ReportRunner reportRunner);
 
 }

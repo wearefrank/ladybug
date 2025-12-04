@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Test;
-
 import org.wearefrank.ladybug.Checkpoint;
 import org.wearefrank.ladybug.CheckpointType;
 import org.wearefrank.ladybug.Report;
@@ -86,7 +85,7 @@ public class StatusMetadataFieldExtractorTest {
 		instance.setMaxLength("Success".length());
 		assertEquals("Success", instance.extractMetadata(report));
 	}
-	
+
 	private Report getReport(int typeOfLastCheckpoint) {
 		TestTool testTool = new TestTool();
 		Report report = new Report();

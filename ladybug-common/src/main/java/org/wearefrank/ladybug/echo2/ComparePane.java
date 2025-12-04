@@ -18,15 +18,12 @@ package org.wearefrank.ladybug.echo2;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
-
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.Resource;
 import jakarta.enterprise.context.Dependent;
 import jakarta.inject.Inject;
-import nextapp.echo2.app.Extent;
-import nextapp.echo2.app.SplitPane;
-import nextapp.echo2.extras.app.layout.TabPaneLayoutData;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.wearefrank.ladybug.MetadataExtractor;
 import org.wearefrank.ladybug.Report;
 import org.wearefrank.ladybug.TestTool;
@@ -44,6 +41,10 @@ import org.wearefrank.ladybug.storage.Storage;
 import org.wearefrank.ladybug.storage.StorageException;
 import org.wearefrank.ladybug.transform.ReportXmlTransformer;
 
+import nextapp.echo2.app.Extent;
+import nextapp.echo2.app.SplitPane;
+import nextapp.echo2.extras.app.layout.TabPaneLayoutData;
+
 /**
  * @author Jaco de Groot
  */
@@ -58,7 +59,7 @@ public class ComparePane extends Tab implements BeanParent {
 	private @Inject @Autowired MetadataExtractor metadataExtractor;
 	private @Inject @Autowired ReportXmlTransformer reportXmlTransformer;
 	// See comment about @Resource in DebugPane
-	private @Inject @Resource(name="dataAdminRoles") List<String> dataAdminRoles;
+	private @Inject @Resource(name = "dataAdminRoles") List<String> dataAdminRoles;
 	private ReportsComponent reportsComponent1;
 	private ReportsComponent reportsComponent2;
 	private TreePane treePane1;
@@ -219,7 +220,7 @@ public class ComparePane extends Tab implements BeanParent {
 		super.initBean(beanParent);
 		Echo2Application echo2Application = Echo2Application.getEcho2Application(beanParent, this);
 		reportsComponent1.setTransformationWindow(echo2Application.getTransformationWindow());
-		reportsComponent2.setTransformationWindow(echo2Application.getTransformationWindow()); 
+		reportsComponent2.setTransformationWindow(echo2Application.getTransformationWindow());
 		reportsComponent1.initBean(this);
 		reportsComponent2.initBean(this);
 		infoPane1.initBean(this);
@@ -260,11 +261,11 @@ public class ComparePane extends Tab implements BeanParent {
 			}
 			for (int i = 0; i < size; i++) {
 				if (i < ids1.size()) {
-					Integer id1 = (Integer)ids1.get(i);
+					Integer id1 = (Integer) ids1.get(i);
 					Report report1 = storage1.getReport(id1);
 					report1.setDifferenceFound(true);
 					if (i < ids2.size()) {
-						Integer id2 = (Integer)ids2.get(i);
+						Integer id2 = (Integer) ids2.get(i);
 						Report report2 = storage2.getReport(id2);
 						if (report1.toXml().equals(report2.toXml())) {
 							report1.setDifferenceFound(false);
@@ -276,13 +277,13 @@ public class ComparePane extends Tab implements BeanParent {
 					}
 					report1.setDifferenceChecked(true);
 				} else {
-					Integer id2 = (Integer)ids2.get(i);
+					Integer id2 = (Integer) ids2.get(i);
 					Report report2 = storage2.getReport(id2);
 					report2.setDifferenceFound(true);
 					report2.setDifferenceChecked(true);
 				}
 			}
-		} catch(StorageException e) {
+		} catch (StorageException e) {
 			// TODO display error
 		}
 	}

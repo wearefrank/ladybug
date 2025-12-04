@@ -44,11 +44,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import ch.qos.logback.classic.Level;
-import ch.qos.logback.classic.spi.ILoggingEvent;
-import ch.qos.logback.core.read.ListAppender;
-import lombok.SneakyThrows;
 import org.wearefrank.ladybug.Checkpoint;
 import org.wearefrank.ladybug.CloseReportsTask;
 import org.wearefrank.ladybug.MessageCapturerImpl;
@@ -59,11 +54,17 @@ import org.wearefrank.ladybug.storage.Storage;
 import org.wearefrank.ladybug.storage.StorageException;
 import org.wearefrank.ladybug.test.junit.ReportRelatedTestCase;
 
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.read.ListAppender;
+import lombok.SneakyThrows;
+
 /**
  * @author Jaco de Groot
  */
 public class TestCreateReport extends ReportRelatedTestCase {
 	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+
 	private enum EndParentThreadAfter {
 		CHILD_THREAD_CREATEPOINT, CHILD_THREAD_STARTPOINT, CHILD_THREAD_ENDPOINT
 	}
@@ -120,7 +121,7 @@ public class TestCreateReport extends ReportRelatedTestCase {
 	}
 
 	@Test
-	public void testExceptionAsMessage() throws StorageException, IOException  {
+	public void testExceptionAsMessage() throws StorageException, IOException {
 		String correlationId = getCorrelationId();
 		Exception exception = new Exception("My Exception");
 		// Checkpoints are added on odd and even level to make it possible to visually check the colors in the tree
@@ -153,7 +154,8 @@ public class TestCreateReport extends ReportRelatedTestCase {
 		String correlationId = getCorrelationId();
 		testThreads(correlationId, false, true, true, false, false, EndParentThreadAfter.CHILD_THREAD_ENDPOINT, true);
 		assertWarningsUseThreadCreatepointBeforeThreadStartpoint(listAppender, correlationId,
-				Thread.currentThread().getName());
+				Thread.currentThread().getName()
+		);
 	}
 
 	@Test
@@ -161,7 +163,8 @@ public class TestCreateReport extends ReportRelatedTestCase {
 		String correlationId = getCorrelationId();
 		testThreads(correlationId, false, false, true, false, false, EndParentThreadAfter.CHILD_THREAD_ENDPOINT, true);
 		assertWarningsUseThreadCreatepointAndThreadStartpoint(listAppender, correlationId,
-				Thread.currentThread().getName());
+				Thread.currentThread().getName()
+		);
 	}
 
 	@Test
@@ -169,7 +172,8 @@ public class TestCreateReport extends ReportRelatedTestCase {
 		String correlationId = getCorrelationId();
 		testThreads(correlationId, true, false, false, false, false, EndParentThreadAfter.CHILD_THREAD_CREATEPOINT, false);
 		assertEquals("Report should be in progress (waiting for threadStartpoint)", 1,
-				testTool.getNumberOfReportsInProgress());
+				testTool.getNumberOfReportsInProgress()
+		);
 		testTool.close(correlationId, Thread.currentThread().getName() + "-ChildThreadIdA");
 		testTool.close(correlationId, Thread.currentThread().getName() + "-ChildThreadIdB");
 		assertReport(correlationId);
@@ -177,17 +181,21 @@ public class TestCreateReport extends ReportRelatedTestCase {
 	}
 
 	@Test
-	public void testCloseThreads() throws StorageException, IOException  {
+	public void testCloseThreads() throws StorageException, IOException {
 		String correlationId = getCorrelationId();
 		testTool.setCloseThreads(true);
 		testThreads(correlationId, true, true, true, true, false, EndParentThreadAfter.CHILD_THREAD_STARTPOINT, false);
 		assertEquals("Report should not be in progress", 0, testTool.getNumberOfReportsInProgress());
-		assertWarningInLog(listAppender,
+		assertWarningInLog(
+				listAppender,
 				"No report in progress for correlationId and checkpoint not a startpoint, ignored checkpoint (name: name2a, type: ThreadEndpoint, level: null, correlationId: "
-				+ correlationId + ")");
-		assertWarningInLog(listAppender,
+						+ correlationId + ")"
+		);
+		assertWarningInLog(
+				listAppender,
 				"No report in progress for correlationId and checkpoint not a startpoint, ignored checkpoint (name: name2b, type: ThreadEndpoint, level: null, correlationId: "
-				+ correlationId + ")");
+						+ correlationId + ")"
+		);
 		testTool.setCloseNewThreadsOnly(true);
 		testThreads(correlationId, true, true, true, true, true, EndParentThreadAfter.CHILD_THREAD_STARTPOINT, false);
 		assertEquals("Report should be in progress", 1, testTool.getNumberOfReportsInProgress());
@@ -205,7 +213,7 @@ public class TestCreateReport extends ReportRelatedTestCase {
 	}
 
 	public void testThreadsWithThreadCreatepointOnlyAndCloseThreads(boolean withCloseMethod, boolean withSetMethod,
-			boolean closeNewThreadsOnly, boolean withTask) throws StorageException, IOException {
+																	boolean closeNewThreadsOnly, boolean withTask) throws StorageException, IOException {
 		if (withSetMethod) {
 			testTool.setCloseThreads(true);
 			testTool.setCloseNewThreadsOnly(closeNewThreadsOnly);
@@ -243,12 +251,13 @@ public class TestCreateReport extends ReportRelatedTestCase {
 		names.add("B");
 		for (String name : names) {
 			assertWarningUseThreadCreatepointBeforeThreadStartpoint(listAppender, correlationId,
-					parentThreadName, parentThreadName + "-ChildThreadId" + name , "name2" + name.toLowerCase());
+					parentThreadName, parentThreadName + "-ChildThreadId" + name, "name2" + name.toLowerCase()
+			);
 		}
 	}
 
 	private static void assertWarningUseThreadCreatepointBeforeThreadStartpoint(ListAppender<ILoggingEvent> listAppender,
-			String correlationId, String parentThreadName, String childThreadName, String checkpointName) {
+																				String correlationId, String parentThreadName, String childThreadName, String checkpointName) {
 		assertWarningInLog(listAppender, "New child thread '" + childThreadName
 				+ "' for guessed parent thread '" + parentThreadName
 				+ "' detected, use threadCreatepoint() before threadStartpoint() for checkpoint (name: "
@@ -256,33 +265,36 @@ public class TestCreateReport extends ReportRelatedTestCase {
 	}
 
 	private static void assertWarningsUseThreadCreatepointAndThreadStartpoint(ListAppender<ILoggingEvent> listAppender,
-			String correlationId, String parentThreadName) {
+																			  String correlationId, String parentThreadName) {
 		List<String> names = new ArrayList<String>();
 		names.add("A");
 		names.add("B");
 		for (String name : names) {
 			assertWarningUseThreadCreatepointAndThreadStartpoint(listAppender, correlationId,
-					parentThreadName, parentThreadName + "-ChildThreadName" + name, "name3" + name.toLowerCase());
+					parentThreadName, parentThreadName + "-ChildThreadName" + name, "name3" + name.toLowerCase()
+			);
 		}
 	}
 
 	private static void assertWarningUseThreadCreatepointAndThreadStartpoint(ListAppender<ILoggingEvent> listAppender,
-			String correlationId, String parentThreadName, String childThreadName, String checkpointName) {
+																			 String correlationId, String parentThreadName, String childThreadName, String checkpointName) {
 		assertWarningUseThreadCreatepointAndThreadStartpoint(listAppender, correlationId, parentThreadName,
-				childThreadName, checkpointName, false);
+				childThreadName, checkpointName, false
+		);
 	}
 
 	private static void assertWarningUseThreadCreatepointAndThreadStartpoint(ListAppender<ILoggingEvent> listAppender,
-			String correlationId, String parentThreadName, String childThreadName, String checkpointName,
-			boolean removeSecondWarning) {
+																			 String correlationId, String parentThreadName, String childThreadName, String checkpointName,
+																			 boolean removeSecondWarning) {
 		String parentThreadSentence = " for guessed parent thread '" + parentThreadName + "'";
 		if (parentThreadName == null) {
 			parentThreadSentence = " for unknown parent thread";
 		}
 		assertWarningInLog(listAppender, "New child thread '" + childThreadName + "'" + parentThreadSentence
-				+ " detected, use threadCreatepoint() and threadStartpoint() instead of startpoint() for ignored checkpoint (name: "
-				+ checkpointName + ", type: ThreadStartpoint, level: null, correlationId: " + correlationId + ")",
-				removeSecondWarning);
+						+ " detected, use threadCreatepoint() and threadStartpoint() instead of startpoint() for ignored checkpoint (name: "
+						+ checkpointName + ", type: ThreadStartpoint, level: null, correlationId: " + correlationId + ")",
+				removeSecondWarning
+		);
 	}
 
 	private static void assertWarningInLog(ListAppender<ILoggingEvent> listAppender, String warning) {
@@ -290,7 +302,7 @@ public class TestCreateReport extends ReportRelatedTestCase {
 	}
 
 	private static void assertWarningInLog(ListAppender<ILoggingEvent> listAppender, String warning,
-			boolean removeSecondWarning) {
+										   boolean removeSecondWarning) {
 		List<ILoggingEvent> loggingEvents = listAppender.list;
 		assertEquals(warning, loggingEvents.get(0).getMessage());
 		assertEquals(Level.WARN, loggingEvents.get(0).getLevel());
@@ -312,8 +324,8 @@ public class TestCreateReport extends ReportRelatedTestCase {
 	}
 
 	private void testThreads(String correlationId, boolean useThreadCreatepoint, boolean useThreadStartpoint,
-			boolean useChildCheckpoints, boolean keepChildThreadOpen, boolean delaySecondChildThread,
-			EndParentThreadAfter endParentThreadAfter, boolean assertReport) throws StorageException, IOException {
+							 boolean useChildCheckpoints, boolean keepChildThreadOpen, boolean delaySecondChildThread,
+							 EndParentThreadAfter endParentThreadAfter, boolean assertReport) throws StorageException, IOException {
 		String parentThreadName = Thread.currentThread().getName();
 		String childThreadIdA = parentThreadName + "-ChildThreadIdA";
 		String childThreadIdB = parentThreadName + "-ChildThreadIdB";
@@ -377,7 +389,7 @@ public class TestCreateReport extends ReportRelatedTestCase {
 
 	/**
 	 * Test whether synchronization is done properly in TestTool.checkpoint()
-	 * 
+	 *
 	 * @throws Throwable ...
 	 */
 	@Test
@@ -421,8 +433,10 @@ public class TestCreateReport extends ReportRelatedTestCase {
 		}
 		ignoreWarningsInLog(listAppender, "New child thread '");
 		ignoreWarningsInLog(listAppender, "Unknown thread 'Thread-");
-		ignoreWarningsInLog(listAppender,
-				"No report in progress for correlationId and checkpoint not a startpoint, ignored checkpoint (name: Thread-");
+		ignoreWarningsInLog(
+				listAppender,
+				"No report in progress for correlationId and checkpoint not a startpoint, ignored checkpoint (name: Thread-"
+		);
 		for (int i = 0; i < nrOfThreads; i++) {
 			if (testThreads[i].getThrowable() != null) {
 				throw new Exception(testThreads[i].getThrowable());
@@ -436,7 +450,7 @@ public class TestCreateReport extends ReportRelatedTestCase {
 	 * disable report.isClosed() check in TestTool.checkpoint() to make this test throw an exception and fail. In
 	 * addition to testConcurrency() (which is a simpler way to test for ArrayIndexOutOfBoundsException) this test will
 	 * also assert the generated reports.
-	 * 
+	 *
 	 * @throws Throwable ...
 	 */
 	@Test
@@ -497,8 +511,10 @@ public class TestCreateReport extends ReportRelatedTestCase {
 		List<Report> reports = findAndGetReports(testTool, testTool.getDebugStorage(), correlationId, false);
 		if (reports.size() == 1) {
 			Report report = reports.get(0);
-			assertTrue("Report name incorrect: " + report.getName(),
-					report.getName().equals("Thread-0") || report.getName().equals("Thread-1"));
+			assertTrue(
+					"Report name incorrect: " + report.getName(),
+					report.getName().equals("Thread-0") || report.getName().equals("Thread-1")
+			);
 			if (report.getNumberOfCheckpoints() == 4) {
 				outcome = 1;
 				String nameSuffix = "11";
@@ -512,7 +528,8 @@ public class TestCreateReport extends ReportRelatedTestCase {
 				}
 				assertReport(report, resourcePath, reportName + nameSuffix, false, false, false, false, false);
 				assertWarningUseThreadCreatepointAndThreadStartpoint(listAppender, correlationId, parentThreadName,
-						childThreadName, childThreadName);
+						childThreadName, childThreadName
+				);
 			} else if (report.getNumberOfCheckpoints() == 2) {
 				outcome = 3;
 				String nameSuffix = "31";
@@ -525,7 +542,8 @@ public class TestCreateReport extends ReportRelatedTestCase {
 				}
 				assertReport(report, resourcePath, reportName + nameSuffix, false, false, false, false, false);
 				assertWarningUseThreadCreatepointAndThreadStartpoint(listAppender, correlationId, parentThreadName,
-						childThreadName, childThreadName, true);
+						childThreadName, childThreadName, true
+				);
 			} else {
 				fail("Didn't find 2 or 4 checkpoints, found " + report.getNumberOfCheckpoints());
 			}
@@ -533,9 +551,11 @@ public class TestCreateReport extends ReportRelatedTestCase {
 			outcome = 2;
 			Report report1 = reports.get(0);
 			Report report2 = reports.get(1);
-			assertTrue("Report names incorrect: " + report1.getName() + " and " + report2.getName(),
+			assertTrue(
+					"Report names incorrect: " + report1.getName() + " and " + report2.getName(),
 					(report1.getName().equals("Thread-0") && report2.getName().equals("Thread-1"))
-					|| (report1.getName().equals("Thread-1") && report2.getName().equals("Thread-0")));
+							|| (report1.getName().equals("Thread-1") && report2.getName().equals("Thread-0"))
+			);
 			if (report1.getName().equals("Thread-1")) {
 				// This time second thread was faster, hence swap places so asserts can be done as if first thread was
 				// faster
@@ -578,7 +598,10 @@ public class TestCreateReport extends ReportRelatedTestCase {
 		testTool.startpoint(correlationId, null, reportName, "startmessage1");
 		testTool.startpoint(correlationId, null, "name2", () -> {return "startmessage2";}, new HashSet<String>());
 		assertThrows(RuntimeException.class, () -> {
-			testTool.endpoint(correlationId, null, "name2", () -> {if (isTrue()) throw new RuntimeException("abortmessage2"); return "dummy";}, new HashSet<String>());
+			testTool.endpoint(correlationId, null, "name2", () -> {
+				if (isTrue()) throw new RuntimeException("abortmessage2");
+				return "dummy";
+			}, new HashSet<String>());
 		});
 		testTool.abortpoint(correlationId, null, reportName, "abortmessage1");
 
@@ -593,7 +616,7 @@ public class TestCreateReport extends ReportRelatedTestCase {
 	public void testAbortThread() throws StorageException, IOException {
 		String correlationId = getCorrelationId();
 		String parentThreadName = Thread.currentThread().getName();
-		String childThreadName = parentThreadName +"-ChildThreadName";
+		String childThreadName = parentThreadName + "-ChildThreadName";
 		testTool.startpoint(correlationId, null, reportName, "startmessage1");
 		testTool.threadCreatepoint(correlationId, childThreadName);
 		Thread.currentThread().setName(childThreadName);
@@ -681,7 +704,7 @@ public class TestCreateReport extends ReportRelatedTestCase {
 			firstException = e.getClass() + ": " + e.getMessage();
 		}
 
-		String secondException= null;
+		String secondException = null;
 		try {
 			Thread.currentThread().setName(parentThreadName);
 			testTool.abortpoint(correlationId, this.getClass().getTypeName(), reportName, "endmessage");
@@ -822,9 +845,11 @@ public class TestCreateReport extends ReportRelatedTestCase {
 		String endmessage2 = testTool.endpoint(correlationId, null, "name2", () -> {return "endmessage2";}, new HashSet<String>());
 		testTool.endpoint(correlationId, null, reportName, "endmessage1");
 		assertReport(correlationId);
-		assertWarningInLog(listAppender,
+		assertWarningInLog(
+				listAppender,
 				"Maximum number of checkpoints (2) exceeded, ignored checkpoint (name: name2, type: Endpoint, level: 2, correlationId: "
-				+ correlationId + ") (next checkpoints for this report will be ignored without any logging)");
+						+ correlationId + ") (next checkpoints for this report will be ignored without any logging)"
+		);
 		assertEquals(0, testTool.getNumberOfReportsInProgress());
 		assertEquals("startmessage2", startmessage2);
 		assertEquals("endmessage2", endmessage2);
@@ -840,9 +865,11 @@ public class TestCreateReport extends ReportRelatedTestCase {
 		// Will give IndexOutOfBoundsException when removeThreadCreatepoint() doesn't check index < checkpoints.size()
 		testTool.close(correlationId, childThreadName1);
 		testTool.endpoint(correlationId, null, reportName, "endmessage");
-		assertWarningInLog(listAppender,
+		assertWarningInLog(
+				listAppender,
 				"Maximum number of checkpoints (1) exceeded, ignored checkpoint (name: Waiting for thread 'child-1' to start..., type: ThreadCreatepoint, level: 1, correlationId: "
-				+ correlationId + ") (next checkpoints for this report will be ignored without any logging)");
+						+ correlationId + ") (next checkpoints for this report will be ignored without any logging)"
+		);
 	}
 
 	@Test
@@ -886,10 +913,14 @@ public class TestCreateReport extends ReportRelatedTestCase {
 
 		Storage storage = testTool.getDebugStorage();
 		Report report = findAndGetReport(testTool, storage, correlationId);
-		assertEquals("java.io.StringReader",
-				testTool.getMessageEncoder().toObject(report.getCheckpoints().get(1)).getClass().getTypeName());
-		assertEquals("java.io.ByteArrayInputStream",
-				testTool.getMessageEncoder().toObject(report.getCheckpoints().get(4)).getClass().getTypeName());
+		assertEquals(
+				"java.io.StringReader",
+				testTool.getMessageEncoder().toObject(report.getCheckpoints().get(1)).getClass().getTypeName()
+		);
+		assertEquals(
+				"java.io.ByteArrayInputStream",
+				testTool.getMessageEncoder().toObject(report.getCheckpoints().get(4)).getClass().getTypeName()
+		);
 	}
 
 	@Test
@@ -907,9 +938,9 @@ public class TestCreateReport extends ReportRelatedTestCase {
 						if (message instanceof byte[]) {
 							String string;
 							if (charset == null) {
-								string = new String((byte[])message);
+								string = new String((byte[]) message);
 							} else {
-								string = new String((byte[])message, charset);
+								string = new String((byte[]) message, charset);
 							}
 							return new ToStringResult(string, "new String((byte[])message)");
 						}
@@ -971,7 +1002,7 @@ public class TestCreateReport extends ReportRelatedTestCase {
 		messageToStub = new ByteArrayOutputStream();
 		message = defaultMessageEncoder.toObject(checkpoint, messageToStub);
 		assertEquals("java.io.ByteArrayOutputStream", message.getClass().getTypeName());
-		assertEquals("Hello World!", ((ByteArrayOutputStream)message).toString("UTF-8"));
+		assertEquals("Hello World!", ((ByteArrayOutputStream) message).toString("UTF-8"));
 	}
 
 	@Test
@@ -992,15 +1023,15 @@ public class TestCreateReport extends ReportRelatedTestCase {
 	@Test
 	public void testStreamWithCharset() throws IOException, StorageException {
 		byte[] bytes = new byte[2];
-		bytes[0] = (byte)235; // ë in ISO-8859-1 (UTF-8 would need two bytes)
-		bytes[1] = (byte)169; // © in ISO-8859-1 (UTF-8 would need two bytes)
+		bytes[0] = (byte) 235; // ë in ISO-8859-1 (UTF-8 would need two bytes)
+		bytes[1] = (byte) 169; // © in ISO-8859-1 (UTF-8 would need two bytes)
 		String actual = testTool.getMessageEncoder().toString(bytes, "ISO-8859-1").getString();
-		assertEquals("ë©" , actual);
+		assertEquals("ë©", actual);
 		testTool.setMessageCapturer(new MessageCapturerImpl() {
 			@Override
 			@SneakyThrows
 			public <T> T toOutputStream(T message, OutputStream outputStream, Consumer<String> charsetNotifier,
-					Consumer<Throwable> exceptionNotifier) {
+										Consumer<Throwable> exceptionNotifier) {
 				charsetNotifier.accept("ISO-8859-1");
 				return super.toOutputStream(message, outputStream, charsetNotifier, exceptionNotifier);
 			}
@@ -1016,9 +1047,9 @@ public class TestCreateReport extends ReportRelatedTestCase {
 		report.setTestTool(testTool);
 		Checkpoint checkpoint = report.getCheckpoints().get(0);
 		assertEquals("CHARSET-ISO-8859-1", checkpoint.getEncoding());
-		ByteArrayInputStream byteArrayInputStream = (ByteArrayInputStream)checkpoint.getMessageAsObject();
-		assertEquals(bytes[0], (byte)byteArrayInputStream.read());
-		assertEquals(bytes[1], (byte)byteArrayInputStream.read());
+		ByteArrayInputStream byteArrayInputStream = (ByteArrayInputStream) checkpoint.getMessageAsObject();
+		assertEquals(bytes[0], (byte) byteArrayInputStream.read());
+		assertEquals(bytes[1], (byte) byteArrayInputStream.read());
 		byteArrayInputStream = checkpoint.getMessageAsObject(new ByteArrayInputStream(new byte[0]));
 		assertEquals(235, byteArrayInputStream.read());
 		assertEquals(169, byteArrayInputStream.read());
@@ -1029,7 +1060,7 @@ public class TestCreateReport extends ReportRelatedTestCase {
 		testTool.setMessageCapturer(new MessageCapturerImpl() {
 			@Override
 			public <T> T toOutputStream(T message, OutputStream outputStream, Consumer<String> charsetNotifier,
-					Consumer<Throwable> exceptionNotifier) {
+										Consumer<Throwable> exceptionNotifier) {
 				exceptionNotifier.accept(new IOException("Notify exception"));
 				return super.toOutputStream(message, outputStream, charsetNotifier, exceptionNotifier);
 			}

@@ -19,10 +19,10 @@ import java.security.Principal;
 import java.util.List;
 import java.util.Map;
 
-import org.springframework.context.ApplicationContext;
-
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.ws.rs.core.Context;
+
+import org.springframework.context.ApplicationContext;
 import org.wearefrank.ladybug.SecurityContext;
 
 public abstract class ApiBase implements SecurityContext {
@@ -86,12 +86,13 @@ public abstract class ApiBase implements SecurityContext {
 
 	/**
 	 * Checks if the given map contains the given arrays of keys, and only those keys.
-	 * @param map Map to be checked.
+	 *
+	 * @param map       Map to be checked.
 	 * @param mandatory List of mandatory keys. If any of them is not present, will return false.
-	 * @param optional List of optional keys.
+	 * @param optional  List of optional keys.
 	 * @return True if the given two arrays are the only keys in the given map.
 	 */
-	public boolean mapContainsOnly(Map<String, ?> map,String[] mandatory, String[] optional) {
+	public boolean mapContainsOnly(Map<String, ?> map, String[] mandatory, String[] optional) {
 		int count = 0;
 		if (mandatory != null) {
 			for (String field : mandatory) {
@@ -100,7 +101,7 @@ public abstract class ApiBase implements SecurityContext {
 			count = mandatory.length;
 		}
 		if (optional != null) {
-			for (String field: optional) {
+			for (String field : optional) {
 				if (map.containsKey(field)) count++;
 			}
 		}

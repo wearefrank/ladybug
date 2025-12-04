@@ -19,7 +19,6 @@ import org.wearefrank.ladybug.MetadataFieldExtractor;
 import org.wearefrank.ladybug.Report;
 
 /**
- * 
  * @author Jaco de Groot
  */
 public class DefaultValueMetadataFieldExtractor implements MetadataFieldExtractor {

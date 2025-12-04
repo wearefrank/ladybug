@@ -7,7 +7,6 @@ import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
-
 import org.wearefrank.ladybug.Checkpoint;
 import org.wearefrank.ladybug.Report;
 import org.wearefrank.ladybug.TestTool;
@@ -58,7 +57,7 @@ public class SessionKeyMetadataFieldExtractorTest {
 		extractor.setSessionKey("mySessionKey");
 		extractor.setRegex("(?!x)x");
 		Object extracted = extractor.extractMetadata(report);
-		assertEquals("myDefaultValue", extracted);	
+		assertEquals("myDefaultValue", extracted);
 	}
 
 	@Test
@@ -67,6 +66,6 @@ public class SessionKeyMetadataFieldExtractorTest {
 		extractor.setSessionKey("mySessionKey");
 		extractor.setRegex("(?!x)x");
 		Object extracted = extractor.extractMetadata(report);
-		assertEquals(null, extracted);	
+		assertEquals(null, extracted);
 	}
 }

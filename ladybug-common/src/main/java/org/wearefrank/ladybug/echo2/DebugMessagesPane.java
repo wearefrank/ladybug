@@ -68,18 +68,18 @@ public class DebugMessagesPane extends ContentPane {
 			messagelabel.setFont(font);
 			column.add(messagelabel);
 		}
-		
+
 		if (!scrollLockCheckBox.isSelected()) {
 			setVerticalScroll(new Extent(-1));
 		}
 
 		while (estimatedMemoryUsage > 1000000) {
-			Label label = (Label)column.getComponent(0);
+			Label label = (Label) column.getComponent(0);
 			column.remove(0);
 			estimatedMemoryUsage = estimatedMemoryUsage - (label.getText().length() * 2);
 		}
 	}
-	
+
 	public void removeAllMessages() {
 		column.removeAll();
 	}

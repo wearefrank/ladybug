@@ -28,16 +28,17 @@ public interface Debugger extends Rerunner {
 
 	/**
 	 * Checks whether a checkpoint will be stubbed so code can be skipped.
-	 * 
-	 * @param checkpoint  the checkpoint that may be stubbed
-	 * @param strategy    the used subbing strategy
-	 * @return            <code>true</code> when this checkpoint will be stubbed 
+	 *
+	 * @param checkpoint the checkpoint that may be stubbed
+	 * @param strategy   the used subbing strategy
+	 * @return <code>true</code> when this checkpoint will be stubbed
 	 */
 	public boolean stub(Checkpoint checkpoint, String strategy);
 
 	/**
 	 * Method to be called from the Ladybug to notify the application using
 	 * the Ladybug of a change in the report generator's status.
+	 *
 	 * @param enabled Whether the Ladybug's report generator should be enabled.
 	 */
 	public void updateReportGeneratorStatus(boolean enabled);
