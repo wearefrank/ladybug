@@ -58,7 +58,7 @@ public class EscapeUtil {
 						specialCharsFound = true;
 						value = value.substring(0, i) + "\"" + value.substring(i);
 						i++;
-					} else if (c == ',' ||c == '\n' || c == '\r') {
+					} else if (c == ',' || c == '\n' || c == '\r') {
 						specialCharsFound = true;
 					}
 				}
@@ -69,7 +69,7 @@ public class EscapeUtil {
 		}
 		return value;
 	}
-	
+
 	public static String escapeCsv(List<String> values) {
 		StringBuilder builder = new StringBuilder();
 		for (int i = 0; i < values.size() - 1; i++) {

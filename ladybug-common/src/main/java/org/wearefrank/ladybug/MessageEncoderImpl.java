@@ -38,13 +38,14 @@ import java.util.Date;
 import org.w3c.dom.Node;
 
 import lombok.SneakyThrows;
+
 import org.wearefrank.ladybug.util.XmlUtil;
 import org.wearefrank.ladybug.xmldecoder.XMLDecoder;
 
 /**
  * Default implementation of {@link MessageEncoder} used by {@link TestTool} that provides a basic set of
  * encoding/decoding methods.
- * 
+ *
  * @author Jaco de Groot
  */
 public class MessageEncoderImpl implements MessageEncoder {
@@ -67,7 +68,7 @@ public class MessageEncoderImpl implements MessageEncoder {
 		if (message == null) {
 			toStringResult = new ToStringResult(null, null);
 		} else if (message instanceof String) {
-			toStringResult = new ToStringResult((String)message, null);
+			toStringResult = new ToStringResult((String) message, null);
 		} else {
 			if (message instanceof byte[]) {
 				String encoding;
@@ -82,11 +83,13 @@ public class MessageEncoderImpl implements MessageEncoder {
 					// This will throw an exception were new String(((byte[])message), "UTF-8") would use the
 					// replacement character instead of throwing an exception. See https://en.wikipedia.org/wiki/UTF-8
 					// also (search for replacement character)
-					CharBuffer charBuffer = charsetDecoder.decode(ByteBuffer.wrap((byte[])message));
+					CharBuffer charBuffer = charsetDecoder.decode(ByteBuffer.wrap((byte[]) message));
 					toStringResult = new ToStringResult(charBuffer.toString(), encoding);
 				} catch (CharacterCodingException e) {
-					toStringResult = new ToStringResult(java.util.Base64.getEncoder().encodeToString((byte[])message),
-							BASE64_ENCODER);
+					toStringResult = new ToStringResult(
+							java.util.Base64.getEncoder().encodeToString((byte[]) message),
+							BASE64_ENCODER
+					);
 				}
 			} else if (message instanceof Reader || message instanceof InputStream
 					|| message instanceof Writer || message instanceof OutputStream) {
@@ -94,14 +97,16 @@ public class MessageEncoderImpl implements MessageEncoder {
 				toStringResult = new ToStringResult(WAITING_FOR_STREAM_MESSAGE, null);
 			} else if (message instanceof Throwable) {
 				StringWriter stringWriter = new StringWriter();
-				((Throwable)message).printStackTrace(new PrintWriter(stringWriter));
+				((Throwable) message).printStackTrace(new PrintWriter(stringWriter));
 				toStringResult = new ToStringResult(stringWriter.toString(), THROWABLE_ENCODER);
 			} else if (message instanceof Node) {
-				Node node = (Node)message;
+				Node node = (Node) message;
 				toStringResult = new ToStringResult(XmlUtil.nodeToString(node), DOM_NODE_ENCODER);
 			} else if (message instanceof Date) {
-				toStringResult = new ToStringResult(new SimpleDateFormat(DATE_PATTERN).format((Date)message),
-						DATE_ENCODER);
+				toStringResult = new ToStringResult(
+						new SimpleDateFormat(DATE_PATTERN).format((Date) message),
+						DATE_ENCODER
+				);
 			} else {
 				String xml = null;
 				ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
@@ -136,12 +141,12 @@ public class MessageEncoderImpl implements MessageEncoder {
 		// In case a stream is stubbed the replaced stream needs to be closed as the system under test will read and
 		// close the stub which would leave the replaced stream unclosed
 		if (messageToStub instanceof AutoCloseable) {
-			((AutoCloseable)messageToStub).close();
+			((AutoCloseable) messageToStub).close();
 		}
 		// Can be null when called from toObject(Checkpoint originalCheckpoint, T messageToStub), see javadoc on param
 		// originalCheckpoint in MessageEncoder
 		if (originalCheckpoint == null) {
-			return (T)TestTool.DEFAULT_STUB_MESSAGE;
+			return (T) TestTool.DEFAULT_STUB_MESSAGE;
 		} else if (originalCheckpoint.getMessage() == null) {
 			return null;
 		} else {
@@ -149,13 +154,13 @@ public class MessageEncoderImpl implements MessageEncoder {
 			String encoding = originalCheckpoint.getEncoding();
 			if (encoding == null) {
 				if (originalCheckpoint.getStreaming() == null) {
-					return (T)message;
+					return (T) message;
 				} else {
 					if (messageToStub instanceof Writer) {
-						((Writer)messageToStub).write(message);
+						((Writer) messageToStub).write(message);
 						return messageToStub;
 					} else {
-						return (T)new StringReader(message);
+						return (T) new StringReader(message);
 					}
 				}
 			} else if (encoding.equals(UTF8_ENCODER) || encoding.startsWith(CHARSET_ENCODER_PREFIX)) {
@@ -167,33 +172,33 @@ public class MessageEncoderImpl implements MessageEncoder {
 				byte[] bytes = new byte[byteBuffer.remaining()];
 				byteBuffer.get(bytes);
 				if (originalCheckpoint.getStreaming() == null) {
-					return (T)bytes;
+					return (T) bytes;
 				} else {
 					if (messageToStub instanceof OutputStream) {
-						((OutputStream)messageToStub).write(bytes);
+						((OutputStream) messageToStub).write(bytes);
 						return messageToStub;
 					} else {
-						return (T)new ByteArrayInputStream(bytes);
+						return (T) new ByteArrayInputStream(bytes);
 					}
 				}
 			} else if (encoding.equals(BASE64_ENCODER)) {
 				byte[] bytes = java.util.Base64.getDecoder().decode(message);
 				if (originalCheckpoint.getStreaming() == null) {
-					return (T)bytes;
+					return (T) bytes;
 				} else {
-					return (T)new ByteArrayInputStream(bytes);
+					return (T) new ByteArrayInputStream(bytes);
 				}
 			} else if (encoding.equals(DOM_NODE_ENCODER)) {
-				return (T)XmlUtil.stringToNode(message);
+				return (T) XmlUtil.stringToNode(message);
 			} else if (encoding.equals(DATE_ENCODER)) {
-				return (T)new SimpleDateFormat(DATE_PATTERN).parse(message);
+				return (T) new SimpleDateFormat(DATE_PATTERN).parse(message);
 			} else if (encoding.equals(XML_ENCODER)) {
 				ByteArrayInputStream byteArrayInputStream = null;
 				byteArrayInputStream = new ByteArrayInputStream(message.getBytes("UTF-8"));
 				XMLDecoder xmlDecoder = new XMLDecoder(byteArrayInputStream);
-				return (T)xmlDecoder.readObject();
+				return (T) xmlDecoder.readObject();
 			} else {
-				return (T)message;
+				return (T) message;
 			}
 		}
 	}

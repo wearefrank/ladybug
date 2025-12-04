@@ -19,15 +19,14 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.cxf.transport.servlet.CXFServlet;
-import org.springframework.context.event.ContextRefreshedEvent;
-
 import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletRequestWrapper;
 import jakarta.servlet.http.HttpServletResponse;
 
+import org.apache.cxf.transport.servlet.CXFServlet;
+import org.springframework.context.event.ContextRefreshedEvent;
 import org.wearefrank.ladybug.web.common.Constants;
 
 public class ApiServlet extends CXFServlet {
@@ -37,7 +36,7 @@ public class ApiServlet extends CXFServlet {
 	 * Static method that can be used to set the default mapping when creating this servlet programmatically instead of
 	 * defining it in web.xml. The javadoc of {@link ApiServlet#getDefaultInitParameters()} shows an example usage for a
 	 * Spring Boot application.
-	 * 
+	 *
 	 * @return ...
 	 */
 	public static String getDefaultMapping() {
@@ -48,13 +47,13 @@ public class ApiServlet extends CXFServlet {
 	 * Static method that can be used to set the init parameters with the default values when creating this servlet
 	 * programmatically instead of defining it in web.xml. This can for example be used in a Spring Boot application as
 	 * follows:
-	 * 
+	 *
 	 * <code>
-	 * 	ServletRegistrationBean&lt;ApiServlet&gt; servletRegistrationBean =
-	 * 			new ServletRegistrationBean&lt;ApiServlet&gt;(new ApiServlet(), ApiServlet.getDefaultMapping());
-	 * 	servletRegistrationBean.setInitParameters(ApiServlet.getDefaultInitParameters());
+	 * ServletRegistrationBean&lt;ApiServlet&gt; servletRegistrationBean =
+	 * new ServletRegistrationBean&lt;ApiServlet&gt;(new ApiServlet(), ApiServlet.getDefaultMapping());
+	 * servletRegistrationBean.setInitParameters(ApiServlet.getDefaultInitParameters());
 	 * </code>
-	 * 
+	 *
 	 * @return ...
 	 */
 	public static Map<String, String> getDefaultInitParameters() {
@@ -120,6 +119,7 @@ public class ApiServlet extends CXFServlet {
 				public String getPathInfo() {
 					return finalPathInof;
 				}
+
 				@Override
 				public String getRequestURI() {
 					return finalPathInof;
@@ -134,7 +134,7 @@ public class ApiServlet extends CXFServlet {
 					String queryString = request.getQueryString();
 					if (queryString == null) {
 						// On WebSphere the query string is removed when a request is forwarded
-						queryString = (String)request.getAttribute("javax.servlet.forward.query_string");
+						queryString = (String) request.getAttribute("javax.servlet.forward.query_string");
 					}
 					return queryString;
 				}

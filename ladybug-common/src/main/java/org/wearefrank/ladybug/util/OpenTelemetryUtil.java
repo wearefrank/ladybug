@@ -15,6 +15,8 @@
 */
 package org.wearefrank.ladybug.util;
 
+import org.wearefrank.ladybug.Report;
+
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.baggage.propagation.W3CBaggagePropagator;
 import io.opentelemetry.api.trace.Tracer;
@@ -30,7 +32,6 @@ import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.semconv.ServiceAttributes;
-import org.wearefrank.ladybug.Report;
 
 public class OpenTelemetryUtil {
 
@@ -44,7 +45,7 @@ public class OpenTelemetryUtil {
 	 * </code>
 	 * </p>
 	 * This happens because OpenTelemetry dependencies have scope provided for now.
-	 * 
+	 *
 	 * @param openTelemetryEndpoint ...
 	 * @return ...
 	 */
@@ -62,16 +63,16 @@ public class OpenTelemetryUtil {
 			Resource resource = Resource.getDefault().toBuilder().put(ServiceAttributes.SERVICE_NAME, "ladybug")
 					.put(ServiceAttributes.SERVICE_VERSION, "1.0.0").build();
 			SdkTracerProvider sdkTracerProvider = SdkTracerProvider.builder()
-						.addSpanProcessor(spanProcessor)
-						.setResource(resource)
-						.build();
+					.addSpanProcessor(spanProcessor)
+					.setResource(resource)
+					.build();
 			OpenTelemetry openTelemetry = OpenTelemetrySdk.builder()
-				.setTracerProvider(sdkTracerProvider)
-				.setPropagators(
-						ContextPropagators.create(
-						TextMapPropagator.composite(
-						W3CTraceContextPropagator.getInstance(), W3CBaggagePropagator.getInstance())))
-				.buildAndRegisterGlobal();
+					.setTracerProvider(sdkTracerProvider)
+					.setPropagators(
+							ContextPropagators.create(
+									TextMapPropagator.composite(
+											W3CTraceContextPropagator.getInstance(), W3CBaggagePropagator.getInstance())))
+					.buildAndRegisterGlobal();
 			return openTelemetry.getTracer(Report.class.getName(), "0.1.0");
 		}
 		return null;

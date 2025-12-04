@@ -19,8 +19,8 @@ import org.wearefrank.ladybug.Report;
 
 /**
  * Storage supporting Create, Read, Update and Delete actions. Primarily intended for the Test tab although it can be
- * used in the Debug tab as well (be careful when doing so, see {@link LogStorage}). 
- * 
+ * used in the Debug tab as well (be careful when doing so, see {@link LogStorage}).
+ *
  * @author Jaco de Groot
  */
 public interface CrudStorage extends Storage {

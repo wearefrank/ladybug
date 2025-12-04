@@ -17,12 +17,13 @@ package org.wearefrank.ladybug.storage.proofofmigration;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
-
 import jakarta.inject.Inject;
-import lombok.Setter;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.wearefrank.ladybug.filter.View;
 import org.wearefrank.ladybug.storage.LogStorage;
+
+import lombok.Setter;
 
 // @Dependent disabled for Quarkus for now because of the use of JdbcTemplate
 public class ProofOfMigrationView extends View {

@@ -86,7 +86,7 @@ public class StatusMetadataFieldExtractorTest {
 		instance.setMaxLength("Success".length());
 		assertEquals("Success", instance.extractMetadata(report));
 	}
-	
+
 	private Report getReport(int typeOfLastCheckpoint) {
 		TestTool testTool = new TestTool();
 		Report report = new Report();

@@ -48,6 +48,7 @@ import org.springframework.context.ApplicationContext;
 
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.read.ListAppender;
+
 import org.wearefrank.ladybug.Checkpoint;
 import org.wearefrank.ladybug.MetadataExtractor;
 import org.wearefrank.ladybug.Report;
@@ -67,10 +68,10 @@ public class ReportRelatedTestCase {
 
 	@Parameters(name = "{0}")
 	public static Collection<Object[]> data() {
-		return Arrays.asList(new Object[][] {
-			{"File storage", Common.CONTEXT_FILE_STORAGE},
-			{"Memory storage", Common.CONTEXT_MEM_STORAGE},
-			{"Database storage", Common.CONTEXT_DB_STORAGE}
+		return Arrays.asList(new Object[][]{
+				{ "File storage", Common.CONTEXT_FILE_STORAGE },
+				{ "Memory storage", Common.CONTEXT_MEM_STORAGE },
+				{ "Database storage", Common.CONTEXT_DB_STORAGE }
 		});
 	}
 
@@ -102,14 +103,16 @@ public class ReportRelatedTestCase {
 		if (!fileStorageDir.isDirectory()) {
 			fileStorageDir.mkdirs();
 		}
-		assertTrue("File storage dir not available: " + fileStorageDir.getAbsolutePath(),
-				fileStorageDir.isDirectory());
-		ch.qos.logback.classic.Logger log = (ch.qos.logback.classic.Logger)LoggerFactory.getLogger("org.wearefrank.ladybug");
+		assertTrue(
+				"File storage dir not available: " + fileStorageDir.getAbsolutePath(),
+				fileStorageDir.isDirectory()
+		);
+		ch.qos.logback.classic.Logger log = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger("org.wearefrank.ladybug");
 		listAppender = new ListAppender<>();
 		listAppender.start();
 		log.addAppender(listAppender);
-		testTool = (TestTool)context.getBean("testTool");
-		testTestTool = (TestTool)context.getBean("testTool");
+		testTool = (TestTool) context.getBean("testTool");
+		testTestTool = (TestTool) context.getBean("testTool");
 		reportName = Common.methodNameWithoutTestParameter(name.getMethodName());
 	}
 
@@ -155,21 +158,24 @@ public class ReportRelatedTestCase {
 	protected Report assertReport(String correlationId, String name) throws StorageException, IOException {
 		return assertReport(correlationId, name, false, false, false, false, false);
 	}
+
 	protected Report assertReport(String correlationId, boolean applyXmlEncoderIgnores,
-			boolean applyEpochTimestampIgnore, boolean applyStackTraceIgnores, boolean applyCorrelationIdIgnores,
-			boolean assertExport) throws StorageException, IOException {
+								  boolean applyEpochTimestampIgnore, boolean applyStackTraceIgnores, boolean applyCorrelationIdIgnores,
+								  boolean assertExport) throws StorageException, IOException {
 		return assertReport(correlationId, reportName, applyXmlEncoderIgnores, applyEpochTimestampIgnore,
-				applyStackTraceIgnores, applyCorrelationIdIgnores, assertExport);
+				applyStackTraceIgnores, applyCorrelationIdIgnores, assertExport
+		);
 	}
 
 	protected Report assertReport(String correlationId, String name, boolean applyXmlEncoderIgnores,
-			boolean applyEpochTimestampIgnore, boolean applyStackTraceIgnores, boolean applyCorrelationIdIgnores,
-			boolean assertExport) throws StorageException, IOException {
+								  boolean applyEpochTimestampIgnore, boolean applyStackTraceIgnores, boolean applyCorrelationIdIgnores,
+								  boolean assertExport) throws StorageException, IOException {
 		assertEquals("Found report(s) in progress", 0, testTool.getNumberOfReportsInProgress());
 		Storage storage = testTool.getDebugStorage();
 		Report report = findAndGetReport(testTool, storage, correlationId);
 		return assertReport(report, resourcePath, name, applyXmlEncoderIgnores, applyEpochTimestampIgnore,
-				applyStackTraceIgnores, applyCorrelationIdIgnores, assertExport);
+				applyStackTraceIgnores, applyCorrelationIdIgnores, assertExport
+		);
 	}
 
 	public static Report assertReport(Report report, String resourcePath, String name)
@@ -178,8 +184,8 @@ public class ReportRelatedTestCase {
 	}
 
 	public static Report assertReport(Report report, String resourcePath, String name, boolean applyXmlEncoderIgnores,
-			boolean applyEpochTimestampIgnore, boolean applyStackTraceIgnores, boolean applyCorrelationIdIgnores,
-			boolean assertExport) throws StorageException, IOException {
+									  boolean applyEpochTimestampIgnore, boolean applyStackTraceIgnores, boolean applyCorrelationIdIgnores,
+									  boolean assertExport) throws StorageException, IOException {
 		assertNotNull("Report is null", report);
 		ReportXmlTransformer reportXmlTransformer = new ReportXmlTransformer();
 		reportXmlTransformer.setXslt(getResource(RESOURCE_PATH, ASSERT_REPORT_XSLT));
@@ -200,7 +206,8 @@ public class ReportRelatedTestCase {
 		assertXml(resourcePath, name, actual);
 		if (assertExport) {
 			TestExport.assertExport(resourcePath, name, report, true, applyEpochTimestampIgnore,
-					applyStackTraceIgnores, false);
+					applyStackTraceIgnores, false
+			);
 			TestImport.assertImport(resourcePath, name);
 		}
 		return report;
@@ -212,7 +219,7 @@ public class ReportRelatedTestCase {
 	}
 
 	public static Report findAndGetReport(TestTool testTool, Storage storage, String correlationId,
-			boolean assertFound) throws StorageException {
+										  boolean assertFound) throws StorageException {
 		List<Report> reports = findAndGetReports(testTool, storage, correlationId, assertFound);
 		Report report = null;
 		if (reports.size() > 0) {
@@ -223,7 +230,7 @@ public class ReportRelatedTestCase {
 	}
 
 	public static List<Report> findAndGetReports(TestTool testTool, Storage storage, String correlationId,
-			boolean assertExactlyOne) throws StorageException {
+												 boolean assertExactlyOne) throws StorageException {
 		// In the Spring config for the JUnit tests bean testTool has scope prototype (see comment in config), hence use
 		// the same instance here instead of using getBean()
 		assertNull("Report should not be in progress", testTool.getReportInProgress(correlationId));
@@ -240,13 +247,14 @@ public class ReportRelatedTestCase {
 		// List<List<Object>> metadata = storage.getMetadata(2, metadataNames, searchValues,
 		// 		MetadataExtractor.VALUE_TYPE_OBJECT);
 		List<List<Object>> metadata = storage.getMetadata(-1, metadataNames, searchValues,
-				MetadataExtractor.VALUE_TYPE_OBJECT);
+				MetadataExtractor.VALUE_TYPE_OBJECT
+		);
 		if (assertExactlyOne) {
 			assertEquals("Didn't find exactly 1 report with correlationId '" + correlationId + "'", 1, metadata.size());
 		}
 		List<Report> reports = new ArrayList<Report>();
 		for (int i = 0; i < metadata.size(); i++) {
-			Report report = storage.getReport((Integer)metadata.get(i).get(0));
+			Report report = storage.getReport((Integer) metadata.get(i).get(0));
 			reports.add(report);
 		}
 		return reports;
@@ -286,10 +294,10 @@ public class ReportRelatedTestCase {
 			}
 			builder.append("]\n");
 			if (i > expected.length()) {
-				builder.append("expected next char: " + expected.charAt(i) + " (" + (int)expected.charAt(i) + ")\n");
+				builder.append("expected next char: " + expected.charAt(i) + " (" + (int) expected.charAt(i) + ")\n");
 			}
 			if (i > actual.length()) {
-				builder.append("actual next char: " + actual.charAt(i) + " (" + (int)actual.charAt(i) + ")\n");
+				builder.append("actual next char: " + actual.charAt(i) + " (" + (int) actual.charAt(i) + ")\n");
 			}
 			writeFile(expectedfile, expected, false);
 			System.err.println("===>>> See " + expectedfile.getCanonicalPath());
@@ -342,22 +350,28 @@ public class ReportRelatedTestCase {
 		// (?s) enables dotall so the expression . will also match line terminator
 		if (string.startsWith("<Report")) {
 			return applyEstimatedMemoryUsageIgnore(string)
-					.replaceAll("(?s)at org.wearefrank.ladybug.test.junit..[^<]*\\)\n</Checkpoint>",
-									"at org.wearefrank.ladybug.test.junit.IGNORE)\n</Checkpoint>");
+					.replaceAll(
+							"(?s)at org.wearefrank.ladybug.test.junit..[^<]*\\)\n</Checkpoint>",
+							"at org.wearefrank.ladybug.test.junit.IGNORE)\n</Checkpoint>"
+					);
 		} else {
-			return string.replaceAll("(?s)java.io.IOException: Test with strange object.[^<]*\\)(&#13;)?\n</string>",
-										 "java.io.IOException: Test with strange objectIGNORE)\n</string>");
+			return string.replaceAll(
+					"(?s)java.io.IOException: Test with strange object.[^<]*\\)(&#13;)?\n</string>",
+					"java.io.IOException: Test with strange objectIGNORE)\n</string>"
+			);
 		}
 	}
 
 	public static String ignoreStorageId(String xml, Report report) {
 		xml = xml.replaceFirst("<int>" + report.getStorageId() + "</int>", "<int>" + "IGNORE-STORAGE-ID" + "</int>");
-		return xml;		
+		return xml;
 	}
 
 	public static String applyEstimatedMemoryUsageIgnore(String string) {
-		return string.replaceFirst("EstimatedMemoryUsage=\"\\d*\">",
-								   "EstimatedMemoryUsage=\"IGNORE\">");
+		return string.replaceFirst(
+				"EstimatedMemoryUsage=\"\\d*\">",
+				"EstimatedMemoryUsage=\"IGNORE\">"
+		);
 	}
 
 	public static String applyCorrelationIdIgnores(String xml, String correlationId) {

@@ -38,7 +38,7 @@ public class StatusMetadataFieldExtractor extends DefaultValueMetadataFieldExtra
 
 	/**
 	 * If there was no abort then calculate the status from the delegate MetadataFieldextractor.
-	 * 
+	 *
 	 * @param delegate ...
 	 */
 	public void setDelegate(MetadataFieldExtractor delegate) {
@@ -61,16 +61,16 @@ public class StatusMetadataFieldExtractor extends DefaultValueMetadataFieldExtra
 		String status = successLabel;
 		List<Checkpoint> checkpoints = report.getCheckpoints();
 		if (checkpoints.size() > 0) {
-			Checkpoint lastCheckpoint = (Checkpoint)checkpoints.get(checkpoints.size() - 1);
+			Checkpoint lastCheckpoint = (Checkpoint) checkpoints.get(checkpoints.size() - 1);
 			if (lastCheckpoint.getType() == CheckpointType.ABORTPOINT.toInt()) {
 				status = errorLabel;
-			} else if(delegate != null) {
+			} else if (delegate != null) {
 				status = (String) delegate.extractMetadata(report);
 			}
 		}
-		if(maxLength > 0){
-			if(status != null){
-				if(status.length() > maxLength){
+		if (maxLength > 0) {
+			if (status != null) {
+				if (status.length() > maxLength) {
 					status = status.substring(0, maxLength);
 				}
 			}

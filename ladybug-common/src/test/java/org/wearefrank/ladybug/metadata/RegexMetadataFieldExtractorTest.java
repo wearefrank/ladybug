@@ -70,7 +70,7 @@ public class RegexMetadataFieldExtractorTest {
 		extractor.setCheckpointName("SessionKey mySessionKey");
 		extractor.setRegex("(?!x)x");
 		Object extracted = extractor.extractMetadata(report);
-		assertEquals("myDefaultValue", extracted);	
+		assertEquals("myDefaultValue", extracted);
 	}
 
 	@Test
@@ -79,7 +79,7 @@ public class RegexMetadataFieldExtractorTest {
 		extractor.setCheckpointName("SessionKey mySessionKey");
 		extractor.setRegex("(?!x)x");
 		Object extracted = extractor.extractMetadata(report);
-        assertNull(extracted);
+		assertNull(extracted);
 	}
 
 	@Test

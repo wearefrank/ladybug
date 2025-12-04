@@ -50,155 +50,152 @@ import org.wearefrank.ladybug.xmldecoder.finder.ConstructorFinder;
  * <dd>the identifier of the variable that is intended to store the result
  * </dl>
  *
- * @since 1.7
- *
  * @author Sergey A. Malenkov
+ * @since 1.7
  */
 class NewElementHandler extends ElementHandler {
-    private List<Object> arguments = new ArrayList<Object>();
-    private ValueObject value = ValueObjectImpl.VOID;
+	private List<Object> arguments = new ArrayList<Object>();
+	private ValueObject value = ValueObjectImpl.VOID;
 
-    private Class<?> type;
+	private Class<?> type;
 
-    /**
-     * Parses attributes of the element.
-     * The following atributes are supported:
-     * <dl>
-     * <dt>class
-     * <dd>the type of object for instantiation
-     * <dt>id
-     * <dd>the identifier of the variable that is intended to store the result
-     * </dl>
-     *
-     * @param name   the attribute name
-     * @param value  the attribute value
-     */
-    @Override
-    public void addAttribute(String name, String value) {
-        if (name.equals("class")) { // NON-NLS: the attribute name
-            this.type = getOwner().findClass(value);
-        } else {
-            super.addAttribute(name, value);
-        }
-    }
+	/**
+	 * Parses attributes of the element.
+	 * The following atributes are supported:
+	 * <dl>
+	 * <dt>class
+	 * <dd>the type of object for instantiation
+	 * <dt>id
+	 * <dd>the identifier of the variable that is intended to store the result
+	 * </dl>
+	 *
+	 * @param name  the attribute name
+	 * @param value the attribute value
+	 */
+	@Override
+	public void addAttribute(String name, String value) {
+		if (name.equals("class")) { // NON-NLS: the attribute name
+			this.type = getOwner().findClass(value);
+		} else {
+			super.addAttribute(name, value);
+		}
+	}
 
-    /**
-     * Adds the argument to the list of arguments
-     * that is used to calculate the value of this element.
-     *
-     * @param argument  the value of the element that contained in this one
-     */
-    @Override
-    protected final void addArgument(Object argument) {
-        if (this.arguments == null) {
-            throw new IllegalStateException("Could not add argument to evaluated element");
-        }
-        this.arguments.add(argument);
-    }
+	/**
+	 * Adds the argument to the list of arguments
+	 * that is used to calculate the value of this element.
+	 *
+	 * @param argument the value of the element that contained in this one
+	 */
+	@Override
+	protected final void addArgument(Object argument) {
+		if (this.arguments == null) {
+			throw new IllegalStateException("Could not add argument to evaluated element");
+		}
+		this.arguments.add(argument);
+	}
 
-    /**
-     * Returns the context of the method.
-     * The context of the static method is the class object.
-     * The context of the non-static method is the value of the parent element.
-     *
-     * @return the context of the method
-     */
-    @Override
-    protected final Object getContextBean() {
-        return (this.type != null)
-                ? this.type
-                : super.getContextBean();
-    }
+	/**
+	 * Returns the context of the method.
+	 * The context of the static method is the class object.
+	 * The context of the non-static method is the value of the parent element.
+	 *
+	 * @return the context of the method
+	 */
+	@Override
+	protected final Object getContextBean() {
+		return (this.type != null)
+				? this.type
+				: super.getContextBean();
+	}
 
-    /**
-     * Returns the value of this element.
-     *
-     * @return the value of this element
-     */
-    @Override
-    protected final ValueObject getValueObject() {
-        if (this.arguments != null) {
-            try {
-                this.value = getValueObject(this.type, this.arguments.toArray());
-            }
-            catch (Exception exception) {
-                getOwner().handleException(exception);
-            }
-            finally {
-                this.arguments = null;
-            }
-        }
-        return this.value;
-    }
+	/**
+	 * Returns the value of this element.
+	 *
+	 * @return the value of this element
+	 */
+	@Override
+	protected final ValueObject getValueObject() {
+		if (this.arguments != null) {
+			try {
+				this.value = getValueObject(this.type, this.arguments.toArray());
+			} catch (Exception exception) {
+				getOwner().handleException(exception);
+			} finally {
+				this.arguments = null;
+			}
+		}
+		return this.value;
+	}
 
-    /**
-     * Calculates the value of this element
-     * using the base class and the array of arguments.
-     * By default, it creates an instance of the base class.
-     * This method should be overridden in those handlers
-     * that extend behavior of this element.
-     *
-     * @param type  the base class
-     * @param args  the array of arguments
-     * @return the value of this element
-     * @throws Exception if calculation is failed
-     */
-    ValueObject getValueObject(Class<?> type, Object[] args) throws Exception {
-        if (type == null) {
-            throw new IllegalArgumentException("Class name is not set");
-        }
-        Class<?>[] types = getArgumentTypes(args);
-        Constructor<?> constructor = ConstructorFinder.findConstructor(type, types);
-        if (constructor.isVarArgs()) {
-            args = getArguments(args, constructor.getParameterTypes());
-        }
-        return ValueObjectImpl.create(constructor.newInstance(args));
-    }
+	/**
+	 * Calculates the value of this element
+	 * using the base class and the array of arguments.
+	 * By default, it creates an instance of the base class.
+	 * This method should be overridden in those handlers
+	 * that extend behavior of this element.
+	 *
+	 * @param type the base class
+	 * @param args the array of arguments
+	 * @return the value of this element
+	 * @throws Exception if calculation is failed
+	 */
+	ValueObject getValueObject(Class<?> type, Object[] args) throws Exception {
+		if (type == null) {
+			throw new IllegalArgumentException("Class name is not set");
+		}
+		Class<?>[] types = getArgumentTypes(args);
+		Constructor<?> constructor = ConstructorFinder.findConstructor(type, types);
+		if (constructor.isVarArgs()) {
+			args = getArguments(args, constructor.getParameterTypes());
+		}
+		return ValueObjectImpl.create(constructor.newInstance(args));
+	}
 
-    /**
-     * Converts the array of arguments to the array of corresponding classes.
-     * If argument is {@code null} the class is {@code null} too.
-     *
-     * @param arguments  the array of arguments
-     * @return the array of corresponding classes
-     */
-    static Class<?>[] getArgumentTypes(Object[] arguments) {
-        Class<?>[] types = new Class<?>[arguments.length];
-        for (int i = 0; i < arguments.length; i++) {
-            if (arguments[i] != null) {
-                types[i] = arguments[i].getClass();
-            }
-        }
-        return types;
-    }
+	/**
+	 * Converts the array of arguments to the array of corresponding classes.
+	 * If argument is {@code null} the class is {@code null} too.
+	 *
+	 * @param arguments the array of arguments
+	 * @return the array of corresponding classes
+	 */
+	static Class<?>[] getArgumentTypes(Object[] arguments) {
+		Class<?>[] types = new Class<?>[arguments.length];
+		for (int i = 0; i < arguments.length; i++) {
+			if (arguments[i] != null) {
+				types[i] = arguments[i].getClass();
+			}
+		}
+		return types;
+	}
 
-    /**
-     * Resolves variable arguments.
-     *
-     * @param arguments  the array of arguments
-     * @param types      the array of parameter types
-     * @return the resolved array of arguments
-     */
-    static Object[] getArguments(Object[] arguments, Class<?>[] types) {
-        int index = types.length - 1;
-        if (types.length == arguments.length) {
-            Object argument = arguments[index];
-            if (argument == null) {
-                return arguments;
-            }
-            Class<?> type = types[index];
-            if (type.isAssignableFrom(argument.getClass())) {
-                return arguments;
-            }
-        }
-        int length = arguments.length - index;
-        Class<?> type = types[index].getComponentType();
-        Object array = Array.newInstance(type, length);
-        System.arraycopy(arguments, index, array, 0, length);
+	/**
+	 * Resolves variable arguments.
+	 *
+	 * @param arguments the array of arguments
+	 * @param types     the array of parameter types
+	 * @return the resolved array of arguments
+	 */
+	static Object[] getArguments(Object[] arguments, Class<?>[] types) {
+		int index = types.length - 1;
+		if (types.length == arguments.length) {
+			Object argument = arguments[index];
+			if (argument == null) {
+				return arguments;
+			}
+			Class<?> type = types[index];
+			if (type.isAssignableFrom(argument.getClass())) {
+				return arguments;
+			}
+		}
+		int length = arguments.length - index;
+		Class<?> type = types[index].getComponentType();
+		Object array = Array.newInstance(type, length);
+		System.arraycopy(arguments, index, array, 0, length);
 
-        Object[] args = new Object[types.length];
-        System.arraycopy(arguments, 0, args, 0, index);
-        args[index] = array;
-        return args;
-    }
+		Object[] args = new Object[types.length];
+		System.arraycopy(arguments, 0, args, 0, index);
+		args[index] = array;
+		return args;
+	}
 }

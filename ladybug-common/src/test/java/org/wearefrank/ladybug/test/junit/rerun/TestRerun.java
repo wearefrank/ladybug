@@ -26,6 +26,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import lombok.SneakyThrows;
+
 import org.wearefrank.ladybug.Report;
 import org.wearefrank.ladybug.Rerunner;
 import org.wearefrank.ladybug.SecurityContext;
@@ -56,10 +57,10 @@ public class TestRerun extends ReportRelatedTestCase {
 			@SneakyThrows
 			@Override
 			public String rerun(String correlationId, Report originalReport, SecurityContext securityContext,
-					ReportRunner reportRunner) {
+								ReportRunner reportRunner) {
 				originalReport.getCheckpoints().get(0);
-				Integer firstMessage = (Integer)originalReport.getCheckpoints().get(0).getMessageAsObject();
-				assertEquals((Integer)10, firstMessage);
+				Integer firstMessage = (Integer) originalReport.getCheckpoints().get(0).getMessageAsObject();
+				assertEquals((Integer) 10, firstMessage);
 				firstMessage = 100;
 				addSomething(testTool, correlationId, reportName, firstMessage);
 				return null;
@@ -67,7 +68,7 @@ public class TestRerun extends ReportRelatedTestCase {
 		});
 		String correlationId = ReportRelatedTestCase.getCorrelationId();
 		addSomething(testTool, correlationId, reportName, 10);
-		assertEquals((Integer)10, i);
+		assertEquals((Integer) 10, i);
 		Storage storage = testTool.getDebugStorage();
 		Report report = ReportRelatedTestCase.findAndGetReport(testTool, storage, correlationId);
 		report.setTestTool(testTool);
@@ -81,7 +82,7 @@ public class TestRerun extends ReportRelatedTestCase {
 		assertNull(testTool.rerun(ReportRelatedTestCase.getCorrelationId(), report, null, null));
 		int maxStorageIdAfterRerun = ReportRelatedTestCase.getMaxStorageId(testTool, storage);
 		assertEquals(maxStorageIdAfterRerun, maxStorageIdBeforeRerun + 1);
-		assertEquals((Integer)10, i);
+		assertEquals((Integer) 10, i);
 	}
 
 	private static void addSomething(TestTool testTool, String correlationId, String name, Integer something) {

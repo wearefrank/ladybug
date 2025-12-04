@@ -30,8 +30,10 @@ import org.springframework.jdbc.datasource.SimpleDriverDataSource;
 import org.springframework.transaction.TransactionManager;
 
 import io.quarkus.arc.DefaultBean;
+
 import jakarta.enterprise.inject.Produces;
 import jakarta.inject.Singleton;
+
 import org.wearefrank.ladybug.echo2.ComparePane;
 import org.wearefrank.ladybug.echo2.DebugPane;
 import org.wearefrank.ladybug.echo2.Echo2Application;
@@ -56,7 +58,7 @@ import org.wearefrank.ladybug.transform.ReportXmlTransformer;
  * Default configuration / wiring of beans to minimize the Spring (xml) / Quarkus configuration needed to integrate
  * Ladybug into an application.
  * </p>
- * 
+ *
  * <p>
  * For classes with <code>@Inject</code>, <code>@Autowired</code>, <code>@Resource</code> and/or
  * <code>@PostConstruct</code> annotations:
@@ -72,14 +74,14 @@ import org.wearefrank.ladybug.transform.ReportXmlTransformer;
  *   </li>
  * </ul>
  * </p>
- * 
+ *
  * <p>
  * For other classes add <code>@Bean</code> (Spring) and <code>@DefaultBean</code> (Quarkus) methods to this class which
  * can be overridden for Spring in xml and for Quarkus in Java.
  * </p>
- * 
+ * <p>
  * Spring related:
- * 
+ *
  * <ul>
  *   <li>
  *     Enable component scanning, e.g.: &lt;context:component-scan base-package="nl.nn.testtool"/&gt;
@@ -115,9 +117,9 @@ import org.wearefrank.ladybug.transform.ReportXmlTransformer;
  *     https://stackoverflow.com/questions/74061160/do-we-have-to-write-setter-method-to-use-inject-annotation)
  *   </li>
  * </ul>
- * 
+ * <p>
  * Quarkus related:
- * 
+ *
  * <ul>
  *   <li>
  *     Quarkus doesn't wire and init beans returned by the methods in this class but will do it for beans created
@@ -128,7 +130,7 @@ import org.wearefrank.ladybug.transform.ReportXmlTransformer;
  *     overridden in an application using Ladybug as a library.
  *   </li>
  * </ul>
- * 
+ *
  * @author Jaco de Groot
  */
 
@@ -139,7 +141,8 @@ import org.wearefrank.ladybug.transform.ReportXmlTransformer;
 public class Config {
 
 	@Bean
-	@Scope("prototype") // Echo2Application needs to be unique per user (not per JVM)
+	@Scope("prototype")
+		// Echo2Application needs to be unique per user (not per JVM)
 	Echo2Application echo2Application() {
 		return new Echo2Application();
 	}
@@ -263,17 +266,17 @@ public class Config {
 
 	@Bean
 	@Scope("singleton")
-	// Prefix with ladybug to prevent interference with other beans of the application that is using Ladybug. E.g. in
-	// F!F when ladybug.jdbc.datasource is empty this bean should not be initialized but when it's name is dataSource
-	// it will be wired to the scheduler bean and initialized (giving error with ladybug.jdbc.datasource is empty)
+		// Prefix with ladybug to prevent interference with other beans of the application that is using Ladybug. E.g. in
+		// F!F when ladybug.jdbc.datasource is empty this bean should not be initialized but when it's name is dataSource
+		// it will be wired to the scheduler bean and initialized (giving error with ladybug.jdbc.datasource is empty)
 	DataSource ladybugDataSource() {
 		return new SimpleDriverDataSource();
 	}
 
 	@Bean
 	@Scope("prototype")
-	// Prefix with ladybug to prevent interference with other beans of the application that is using Ladybug. E.g. in
-	// F!F matrix test several combination fail with 5 scenarios failed (all JMS related)
+		// Prefix with ladybug to prevent interference with other beans of the application that is using Ladybug. E.g. in
+		// F!F matrix test several combination fail with 5 scenarios failed (all JMS related)
 	TransactionManager ladybugTransactionManager(DataSource ladybugDataSource) {
 		OptionalJtaTransactionManager optionalJtaTransactionManager = new OptionalJtaTransactionManager();
 		optionalJtaTransactionManager.setDataSource(ladybugDataSource);
@@ -282,8 +285,8 @@ public class Config {
 
 	@Bean
 	@Scope("prototype")
-	// Prefix with ladybug to prevent interference with other beans of the application that is using Ladybug as this is
-	// a commonly used class. Other classes (except the above two that are also prefixed) are Ladybug specific 
+		// Prefix with ladybug to prevent interference with other beans of the application that is using Ladybug as this is
+		// a commonly used class. Other classes (except the above two that are also prefixed) are Ladybug specific
 	JdbcTemplate ladybugJdbcTemplate(DataSource ladybugDataSource) {
 		JdbcTemplate jdbcTemplate = new JdbcTemplate();
 		jdbcTemplate.setDataSource(ladybugDataSource);

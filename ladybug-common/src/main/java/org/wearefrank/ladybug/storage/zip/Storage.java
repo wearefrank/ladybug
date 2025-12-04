@@ -72,7 +72,7 @@ public class Storage extends MemoryStorage {
 		}
 		ZipEntry zipEntry = zipFile.getEntry(storageId.toString());
 //		zipEntry.
-		return (Report)reports.get(storageId);
+		return (Report) reports.get(storageId);
 	}
 
 	@Override

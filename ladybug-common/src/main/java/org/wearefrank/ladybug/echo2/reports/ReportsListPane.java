@@ -15,22 +15,23 @@
 */
 package org.wearefrank.ladybug.echo2.reports;
 
-import nextapp.echo2.app.ContentPane;
 import org.wearefrank.ladybug.echo2.Echo2Application;
+
+import nextapp.echo2.app.ContentPane;
 
 public class ReportsListPane extends ContentPane {
 	private static final long serialVersionUID = 1L;
 	private ReportsComponent reportsComponent;
 
-    public void setReportsComponent(ReportsComponent reportsComponent) {
-        this.reportsComponent = reportsComponent;
-    }
-    
+	public void setReportsComponent(ReportsComponent reportsComponent) {
+		this.reportsComponent = reportsComponent;
+	}
+
 	/**
 	 * @see Echo2Application#initBean()
 	 */
-    public void initBean() {
-        add(reportsComponent, 0);
-    }
-    
+	public void initBean() {
+		add(reportsComponent, 0);
+	}
+
 }

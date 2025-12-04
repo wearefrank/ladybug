@@ -45,6 +45,7 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;
+
 import org.wearefrank.ladybug.MessageEncoder.ToStringResult;
 import org.wearefrank.ladybug.run.ReportRunner;
 import org.wearefrank.ladybug.storage.CrudStorage;
@@ -175,7 +176,7 @@ public class Report implements Serializable {
 	 * Convenient method (for the frontend) to check (without calling {@link #getStorage()}) whether the underlying
 	 * storage of this report is a {@link CrudStorage}. Based on this the frontend determines whether it should be
 	 * possible to edit the report or not.
-	 * 
+	 *
 	 * @return true when underlying storage is a {@link CrudStorage}, false otherwise
 	 */
 	public boolean isCrudStorage() {
@@ -273,8 +274,8 @@ public class Report implements Serializable {
 	}
 
 	protected <T> T checkpoint(String childThreadId, String sourceClassName, String name, T message, Map<String, Object> messageContext,
-			StubableCode stubableCode, StubableCodeThrowsException stubableCodeThrowsException,
-			Set<String> matchingStubStrategies, int checkpointType, int levelChangeNextCheckpoint) {
+							   StubableCode stubableCode, StubableCodeThrowsException stubableCodeThrowsException,
+							   Set<String> matchingStubStrategies, int checkpointType, int levelChangeNextCheckpoint) {
 		if (checkpointType == CheckpointType.THREAD_CREATEPOINT.toInt()) {
 			String parentThreadName = Thread.currentThread().getName();
 			if (!threads.contains(parentThreadName)) {
@@ -317,12 +318,13 @@ public class Report implements Serializable {
 			}
 		}
 		message = addCheckpoint(childThreadId, sourceClassName, name, message, messageContext, stubableCode, stubableCodeThrowsException,
-				matchingStubStrategies, checkpointType, levelChangeNextCheckpoint);
+				matchingStubStrategies, checkpointType, levelChangeNextCheckpoint
+		);
 		return message;
 	}
 
 	private void warnNewChildThreadDetected(String childThreadId, String parentThreadName,
-			boolean threadStartpointNotUsed, String checkpointName, int checkpointType, boolean ignored) {
+											boolean threadStartpointNotUsed, String checkpointName, int checkpointType, boolean ignored) {
 		String parentThreadWarning = " for guessed parent thread '" + parentThreadName + "'";
 		if (parentThreadName == null) {
 			parentThreadWarning = " for unknown parent thread";
@@ -353,7 +355,7 @@ public class Report implements Serializable {
 	 * For threadCreatepoints a checkpoint is added to the report and removed when a threadStartpoint is added to
 	 * visualize the status of waiting for a thread to start. A threadCreatepoint should be visualized as an error as a
 	 * thread was expected to start but didn't start.
-	 * 
+	 *
 	 * @param index
 	 * @param threadName
 	 */
@@ -372,9 +374,9 @@ public class Report implements Serializable {
 		}
 	}
 
-	private  <T> T addCheckpoint(String childThreadId, String sourceClassName, String name, T message, Map<String, Object> messageContext,
-			StubableCode stubableCode, StubableCodeThrowsException stubableCodeThrowsException,
-			Set<String> matchingStubStrategies, int checkpointType, int levelChangeNextCheckpoint) {
+	private <T> T addCheckpoint(String childThreadId, String sourceClassName, String name, T message, Map<String, Object> messageContext,
+								StubableCode stubableCode, StubableCodeThrowsException stubableCodeThrowsException,
+								Set<String> matchingStubStrategies, int checkpointType, int levelChangeNextCheckpoint) {
 		String threadName = Thread.currentThread().getName();
 		Integer index = threadCheckpointIndex.get(threadName);
 		Integer level = threadLevel.get(threadName);
@@ -411,7 +413,7 @@ public class Report implements Serializable {
 		}
 		if (index == null) {
 			log.warn("Unknown thread '" + threadName + "', ignored checkpoint "
-			 		+ getCheckpointLogDescription(name, checkpointType, level));
+					+ getCheckpointLogDescription(name, checkpointType, level));
 		} else {
 			if (!isReportFilterMatching()) {
 				message = TestTool.execute(stubableCode, stubableCodeThrowsException, message);
@@ -440,7 +442,8 @@ public class Report implements Serializable {
 				}
 			} else {
 				message = addCheckpoint(threadName, sourceClassName, name, message, messageContext, stubableCode,
-						stubableCodeThrowsException, matchingStubStrategies, checkpointType, index, level);
+						stubableCodeThrowsException, matchingStubStrategies, checkpointType, index, level
+				);
 			}
 			Integer newLevel = level + levelChangeNextCheckpoint;
 			threadLevel.put(threadName, newLevel);
@@ -454,14 +457,14 @@ public class Report implements Serializable {
 	}
 
 	@SneakyThrows
-	private  <T> T addCheckpoint(String threadName, String sourceClassName, String name, T message, Map<String, Object> messageContext,
-			StubableCode stubableCode, StubableCodeThrowsException stubableCodeThrowsException,
-			Set<String> matchingStubStrategies, int checkpointType, Integer index, Integer level) {
+	private <T> T addCheckpoint(String threadName, String sourceClassName, String name, T message, Map<String, Object> messageContext,
+								StubableCode stubableCode, StubableCodeThrowsException stubableCodeThrowsException,
+								Set<String> matchingStubStrategies, int checkpointType, Integer index, Integer level) {
 		Checkpoint checkpoint = new Checkpoint(this, threadName, sourceClassName, name, checkpointType, level);
 		checkpoint.setMessageContext(messageContext);
 		if (testTool.getOpenTelemetryTracer() != null) {
 			SpanBuilder checkpointSpanBuilder = testTool.getOpenTelemetryTracer().spanBuilder("checkpoint - " + name);
-			for (Checkpoint checkpointInList: checkpoints) {
+			for (Checkpoint checkpointInList : checkpoints) {
 				if (checkpointInList.getType() == 1 && checkpointInList.getLevel() == checkpoint.getLevel() - 1) {
 					checkpointSpanBuilder.setParent(Context.current().with(checkpointInList.getSpan()));
 				}
@@ -513,7 +516,7 @@ public class Report implements Serializable {
 		if (!stub) {
 			try {
 				message = TestTool.execute(stubableCode, stubableCodeThrowsException, message);
-			} catch(Throwable t) {
+			} catch (Throwable t) {
 				testTool.abortpoint(correlationId, sourceClassName, name, t.getMessage());
 				throw t;
 			}
@@ -528,7 +531,8 @@ public class Report implements Serializable {
 					+ getThreadInfo();
 			log.warn(warning);
 			Checkpoint warningCheckpoint = new Checkpoint(this, threadName, this.getClass().getCanonicalName(),
-					"WARNING", CheckpointType.INFOPOINT.toInt(), level);
+					"WARNING", CheckpointType.INFOPOINT.toInt(), level
+			);
 			warningCheckpoint.setMessage(warning);
 			threadCheckpointIndex.put(threadName, checkpoints.size());
 			index = checkpoints.size() - 1;
@@ -552,7 +556,7 @@ public class Report implements Serializable {
 				checkpoint.getSpan().end();
 			}
 			if (checkpointType == 2) {
-				for (Checkpoint checkpointInList: checkpoints) {
+				for (Checkpoint checkpointInList : checkpoints) {
 					if (checkpointInList.getType() == 1 && checkpointInList.getLevel() == checkpoint.getLevel() - 1) {
 						checkpointInList.getSpan().end();
 					}
@@ -585,7 +589,7 @@ public class Report implements Serializable {
 			// referenced by those checkpoints, to prevent creating multiple String objects representing the
 			// same string and occupying unnecessary memory.
 			checkpoint.setPreTruncatedMessageLength(message.length());
-			if(truncatedMessageMap.containsKey(message)) {
+			if (truncatedMessageMap.containsKey(message)) {
 				return truncatedMessageMap.get(message);
 			} else {
 				String truncatedMessage = message.substring(0, testTool.getMaxMessageLength());
@@ -599,14 +603,14 @@ public class Report implements Serializable {
 	public Checkpoint getOriginalEndpointOrAbortpointForCurrentLevel() {
 		Checkpoint result = null;
 		if (originalReport != null) {
-			Checkpoint lastCheckpoint = (Checkpoint)checkpoints.get(checkpoints.size() - 1);
+			Checkpoint lastCheckpoint = (Checkpoint) checkpoints.get(checkpoints.size() - 1);
 			Checkpoint checkpoint = originalReport.getCheckpoint(lastCheckpoint.getPath());
 			if (checkpoint != null) {
 				int i = originalReport.checkpoints.indexOf(checkpoint) + 1;
 				while (checkpoint.getType() != CheckpointType.ENDPOINT.toInt()
 						&& checkpoint.getType() != CheckpointType.ABORTPOINT.toInt()
 						&& i < originalReport.checkpoints.size()) {
-					checkpoint = (Checkpoint)originalReport.checkpoints.get(i);
+					checkpoint = (Checkpoint) originalReport.checkpoints.get(i);
 					i++;
 				}
 				if (checkpoint.getType() == CheckpointType.ENDPOINT.toInt()
@@ -665,7 +669,7 @@ public class Report implements Serializable {
 	}
 
 	protected void addStreamingMessageListener(Object streamingMessage, Checkpoint checkpoint) {
-		synchronized(streamingMessageListeners) {
+		synchronized (streamingMessageListeners) {
 			Set<Checkpoint> checkpoints = streamingMessageListeners.get(streamingMessage);
 			if (checkpoints == null) {
 				checkpoints = new HashSet<Checkpoint>();
@@ -676,7 +680,7 @@ public class Report implements Serializable {
 	}
 
 	protected void removeStreamingMessageListener(Object streamingMessage, Checkpoint checkpoint) {
-		synchronized(streamingMessageListeners) {
+		synchronized (streamingMessageListeners) {
 			Set<Checkpoint> checkpoints = streamingMessageListeners.remove(streamingMessage);
 			if (checkpoints != null) {
 				checkpoints.remove(checkpoint);
@@ -694,13 +698,13 @@ public class Report implements Serializable {
 	}
 
 	protected boolean isKnownStreamingMessage(Object streamingMessage) {
-		synchronized(streamingMessageListeners) {
+		synchronized (streamingMessageListeners) {
 			return streamingMessageListeners.get(streamingMessage) != null;
 		}
 	}
 
 	protected void closeStreamingMessage(String messageClassName, Object streamingMessage, String streamingType,
-			String charset, Object message, int preTruncatedMessageLength, Throwable exception) {
+										 String charset, Object message, int preTruncatedMessageLength, Throwable exception) {
 		StreamingMessageResult streamingMessageResult = new StreamingMessageResult();
 		streamingMessageResult.setMessageClassName(messageClassName);
 		streamingMessageResult.setStreamingType(streamingType);
@@ -708,7 +712,7 @@ public class Report implements Serializable {
 		streamingMessageResult.setMessage(message);
 		streamingMessageResult.setPreTruncatedMessageLength(preTruncatedMessageLength);
 		streamingMessageResult.setException(exception);
-		synchronized(streamingMessageListeners) {
+		synchronized (streamingMessageListeners) {
 			// Check whether TestTool.close() already closed the message capturer
 			if (streamingMessageListeners.containsKey(streamingMessage)) {
 				streamingMessageResults.put(streamingMessage, streamingMessageResult);
@@ -722,7 +726,7 @@ public class Report implements Serializable {
 	 * Close all streaming message listeners for which the streaming message has been closed
 	 */
 	private void closeStreamingMessageListeners() {
-		synchronized(streamingMessageListeners) {
+		synchronized (streamingMessageListeners) {
 			Set<Object> finishedStreamingMessage = new HashSet<Object>();
 			for (Object streamingMessage : streamingMessageListeners.keySet()) {
 				StreamingMessageResult streamingMessageResult = streamingMessageResults.remove(streamingMessage);
@@ -745,7 +749,7 @@ public class Report implements Serializable {
 					}
 				}
 			}
-			for (Object streamingMessage: finishedStreamingMessage) {
+			for (Object streamingMessage : finishedStreamingMessage) {
 				streamingMessageListeners.remove(streamingMessage);
 			}
 		}
@@ -755,7 +759,7 @@ public class Report implements Serializable {
 		Checkpoint result = null;
 		Iterator<Checkpoint> iterator = checkpoints.iterator();
 		while (result == null && iterator.hasNext()) {
-			Checkpoint checkpoint = (Checkpoint)iterator.next();
+			Checkpoint checkpoint = (Checkpoint) iterator.next();
 			if (path.equals(checkpoint.getPath())) {
 				result = checkpoint;
 			}
@@ -772,7 +776,7 @@ public class Report implements Serializable {
 	}
 
 	public Checkpoint getCheckpoint(Checkpoint counterpartCheckpoint, String linkMethod,
-			boolean counterpartCheckpointInProgress) {
+									boolean counterpartCheckpointInProgress) {
 		// linkMethod is null when report has been created with a Ladybug version before link method was introduced
 		if (LinkMethodType.PATH_AND_TYPE.toString().equals(linkMethod)) {
 			Path path = counterpartCheckpoint.getPath(counterpartCheckpointInProgress);
@@ -819,7 +823,7 @@ public class Report implements Serializable {
 	public List<Checkpoint> getCheckpoints() {
 		return checkpoints;
 	}
-	
+
 	public Checkpoint getInputCheckpoint() {
 		return checkpoints.get(0);
 	}
@@ -935,7 +939,7 @@ public class Report implements Serializable {
 			builder.append(">");
 			for (Checkpoint checkpoint : checkpoints) {
 				String message;
-				if(reportRunner != null && checkpoint.containsVariables()) {
+				if (reportRunner != null && checkpoint.containsVariables()) {
 					message = checkpoint.getMessageWithResolvedVariables(reportRunner);
 				} else {
 					message = checkpoint.getMessage();
@@ -1053,16 +1057,16 @@ public class Report implements Serializable {
 		variables = new LinkedHashMap<String, String>();
 		Scanner scanner = new Scanner(variablesCsv);
 		List<String> lines = new ArrayList<String>();
-		while(scanner.hasNextLine()) {
+		while (scanner.hasNextLine()) {
 			String nextLine = scanner.nextLine();
-			if(StringUtils.isNotEmpty(nextLine) && !nextLine.startsWith("#")) {
+			if (StringUtils.isNotEmpty(nextLine) && !nextLine.startsWith("#")) {
 				lines.add(nextLine);
 			}
 		}
 		scanner.close();
 		// For each column name from the header of the csv
 		List<String> columns = Arrays.asList(lines.get(0).split(";"));
-		for(String key : columns) {
+		for (String key : columns) {
 			// Read the value from the first line of values
 			String value = lines.get(1).split(";")[columns.indexOf(key)];
 			variables.put(key, value);
@@ -1094,37 +1098,37 @@ public class Report implements Serializable {
  * A custom implementation of the map interface that compares keys based on their object reference, i.e. comparing with 'o1 == o2' rather than 'o1.equals(o2)'.
  * This greatly enhances the performance of maps with large objects as keys.
  * <p>
- * Note: Since this implementation was written with a specific use case in mind, most methods are not implemented and will throw an exception when called. 
+ * Note: Since this implementation was written with a specific use case in mind, most methods are not implemented and will throw an exception when called.
  */
 class RefCompareMap<K, V> implements Map<K, V> {
-	
+
 	private List<K> keys = new ArrayList<K>();
 	private List<V> values = new ArrayList<V>();
-	
+
 	@Override
 	public V get(Object key) {
 		int i = 0;
-		for(Object o : keys) {
-			if(o == key) {
+		for (Object o : keys) {
+			if (o == key) {
 				return values.get(i);
 			}
 			i++;
 		}
 		return null;
 	}
-	
+
 	@Override
 	public V put(K key, V value) {
 		keys.add(key);
 		values.add(value);
-		
+
 		return value;
 	}
-	
+
 	@Override
 	public boolean containsKey(Object key) {
-		for(Object o : keys) {
-			if(o == key) {
+		for (Object o : keys) {
+			if (o == key) {
 				return true;
 			}
 		}
@@ -1142,7 +1146,7 @@ class RefCompareMap<K, V> implements Map<K, V> {
 	}
 
 	@Override
-	public Set<Map.Entry<K,V>> entrySet() {
+	public Set<Map.Entry<K, V>> entrySet() {
 		throw new NotImplementedException();
 	}
 
@@ -1157,7 +1161,7 @@ class RefCompareMap<K, V> implements Map<K, V> {
 	}
 
 	@Override
-	public void putAll(Map<? extends K,? extends V> m) {
+	public void putAll(Map<? extends K, ? extends V> m) {
 		throw new NotImplementedException();
 	}
 

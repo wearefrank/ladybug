@@ -74,8 +74,8 @@ public class ReportExtractorTest {
 	public void whenRegexIsSetThenValueIsTransformed() {
 		ReportExtractor extractor = new ReportExtractor();
 		extractor.setCheckpointName("mySessionKey");
-        RegexExtractionStrategy regexStrategy = new RegexExtractionStrategy("\\/([^\\/_]*)_");
-        extractor.getExtractionStrategies().add(regexStrategy);
+		RegexExtractionStrategy regexStrategy = new RegexExtractionStrategy("\\/([^\\/_]*)_");
+		extractor.getExtractionStrategies().add(regexStrategy);
 		extractor.setSessionKey(true);
 		String extracted = (String) extractor.extractMetadata(report);
 		assertEquals("creeerZaak", extracted);
@@ -85,19 +85,19 @@ public class ReportExtractorTest {
 	public void whenValueNotFoundThenDefaultShouldReturn() {
 		ReportExtractor extractor = new ReportExtractor();
 		extractor.setDefaultValue("myDefaultValue");
-        RegexExtractionStrategy regexStrategy = new RegexExtractionStrategy("(?!x)x");
-        extractor.getExtractionStrategies().add(regexStrategy);
+		RegexExtractionStrategy regexStrategy = new RegexExtractionStrategy("(?!x)x");
+		extractor.getExtractionStrategies().add(regexStrategy);
 		extractor.setSessionKey(true);
 		extractor.setCheckpointName("mySessionKey");
 		Object extracted = extractor.extractMetadata(report);
-		assertEquals("myDefaultValue", extracted);	
+		assertEquals("myDefaultValue", extracted);
 	}
 
 	@Test
 	public void whenNoDefaultIsSetThenNullShouldReturn() {
 		ReportExtractor extractor = new ReportExtractor();
-        RegexExtractionStrategy regexStrategy = new RegexExtractionStrategy("(?!x)x");
-        extractor.getExtractionStrategies().add(regexStrategy);
+		RegexExtractionStrategy regexStrategy = new RegexExtractionStrategy("(?!x)x");
+		extractor.getExtractionStrategies().add(regexStrategy);
 		extractor.setSessionKey(true);
 		extractor.setCheckpointName("mySessionKey");
 		Object extracted = extractor.extractMetadata(report);
@@ -108,7 +108,7 @@ public class ReportExtractorTest {
 	public void whenXpathIsSetThenPathShouldBeApplied() throws XPathExpressionException {
 		Report report = getReport();
 		ReportExtractor extractor = new ReportExtractor();
-        XpathExtractionStrategy xpathStrategy = new XpathExtractionStrategy("/one/two");
+		XpathExtractionStrategy xpathStrategy = new XpathExtractionStrategy("/one/two");
 		extractor.getExtractionStrategies().add(xpathStrategy);
 		extractor.setSessionKey(true);
 		extractor.setCheckpointName("anotherKey");
@@ -119,10 +119,10 @@ public class ReportExtractorTest {
 	public void whenRegexAndXpathAreSetThenBothAreApplied() throws XPathExpressionException {
 		Report report = getReport();
 		ReportExtractor extractor = new ReportExtractor();
-        XpathExtractionStrategy xpathStrategy = new XpathExtractionStrategy("/one/two");
-        extractor.getExtractionStrategies().add(xpathStrategy);
-        RegexExtractionStrategy regexStrategy = new RegexExtractionStrategy("([^\\s]+)");
-        extractor.getExtractionStrategies().add(regexStrategy);
+		XpathExtractionStrategy xpathStrategy = new XpathExtractionStrategy("/one/two");
+		extractor.getExtractionStrategies().add(xpathStrategy);
+		RegexExtractionStrategy regexStrategy = new RegexExtractionStrategy("([^\\s]+)");
+		extractor.getExtractionStrategies().add(regexStrategy);
 		extractor.setSessionKey(true);
 		extractor.setCheckpointName("anotherKey");
 		assertEquals("My", extractor.extractMetadata(report));
@@ -132,10 +132,10 @@ public class ReportExtractorTest {
 	public void whenExtractionOrderIsIncorrectThenExtractShouldFail() throws XPathExpressionException {
 		Report report = getReport();
 		ReportExtractor extractor = new ReportExtractor();
-        RegexExtractionStrategy regexStrategy = new RegexExtractionStrategy("([^\\s]+)");
-        extractor.getExtractionStrategies().add(regexStrategy);
-        XpathExtractionStrategy xpathStrategy = new XpathExtractionStrategy("/one/two");
-        extractor.getExtractionStrategies().add(xpathStrategy);
+		RegexExtractionStrategy regexStrategy = new RegexExtractionStrategy("([^\\s]+)");
+		extractor.getExtractionStrategies().add(regexStrategy);
+		XpathExtractionStrategy xpathStrategy = new XpathExtractionStrategy("/one/two");
+		extractor.getExtractionStrategies().add(xpathStrategy);
 		extractor.setSessionKey(true);
 		extractor.setCheckpointName("anotherKey");
 		assertNull(extractor.extractMetadata(report));

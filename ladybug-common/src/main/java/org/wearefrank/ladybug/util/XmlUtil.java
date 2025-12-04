@@ -41,6 +41,7 @@ import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 
 import org.w3c.dom.Node;
+import org.wearefrank.ladybug.storage.StorageException;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
@@ -48,10 +49,10 @@ import org.xml.sax.helpers.DefaultHandler;
 import lombok.SneakyThrows;
 import net.sf.saxon.Configuration;
 import net.sf.saxon.xpath.XPathEvaluator;
-import org.wearefrank.ladybug.storage.StorageException;
 
 public class XmlUtil {
 	private static final XPathEvaluator xpathEvaluator = new XPathEvaluator();
+
 	static {
 		// Prevent error messages being printed to system err (for example when source xml is invalid).
 		Configuration configuration = xpathEvaluator.getConfiguration();
@@ -86,7 +87,7 @@ public class XmlUtil {
 	public static boolean isJavaBeansXml(File file) throws StorageException {
 		String line;
 		try (FileReader fileReader = new FileReader(file);
-				BufferedReader bufferedReader = new BufferedReader(fileReader)) {
+			 BufferedReader bufferedReader = new BufferedReader(fileReader)) {
 			line = bufferedReader.readLine();
 			if (line != null) {
 				String firstLine = line;

@@ -82,7 +82,7 @@ public class TestMessageEncoder {
 		assertEquals("<test/>", actual);
 		checkpoint.setMessage(actual);
 		checkpoint.setEncoding(MessageEncoderImpl.DOM_NODE_ENCODER);
-		node = (Node)checkpoint.getMessageAsObject();
+		node = (Node) checkpoint.getMessageAsObject();
 		assertTrue(node instanceof Node);
 		assertEquals("test", node.getNodeName());
 		node = checkpoint.getMessageAsObject(XmlUtil.stringToNode("<test2/>"));

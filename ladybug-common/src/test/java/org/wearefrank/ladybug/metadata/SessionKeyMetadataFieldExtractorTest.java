@@ -58,7 +58,7 @@ public class SessionKeyMetadataFieldExtractorTest {
 		extractor.setSessionKey("mySessionKey");
 		extractor.setRegex("(?!x)x");
 		Object extracted = extractor.extractMetadata(report);
-		assertEquals("myDefaultValue", extracted);	
+		assertEquals("myDefaultValue", extracted);
 	}
 
 	@Test
@@ -67,6 +67,6 @@ public class SessionKeyMetadataFieldExtractorTest {
 		extractor.setSessionKey("mySessionKey");
 		extractor.setRegex("(?!x)x");
 		Object extracted = extractor.extractMetadata(report);
-		assertEquals(null, extracted);	
+		assertEquals(null, extracted);
 	}
 }

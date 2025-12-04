@@ -21,6 +21,7 @@ import java.io.OutputStream;
 
 import lombok.Getter;
 import lombok.Setter;
+
 import org.wearefrank.ladybug.TestTool;
 
 class TestThread extends Thread {
@@ -38,7 +39,8 @@ class TestThread extends Thread {
 				if (keepReportOpenWithMessageCapturer) {
 					OutputStream outputStreamOriginalMessage = new ByteArrayOutputStream();
 					OutputStream outputStreamMessage = testTool.inputpoint(correlationId, null, "outputstream",
-							outputStreamOriginalMessage);
+							outputStreamOriginalMessage
+					);
 					outputStreamMessage.write("Hello OutputStream World!".getBytes());
 				}
 				testTool.endpoint(correlationId, null, getName(), "endmessage1");

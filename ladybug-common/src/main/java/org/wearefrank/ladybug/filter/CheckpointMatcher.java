@@ -24,5 +24,5 @@ import org.wearefrank.ladybug.Report;
 public interface CheckpointMatcher {
 
 	public boolean match(Report report, Checkpoint checkpoint);
-	
+
 }

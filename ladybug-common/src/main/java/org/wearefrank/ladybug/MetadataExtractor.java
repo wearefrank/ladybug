@@ -23,8 +23,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import jakarta.annotation.PostConstruct;
+
 import lombok.Getter;
 import lombok.Setter;
+
 import org.wearefrank.ladybug.metadata.StatusMetadataFieldExtractor;
 
 /**
@@ -38,10 +40,11 @@ public class MetadataExtractor {
 	public static final String DATE_TIME_RANGE_START_SUFFIX;
 	public static final String DATE_TIME_RANGE_END_SUFFIX;
 	public static final String[] DATE_TIME_RANGE_END_SPECIALS = new String[4];
+
 	static {
-		DATE_TIME_PATTERN               = "yyyy-MM-dd HH:mm:ss.SSS";
-		DATE_TIME_RANGE_START_SUFFIX    = "0000-00-00 00:00:00.000";
-		DATE_TIME_RANGE_END_SUFFIX      = "9999-12-31 23:59:59.999";
+		DATE_TIME_PATTERN = "yyyy-MM-dd HH:mm:ss.SSS";
+		DATE_TIME_RANGE_START_SUFFIX = "0000-00-00 00:00:00.000";
+		DATE_TIME_RANGE_END_SUFFIX = "9999-12-31 23:59:59.999";
 		DATE_TIME_RANGE_END_SPECIALS[0] = "     0";
 		DATE_TIME_RANGE_END_SPECIALS[1] = "        1";
 		DATE_TIME_RANGE_END_SPECIALS[2] = "        2";
@@ -52,6 +55,7 @@ public class MetadataExtractor {
 		//   2024-10-2 should not become 2024-10-21 but 2024-10-29
 		//   2024-10-25 1 should not become 2024-10-25 13 but 2024-10-25 19
 	}
+
 	public static final String DATE_TIME_RANGE_END_SPECIAL2 = "        3";
 	public static final String DATE_TIME_RANGE_END_SPECIAL3 = "           2";
 	private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern(DATE_TIME_PATTERN).withZone(ZoneId.systemDefault());
@@ -255,7 +259,7 @@ public class MetadataExtractor {
 
 	public Object fromObjectToGUI(String metadataName, Object metadataValue) {
 		if (metadataName.equals("startTime") || metadataName.equals("endTime")) {
-			return DATE_TIME_FORMATTER.format(Instant.ofEpochMilli((Long)metadataValue));
+			return DATE_TIME_FORMATTER.format(Instant.ofEpochMilli((Long) metadataValue));
 		}
 		return fromObjectToString(metadataName, metadataValue);
 	}
@@ -272,17 +276,17 @@ public class MetadataExtractor {
 	}
 
 	public Object fromStringtoObject(String metadataName, String metadataValue) {
-        switch (metadataName) {
-            case "storageId":
-            case "numberOfCheckpoints":
-                return Integer.valueOf(metadataValue);
-            case "storageSize":
-            case "startTime":
-            case "endTime":
-            case "estimatedMemoryUsage":
-                return Long.valueOf(metadataValue);
-        }
-        return metadataValue;
+		switch (metadataName) {
+			case "storageId":
+			case "numberOfCheckpoints":
+				return Integer.valueOf(metadataValue);
+			case "storageSize":
+			case "startTime":
+			case "endTime":
+			case "estimatedMemoryUsage":
+				return Long.valueOf(metadataValue);
+		}
+		return metadataValue;
 	}
 
 	public Object fromGUIToObject(String metadataName, String metadataValue) {

@@ -32,12 +32,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
 import io.opentelemetry.api.trace.Tracer;
+
 import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+
 import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;
+
 import org.wearefrank.ladybug.filter.View;
 import org.wearefrank.ladybug.filter.Views;
 import org.wearefrank.ladybug.run.ReportRunner;
@@ -81,16 +84,20 @@ public class TestTool {
 	public static final String STUB_STRATEGY_ALWAYS = "Always";
 	private String defaultStubStrategy = STUB_STRATEGY_STUB_ALL_EXTERNAL_CONNECTION_CODE;
 	private List<String> stubStrategies = new ArrayList<String>();
-		{
-			stubStrategies.add(STUB_STRATEGY_STUB_ALL_EXTERNAL_CONNECTION_CODE);
-			stubStrategies.add(STUB_STRATEGY_NEVER);
-			stubStrategies.add(STUB_STRATEGY_ALWAYS);
-		}
+
+	{
+		stubStrategies.add(STUB_STRATEGY_STUB_ALL_EXTERNAL_CONNECTION_CODE);
+		stubStrategies.add(STUB_STRATEGY_NEVER);
+		stubStrategies.add(STUB_STRATEGY_ALWAYS);
+	}
+
 	private Set<String> matchingStubStrategiesForExternalConnectionCode = new HashSet<>();
-		{
-			matchingStubStrategiesForExternalConnectionCode.add(STUB_STRATEGY_STUB_ALL_EXTERNAL_CONNECTION_CODE);
-			matchingStubStrategiesForExternalConnectionCode.add(STUB_STRATEGY_ALWAYS);
-		}
+
+	{
+		matchingStubStrategiesForExternalConnectionCode.add(STUB_STRATEGY_STUB_ALL_EXTERNAL_CONNECTION_CODE);
+		matchingStubStrategiesForExternalConnectionCode.add(STUB_STRATEGY_ALWAYS);
+	}
+
 	public static final String DEFAULT_STUB_MESSAGE =
 			"Default Ladybug stub message (counterpart checkpoint in original report not found?)";
 	private @Setter @Getter String defaultLinkMethod = LinkMethodType.PATH_AND_TYPE.toString();
@@ -156,11 +163,11 @@ public class TestTool {
 	public int getMaxMessageLength() {
 		return maxMessageLength;
 	}
-	
+
 	public void setMaxMemoryUsage(long maxMemoryUsage) {
 		this.maxMemoryUsage = maxMemoryUsage;
 	}
-	
+
 	public long getMaxMemoryUsage() {
 		return maxMemoryUsage;
 	}
@@ -168,7 +175,7 @@ public class TestTool {
 	public void setDebugger(Debugger debugger) {
 		this.debugger = debugger;
 	}
-	
+
 	public Debugger getDebugger() {
 		return debugger;
 	}
@@ -176,7 +183,7 @@ public class TestTool {
 	public void setRerunner(Rerunner rerunner) {
 		this.rerunner = rerunner;
 	}
-	
+
 	public Rerunner getRerunner() {
 		return rerunner;
 	}
@@ -184,11 +191,11 @@ public class TestTool {
 	public void setReportGeneratorEnabled(boolean reportGeneratorEnabled) {
 		this.reportGeneratorEnabled = reportGeneratorEnabled;
 	}
-	
+
 	public boolean isReportGeneratorEnabled() {
 		return reportGeneratorEnabled;
 	}
-	
+
 	/**
 	 * Sends the result of <code>isReportGeneratorEnabled()</code> to the Debugger
 	 * implementation of the application using the Ladybug.
@@ -276,10 +283,10 @@ public class TestTool {
 	 * keeping reports in progress in case they call checkpoints that aren't properly surrounded with a try/catch, see
 	 * {@link TestTool#close(String)}. Setting this to true will risk checkpoints not being added for child threads that
 	 * are still running after the main thread is finished. The use of {@link CloseReportsTask} can lower this risk
-	 * 
+	 *
+	 * @param closeThreads ...
 	 * @see CloseReportsTask
 	 * @see TestTool#close(String)
-	 * @param closeThreads ...
 	 */
 	public void setCloseThreads(boolean closeThreads) {
 		this.closeThreads = closeThreads;
@@ -291,7 +298,7 @@ public class TestTool {
 	 * threads are finished while threads that will not start and aren't cancelld will not keep the report in progress.
 	 * See {@link TestTool#close(String)} on how to properly surrounded checkpoint with a try/catch to prevent threads
 	 * from keeping reports in progress.
-	 * 
+	 *
 	 * @param closeNewThreadsOnly ...
 	 */
 	public void setCloseNewThreadsOnly(boolean closeNewThreadsOnly) {
@@ -303,10 +310,10 @@ public class TestTool {
 	 * which the close method isn't called to keep reports in progress. Setting this to true will risk streams not
 	 * being captured when they are still active after the main thread is finished. The use of {@link CloseReportsTask}
 	 * can lower this risk
-	 * 
+	 *
+	 * @param closeMessageCapturers ...
 	 * @see CloseReportsTask
 	 * @see TestTool#close(String)
-	 * @param closeMessageCapturers ...
 	 */
 	public void setCloseMessageCapturers(boolean closeMessageCapturers) {
 		this.closeMessageCapturers = closeMessageCapturers;
@@ -317,21 +324,22 @@ public class TestTool {
 	}
 
 	private <T> T checkpoint(String correlationId, String childThreadId, String sourceClassName, String name,
-			T message, StubableCode stubableCode, StubableCodeThrowsException stubableCodeThrowsException,
-			Set<String> matchingStubStrategies, int checkpointType, int levelChangeNextCheckpoint) {
+							 T message, StubableCode stubableCode, StubableCodeThrowsException stubableCodeThrowsException,
+							 Set<String> matchingStubStrategies, int checkpointType, int levelChangeNextCheckpoint) {
 		return checkpoint(correlationId, childThreadId, sourceClassName, name,
 				message, null, stubableCode, stubableCodeThrowsException,
-				matchingStubStrategies, checkpointType, levelChangeNextCheckpoint);
+				matchingStubStrategies, checkpointType, levelChangeNextCheckpoint
+		);
 	}
 
 	private <T> T checkpoint(String correlationId, String childThreadId, String sourceClassName, String name,
-			T message, Map<String, Object> messageContext, StubableCode stubableCode, StubableCodeThrowsException stubableCodeThrowsException,
-			Set<String> matchingStubStrategies, int checkpointType, int levelChangeNextCheckpoint) {
+							 T message, Map<String, Object> messageContext, StubableCode stubableCode, StubableCodeThrowsException stubableCodeThrowsException,
+							 Set<String> matchingStubStrategies, int checkpointType, int levelChangeNextCheckpoint) {
 		boolean executeStubableCode = true;
 		if (reportGeneratorEnabled) {
 			Report report;
 			// Blocking for all threads for all reports
-			synchronized(reportsInProgress) {
+			synchronized (reportsInProgress) {
 				report = getReportInProgress(correlationId);
 				if (report == null) {
 					report = createReport(correlationId, name, checkpointType);
@@ -341,7 +349,7 @@ public class TestTool {
 			while (report != null) {
 				// "synchronized(report)" is only blocking for threads writing to the same report (which is only the
 				// case when multiple threads use the same correlationId)
-				synchronized(report) {
+				synchronized (report) {
 					// "synchronized(report)" is used instead of "synchronized(reportsInProgress)" and separate from the
 					// "synchronized(reportsInProgress)" in getReportInProgress() to prevent threads from being blocked
 					// as much as possible. But in the very rare/unusual case that one thread calls the last endpoint of
@@ -351,7 +359,7 @@ public class TestTool {
 					// report.checkpoint() below and closing the report. Hence double check that the report isn't
 					// closed.
 					if (report.isClosed()) {
-						synchronized(reportsInProgress) {
+						synchronized (reportsInProgress) {
 							report = getReportInProgress(correlationId);
 							if (report == null) {
 								report = createReport(correlationId, name, checkpointType);
@@ -363,7 +371,8 @@ public class TestTool {
 					executeStubableCode = false;
 					message = report.checkpoint(childThreadId, sourceClassName, name, message, messageContext, stubableCode,
 							stubableCodeThrowsException, matchingStubStrategies, checkpointType,
-							levelChangeNextCheckpoint);
+							levelChangeNextCheckpoint
+					);
 					closeReportIfFinished(report);
 				}
 				report = null;
@@ -394,8 +403,8 @@ public class TestTool {
 				}
 			}
 			Report originalReport;
-			synchronized(originalReports) {
-				originalReport = (Report)originalReports.remove(correlationId);
+			synchronized (originalReports) {
+				originalReport = (Report) originalReports.remove(correlationId);
 			}
 			if (originalReport == null) {
 				report.setStubStrategy(getDefaultStubStrategy());
@@ -419,18 +428,18 @@ public class TestTool {
 	@SuppressWarnings("unchecked")
 	@SneakyThrows
 	protected static <T> T execute(StubableCode stubableCode, StubableCodeThrowsException stubableCodeThrowsException,
-			T message) {
+								   T message) {
 		if (stubableCode != null) {
-			message = (T)stubableCode.execute();
+			message = (T) stubableCode.execute();
 		}
 		if (stubableCodeThrowsException != null) {
-			message = (T)stubableCodeThrowsException.execute();
+			message = (T) stubableCodeThrowsException.execute();
 		}
 		return message;
 	}
 
 	protected void closeReportIfFinished(Report report) {
-		synchronized(report) {
+		synchronized (report) {
 			if (!report.isClosed()) {
 				if (report.mainThreadFinished()) {
 					if (!report.threadsFinished() && closeThreads) {
@@ -451,7 +460,7 @@ public class TestTool {
 					if (!report.isClosed() && report.streamingMessageListenersFinished()) {
 						report.setClosed(true);
 						log.debug("Report is finished for '" + report.getCorrelationId() + "'");
-						synchronized(reportsInProgress) {
+						synchronized (reportsInProgress) {
 							reportsInProgress.remove(report);
 							reportsInProgressByCorrelationId.remove(report.getCorrelationId());
 							numberOfReportsInProgress--;
@@ -474,7 +483,7 @@ public class TestTool {
 	}
 
 	public boolean warnReportsInProgress() {
-		synchronized(reportsInProgress) {
+		synchronized (reportsInProgress) {
 			for (Report report : reportsInProgress) {
 				if (!messageCapturerWaitingForClose(report)
 						&& report.getStartTime() + (5 * 60 * 1000) < System.currentTimeMillis()) {
@@ -486,7 +495,7 @@ public class TestTool {
 	}
 
 	public boolean warnMessageCapturerWaitingForClose() {
-		synchronized(reportsInProgress) {
+		synchronized (reportsInProgress) {
 			for (Report report : reportsInProgress) {
 				if (messageCapturerWaitingForClose(report)
 						&& report.getEndTime() + (30 * 1000) < System.currentTimeMillis()) {
@@ -498,124 +507,138 @@ public class TestTool {
 	}
 
 	private boolean messageCapturerWaitingForClose(Report report) {
-		synchronized(reportsInProgress) {
+		synchronized (reportsInProgress) {
 			return report.threadsFinished() && !report.streamingMessageListenersFinished();
 		}
 	}
 
 	public <T> T startpoint(String correlationId, String sourceClassName, String name, T message) {
 		return checkpoint(correlationId, null, sourceClassName, name, message, null, null, null,
-				CheckpointType.STARTPOINT.toInt(), 1);
+				CheckpointType.STARTPOINT.toInt(), 1
+		);
 	}
 
 	public <T> T startpoint(String correlationId, String sourceClassName, String name, T message, Map<String, Object> messageContext) {
 		return checkpoint(correlationId, null, sourceClassName, name, message, messageContext, null, null, null,
-				CheckpointType.STARTPOINT.toInt(), 1);
+				CheckpointType.STARTPOINT.toInt(), 1
+		);
 	}
 
 	public <T> T startpoint(String correlationId, String sourceClassName, String name, T message,
-			Set<String> matchingStubStrategies) {
+							Set<String> matchingStubStrategies) {
 		return checkpoint(correlationId, null, sourceClassName, name, message, null, null, matchingStubStrategies,
-				CheckpointType.STARTPOINT.toInt(), 1);
+				CheckpointType.STARTPOINT.toInt(), 1
+		);
 	}
 
 	public <T> T startpoint(String correlationId, String sourceClassName, String name, T message, Map<String, Object> messageContext,
-			Set<String> matchingStubStrategies) {
+							Set<String> matchingStubStrategies) {
 		return checkpoint(correlationId, null, sourceClassName, name, message, messageContext, null, null, matchingStubStrategies,
-				CheckpointType.STARTPOINT.toInt(), 1);
+				CheckpointType.STARTPOINT.toInt(), 1
+		);
 	}
 
 	public <T> T startpoint(String correlationId, String sourceClassName, String name, StubableCode stubableCode,
-			Set<String> matchingStubStrategies) {
+							Set<String> matchingStubStrategies) {
 		return checkpoint(correlationId, null, sourceClassName, name, null, stubableCode, null, matchingStubStrategies,
-				CheckpointType.STARTPOINT.toInt(), 1);
+				CheckpointType.STARTPOINT.toInt(), 1
+		);
 	}
 
 	/**
 	 * Parameter throwsException determines the type of exception thrown. E.g. when set to (IOException)null the
 	 * compiler will report this method to throw an IOException which needs to be handled. When set to null the compiler
 	 * will not report an exception being thrown by this method.
-	 * 
-	 * @param <E> ...
-	 * @param correlationId ...
-	 * @param sourceClassName ...
-	 * @param name ...
+	 *
+	 * @param <E>                         ...
+	 * @param correlationId               ...
+	 * @param sourceClassName             ...
+	 * @param name                        ...
 	 * @param stubableCodeThrowsException ...
-	 * @param matchingStubStrategies ...
-	 * @param throwsException ...
+	 * @param matchingStubStrategies      ...
+	 * @param throwsException             ...
 	 * @return ...
 	 * @throws E ...
 	 */
 	public <E extends Exception> Object startpoint(String correlationId, String sourceClassName, String name,
-			StubableCodeThrowsException stubableCodeThrowsException, Set<String> matchingStubStrategies,
-			E throwsException) throws E {
+												   StubableCodeThrowsException stubableCodeThrowsException, Set<String> matchingStubStrategies,
+												   E throwsException) throws E {
 		return checkpoint(correlationId, null, sourceClassName, name, null, null, stubableCodeThrowsException,
-				matchingStubStrategies, CheckpointType.STARTPOINT.toInt(), 1);
+				matchingStubStrategies, CheckpointType.STARTPOINT.toInt(), 1
+		);
 	}
 
 	public <T> T endpoint(String correlationId, String sourceClassName, String name, T message) {
 		return checkpoint(correlationId, null, sourceClassName, name, message, null, null, null,
-				CheckpointType.ENDPOINT.toInt(), -1);
+				CheckpointType.ENDPOINT.toInt(), -1
+		);
 	}
-	
+
 	public <T> T endpoint(String correlationId, String sourceClassName, String name, T message, Map<String, Object> messageContext) {
 		return checkpoint(correlationId, null, sourceClassName, name, message, messageContext, null, null, null,
-				CheckpointType.ENDPOINT.toInt(), -1);
+				CheckpointType.ENDPOINT.toInt(), -1
+		);
 	}
 
 	public <T> T endpoint(String correlationId, String sourceClassName, String name, T message,
-			Set<String> matchingStubStrategies) {
+						  Set<String> matchingStubStrategies) {
 		return checkpoint(correlationId, null, sourceClassName, name, message, null, null, matchingStubStrategies,
-				CheckpointType.ENDPOINT.toInt(), -1);
+				CheckpointType.ENDPOINT.toInt(), -1
+		);
 	}
+
 	public <T> T endpoint(String correlationId, String sourceClassName, String name, T message, Map<String, Object> messageContext,
-			Set<String> matchingStubStrategies) {
+						  Set<String> matchingStubStrategies) {
 		return checkpoint(correlationId, null, sourceClassName, name, message, messageContext, null, null, matchingStubStrategies,
-				CheckpointType.ENDPOINT.toInt(), -1);
+				CheckpointType.ENDPOINT.toInt(), -1
+		);
 	}
 
 	public <T> T endpoint(String correlationId, String sourceClassName, String name,
-			StubableCode stubableCode, Set<String> matchingStubStrategies) {
+						  StubableCode stubableCode, Set<String> matchingStubStrategies) {
 		return checkpoint(correlationId, null, sourceClassName, name, null, stubableCode, null, matchingStubStrategies,
-				CheckpointType.ENDPOINT.toInt(), -1);
+				CheckpointType.ENDPOINT.toInt(), -1
+		);
 	}
 
 	/**
 	 * See description of parameter throwsException at startpoint method.
-	 * 
-	 * @param <T> ...
-	 * @param <E> ...
-	 * @param correlationId ...
-	 * @param sourceClassName ...
-	 * @param name ...
+	 *
+	 * @param <T>                         ...
+	 * @param <E>                         ...
+	 * @param correlationId               ...
+	 * @param sourceClassName             ...
+	 * @param name                        ...
 	 * @param stubableCodeThrowsException ...
-	 * @param matchingStubStrategies ...
-	 * @param throwsException ...
+	 * @param matchingStubStrategies      ...
+	 * @param throwsException             ...
 	 * @return ...
 	 * @throws E ...
 	 */
 	public <T, E extends Exception> T endpoint(String correlationId, String sourceClassName, String name,
-			StubableCodeThrowsException stubableCodeThrowsException, Set<String> matchingStubStrategies,
-			E throwsException) throws E {
+											   StubableCodeThrowsException stubableCodeThrowsException, Set<String> matchingStubStrategies,
+											   E throwsException) throws E {
 		return checkpoint(correlationId, null, sourceClassName, name, null, null, stubableCodeThrowsException,
-				matchingStubStrategies, CheckpointType.ENDPOINT.toInt(), -1);
+				matchingStubStrategies, CheckpointType.ENDPOINT.toInt(), -1
+		);
 	}
 
 	/**
 	 * Convenient method for the most common use case for stubable code, stubbing all external connections related code.
 	 * The default stubbing strategy (Stub all external connection code) will be used as matching stub strategies.
-	 * 
-	 * @param <T> ...
-	 * @param correlationId ...
-	 * @param sourceClassName ...
-	 * @param name ...
+	 *
+	 * @param <T>                    ...
+	 * @param correlationId          ...
+	 * @param sourceClassName        ...
+	 * @param name                   ...
 	 * @param externalConnectionCode ...
 	 * @return ...
 	 */
 	public <T> T endpoint(String correlationId, String sourceClassName, String name,
-			ExternalConnectionCode externalConnectionCode) {
+						  ExternalConnectionCode externalConnectionCode) {
 		return checkpoint(correlationId, null, sourceClassName, name, null, externalConnectionCode, null,
-				matchingStubStrategiesForExternalConnectionCode, CheckpointType.ENDPOINT.toInt(), -1);
+				matchingStubStrategiesForExternalConnectionCode, CheckpointType.ENDPOINT.toInt(), -1
+		);
 	}
 
 	/**
@@ -623,132 +646,150 @@ public class TestTool {
 	 * connections related code.
 	 * The default stubbing strategy (Stub all external connection code) will be used as matching stub strategies.
 	 * See description of parameter throwsException at startpoint method.
-	 * 
-	 * @param <T> ...
-	 * @param <E> ...
-	 * @param correlationId ...
-	 * @param sourceClassName ...
-	 * @param name ...
+	 *
+	 * @param <T>                                   ...
+	 * @param <E>                                   ...
+	 * @param correlationId                         ...
+	 * @param sourceClassName                       ...
+	 * @param name                                  ...
 	 * @param externalConnectionCodeThrowsException ...
-	 * @param throwsException ...
+	 * @param throwsException                       ...
 	 * @return ...
 	 * @throws E ...
 	 */
 	public <T, E extends Exception> T endpoint(String correlationId, String sourceClassName, String name,
-			ExternalConnectionCodeThrowsException externalConnectionCodeThrowsException, E throwsException) throws E {
+											   ExternalConnectionCodeThrowsException externalConnectionCodeThrowsException, E throwsException) throws E {
 		return checkpoint(correlationId, null, sourceClassName, name, null, null, externalConnectionCodeThrowsException,
-				matchingStubStrategiesForExternalConnectionCode, CheckpointType.ENDPOINT.toInt(), -1);
+				matchingStubStrategiesForExternalConnectionCode, CheckpointType.ENDPOINT.toInt(), -1
+		);
 	}
 
 	public <T> T inputpoint(String correlationId, String sourceClassName, String name, T message) {
 		return checkpoint(correlationId, null, sourceClassName, name, message, null, null, null,
-				CheckpointType.INPUTPOINT.toInt(), 0);
+				CheckpointType.INPUTPOINT.toInt(), 0
+		);
 	}
+
 	public <T> T inputpoint(String correlationId, String sourceClassName, String name, T message, Map<String, Object> messageContext) {
 		return checkpoint(correlationId, null, sourceClassName, name, message, messageContext, null, null, null,
-				CheckpointType.INPUTPOINT.toInt(), 0);
+				CheckpointType.INPUTPOINT.toInt(), 0
+		);
 	}
 
 	public <T> T inputpoint(String correlationId, String sourceClassName, String name, T message,
-			Set<String> matchingStubStrategies) {
+							Set<String> matchingStubStrategies) {
 		return checkpoint(correlationId, null, sourceClassName, name, message, null, null, matchingStubStrategies,
-				CheckpointType.INPUTPOINT.toInt(), 0);
+				CheckpointType.INPUTPOINT.toInt(), 0
+		);
 	}
+
 	public <T> T inputpoint(String correlationId, String sourceClassName, String name, T message, Map<String, Object> messageContext,
-			Set<String> matchingStubStrategies) {
+							Set<String> matchingStubStrategies) {
 		return checkpoint(correlationId, null, sourceClassName, name, message, messageContext, null, null, matchingStubStrategies,
-				CheckpointType.INPUTPOINT.toInt(), 0);
+				CheckpointType.INPUTPOINT.toInt(), 0
+		);
 	}
 
 	public <T> T inputpoint(String correlationId, String sourceClassName, String name,
-			StubableCode stubableCode, Set<String> matchingStubStrategies) {
+							StubableCode stubableCode, Set<String> matchingStubStrategies) {
 		return checkpoint(correlationId, null, sourceClassName, name, null, stubableCode, null, matchingStubStrategies,
-				CheckpointType.INPUTPOINT.toInt(), 0);
+				CheckpointType.INPUTPOINT.toInt(), 0
+		);
 	}
 
 	/**
 	 * See description of parameter throwsException at startpoint method.
-	 * 
-	 * @param <T> ...
-	 * @param <E> ...
-	 * @param correlationId ...
-	 * @param sourceClassName ...
-	 * @param name ...
+	 *
+	 * @param <T>                         ...
+	 * @param <E>                         ...
+	 * @param correlationId               ...
+	 * @param sourceClassName             ...
+	 * @param name                        ...
 	 * @param stubableCodeThrowsException ...
-	 * @param matchingStubStrategies ...
-	 * @param throwsException ...
+	 * @param matchingStubStrategies      ...
+	 * @param throwsException             ...
 	 * @return ...
 	 * @throws E ...
 	 */
 	public <T, E extends Exception> T inputpoint(String correlationId, String sourceClassName,
-			String name, StubableCodeThrowsException stubableCodeThrowsException, Set<String> matchingStubStrategies,
-			E throwsException) throws E {
+												 String name, StubableCodeThrowsException stubableCodeThrowsException, Set<String> matchingStubStrategies,
+												 E throwsException) throws E {
 		return checkpoint(correlationId, null, sourceClassName, name, null, null, stubableCodeThrowsException,
-				matchingStubStrategies, CheckpointType.INPUTPOINT.toInt(), 0);
+				matchingStubStrategies, CheckpointType.INPUTPOINT.toInt(), 0
+		);
 	}
 
 	public <T> T outputpoint(String correlationId, String sourceClassName, String name, T message) {
 		return checkpoint(correlationId, null, sourceClassName, name, message, null, null, null,
-				CheckpointType.OUTPUTPOINT.toInt(), 0);
+				CheckpointType.OUTPUTPOINT.toInt(), 0
+		);
 	}
+
 	public <T> T outputpoint(String correlationId, String sourceClassName, String name, T message, Map<String, Object> messageContext) {
 		return checkpoint(correlationId, null, sourceClassName, name, message, messageContext, null, null, null,
-				CheckpointType.OUTPUTPOINT.toInt(), 0);
+				CheckpointType.OUTPUTPOINT.toInt(), 0
+		);
 	}
 
 	public <T> T outputpoint(String correlationId, String sourceClassName, String name, T message,
-			Set<String> matchingStubStrategies) {
+							 Set<String> matchingStubStrategies) {
 		return checkpoint(correlationId, null, sourceClassName, name, message, null, null, matchingStubStrategies,
-				CheckpointType.OUTPUTPOINT.toInt(), 0);
+				CheckpointType.OUTPUTPOINT.toInt(), 0
+		);
 	}
+
 	public <T> T outputpoint(String correlationId, String sourceClassName, String name, T message, Map<String, Object> messageContext,
-			Set<String> matchingStubStrategies) {
+							 Set<String> matchingStubStrategies) {
 		return checkpoint(correlationId, null, sourceClassName, name, message, messageContext, null, null, matchingStubStrategies,
-				CheckpointType.OUTPUTPOINT.toInt(), 0);
+				CheckpointType.OUTPUTPOINT.toInt(), 0
+		);
 	}
 
 	public <T> T outputpoint(String correlationId, String sourceClassName, String name,
-			StubableCode stubableCode, Set<String> matchingStubStrategies) {
+							 StubableCode stubableCode, Set<String> matchingStubStrategies) {
 		return checkpoint(correlationId, null, sourceClassName, name, null, stubableCode, null, matchingStubStrategies,
-				CheckpointType.OUTPUTPOINT.toInt(), 0);
+				CheckpointType.OUTPUTPOINT.toInt(), 0
+		);
 	}
 
 	/**
 	 * See description of parameter throwsException at startpoint method.
-	 * 
-	 * @param <T> ...
-	 * @param <E> ...
-	 * @param correlationId ...
-	 * @param sourceClassName ...
-	 * @param name ...
+	 *
+	 * @param <T>                         ...
+	 * @param <E>                         ...
+	 * @param correlationId               ...
+	 * @param sourceClassName             ...
+	 * @param name                        ...
 	 * @param stubableCodeThrowsException ...
-	 * @param matchingStubStrategies ...
-	 * @param throwsException ...
+	 * @param matchingStubStrategies      ...
+	 * @param throwsException             ...
 	 * @return ...
 	 * @throws E ...
 	 */
 	public <T, E extends Exception> T outputpoint(String correlationId, String sourceClassName,
-			String name, StubableCodeThrowsException stubableCodeThrowsException, Set<String> matchingStubStrategies,
-			E throwsException) throws E {
+												  String name, StubableCodeThrowsException stubableCodeThrowsException, Set<String> matchingStubStrategies,
+												  E throwsException) throws E {
 		return checkpoint(correlationId, null, sourceClassName, name, null, null, stubableCodeThrowsException,
-				matchingStubStrategies, CheckpointType.OUTPUTPOINT.toInt(), 0);
+				matchingStubStrategies, CheckpointType.OUTPUTPOINT.toInt(), 0
+		);
 	}
 
 	/**
 	 * Convenient method for the most common use case for stubable code, stubbing all external connections related code.
 	 * The default stubbing strategy (Stub all external connection code) will be used as matching stub strategies.
-	 * 
-	 * @param <T> ...
-	 * @param correlationId ...
-	 * @param sourceClassName ...
-	 * @param name ...
+	 *
+	 * @param <T>                    ...
+	 * @param correlationId          ...
+	 * @param sourceClassName        ...
+	 * @param name                   ...
 	 * @param externalConnectionCode ...
 	 * @return ...
 	 */
 	public <T> T outputpoint(String correlationId, String sourceClassName, String name,
-			ExternalConnectionCode externalConnectionCode) {
+							 ExternalConnectionCode externalConnectionCode) {
 		return checkpoint(correlationId, null, sourceClassName, name, null, externalConnectionCode, null,
-				matchingStubStrategiesForExternalConnectionCode, CheckpointType.OUTPUTPOINT.toInt(), 0);
+				matchingStubStrategiesForExternalConnectionCode, CheckpointType.OUTPUTPOINT.toInt(), 0
+		);
 	}
 
 	/**
@@ -756,51 +797,58 @@ public class TestTool {
 	 * connections related code.
 	 * The default stubbing strategy (Stub all external connection code) will be used as matching stub strategies.
 	 * See description of parameter throwsException at startpoint method.
-	 * 
-	 * @param <T> ...
-	 * @param <E> ...
-	 * @param correlationId ...
-	 * @param sourceClassName ...
-	 * @param name ...
+	 *
+	 * @param <T>                                   ...
+	 * @param <E>                                   ...
+	 * @param correlationId                         ...
+	 * @param sourceClassName                       ...
+	 * @param name                                  ...
 	 * @param externalConnectionCodeThrowsException ...
-	 * @param throwsException ...
+	 * @param throwsException                       ...
 	 * @return ...
 	 * @throws E ...
 	 */
 	public <T, E extends Exception> T outputpoint(String correlationId, String sourceClassName,
-			String name, ExternalConnectionCodeThrowsException externalConnectionCodeThrowsException, E throwsException
-			) throws E {
+												  String name, ExternalConnectionCodeThrowsException externalConnectionCodeThrowsException, E throwsException
+	) throws E {
 		return checkpoint(correlationId, null, sourceClassName, name, null, null, externalConnectionCodeThrowsException,
-				matchingStubStrategiesForExternalConnectionCode, CheckpointType.OUTPUTPOINT.toInt(), 0);
+				matchingStubStrategiesForExternalConnectionCode, CheckpointType.OUTPUTPOINT.toInt(), 0
+		);
 	}
 
 	public <T> T infopoint(String correlationId, String sourceClassName, String name, T message) {
 		return checkpoint(correlationId, null, sourceClassName, name, message, null, null, null,
-				CheckpointType.INFOPOINT.toInt(), 0);
+				CheckpointType.INFOPOINT.toInt(), 0
+		);
 	}
+
 	public <T> T infopoint(String correlationId, String sourceClassName, String name, T message, Map<String, Object> messageContext) {
 		return checkpoint(correlationId, null, sourceClassName, name, message, messageContext, null, null, null,
-				CheckpointType.INFOPOINT.toInt(), 0);
+				CheckpointType.INFOPOINT.toInt(), 0
+		);
 	}
 
 	/**
 	 * Use abortpoint instead of endpoint in case an exception is thrown after a startpoint. The exception object can
 	 * be passed as the message parameter.
-	 * 
-	 * @param <T> ...
-	 * @param correlationId ...
+	 *
+	 * @param <T>             ...
+	 * @param correlationId   ...
 	 * @param sourceClassName ...
-	 * @param name ...
-	 * @param message ...
+	 * @param name            ...
+	 * @param message         ...
 	 * @return ...
 	 */
 	public <T> T abortpoint(String correlationId, String sourceClassName, String name, T message) {
 		return checkpoint(correlationId, null, sourceClassName, name, message, null, null, null,
-				CheckpointType.ABORTPOINT.toInt(), -1);
+				CheckpointType.ABORTPOINT.toInt(), -1
+		);
 	}
+
 	public <T> T abortpoint(String correlationId, String sourceClassName, String name, T message, Map<String, Object> messageContext) {
 		return checkpoint(correlationId, null, sourceClassName, name, message, messageContext, null, null, null,
-				CheckpointType.ABORTPOINT.toInt(), -1);
+				CheckpointType.ABORTPOINT.toInt(), -1
+		);
 	}
 
 	/**
@@ -808,63 +856,71 @@ public class TestTool {
 	 * should be called by the parent thread. Specify a childThreadId that will also
 	 * be used by the child thread when calling threadStartpoint. The name of the
 	 * child thread can be used as childThreadId (when unique and known at this point).
-	 * 
+	 *
 	 * @param correlationId ...
 	 * @param childThreadId ...
 	 */
 	public void threadCreatepoint(String correlationId, String childThreadId) {
 		checkpoint(correlationId, childThreadId, null, null, null, null, null, null,
-				CheckpointType.THREAD_CREATEPOINT.toInt(), 0);
+				CheckpointType.THREAD_CREATEPOINT.toInt(), 0
+		);
 	}
 
 	/**
 	 * Startpoint for a child thread. Specify a childThreadId that was also used when
 	 * calling threadCreatepoint.
-	 * 
-	 * @param <T> ...
-	 * @param correlationId ...
-	 * @param childThreadId ...
+	 *
+	 * @param <T>             ...
+	 * @param correlationId   ...
+	 * @param childThreadId   ...
 	 * @param sourceClassName ...
-	 * @param name ...
-	 * @param message ...
+	 * @param name            ...
+	 * @param message         ...
 	 * @return ...
 	 */
 	public <T> T threadStartpoint(String correlationId, String childThreadId, String sourceClassName,
-			String name, T message) {
+								  String name, T message) {
 		return checkpoint(correlationId, childThreadId, sourceClassName, name, message, null, null, null,
-				CheckpointType.THREAD_STARTPOINT.toInt(), 1);
+				CheckpointType.THREAD_STARTPOINT.toInt(), 1
+		);
 	}
+
 	public <T> T threadStartpoint(String correlationId, String childThreadId, String sourceClassName,
-			String name, T message, Map<String, Object> messageContext) {
+								  String name, T message, Map<String, Object> messageContext) {
 		return checkpoint(correlationId, childThreadId, sourceClassName, name, message, messageContext, null, null, null,
-				CheckpointType.THREAD_STARTPOINT.toInt(), 1);
+				CheckpointType.THREAD_STARTPOINT.toInt(), 1
+		);
 	}
 
 	/**
 	 * Startpoint for a child thread. This method can be used when the name of
 	 * the child thread was used as childThreadId when calling threadCreatepoint.
-	 * 
-	 * @param <T> ...
-	 * @param correlationId ...
+	 *
+	 * @param <T>             ...
+	 * @param correlationId   ...
 	 * @param sourceClassName ...
-	 * @param name ...
-	 * @param message ...
+	 * @param name            ...
+	 * @param message         ...
 	 * @return ...
 	 */
 	public <T> T threadStartpoint(String correlationId, String sourceClassName, String name, T message) {
 		return threadStartpoint(correlationId, Thread.currentThread().getName(), sourceClassName, name, message);
 	}
+
 	public <T> T threadStartpoint(String correlationId, String sourceClassName, String name, T message, Map<String, Object> messageContext) {
 		return threadStartpoint(correlationId, Thread.currentThread().getName(), sourceClassName, name, message, messageContext);
 	}
 
 	public <T> T threadEndpoint(String correlationId, String sourceClassName, String name, T message) {
 		return checkpoint(correlationId, null, sourceClassName, name, message, null, null, null,
-				CheckpointType.THREAD_ENDPOINT.toInt(), -1);
+				CheckpointType.THREAD_ENDPOINT.toInt(), -1
+		);
 	}
+
 	public <T> T threadEndpoint(String correlationId, String sourceClassName, String name, T message, Map<String, Object> messageContext) {
 		return checkpoint(correlationId, null, sourceClassName, name, message, messageContext, null, null, null,
-				CheckpointType.THREAD_ENDPOINT.toInt(), -1);
+				CheckpointType.THREAD_ENDPOINT.toInt(), -1
+		);
 	}
 
 	/**
@@ -873,42 +929,41 @@ public class TestTool {
 	 * properly surrounded with a try/catch it should not be necessary to call this method. On the other hand, to be on
 	 * the safe side call this method in the finally of the root startpoint of the report to prevent reports from
 	 * staying in progress and consuming memory. Hence for the top level startpoint use:
-	 * 
+	 *
 	 * <code>
 	 * try {
-	 *     startpoint();
-	 *     inputpoint();
-	 *     infopoint();
-	 *     outputpoint();
-	 *     endpoint();
+	 * startpoint();
+	 * inputpoint();
+	 * infopoint();
+	 * outputpoint();
+	 * endpoint();
 	 * } catch(Throwable t) {
-	 *     abortpoint();
-	 *     throw t;
+	 * abortpoint();
+	 * throw t;
 	 * } finally {
-	 *     close();
+	 * close();
 	 * }
-	 *</code>
-	 *
+	 * </code>
+	 * <p>
 	 * Don't use this when threads and/or {@link MessageCapturer}s can continue to live after the main thread has
 	 * finished (after it called the top level endpoint) and you want to wait for them to finish. In this case make sure
 	 * that all necessary checkpoints are properly surrounded with a try/catch that calls an abortpoint and all threads
 	 * are properly ended and all streams properly closed or use {@link CloseReportsTask}
-	 * 
+	 *
+	 * @param correlationId ...
 	 * @see CloseReportsTask
 	 * @see TestTool#setCloseThreads(boolean)
 	 * @see TestTool#setCloseMessageCapturers(boolean)
-	 * @param correlationId ...
 	 */
 	public void close(String correlationId) {
 		close(correlationId, true, true);
 	}
 
 	/**
-	 * @see TestTool#close(String)
-	 * 
-	 * @param correlationId ...
-	 * @param closeThreads ...
+	 * @param correlationId         ...
+	 * @param closeThreads          ...
 	 * @param closeMessageCapturers ...
+	 * @see TestTool#close(String)
 	 */
 	public void close(String correlationId, boolean closeThreads, boolean closeMessageCapturers) {
 		close(null, correlationId, closeThreads, closeMessageCapturers);
@@ -920,12 +975,12 @@ public class TestTool {
 		}
 		if (closeMessageCapturers) {
 			if (report == null) {
-				synchronized(reportsInProgress) {
-					report = (Report)reportsInProgressByCorrelationId.get(correlationId);
+				synchronized (reportsInProgress) {
+					report = (Report) reportsInProgressByCorrelationId.get(correlationId);
 				}
 			}
 			if (report != null) {
-				synchronized(report) {
+				synchronized (report) {
 					if (!report.isClosed()) {
 						report.closeMessageCapturers();
 						closeReportIfFinished(report);
@@ -940,7 +995,6 @@ public class TestTool {
 	 * execute this method can be used to mark this thread as finished / cancel it when it is certain that this thread
 	 * will not start.
 	 *
-	 * @see #close(String)
 	 * @param correlationId ...
 	 * @param threadName    child thread id or name of the thread to close or null to close all threads (name of a
 	 *                      thread cannot be null as Thread.setName(null) will result in:
@@ -949,14 +1003,15 @@ public class TestTool {
 	 *                      threads were supposed to start. This will warn the user that the thread didn't start and
 	 *                      that the thread wasn't cancelled either (by explicitly calling this method with the specific
 	 *                      thread name)
+	 * @see #close(String)
 	 */
 	public void close(String correlationId, String threadName) {
 		Report report;
-		synchronized(reportsInProgress) {
-			report = (Report)reportsInProgressByCorrelationId.get(correlationId);
+		synchronized (reportsInProgress) {
+			report = (Report) reportsInProgressByCorrelationId.get(correlationId);
 		}
 		if (report != null) {
-			synchronized(report) {
+			synchronized (report) {
 				if (threadName == null) {
 					report.closeThreads(false);
 				} else {
@@ -972,27 +1027,27 @@ public class TestTool {
 	 * <code>waitForMainThreadToFinish</code> to <code>false</code> when there's a risk for reports to stay in progress
 	 * because some checkpoints handled by the main thread are not properly surrounded with a try/catch that calls an
 	 * abortpoint. This method is used by {@link CloseReportsTask}
-	 * 
+	 *
+	 * @param threadsTime               the time in milliseconds that needs to be passed for threads to be closed. Set
+	 *                                  to -1 to not close threads
+	 * @param messageCapturersTime      the time in milliseconds that needs to be passed for message capturers to be
+	 *                                  closed. Set to -1 to not close threads
+	 * @param waitForMainThreadToFinish whether or not to wait for the main thread to finish. When <code>true</code>
+	 *                                  time for threads and message capturers is counted from the time the main thread
+	 *                                  has finished otherwise from the start of the report
+	 * @param logThreadInfoBeforeClose  whether or not to log thread info on info level before calling close on a
+	 *                                  report
+	 * @param logThreadInfoMinReportAge log thread info at info level for reports with an age above this minimum age
+	 *                                  (disabled when minimum age and maximum age is the same)
+	 * @param logThreadInfoMaxReportAge log thread info at info level for reports with an age below this maximum age
+	 *                                  (disabled when minimum age and maximum age is the same)
 	 * @see CloseReportsTask
-	 * @param threadsTime                the time in milliseconds that needs to be passed for threads to be closed. Set
-	 *                                   to -1 to not close threads
-	 * @param messageCapturersTime       the time in milliseconds that needs to be passed for message capturers to be
-	 *                                   closed. Set to -1 to not close threads
-	 * @param waitForMainThreadToFinish  whether or not to wait for the main thread to finish. When <code>true</code>
-	 *                                   time for threads and message capturers is counted from the time the main thread
-	 *                                   has finished otherwise from the start of the report
-	 * @param logThreadInfoBeforeClose   whether or not to log thread info on info level before calling close on a
-	 *                                   report
-	 * @param logThreadInfoMinReportAge  log thread info at info level for reports with an age above this minimum age
-	 *                                   (disabled when minimum age and maximum age is the same)
-	 * @param logThreadInfoMaxReportAge  log thread info at info level for reports with an age below this maximum age
-	 *                                   (disabled when minimum age and maximum age is the same)
 	 */
 	public final void close(long threadsTime, long messageCapturersTime, boolean waitForMainThreadToFinish,
-			boolean logThreadInfoBeforeClose, long logThreadInfoMinReportAge, long logThreadInfoMaxReportAge) {
+							boolean logThreadInfoBeforeClose, long logThreadInfoMinReportAge, long logThreadInfoMaxReportAge) {
 		// Lock reportsInProgress as less as possible, synchronize on each report individually
 		Set<Report> reports = new HashSet<Report>();
-		synchronized(reportsInProgress) {
+		synchronized (reportsInProgress) {
 			for (Report report : reportsInProgress) {
 				reports.add(report);
 			}
@@ -1057,9 +1112,9 @@ public class TestTool {
 
 	/**
 	 * See {@link Rerunner#rerun(String, Report, SecurityContext, ReportRunner)}
-	 * 
-	 * @param correlationId ...
-	 * @param report ...
+	 *
+	 * @param correlationId   ...
+	 * @param report          ...
 	 * @param securityContext ...
 	 * @return ...
 	 */
@@ -1069,11 +1124,11 @@ public class TestTool {
 
 	/**
 	 * See {@link Rerunner#rerun(String, Report, SecurityContext, ReportRunner)}
-	 * 
-	 * @param correlationId ...
-	 * @param report ...
+	 *
+	 * @param correlationId   ...
+	 * @param report          ...
 	 * @param securityContext ...
-	 * @param reportRunner ...
+	 * @param reportRunner    ...
 	 * @return ...
 	 */
 	public String rerun(String correlationId, Report report, SecurityContext securityContext, ReportRunner reportRunner) {
@@ -1085,7 +1140,7 @@ public class TestTool {
 		} else {
 			boolean reportGeneratorEnabled = isReportGeneratorEnabled();
 			if (reportGeneratorEnabled) {
-				synchronized(originalReports) {
+				synchronized (originalReports) {
 					originalReports.put(correlationId, report);
 				}
 			}
@@ -1099,8 +1154,8 @@ public class TestTool {
 				if (reportGeneratorEnabled) {
 					// Verify that originalReport has been removed from originalReports by checkpoint()
 					Report originalReport;
-					synchronized(originalReports) {
-						originalReport = (Report)originalReports.remove(correlationId);
+					synchronized (originalReports) {
+						originalReport = (Report) originalReports.remove(correlationId);
 					}
 					if (errorMessage == null && originalReport != null) {
 						errorMessage = "Rerun didn't trigger any checkpoint or new report didn't get correlationId '"
@@ -1112,41 +1167,42 @@ public class TestTool {
 		return errorMessage;
 	}
 
-    /**
-     * Get the endpoint for the current level from the original report. The
-     * optional found and returned checkpoint can be used to check whether the
-     * next endpoint will be stubbed, hence code until the next endpoint can
-     * be skipped. This method will always return null when report is not in
-     * rerun.
-     * 
-     * @param correlationId ...
-     * @return ...
-     */
+	/**
+	 * Get the endpoint for the current level from the original report. The
+	 * optional found and returned checkpoint can be used to check whether the
+	 * next endpoint will be stubbed, hence code until the next endpoint can
+	 * be skipped. This method will always return null when report is not in
+	 * rerun.
+	 *
+	 * @param correlationId ...
+	 * @return ...
+	 */
 	public Checkpoint getOriginalEndpointOrAbortpointForCurrentLevel(String correlationId) {
 		Checkpoint result = null;
-		synchronized(reportsInProgress) {
-			Report report = (Report)reportsInProgressByCorrelationId.get(correlationId);
+		synchronized (reportsInProgress) {
+			Report report = (Report) reportsInProgressByCorrelationId.get(correlationId);
 			if (report != null) {
 				result = report.getOriginalEndpointOrAbortpointForCurrentLevel();
 			}
 		}
 		return result;
 	}
-	// TODO vorige methode niet meer nodig?! hier nog documentern dat je met geturnde report voorzicht moet zijn omdat het nog in progress is? 
+
+	// TODO vorige methode niet meer nodig?! hier nog documentern dat je met geturnde report voorzicht moet zijn omdat het nog in progress is?
 	public Report getReportInProgress(String correlationId) {
-		synchronized(reportsInProgress) {
-			return (Report)reportsInProgressByCorrelationId.get(correlationId);
+		synchronized (reportsInProgress) {
+			return (Report) reportsInProgressByCorrelationId.get(correlationId);
 		}
 	}
 
 	/**
 	 * Check whether the checkpoint should be stubbed for the given stub strategy in case no matchingStubStrategies for
 	 * the checkpoint are known
-	 * 
+	 *
 	 * @param checkpoint ...
-	 * @param strategy ...
+	 * @param strategy   ...
 	 * @return whether the checkpoint should be stubbed
-	 */	
+	 */
 	public boolean stub(Checkpoint checkpoint, String strategy) {
 		if (debugger == null) {
 			if (STUB_STRATEGY_ALWAYS.equals(strategy)) {
@@ -1176,7 +1232,7 @@ public class TestTool {
 			// open a report, download a report or to copy a report to the Test tab). 
 			// LogStorage instead of CrudStorage will make the frontend disable the possibility to edit the report.
 			LogStorage storage = new MemoryLogStorage();
-			synchronized(reportsInProgress) {
+			synchronized (reportsInProgress) {
 				for (Report report : reportsInProgress) {
 					try {
 						storage.storeWithoutException(report.clone());
@@ -1200,7 +1256,7 @@ public class TestTool {
 
 	public Report removeReportInProgress(int index) {
 		Report report = null;
-		synchronized(reportsInProgress) {
+		synchronized (reportsInProgress) {
 			if (index > -1 && index < reportsInProgress.size()) {
 				report = reportsInProgress.remove(index);
 				numberOfReportsInProgress--;
@@ -1215,7 +1271,7 @@ public class TestTool {
 
 	public long getReportsInProgressEstimatedMemoryUsage() {
 		long reportsInProgressEstimatedMemoryUsage = 0;
-		synchronized(reportsInProgress) {
+		synchronized (reportsInProgress) {
 			for (Report report : reportsInProgress) {
 				reportsInProgressEstimatedMemoryUsage += report.getEstimatedMemoryUsage();
 			}

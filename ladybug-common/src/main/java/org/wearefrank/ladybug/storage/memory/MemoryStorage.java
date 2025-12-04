@@ -21,16 +21,17 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.springframework.beans.factory.annotation.Autowired;
-
 import jakarta.inject.Inject;
-import lombok.Getter;
-import lombok.Setter;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.wearefrank.ladybug.MetadataExtractor;
 import org.wearefrank.ladybug.Report;
 import org.wearefrank.ladybug.storage.Storage;
 import org.wearefrank.ladybug.storage.StorageException;
 import org.wearefrank.ladybug.util.SearchUtil;
+
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  * @author Jaco de Groot
@@ -89,7 +90,7 @@ public class MemoryStorage implements Storage {
 
 	@Override
 	public synchronized List<List<Object>> getMetadata(int maxNumberOfRecords, List<String> metadataNames,
-			List<String> searchValues, int metadataValueType) throws StorageException {
+													   List<String> searchValues, int metadataValueType) throws StorageException {
 		List<List<Object>> result = new ArrayList<List<Object>>();
 		for (int i = 0; i < storageIds.size() && (maxNumberOfRecords == -1 || i < maxNumberOfRecords); i++) {
 			Map<Integer, Map<String, Object>> metadataRecordPerType = metadata.get(storageIds.get(i));
@@ -105,10 +106,10 @@ public class MemoryStorage implements Storage {
 			List<Object> resultRecord = new ArrayList<Object>();
 			Iterator<String> metadataNamesIterator = metadataNames.iterator();
 			while (metadataNamesIterator.hasNext()) {
-				String metadataName = (String)metadataNamesIterator.next();
+				String metadataName = (String) metadataNamesIterator.next();
 				Object metadataValue;
 				if (!metadataRecord.keySet().contains(metadataName)) {
-					Report report = getReport((Integer)storageIds.get(i));
+					Report report = getReport((Integer) storageIds.get(i));
 					metadataValue = metadataExtractor.getMetadata(report, metadataName, metadataValueType);
 					metadataRecord.put(metadataName, metadataValue);
 				} else {

@@ -9,8 +9,6 @@ Upcoming (3.0)
 - Support running human editable report xml file
 - Upgrade from javax to jakarta
 
-
-
 2.2
 ---
 
@@ -36,17 +34,15 @@ Upcoming (3.0)
 - Disable javax.inject.Inject (change pom.xml to enable)
 - Improve (database) storage search
 - Improve proof of migration
-  - Show first endpoint in overview / metadata table
-  - Add separate errors view
-  - Make sure the record for old component and the record for the new component (that have the same correlation id) are displayed directly below each other
+	- Show first endpoint in overview / metadata table
+	- Add separate errors view
+	- Make sure the record for old component and the record for the new component (that have the same correlation id) are displayed directly below each other
 - Add level label to checkpoint component (old GUI)
 - Add type label to checkpoint component (old GUI)
 - Whitelist api resources (instead of blacklisting)
 - Support Quarkus
 - Handle invalid checkpoints with level < 0
 - Add closeNewThreadsOnly
-
-
 
 2.2
 ---
@@ -83,8 +79,6 @@ Upcoming (3.0)
 - Fix: toObject is using UTF-8 instead of value from charsetNotifier
 - Add method to close report or thread in report
 
-
-
 2.1
 ---
 
@@ -120,7 +114,7 @@ Upcoming (3.0)
 - Add easier way to integrate with Ladybug using subable code, matching stub strategies, default stub strategy "Stub all external connection code" and rerunner interface
 - Add StatusExtractor
 - Show encoding (object to string conversion) applied on message
-- Encode/decode bean messages to/from xml (with XMLEncoder and XMLDecoder) 
+- Encode/decode bean messages to/from xml (with XMLEncoder and XMLDecoder)
 - Encode/decode byte array messages to/from base64
 - Add Null="true" to report xml for null messages
 - Fix numbers in checkpoint path, not larger than 0 in some cases casing the wrong counterpart checkpoint to be selected in compare
@@ -141,16 +135,12 @@ Upcoming (3.0)
 - Add toggle options for showing storage and checkpoint IDs in the UI
 - Add timestamp to filename when downloading zipped reports
 
-
-
 2.0.14
 ---
 
 - Fix bug where pressing Replace on a report would cause an application error
 - Add a text field to the Clone window for editing the input message to clone
 - Make all of the Edit window's UI elements fit in one screen
-
-
 
 2.0.13
 ---
@@ -161,8 +151,6 @@ Upcoming (3.0)
 - Clarify delete message (delete selected reports? -> delete X selected reports?)
 - Clarify truncate message (X characters remaining -> X characters removed)
 
-
-
 2.0.11
 ---
 
@@ -172,14 +160,10 @@ Upcoming (3.0)
 - Prevent checkpoints from being created when the report occupies too much memory
 - Make compare tabs equally wide
 
-
-
 2.0.10
 ---
 
 - Remove single-report delete button (button to delete selected reports remains)
-
-
 
 2.0.9
 ---
@@ -187,8 +171,6 @@ Upcoming (3.0)
 - Add refresh after test tab delete action (#2)
 - Add configurable checkpoint message truncating
 - Avoid IndexOutOfBoundException when starting an unknown thread (#5)
-
-
 
 2.0.8
 ---
@@ -198,8 +180,6 @@ Upcoming (3.0)
 - Replace Download all with Download table and Download tree
 - Add Open all
 - Move error label from above to below buttons in debug tab
-
-
 
 2.0.7
 ---
@@ -211,8 +191,6 @@ Upcoming (3.0)
 - Display run result error (if any) on run in Test tab
 - Fix error on selecting checkpoint with null message
 - Fix error on selecting different stub strategy
-
-
 
 2.0.6
 ---
@@ -230,20 +208,16 @@ Upcoming (3.0)
 - Prevent losing typed data in edit mode on close or select node in tree
 - Copy report name from original report on Replace
 
-
-
 2.0.5
 ---
 
 - Refactor code for errorLabel, okayLabel and getReport
-- Fix NPE on Open report (from Test tab), Edit, Save 
+- Fix NPE on Open report (from Test tab), Edit, Save
 - Show reports in child folders too in Test tab
 - Run reports in Test tab in background
 - Add (de)select all to Test tab
 - Make it possible to search case sensitive
 - Add ProgressBar to Test tab
-
-
 
 2.0.4
 ---
@@ -252,8 +226,6 @@ Upcoming (3.0)
 - Improve Open after Run (select report and don't compare and sort all reports in Compare tab)
 - Refactor TreePane in Test tab
 - Upgrade Xerces to latest version without ElementTraversal
-
-
 
 2.0.3
 ---

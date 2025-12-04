@@ -31,6 +31,10 @@ import java.util.List;
 
 import javax.sql.DataSource;
 
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.Resource;
+import jakarta.inject.Inject;
+
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,13 +46,6 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-
-import jakarta.annotation.PostConstruct;
-import jakarta.annotation.Resource;
-import jakarta.inject.Inject;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.SneakyThrows;
 import org.wearefrank.ladybug.Config;
 import org.wearefrank.ladybug.MetadataExtractor;
 import org.wearefrank.ladybug.MetadataFieldExtractor;
@@ -60,17 +57,21 @@ import org.wearefrank.ladybug.util.Export;
 import org.wearefrank.ladybug.util.Import;
 import org.wearefrank.ladybug.util.SearchUtil;
 
+import lombok.Getter;
+import lombok.Setter;
+import lombok.SneakyThrows;
+
 /**
  * Database storage implementation for Ladybug. The configuration of a transaction manager
  * (see {@link Config#ladybugTransactionManager(DataSource)} will disable auto-commit so PostgreSQL will not throw the following
  * exception on insert of a report:
- *   org.postgresql.util.PSQLException: Large Objects may not be used in auto-commit mode.
+ * org.postgresql.util.PSQLException: Large Objects may not be used in auto-commit mode.
  * It would also be possible to set auto-commit to false on Connection(Pool) or DataSource level but then still a
  * transaction manger needs to be configured for JdbcTemplate to commit changes. Otherwise everything seems to be
  * working fine (logging shows insert query) but no data appears in database and debug tab.
- * 
- * @see OptionalJtaTransactionManager
+ *
  * @author Jaco de Groot
+ * @see OptionalJtaTransactionManager
  */
 // Without proxyTargetClass = true the test webapp will give: Bean named 'proofOfMigrationStorage' is expected to be of
 // type 'nl.nn.testtool.storage.proofofmigration.ProofOfMigrationStorage' but was actually of type 'jdk.proxy3.$Proxy26'
@@ -88,7 +89,7 @@ public class DatabaseStorage implements Storage {
 	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 	protected @Setter @Getter String name;
 	protected @Setter String table;
-	protected @Setter @Inject @Resource(name="metadataNames") List<String> metadataNames; // Used as column names in this storage
+	protected @Setter @Inject @Resource(name = "metadataNames") List<String> metadataNames; // Used as column names in this storage
 	protected @Setter String storageIdColumn;
 	protected @Setter String endTimeColumn;
 	protected @Setter List<String> bigValueColumns; // Columns for which to limit the number of retrieved characters to 100
@@ -231,21 +232,23 @@ public class DatabaseStorage implements Storage {
 			// Using Statement.RETURN_GENERATED_KEYS instead of new String[] { getStorageIdColumn().toLowerCase() }
 			// doesn't work for Oracle. It will result in: org.springframework.dao.DataRetrievalFailureException:
 			// The generated key type is not supported. Unable to cast [oracle.sql.ROWID] to [java.lang.Number].
-			PreparedStatement ps = connection.prepareStatement(query.toString(),
+			PreparedStatement ps = connection.prepareStatement(
+					query.toString(),
 					// Use lowercase for PostgreSQL to avoid:
 					// org.postgresql.util.PSQLException: ERROR: column "storageId" does not exist
-					new String[] { getStorageIdColumn().toLowerCase() });
+					new String[]{ getStorageIdColumn().toLowerCase() }
+			);
 			int i = 1;
 			for (String column : getMetadataNames()) {
 				if (!column.equals(getStorageIdColumn())) {
 					if (isInteger(column)) {
-						ps.setInt(i, (Integer)metadataExtractor.getMetadata(report, column, MetadataExtractor.VALUE_TYPE_OBJECT));
+						ps.setInt(i, (Integer) metadataExtractor.getMetadata(report, column, MetadataExtractor.VALUE_TYPE_OBJECT));
 					} else if (isLong(column)) {
-						ps.setLong(i, (Long)metadataExtractor.getMetadata(report, column, MetadataExtractor.VALUE_TYPE_OBJECT));
+						ps.setLong(i, (Long) metadataExtractor.getMetadata(report, column, MetadataExtractor.VALUE_TYPE_OBJECT));
 					} else if (isTimestamp(column)) {
-						ps.setTimestamp(i, new Timestamp((Long)metadataExtractor.getMetadata(report, column, MetadataExtractor.VALUE_TYPE_OBJECT)));
+						ps.setTimestamp(i, new Timestamp((Long) metadataExtractor.getMetadata(report, column, MetadataExtractor.VALUE_TYPE_OBJECT)));
 					} else {
-						ps.setString(i, (String)metadataExtractor.getMetadata(report, column, MetadataExtractor.VALUE_TYPE_STRING));
+						ps.setString(i, (String) metadataExtractor.getMetadata(report, column, MetadataExtractor.VALUE_TYPE_STRING));
 					}
 					i++;
 				}
@@ -262,7 +265,7 @@ public class DatabaseStorage implements Storage {
 			String averageQuery = "select avg(storageSize) from " + getTable();
 			int averageStorageSize = ladybugJdbcTemplate.queryForObject(averageQuery, Integer.class);
 			log.debug("Get average storage size query (returned " + averageStorageSize + "): " + averageQuery);
-			int maxNrOfReports = (int)(getMaxStorageSize() / averageStorageSize);
+			int maxNrOfReports = (int) (getMaxStorageSize() / averageStorageSize);
 			String deleteQuery = "delete from " + getTable() + " where " + getStorageIdColumn()
 					+ " <= ((select max(" + getStorageIdColumn() + ") from " + getTable() + ") - ?)";
 			delete(deleteQuery, maxNrOfReports);
@@ -280,8 +283,9 @@ public class DatabaseStorage implements Storage {
 	public Report getReport(Integer storageId) throws StorageException {
 		String query = "select report from " + getTable() + " where " + getStorageIdColumn() + " = ?";
 		log.debug("Get report query: " + query);
-		List<Report> result = ladybugJdbcTemplate.query(query, new Object[]{storageId}, new int[] {Types.INTEGER},
-				(resultSet, rowNum) -> getReport(storageId, resultSet.getBytes(1)));
+		List<Report> result = ladybugJdbcTemplate.query(query, new Object[]{ storageId }, new int[]{ Types.INTEGER },
+				(resultSet, rowNum) -> getReport(storageId, resultSet.getBytes(1))
+		);
 		Report report = null;
 		if (result.size() == 1) {
 			report = result.get(0);
@@ -299,13 +303,15 @@ public class DatabaseStorage implements Storage {
 
 	protected void delete(String query, int i) throws StorageException {
 		log.debug("Delete report query (with param value " + i + "): " + query);
-		ladybugJdbcTemplate.update(query,
+		ladybugJdbcTemplate.update(
+				query,
 				new PreparedStatementSetter() {
 					@Override
 					public void setValues(PreparedStatement ps) throws SQLException {
 						ps.setInt(1, i);
 					}
-				});
+				}
+		);
 	}
 
 	@Override
@@ -322,7 +328,7 @@ public class DatabaseStorage implements Storage {
 		log.debug("Get size query: " + query);
 		try {
 			return ladybugJdbcTemplate.queryForObject(query.toString(), Integer.class);
-		} catch(DataAccessException e){
+		} catch (DataAccessException e) {
 			throw new StorageException("Could not read size", e);
 		}
 	}
@@ -338,7 +344,7 @@ public class DatabaseStorage implements Storage {
 		try {
 			List<Integer> storageIds = ladybugJdbcTemplate.query(query, (rs, rowNum) -> rs.getInt(1));
 			return storageIds;
-		} catch(DataAccessException e){
+		} catch (DataAccessException e) {
 			throw new StorageException("Could not read storage id's", e);
 		}
 	}
@@ -349,7 +355,7 @@ public class DatabaseStorage implements Storage {
 
 	@Override
 	public List<List<Object>> getMetadata(int maxNumberOfRecords, List<String> metadataNames, List<String> searchValues,
-			int metadataValueType) throws StorageException {
+										  int metadataValueType) throws StorageException {
 		// Prevent SQL injection (searchValues are passed as parameters to the SQL statement)
 		for (String metadataName : metadataNames) {
 			if (!getMetadataNames().contains(metadataName)) {
@@ -363,9 +369,9 @@ public class DatabaseStorage implements Storage {
 				String searchValue = searchValues.get(i);
 				if (searchValue != null && searchValue.startsWith("<") && searchValue.endsWith(">") && (
 						isInteger(metadataNames.get(i))
-						|| isLong(metadataNames.get(i))
-						|| isTimestamp(metadataNames.get(i))
-						)) {
+								|| isLong(metadataNames.get(i))
+								|| isTimestamp(metadataNames.get(i))
+				)) {
 					rangeSearchValues.add(searchValue);
 					regexSearchValues.add(null);
 					searchValues.remove(i);
@@ -393,32 +399,33 @@ public class DatabaseStorage implements Storage {
 			metadata = ladybugJdbcTemplate.query(query.toString(), args.toArray(),
 					argTypes.stream().mapToInt(i -> i).toArray(),
 					(rs, rowNum) ->
-						{
-							List<Object> row = new ArrayList<Object>();
-							for (int i = 0; i < metadataNames.size(); i++) {
-								Object value = null;
-								if (isInteger(metadataNames.get(i))) {
-									value = rs.getInt(i + 1);
-								} else if (isLong(metadataNames.get(i))) {
-									value = rs.getLong(i + 1);
-								} else if (isTimestamp(metadataNames.get(i))) {
-									value = rs.getTimestamp(i + 1).getTime();
-								} else {
-									value = rs.getString(i + 1);
-								}
-								row.add(metadataExtractor.fromObjectToMetadataValueType(metadataNames.get(i), value,
-										metadataValueType));
+					{
+						List<Object> row = new ArrayList<Object>();
+						for (int i = 0; i < metadataNames.size(); i++) {
+							Object value = null;
+							if (isInteger(metadataNames.get(i))) {
+								value = rs.getInt(i + 1);
+							} else if (isLong(metadataNames.get(i))) {
+								value = rs.getLong(i + 1);
+							} else if (isTimestamp(metadataNames.get(i))) {
+								value = rs.getTimestamp(i + 1).getTime();
+							} else {
+								value = rs.getString(i + 1);
 							}
-							return row;
+							row.add(metadataExtractor.fromObjectToMetadataValueType(metadataNames.get(i), value,
+									metadataValueType
+							));
 						}
-					);
-		} catch(DataAccessException e){
+						return row;
+					}
+			);
+		} catch (DataAccessException e) {
 			throw new StorageException("Could not read metadata", e);
 		}
 		postProcessMetadataResult(metadata, maxNumberOfRecords, metadataNames, searchValues, metadataValueType);
 		if (searchValues != null) {
 			for (int i = 0; i < metadata.size(); i++) {
-				if (!SearchUtil.matches((List<Object>)metadata.get(i), regexSearchValues)) {
+				if (!SearchUtil.matches((List<Object>) metadata.get(i), regexSearchValues)) {
 					metadata.remove(i);
 					i--;
 				}
@@ -428,7 +435,7 @@ public class DatabaseStorage implements Storage {
 	}
 
 	protected void buildMetadataQuery(int maxNumberOfRecords, List<String> metadataNames, List<String> searchValues,
-			List<String> rangeSearchValues, StringBuilder query, List<Object> args, List<Integer> argTypes)
+									  List<String> rangeSearchValues, StringBuilder query, List<Object> args, List<Integer> argTypes)
 			throws StorageException {
 		SortOrder sortOrder = SortOrder.DESC;
 		query.append("select");
@@ -465,8 +472,10 @@ public class DatabaseStorage implements Storage {
 				if (j != -1) {
 					String column = metadataNames.get(i);
 					String searchValueLeft = searchValue.substring(1, j);
-					String searchValueRight = searchValue.substring(j + 1,
-							searchValue.length() - 1);
+					String searchValueRight = searchValue.substring(
+							j + 1,
+							searchValue.length() - 1
+					);
 					if (StringUtils.isNotEmpty(searchValueLeft)) {
 						if (isInteger(column) || isLong(column)) {
 							addNumberExpression(query, args, argTypes, column, ">=", searchValueLeft.trim());
@@ -516,7 +525,7 @@ public class DatabaseStorage implements Storage {
 	 * Override this method in a subclass when needed
 	 */
 	protected void postProcessMetadataResult(List<List<Object>> metadata, int maxNumberOfRecords,
-			List<String> metadataNames, List<String> searchValues, int metadataValueType) {
+											 List<String> metadataNames, List<String> searchValues, int metadataValueType) {
 	}
 
 	@Override
@@ -524,7 +533,7 @@ public class DatabaseStorage implements Storage {
 	}
 
 	private void addLikeOrEqualsExpression(StringBuilder query, List<Object> args, List<Integer> argTypes,
-			String column, String searchValue) throws StorageException {
+										   String column, String searchValue) throws StorageException {
 		if (!(searchValue.startsWith("[") && searchValue.endsWith("]"))
 				&& !(searchValue.startsWith("*") || searchValue.endsWith("*"))) {
 			searchValue = "*" + searchValue + "*";
@@ -555,21 +564,21 @@ public class DatabaseStorage implements Storage {
 	}
 
 	private void addNumberExpression(StringBuilder query, List<Object> args, List<Integer> argTypes,
-			String column, String operator, String searchValue)
-					throws StorageException {
+									 String column, String operator, String searchValue)
+			throws StorageException {
 		try {
 			BigDecimal bigDecimal = new BigDecimal(searchValue);
 			addExpression(query, column + " " + operator + " ?");
 			args.add(bigDecimal);
 			argTypes.add(Types.DECIMAL);
-		} catch(NumberFormatException e) {
+		} catch (NumberFormatException e) {
 			throw new StorageException("Search value '" + searchValue
 					+ "' isn't a valid number");
 		}
 	}
 
 	private void addTimestampExpression(StringBuilder query, List<Object> args, List<Integer> argTypes,
-			String column, String operator, String searchValue) throws StorageException {
+										String column, String operator, String searchValue) throws StorageException {
 		String searchValueToParse;
 		if (searchValue.length() < 23) {
 			if (">=".equals(operator)) {
@@ -583,7 +592,7 @@ public class DatabaseStorage implements Storage {
 					if (searchValue.length() == s.length()
 							&& searchValue.charAt(s.length() - 1) == s.charAt(s.length() - 1)) {
 						searchValueToParse = searchValueToParse.substring(0, s.length()) + "9"
-							+ searchValueToParse.substring(s.length() + 1);
+								+ searchValueToParse.substring(s.length() + 1);
 					}
 				}
 			}
@@ -598,7 +607,7 @@ public class DatabaseStorage implements Storage {
 				Integer.parseInt(searchValueToParse.substring(14, 16));
 				Integer.parseInt(searchValueToParse.substring(17, 19));
 				Integer.parseInt(searchValueToParse.substring(20, 23));
-			} catch(NumberFormatException e) {
+			} catch (NumberFormatException e) {
 				throwExceptionOnInvalidTimestamp(searchValue);
 			}
 			if (searchValueToParse.charAt(4) != '-'
@@ -620,7 +629,7 @@ public class DatabaseStorage implements Storage {
 		} else {
 			searchValueToParse = searchValue;
 		}
-		long l = (long)metadataExtractor.fromGUIToObject(column, searchValueToParse);
+		long l = (long) metadataExtractor.fromGUIToObject(column, searchValueToParse);
 		args.add(new Timestamp(l));
 		argTypes.add(Types.TIMESTAMP);
 		addExpression(query, column + " " + operator + " ?");
@@ -680,12 +689,12 @@ public class DatabaseStorage implements Storage {
 		}
 		if (isTimestamp(column)) {
 			userHelp = userHelp
-				+ " If the provided search value only matches the beginning portion of a timestamp (in the format '"
-				+ MetadataExtractor.DATE_TIME_PATTERN
-				+ "'), the system will autocomplete the missing information with the end of latest possible timestamp '"
-				+ MetadataExtractor.DATE_TIME_RANGE_END_SUFFIX
-				+ "'. In case of the first value of a range it is autocompleted with the end of '"
-				+ MetadataExtractor.DATE_TIME_RANGE_START_SUFFIX + "'.";
+					+ " If the provided search value only matches the beginning portion of a timestamp (in the format '"
+					+ MetadataExtractor.DATE_TIME_PATTERN
+					+ "'), the system will autocomplete the missing information with the end of latest possible timestamp '"
+					+ MetadataExtractor.DATE_TIME_RANGE_END_SUFFIX
+					+ "'. In case of the first value of a range it is autocompleted with the end of '"
+					+ MetadataExtractor.DATE_TIME_RANGE_START_SUFFIX + "'.";
 		}
 		return userHelp + SearchUtil.getUserHelpRegex() + SearchUtil.getUserHelpNullAndEmpty();
 	}
