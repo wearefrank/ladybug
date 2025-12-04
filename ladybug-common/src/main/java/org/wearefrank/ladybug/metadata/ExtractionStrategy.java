@@ -15,14 +15,14 @@
 */
 package org.wearefrank.ladybug.metadata;
 
-import org.wearefrank.ladybug.util.XmlUtil;
+import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 
-import java.util.Optional;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import org.wearefrank.ladybug.util.XmlUtil;
 
 public interface ExtractionStrategy {
 	Optional<String> extract(String message);
