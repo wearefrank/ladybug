@@ -419,7 +419,7 @@ ij_yaml_space_before_colon = false
 ij_yaml_spaces_within_braces = true
 ij_yaml_spaces_within_brackets = true
 
-[ladybug-common/src/test/resources/**]
+[*/src/test/resources/**]
 ij_formatter_enabled = false
 charset = unset
 end_of_line = unset
