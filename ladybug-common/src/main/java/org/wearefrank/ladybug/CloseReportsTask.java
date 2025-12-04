@@ -18,6 +18,7 @@ package org.wearefrank.ladybug;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import jakarta.inject.Inject;
+
 import lombok.Setter;
 
 /**
@@ -25,12 +26,12 @@ import lombok.Setter;
  * {@link TestTool#setCloseMessageCapturers(boolean)} that can be scheduled (e.g. by Spring) giving threads and message
  * capturers a chance to finish after the last checkpoint of a report has already finished. For more information see
  * {@link TestTool#close(long, long, boolean, boolean, long, long)}
- * 
+ *
+ * @author Jaco de Groot
  * @see TestTool#close(long, long, boolean, boolean, long, long)
  * @see TestTool#close(String)
  * @see TestTool#setCloseThreads(boolean)
  * @see TestTool#setCloseMessageCapturers(boolean)
- * @author Jaco de Groot
  */
 public class CloseReportsTask {
 	private @Setter @Inject @Autowired TestTool testTool;
@@ -44,7 +45,8 @@ public class CloseReportsTask {
 
 	public void closeReports() {
 		testTool.close(threadsTime, messageCapturersTime, waitForMainThreadToFinish, logThreadInfoBeforeClose,
-				logThreadInfoMinReportAge, logThreadInfoMaxReportAge);
+				logThreadInfoMinReportAge, logThreadInfoMaxReportAge
+		);
 	}
 
 }

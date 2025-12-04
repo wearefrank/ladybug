@@ -43,21 +43,20 @@ package org.wearefrank.ladybug.xmldecoder;
  * <dd>the identifier of the variable that is intended to store the result
  * </dl>
  *
- * @since 1.7
- *
  * @author Sergey A. Malenkov
+ * @since 1.7
  */
 final class ByteElementHandler extends StringElementHandler {
 
-    /**
-     * Creates {@code byte} value from
-     * the text of the body of this element.
-     *
-     * @param argument  the text of the body
-     * @return evaluated {@code byte} value
-     */
-    @Override
-    public Object getValue(String argument) {
-        return Byte.decode(argument);
-    }
+	/**
+	 * Creates {@code byte} value from
+	 * the text of the body of this element.
+	 *
+	 * @param argument the text of the body
+	 * @return evaluated {@code byte} value
+	 */
+	@Override
+	public Object getValue(String argument) {
+		return Byte.decode(argument);
+	}
 }

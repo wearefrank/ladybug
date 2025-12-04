@@ -17,15 +17,15 @@ package org.wearefrank.ladybug.transform;
 
 import java.util.regex.Pattern;
 
-import lombok.Setter;
 import org.wearefrank.ladybug.Checkpoint;
+
+import lombok.Setter;
 
 /**
  * Hide message of a checkpoint when the name of the checkpoint is equal to a specified string or when it is matching a
  * specified regex
- * 
- * @author Jaco de Groot
  *
+ * @author Jaco de Groot
  */
 public class HideMessageTransformer implements MessageTransformer {
 	private @Setter String nameEquals;

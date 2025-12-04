@@ -22,23 +22,23 @@ import org.wearefrank.ladybug.Report;
 /**
  * When a bean is present that implements this interface a button will be added to the Test tab that will call this
  * bean when the button is pressed
- * 
+ *
  * @author Jaco de Groot
  */
 public interface CustomReportAction {
 
 	/**
 	 * The text to display on the button
-	 * 
-	 * @return  The text to display on the button
+	 *
+	 * @return The text to display on the button
 	 */
 	public String getButtonText();
 
 	/**
 	 * This method is called when button is pressed
-	 * 
-	 * @param reports  The selected reports
-	 * @return         A success and/or error message to display to the user
+	 *
+	 * @param reports The selected reports
+	 * @return A success and/or error message to display to the user
 	 */
 	public CustomReportActionResult handleReports(List<Report> reports);
 

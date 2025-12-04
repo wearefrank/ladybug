@@ -17,20 +17,23 @@ package org.wearefrank.ladybug.echo2.reports;
 
 import java.util.List;
 
+import org.wearefrank.ladybug.MetadataExtractor;
+
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Insets;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.Table;
 import nextapp.echo2.app.layout.TableLayoutData;
 import nextapp.echo2.app.table.DefaultTableCellRenderer;
-import org.wearefrank.ladybug.MetadataExtractor;
 
 public class MetadataTableCellRenderer extends DefaultTableCellRenderer {
 	private static final long serialVersionUID = 1L;
 	private static final TableLayoutData tableLayoutData = new TableLayoutData();
+
 	static {
 		tableLayoutData.setInsets(new Insets(2, 0, 4, 0));
 	}
+
 	private MetadataExtractor metadataExtractor;
 	private List metadataNames;
 
@@ -43,13 +46,13 @@ public class MetadataTableCellRenderer extends DefaultTableCellRenderer {
 	}
 
 	public Component getTableCellRendererComponent(Table table, Object value,
-			int column, int row) {
-		Label label = (Label)super.getTableCellRendererComponent(table, value, column, row);
+												   int column, int row) {
+		Label label = (Label) super.getTableCellRendererComponent(table, value, column, row);
 		if (label == null) {
 			label = new Label();
 		}
 		label.setLayoutData(tableLayoutData);
-		label.setToolTipText(metadataExtractor.getLabel((String)metadataNames.get(column)));
+		label.setToolTipText(metadataExtractor.getLabel((String) metadataNames.get(column)));
 		return label;
 	}
 

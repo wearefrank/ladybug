@@ -16,14 +16,6 @@
 package org.wearefrank.ladybug.web.jaxrs.api;
 
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.springframework.beans.factory.annotation.Autowired;
-
 import jakarta.inject.Inject;
 import jakarta.ws.rs.DefaultValue;
 import jakarta.ws.rs.GET;
@@ -36,27 +28,33 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
 import lombok.Setter;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.wearefrank.ladybug.MetadataExtractor;
 import org.wearefrank.ladybug.TestTool;
 import org.wearefrank.ladybug.storage.Storage;
-
 import org.wearefrank.ladybug.web.common.Constants;
-import org.wearefrank.ladybug.web.jaxrs.api.ApiBase;
-import org.wearefrank.ladybug.web.jaxrs.api.ApiException;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 @Path("/" + Constants.LADYBUG_API_PATH + "/metadata")
 public class MetadataApi extends ApiBase {
-	private @Setter @Inject @Autowired TestTool testTool;
+	private @Setter
+	@Inject
+	@Autowired TestTool testTool;
 
 	/**
 	 * Searches the storage metadata.
 	 *
-	 * @param storageName Name of the storage to search.
+	 * @param storageName   Name of the storage to search.
 	 * @param metadataNames The metadata names to return.
-	 * @param limit Maximum number of results to return.
+	 * @param limit         Maximum number of results to return.
 	 * @param filterHeaders The headers on which we filter.
-	 * @param uriInfo Query parameters for search.
-	 * @param filterParams The regex on which the report names will be filtered
+	 * @param uriInfo       Query parameters for search.
+	 * @param filterParams  The regex on which the report names will be filtered
 	 * @return Response containing fields [List[String]] and values [List[List[Object]]].
 	 * @throws ApiException If an exception occurs during metadata search in storage.
 	 */
@@ -67,10 +65,10 @@ public class MetadataApi extends ApiBase {
 									@QueryParam("metadataNames") List<String> metadataNames,
 									@DefaultValue("-1") @QueryParam("limit") int limit,
 									@QueryParam("filterHeader") List<String> filterHeaders,
-									@QueryParam("filter") List<String> filterParams ,
+									@QueryParam("filter") List<String> filterParams,
 									@Context UriInfo uriInfo) {
 		List<String> searchValues = new ArrayList<>();
-		for(String field : metadataNames) {
+		for (String field : metadataNames) {
 			boolean changed = false;
 			for (int filterHeaderIndex = 0; filterHeaderIndex < filterHeaders.size(); filterHeaderIndex++) {
 				if (filterHeaders.get(filterHeaderIndex).equals(field)) {
@@ -78,7 +76,7 @@ public class MetadataApi extends ApiBase {
 					changed = true;
 				}
 			}
-			if(!changed) {
+			if (!changed) {
 				searchValues.add(null);
 			}
 		}
@@ -110,7 +108,7 @@ public class MetadataApi extends ApiBase {
 	/**
 	 * Returns the user help for each filter header.
 	 *
-	 * @param storageName - Name of the storage of the headers.
+	 * @param storageName   - Name of the storage of the headers.
 	 * @param metadataNames - the header names.
 	 * @return The user help of each filter header.
 	 */

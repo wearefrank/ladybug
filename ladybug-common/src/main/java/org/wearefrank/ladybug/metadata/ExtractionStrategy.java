@@ -15,58 +15,59 @@
 */
 package org.wearefrank.ladybug.metadata;
 
-import org.wearefrank.ladybug.util.XmlUtil;
-
-import javax.xml.xpath.XPathExpression;
-import javax.xml.xpath.XPathExpressionException;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.xml.xpath.XPathExpression;
+import javax.xml.xpath.XPathExpressionException;
+
+import org.wearefrank.ladybug.util.XmlUtil;
+
 public interface ExtractionStrategy {
-    Optional<String> extract(String message);
+	Optional<String> extract(String message);
 }
 
 class RegexExtractionStrategy implements ExtractionStrategy {
-    private Pattern pattern;
+	private Pattern pattern;
 
-    public RegexExtractionStrategy(String pattern) {
-        setRegexPattern(pattern);
-    }
+	public RegexExtractionStrategy(String pattern) {
+		setRegexPattern(pattern);
+	}
 
-    private void setRegexPattern(String regex) {
-        pattern = (regex == null || regex.isEmpty()) ? null : Pattern.compile(regex);
-    }
+	private void setRegexPattern(String regex) {
+		pattern = (regex == null || regex.isEmpty()) ? null : Pattern.compile(regex);
+	}
 
-    @Override
-    public Optional<String> extract(String message) {
-        if (message == null || message.isEmpty() || pattern == null) {
-            return Optional.empty();
-        }
+	@Override
+	public Optional<String> extract(String message) {
+		if (message == null || message.isEmpty() || pattern == null) {
+			return Optional.empty();
+		}
 
-        Matcher matcher = pattern.matcher(message);
-        if (matcher.find()) {
-            return Optional.ofNullable(matcher.groupCount() > 0 ? matcher.group(1) : matcher.group(0));
-        }
-        return Optional.empty();
-    }
+		Matcher matcher = pattern.matcher(message);
+		if (matcher.find()) {
+			return Optional.ofNullable(matcher.groupCount() > 0 ? matcher.group(1) : matcher.group(0));
+		}
+		return Optional.empty();
+	}
 }
 
 class XpathExtractionStrategy implements ExtractionStrategy {
-    private XPathExpression xpathExpression;
+	private XPathExpression xpathExpression;
 
-    public XpathExtractionStrategy(String xpath) throws XPathExpressionException {
-        if (xpath != null) {
-            xpathExpression = XmlUtil.createXPathExpression(xpath);
-        }
-    }
+	public XpathExtractionStrategy(String xpath) throws XPathExpressionException {
+		if (xpath != null) {
+			xpathExpression = XmlUtil.createXPathExpression(xpath);
+		}
+	}
 
-    @Override
-    public Optional<String> extract(String message) {
-        try {
-            return Optional.ofNullable(xpathExpression.evaluate(XmlUtil.createXmlSourceFromString(message)));
-        } catch (XPathExpressionException e) {
-            return Optional.empty();
-        }
-    }
+	@Override
+	public Optional<String> extract(String message) {
+		try {
+			return Optional.ofNullable(xpathExpression.evaluate(XmlUtil.createXmlSourceFromString(message)));
+		} catch (XPathExpressionException e) {
+			return Optional.empty();
+		}
+	}
 }

@@ -34,11 +34,11 @@ public interface Storage {
 	/**
 	 * Get a report with the specified id. Returns null when the report could not be found. The report returned should
 	 * always be a new object so different calls for the same storageId will not get a reference to the same object and
-	 * interfere with each other when they change the returned report. 
-	 * 
+	 * interfere with each other when they change the returned report.
+	 *
 	 * @param storageId ...
-	 * @throws StorageException ...
 	 * @return ...
+	 * @throws StorageException ...
 	 */
 	public Report getReport(Integer storageId) throws StorageException;
 
@@ -49,16 +49,16 @@ public interface Storage {
 	/**
 	 * Get a list of metadata records. A metadata record is also a list and
 	 * contains the metadata for a specific report.
-	 * 
-	 * @param maxNumberOfRecords  the maximum number of records to return (-1 for no limit)
-	 * @param metadataNames ...
-	 * @param searchValues see {@link SearchUtil}
-	 * @param metadataValueType ...
-	 * @throws StorageException ...
+	 *
+	 * @param maxNumberOfRecords the maximum number of records to return (-1 for no limit)
+	 * @param metadataNames      ...
+	 * @param searchValues       see {@link SearchUtil}
+	 * @param metadataValueType  ...
 	 * @return ...
+	 * @throws StorageException ...
 	 */
 	public List<List<Object>> getMetadata(int maxNumberOfRecords, List<String> metadataNames,
-			List<String> searchValues, int metadataValueType) throws StorageException;
+										  List<String> searchValues, int metadataValueType) throws StorageException;
 
 	public void clear() throws StorageException;
 

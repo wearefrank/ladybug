@@ -1,48 +1,56 @@
 <Report Name="testStreamsWithReaderAndInputStream"
-        Description=""
-        Path=""
-        CorrelationId="Original length: 36"
-        StartTime="Original length: 13"
-        EndTime="Original length: 13"
-        NumberOfCheckpoints="8"
-        EstimatedMemoryUsage="224">
-   <Checkpoint Name="testStreamsWithReaderAndInputStream"
-               Type="Startpoint"
-               Level="0">startmessage</Checkpoint>
-   <Checkpoint Name="reader"
-               Type="Inputpoint"
-               Level="1"
-               MessageClassName="java.io.StringReader"
-               Streaming="Character">Random string 1</Checkpoint>
-   <Checkpoint Name="reader"
-               Type="Inputpoint"
-               Level="1"
-               MessageClassName="java.io.StringReader"
-               Streaming="Character">Random string 2</Checkpoint>
-   <Checkpoint Name="reader"
-               Type="Inputpoint"
-               Level="1"
-               MessageClassName="java.io.StringReader"
-               Streaming="Character">Random string 2</Checkpoint>
-   <Checkpoint Name="inputstream"
-               Type="Inputpoint"
-               Level="1"
-               MessageClassName="java.io.ByteArrayInputStream"
-               Encoding="UTF-8"
-               Streaming="Byte">Random string 3</Checkpoint>
-   <Checkpoint Name="inputstream"
-               Type="Inputpoint"
-               Level="1"
-               MessageClassName="java.io.ByteArrayInputStream"
-               Encoding="UTF-8"
-               Streaming="Byte">Random string 4</Checkpoint>
-   <Checkpoint Name="inputstream"
-               Type="Inputpoint"
-               Level="1"
-               MessageClassName="java.io.ByteArrayInputStream"
-               Encoding="UTF-8"
-               Streaming="Byte">Random string 4</Checkpoint>
-   <Checkpoint Name="testStreamsWithReaderAndInputStream"
-               Type="Endpoint"
-               Level="1">endmessage</Checkpoint>
+	Description=""
+	Path=""
+	CorrelationId="Original length: 36"
+	StartTime="Original length: 13"
+	EndTime="Original length: 13"
+	NumberOfCheckpoints="8"
+	EstimatedMemoryUsage="224">
+	<Checkpoint Name="testStreamsWithReaderAndInputStream"
+		Type="Startpoint"
+		Level="0">startmessage
+	</Checkpoint>
+	<Checkpoint Name="reader"
+		Type="Inputpoint"
+		Level="1"
+		MessageClassName="java.io.StringReader"
+		Streaming="Character">Random string 1
+	</Checkpoint>
+	<Checkpoint Name="reader"
+		Type="Inputpoint"
+		Level="1"
+		MessageClassName="java.io.StringReader"
+		Streaming="Character">Random string 2
+	</Checkpoint>
+	<Checkpoint Name="reader"
+		Type="Inputpoint"
+		Level="1"
+		MessageClassName="java.io.StringReader"
+		Streaming="Character">Random string 2
+	</Checkpoint>
+	<Checkpoint Name="inputstream"
+		Type="Inputpoint"
+		Level="1"
+		MessageClassName="java.io.ByteArrayInputStream"
+		Encoding="UTF-8"
+		Streaming="Byte">Random string 3
+	</Checkpoint>
+	<Checkpoint Name="inputstream"
+		Type="Inputpoint"
+		Level="1"
+		MessageClassName="java.io.ByteArrayInputStream"
+		Encoding="UTF-8"
+		Streaming="Byte">Random string 4
+	</Checkpoint>
+	<Checkpoint Name="inputstream"
+		Type="Inputpoint"
+		Level="1"
+		MessageClassName="java.io.ByteArrayInputStream"
+		Encoding="UTF-8"
+		Streaming="Byte">Random string 4
+	</Checkpoint>
+	<Checkpoint Name="testStreamsWithReaderAndInputStream"
+		Type="Endpoint"
+		Level="1">endmessage
+	</Checkpoint>
 </Report>

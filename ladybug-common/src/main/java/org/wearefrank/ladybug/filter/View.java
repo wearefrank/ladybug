@@ -19,13 +19,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.springframework.beans.factory.annotation.Autowired;
-
 import jakarta.annotation.Resource;
 import jakarta.enterprise.context.Dependent;
 import jakarta.inject.Inject;
-import lombok.Getter;
-import lombok.Setter;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.wearefrank.ladybug.Checkpoint;
 import org.wearefrank.ladybug.MetadataExtractor;
 import org.wearefrank.ladybug.Report;
@@ -33,6 +31,9 @@ import org.wearefrank.ladybug.echo2.BeanParent;
 import org.wearefrank.ladybug.echo2.Echo2Application;
 import org.wearefrank.ladybug.echo2.reports.ReportsComponent;
 import org.wearefrank.ladybug.storage.Storage;
+
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  * @author Jaco de Groot
@@ -42,7 +43,7 @@ public class View implements BeanParent {
 	protected String name;
 	protected String nodeLinkStrategy;
 	private @Setter @Getter @Inject @Autowired Storage debugStorage;
-	private @Setter @Getter @Inject @Resource(name="metadataNames") List<String> metadataNames;
+	private @Setter @Getter @Inject @Resource(name = "metadataNames") List<String> metadataNames;
 	private Map<String, String> metadataFilter;
 	private List<CheckpointMatcher> checkpointMatchers;
 	private BeanParent beanParent;

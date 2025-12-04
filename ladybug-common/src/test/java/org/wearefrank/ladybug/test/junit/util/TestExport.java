@@ -29,7 +29,6 @@ import java.util.Map;
 import java.util.zip.GZIPInputStream;
 
 import org.junit.Test;
-
 import org.wearefrank.ladybug.Checkpoint;
 import org.wearefrank.ladybug.Report;
 import org.wearefrank.ladybug.storage.StorageException;
@@ -61,10 +60,10 @@ public class TestExport {
 			Method method = setMethods.get(name);
 			if (getMethods.get(name) != null || isMethods.get(name) != null) {
 				if (method.getParameters()[0].getType() == long.class) {
-					Long defaultValue = (Long)getMethods.get(name).invoke(report, new Object[0]);
+					Long defaultValue = (Long) getMethods.get(name).invoke(report, new Object[0]);
 					method.invoke(report, defaultValue + name.length());
 				} else if (method.getParameters()[0].getType() == Integer.class) {
-					Integer defaultValue = (Integer)getMethods.get(name).invoke(report, new Object[0]);
+					Integer defaultValue = (Integer) getMethods.get(name).invoke(report, new Object[0]);
 					if (defaultValue == null) {
 						method.invoke(report, name.length());
 					} else {
@@ -72,7 +71,7 @@ public class TestExport {
 					}
 				} else if (method.getParameters()[0].getType() == boolean.class) {
 					assertIsMethodAvailable(isMethods, name);
-					Boolean defaultValue = (Boolean)isMethods.get(name).invoke(report, new Object[0]);
+					Boolean defaultValue = (Boolean) isMethods.get(name).invoke(report, new Object[0]);
 					if (defaultValue) {
 						method.invoke(report, false);
 					} else {
@@ -103,7 +102,7 @@ public class TestExport {
 					assertNull("Method not handled: " + name);
 				}
 			}
-			
+
 		}
 		Checkpoint checkpoint = new Checkpoint();
 		checkpoint.setReport(report);
@@ -117,11 +116,11 @@ public class TestExport {
 			Method method = setMethods.get(name);
 			if (getMethods.get(name) != null || isMethods.get(name) != null) {
 				if (method.getParameters()[0].getType() == int.class) {
-					Integer defaultValue = (Integer)getMethods.get(name).invoke(checkpoint, new Object[0]);
+					Integer defaultValue = (Integer) getMethods.get(name).invoke(checkpoint, new Object[0]);
 					method.invoke(checkpoint, defaultValue + name.length());
 				} else if (method.getParameters()[0].getType() == boolean.class) {
 					assertIsMethodAvailable(isMethods, name);
-					Boolean defaultValue = (Boolean)isMethods.get(name).invoke(checkpoint, new Object[0]);
+					Boolean defaultValue = (Boolean) isMethods.get(name).invoke(checkpoint, new Object[0]);
 					if (defaultValue) {
 						method.invoke(checkpoint, false);
 					} else {
@@ -141,7 +140,7 @@ public class TestExport {
 					assertNull("Method not handled: " + name);
 				}
 			}
-			
+
 		}
 		List<Checkpoint> checkpoints = new ArrayList<Checkpoint>();
 		checkpoints.add(checkpoint);
@@ -168,8 +167,10 @@ public class TestExport {
 						&& methods[i].getParameters().length > 0) {
 					// Ignore all Report.getCheckpoint() methods (which wouldn't pass the assertNull below)
 				} else {
-					assertNull("More than one " + verb + " " + name + " method found on " + clazz,
-							beanProperties.get(name));
+					assertNull(
+							"More than one " + verb + " " + name + " method found on " + clazz,
+							beanProperties.get(name)
+					);
 					beanProperties.put(name, methods[i]);
 				}
 			}
@@ -184,8 +185,8 @@ public class TestExport {
 	// that has setters for all the ignores that we need. Then objects of that class can perform the
 	// comparing.
 	public static void assertExport(String resourcePath, String testCaseName, Report report,
-			boolean applyToXmlIgnores, boolean applyEpochTimestampIgnores, boolean applyStackTraceIgnores,
-			boolean ignoreStorageId)
+									boolean applyToXmlIgnores, boolean applyEpochTimestampIgnores, boolean applyStackTraceIgnores,
+									boolean ignoreStorageId)
 			throws IOException, StorageException {
 		byte[] bytes = Export.getReportBytesPortable(report);
 		ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(bytes);
@@ -193,7 +194,7 @@ public class TestExport {
 		StringBuilder builder = new StringBuilder();
 		int i = gzipInputStream.read();
 		while (i != -1) {
-			builder.append((char)i);
+			builder.append((char) i);
 			i = gzipInputStream.read();
 		}
 		String actual = builder.toString();

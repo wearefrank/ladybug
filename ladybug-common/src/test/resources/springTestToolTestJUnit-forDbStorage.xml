@@ -8,7 +8,7 @@
 		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
 	"
 	default-lazy-init="true"
-	>
+>
 
 	<context:component-scan base-package="org.wearefrank.ladybug"/>
 
@@ -21,8 +21,8 @@
 	</bean>
 
 	<bean
-            name="debugStorage"
-            class="org.wearefrank.ladybug.storage.database.DatabaseLogStorage" autowire="byName" depends-on="ladybugDatabaseChangelog">
+		name="debugStorage"
+		class="org.wearefrank.ladybug.storage.database.DatabaseLogStorage" autowire="byName" depends-on="ladybugDatabaseChangelog">
 		<property name="table" value="LADYBUG"/>
 		<property name="metadataExtractor" ref="metadataExtractor"/>
 	</bean>
@@ -39,8 +39,8 @@
 	</bean>
 
 	<bean name="ladybugDatabaseChangelog" class="liquibase.integration.spring.SpringLiquibase">
-		<property name="dataSource" ref="ladybugDataSource" />
-		<property name="changeLog" value="classpath:ladybug/DatabaseChangelog.xml" />
+		<property name="dataSource" ref="ladybugDataSource"/>
+		<property name="changeLog" value="classpath:ladybug/DatabaseChangelog.xml"/>
 	</bean>
 
 </beans>

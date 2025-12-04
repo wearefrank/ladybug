@@ -17,10 +17,10 @@ package org.wearefrank.ladybug.storage.memory;
 
 import java.lang.invoke.MethodHandles;
 
+import jakarta.enterprise.context.Dependent;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import jakarta.enterprise.context.Dependent;
 import org.wearefrank.ladybug.Report;
 import org.wearefrank.ladybug.storage.LogStorage;
 import org.wearefrank.ladybug.storage.StorageException;
@@ -37,7 +37,7 @@ public class MemoryLogStorage extends MemoryStorage implements LogStorage {
 	public void storeWithoutException(Report report) {
 		try {
 			store(report);
-		} catch(Throwable throwable) {
+		} catch (Throwable throwable) {
 			lastExceptionMessage = throwable.getMessage();
 			// When StorageException is should already be logged
 			if (!(throwable instanceof StorageException)) {

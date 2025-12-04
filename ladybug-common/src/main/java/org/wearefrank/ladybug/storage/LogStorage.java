@@ -27,7 +27,7 @@ import org.wearefrank.ladybug.Report;
  * implement {@link CrudStorage} as {@link Config#debugStorage(MetadataExtractor metadataExtractor) debug storage}.
  * Although the Debug tab does support a CrudStorage (in which case reports can be changed) this is for specific use
  * cases where people don't expect the Debug tab to tell the "truth" about what has happened in a system.
- * 
+ *
  * @author Jaco de Groot
  */
 public interface LogStorage extends Storage {
@@ -37,7 +37,7 @@ public interface LogStorage extends Storage {
 	/**
 	 * Get warnings and errors that need user attention like file system (almost) full or exceptions while storing
 	 * reports.
-	 * 
+	 *
 	 * @return the message to show to the user or null when everything is fine
 	 */
 	public String getWarningsAndErrors();

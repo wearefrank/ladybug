@@ -20,10 +20,10 @@ import java.io.InputStream;
 import java.lang.invoke.MethodHandles;
 import java.util.Properties;
 
+import jakarta.servlet.ServletException;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import jakarta.servlet.ServletException;
 
 public class FrontendServlet extends AngularServlet {
 	private static final long serialVersionUID = 1L;
@@ -32,7 +32,7 @@ public class FrontendServlet extends AngularServlet {
 
 	/**
 	 * See documentation at ApiServlet.getDefaultMapping()
-	 * 
+	 *
 	 * @return ...
 	 */
 	public static String getDefaultMapping() {

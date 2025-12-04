@@ -1,60 +1,61 @@
 <Report Name="testSpecialValues"
-        Description=""
-        Path=""
-        CorrelationId="Original length: 36"
-        StartTime="Original length: 13"
-        EndTime="Original length: 13"
-        NumberOfCheckpoints="7"
-        EstimatedMemoryUsage="IGNORE">
-   <Checkpoint Name="testSpecialValues"
-               Type="Startpoint"
-               Level="0"
-               Null="true"/>
-   <Checkpoint Name="infoname1"
-               Type="Infopoint"
-               Level="1"
-               MessageClassName="java.util.Date"
-               Encoding="SimpleDateFormat(&#34;yyyy-MM-dd'T'HH:mm:ss.SSSZ&#34;)">1970-01-01TXX:XX:00.000+XXXX</Checkpoint>
-   <Checkpoint Name="infoname2"
-               Type="Infopoint"
-               Level="1"
-               MessageClassName="java.util.HashSet"
-               Encoding="XMLEncoder"
-               TextDecl="&lt;?xml version=&#34;1.0&#34; encoding=&#34;UTF-8&#34;?&gt;">
-      <java version="IGNORE-JAVA-VERSION" class="java.beans.XMLDecoder">
-         <object class="java.util.HashSet">
-            <void method="add">
-               <string>Test with strange object</string>
-            </void>
-         </object>
-      </java>
-   </Checkpoint>
-   <Checkpoint Name="infoname3"
-               Type="Infopoint"
-               Level="1"
-               MessageClassName="java.lang.Integer"
-               Encoding="XMLEncoder"
-               TextDecl="&lt;?xml version=&#34;1.0&#34; encoding=&#34;UTF-8&#34;?&gt;">
-      <java version="IGNORE-JAVA-VERSION" class="java.beans.XMLDecoder">
-         <int>123</int>
-      </java>
-   </Checkpoint>
-   <Checkpoint Name="infoname4"
-               Type="Infopoint"
-               Level="1"
-               MessageClassName="java.lang.Integer"
-               Encoding="XMLEncoder"
-               TextDecl="&lt;?xml version=&#34;1.0&#34; encoding=&#34;UTF-8&#34;?&gt;">
-      <java version="IGNORE-JAVA-VERSION" class="java.beans.XMLDecoder">
-         <int>456</int>
-      </java>
-   </Checkpoint>
-   <Checkpoint Name="infoname5"
-               Type="Infopoint"
-               Level="1"
-               MessageClassName="org.apache.xerces.dom.ElementImpl"
-               Encoding="XmlUtil.nodeToString()">
-      <NodeTest/>
-   </Checkpoint>
-   <Checkpoint Name="testSpecialValues" Type="Endpoint" Level="1"/>
+	Description=""
+	Path=""
+	CorrelationId="Original length: 36"
+	StartTime="Original length: 13"
+	EndTime="Original length: 13"
+	NumberOfCheckpoints="7"
+	EstimatedMemoryUsage="IGNORE">
+	<Checkpoint Name="testSpecialValues"
+		Type="Startpoint"
+		Level="0"
+		Null="true"/>
+	<Checkpoint Name="infoname1"
+		Type="Infopoint"
+		Level="1"
+		MessageClassName="java.util.Date"
+		Encoding="SimpleDateFormat(&#34;yyyy-MM-dd'T'HH:mm:ss.SSSZ&#34;)">1970-01-01TXX:XX:00.000+XXXX
+	</Checkpoint>
+	<Checkpoint Name="infoname2"
+		Type="Infopoint"
+		Level="1"
+		MessageClassName="java.util.HashSet"
+		Encoding="XMLEncoder"
+		TextDecl="&lt;?xml version=&#34;1.0&#34; encoding=&#34;UTF-8&#34;?&gt;">
+		<java version="IGNORE-JAVA-VERSION" class="java.beans.XMLDecoder">
+			<object class="java.util.HashSet">
+				<void method="add">
+					<string>Test with strange object</string>
+				</void>
+			</object>
+		</java>
+	</Checkpoint>
+	<Checkpoint Name="infoname3"
+		Type="Infopoint"
+		Level="1"
+		MessageClassName="java.lang.Integer"
+		Encoding="XMLEncoder"
+		TextDecl="&lt;?xml version=&#34;1.0&#34; encoding=&#34;UTF-8&#34;?&gt;">
+		<java version="IGNORE-JAVA-VERSION" class="java.beans.XMLDecoder">
+			<int>123</int>
+		</java>
+	</Checkpoint>
+	<Checkpoint Name="infoname4"
+		Type="Infopoint"
+		Level="1"
+		MessageClassName="java.lang.Integer"
+		Encoding="XMLEncoder"
+		TextDecl="&lt;?xml version=&#34;1.0&#34; encoding=&#34;UTF-8&#34;?&gt;">
+		<java version="IGNORE-JAVA-VERSION" class="java.beans.XMLDecoder">
+			<int>456</int>
+		</java>
+	</Checkpoint>
+	<Checkpoint Name="infoname5"
+		Type="Infopoint"
+		Level="1"
+		MessageClassName="org.apache.xerces.dom.ElementImpl"
+		Encoding="XmlUtil.nodeToString()">
+		<NodeTest/>
+	</Checkpoint>
+	<Checkpoint Name="testSpecialValues" Type="Endpoint" Level="1"/>
 </Report>

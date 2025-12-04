@@ -41,6 +41,7 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import io.opentelemetry.api.trace.Span;
+
 import org.wearefrank.ladybug.MessageCapturer.StreamingType;
 import org.wearefrank.ladybug.MessageEncoder.ToStringResult;
 import org.wearefrank.ladybug.run.ReportRunner;
@@ -86,7 +87,7 @@ public class Checkpoint implements Serializable, Cloneable {
 		// Only for Java XML encoding/decoding! Use other constructor instead.
 	}
 
-	public Checkpoint(Report report, String threadName, String sourceClassName,	String name, int type, int level) {
+	public Checkpoint(Report report, String threadName, String sourceClassName, String name, int type, int level) {
 		this.report = report;
 		this.threadName = threadName;
 		this.sourceClassName = sourceClassName;
@@ -153,7 +154,7 @@ public class Checkpoint implements Serializable, Cloneable {
 		this.message = message;
 	}
 
-	public  <T> T setMessage(T message) {
+	public <T> T setMessage(T message) {
 		// For streams message encoder and setMessage() with param type String will be called a second time in
 		// Report.closeStreamingMessageListeners(). The first call here will allow the message encoder to set the
 		// message to a value that shows that Ladybug is waiting for the stream to be read, captured and closed or any
@@ -182,111 +183,115 @@ public class Checkpoint implements Serializable, Cloneable {
 					Throwable[] exception = new Throwable[1];
 					if (streamingType == StreamingType.CHARACTER_STREAM) {
 						messageCapturerWriter = new StringWriter() {
-								int length = 0;
-								boolean truncated = false;
+							int length = 0;
+							boolean truncated = false;
 
-								@Override
-								public void write(String str) {
-									write(str.toCharArray(), 0, str.length());
-								}
+							@Override
+							public void write(String str) {
+								write(str.toCharArray(), 0, str.length());
+							}
 
-								@Override
-								public void write(String str, int off, int len) {
-									write(str.toCharArray(), off, len);
-								}
+							@Override
+							public void write(String str, int off, int len) {
+								write(str.toCharArray(), off, len);
+							}
 
-								@Override
-								public void write(int c) {
-									char[] cbuf = new char[1];
-									cbuf[0] = (char)c;
-									write(cbuf, 0, 1);
-								}
+							@Override
+							public void write(int c) {
+								char[] cbuf = new char[1];
+								cbuf[0] = (char) c;
+								write(cbuf, 0, 1);
+							}
 
-								@Override
-								public void write(char[] cbuf) {
-									write(cbuf, 0, cbuf.length);
-								}
+							@Override
+							public void write(char[] cbuf) {
+								write(cbuf, 0, cbuf.length);
+							}
 
-								@Override
-								public void write(char[] cbuf, int off, int len) {
-									if (length + len > testTool.getMaxMessageLength()) {
-										if (!truncated) {
-											super.write(cbuf, off, testTool.getMaxMessageLength() - length);
-											truncated = true;
-										}
-									}
-									length = length + len;
-									if (truncated) {
-										return;
-									} else {
-										super.write(cbuf, off, len);
+							@Override
+							public void write(char[] cbuf, int off, int len) {
+								if (length + len > testTool.getMaxMessageLength()) {
+									if (!truncated) {
+										super.write(cbuf, off, testTool.getMaxMessageLength() - length);
+										truncated = true;
 									}
 								}
-
-								@Override
-								public void close() throws IOException {
-									super.close();
-									int preTruncatedMessageLength = -1;
-									if (truncated) {
-										preTruncatedMessageLength = length;
-									}
-									messageCapturerWriter = null;
-									report.closeStreamingMessage(toStringResult.getMessageClassName(),
-											messageToClose[0], streamingType.toString(), charset[0],
-											toString(), preTruncatedMessageLength, exception[0]);
+								length = length + len;
+								if (truncated) {
+									return;
+								} else {
+									super.write(cbuf, off, len);
 								}
+							}
+
+							@Override
+							public void close() throws IOException {
+								super.close();
+								int preTruncatedMessageLength = -1;
+								if (truncated) {
+									preTruncatedMessageLength = length;
+								}
+								messageCapturerWriter = null;
+								report.closeStreamingMessage(toStringResult.getMessageClassName(),
+										messageToClose[0], streamingType.toString(), charset[0],
+										toString(), preTruncatedMessageLength, exception[0]
+								);
+							}
 						};
 						message = report.getMessageCapturer().toWriter(message, messageCapturerWriter,
-								exceptionNotifier -> exception[0] = exceptionNotifier);
+								exceptionNotifier -> exception[0] = exceptionNotifier
+						);
 					} else {
 						messageCapturerOutputStream = new ByteArrayOutputStream() {
-								int length = 0;
-								boolean truncated = false;
+							int length = 0;
+							boolean truncated = false;
 
-								@Override
-								public void write(int b) {
-									byte[] buf = new byte[1];
-									buf[0] = (byte)b;
-									write(buf, 0, 1);
-								}
+							@Override
+							public void write(int b) {
+								byte[] buf = new byte[1];
+								buf[0] = (byte) b;
+								write(buf, 0, 1);
+							}
 
-								@Override
-								public void write(byte[] b) {
-									write(b, 0, b.length);
-								}
+							@Override
+							public void write(byte[] b) {
+								write(b, 0, b.length);
+							}
 
-								@Override
-								public void write(byte[] b, int off, int len) {
-									if (length + len > testTool.getMaxMessageLength()) {
-										if (!truncated) {
-											super.write(b, off, testTool.getMaxMessageLength() - length);
-											truncated = true;
-										}
-									}
-									length = length + len;
-									if (truncated) {
-										return;
-									} else {
-										super.write(b, off, len);
+							@Override
+							public void write(byte[] b, int off, int len) {
+								if (length + len > testTool.getMaxMessageLength()) {
+									if (!truncated) {
+										super.write(b, off, testTool.getMaxMessageLength() - length);
+										truncated = true;
 									}
 								}
-
-								@Override
-								public void close() throws IOException {
-									super.close();
-									int preTruncatedMessageLength = -1;
-									if (truncated) {
-										preTruncatedMessageLength = length;
-									}
-									messageCapturerOutputStream = null;
-									report.closeStreamingMessage(toStringResult.getMessageClassName(),
-											messageToClose[0], streamingType.toString(), charset[0],
-											toByteArray(), preTruncatedMessageLength, exception[0]);
+								length = length + len;
+								if (truncated) {
+									return;
+								} else {
+									super.write(b, off, len);
 								}
+							}
+
+							@Override
+							public void close() throws IOException {
+								super.close();
+								int preTruncatedMessageLength = -1;
+								if (truncated) {
+									preTruncatedMessageLength = length;
+								}
+								messageCapturerOutputStream = null;
+								report.closeStreamingMessage(toStringResult.getMessageClassName(),
+										messageToClose[0], streamingType.toString(), charset[0],
+										toByteArray(), preTruncatedMessageLength, exception[0]
+								);
+							}
 						};
 						message = report.getMessageCapturer().toOutputStream(message, messageCapturerOutputStream,
 								charsetNotifier -> charset[0] = charsetNotifier,
-								exceptionNotifier -> exception[0] = exceptionNotifier);
+								exceptionNotifier -> exception[0] = exceptionNotifier
+						);
 					}
 					// When message is wrapped by toWriter() or toOutputStream() start listening to the wrapped message
 					// instead of the original message message for which addStreamingMessageListener() was called
@@ -360,7 +365,7 @@ public class Checkpoint implements Serializable, Cloneable {
 	/**
 	 * Indicates whether the message is (being) captured from a stream and when this is the case the
 	 * {@link StreamingType} being used
-	 * 
+	 *
 	 * @param streaming ...
 	 */
 	public void setStreaming(String streaming) {
@@ -451,7 +456,7 @@ public class Checkpoint implements Serializable, Cloneable {
 			i = report.getCheckpoints().size();
 		}
 		i--;
-		for ( ; i >= 0; i--) {
+		for (; i >= 0; i--) {
 			Checkpoint currentCheckpoint = report.getCheckpoints().get(i);
 			String nextName = currentCheckpoint.getName();
 			if (currentCheckpoint.getLevel() == currentLevel &&
@@ -468,7 +473,7 @@ public class Checkpoint implements Serializable, Cloneable {
 
 	/**
 	 * Estimated memory usage in bytes.
-	 * 
+	 *
 	 * @return estimated memory usage in bytes
 	 */
 	public long getEstimatedMemoryUsage() {
@@ -481,7 +486,7 @@ public class Checkpoint implements Serializable, Cloneable {
 
 	@Override
 	public Checkpoint clone() throws CloneNotSupportedException {
-		Checkpoint checkpoint = (Checkpoint)super.clone();
+		Checkpoint checkpoint = (Checkpoint) super.clone();
 		checkpoint.setReport(null);
 		return checkpoint;
 	}
@@ -494,7 +499,7 @@ public class Checkpoint implements Serializable, Cloneable {
 	/**
 	 * Sets the length of the message before it was truncated, so that the Ladybug's UI
 	 * can display the amount of characters that were removed from the original message.
-	 * 
+	 *
 	 * @param length The length of the message before it was truncated.
 	 */
 	public void setPreTruncatedMessageLength(int length) {
@@ -507,27 +512,27 @@ public class Checkpoint implements Serializable, Cloneable {
 
 	public String getMessageWithResolvedVariables(ReportRunner reportRunner) {
 		String result = getMessage();
-		if(getMessage() != null && containsVariables()) {
+		if (getMessage() != null && containsVariables()) {
 			// 1. Parse external report variables
-			if(reportRunner != null) {
+			if (reportRunner != null) {
 				List<MatchResult> matchResults = new ArrayList<MatchResult>();
 				Matcher m = EXTERNAL_VARIABLE_PATTERN.matcher(getMessage());
-				while(m.find()) {
+				while (m.find()) {
 					matchResults.add(m.toMatchResult());
 				}
-				for(MatchResult matchResult : matchResults) {
+				for (MatchResult matchResult : matchResults) {
 					int reportStorageId = Integer.parseInt(matchResult.group(1).split("#")[0]);
 					int checkpointIndex = Integer.parseInt(matchResult.group(1).split("#")[1]);
 					String xpathExpression = null;
-					if(StringUtils.isNotEmpty(matchResult.group(2))) {
+					if (StringUtils.isNotEmpty(matchResult.group(2))) {
 						xpathExpression = matchResult.group(3);
 					}
-					
+
 					// Determine the target report
 					Report targetReport = null;
 					try {
-						for(Entry<Integer, RunResult> entry : reportRunner.getResults().entrySet()) {
-							if(entry.getKey() == reportStorageId) {
+						for (Entry<Integer, RunResult> entry : reportRunner.getResults().entrySet()) {
+							if (entry.getKey() == reportStorageId) {
 								targetReport = reportRunner.getRunResultReport(entry.getValue().correlationId);
 							}
 						}
@@ -535,49 +540,50 @@ public class Checkpoint implements Serializable, Cloneable {
 						log.error(e.getMessage(), e);
 					}
 					// Attempt to fetch data from xpath in target checkpoint's XML message
-					if(targetReport != null) {
+					if (targetReport != null) {
 						try {
 							String targetCheckpointMessage = targetReport.getCheckpoints().get(checkpointIndex).getMessage();
-							if(StringUtils.isNotEmpty(targetCheckpointMessage)) {
-								if(StringUtils.isNotEmpty(xpathExpression)) {
+							if (StringUtils.isNotEmpty(targetCheckpointMessage)) {
+								if (StringUtils.isNotEmpty(xpathExpression)) {
 									try {
 										String xpathResult = XmlUtil.createXPathExpression(xpathExpression).evaluate(
 												XmlUtil.createXmlSourceFromString(targetCheckpointMessage));
-										if(xpathResult != null) {
+										if (xpathResult != null) {
 											try {
 												result = result.replace(matchResult.group(), xpathResult);
 											} catch (IllegalArgumentException e) {
-												if(GENERIC_VARIABLE_PATTERN.matcher(xpathResult).find()) {
+												if (GENERIC_VARIABLE_PATTERN.matcher(xpathResult).find()) {
 													log.warn(warningMessageHeader(matchResult.group())
-															+"Specified xpath expression points to incorrectly parsed parameter "+xpathResult+"; "
+															+ "Specified xpath expression points to incorrectly parsed parameter " + xpathResult + "; "
 															+ "see other recent log warnings for a possible cause");
 												}
 											}
 										}
 									} catch (XPathExpressionException e) {
-										log.warn(warningMessageHeader(matchResult.group())+"Invalid xpath expression or XML message in target checkpoint");
+										log.warn(warningMessageHeader(matchResult.group()) + "Invalid xpath expression or XML message in target checkpoint");
 									}
 								} else {
 									result = result.replaceAll(Pattern.quote(matchResult.group()), targetCheckpointMessage);
 								}
 							} else {
-								log.warn(warningMessageHeader(matchResult.group())+"Target checkpoint ["+targetReport.getCheckpoints().get(checkpointIndex)+"] contains no message");
+								log.warn(warningMessageHeader(matchResult.group()) + "Target checkpoint [" + targetReport.getCheckpoints()
+										.get(checkpointIndex) + "] contains no message");
 							}
 						} catch (IndexOutOfBoundsException e) {
-							log.warn(warningMessageHeader(matchResult.group())+"Index out of bounds: checkpoint with index ["+checkpointIndex+"] does not exist in report with storageId ["+reportStorageId+"]");
+							log.warn(warningMessageHeader(matchResult.group()) + "Index out of bounds: checkpoint with index [" + checkpointIndex + "] does not exist in report with storageId [" + reportStorageId + "]");
 						}
 					} else {
-						log.warn(warningMessageHeader(matchResult.group())+"Run result not found for storageId ["+reportStorageId+"] - please make sure it runs before this report");
+						log.warn(warningMessageHeader(matchResult.group()) + "Run result not found for storageId [" + reportStorageId + "] - please make sure it runs before this report");
 					}
 				}
 			}
 			// 2. Parse local variables
-			if(report.getVariables() != null) {
+			if (report.getVariables() != null) {
 				Map<String, String> variablesMap = report.getVariables();
 				Map<String, Pattern> variablesPatternMap = getVariablePatternMap(variablesMap);
-				for(Entry<String, String> entry : variablesMap.entrySet()) {
+				for (Entry<String, String> entry : variablesMap.entrySet()) {
 					Matcher m = variablesPatternMap.get(entry.getKey()).matcher(getMessage());
-					while(m.find()) {
+					while (m.find()) {
 						result = result.replaceAll(Pattern.quote(m.group()), entry.getValue());
 					}
 				}
@@ -587,19 +593,19 @@ public class Checkpoint implements Serializable, Cloneable {
 	}
 
 	private String warningMessageHeader(String parameter) {
-		return "Could not parse parameter "+parameter+" found in the input of report ["+report.getFullPath()+"] with storageId ["+report.getStorageId()+"]\n"; 
+		return "Could not parse parameter " + parameter + " found in the input of report [" + report.getFullPath() + "] with storageId [" + report.getStorageId() + "]\n";
 	}
-	
+
 	public boolean containsVariables() {
-		if(StringUtils.isEmpty(getMessage())) return false;
+		if (StringUtils.isEmpty(getMessage())) return false;
 		return GENERIC_VARIABLE_PATTERN.matcher(getMessage()).find();
 	}
 
 	protected Map<String, Pattern> getVariablePatternMap(Map<String, String> variableMap) {
-		if(variablesPatternMap == null) {
+		if (variablesPatternMap == null) {
 			variablesPatternMap = new HashMap<String, Pattern>();
-			for(Entry<String, String> entry : variableMap.entrySet()) {
-				variablesPatternMap.put(entry.getKey(), Pattern.compile("\\$\\{"+entry.getKey()+"\\}"));
+			for (Entry<String, String> entry : variableMap.entrySet()) {
+				variablesPatternMap.put(entry.getKey(), Pattern.compile("\\$\\{" + entry.getKey() + "\\}"));
 			}
 		}
 		return variablesPatternMap;
@@ -612,12 +618,13 @@ public class Checkpoint implements Serializable, Cloneable {
 	// Use lowercase to make JSON-B behave the same as Jackson
 	// See also comment in Report above Integer transientStorageId
 	public String getUid() {
-		return report.getStorageId()+"#"+report.getCheckpoints().indexOf(this);
+		return report.getStorageId() + "#" + report.getCheckpoints().indexOf(this);
 	}
 
 	/**
-	 * To be called when reports are uploaded to the Ladybug. Updates variables referring to 
+	 * To be called when reports are uploaded to the Ladybug. Updates variables referring to
 	 * a report that had its storageId changed.
+	 *
 	 * @param importResults ...
 	 * @return ...
 	 */
@@ -625,13 +632,13 @@ public class Checkpoint implements Serializable, Cloneable {
 		boolean isVariablesUpdated = false;
 		Matcher m = EXTERNAL_VARIABLE_PATTERN.matcher(getMessage());
 		List<MatchResult> matchResults = new ArrayList<MatchResult>();
-		while(m.find()) {
+		while (m.find()) {
 			matchResults.add(m.toMatchResult());
 		}
-		for(MatchResult matchResult : matchResults) {
+		for (MatchResult matchResult : matchResults) {
 			int matchResultStorageId = Integer.valueOf(matchResult.group(1).split("#")[0]);
-			for(ImportResult importResult : importResults) {
-				if(matchResultStorageId == importResult.getOldStorageId()) {
+			for (ImportResult importResult : importResults) {
+				if (matchResultStorageId == importResult.getOldStorageId()) {
 					int newStorageId = importResult.getNewStorageId();
 					String newVar = matchResult.group().replaceAll(String.valueOf(matchResultStorageId), String.valueOf(newStorageId));
 					setMessage(getMessage().replace(matchResult.group(), newVar));

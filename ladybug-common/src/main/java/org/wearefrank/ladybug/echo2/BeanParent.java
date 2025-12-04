@@ -18,14 +18,15 @@ package org.wearefrank.ladybug.echo2;
 public interface BeanParent {
 
 	/**
-	 * @see Echo2Application#initBean()
 	 * @param beanParent ...
+	 * @see Echo2Application#initBean()
 	 */
 	public void initBean(BeanParent beanParent);
 
 	/**
 	 * Echo2 Components already have a getParent() method which in some cases
 	 * will do, but it's not always the same/needed hierarchy.
+	 *
 	 * @return ...
 	 */
 	public BeanParent getBeanParent();

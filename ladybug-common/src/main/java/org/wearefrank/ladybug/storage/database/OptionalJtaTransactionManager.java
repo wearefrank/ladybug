@@ -40,31 +40,31 @@ import lombok.Setter;
  * Use {@link org.springframework.transaction.jta.JtaTransactionManager} when possible (e.g. on JBoss),
  * fallback to {@link org.springframework.jdbc.datasource.DataSourceTransactionManager} otherwise (e.g. on Tomcat).
  * </p>
- * 
+ *
  * <p>
  * This will help applications, that for example need to run on both JBoss and Tomcat, to automatically use the JBoss
  * provided transaction manager on JBoss and create a DataSourceTransactionManager when running on Tomcat (using a
  * DataSourceTransactionManager on JBoss can give: IJ031019: You cannot commit during a managed transaction).
  * </p>
- * 
+ *
  * <p>
  * For applications that require XA / distributed transactions a DataSourceTransactionManager will not but sufficient.
  * But for example when using JdbcTemplate and only in need of a transaction manager to disable auto-commit (like in
  * {@link DatabaseStorage} using OptionalJtaTransactionManager can be convenient.
  * </p>
- * 
+ *
  * <p>
  * Other solutions like defining both beans and only use one of them depending on the detected application server can be
  * tricky because Spring will detect both transaction managers and give the following error:
- *   No qualifying bean of type 'org.springframework.transaction.TransactionManager' available: expected single matching
- *   bean but found 2
+ * No qualifying bean of type 'org.springframework.transaction.TransactionManager' available: expected single matching
+ * bean but found 2
  * </p>
- * 
+ *
  * <p>
  * Using &lt;tx:jta-transaction-manager/> will require Tomcat to be configured to provide a transaction manager through
  * JNDI. See https://stackoverflow.com/a/5080761/17193564
  * </p>
- * 
+ *
  * <p>
  * Please note that when DataSourceTransactionManager is being used you might want to check whether a connection pool is
  * provided. Java EE servers that provide a transaction manager will automatically link the data source to it and
@@ -73,7 +73,7 @@ import lombok.Setter;
  * when Tomcat already provides a connection pool. Class PoolingDataSourceFactory of the Frank!Framework can be used to
  * detect whether a connection pool is provided and automatically create a DBCP 2 connection pool when needed.
  * </p>
- * 
+ *
  * @author Jaco de Groot
  */
 public class OptionalJtaTransactionManager implements PlatformTransactionManager, InitializingBean {
@@ -102,7 +102,7 @@ public class OptionalJtaTransactionManager implements PlatformTransactionManager
 	 * example Frank!Framework will configure it's PoolingDataSourceFactory to pool XA data sources only when a JTA
 	 * environment is not available. In a JTA environment the PoolingDataSourceFactory, which is configured to provide
 	 * a {@link DataSource} to Ladybug, should not pool the {@link XADataSource}
-	 * 
+	 *
 	 * @return true when a JTA environment is available
 	 */
 	public static boolean isJtaAvailable() {
@@ -119,7 +119,7 @@ public class OptionalJtaTransactionManager implements PlatformTransactionManager
 			// a JTA environment is available) instead of doing it in method afterPropertiesSet() of this class
 			jtaTransactionManager.afterPropertiesSet();
 			return jtaTransactionManager;
-		} catch(IllegalStateException e) {
+		} catch (IllegalStateException e) {
 			return null;
 		}
 	}
@@ -128,7 +128,7 @@ public class OptionalJtaTransactionManager implements PlatformTransactionManager
 	public void afterPropertiesSet() {
 		// For JtaTransactionManager method afterPropertiesSet() is called in getJtaTransactionManager()
 		if (delegate instanceof DataSourceTransactionManager) {
-			DataSourceTransactionManager dataSourceTransactionManager = ((DataSourceTransactionManager)delegate);
+			DataSourceTransactionManager dataSourceTransactionManager = ((DataSourceTransactionManager) delegate);
 			dataSourceTransactionManager.setDataSource(dataSource);
 			dataSourceTransactionManager.afterPropertiesSet();
 		}

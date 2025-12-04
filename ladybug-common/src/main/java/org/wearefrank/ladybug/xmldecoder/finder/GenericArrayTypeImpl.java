@@ -33,66 +33,67 @@ import java.lang.reflect.Type;
  * Implementation of GenericArrayType interface for core reflection.
  */
 public class GenericArrayTypeImpl
-    implements GenericArrayType {
-    private Type genericComponentType;
+		implements GenericArrayType {
+	private Type genericComponentType;
 
-    // private constructor enforces use of static factory
-    private GenericArrayTypeImpl(Type ct) {
-        genericComponentType = ct;
-    }
+	// private constructor enforces use of static factory
+	private GenericArrayTypeImpl(Type ct) {
+		genericComponentType = ct;
+	}
 
-    /**
-     * Factory method.
-     * @param ct - the desired component type of the generic array type
-     * being created
-     * @return a generic array type with the desired component type
-     */
-    public static GenericArrayTypeImpl make(Type ct) {
-        return new GenericArrayTypeImpl(ct);
-    }
+	/**
+	 * Factory method.
+	 *
+	 * @param ct - the desired component type of the generic array type
+	 *           being created
+	 * @return a generic array type with the desired component type
+	 */
+	public static GenericArrayTypeImpl make(Type ct) {
+		return new GenericArrayTypeImpl(ct);
+	}
 
 
-    /**
-     * Returns  a <var>Type</var> object representing the component type
-     * of this array.
-     *
-     * @return  a <var>Type</var> object representing the component type
-     *     of this array
-     * @since 1.5
-     */
-    public Type getGenericComponentType() {
-        return genericComponentType; // return cached component type
-    }
+	/**
+	 * Returns  a <var>Type</var> object representing the component type
+	 * of this array.
+	 *
+	 * @return a <var>Type</var> object representing the component type
+	 * 		of this array
+	 * @since 1.5
+	 */
+	public Type getGenericComponentType() {
+		return genericComponentType; // return cached component type
+	}
 
-    public String toString() {
-        Type componentType = getGenericComponentType();
-        StringBuilder sb = new StringBuilder();
+	public String toString() {
+		Type componentType = getGenericComponentType();
+		StringBuilder sb = new StringBuilder();
 
-        if (componentType instanceof Class)
-            sb.append(((Class)componentType).getName() );
-        else
-            sb.append(componentType.toString());
-        sb.append("[]");
-        return sb.toString();
-    }
+		if (componentType instanceof Class)
+			sb.append(((Class) componentType).getName());
+		else
+			sb.append(componentType.toString());
+		sb.append("[]");
+		return sb.toString();
+	}
 
-    @Override
-    public boolean equals(Object o) {
-        if (o instanceof GenericArrayType) {
-            GenericArrayType that = (GenericArrayType) o;
+	@Override
+	public boolean equals(Object o) {
+		if (o instanceof GenericArrayType) {
+			GenericArrayType that = (GenericArrayType) o;
 
-            Type thatComponentType = that.getGenericComponentType();
-            return genericComponentType == null ?
-                thatComponentType == null :
-                genericComponentType.equals(thatComponentType);
-        } else
-            return false;
-    }
+			Type thatComponentType = that.getGenericComponentType();
+			return genericComponentType == null ?
+					thatComponentType == null :
+					genericComponentType.equals(thatComponentType);
+		} else
+			return false;
+	}
 
-    @Override
-    public int hashCode() {
-        return (genericComponentType == null) ?
-            0:
-            genericComponentType.hashCode();
-    }
+	@Override
+	public int hashCode() {
+		return (genericComponentType == null) ?
+				0 :
+				genericComponentType.hashCode();
+	}
 }

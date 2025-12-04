@@ -21,7 +21,6 @@ import static org.junit.Assert.assertTrue;
 import java.util.Arrays;
 
 import org.junit.Test;
-
 import org.wearefrank.ladybug.util.SearchUtil;
 
 /**
@@ -33,33 +32,33 @@ public class TestSearchUtil {
 	public void testSearchUtil() {
 		String[] values;
 		String[] search;
-		
-		values = new String[]{"a"};
-		search = new String[]{"a"};
+
+		values = new String[]{ "a" };
+		search = new String[]{ "a" };
 		assertAllMatch(values, search);
 
-		values = new String[]{"a"};
-		search = new String[]{"*"};
+		values = new String[]{ "a" };
+		search = new String[]{ "*" };
 		assertAllMatch(values, search);
 
-		values = new String[]{"abc"};
+		values = new String[]{ "abc" };
 
-		search = new String[]{"(abc)"};
+		search = new String[]{ "(abc)" };
 		assertAllMatch(values, search);
 
-		search = new String[]{"b"};
+		search = new String[]{ "b" };
 		assertAllMatch(values, search);
 
-		search = new String[]{"a*"};
+		search = new String[]{ "a*" };
 		assertAllMatch(values, search);
 
-		search = new String[]{"*bc"};
+		search = new String[]{ "*bc" };
 		assertAllMatch(values, search);
 
-		search = new String[]{"b*"};
+		search = new String[]{ "b*" };
 		assertAnyDoesNotMatch(values, search);
 
-		search = new String[]{"*b"};
+		search = new String[]{ "*b" };
 		assertAnyDoesNotMatch(values, search);
 
 		assertTrue(SearchUtil.matches(null, "null"));

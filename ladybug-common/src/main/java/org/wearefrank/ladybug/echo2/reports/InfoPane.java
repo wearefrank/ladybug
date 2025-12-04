@@ -15,16 +15,17 @@
 */
 package org.wearefrank.ladybug.echo2.reports;
 
-import echopointng.Tree;
-import echopointng.tree.DefaultMutableTreeNode;
-import echopointng.tree.TreePath;
-import nextapp.echo2.app.Component;
-import nextapp.echo2.app.ContentPane;
 import org.wearefrank.ladybug.Checkpoint;
 import org.wearefrank.ladybug.Report;
 import org.wearefrank.ladybug.echo2.BaseComponent;
 import org.wearefrank.ladybug.echo2.BeanParent;
 import org.wearefrank.ladybug.echo2.Echo2Application;
+
+import echopointng.Tree;
+import echopointng.tree.DefaultMutableTreeNode;
+import echopointng.tree.TreePath;
+import nextapp.echo2.app.Component;
+import nextapp.echo2.app.ContentPane;
 
 /**
  * @author Jaco de Groot
@@ -107,8 +108,8 @@ public class InfoPane extends ContentPane implements BeanParent {
 		add(reportComponent, 0);
 	}
 
-	public void displayCheckpoint(Tree tree, TreePath treePath, DefaultMutableTreeNode node, 
-			Report report, Checkpoint checkpoint, Checkpoint checkpointCompare, boolean compare) {
+	public void displayCheckpoint(Tree tree, TreePath treePath, DefaultMutableTreeNode node,
+								  Report report, Checkpoint checkpoint, Checkpoint checkpointCompare, boolean compare) {
 		checkpointComponent.displayCheckpoint(node, report, checkpoint, checkpointCompare, compare);
 		removeAll();
 		add(checkpointComponent, 0);
@@ -140,7 +141,7 @@ public class InfoPane extends ContentPane implements BeanParent {
 		if (getComponentCount() > 0) {
 			Component component = getComponent(0);
 			if (component instanceof MessageComponent) {
-				return ((MessageComponent)component).hasChanges();
+				return ((MessageComponent) component).hasChanges();
 			}
 		}
 		return false;
@@ -149,7 +150,7 @@ public class InfoPane extends ContentPane implements BeanParent {
 	public void displayError(String message) {
 		if (getComponentCount() > 0) {
 			Component component = getComponent(0);
-			((BaseComponent)component).displayError(message);
+			((BaseComponent) component).displayError(message);
 		}
 	}
 

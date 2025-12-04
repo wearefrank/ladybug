@@ -27,7 +27,7 @@ import org.wearefrank.ladybug.web.common.Constants;
 /**
  * Redirect frontend from /ladybug/api/ to /ladybug-api/ when for example running on Quarkus. When the frontend is
  * adjusted to try both /ladybug/api/ and /ladybug-api/ this isn't needed anymore
- * 
+ *
  * @author Jaco de Groot
  */
 public class RedirectServlet extends HttpServlet {
@@ -64,7 +64,7 @@ public class RedirectServlet extends HttpServlet {
 	}
 
 	private void doRequest(String method, HttpServletRequest request, HttpServletResponse response)
-		throws ServletException, IOException {
+			throws ServletException, IOException {
 		// TODO: Re
 		String pathInfo = "/" + Constants.LADYBUG_API_PATH + request.getPathInfo();
 		String queryString = request.getQueryString();

@@ -24,6 +24,23 @@ import java.util.TooManyListenersException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.wearefrank.ladybug.MetadataExtractor;
+import org.wearefrank.ladybug.Report;
+import org.wearefrank.ladybug.TestTool;
+import org.wearefrank.ladybug.echo2.BaseComponent;
+import org.wearefrank.ladybug.echo2.BeanParent;
+import org.wearefrank.ladybug.echo2.ComparePane;
+import org.wearefrank.ladybug.echo2.Echo2Application;
+import org.wearefrank.ladybug.echo2.TransformationWindow;
+import org.wearefrank.ladybug.echo2.util.Download;
+import org.wearefrank.ladybug.filter.View;
+import org.wearefrank.ladybug.filter.Views;
+import org.wearefrank.ladybug.storage.CrudStorage;
+import org.wearefrank.ladybug.storage.LogStorage;
+import org.wearefrank.ladybug.storage.Storage;
+import org.wearefrank.ladybug.storage.StorageException;
+import org.wearefrank.ladybug.storage.memory.MemoryCrudStorage;
+import org.wearefrank.ladybug.transform.ReportXmlTransformer;
 
 import echopointng.SelectFieldEx;
 import echopointng.table.DefaultSortableTableModel;
@@ -53,23 +70,6 @@ import nextapp.echo2.app.layout.ColumnLayoutData;
 import nextapp.echo2.app.list.DefaultListModel;
 import nextapp.echo2.app.list.ListSelectionModel;
 import nextapp.echo2.app.table.DefaultTableModel;
-import org.wearefrank.ladybug.MetadataExtractor;
-import org.wearefrank.ladybug.Report;
-import org.wearefrank.ladybug.TestTool;
-import org.wearefrank.ladybug.echo2.BaseComponent;
-import org.wearefrank.ladybug.echo2.BeanParent;
-import org.wearefrank.ladybug.echo2.ComparePane;
-import org.wearefrank.ladybug.echo2.Echo2Application;
-import org.wearefrank.ladybug.echo2.TransformationWindow;
-import org.wearefrank.ladybug.echo2.util.Download;
-import org.wearefrank.ladybug.filter.View;
-import org.wearefrank.ladybug.filter.Views;
-import org.wearefrank.ladybug.storage.CrudStorage;
-import org.wearefrank.ladybug.storage.LogStorage;
-import org.wearefrank.ladybug.storage.Storage;
-import org.wearefrank.ladybug.storage.StorageException;
-import org.wearefrank.ladybug.storage.memory.MemoryCrudStorage;
-import org.wearefrank.ladybug.transform.ReportXmlTransformer;
 
 /**
  * @author Jaco de Groot
@@ -133,15 +133,15 @@ public class ReportsComponent extends BaseComponent implements BeanParent, Actio
 	public void setMetadataExtractor(MetadataExtractor metadataExtractor) {
 		this.metadataExtractor = metadataExtractor;
 	}
-	
+
 	public void setViews(Views views) {
 		this.views = views;
 	}
-	
+
 	public Views getViews() {
 		return views;
 	}
-	
+
 	public void setAddCompareButton(boolean addCompareButton) {
 		this.addCompareButton = addCompareButton;
 	}
@@ -223,18 +223,18 @@ public class ReportsComponent extends BaseComponent implements BeanParent, Actio
 		uploadWindow.init();
 
 		Row buttonRow = Echo2Application.getNewRow();
-		
-		Button expandAllButton  = new Button("Expand all");
+
+		Button expandAllButton = new Button("Expand all");
 		expandAllButton.setActionCommand("ExpandAll");
 		Echo2Application.decorateButton(expandAllButton);
 		expandAllButton.addActionListener(this);
 
-		Button collapseAllButton  = new Button("Collapse all");
+		Button collapseAllButton = new Button("Collapse all");
 		collapseAllButton.setActionCommand("CollapseAll");
 		Echo2Application.decorateButton(collapseAllButton);
 		collapseAllButton.addActionListener(this);
 
-		Button closeAllButton  = new Button("Close all");
+		Button closeAllButton = new Button("Close all");
 		closeAllButton.setActionCommand("CloseAll");
 		Echo2Application.decorateButton(closeAllButton);
 		closeAllButton.addActionListener(this);
@@ -289,12 +289,12 @@ public class ReportsComponent extends BaseComponent implements BeanParent, Actio
 			displayAndLogError(e);
 		}
 
-		Button buttonRefresh  = new Button("Refresh");
+		Button buttonRefresh = new Button("Refresh");
 		buttonRefresh.setActionCommand("Refresh");
 		Echo2Application.decorateButton(buttonRefresh);
 		buttonRefresh.addActionListener(this);
 
-		downloadSelectField = new SelectField(new String[]{"Both", "Report", "Message"});
+		downloadSelectField = new SelectField(new String[]{ "Both", "Report", "Message" });
 		downloadSelectField.setSelectedIndex(0);
 
 		integerFieldMaxMetadataTableSize = new IntegerField();
@@ -338,7 +338,7 @@ public class ReportsComponent extends BaseComponent implements BeanParent, Actio
 
 		estimatedMemoryUsageReportsInProgressLabel = Echo2Application.createInfoLabelWithColumnLayoutData();
 
-		reportGeneratorEnabledSelectField = new SelectField(new String[]{"Yes", "No"});
+		reportGeneratorEnabledSelectField = new SelectField(new String[]{ "Yes", "No" });
 		reportGeneratorEnabledSelectField.setActionCommand("UpdateGeneratorEnabled");
 		reportGeneratorEnabledSelectField.addActionListener(this);
 
@@ -358,33 +358,33 @@ public class ReportsComponent extends BaseComponent implements BeanParent, Actio
 		reportGeneratorEnabledRow.add(new Label("Report generator enabled:"));
 		reportGeneratorEnabledRow.add(reportGeneratorEnabledSelectField);
 		reportGeneratorEnabledRow.add(reportGeneratorEnabledErrorLabel);
-		
+
 		// Testtool - Options - RegexFilterField
 		regexFilterField = new TextField();
 		regexFilterField.setWidth(new Extent(200));
 		regexFilterField.setToolTipText(
 				"Example 1 (only store report when name is Hello World):\n" +
-				"Hello World\n" +
-				"\n" +
-				"Example 2 (only store report when name contains Hello or World):\n" +
-				".*(Hello|World).*\n" +
-				"\n" +
-				"Example 3 (only store report when name doesn't start with Hello World):\n" +
-				"^(?!Hello World).*");
-		
-		Button buttonRegexFilterField  = new Button("Apply");
+						"Hello World\n" +
+						"\n" +
+						"Example 2 (only store report when name contains Hello or World):\n" +
+						".*(Hello|World).*\n" +
+						"\n" +
+						"Example 3 (only store report when name doesn't start with Hello World):\n" +
+						"^(?!Hello World).*");
+
+		Button buttonRegexFilterField = new Button("Apply");
 		buttonRegexFilterField.setActionCommand("UpdateRegexValues");
 		Echo2Application.decorateButton(buttonRegexFilterField);
 		buttonRegexFilterField.addActionListener(this);
-				
+
 		Row reportFilterRegexRow = Echo2Application.getNewRow();
 		reportFilterRegexRow.setInsets(new Insets(0, 5, 0, 0));
 		reportFilterRegexRow.add(new Label("Report filter (regex):"));
 		reportFilterRegexRow.add(regexFilterField);
 		reportFilterRegexRow.add(buttonRegexFilterField);
-					
+
 		// End Testtool - Options - RegexFilterField
-		
+
 		Row filterValuesLabelRow = Echo2Application.getNewRow();
 		filterValuesLabelRow.setInsets(new Insets(0, 5, 0, 0));
 		filterValuesLabelRow.add(filterValuesLabel);
@@ -393,12 +393,12 @@ public class ReportsComponent extends BaseComponent implements BeanParent, Actio
 		filterValuesSelectRow.setInsets(new Insets(0, 5, 0, 0));
 		filterValuesSelectRow.add(new Label("Select one or more of:"));
 		filterValuesSelectRow.add(filterValuesListBox);
-		
+
 		checkBoxTransformReportXml = new CheckBox("Transform report xml");
 		checkBoxTransformReportXml.setInsets(new Insets(0, 5, 0, 0));
 		checkBoxTransformReportXml.setSelected(true);
 
-		Button buttonOpenTransformationWindow  = new Button("Transformation...");
+		Button buttonOpenTransformationWindow = new Button("Transformation...");
 		buttonOpenTransformationWindow.setActionCommand("OpenTransformationWindow");
 		Echo2Application.decorateButton(buttonOpenTransformationWindow);
 		buttonOpenTransformationWindow.addActionListener(this);
@@ -411,7 +411,7 @@ public class ReportsComponent extends BaseComponent implements BeanParent, Actio
 		Row openLatestReportsRow = Echo2Application.getNewRow();
 		openLatestReportsRow.setInsets(new Insets(0, 5, 0, 0));
 
-		Button buttonOpen  = new Button("Open");
+		Button buttonOpen = new Button("Open");
 		buttonOpen.setActionCommand("OpenLatestReports");
 		Echo2Application.decorateButton(buttonOpen);
 		buttonOpen.addActionListener(this);
@@ -423,11 +423,11 @@ public class ReportsComponent extends BaseComponent implements BeanParent, Actio
 		checkBoxExcludeReportsWithEmptyReportXml = new CheckBox("Exclude reports with empty report xml");
 		checkBoxExcludeReportsWithEmptyReportXml.setSelected(true);
 
-		Button buttonOpenReportInProgress  = new Button("Open");
+		Button buttonOpenReportInProgress = new Button("Open");
 		buttonOpenReportInProgress.setActionCommand("OpenReportInProgress");
 		Echo2Application.decorateButton(buttonOpenReportInProgress);
 		buttonOpenReportInProgress.addActionListener(this);
-		
+
 		integerFieldOpenReportInProgress = new IntegerField();
 		integerFieldOpenReportInProgress.setWidth(new Extent(25));
 		integerFieldOpenReportInProgress.setDefaultValue(1);
@@ -461,7 +461,7 @@ public class ReportsComponent extends BaseComponent implements BeanParent, Actio
 		openLatestReportsRow.add(integerFieldOpenLatest);
 		openLatestReportsRow.add(new Label("latest reports"));
 		openLatestReportsRow.add(checkBoxExcludeReportsWithEmptyReportXml);
-		
+
 		Row rowForAdditinalOptions;
 		if (addSeparateOptionsRow) {
 			rowForAdditinalOptions = optionsRow;
@@ -559,7 +559,7 @@ public class ReportsComponent extends BaseComponent implements BeanParent, Actio
 				Storage storage = treePane.getStorage();
 				List storageIds = storage.getStorageIds();
 				download(storage, storageIds);
-			} catch(StorageException storageException) {
+			} catch (StorageException storageException) {
 				displayAndLogError(storageException);
 			}
 		} else if (e.getActionCommand().equals("DownloadTable")) {
@@ -568,7 +568,7 @@ public class ReportsComponent extends BaseComponent implements BeanParent, Actio
 				Storage storage = view.getDebugStorage();
 				CrudStorage memStorage = new MemoryCrudStorage();
 				for (int i = 0; i < metadataSortableTableModel.getRowCount(); i++) {
-					Integer storageId = (Integer)metadataSortableTableModel.getValueAt(0, i);
+					Integer storageId = (Integer) metadataSortableTableModel.getValueAt(0, i);
 					String isOpenReportAllowed = view.isOpenReportAllowed(storageId);
 					if (OPEN_REPORT_ALLOWED.equals(isOpenReportAllowed)) {
 						Report report = storage.getReport(storageId);
@@ -579,21 +579,21 @@ public class ReportsComponent extends BaseComponent implements BeanParent, Actio
 				}
 				List storageIds = memStorage.getStorageIds();
 				download(memStorage, storageIds);
-			} catch(StorageException storageException) {
+			} catch (StorageException storageException) {
 				displayAndLogError(storageException);
 			}
 		} else if (e.getActionCommand().equals("Refresh")) {
 			displayReports(false);
 		} else if (e.getActionCommand().equals("OpenReport")) {
 			View view = getSelectedView();
-			Table table = (Table)e.getSource();
+			Table table = (Table) e.getSource();
 			int selectedIndex = table.getSelectionModel().getMinSelectedIndex();
-			firstValueOfLastSelectedRow = (String)metadataSortableTableModel.getValueAt(0, selectedIndex);
+			firstValueOfLastSelectedRow = (String) metadataSortableTableModel.getValueAt(0, selectedIndex);
 			openReport(view, Integer.valueOf(firstValueOfLastSelectedRow));
 		} else if (e.getActionCommand().equals("OpenAll")) {
 			View view = getSelectedView();
 			for (int i = 0; i < metadataSortableTableModel.getRowCount(); i++) {
-				Integer storageId = (Integer)metadataSortableTableModel.getValueAt(0, i);
+				Integer storageId = (Integer) metadataSortableTableModel.getValueAt(0, i);
 				openReport(view, storageId);
 			}
 		} else if (e.getActionCommand().equals("ViewSelect")) {
@@ -634,9 +634,8 @@ public class ReportsComponent extends BaseComponent implements BeanParent, Actio
 			}
 		} else if (e.getActionCommand().equals("UpdateRegexValues")) {
 			if (echo2Application.isUserInRoles(dataAdminRoles)) {
-					testTool.setRegexFilter(regexFilterField.getText());
-				}
-			else {
+				testTool.setRegexFilter(regexFilterField.getText());
+			} else {
 				reportGeneratorEnabledErrorLabel.setText("Not allowed");
 				reportGeneratorEnabledErrorLabel.setVisible(true);
 			}
@@ -648,7 +647,7 @@ public class ReportsComponent extends BaseComponent implements BeanParent, Actio
 			List storageIds = null;
 			try {
 				storageIds = storage.getStorageIds();
-			} catch(StorageException storageException) {
+			} catch (StorageException storageException) {
 				displayAndLogError(storageException);
 			}
 			if (storageIds != null) {
@@ -658,14 +657,14 @@ public class ReportsComponent extends BaseComponent implements BeanParent, Actio
 					max = size;
 				}
 				for (int i = max - 1; i > -1; i--) {
-					openReport(view, (Integer)storageIds.get(i));
+					openReport(view, (Integer) storageIds.get(i));
 				}
 			}
 		} else if (e.getActionCommand().equals("OpenReportInProgress")) {
 			Report report = null;
 			try {
-				report = (Report)testTool.getReportInProgress(integerFieldOpenReportInProgress.getValue() - 1);
-			} catch(StorageException storageException) {
+				report = (Report) testTool.getReportInProgress(integerFieldOpenReportInProgress.getValue() - 1);
+			} catch (StorageException storageException) {
 				displayAndLogError(storageException);
 			}
 			if (report != null) {
@@ -680,18 +679,18 @@ public class ReportsComponent extends BaseComponent implements BeanParent, Actio
 			String filterValue = "";
 			Map metadataFilter = getSelectedView().getMetadataFilter();
 			if (metadataFilter != null) {
-				filterValue = (String)metadataFilter.get(metadataName);
+				filterValue = (String) metadataFilter.get(metadataName);
 			}
-			Button button = (Button)e.getSource();
+			Button button = (Button) e.getSource();
 			Component component = button.getParent();
 			Column column;
 			if (component instanceof Grid) {
-				Grid grid = (Grid)button.getParent();
-				column = (Column)grid.getParent();
+				Grid grid = (Grid) button.getParent();
+				column = (Column) grid.getParent();
 			} else {
-				column = (Column)button.getParent();
+				column = (Column) button.getParent();
 			}
-			TextField textField = (TextField)column.getComponent(1);
+			TextField textField = (TextField) column.getComponent(1);
 			textField.setText(filterValue);
 			displayReports(false);
 		} else if (e.getActionCommand().startsWith("Select filter ")) {
@@ -700,7 +699,7 @@ public class ReportsComponent extends BaseComponent implements BeanParent, Actio
 			List filterValues = null;
 			try {
 				filterValues = storage.getFilterValues(metadataName);
-			} catch(StorageException storageException) {
+			} catch (StorageException storageException) {
 				displayAndLogError(storageException);
 			}
 			if (filterValues != null) {
@@ -716,23 +715,23 @@ public class ReportsComponent extends BaseComponent implements BeanParent, Actio
 						}
 					}
 				}
-				Button button = (Button)e.getSource();
+				Button button = (Button) e.getSource();
 				Component component = button.getParent();
 				Column column;
 				if (component instanceof Grid) {
-					Grid grid = (Grid)button.getParent();
-					column = (Column)grid.getParent();
+					Grid grid = (Grid) button.getParent();
+					column = (Column) grid.getParent();
 				} else {
-					column = (Column)button.getParent();
+					column = (Column) button.getParent();
 				}
-				TextField textField = (TextField)column.getComponent(1);
+				TextField textField = (TextField) column.getComponent(1);
 				String currentFilterValue = textField.getText();
 				String[] cfvs = currentFilterValue.split(",");
 				int[] indices = new int[cfvs.length];
 				for (int i = 0; i < cfvs.length; i++) {
 					String cfv = (String) cfvs[i];
 					int selectedIndex = filterListModel.indexOf(cfv);
-					if (selectedIndex>=0) {
+					if (selectedIndex >= 0) {
 						indices[i] = selectedIndex;
 					}
 				}
@@ -742,7 +741,7 @@ public class ReportsComponent extends BaseComponent implements BeanParent, Actio
 		} else if (e.getActionCommand().equals("UpdateFilterValues")) {
 			String columnId = (String) filterValuesLabel.getText();
 			Column column = (Column) filterRow.getComponent(columnId);
-			TextField textField = (TextField)column.getComponent(1);
+			TextField textField = (TextField) column.getComponent(1);
 			String listBoxValues = "";
 			for (int i = 0; i < filterValuesListBox.getSelectedValues().length; i++) {
 				if (i == 0) {
@@ -758,9 +757,9 @@ public class ReportsComponent extends BaseComponent implements BeanParent, Actio
 
 	public void download(Storage storage, List storageIds) throws StorageException {
 		if (storageIds.size() > 0) {
-			String filename = storage.getReport((Integer)storageIds.get(0)).getName();
+			String filename = storage.getReport((Integer) storageIds.get(0)).getName();
 			if (storageIds.size() > 1) {
-				filename = filename  + " and " + (storageIds.size() - 1) + " more";
+				filename = filename + " and " + (storageIds.size() - 1) + " more";
 			}
 			if ("Both".equals(downloadSelectField.getSelectedItem())) {
 				displayAndLogError(Download.download(storage, filename, true, true));
@@ -796,7 +795,7 @@ public class ReportsComponent extends BaseComponent implements BeanParent, Actio
 	}
 
 	public void openReport(Report report, String isOpenReportAllowed, boolean excludeReportsWithEmptyReportXml,
-			boolean sortReports) {
+						   boolean sortReports) {
 		if (OPEN_REPORT_ALLOWED.equals(isOpenReportAllowed)) {
 			if (checkBoxTransformReportXml.isSelected()) {
 				report.setGlobalReportXmlTransformer(reportXmlTransformer);
@@ -818,11 +817,11 @@ public class ReportsComponent extends BaseComponent implements BeanParent, Actio
 		}
 		Storage storage = getSelectedView().getDebugStorage();
 		if (storage instanceof LogStorage) {
-			displayError(((LogStorage)storage).getWarningsAndErrors());
+			displayError(((LogStorage) storage).getWarningsAndErrors());
 		}
 		try {
 			numberOfMetadataRecords.setText("/ " + storage.getSize());
-		} catch(StorageException storageException) {
+		} catch (StorageException storageException) {
 			displayAndLogError(storageException);
 		}
 		// Update filter table and metadata table layout when metadata names have changed
@@ -832,7 +831,7 @@ public class ReportsComponent extends BaseComponent implements BeanParent, Actio
 			Map metadataFilter = getSelectedView().getMetadataFilter();
 			Iterator iterator = getSelectedView().getMetadataNames().iterator();
 			while (iterator.hasNext()) {
-				String metadataName = (String)iterator.next();
+				String metadataName = (String) iterator.next();
 				int filterType = storage.getFilterType(metadataName);
 				Button button = new Button(metadataExtractor.getShortLabel(metadataName));
 				Column column = new Column();
@@ -861,7 +860,7 @@ public class ReportsComponent extends BaseComponent implements BeanParent, Actio
 				textField.setFont(DefaultTreeCellRenderer.DEFAULT_FONT);
 				textField.setWidth(new Extent(104, Extent.PERCENT));
 				if (metadataFilter != null) {
-					textField.setText((String)metadataFilter.get(metadataName));
+					textField.setText((String) metadataFilter.get(metadataName));
 				}
 				textField.setToolTipText(storage.getUserHelp(metadataName));
 				if (filterType == Storage.FILTER_SELECT) {
@@ -882,7 +881,7 @@ public class ReportsComponent extends BaseComponent implements BeanParent, Actio
 			metadataTableCellRenderer.setMetadataNames(metadataNames);
 			metadataTableModel.setColumnCount(metadataNames.size());
 			for (int i = 0; i < metadataNames.size(); i++) {
-				String metadataName = (String)metadataNames.get(i);
+				String metadataName = (String) metadataNames.get(i);
 				metadataTableModel.setColumnName(i, metadataExtractor.getShortLabel(metadataName));
 			}
 		}
@@ -898,22 +897,23 @@ public class ReportsComponent extends BaseComponent implements BeanParent, Actio
 		// Search/get new metadata
 		List searchValues = new ArrayList();
 		for (int i = 0; i < filterRow.getComponentCount(); i++) {
-			Column column = (Column)filterRow.getComponent(i);
-			TextField textField = (TextField)column.getComponent(1);
+			Column column = (Column) filterRow.getComponent(i);
+			TextField textField = (TextField) column.getComponent(1);
 			searchValues.add(textField.getText());
 		}
 		List metadata = null;
 		try {
 			metadata = storage.getMetadata(numberOfRecords, metadataNames,
-					searchValues, MetadataExtractor.VALUE_TYPE_GUI);
-		} catch(StorageException storageException) {
+					searchValues, MetadataExtractor.VALUE_TYPE_GUI
+			);
+		} catch (StorageException storageException) {
 			displayAndLogError(storageException);
 		}
 		// Display new metadata
 		if (metadata != null) {
 			Iterator metadataIterator = metadata.iterator();
 			while (metadataIterator.hasNext()) {
-				List metadataRecord = (List)metadataIterator.next();
+				List metadataRecord = (List) metadataIterator.next();
 				Object[] rowData = new Object[metadataNames.size()];
 				for (int i = 0; i < metadataRecord.size(); i++) {
 					rowData[i] = metadataRecord.get(i);
@@ -945,7 +945,7 @@ public class ReportsComponent extends BaseComponent implements BeanParent, Actio
 	}
 
 	public View getSelectedView() {
-		return (View)viewSelect.getSelectedItem();
+		return (View) viewSelect.getSelectedItem();
 	}
 }
 
@@ -967,7 +967,7 @@ class IntegerField extends TextField {
 		int result;
 		try {
 			result = Integer.parseInt(getText());
-		} catch(NumberFormatException numberFormatException) {
+		} catch (NumberFormatException numberFormatException) {
 			init();
 			result = defaultValue;
 		}

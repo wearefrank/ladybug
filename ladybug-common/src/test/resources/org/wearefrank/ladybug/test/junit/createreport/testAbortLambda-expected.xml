@@ -1,13 +1,13 @@
 <Report Name="testAbortLambda"
-        Description=""
-        Path=""
-        CorrelationId="Original length: 36"
-        StartTime="Original length: 13"
-        EndTime="Original length: 13"
-        NumberOfCheckpoints="4"
-        EstimatedMemoryUsage="104">
-   <Checkpoint Name="testAbortLambda" Type="Startpoint" Level="0">startmessage1</Checkpoint>
-   <Checkpoint Name="name2" Type="Startpoint" Level="1">startmessage2</Checkpoint>
-   <Checkpoint Name="name2" Type="Abortpoint" Level="2">abortmessage2</Checkpoint>
-   <Checkpoint Name="testAbortLambda" Type="Abortpoint" Level="1">abortmessage1</Checkpoint>
+	Description=""
+	Path=""
+	CorrelationId="Original length: 36"
+	StartTime="Original length: 13"
+	EndTime="Original length: 13"
+	NumberOfCheckpoints="4"
+	EstimatedMemoryUsage="104">
+	<Checkpoint Name="testAbortLambda" Type="Startpoint" Level="0">startmessage1</Checkpoint>
+	<Checkpoint Name="name2" Type="Startpoint" Level="1">startmessage2</Checkpoint>
+	<Checkpoint Name="name2" Type="Abortpoint" Level="2">abortmessage2</Checkpoint>
+	<Checkpoint Name="testAbortLambda" Type="Abortpoint" Level="1">abortmessage1</Checkpoint>
 </Report>

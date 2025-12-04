@@ -21,7 +21,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import lombok.Setter;
 import org.wearefrank.ladybug.Checkpoint;
 import org.wearefrank.ladybug.MetadataExtractor;
 import org.wearefrank.ladybug.Report;
@@ -29,6 +28,8 @@ import org.wearefrank.ladybug.SecurityContext;
 import org.wearefrank.ladybug.TestTool;
 import org.wearefrank.ladybug.storage.Storage;
 import org.wearefrank.ladybug.storage.StorageException;
+
+import lombok.Setter;
 
 /**
  * @author Jaco de Groot
@@ -83,7 +84,7 @@ public class ReportRunner implements Runnable {
 	private void run(Report report) {
 		RunResult runResult = new RunResult();
 		runResult.correlationId = TestTool.getCorrelationId();
- 		runResult.errorMessage = testTool.rerun(runResult.correlationId, report, securityContext, this);
+		runResult.errorMessage = testTool.rerun(runResult.correlationId, report, securityContext, this);
 		results.put(report.getStorageId(), runResult);
 	}
 
@@ -114,9 +115,10 @@ public class ReportRunner implements Runnable {
 		List<List<Object>> metadata = null;
 		// TODO in Reader.getMetadata kun je ook i < numberOfRecords veranderen in result.size() < numberOfRecords zodat je hier 1 i.p.v. -1 mee kunt geven maar als je dan zoekt op iets dat niet te vinden is gaat hij alle records door. misschien debugStorage.getMetadata een extra paremter geven, numberOfRecordsToConsider en numberOfRecordsToReturn i.p.v. numberOfRecords? (let op: logica ook in mem storage aanpassen)
 		metadata = storage.getMetadata(-1, metadataNames, searchValues,
-				MetadataExtractor.VALUE_TYPE_OBJECT);
+				MetadataExtractor.VALUE_TYPE_OBJECT
+		);
 		if (metadata != null && metadata.size() > 0) {
-			Integer runResultStorageId = (Integer)((List<Object>)metadata.get(0)).get(0);
+			Integer runResultStorageId = (Integer) ((List<Object>) metadata.get(0)).get(0);
 			report = storage.getReport(runResultStorageId);
 		}
 		return report;
@@ -125,7 +127,7 @@ public class ReportRunner implements Runnable {
 	public static String getRunResultInfo(Report reportOrig, Report reportResult) {
 		int totalOrig = reportOrig.getCheckpoints().size();
 		int totalResult = reportResult.getCheckpoints().size();
-		String info = "(" + totalOrig + " >> "	+ totalResult + " checkpoints)";
+		String info = "(" + totalOrig + " >> " + totalResult + " checkpoints)";
 
 		int stubbedOrig = 0;
 		int stubsNotFoundOrig = 0;
@@ -153,7 +155,7 @@ public class ReportRunner implements Runnable {
 					stubsNotFoundResult++;
 					if (alternativeStubInfo.length() == 0) {
 						alternativeStubInfo = " (Alternative stub used for checkpoint nr " + checkpoint.getIndex()
-								+ " ("+ checkpoint.getName() + "): " + checkpoint.getStubNotFound();
+								+ " (" + checkpoint.getName() + "): " + checkpoint.getStubNotFound();
 					} else if (alternativeStubInfo.length() > 200) {
 						alternativeStubSkipped++;
 					} else {
@@ -190,9 +192,9 @@ public class ReportRunner implements Runnable {
 			info += ")";
 		}
 
-		String timeOrig = isExecutedOrig ? "" + (reportOrig.getEndTime() - reportOrig.getStartTime()) :  "n/a";
+		String timeOrig = isExecutedOrig ? "" + (reportOrig.getEndTime() - reportOrig.getStartTime()) : "n/a";
 		String timeResult = isExecutedResult ? "" + (reportResult.getEndTime() - reportResult.getStartTime()) : "n/a";
-		info += " (" + timeOrig + " >> "	+ timeResult + " ms)";
+		info += " (" + timeOrig + " >> " + timeResult + " ms)";
 
 		return info;
 	}

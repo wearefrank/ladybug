@@ -17,15 +17,12 @@ package org.wearefrank.ladybug.echo2;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
-
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.Resource;
 import jakarta.enterprise.context.Dependent;
 import jakarta.inject.Inject;
-import nextapp.echo2.app.Extent;
-import nextapp.echo2.app.SplitPane;
-import nextapp.echo2.extras.app.layout.TabPaneLayoutData;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.wearefrank.ladybug.MetadataExtractor;
 import org.wearefrank.ladybug.TestTool;
 import org.wearefrank.ladybug.echo2.reports.CheckpointComponent;
@@ -40,6 +37,10 @@ import org.wearefrank.ladybug.storage.CrudStorage;
 import org.wearefrank.ladybug.storage.LogStorage;
 import org.wearefrank.ladybug.transform.ReportXmlTransformer;
 
+import nextapp.echo2.app.Extent;
+import nextapp.echo2.app.SplitPane;
+import nextapp.echo2.extras.app.layout.TabPaneLayoutData;
+
 /**
  * @author Jaco de Groot
  */
@@ -53,7 +54,7 @@ public class DebugPane extends Tab implements BeanParent {
 	private @Inject @Autowired CrudStorage testStorage;
 	private @Inject @Autowired MetadataExtractor metadataExtractor;
 	private @Inject @Autowired ReportXmlTransformer reportXmlTransformer;
-	private @Inject @Resource(name="dataAdminRoles") List<String> dataAdminRoles;
+	private @Inject @Resource(name = "dataAdminRoles") List<String> dataAdminRoles;
 	private ReportsListPane reportsListPane;
 	private ReportsComponent reportsComponent;
 	private TreePane treePane;

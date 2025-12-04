@@ -37,40 +37,39 @@ package org.wearefrank.ladybug.xmldecoder;
  * <dd>the identifier of the variable that is intended to store the result
  * </dl>
  *
- * @since 1.7
- *
  * @author Sergey A. Malenkov
+ * @since 1.7
  */
 class NullElementHandler extends ElementHandler implements ValueObject {
 
-    /**
-     * Returns the value of this element.
-     *
-     * @return the value of this element
-     */
-    @Override
-    protected final ValueObject getValueObject() {
-        return this;
-    }
+	/**
+	 * Returns the value of this element.
+	 *
+	 * @return the value of this element
+	 */
+	@Override
+	protected final ValueObject getValueObject() {
+		return this;
+	}
 
-    /**
-     * Returns {@code null}
-     * as a value of &lt;null&gt; element.
-     * This method should be overridden in those handlers
-     * that extend behavior of this element.
-     *
-     * @return {@code null} by default
-     */
-    public Object getValue() {
-        return null;
-    }
+	/**
+	 * Returns {@code null}
+	 * as a value of &lt;null&gt; element.
+	 * This method should be overridden in those handlers
+	 * that extend behavior of this element.
+	 *
+	 * @return {@code null} by default
+	 */
+	public Object getValue() {
+		return null;
+	}
 
-    /**
-     * Returns {@code void} state of this value object.
-     *
-     * @return {@code false} always
-     */
-    public final boolean isVoid() {
-        return false;
-    }
+	/**
+	 * Returns {@code void} state of this value object.
+	 *
+	 * @return {@code false} always
+	 */
+	public final boolean isVoid() {
+		return false;
+	}
 }

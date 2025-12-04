@@ -37,20 +37,19 @@ package org.wearefrank.ladybug.xmldecoder;
  * <dd>the identifier of the variable that is intended to store the result
  * </dl>
  *
- * @since 1.7
- *
  * @author Sergey A. Malenkov
+ * @since 1.7
  */
 final class TrueElementHandler extends NullElementHandler {
 
-    /**
-     * Returns {@code Boolean.TRUE}
-     * as a value of &lt;true&gt; element.
-     *
-     * @return {@code Boolean.TRUE} by default
-     */
-    @Override
-    public Object getValue() {
-        return Boolean.TRUE;
-    }
+	/**
+	 * Returns {@code Boolean.TRUE}
+	 * as a value of &lt;true&gt; element.
+	 *
+	 * @return {@code Boolean.TRUE} by default
+	 */
+	@Override
+	public Object getValue() {
+		return Boolean.TRUE;
+	}
 }

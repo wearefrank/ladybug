@@ -36,7 +36,7 @@ import java.util.NoSuchElementException;
  *
  * <br>
  * <br>
- * 
+ * <p>
  * You could for example use the following code to read csv files:
  * <pre>
  * FileReader fr = new FileReader(file);
@@ -50,33 +50,33 @@ import java.util.NoSuchElementException;
  * cr.close();
  * </pre>
  *
- * @author  Jaco de Groot
+ * @author Jaco de Groot
  */
 public class CSVReader {
-    Reader r;
-    char separator = ',';
-    int state;
-    int lineNumberLast = -1;
-    int lineNumberNext = 1;
-    
-    public CSVReader(Reader r) {
-        this.r = r;
-        state = 0;
-    }
+	Reader r;
+	char separator = ',';
+	int state;
+	int lineNumberLast = -1;
+	int lineNumberNext = 1;
 
-    public void setSeparator(char c) {
-        separator = c;
-    }
+	public CSVReader(Reader r) {
+		this.r = r;
+		state = 0;
+	}
 
-    public boolean hasMoreElements() {
-        boolean hasMoreElements;
-        if (state == 4) {
-            hasMoreElements = false;
-        } else {
-            hasMoreElements = true;
-        }
-        return hasMoreElements;
-    }
+	public void setSeparator(char c) {
+		separator = c;
+	}
+
+	public boolean hasMoreElements() {
+		boolean hasMoreElements;
+		if (state == 4) {
+			hasMoreElements = false;
+		} else {
+			hasMoreElements = true;
+		}
+		return hasMoreElements;
+	}
 
 /*
 
@@ -107,107 +107,109 @@ gebruiken om een string m.b.v. stringreader om te zetten naar csv. Want bij een
 string verwacht je op het einde ook geen newline tenzij...
 */
 
-    public List<String> nextCSV() throws NoSuchElementException, IOException {
-        if (state == 4) {
-            throw new NoSuchElementException();
-        }
-        lineNumberLast = lineNumberNext;
-        int c;
-        List<String> l = new ArrayList<>();
-        StringBuilder sb = new StringBuilder();
-        while (true) {
-            c = r.read();
-            if (state == 0) {
-                if (c == separator) {
-                    l.add(null);
-                } else if (c == '\n') {
-                    l.add(null);
-                    lineNumberNext++;
-                    return l;
-                } else if (c == '"') {
-                    state = 1;
-                } else if (c == -1) {
-                    state = 4;
-                    l.add(null);
-                    return l;
-                } else {
-                    state = 3;
-                    sb.append((char) c);
-                }
-            } else if (state == 1) {
-                if (c == '"') {
-                    state = 2;
-                } else if (c == -1) {
-                    // nog doen:
-                    // throw new IllegalEndOfStreamException(); strikte modus maken? en alleen in strikte modes doen?
-                    l.add(sb.toString());
-                    return l;
-                } else {
-                    if (c == '\n') {
-                      lineNumberNext++;
-                    }
-                    sb.append((char) c);
-                }
-            } else if (state == 2) {
-                if (c == '"') {
-                    state = 1;
-                    sb.append('"');
-                } else if (c == separator) {
-                    state = 0;
-                    l.add(sb.toString());
-                    sb = new StringBuilder();
-                } else if (c == '\n') {
-                    state = 0;
-                    l.add(sb.toString());
-                    lineNumberNext++;
-                    return l;
-                } else if (c == -1) {
-                    state = 4;
-                    l.add(sb.toString());
-                    return l;
-                } else {
-                    // nog doen:
-                    // throw IllegalCharacterException;  strikte modus maken? en alleen in strikte modes doen?
-                }
-            } else { // state == 3
-                if (c == separator) {
-                    state = 0;
-                    l.add(sb.toString());
-                    sb = new StringBuilder();
-                } else if (c == '\n') {
-                    state = 0;
-                    l.add(sb.toString());
-                    lineNumberNext++;
-                    return l;
-                } else if (c == -1) {
-                    state = 4;
-                    l.add(sb.toString());
-                    return l;
-                } else {
-                    sb.append((char) c);
-                }
-            }
-        }
-    }
+	public List<String> nextCSV() throws NoSuchElementException, IOException {
+		if (state == 4) {
+			throw new NoSuchElementException();
+		}
+		lineNumberLast = lineNumberNext;
+		int c;
+		List<String> l = new ArrayList<>();
+		StringBuilder sb = new StringBuilder();
+		while (true) {
+			c = r.read();
+			if (state == 0) {
+				if (c == separator) {
+					l.add(null);
+				} else if (c == '\n') {
+					l.add(null);
+					lineNumberNext++;
+					return l;
+				} else if (c == '"') {
+					state = 1;
+				} else if (c == -1) {
+					state = 4;
+					l.add(null);
+					return l;
+				} else {
+					state = 3;
+					sb.append((char) c);
+				}
+			} else if (state == 1) {
+				if (c == '"') {
+					state = 2;
+				} else if (c == -1) {
+					// nog doen:
+					// throw new IllegalEndOfStreamException(); strikte modus maken? en alleen in strikte modes doen?
+					l.add(sb.toString());
+					return l;
+				} else {
+					if (c == '\n') {
+						lineNumberNext++;
+					}
+					sb.append((char) c);
+				}
+			} else if (state == 2) {
+				if (c == '"') {
+					state = 1;
+					sb.append('"');
+				} else if (c == separator) {
+					state = 0;
+					l.add(sb.toString());
+					sb = new StringBuilder();
+				} else if (c == '\n') {
+					state = 0;
+					l.add(sb.toString());
+					lineNumberNext++;
+					return l;
+				} else if (c == -1) {
+					state = 4;
+					l.add(sb.toString());
+					return l;
+				} else {
+					// nog doen:
+					// throw IllegalCharacterException;  strikte modus maken? en alleen in strikte modes doen?
+				}
+			} else { // state == 3
+				if (c == separator) {
+					state = 0;
+					l.add(sb.toString());
+					sb = new StringBuilder();
+				} else if (c == '\n') {
+					state = 0;
+					l.add(sb.toString());
+					lineNumberNext++;
+					return l;
+				} else if (c == -1) {
+					state = 4;
+					l.add(sb.toString());
+					return l;
+				} else {
+					sb.append((char) c);
+				}
+			}
+		}
+	}
 
-    /**
-     * Get first line number of the last CSV record.
-     * @return ...
-     */
-    public int getLineNumberLast() {
-        return lineNumberLast;
-    }
+	/**
+	 * Get first line number of the last CSV record.
+	 *
+	 * @return ...
+	 */
+	public int getLineNumberLast() {
+		return lineNumberLast;
+	}
 
-    /**
-     * Get first line number of the next CSV record.
-     * @return ...
-     */
-    public int getLineNumberNext() {
-        return lineNumberNext;
-    }
+	/**
+	 * Get first line number of the next CSV record.
+	 *
+	 * @return ...
+	 */
+	public int getLineNumberNext() {
+		return lineNumberNext;
+	}
 
-    public void close() throws IOException {
-        r.close();
-    }
+	public void close() throws IOException {
+		r.close();
+	}
 
 }

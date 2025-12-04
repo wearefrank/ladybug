@@ -26,31 +26,31 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import jakarta.annotation.PostConstruct;
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.container.ContainerRequestFilter;
 import jakarta.ws.rs.container.PreMatching;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.Provider;
-import lombok.Getter;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.wearefrank.ladybug.web.common.Constants;
+
+import lombok.Getter;
 
 /**
  * Filter requests based on their permission requirements.
- *
+ * <p>
  * Permission requirements can be set with set*Roles() methods,
  * where keys are strings explaining possible requests, such as "POST,PUT/path/to/\w+/endpoint".
- *
+ * <p>
  * The first part of the string is a list of methods as CSV (Comma Separated Values),
  * and the latter part (starting with '/') is a regex string used to match requested paths.
- *
+ * <p>
  * If multiple regex strings match a path, the one with the most '/' (forward slashes) will be considered the most
  * specific string, and therefore be applied for filtering.
- *
+ * <p>
  * Method part can be left empty in order to apply it for all methods, such as "/path/to/endpoint".
  */
 @Provider
@@ -89,30 +89,30 @@ public class ApiAuthorizationFilter implements ContainerRequestFilter {
 
 	public void setObserverRoles(List<String> observerRoles) {
 		if (constructorDone) log.info("Set observer roles");
-		addConfigurationPart("GET/"  + Constants.LADYBUG_API_PATH + "/testtool.*$", observerRoles);
+		addConfigurationPart("GET/" + Constants.LADYBUG_API_PATH + "/testtool.*$", observerRoles);
 		addConfigurationPart("POST/" + Constants.LADYBUG_API_PATH + "/testtool/transformation$", observerRoles);
-		addConfigurationPart("GET/"  + Constants.LADYBUG_API_PATH + "/report/variables$", observerRoles);
+		addConfigurationPart("GET/" + Constants.LADYBUG_API_PATH + "/report/variables$", observerRoles);
 		addConfigurationPart("POST/" + Constants.LADYBUG_API_PATH + "/report/customreportaction$", observerRoles);
-		addConfigurationPart("PUT/"  + Constants.LADYBUG_API_PATH + "/testtool/node-link-strategy$", observerRoles);
-		addConfigurationPart("GET/"  + Constants.LADYBUG_API_PATH + "/metadata/.*$", observerRoles);
-		addConfigurationPart("GET/"  + Constants.LADYBUG_API_PATH + "/report/.*$", observerRoles);
+		addConfigurationPart("PUT/" + Constants.LADYBUG_API_PATH + "/testtool/node-link-strategy$", observerRoles);
+		addConfigurationPart("GET/" + Constants.LADYBUG_API_PATH + "/metadata/.*$", observerRoles);
+		addConfigurationPart("GET/" + Constants.LADYBUG_API_PATH + "/report/.*$", observerRoles);
 	}
 
 	public void setDataAdminRoles(List<String> dataAdminRoles) {
 		if (constructorDone) log.info("Set data admin roles");
-		addConfigurationPart("POST/"   + Constants.LADYBUG_API_PATH + "/testtool$", dataAdminRoles);
+		addConfigurationPart("POST/" + Constants.LADYBUG_API_PATH + "/testtool$", dataAdminRoles);
 		addConfigurationPart("DELETE/" + Constants.LADYBUG_API_PATH + "/testtool/in-progress/.*$", dataAdminRoles);
 		addConfigurationPart("DELETE/" + Constants.LADYBUG_API_PATH + "/report/.*$", dataAdminRoles);
-		addConfigurationPart("PUT/"    + Constants.LADYBUG_API_PATH + "/report/.*$", dataAdminRoles);
-		addConfigurationPart("POST/"   + Constants.LADYBUG_API_PATH + "/report/.*$", dataAdminRoles);
-		addConfigurationPart("PUT/"    + Constants.LADYBUG_API_PATH + "/runner/.*", dataAdminRoles);
-		addConfigurationPart("POST/"   + Constants.LADYBUG_API_PATH + "/runner/.*", dataAdminRoles);
+		addConfigurationPart("PUT/" + Constants.LADYBUG_API_PATH + "/report/.*$", dataAdminRoles);
+		addConfigurationPart("POST/" + Constants.LADYBUG_API_PATH + "/report/.*$", dataAdminRoles);
+		addConfigurationPart("PUT/" + Constants.LADYBUG_API_PATH + "/runner/.*", dataAdminRoles);
+		addConfigurationPart("POST/" + Constants.LADYBUG_API_PATH + "/runner/.*", dataAdminRoles);
 	}
 
 	/**
 	 * Set tester roles, a role which is normally not available in production environments, hence actions for this role
 	 * will be disabled in P
-	 * 
+	 *
 	 * @param testerRoles ...
 	 */
 	public void setTesterRoles(List<String> testerRoles) {
@@ -208,7 +208,7 @@ public class ApiAuthorizationFilter implements ContainerRequestFilter {
 	}
 
 	private void log(ContainerRequestContext requestContext, String method, String path, boolean allowed,
-			String reason) {
+					 String reason) {
 		String user = "";
 		if (requestContext.getSecurityContext().getUserPrincipal() != null) {
 			user = requestContext.getSecurityContext().getUserPrincipal().getName();
@@ -227,16 +227,17 @@ public class ApiAuthorizationFilter implements ContainerRequestFilter {
 
 		/**
 		 * Hold a piece of authorization configuration
-		 * 
-		 * @param methodsAndPathPattern  A string explaining the possible requests, such as: "POST,PUT/path/to/endpoint"
+		 *
+		 * @param methodsAndPathPattern A string explaining the possible requests, such as: "POST,PUT/path/to/endpoint"
 		 * @param roles                 List of roles accepted for the given config.
 		 */
 		ConfigurationPart(String methodsAndPathPattern, List<String> roles) {
 			int firstSlash = methodsAndPathPattern.indexOf('/');
 			String[] methods = methodsAndPathPattern.substring(0, firstSlash).split(",");
 			if (methods.length != 0 && !methods[0].equals("")) {
-				for (int i = 0; i < methods.length; i++)
+				for (int i = 0; i < methods.length; i++) {
 					methods[i] = methods[i].toLowerCase();
+				}
 				this.methods = new HashSet<String>(Arrays.asList(methods));
 			}
 

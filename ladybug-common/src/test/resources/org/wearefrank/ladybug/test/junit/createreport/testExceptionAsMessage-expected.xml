@@ -1,107 +1,107 @@
 <Report Name="testExceptionAsMessage"
-        Description=""
-        Path=""
-        CorrelationId="Original length: 36"
-        StartTime="Original length: 13"
-        EndTime="Original length: 13"
-        NumberOfCheckpoints="14"
-        EstimatedMemoryUsage="IGNORE">
-   <Checkpoint Name="testExceptionAsMessage"
-               Type="Startpoint"
-               Level="0"
-               MessageClassName="java.lang.Exception"
-               Encoding="printStackTrace()">java.lang.Exception: My Exception
-	at org.wearefrank.ladybug.test.junit.IGNORE)
-</Checkpoint>
-   <Checkpoint Name="input"
-               Type="Inputpoint"
-               Level="1"
-               MessageClassName="java.lang.Exception"
-               Encoding="printStackTrace()">java.lang.Exception: My Exception
-	at org.wearefrank.ladybug.test.junit.IGNORE)
-</Checkpoint>
-   <Checkpoint Name="output"
-               Type="Outputpoint"
-               Level="1"
-               MessageClassName="java.lang.Exception"
-               Encoding="printStackTrace()">java.lang.Exception: My Exception
-	at org.wearefrank.ladybug.test.junit.IGNORE)
-</Checkpoint>
-   <Checkpoint Name="info"
-               Type="Infopoint"
-               Level="1"
-               MessageClassName="java.lang.Exception"
-               Encoding="printStackTrace()">java.lang.Exception: My Exception
-	at org.wearefrank.ladybug.test.junit.IGNORE)
-</Checkpoint>
-   <Checkpoint Name="thread start"
-               Type="ThreadStartpoint"
-               Level="1"
-               MessageClassName="java.lang.Exception"
-               Encoding="printStackTrace()">java.lang.Exception: My Exception
-	at org.wearefrank.ladybug.test.junit.IGNORE)
-</Checkpoint>
-   <Checkpoint Name="thread end"
-               Type="ThreadEndpoint"
-               Level="2"
-               MessageClassName="java.lang.Exception"
-               Encoding="printStackTrace()">java.lang.Exception: My Exception
-	at org.wearefrank.ladybug.test.junit.IGNORE)
-</Checkpoint>
-   <Checkpoint Name="start"
-               Type="Startpoint"
-               Level="1"
-               MessageClassName="java.lang.Exception"
-               Encoding="printStackTrace()">java.lang.Exception: My Exception
-	at org.wearefrank.ladybug.test.junit.IGNORE)
-</Checkpoint>
-   <Checkpoint Name="input"
-               Type="Inputpoint"
-               Level="2"
-               MessageClassName="java.lang.Exception"
-               Encoding="printStackTrace()">java.lang.Exception: My Exception
-	at org.wearefrank.ladybug.test.junit.IGNORE)
-</Checkpoint>
-   <Checkpoint Name="output"
-               Type="Outputpoint"
-               Level="2"
-               MessageClassName="java.lang.Exception"
-               Encoding="printStackTrace()">java.lang.Exception: My Exception
-	at org.wearefrank.ladybug.test.junit.IGNORE)
-</Checkpoint>
-   <Checkpoint Name="info"
-               Type="Infopoint"
-               Level="2"
-               MessageClassName="java.lang.Exception"
-               Encoding="printStackTrace()">java.lang.Exception: My Exception
-	at org.wearefrank.ladybug.test.junit.IGNORE)
-</Checkpoint>
-   <Checkpoint Name="thread start"
-               Type="ThreadStartpoint"
-               Level="2"
-               MessageClassName="java.lang.Exception"
-               Encoding="printStackTrace()">java.lang.Exception: My Exception
-	at org.wearefrank.ladybug.test.junit.IGNORE)
-</Checkpoint>
-   <Checkpoint Name="thread end"
-               Type="ThreadEndpoint"
-               Level="3"
-               MessageClassName="java.lang.Exception"
-               Encoding="printStackTrace()">java.lang.Exception: My Exception
-	at org.wearefrank.ladybug.test.junit.IGNORE)
-</Checkpoint>
-   <Checkpoint Name="end"
-               Type="Endpoint"
-               Level="2"
-               MessageClassName="java.lang.Exception"
-               Encoding="printStackTrace()">java.lang.Exception: My Exception
-	at org.wearefrank.ladybug.test.junit.IGNORE)
-</Checkpoint>
-   <Checkpoint Name="testExceptionAsMessage"
-               Type="Endpoint"
-               Level="1"
-               MessageClassName="java.lang.Exception"
-               Encoding="printStackTrace()">java.lang.Exception: My Exception
-	at org.wearefrank.ladybug.test.junit.IGNORE)
-</Checkpoint>
+	Description=""
+	Path=""
+	CorrelationId="Original length: 36"
+	StartTime="Original length: 13"
+	EndTime="Original length: 13"
+	NumberOfCheckpoints="14"
+	EstimatedMemoryUsage="IGNORE">
+	<Checkpoint Name="testExceptionAsMessage"
+		Type="Startpoint"
+		Level="0"
+		MessageClassName="java.lang.Exception"
+		Encoding="printStackTrace()">java.lang.Exception: My Exception
+		at org.wearefrank.ladybug.test.junit.IGNORE)
+	</Checkpoint>
+	<Checkpoint Name="input"
+		Type="Inputpoint"
+		Level="1"
+		MessageClassName="java.lang.Exception"
+		Encoding="printStackTrace()">java.lang.Exception: My Exception
+		at org.wearefrank.ladybug.test.junit.IGNORE)
+	</Checkpoint>
+	<Checkpoint Name="output"
+		Type="Outputpoint"
+		Level="1"
+		MessageClassName="java.lang.Exception"
+		Encoding="printStackTrace()">java.lang.Exception: My Exception
+		at org.wearefrank.ladybug.test.junit.IGNORE)
+	</Checkpoint>
+	<Checkpoint Name="info"
+		Type="Infopoint"
+		Level="1"
+		MessageClassName="java.lang.Exception"
+		Encoding="printStackTrace()">java.lang.Exception: My Exception
+		at org.wearefrank.ladybug.test.junit.IGNORE)
+	</Checkpoint>
+	<Checkpoint Name="thread start"
+		Type="ThreadStartpoint"
+		Level="1"
+		MessageClassName="java.lang.Exception"
+		Encoding="printStackTrace()">java.lang.Exception: My Exception
+		at org.wearefrank.ladybug.test.junit.IGNORE)
+	</Checkpoint>
+	<Checkpoint Name="thread end"
+		Type="ThreadEndpoint"
+		Level="2"
+		MessageClassName="java.lang.Exception"
+		Encoding="printStackTrace()">java.lang.Exception: My Exception
+		at org.wearefrank.ladybug.test.junit.IGNORE)
+	</Checkpoint>
+	<Checkpoint Name="start"
+		Type="Startpoint"
+		Level="1"
+		MessageClassName="java.lang.Exception"
+		Encoding="printStackTrace()">java.lang.Exception: My Exception
+		at org.wearefrank.ladybug.test.junit.IGNORE)
+	</Checkpoint>
+	<Checkpoint Name="input"
+		Type="Inputpoint"
+		Level="2"
+		MessageClassName="java.lang.Exception"
+		Encoding="printStackTrace()">java.lang.Exception: My Exception
+		at org.wearefrank.ladybug.test.junit.IGNORE)
+	</Checkpoint>
+	<Checkpoint Name="output"
+		Type="Outputpoint"
+		Level="2"
+		MessageClassName="java.lang.Exception"
+		Encoding="printStackTrace()">java.lang.Exception: My Exception
+		at org.wearefrank.ladybug.test.junit.IGNORE)
+	</Checkpoint>
+	<Checkpoint Name="info"
+		Type="Infopoint"
+		Level="2"
+		MessageClassName="java.lang.Exception"
+		Encoding="printStackTrace()">java.lang.Exception: My Exception
+		at org.wearefrank.ladybug.test.junit.IGNORE)
+	</Checkpoint>
+	<Checkpoint Name="thread start"
+		Type="ThreadStartpoint"
+		Level="2"
+		MessageClassName="java.lang.Exception"
+		Encoding="printStackTrace()">java.lang.Exception: My Exception
+		at org.wearefrank.ladybug.test.junit.IGNORE)
+	</Checkpoint>
+	<Checkpoint Name="thread end"
+		Type="ThreadEndpoint"
+		Level="3"
+		MessageClassName="java.lang.Exception"
+		Encoding="printStackTrace()">java.lang.Exception: My Exception
+		at org.wearefrank.ladybug.test.junit.IGNORE)
+	</Checkpoint>
+	<Checkpoint Name="end"
+		Type="Endpoint"
+		Level="2"
+		MessageClassName="java.lang.Exception"
+		Encoding="printStackTrace()">java.lang.Exception: My Exception
+		at org.wearefrank.ladybug.test.junit.IGNORE)
+	</Checkpoint>
+	<Checkpoint Name="testExceptionAsMessage"
+		Type="Endpoint"
+		Level="1"
+		MessageClassName="java.lang.Exception"
+		Encoding="printStackTrace()">java.lang.Exception: My Exception
+		at org.wearefrank.ladybug.test.junit.IGNORE)
+	</Checkpoint>
 </Report>

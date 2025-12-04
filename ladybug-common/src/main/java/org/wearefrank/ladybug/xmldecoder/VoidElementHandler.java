@@ -47,22 +47,21 @@ package org.wearefrank.ladybug.xmldecoder;
  * <dd>the identifier of the variable that is intended to store the result
  * </dl>
  *
- * @since 1.7
- *
  * @author Sergey A. Malenkov
+ * @since 1.7
  */
 final class VoidElementHandler extends ObjectElementHandler {
 
-    /**
-     * Tests whether the value of this element can be used
-     * as an argument of the element that contained in this one.
-     *
-     * @return {@code true} if the value of this element should be used
-     *         as an argument of the element that contained in this one,
-     *         {@code false} otherwise
-     */
-    @Override
-    protected boolean isArgument() {
-        return false; // hack for compatibility
-    }
+	/**
+	 * Tests whether the value of this element can be used
+	 * as an argument of the element that contained in this one.
+	 *
+	 * @return {@code true} if the value of this element should be used
+	 * 		as an argument of the element that contained in this one,
+	 *        {@code false} otherwise
+	 */
+	@Override
+	protected boolean isArgument() {
+		return false; // hack for compatibility
+	}
 }

@@ -51,59 +51,58 @@ import org.wearefrank.ladybug.xmldecoder.finder.MethodFinder;
  * <dd>the identifier of the variable that is intended to store the result
  * </dl>
  *
- * @since 1.7
- *
  * @author Sergey A. Malenkov
+ * @since 1.7
  */
 final class MethodElementHandler extends NewElementHandler {
-    private String name;
+	private String name;
 
-    /**
-     * Parses attributes of the element.
-     * The following atributes are supported:
-     * <dl>
-     * <dt>name
-     * <dd>the method name
-     * <dt>class
-     * <dd>the type of object for instantiation
-     * <dt>id
-     * <dd>the identifier of the variable that is intended to store the result
-     * </dl>
-     *
-     * @param name   the attribute name
-     * @param value  the attribute value
-     */
-    @Override
-    public void addAttribute(String name, String value) {
-        if (name.equals("name")) { // NON-NLS: the attribute name
-            this.name = value;
-        } else {
-            super.addAttribute(name, value);
-        }
-    }
+	/**
+	 * Parses attributes of the element.
+	 * The following atributes are supported:
+	 * <dl>
+	 * <dt>name
+	 * <dd>the method name
+	 * <dt>class
+	 * <dd>the type of object for instantiation
+	 * <dt>id
+	 * <dd>the identifier of the variable that is intended to store the result
+	 * </dl>
+	 *
+	 * @param name  the attribute name
+	 * @param value the attribute value
+	 */
+	@Override
+	public void addAttribute(String name, String value) {
+		if (name.equals("name")) { // NON-NLS: the attribute name
+			this.name = value;
+		} else {
+			super.addAttribute(name, value);
+		}
+	}
 
-    /**
-     * Returns the result of method execution.
-     *
-     * @param type  the base class
-     * @param args  the array of arguments
-     * @return the value of this element
-     * @throws Exception if calculation is failed
-     */
-    @Override
-    protected ValueObject getValueObject(Class<?> type, Object[] args) throws Exception {
-        Object bean = getContextBean();
-        Class<?>[] types = getArgumentTypes(args);
-        Method method = (type != null)
-                ? MethodFinder.findStaticMethod(type, this.name, types)
-                : MethodFinder.findMethod(bean.getClass(), this.name, types);
+	/**
+	 * Returns the result of method execution.
+	 *
+	 * @param type the base class
+	 * @param args the array of arguments
+	 * @return the value of this element
+	 * @throws Exception if calculation is failed
+	 */
+	@Override
+	protected ValueObject getValueObject(Class<?> type, Object[] args) throws Exception {
+		Object bean = getContextBean();
+		Class<?>[] types = getArgumentTypes(args);
+		Method method = (type != null)
+				? MethodFinder.findStaticMethod(type, this.name, types)
+				: MethodFinder.findMethod(bean.getClass(), this.name, types);
 
-        if (method.isVarArgs()) {
-            args = getArguments(args, method.getParameterTypes());
-        }
-        Object value = method.invoke(bean, args);
-        return method.getReturnType().equals(void.class)
-                ? ValueObjectImpl.VOID
-                : ValueObjectImpl.create(value);
-    }
+		if (method.isVarArgs()) {
+			args = getArguments(args, method.getParameterTypes());
+		}
+		Object value = method.invoke(bean, args);
+		return method.getReturnType().equals(void.class)
+				? ValueObjectImpl.VOID
+				: ValueObjectImpl.create(value);
+	}
 }

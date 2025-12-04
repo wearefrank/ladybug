@@ -1,223 +1,223 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <java version="IGNORE-JAVA-VERSION" class="java.beans.XMLDecoder">
- <null/>
- <object class="org.wearefrank.ladybug.Report" id="Report0">
-  <void property="checkpoints">
-   <void method="add">
-    <object class="org.wearefrank.ladybug.Checkpoint">
-     <void property="name">
-      <string>testSpecialValues</string>
-     </void>
-     <void property="report">
-      <object idref="Report0"/>
-     </void>
-     <void property="threadName">
-      <string>main</string>
-     </void>
-     <void property="type">
-      <int>1</int>
-     </void>
-    </object>
-   </void>
-   <void method="add">
-    <object class="org.wearefrank.ladybug.Checkpoint">
-     <void property="encoding">
-      <string>SimpleDateFormat(&quot;yyyy-MM-dd&apos;T&apos;HH:mm:ss.SSSZ&quot;)</string>
-     </void>
-     <void property="level">
-      <int>1</int>
-     </void>
-     <void property="message">
-      <string>1970-01-01TXX:XX:00.000+XXXX</string>
-     </void>
-     <void property="messageClassName">
-      <string>java.util.Date</string>
-     </void>
-     <void property="name">
-      <string>infoname1</string>
-     </void>
-     <void property="report">
-      <object idref="Report0"/>
-     </void>
-     <void property="threadName">
-      <string>main</string>
-     </void>
-     <void property="type">
-      <int>6</int>
-     </void>
-    </object>
-   </void>
-   <void method="add">
-    <object class="org.wearefrank.ladybug.Checkpoint">
-     <void property="encoding">
-      <string>XMLEncoder</string>
-     </void>
-     <void property="level">
-      <int>1</int>
-     </void>
-     <void property="message">
-      <string>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
-&lt;java version=&quot;IGNORE-JAVA-VERSION&quot; class=&quot;java.beans.XMLDecoder&quot;&gt;
- &lt;object class=&quot;java.util.HashSet&quot;&gt;
-  &lt;void method=&quot;add&quot;&gt;
-   &lt;string&gt;Test with strange object&lt;/string&gt;
-  &lt;/void&gt;
- &lt;/object&gt;
-&lt;/java&gt;
-</string>
-     </void>
-     <void property="messageClassName">
-      <string>java.util.HashSet</string>
-     </void>
-     <void property="name">
-      <string>infoname2</string>
-     </void>
-     <void property="report">
-      <object idref="Report0"/>
-     </void>
-     <void property="threadName">
-      <string>main</string>
-     </void>
-     <void property="type">
-      <int>6</int>
-     </void>
-    </object>
-   </void>
-   <void method="add">
-    <object class="org.wearefrank.ladybug.Checkpoint">
-     <void property="encoding">
-      <string>XMLEncoder</string>
-     </void>
-     <void property="level">
-      <int>1</int>
-     </void>
-     <void property="message">
-      <string>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
-&lt;java version=&quot;IGNORE-JAVA-VERSION&quot; class=&quot;java.beans.XMLDecoder&quot;&gt;
- &lt;int&gt;123&lt;/int&gt;
-&lt;/java&gt;
-</string>
-     </void>
-     <void property="messageClassName">
-      <string>java.lang.Integer</string>
-     </void>
-     <void property="name">
-      <string>infoname3</string>
-     </void>
-     <void property="report">
-      <object idref="Report0"/>
-     </void>
-     <void property="threadName">
-      <string>main</string>
-     </void>
-     <void property="type">
-      <int>6</int>
-     </void>
-    </object>
-   </void>
-   <void method="add">
-    <object class="org.wearefrank.ladybug.Checkpoint">
-     <void property="encoding">
-      <string>XMLEncoder</string>
-     </void>
-     <void property="level">
-      <int>1</int>
-     </void>
-     <void property="message">
-      <string>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
-&lt;java version=&quot;IGNORE-JAVA-VERSION&quot; class=&quot;java.beans.XMLDecoder&quot;&gt;
- &lt;int&gt;456&lt;/int&gt;
-&lt;/java&gt;
-</string>
-     </void>
-     <void property="messageClassName">
-      <string>java.lang.Integer</string>
-     </void>
-     <void property="name">
-      <string>infoname4</string>
-     </void>
-     <void property="report">
-      <object idref="Report0"/>
-     </void>
-     <void property="threadName">
-      <string>main</string>
-     </void>
-     <void property="type">
-      <int>6</int>
-     </void>
-    </object>
-   </void>
-   <void method="add">
-    <object class="org.wearefrank.ladybug.Checkpoint">
-     <void property="encoding">
-      <string>XmlUtil.nodeToString()</string>
-     </void>
-     <void property="level">
-      <int>1</int>
-     </void>
-     <void property="message">
-      <string>&lt;NodeTest/&gt;</string>
-     </void>
-     <void property="messageClassName">
-      <string>org.apache.xerces.dom.ElementImpl</string>
-     </void>
-     <void property="name">
-      <string>infoname5</string>
-     </void>
-     <void property="report">
-      <object idref="Report0"/>
-     </void>
-     <void property="threadName">
-      <string>main</string>
-     </void>
-     <void property="type">
-      <int>6</int>
-     </void>
-    </object>
-   </void>
-   <void method="add">
-    <object class="org.wearefrank.ladybug.Checkpoint">
-     <void property="level">
-      <int>1</int>
-     </void>
-     <void property="message">
-      <string></string>
-     </void>
-     <void property="name">
-      <string>testSpecialValues</string>
-     </void>
-     <void property="report">
-      <object idref="Report0"/>
-     </void>
-     <void property="threadName">
-      <string>main</string>
-     </void>
-     <void property="type">
-      <int>2</int>
-     </void>
-    </object>
-   </void>
-  </void>
-  <void property="correlationId">
-   <string>IGNORE-CORRELATIONID</string>
-  </void>
-  <void property="endTime">
-   <long>IGNORE-END-TIME</long>
-  </void>
-  <void property="linkMethod">
-   <string>Path and type</string>
-  </void>
-  <void property="name">
-   <string>testSpecialValues</string>
-  </void>
-  <void property="startTime">
-   <long>IGNORE-START-TIME</long>
-  </void>
-  <void property="storageId">
-   <int>IGNORE-STORAGE-ID</int>
-  </void>
-  <void property="stubStrategy">
-   <string>Stub all external connection code</string>
-  </void>
- </object>
+	<null/>
+	<object class="org.wearefrank.ladybug.Report" id="Report0">
+		<void property="checkpoints">
+			<void method="add">
+				<object class="org.wearefrank.ladybug.Checkpoint">
+					<void property="name">
+						<string>testSpecialValues</string>
+					</void>
+					<void property="report">
+						<object idref="Report0"/>
+					</void>
+					<void property="threadName">
+						<string>main</string>
+					</void>
+					<void property="type">
+						<int>1</int>
+					</void>
+				</object>
+			</void>
+			<void method="add">
+				<object class="org.wearefrank.ladybug.Checkpoint">
+					<void property="encoding">
+						<string>SimpleDateFormat(&quot;yyyy-MM-dd&apos;T&apos;HH:mm:ss.SSSZ&quot;)</string>
+					</void>
+					<void property="level">
+						<int>1</int>
+					</void>
+					<void property="message">
+						<string>1970-01-01TXX:XX:00.000+XXXX</string>
+					</void>
+					<void property="messageClassName">
+						<string>java.util.Date</string>
+					</void>
+					<void property="name">
+						<string>infoname1</string>
+					</void>
+					<void property="report">
+						<object idref="Report0"/>
+					</void>
+					<void property="threadName">
+						<string>main</string>
+					</void>
+					<void property="type">
+						<int>6</int>
+					</void>
+				</object>
+			</void>
+			<void method="add">
+				<object class="org.wearefrank.ladybug.Checkpoint">
+					<void property="encoding">
+						<string>XMLEncoder</string>
+					</void>
+					<void property="level">
+						<int>1</int>
+					</void>
+					<void property="message">
+						<string>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+							&lt;java version=&quot;IGNORE-JAVA-VERSION&quot; class=&quot;java.beans.XMLDecoder&quot;&gt;
+							&lt;object class=&quot;java.util.HashSet&quot;&gt;
+							&lt;void method=&quot;add&quot;&gt;
+							&lt;string&gt;Test with strange object&lt;/string&gt;
+							&lt;/void&gt;
+							&lt;/object&gt;
+							&lt;/java&gt;
+						</string>
+					</void>
+					<void property="messageClassName">
+						<string>java.util.HashSet</string>
+					</void>
+					<void property="name">
+						<string>infoname2</string>
+					</void>
+					<void property="report">
+						<object idref="Report0"/>
+					</void>
+					<void property="threadName">
+						<string>main</string>
+					</void>
+					<void property="type">
+						<int>6</int>
+					</void>
+				</object>
+			</void>
+			<void method="add">
+				<object class="org.wearefrank.ladybug.Checkpoint">
+					<void property="encoding">
+						<string>XMLEncoder</string>
+					</void>
+					<void property="level">
+						<int>1</int>
+					</void>
+					<void property="message">
+						<string>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+							&lt;java version=&quot;IGNORE-JAVA-VERSION&quot; class=&quot;java.beans.XMLDecoder&quot;&gt;
+							&lt;int&gt;123&lt;/int&gt;
+							&lt;/java&gt;
+						</string>
+					</void>
+					<void property="messageClassName">
+						<string>java.lang.Integer</string>
+					</void>
+					<void property="name">
+						<string>infoname3</string>
+					</void>
+					<void property="report">
+						<object idref="Report0"/>
+					</void>
+					<void property="threadName">
+						<string>main</string>
+					</void>
+					<void property="type">
+						<int>6</int>
+					</void>
+				</object>
+			</void>
+			<void method="add">
+				<object class="org.wearefrank.ladybug.Checkpoint">
+					<void property="encoding">
+						<string>XMLEncoder</string>
+					</void>
+					<void property="level">
+						<int>1</int>
+					</void>
+					<void property="message">
+						<string>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+							&lt;java version=&quot;IGNORE-JAVA-VERSION&quot; class=&quot;java.beans.XMLDecoder&quot;&gt;
+							&lt;int&gt;456&lt;/int&gt;
+							&lt;/java&gt;
+						</string>
+					</void>
+					<void property="messageClassName">
+						<string>java.lang.Integer</string>
+					</void>
+					<void property="name">
+						<string>infoname4</string>
+					</void>
+					<void property="report">
+						<object idref="Report0"/>
+					</void>
+					<void property="threadName">
+						<string>main</string>
+					</void>
+					<void property="type">
+						<int>6</int>
+					</void>
+				</object>
+			</void>
+			<void method="add">
+				<object class="org.wearefrank.ladybug.Checkpoint">
+					<void property="encoding">
+						<string>XmlUtil.nodeToString()</string>
+					</void>
+					<void property="level">
+						<int>1</int>
+					</void>
+					<void property="message">
+						<string>&lt;NodeTest/&gt;</string>
+					</void>
+					<void property="messageClassName">
+						<string>org.apache.xerces.dom.ElementImpl</string>
+					</void>
+					<void property="name">
+						<string>infoname5</string>
+					</void>
+					<void property="report">
+						<object idref="Report0"/>
+					</void>
+					<void property="threadName">
+						<string>main</string>
+					</void>
+					<void property="type">
+						<int>6</int>
+					</void>
+				</object>
+			</void>
+			<void method="add">
+				<object class="org.wearefrank.ladybug.Checkpoint">
+					<void property="level">
+						<int>1</int>
+					</void>
+					<void property="message">
+						<string></string>
+					</void>
+					<void property="name">
+						<string>testSpecialValues</string>
+					</void>
+					<void property="report">
+						<object idref="Report0"/>
+					</void>
+					<void property="threadName">
+						<string>main</string>
+					</void>
+					<void property="type">
+						<int>2</int>
+					</void>
+				</object>
+			</void>
+		</void>
+		<void property="correlationId">
+			<string>IGNORE-CORRELATIONID</string>
+		</void>
+		<void property="endTime">
+			<long>IGNORE-END-TIME</long>
+		</void>
+		<void property="linkMethod">
+			<string>Path and type</string>
+		</void>
+		<void property="name">
+			<string>testSpecialValues</string>
+		</void>
+		<void property="startTime">
+			<long>IGNORE-START-TIME</long>
+		</void>
+		<void property="storageId">
+			<int>IGNORE-STORAGE-ID</int>
+		</void>
+		<void property="stubStrategy">
+			<string>Stub all external connection code</string>
+		</void>
+	</object>
 </java>

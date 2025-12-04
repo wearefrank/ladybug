@@ -56,7 +56,7 @@ import jakarta.servlet.http.HttpServletResponseWrapper;
  * the same WebJars jar for servlet configurations with different servlet mappings this Angular servlet will adjust
  * the value of the href attribute of the base element to correspond with the serverside configured context path and
  * servlet path when serving the index.html.
- * 
+ *
  * @author Jaco de Groot
  */
 public class AngularServlet extends HttpServlet {
@@ -68,8 +68,8 @@ public class AngularServlet extends HttpServlet {
 	/**
 	 * Set artifactId of WebJars jar that contains the Angular app to be served. In case of a Maven project the pom.xml
 	 * of the project should also contain this artifactId.
-	 * 
-	 * @param artifactId  artifactId of WebJars jar that contains the Angular app to be served
+	 *
+	 * @param artifactId artifactId of WebJars jar that contains the Angular app to be served
 	 */
 	public void setArtifactId(String artifactId) {
 		this.artifactId = artifactId;
@@ -78,8 +78,8 @@ public class AngularServlet extends HttpServlet {
 	/**
 	 * Set version of WebJars jar that contains the Angular app to be served. In case of a Maven project the pom.xml
 	 * of the project should also contain this version. The version agnostic approach is used when version is not set.
-	 * 
-	 * @param version  version of WebJars jar that contains the Angular app to be served
+	 *
+	 * @param version version of WebJars jar that contains the Angular app to be served
 	 */
 	public void setVersion(String version) {
 		this.version = "/" + version;
@@ -90,8 +90,8 @@ public class AngularServlet extends HttpServlet {
 	 * server. For Tomcat this means that the JarScanner should not be configured to skip the WebJar (see also
 	 * https://www.webjars.org/documentation#servlet3). Hence useRequestDispatcher is false by default (works in all
 	 * situations).
-	 * 
-	 * @param useRequestDispatcher  set to true to dispatch requests and make the application server serve the resources
+	 *
+	 * @param useRequestDispatcher set to true to dispatch requests and make the application server serve the resources
 	 */
 	public void setUseRequestDispatcher(boolean useRequestDispatcher) {
 		this.useRequestDispatcher = useRequestDispatcher;
@@ -167,6 +167,7 @@ public class AngularServlet extends HttpServlet {
 				public String getServletPath() {
 					return webJarsBase;
 				}
+
 				@Override
 				public String getRequestURI() {
 					return webJarsRequestURI;
@@ -177,7 +178,7 @@ public class AngularServlet extends HttpServlet {
 				// Using forward instead of include would set Content-Type and caching related headers but doesn't
 				// throw an exception when resource is not found (allowing for index.html to be served)
 				requestDispatcher.include(requestWrapper, response);
-			} catch(RuntimeException e) {
+			} catch (RuntimeException e) {
 				if (forceIndexHtml) {
 					// Prevent infinite recursion when index.html is not found
 					throw e;
@@ -197,7 +198,7 @@ class BaseRewritingServletOutputStream extends ServletOutputStream {
 	int i = -1;
 	int phase = 1;
 	StringBuilder builder = new StringBuilder();
-	
+
 	BaseRewritingServletOutputStream(ServletOutputStream servletOutputStream, String newBase) {
 		this.servletOutputStream = servletOutputStream;
 		this.newBase = newBase;
@@ -212,18 +213,18 @@ class BaseRewritingServletOutputStream extends ServletOutputStream {
 	@Override
 	public void setWriteListener(WriteListener writeListener) {
 		servletOutputStream.setWriteListener(writeListener);
-		
+
 	}
 
 	@Override
 	public void write(int b) throws IOException {
 		if (i != -1) {
-			if (phase == 2 && (char)b != '"') {
+			if (phase == 2 && (char) b != '"') {
 				// Discard char from old base
 			} else {
 				servletOutputStream.write(b);
-				builder.append((char)b);
-				if (phase == 2 && (char)b == '"') {
+				builder.append((char) b);
+				if (phase == 2 && (char) b == '"') {
 					i = -1;
 				} else {
 					if (endsWith(builder, "<base href=\"")) {

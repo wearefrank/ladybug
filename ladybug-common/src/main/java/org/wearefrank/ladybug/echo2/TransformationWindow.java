@@ -15,6 +15,8 @@
 */
 package org.wearefrank.ladybug.echo2;
 
+import org.wearefrank.ladybug.transform.ReportXmlTransformer;
+
 import echopointng.tree.DefaultTreeCellRenderer;
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Column;
@@ -26,7 +28,6 @@ import nextapp.echo2.app.TextArea;
 import nextapp.echo2.app.WindowPane;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
-import org.wearefrank.ladybug.transform.ReportXmlTransformer;
 
 /**
  * @author Jaco de Groot
@@ -58,9 +59,9 @@ public class TransformationWindow extends WindowPane implements ActionListener {
 		// TODO weer courier maken?
 		textArea.setFont(DefaultTreeCellRenderer.DEFAULT_FONT);
 		textArea.setWidth(new Extent(100, Extent.PERCENT));
-		textArea.setHeight(new Extent(TEXT_AREA_HEIGHT)); 
+		textArea.setHeight(new Extent(TEXT_AREA_HEIGHT));
 
-		Button buttonSaveTranformation  = new Button("Save transformation");
+		Button buttonSaveTranformation = new Button("Save transformation");
 		buttonSaveTranformation.setActionCommand("SaveTransformation");
 		Echo2Application.decorateButton(buttonSaveTranformation);
 		buttonSaveTranformation.addActionListener(this);
@@ -95,7 +96,7 @@ public class TransformationWindow extends WindowPane implements ActionListener {
 		// Init
 
 	}
-	
+
 	public void setReportXmlTransformer(ReportXmlTransformer reportXmlTransformer) {
 		this.reportXmlTransformer = reportXmlTransformer;
 	}

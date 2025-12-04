@@ -1,33 +1,37 @@
 <Report Name="testCloseMessageCapturers"
-        Description=""
-        Path=""
-        CorrelationId="Original length: 36"
-        StartTime="Original length: 13"
-        EndTime="Original length: 13"
-        NumberOfCheckpoints="6"
-        EstimatedMemoryUsage="218">
-   <Checkpoint Name="testCloseMessageCapturers" Type="Startpoint" Level="0">startmessage</Checkpoint>
-   <Checkpoint Name="writer"
-               Type="Inputpoint"
-               Level="1"
-               MessageClassName="java.io.StringWriter"
-               Streaming="Character">Hello Writer World!</Checkpoint>
-   <Checkpoint Name="reader"
-               Type="Inputpoint"
-               Level="1"
-               MessageClassName="java.io.StringReader"
-               Streaming="Character">Hello Reader World!</Checkpoint>
-   <Checkpoint Name="outputstream"
-               Type="Inputpoint"
-               Level="1"
-               MessageClassName="java.io.ByteArrayOutputStream"
-               Encoding="UTF-8"
-               Streaming="Byte">Hello OutputStream World!</Checkpoint>
-   <Checkpoint Name="inputstream"
-               Type="Inputpoint"
-               Level="1"
-               MessageClassName="java.io.ByteArrayInputStream"
-               Encoding="UTF-8"
-               Streaming="Byte">Hello InputStream World!</Checkpoint>
-   <Checkpoint Name="testCloseMessageCapturers" Type="Endpoint" Level="1">endmessage</Checkpoint>
+	Description=""
+	Path=""
+	CorrelationId="Original length: 36"
+	StartTime="Original length: 13"
+	EndTime="Original length: 13"
+	NumberOfCheckpoints="6"
+	EstimatedMemoryUsage="218">
+	<Checkpoint Name="testCloseMessageCapturers" Type="Startpoint" Level="0">startmessage</Checkpoint>
+	<Checkpoint Name="writer"
+		Type="Inputpoint"
+		Level="1"
+		MessageClassName="java.io.StringWriter"
+		Streaming="Character">Hello Writer World!
+	</Checkpoint>
+	<Checkpoint Name="reader"
+		Type="Inputpoint"
+		Level="1"
+		MessageClassName="java.io.StringReader"
+		Streaming="Character">Hello Reader World!
+	</Checkpoint>
+	<Checkpoint Name="outputstream"
+		Type="Inputpoint"
+		Level="1"
+		MessageClassName="java.io.ByteArrayOutputStream"
+		Encoding="UTF-8"
+		Streaming="Byte">Hello OutputStream World!
+	</Checkpoint>
+	<Checkpoint Name="inputstream"
+		Type="Inputpoint"
+		Level="1"
+		MessageClassName="java.io.ByteArrayInputStream"
+		Encoding="UTF-8"
+		Streaming="Byte">Hello InputStream World!
+	</Checkpoint>
+	<Checkpoint Name="testCloseMessageCapturers" Type="Endpoint" Level="1">endmessage</Checkpoint>
 </Report>

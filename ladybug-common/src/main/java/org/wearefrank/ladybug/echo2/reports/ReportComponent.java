@@ -16,6 +16,13 @@
 package org.wearefrank.ladybug.echo2.reports;
 
 import org.springframework.util.StringUtils;
+import org.wearefrank.ladybug.Report;
+import org.wearefrank.ladybug.echo2.BeanParent;
+import org.wearefrank.ladybug.echo2.Echo2Application;
+import org.wearefrank.ladybug.echo2.TransformationWindow;
+import org.wearefrank.ladybug.echo2.test.TestComponent;
+import org.wearefrank.ladybug.echo2.util.Download;
+import org.wearefrank.ladybug.storage.CrudStorage;
 
 import echopointng.tree.DefaultMutableTreeNode;
 import nextapp.echo2.app.Button;
@@ -30,13 +37,6 @@ import nextapp.echo2.app.TextArea;
 import nextapp.echo2.app.TextField;
 import nextapp.echo2.app.WindowPane;
 import nextapp.echo2.app.event.ActionEvent;
-import org.wearefrank.ladybug.Report;
-import org.wearefrank.ladybug.echo2.BeanParent;
-import org.wearefrank.ladybug.echo2.Echo2Application;
-import org.wearefrank.ladybug.echo2.TransformationWindow;
-import org.wearefrank.ladybug.echo2.test.TestComponent;
-import org.wearefrank.ladybug.echo2.util.Download;
-import org.wearefrank.ladybug.storage.CrudStorage;
 
 /**
  * @author Jaco de Groot
@@ -100,13 +100,13 @@ public class ReportComponent extends MessageComponent {
 		Echo2Application.decorateButton(downloadButton);
 		buttonRow.add(downloadButton);
 
-		Button expandAll  = new Button("Expand all");
+		Button expandAll = new Button("Expand all");
 		expandAll.setActionCommand("ExpandAll");
 		Echo2Application.decorateButton(expandAll);
 		expandAll.addActionListener(this);
 		buttonRow.add(expandAll);
 
-		Button collapseAll  = new Button("Collapse all");
+		Button collapseAll = new Button("Collapse all");
 		collapseAll.setActionCommand("CollapseAll");
 		Echo2Application.decorateButton(collapseAll);
 		collapseAll.addActionListener(this);
@@ -133,7 +133,7 @@ public class ReportComponent extends MessageComponent {
 		optionsRow.add(linkMethodSelectField);
 
 		// TODO werkend maken
-		copyToSelectField = new SelectField(new String[]{testStorage.getName()});
+		copyToSelectField = new SelectField(new String[]{ testStorage.getName() });
 		copyToSelectField.setSelectedIndex(0);
 		optionsRow.add(new Label("Copy to:"));
 		optionsRow.add(copyToSelectField);
@@ -147,11 +147,11 @@ public class ReportComponent extends MessageComponent {
 
 		add(messageColumn);
 		add(messageTextArea);
-		
+
 		variableErrorMessageLabel = Echo2Application.createErrorLabel();
 		variableErrorMessageLabel.setVisible(false);
 		add(variableErrorMessageLabel);
-		
+
 		buttonRow = Echo2Application.getNewRow();
 		add(buttonRow);
 
@@ -211,11 +211,11 @@ public class ReportComponent extends MessageComponent {
 		transformationTextArea.setHeight(new Extent(TransformationWindow.TEXT_AREA_HEIGHT));
 		transformationTextArea.setVisible(false);
 		add(transformationTextArea);
-		
+
 		Row variablesRow = Echo2Application.getNewRow();
-		variablesRow.setInsets(new Insets(0, 5, 0 ,0));
+		variablesRow.setInsets(new Insets(0, 5, 0, 0));
 		add(variablesRow);
-		
+
 		variablesLabel = Echo2Application.createInfoLabel();
 		variablesLabel.setText("Variables:");
 		variablesLabel.setVisible(false);
@@ -227,9 +227,9 @@ public class ReportComponent extends MessageComponent {
 				+ "In this case, any occurences of ${firstname} in the report's input message "
 				+ "will be replaced with \"jaco\" at runtime.");
 		variablesRow.add(variablesLabel);
-		
+
 		variablesColumn = new Column();
-		variablesColumn.setInsets(new Insets(0, 5, 0 ,0));
+		variablesColumn.setInsets(new Insets(0, 5, 0, 0));
 		variablesTextArea = new TextArea();
 		variablesTextArea.setWidth(new Extent(50, Extent.PERCENT));
 		variablesTextArea.setHeight(new Extent(32));
@@ -265,12 +265,12 @@ public class ReportComponent extends MessageComponent {
 			deleteWarningWindow.setDefaultCloseOperation(WindowPane.HIDE_ON_CLOSE);
 			deleteWarningWindow.init();
 
-			Button yesButton  = new Button("Yes");
+			Button yesButton = new Button("Yes");
 			yesButton.setActionCommand("DeleteYes");
 			Echo2Application.decorateButton(yesButton);
 			yesButton.addActionListener(this);
 
-			Button noButton  = new Button("No");
+			Button noButton = new Button("No");
 			noButton.setActionCommand("DeleteNo");
 			Echo2Application.decorateButton(noButton);
 			noButton.addActionListener(this);
@@ -314,7 +314,7 @@ public class ReportComponent extends MessageComponent {
 			setMessage(reportXml);
 		}
 		messageTextArea.setVisible(false);
-		
+
 		storageIdLabel.setText("StorageId: " + (report.getStorageId() == null ? "" : report.getStorageId()));
 		storageLabel.setText("Storage: " + (report.getStorage() == null ? "" : report.getStorage().getName()));
 		estimatedMemoryUsageLabel.setText("EstimatedMemoryUsage: " + report.getEstimatedMemoryUsage() + " bytes");
@@ -329,9 +329,9 @@ public class ReportComponent extends MessageComponent {
 	public void actionPerformed(ActionEvent e) {
 		super.actionPerformed(e);
 		if (stubStrategySelectField == e.getSource()) {
-			report.setStubStrategy((String)stubStrategySelectField.getSelectedItem());
+			report.setStubStrategy((String) stubStrategySelectField.getSelectedItem());
 		} else if (linkMethodSelectField == e.getSource()) {
-			report.setLinkMethod((String)linkMethodSelectField.getSelectedItem());
+			report.setLinkMethod((String) linkMethodSelectField.getSelectedItem());
 		} else if (e.getActionCommand().equals("Download")) {
 			if ("Both".equals(downloadSelectField.getSelectedItem())) {
 				displayAndLogError(Download.download(report, true, true));
@@ -344,7 +344,7 @@ public class ReportComponent extends MessageComponent {
 			if (report.getStorage() instanceof CrudStorage) {
 				deleteIdLabel.setText(
 						"Are you sure you want to delete report with storage id "
-						+ report.getStorageId() + "?");
+								+ report.getStorageId() + "?");
 				deleteWarningWindow.setVisible(true);
 			} else {
 				displayError("Storage doesn't support delete method");
@@ -352,7 +352,7 @@ public class ReportComponent extends MessageComponent {
 		} else if (e.getActionCommand().equals("DeleteYes")
 				|| e.getActionCommand().equals("DeleteNo")) {
 			if (e.getActionCommand().equals("DeleteYes")) {
-				displayAndLogError(Echo2Application.delete((CrudStorage)report.getStorage(), report));
+				displayAndLogError(Echo2Application.delete((CrudStorage) report.getStorage(), report));
 			}
 			deleteWarningWindow.setVisible(false);
 			deleteIdLabel.setText("?");
@@ -388,7 +388,7 @@ public class ReportComponent extends MessageComponent {
 		report.setTransformation(transformationTextArea.getText());
 		report.flushCachedXml();
 		if (report.getStorage() instanceof CrudStorage) {
-			displayAndLogError(Echo2Application.update((CrudStorage)report.getStorage(), report));
+			displayAndLogError(Echo2Application.update((CrudStorage) report.getStorage(), report));
 		} else {
 			displayError("Storage with name " + report.getStorage().getName() + " is not a CrudStorage");
 		}
@@ -399,7 +399,7 @@ public class ReportComponent extends MessageComponent {
 
 	private void saveReportPathChanges() {
 		String input = pathTextField.getText();
-		if(!StringUtils.isEmpty(input)) {
+		if (!StringUtils.isEmpty(input)) {
 			input = TestComponent.normalizePath(input);
 			pathTextField.setText(input);
 		}
@@ -408,10 +408,10 @@ public class ReportComponent extends MessageComponent {
 
 	private void saveReportVariablesChanges() {
 		String errorMessage = report.setVariablesCsv(variablesTextArea.getText());
-		if(errorMessage == null) {
+		if (errorMessage == null) {
 			variableErrorMessageLabel.setVisible(false);
 		} else {
-			variableErrorMessageLabel.setText("[Variables] "+errorMessage);
+			variableErrorMessageLabel.setText("[Variables] " + errorMessage);
 			variableErrorMessageLabel.setVisible(true);
 		}
 	}
@@ -424,7 +424,7 @@ public class ReportComponent extends MessageComponent {
 		updatePathLabelAndPathTextField();
 		updateTransformationLabelAndTransformationColumnAndTextArea();
 		updateVariableLabelAndTextArea();
-		if(!infoPane.edit()) {
+		if (!infoPane.edit()) {
 			variableErrorMessageLabel.setVisible(false);
 		}
 	}

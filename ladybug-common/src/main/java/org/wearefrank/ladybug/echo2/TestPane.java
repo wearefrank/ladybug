@@ -15,14 +15,11 @@
 */
 package org.wearefrank.ladybug.echo2;
 
-import org.springframework.beans.factory.annotation.Autowired;
-
 import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.context.Dependent;
 import jakarta.inject.Inject;
-import nextapp.echo2.app.Extent;
-import nextapp.echo2.app.SplitPane;
-import nextapp.echo2.extras.app.layout.TabPaneLayoutData;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.wearefrank.ladybug.TestTool;
 import org.wearefrank.ladybug.echo2.test.InfoPane;
 import org.wearefrank.ladybug.echo2.test.TreePane;
@@ -30,6 +27,10 @@ import org.wearefrank.ladybug.extensions.CustomReportAction;
 import org.wearefrank.ladybug.storage.CrudStorage;
 import org.wearefrank.ladybug.storage.LogStorage;
 import org.wearefrank.ladybug.transform.ReportXmlTransformer;
+
+import nextapp.echo2.app.Extent;
+import nextapp.echo2.app.SplitPane;
+import nextapp.echo2.extras.app.layout.TabPaneLayoutData;
 
 @Dependent
 public class TestPane extends Tab implements BeanParent {

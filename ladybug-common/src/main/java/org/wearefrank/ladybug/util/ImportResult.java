@@ -23,7 +23,7 @@ public class ImportResult {
 	public int getOldStorageId() {
 		return oldStorageId;
 	}
-	
+
 	public int getNewStorageId() {
 		return newStorageId;
 	}

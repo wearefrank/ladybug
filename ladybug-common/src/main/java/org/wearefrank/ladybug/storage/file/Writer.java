@@ -32,7 +32,6 @@ import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import org.wearefrank.ladybug.MetadataExtractor;
 import org.wearefrank.ladybug.Report;
 import org.wearefrank.ladybug.storage.StorageException;
@@ -108,7 +107,7 @@ public class Writer {
 		reportsFile = new File(reportsFilename);
 		metadataFile = new File(metadataFilename);
 		if (storageIds != null && storageIds.size() > 0) {
-			Integer id = (Integer)storageIds.get(0);
+			Integer id = (Integer) storageIds.get(0);
 			latestStorageId = id.intValue();
 			latestStorageId++;
 		}
@@ -121,7 +120,7 @@ public class Writer {
 	protected void store(Report report, boolean preserveStorageId) throws StorageException {
 		byte[] reportBytes = Export.getReportBytes(report);
 		// Synchronize to keep order of storage id's in storage in incremental order
-		synchronized(synchronizeStore) {
+		synchronized (synchronizeStore) {
 			if (!preserveStorageId) {
 				Integer storageId = latestStorageId++;
 				report.setStorageId(storageId);
@@ -131,14 +130,15 @@ public class Writer {
 			for (int i = 0; i < persistentMetadata.size(); i++) {
 				String metadataName = persistentMetadata.get(i);
 				metadataValues.add(metadataExtractor.getMetadata(report,
-						metadataName, MetadataExtractor.VALUE_TYPE_STRING));
+						metadataName, MetadataExtractor.VALUE_TYPE_STRING
+				));
 			}
 			store(report.getName(), reportBytes, metadataValues);
 		}
 	}
 
 	protected void store(String reportName, byte[] reportBytes, List<String> metadataValues) throws StorageException {
-		synchronized(synchronizeStore) {
+		synchronized (synchronizeStore) {
 			try {
 				if (reportsFileOutputStream == null) {
 					if (!metadataFile.exists()) {
@@ -185,11 +185,11 @@ public class Writer {
 //				}
 				checkFreeSpace(reportName, reportBytes.length);
 				writeReportAndMetadata(reportBytes, EscapeUtil.escapeCsv(metadataValues));
-			} catch(Throwable throwable) {
+			} catch (Throwable throwable) {
 				StorageException storageException;
 				if (throwable instanceof StorageException) {
 					lastExceptionMessage = throwable.getMessage();
-					storageException = (StorageException)throwable;
+					storageException = (StorageException) throwable;
 				} else {
 					String message = "Caught unexpected throwable storing report";
 					lastExceptionMessage = message + ": " + throwable.getMessage();
@@ -205,7 +205,7 @@ public class Writer {
 	protected void storeWithoutException(Report report, boolean preserveStorageId) {
 		try {
 			store(report, preserveStorageId);
-		} catch(Throwable throwable) {
+		} catch (Throwable throwable) {
 			lastExceptionMessage = throwable.getMessage();
 			// When StorageException is should already be logged
 			if (!(throwable instanceof StorageException)) {
@@ -223,10 +223,10 @@ public class Writer {
 	}
 
 	protected void clear() throws StorageException {
-		synchronized(synchronizeStore) {
+		synchronized (synchronizeStore) {
 			closeFiles();
 
-			synchronized(synchronizeRotate) {
+			synchronized (synchronizeRotate) {
 				for (int i = 1; i <= maximumBackupIndex; i++) {
 					File reportsFile = new File(reportsFilename + "." + i);
 					if (reportsFile.exists()) {
@@ -260,9 +260,9 @@ public class Writer {
 			fileReader = new FileReader(metadataFile);
 			bufferedReader = new BufferedReader(fileReader);
 			header = bufferedReader.readLine();
-		} catch(FileNotFoundException fileNotFoundException) {
+		} catch (FileNotFoundException fileNotFoundException) {
 			Export.logAndThrow(log, fileNotFoundException, "FileNotFoundException reading metadata header from file '" + metadataFile.getAbsolutePath() + "'");
-		} catch(IOException ioException) {
+		} catch (IOException ioException) {
 			Export.logAndThrow(log, ioException, "IOException reading metadata header from file '" + metadataFile.getAbsolutePath() + "'");
 		} finally {
 			if (bufferedReader != null) {
@@ -283,17 +283,17 @@ public class Writer {
 		try {
 			reportsFileLength = reportsFile.length();
 			reportsFileOutputStream = new FileOutputStream(reportsFile, append);
-		} catch(IOException e) {
+		} catch (IOException e) {
 			Export.logAndThrow(log, e, "IOException opening reports file '" + reportsFile.getAbsolutePath() + "'");
 		}
 		try {
 			metadataFileOutputStream = new FileOutputStream(metadataFile, append);
-		} catch(IOException e) {
+		} catch (IOException e) {
 			Export.logAndThrow(log, e, "IOException opening metadata file '" + metadataFile.getAbsolutePath() + "'");
 		}
 		try {
 			metadataOutputStreamWriter = new OutputStreamWriter(metadataFileOutputStream, "UTF-8");
-		} catch(UnsupportedEncodingException e) {
+		} catch (UnsupportedEncodingException e) {
 			Export.logAndThrow(log, e, "UnsupportedEncodingException opening metadata output stream");
 		}
 	}
@@ -302,7 +302,7 @@ public class Writer {
 		try {
 			metadataOutputStreamWriter.write(metadataHeader);
 			metadataOutputStreamWriter.flush();
-		} catch(IOException ioException) {
+		} catch (IOException ioException) {
 			Export.logAndThrow(log, ioException, "IOException writing metadata header to file '" + metadataFile.getAbsolutePath() + "'");
 		}
 		metadataFileModifiedCounter++;
@@ -313,14 +313,14 @@ public class Writer {
 			reportsFileOutputStream.write(reportBytes);
 			reportsFileOutputStream.flush();
 			reportsFileLength = reportsFileLength + reportBytes.length;
-		} catch(IOException e) {
+		} catch (IOException e) {
 			Export.logAndThrow(log, e, "IOException writing report to file '" + reportsFile.getAbsolutePath() + "'");
 		}
 		try {
 			metadataOutputStreamWriter.write("\n");
 			metadataOutputStreamWriter.write(metadataCsvRecord);
 			metadataOutputStreamWriter.flush();
-		} catch(IOException e) {
+		} catch (IOException e) {
 			Export.logAndThrow(log, e, "IOException writing metadata to file '" + metadataFile.getAbsolutePath() + "'");
 		}
 		metadataFileModifiedCounter++;
@@ -342,7 +342,7 @@ public class Writer {
 	}
 
 	private void rotateFiles() throws StorageException {
-		synchronized(synchronizeRotate) {
+		synchronized (synchronizeRotate) {
 			for (int i = maximumBackupIndex; i >= 0; i--) {
 				rotateFile(reportsFilename, i);
 				rotateFile(metadataFilename, i);
@@ -376,7 +376,8 @@ public class Writer {
 			Files.move(oldFile.toPath(), newFile.toPath());
 		} catch (Exception e) {
 			Export.logAndThrow(log, e,
-					"Could not rename file '" + oldFile.getAbsolutePath() + "' to '" + newFile.getAbsolutePath() + "'");
+					"Could not rename file '" + oldFile.getAbsolutePath() + "' to '" + newFile.getAbsolutePath() + "'"
+			);
 		}
 	}
 

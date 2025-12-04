@@ -25,41 +25,41 @@ import org.apache.commons.lang3.StringUtils;
 public class CsvUtil {
 
 	/**
-     * @param text ...
-     * @param delimiter ...
-     * @return An error message as a result of unsuccessful validation; null if validation was successful.
-     */
+	 * @param text      ...
+	 * @param delimiter ...
+	 * @return An error message as a result of unsuccessful validation; null if validation was successful.
+	 */
 	public static String validateCsv(String text, String delimiter) {
 		return validateCsv(text, delimiter, -1);
 	}
 
 	/**
-     * @param text ...
-     * @param delimiter ...
-     * @param maxAmtOfRows ...
-     * @return An error message as a result of unsuccessful validation; null if validation was successful.
-     */
+	 * @param text         ...
+	 * @param delimiter    ...
+	 * @param maxAmtOfRows ...
+	 * @return An error message as a result of unsuccessful validation; null if validation was successful.
+	 */
 	public static String validateCsv(String text, String delimiter, int maxAmtOfRows) {
 		Scanner scanner = new Scanner(text);
 		List<String> lines = new ArrayList<String>();
-		while(scanner.hasNextLine()) {
+		while (scanner.hasNextLine()) {
 			String nextLine = scanner.nextLine();
-			if(StringUtils.isNotEmpty(nextLine) && !nextLine.startsWith("#")) {
+			if (StringUtils.isNotEmpty(nextLine) && !nextLine.startsWith("#")) {
 				lines.add(nextLine);
 			}
 		}
 		scanner.close();
-		
-		if(lines.size() < 2) {
+
+		if (lines.size() < 2) {
 			return "Invalid CSV: must contain at least two rows";
 		}
-		if(maxAmtOfRows > 1 && lines.size() > maxAmtOfRows) {
-			return "Invalid CSV: may only contain a maximum of "+maxAmtOfRows+" rows";
+		if (maxAmtOfRows > 1 && lines.size() > maxAmtOfRows) {
+			return "Invalid CSV: may only contain a maximum of " + maxAmtOfRows + " rows";
 		}
-		for(int i = 1; i < lines.size(); i++) {
+		for (int i = 1; i < lines.size(); i++) {
 			String line = lines.get(i);
-			if(!(line.split(delimiter).length == lines.get(0).split(delimiter).length)) {
-				return "Invalid CSV at row "+(i+1)+": all rows must contain an equal amount of comma-separated values";
+			if (!(line.split(delimiter).length == lines.get(0).split(delimiter).length)) {
+				return "Invalid CSV at row " + (i + 1) + ": all rows must contain an equal amount of comma-separated values";
 			}
 		}
 		return null;

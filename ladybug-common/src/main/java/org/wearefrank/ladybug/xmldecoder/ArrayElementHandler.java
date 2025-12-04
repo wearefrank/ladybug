@@ -67,67 +67,66 @@ import java.lang.reflect.Array;
  * <dd>the identifier of the variable that is intended to store the result
  * </dl>
  *
- * @since 1.7
- *
  * @author Sergey A. Malenkov
+ * @since 1.7
  */
 final class ArrayElementHandler extends NewElementHandler {
-    private Integer length;
+	private Integer length;
 
-    /**
-     * Parses attributes of the element.
-     * The following atributes are supported:
-     * <dl>
-     * <dt>length
-     * <dd>the array length
-     * <dt>class
-     * <dd>the type of object for instantiation
-     * <dt>id
-     * <dd>the identifier of the variable that is intended to store the result
-     * </dl>
-     *
-     * @param name   the attribute name
-     * @param value  the attribute value
-     */
-    @Override
-    public void addAttribute(String name, String value) {
-        if (name.equals("length")) { // NON-NLS: the attribute name
-            this.length = Integer.valueOf(value);
-        } else {
-            super.addAttribute(name, value);
-        }
-    }
+	/**
+	 * Parses attributes of the element.
+	 * The following atributes are supported:
+	 * <dl>
+	 * <dt>length
+	 * <dd>the array length
+	 * <dt>class
+	 * <dd>the type of object for instantiation
+	 * <dt>id
+	 * <dd>the identifier of the variable that is intended to store the result
+	 * </dl>
+	 *
+	 * @param name  the attribute name
+	 * @param value the attribute value
+	 */
+	@Override
+	public void addAttribute(String name, String value) {
+		if (name.equals("length")) { // NON-NLS: the attribute name
+			this.length = Integer.valueOf(value);
+		} else {
+			super.addAttribute(name, value);
+		}
+	}
 
-    /**
-     * Calculates the value of this element
-     * if the lentgh attribute is set.
-     */
-    @Override
-    public void startElement() {
-        if (this.length != null) {
-            getValueObject();
-        }
-    }
+	/**
+	 * Calculates the value of this element
+	 * if the lentgh attribute is set.
+	 */
+	@Override
+	public void startElement() {
+		if (this.length != null) {
+			getValueObject();
+		}
+	}
 
-    /**
-     * Creates an instance of the array.
-     *
-     * @param type  the base class
-     * @param args  the array of arguments
-     * @return the value of this element
-     */
-    @Override
-    protected ValueObject getValueObject(Class<?> type, Object[] args) {
-        if (type == null) {
-            type = Object.class;
-        }
-        if (this.length != null) {
-            return ValueObjectImpl.create(Array.newInstance(type, this.length));
-        }
-        Object array = Array.newInstance(type, args.length);
-        for (int i = 0; i < args.length; i++) {
-            Array.set(array, i, args[i]);
-        }
-        return ValueObjectImpl.create(array);
-    }
+	/**
+	 * Creates an instance of the array.
+	 *
+	 * @param type the base class
+	 * @param args the array of arguments
+	 * @return the value of this element
+	 */
+	@Override
+	protected ValueObject getValueObject(Class<?> type, Object[] args) {
+		if (type == null) {
+			type = Object.class;
+		}
+		if (this.length != null) {
+			return ValueObjectImpl.create(Array.newInstance(type, this.length));
+		}
+		Object array = Array.newInstance(type, args.length);
+		for (int i = 0; i < args.length; i++) {
+			Array.set(array, i, args[i]);
+		}
+		return ValueObjectImpl.create(array);
+	}
 }

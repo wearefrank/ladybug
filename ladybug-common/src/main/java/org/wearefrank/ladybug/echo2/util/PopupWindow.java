@@ -18,6 +18,8 @@ package org.wearefrank.ladybug.echo2.util;
 import java.util.Iterator;
 import java.util.List;
 
+import org.wearefrank.ladybug.echo2.Echo2Application;
+
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Extent;
@@ -28,13 +30,12 @@ import nextapp.echo2.app.WindowPane;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import nextapp.echo2.app.layout.ColumnLayoutData;
-import org.wearefrank.ladybug.echo2.Echo2Application;
 
 public class PopupWindow extends WindowPane implements ActionListener {
 	private static final long serialVersionUID = 1L;
 
 	public PopupWindow(String title, String message, int with, int height,
-			List<String> actionLabels, List<String> actionCommands, List<ActionListener> actionListeners) {
+					   List<String> actionLabels, List<String> actionCommands, List<ActionListener> actionListeners) {
 		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 		setModal(true);
 		setTitle(title);
@@ -52,9 +53,9 @@ public class PopupWindow extends WindowPane implements ActionListener {
 		Iterator<String> actionCommandsIterator = actionCommands.iterator();
 		Iterator<ActionListener> actionListenersIterator = actionListeners.iterator();
 		while (actionCommandsIterator.hasNext() && actionListenersIterator.hasNext()) {
-			String actionLabel = (String)actionLabelsIterator.next();
-			String actionCommand = (String)actionCommandsIterator.next();
-			ActionListener actionListener = (ActionListener)actionListenersIterator.next();
+			String actionLabel = (String) actionLabelsIterator.next();
+			String actionCommand = (String) actionCommandsIterator.next();
+			ActionListener actionListener = (ActionListener) actionListenersIterator.next();
 			Button button = new Button(actionLabel);
 			Echo2Application.decorateButton(button);
 			button.setActionCommand(actionCommand);
@@ -67,7 +68,7 @@ public class PopupWindow extends WindowPane implements ActionListener {
 		column.add(label);
 		column.add(buttonRow);
 		add(column);
-		
+
 	}
 
 	public void actionPerformed(ActionEvent e) {

@@ -20,17 +20,34 @@ import java.security.Principal;
 import java.util.ArrayList;
 import java.util.List;
 
+import jakarta.annotation.PostConstruct;
+import jakarta.enterprise.context.Dependent;
+import jakarta.inject.Inject;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.wearefrank.ladybug.Report;
+import org.wearefrank.ladybug.SecurityContext;
+import org.wearefrank.ladybug.TestTool;
+import org.wearefrank.ladybug.echo2.reports.CheckpointComponent;
+import org.wearefrank.ladybug.echo2.reports.InfoPane;
+import org.wearefrank.ladybug.echo2.reports.PathComponent;
+import org.wearefrank.ladybug.echo2.reports.ReportComponent;
+import org.wearefrank.ladybug.echo2.reports.ReportsComponent;
+import org.wearefrank.ladybug.echo2.reports.TreePane;
+import org.wearefrank.ladybug.filter.Views;
+import org.wearefrank.ladybug.run.ReportRunner;
+import org.wearefrank.ladybug.storage.CrudStorage;
+import org.wearefrank.ladybug.storage.LogStorage;
+import org.wearefrank.ladybug.storage.Storage;
+import org.wearefrank.ladybug.storage.StorageException;
+import org.wearefrank.ladybug.transform.ReportXmlTransformer;
 
 import echopointng.tree.DefaultMutableTreeNode;
-import jakarta.annotation.PostConstruct;
-import jakarta.enterprise.context.Dependent;
-import jakarta.inject.Inject;
 import nextapp.echo2.app.ApplicationInstance;
 import nextapp.echo2.app.Border;
 import nextapp.echo2.app.Button;
@@ -49,22 +66,6 @@ import nextapp.echo2.app.layout.RowLayoutData;
 import nextapp.echo2.extras.app.TabPane;
 import nextapp.echo2.extras.app.layout.TabPaneLayoutData;
 import nextapp.echo2.webcontainer.ContainerContext;
-import org.wearefrank.ladybug.Report;
-import org.wearefrank.ladybug.SecurityContext;
-import org.wearefrank.ladybug.TestTool;
-import org.wearefrank.ladybug.echo2.reports.CheckpointComponent;
-import org.wearefrank.ladybug.echo2.reports.InfoPane;
-import org.wearefrank.ladybug.echo2.reports.PathComponent;
-import org.wearefrank.ladybug.echo2.reports.ReportComponent;
-import org.wearefrank.ladybug.echo2.reports.ReportsComponent;
-import org.wearefrank.ladybug.echo2.reports.TreePane;
-import org.wearefrank.ladybug.filter.Views;
-import org.wearefrank.ladybug.run.ReportRunner;
-import org.wearefrank.ladybug.storage.CrudStorage;
-import org.wearefrank.ladybug.storage.LogStorage;
-import org.wearefrank.ladybug.storage.Storage;
-import org.wearefrank.ladybug.storage.StorageException;
-import org.wearefrank.ladybug.transform.ReportXmlTransformer;
 
 @Dependent
 public class Echo2Application extends ApplicationInstance implements ApplicationContextAware, BeanParent, SecurityContext {
@@ -76,7 +77,7 @@ public class Echo2Application extends ApplicationInstance implements Application
 	private static Color MAIN_COLOR_BUTTON = new Color(135, 160, 184);
 	private static Color MAIN_COLOR_BUTTON_ROLLOVER = new Color(162, 182, 200);
 	private static Color MAIN_COLOR_BUTTON_PRESSED = new Color(202, 214, 223);
-	
+
 	private static Color applicationBackgroundColor = Color.WHITE;
 	private static Color paneBackgroundColor = MAIN_COLOR_BUTTON_PRESSED;
 	private static Color buttonForegroundColor = Color.WHITE; // Text on button
@@ -96,10 +97,12 @@ public class Echo2Application extends ApplicationInstance implements Application
 	private static Color lineNumberTextColor = Color.WHITE;
 	private static Font messageFont = new Font(Font.MONOSPACE, Font.PLAIN, new Extent(12));
 	private static ColumnLayoutData columnLayoutDataForLabel;
+
 	static {
 		columnLayoutDataForLabel = new ColumnLayoutData();
 		columnLayoutDataForLabel.setInsets(new Insets(0, 5, 0, 0));
 	}
+
 	private static RowLayoutData rowLayoutDataForLabel;
 
 	private ApplicationContext applicationContext;
@@ -127,20 +130,20 @@ public class Echo2Application extends ApplicationInstance implements Application
 	 * The <code>initBean()</code> methods on the classes in the
 	 * <code>nl.nn.testtool.echo2</code> package should be called when they are
 	 * instantiated (e.g. by Spring (after the set methods have been called)).
-	 * 
+	 * <p>
 	 * After a tree of beans has been created some child prototype beans need
 	 * references to other beans in the tree for runtime user actions and
 	 * settings (e.g. references which are not possible to create with Spring
 	 * because of "unresolvable circular references"). For this the
 	 * <code>initBean(BeanParent beanParent)</code> will be called to give the
 	 * beans a change to require references to each other.
-	 * 
+	 * <p>
 	 * In Spring configuration all beans that implement <code>BeanParent</code>
 	 * must have scope prototype. When one of the beans in the tree is scoped as
 	 * singleton it's children will effectively be part of the last created
 	 * tree. Hence part of the tree will always be part of the tree of the most
 	 * recent user.
-	 * 
+	 * <p>
 	 * After the <code>WebContainerServlet</code> (e.g.
 	 * <code>nl.nn.ibistesttool.Servlet</code>) returns the
 	 * <code>ApplicationInstance</code> (this class) the Echo2 framework will
@@ -197,14 +200,15 @@ public class Echo2Application extends ApplicationInstance implements Application
 	}
 
 	public static Echo2Application getEcho2Application(BeanParent beanParent, Object child) {
-		String message = beanParent.getClass().getSimpleName() + "(" + beanParent.hashCode() + "), " + child.getClass().getSimpleName() + "(" + child.hashCode() + ")";
+		String message = beanParent.getClass().getSimpleName() + "(" + beanParent.hashCode() + "), " + child.getClass()
+				.getSimpleName() + "(" + child.hashCode() + ")";
 		while (beanParent.getBeanParent() != null) {
 			beanParent = beanParent.getBeanParent();
 			message = beanParent.getClass().getSimpleName() + "(" + beanParent.hashCode() + "), " + message;
 		}
 		message = "BeanParent path: " + message;
 		log.debug(message);
-		return (Echo2Application)beanParent;
+		return (Echo2Application) beanParent;
 	}
 
 	/**
@@ -231,7 +235,7 @@ public class Echo2Application extends ApplicationInstance implements Application
 			if (report == null) {
 				baseComponent.displayAndLogError("Report with storage id '" + storageId + "' not found");
 			}
-		} catch(StorageException storageException) {
+		} catch (StorageException storageException) {
 			baseComponent.displayAndLogError(storageException);
 		}
 		if (report != null) {
@@ -250,7 +254,7 @@ public class Echo2Application extends ApplicationInstance implements Application
 			Component component = tabPane.getComponent(i);
 			if (component instanceof ReportPane) {
 				// TODO ook nog checken dat het dezelfde storage is (reports comparen werkt niet omdat bij het opnieuw ophalen van een report uit de storage een nieuw object wordt aangemaakt, of we moeten hier het report uit storage halen a.d.h.v. storage id?)
-				if (((ReportPane)component).getReport().getStorageId().intValue() == report.getStorageId().intValue()) {
+				if (((ReportPane) component).getReport().getStorageId().intValue() == report.getStorageId().intValue()) {
 					tabPane.setActiveTabIndex(i);
 					reportFound = true;
 				}
@@ -356,7 +360,7 @@ public class Echo2Application extends ApplicationInstance implements Application
 		ComparePane comparePane = null;
 		for (Tab tab : tabs) {
 			if (tab instanceof ComparePane) {
-				comparePane = (ComparePane)tab;
+				comparePane = (ComparePane) tab;
 			}
 		}
 		DefaultMutableTreeNode reportNode1;
@@ -406,7 +410,7 @@ public class Echo2Application extends ApplicationInstance implements Application
 		try {
 			ids = storage.getStorageIds();
 			for (int i = 0; i < ids.size(); i++) {
-				Integer id = (Integer)ids.get(i);
+				Integer id = (Integer) ids.get(i);
 				Report report = storage.getReport(id);
 				// TODO op basis van storageId doen i.p.v. report?
 				storage.delete(report);
@@ -441,11 +445,11 @@ public class Echo2Application extends ApplicationInstance implements Application
 	public static Color getButtonRolloverBackgroundColor() {
 		return buttonRolloverBackgroundColor;
 	}
-	
+
 	public static Color getErrorBackgroundColor() {
 		return errorBackgroundColor;
 	}
-	
+
 	public static Color getErrorForegroundColor() {
 		return errorForegroundColor;
 	}
@@ -453,7 +457,7 @@ public class Echo2Application extends ApplicationInstance implements Application
 	public static Color getOkayBackgroundColor() {
 		return okayBackgroundColor;
 	}
-	
+
 	public static Color getOkayForegroundColor() {
 		return okayForegroundColor;
 	}
@@ -461,7 +465,7 @@ public class Echo2Application extends ApplicationInstance implements Application
 	public static Color getDifferenceFoundLabelColor() {
 		return differenceFoundLabelColor;
 	}
-	
+
 	public static Color getNoDifferenceFoundLabelColor() {
 		return noDifferenceFoundLabelColor;
 	}
@@ -481,9 +485,9 @@ public class Echo2Application extends ApplicationInstance implements Application
 	public static Row getNewRow() {
 		Row row = new Row();
 		row.setCellSpacing(new Extent(5));
-		return row; 
+		return row;
 	}
-	
+
 	public static void decorateButton(Button button) {
 		button.setInsets(new Insets(5, 2));
 		button.setForeground(Color.WHITE);
@@ -495,7 +499,7 @@ public class Echo2Application extends ApplicationInstance implements Application
 		button.setRolloverBorder(buttonRolloverBorder);
 		button.setRolloverBackground(buttonRolloverBackgroundColor);
 	}
-	
+
 	public static void decorateRadioButton(RadioButton radioButton) {
 		radioButton.setInsets(new Insets(5, 2));
 		radioButton.setForeground(Color.WHITE);
@@ -562,7 +566,7 @@ public class Echo2Application extends ApplicationInstance implements Application
 	public static Label createErrorLabelWithRowLayoutData() {
 		return createErrorLabel(rowLayoutDataForLabel);
 	}
-	
+
 	public static Font getMessageFont() {
 		return messageFont;
 	}
@@ -581,7 +585,7 @@ public class Echo2Application extends ApplicationInstance implements Application
 
 	public boolean isUserInRoles(List<String> roles) {
 		ContainerContext containerContext = getContainerContext();
-		
+
 		if (containerContext.getUserPrincipal() == null) {
 			// The servlet container didn't authenticate the user (not
 			// configured in the web.xml or explicitly overwritten by the
@@ -602,7 +606,7 @@ public class Echo2Application extends ApplicationInstance implements Application
 		ContainerContext containerContext = getContainerContext();
 		if (containerContext != null) {
 			String commandIssuedBy = " remoteHost [" + containerContext.getClientProperties().getString("remoteHost")
-			+ "]";
+					+ "]";
 			commandIssuedBy += " remoteUser [" + getUserPrincipal() + "]";
 			return commandIssuedBy;
 		}

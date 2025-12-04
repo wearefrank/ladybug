@@ -1,15 +1,17 @@
 <Report Name="testThreadsWithThreadCreatepointOnlyAndCancelThreads"
-        Description=""
-        Path=""
-        CorrelationId="Original length: 36"
-        StartTime="Original length: 13"
-        EndTime="Original length: 13"
-        NumberOfCheckpoints="2"
-        EstimatedMemoryUsage="48">
-   <Checkpoint Name="testThreadsWithThreadCreatepointOnlyAndCancelThreads"
-               Type="Startpoint"
-               Level="0">startmessage1</Checkpoint>
-   <Checkpoint Name="testThreadsWithThreadCreatepointOnlyAndCancelThreads"
-               Type="Endpoint"
-               Level="1">endmessage1</Checkpoint>
+	Description=""
+	Path=""
+	CorrelationId="Original length: 36"
+	StartTime="Original length: 13"
+	EndTime="Original length: 13"
+	NumberOfCheckpoints="2"
+	EstimatedMemoryUsage="48">
+	<Checkpoint Name="testThreadsWithThreadCreatepointOnlyAndCancelThreads"
+		Type="Startpoint"
+		Level="0">startmessage1
+	</Checkpoint>
+	<Checkpoint Name="testThreadsWithThreadCreatepointOnlyAndCancelThreads"
+		Type="Endpoint"
+		Level="1">endmessage1
+	</Checkpoint>
 </Report>

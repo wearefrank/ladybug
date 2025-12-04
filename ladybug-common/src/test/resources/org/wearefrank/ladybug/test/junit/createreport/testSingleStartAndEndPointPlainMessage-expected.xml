@@ -1,17 +1,19 @@
 <Report Name="testSingleStartAndEndPointPlainMessage"
-        Description=""
-        Path=""
-        CorrelationId="Original length: 36"
-        StartTime="Original length: 13"
-        EndTime="Original length: 13"
-        NumberOfCheckpoints="2"
-        EstimatedMemoryUsage="44">
-   <Checkpoint Name="testSingleStartAndEndPointPlainMessage"
-               Type="Startpoint"
-               Level="0"
-               SourceClassName="org.wearefrank.ladybug.test.junit.createreport.TestCreateReport">startmessage</Checkpoint>
-   <Checkpoint Name="testSingleStartAndEndPointPlainMessage"
-               Type="Endpoint"
-               Level="1"
-               SourceClassName="org.wearefrank.ladybug.test.junit.createreport.TestCreateReport">endmessage</Checkpoint>
+	Description=""
+	Path=""
+	CorrelationId="Original length: 36"
+	StartTime="Original length: 13"
+	EndTime="Original length: 13"
+	NumberOfCheckpoints="2"
+	EstimatedMemoryUsage="44">
+	<Checkpoint Name="testSingleStartAndEndPointPlainMessage"
+		Type="Startpoint"
+		Level="0"
+		SourceClassName="org.wearefrank.ladybug.test.junit.createreport.TestCreateReport">startmessage
+	</Checkpoint>
+	<Checkpoint Name="testSingleStartAndEndPointPlainMessage"
+		Type="Endpoint"
+		Level="1"
+		SourceClassName="org.wearefrank.ladybug.test.junit.createreport.TestCreateReport">endmessage
+	</Checkpoint>
 </Report>

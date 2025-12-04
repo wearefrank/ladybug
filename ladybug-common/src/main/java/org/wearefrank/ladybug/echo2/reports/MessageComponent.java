@@ -22,6 +22,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.util.StringUtils;
+import org.wearefrank.ladybug.Report;
+import org.wearefrank.ladybug.TestTool;
+import org.wearefrank.ladybug.echo2.BaseComponent;
+import org.wearefrank.ladybug.echo2.BeanParent;
+import org.wearefrank.ladybug.echo2.Echo2Application;
+import org.wearefrank.ladybug.echo2.ReportPane;
+import org.wearefrank.ladybug.echo2.util.Download;
+import org.wearefrank.ladybug.echo2.util.PopupWindow;
+import org.wearefrank.ladybug.run.ReportRunner;
+import org.wearefrank.ladybug.storage.LogStorage;
+import org.wearefrank.ladybug.storage.StorageException;
 
 import echopointng.tree.DefaultMutableTreeNode;
 import lombok.Setter;
@@ -37,17 +48,6 @@ import nextapp.echo2.app.TextArea;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import nextapp.echo2.app.layout.RowLayoutData;
-import org.wearefrank.ladybug.Report;
-import org.wearefrank.ladybug.TestTool;
-import org.wearefrank.ladybug.echo2.BaseComponent;
-import org.wearefrank.ladybug.echo2.BeanParent;
-import org.wearefrank.ladybug.echo2.Echo2Application;
-import org.wearefrank.ladybug.echo2.ReportPane;
-import org.wearefrank.ladybug.echo2.util.Download;
-import org.wearefrank.ladybug.echo2.util.PopupWindow;
-import org.wearefrank.ladybug.run.ReportRunner;
-import org.wearefrank.ladybug.storage.LogStorage;
-import org.wearefrank.ladybug.storage.StorageException;
 
 /**
  * @author Jaco de Groot
@@ -107,7 +107,7 @@ public class MessageComponent extends BaseComponent implements ActionListener {
 		Echo2Application.decorateButton(saveButton);
 		buttonRow.add(saveButton);
 
-		downloadSelectField = new SelectField(new String[]{"Both", "Report", "Message"});
+		downloadSelectField = new SelectField(new String[]{ "Both", "Report", "Message" });
 		downloadSelectField.setSelectedIndex(0);
 
 		messageColumn = new Column();
@@ -128,8 +128,8 @@ public class MessageComponent extends BaseComponent implements ActionListener {
 	}
 
 	/**
-	 * @see Echo2Application#initBean()
 	 * @param beanParent ...
+	 * @see Echo2Application#initBean()
 	 */
 	public void initBean(BeanParent beanParent) {
 		this.beanParent = beanParent;
@@ -157,7 +157,7 @@ public class MessageComponent extends BaseComponent implements ActionListener {
 	protected String getMessage() {
 		return message;
 	}
-	
+
 	protected void toggleShowLineNumbers() {
 		if (!infoPane.edit()) {
 			if (infoPane.showLineNumbers()) {
@@ -211,7 +211,7 @@ public class MessageComponent extends BaseComponent implements ActionListener {
 	}
 
 	public static void updateMessageColumn(String message, Column messageColumn, boolean compare,
-			String messageCompare) {
+										   String messageCompare) {
 		messageColumn.removeAll();
 		if (message == null || message.equals("")) {
 			messageColumn.setVisible(false);
@@ -296,7 +296,7 @@ public class MessageComponent extends BaseComponent implements ActionListener {
 	}
 
 	private static void setIndent(Label label, int preNumberOfChars, int postNumberOfChars, boolean whiteSpaceOnly) {
-		RowLayoutData rowLayoutData = (RowLayoutData)label.getLayoutData();
+		RowLayoutData rowLayoutData = (RowLayoutData) label.getLayoutData();
 		int topPx = 0;
 		if (whiteSpaceOnly) {
 			topPx = 15;
@@ -334,11 +334,11 @@ public class MessageComponent extends BaseComponent implements ActionListener {
 			}
 		}
 	}
-	
+
 	public static void addLineNumbers(Column messageColumn) {
 		int maxNumberLength = ("" + messageColumn.getComponentCount()).length();
 		for (int i = 0; i < messageColumn.getComponentCount(); i++) {
-			Row row = (Row)messageColumn.getComponent(i);
+			Row row = (Row) messageColumn.getComponent(i);
 			int lineNumber = i + 1;
 			Label label = createLabel(lineNumber + ":", false, false);
 			label.setForeground(Echo2Application.getLineNumberTextColor());
@@ -349,7 +349,7 @@ public class MessageComponent extends BaseComponent implements ActionListener {
 
 	public static void removeLineNumbers(Column messageColumn) {
 		for (int i = 0; i < messageColumn.getComponentCount(); i++) {
-			Row row = (Row)messageColumn.getComponent(i);
+			Row row = (Row) messageColumn.getComponent(i);
 			row.remove(0);
 		}
 	}
@@ -383,14 +383,14 @@ public class MessageComponent extends BaseComponent implements ActionListener {
 	// Copied from IAF XmlUtils
 	public static boolean isPrintableUnicodeChar(int c) {
 		return (c == 0x0009)
-			|| (c == 0x000A)
-			|| (c == 0x000D)
-			|| (c >= 0x0020 && c <= 0xD7FF)
-			|| (c >= 0xE000 && c <= 0xFFFD)
+				|| (c == 0x000A)
+				|| (c == 0x000D)
+				|| (c >= 0x0020 && c <= 0xD7FF)
+				|| (c >= 0xE000 && c <= 0xFFFD)
 			/* Prevent application crash 
 			|| (c >= 0x0010000 && c <= 0x0010FFFF)*/
-			// But allow (some) emoticons (https://en.wikipedia.org/wiki/Emoticons_(Unicode_block))
-			|| (c >= 0x001F600 && c <= 0x0001F64F);
+				// But allow (some) emoticons (https://en.wikipedia.org/wiki/Emoticons_(Unicode_block))
+				|| (c >= 0x001F600 && c <= 0x0001F64F);
 	}
 
 	/**
@@ -408,7 +408,7 @@ public class MessageComponent extends BaseComponent implements ActionListener {
 		} else if (e.getActionCommand().equals("Close") || e.getActionCommand().equals("CloseOk")) {
 			if (overwriteChanges(e.getActionCommand(), "CloseOk", "CloseCancel")) {
 				if (getParent().getParent().getParent() instanceof ReportPane) {
-					((Echo2Application)getApplicationInstance()).closeReport();
+					((Echo2Application) getApplicationInstance()).closeReport();
 				} else {
 					treePane.closeReport(report);
 				}
@@ -439,7 +439,7 @@ public class MessageComponent extends BaseComponent implements ActionListener {
 				Report runResultReport = null;
 				try {
 					runResultReport = ReportRunner.getRunResultReport(debugStorage, correlationId);
-				} catch(StorageException storageException) {
+				} catch (StorageException storageException) {
 					displayAndLogError(storageException);
 				}
 				if (runResultReport != null) {
@@ -469,7 +469,8 @@ public class MessageComponent extends BaseComponent implements ActionListener {
 			actionListeners.add(this);
 			PopupWindow popupWindow = new PopupWindow("",
 					"Are you sure you want to continue and discard your changes?", 450, 100,
-					actionLabels, actionCommands, actionListeners);
+					actionLabels, actionCommands, actionListeners
+			);
 			echo2Application.getContentPane().add(popupWindow);
 			return false;
 		} else {

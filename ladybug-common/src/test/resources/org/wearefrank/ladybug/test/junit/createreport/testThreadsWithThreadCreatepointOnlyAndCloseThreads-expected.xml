@@ -1,23 +1,25 @@
 <Report Name="testThreadsWithThreadCreatepointOnlyAndCloseThreads"
-        Description=""
-        Path=""
-        CorrelationId="Original length: 36"
-        StartTime="Original length: 13"
-        EndTime="Original length: 13"
-        NumberOfCheckpoints="4"
-        EstimatedMemoryUsage="48">
-   <Checkpoint Name="testThreadsWithThreadCreatepointOnlyAndCloseThreads"
-               Type="Startpoint"
-               Level="0">startmessage1</Checkpoint>
-   <Checkpoint Name="Waiting for thread 'main-ChildThreadIdA' to start..."
-               Type="ThreadCreatepoint"
-               Level="1"
-               Null="true"/>
-   <Checkpoint Name="Waiting for thread 'main-ChildThreadIdB' to start..."
-               Type="ThreadCreatepoint"
-               Level="1"
-               Null="true"/>
-   <Checkpoint Name="testThreadsWithThreadCreatepointOnlyAndCloseThreads"
-               Type="Endpoint"
-               Level="1">endmessage1</Checkpoint>
+	Description=""
+	Path=""
+	CorrelationId="Original length: 36"
+	StartTime="Original length: 13"
+	EndTime="Original length: 13"
+	NumberOfCheckpoints="4"
+	EstimatedMemoryUsage="48">
+	<Checkpoint Name="testThreadsWithThreadCreatepointOnlyAndCloseThreads"
+		Type="Startpoint"
+		Level="0">startmessage1
+	</Checkpoint>
+	<Checkpoint Name="Waiting for thread 'main-ChildThreadIdA' to start..."
+		Type="ThreadCreatepoint"
+		Level="1"
+		Null="true"/>
+	<Checkpoint Name="Waiting for thread 'main-ChildThreadIdB' to start..."
+		Type="ThreadCreatepoint"
+		Level="1"
+		Null="true"/>
+	<Checkpoint Name="testThreadsWithThreadCreatepointOnlyAndCloseThreads"
+		Type="Endpoint"
+		Level="1">endmessage1
+	</Checkpoint>
 </Report>
