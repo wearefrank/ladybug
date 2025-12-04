@@ -1,4 +1,4 @@
-[{*/src/main/java/**,*/src/test/java/**,*/src/main/resources/**}]
+[*]
 charset = utf-8
 end_of_line = lf
 indent_size = 4
@@ -14,7 +14,7 @@ ij_smart_tabs = false
 ij_visual_guides =
 ij_wrap_on_typing = false
 
-[{*/src/main/java/**/*.java,*/src/test/java/**/*.java}]
+[*.java]
 indent_style = tab
 ij_java_align_consecutive_assignments = false
 ij_java_align_consecutive_variable_declarations = false
@@ -345,7 +345,7 @@ ij_editorconfig_space_before_colon = false
 ij_editorconfig_space_before_comma = false
 ij_editorconfig_spaces_around_assignment_operators = true
 
-[{*.ant,*.fxml,*.jhm,*.jnlp,*.jrxml,*.pom,*.rng,*.tld,*.wadl,*.wsdl,*/src/main/resources/**/*.xml,*/src/main/resources/**/*.xsd,*/src/main/resources/**/*.xsl,*/src/main/resources/**/*.xslt,*.xul}]
+[{*.ant,*.fxml,*.jhm,*.jnlp,*.jrxml,*.pom,*.rng,*.tld,*.wadl,*.wsdl,*.xml,*.xsd,*.xsl,*.xslt,*.xul}]
 indent_style = tab
 max_line_length = 250
 ij_continuation_indent_size = 4
@@ -399,7 +399,7 @@ ij_json_wrap_long_lines = false
 ij_jsp_jsp_prefer_comma_separated_import_list = false
 ij_jsp_keep_indents_on_empty_lines = false
 
-[{*/src/main/resources/**/*.properties,spring.handlers,spring.schemas}]
+[{*.properties,spring.handlers,spring.schemas}]
 ij_properties_align_group_field_declarations = false
 ij_properties_keep_blank_lines = false
 ij_properties_key_value_delimiter = equals
@@ -418,3 +418,36 @@ ij_yaml_sequence_on_new_line = false
 ij_yaml_space_before_colon = false
 ij_yaml_spaces_within_braces = true
 ij_yaml_spaces_within_brackets = true
+
+[ladybug-common/src/test/resources/**]
+charset = unset
+end_of_line = unset
+indent_size = unset
+indent_style = unset
+insert_final_newline = unset
+max_line_length = unset
+tab_width = unset
+ij_continuation_indent_size = unset
+ij_formatter_off_tag = unset
+ij_formatter_on_tag = unset
+ij_formatter_tags_enabled = unset
+ij_smart_tabs = unset
+ij_visual_guides = unset
+ij_wrap_on_typing = unset
+ij_xml_align_attributes = unset
+ij_xml_align_text = unset
+ij_xml_attribute_wrap = unset
+ij_xml_block_comment_add_space = unset
+ij_xml_block_comment_at_first_column = unset
+ij_xml_keep_blank_lines = unset
+ij_xml_keep_indents_on_empty_lines = unset
+ij_xml_keep_line_breaks = unset
+ij_xml_keep_line_breaks_in_text = unset
+ij_xml_keep_whitespaces = unset
+ij_xml_keep_whitespaces_around_cdata = unset
+ij_xml_keep_whitespaces_inside_cdata = unset
+ij_xml_line_comment_at_first_column = unset
+ij_xml_space_after_tag_name = unset
+ij_xml_space_around_equals_in_attribute = unset
+ij_xml_space_inside_empty_tag = unset
+ij_xml_text_wrap = unset
