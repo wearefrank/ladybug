@@ -43,26 +43,27 @@ package org.wearefrank.ladybug.xmldecoder;
  * <dd>the identifier of the variable that is intended to store the result
  * </dl>
  *
- * @author Sergey A. Malenkov
  * @since 1.7
+ *
+ * @author Sergey A. Malenkov
  */
 final class BooleanElementHandler extends StringElementHandler {
 
-	/**
-	 * Creates {@code boolean} value from
-	 * the text of the body of this element.
-	 *
-	 * @param argument the text of the body
-	 * @return evaluated {@code boolean} value
-	 */
-	@Override
-	public Object getValue(String argument) {
-		if (Boolean.TRUE.toString().equalsIgnoreCase(argument)) {
-			return Boolean.TRUE;
-		}
-		if (Boolean.FALSE.toString().equalsIgnoreCase(argument)) {
-			return Boolean.FALSE;
-		}
-		throw new IllegalArgumentException("Unsupported boolean argument: " + argument);
-	}
+    /**
+     * Creates {@code boolean} value from
+     * the text of the body of this element.
+     *
+     * @param argument  the text of the body
+     * @return evaluated {@code boolean} value
+     */
+    @Override
+    public Object getValue(String argument) {
+        if (Boolean.TRUE.toString().equalsIgnoreCase(argument)) {
+            return Boolean.TRUE;
+        }
+        if (Boolean.FALSE.toString().equalsIgnoreCase(argument)) {
+            return Boolean.FALSE;
+        }
+        throw new IllegalArgumentException("Unsupported boolean argument: " + argument);
+    }
 }

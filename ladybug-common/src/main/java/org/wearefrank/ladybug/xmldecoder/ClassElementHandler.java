@@ -42,20 +42,21 @@ package org.wearefrank.ladybug.xmldecoder;
  * <dd>the identifier of the variable that is intended to store the result
  * </dl>
  *
- * @author Sergey A. Malenkov
  * @since 1.7
+ *
+ * @author Sergey A. Malenkov
  */
 final class ClassElementHandler extends StringElementHandler {
 
-	/**
-	 * Creates class by the name from
-	 * the text of the body of this element.
-	 *
-	 * @param argument the text of the body
-	 * @return evaluated {@code Class} value
-	 */
-	@Override
-	public Object getValue(String argument) {
-		return getOwner().findClass(argument);
-	}
+    /**
+     * Creates class by the name from
+     * the text of the body of this element.
+     *
+     * @param argument  the text of the body
+     * @return evaluated {@code Class} value
+     */
+    @Override
+    public Object getValue(String argument) {
+        return getOwner().findClass(argument);
+    }
 }

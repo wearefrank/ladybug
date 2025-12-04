@@ -44,48 +44,49 @@ package org.wearefrank.ladybug.xmldecoder;
  * that are illegal in XML document, for example:<pre>
  * &lt;char code="0"/&gt;</pre>
  *
- * @author Sergey A. Malenkov
  * @since 1.7
+ *
+ * @author Sergey A. Malenkov
  */
 final class CharElementHandler extends StringElementHandler {
 
-	/**
-	 * Parses attributes of the element.
-	 * The following atributes are supported:
-	 * <dl>
-	 * <dt>code
-	 * <dd>this attribute specifies character code
-	 * <dt>id
-	 * <dd>the identifier of the variable that is intended to store the result
-	 * </dl>
-	 *
-	 * @param name  the attribute name
-	 * @param value the attribute value
-	 */
-	@Override
-	public void addAttribute(String name, String value) {
-		if (name.equals("code")) { // NON-NLS: the attribute name
-			int code = Integer.decode(value);
-			for (char ch : Character.toChars(code)) {
-				addCharacter(ch);
-			}
-		} else {
-			super.addAttribute(name, value);
-		}
-	}
+    /**
+     * Parses attributes of the element.
+     * The following atributes are supported:
+     * <dl>
+     * <dt>code
+     * <dd>this attribute specifies character code
+     * <dt>id
+     * <dd>the identifier of the variable that is intended to store the result
+     * </dl>
+     *
+     * @param name   the attribute name
+     * @param value  the attribute value
+     */
+    @Override
+    public void addAttribute(String name, String value) {
+        if (name.equals("code")) { // NON-NLS: the attribute name
+            int code = Integer.decode(value);
+            for (char ch : Character.toChars(code)) {
+                addCharacter(ch);
+            }
+        } else {
+            super.addAttribute(name, value);
+        }
+    }
 
-	/**
-	 * Creates {@code char} value from
-	 * the text of the body of this element.
-	 *
-	 * @param argument the text of the body
-	 * @return evaluated {@code char} value
-	 */
-	@Override
-	public Object getValue(String argument) {
-		if (argument.length() != 1) {
-			throw new IllegalArgumentException("Wrong characters count");
-		}
-		return Character.valueOf(argument.charAt(0));
-	}
+    /**
+     * Creates {@code char} value from
+     * the text of the body of this element.
+     *
+     * @param argument  the text of the body
+     * @return evaluated {@code char} value
+     */
+    @Override
+    public Object getValue(String argument) {
+        if (argument.length() != 1) {
+            throw new IllegalArgumentException("Wrong characters count");
+        }
+        return Character.valueOf(argument.charAt(0));
+    }
 }

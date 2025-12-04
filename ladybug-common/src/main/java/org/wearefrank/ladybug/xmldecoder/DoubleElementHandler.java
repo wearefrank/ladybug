@@ -43,20 +43,21 @@ package org.wearefrank.ladybug.xmldecoder;
  * <dd>the identifier of the variable that is intended to store the result
  * </dl>
  *
- * @author Sergey A. Malenkov
  * @since 1.7
+ *
+ * @author Sergey A. Malenkov
  */
 final class DoubleElementHandler extends StringElementHandler {
 
-	/**
-	 * Creates {@code double} value from
-	 * the text of the body of this element.
-	 *
-	 * @param argument the text of the body
-	 * @return evaluated {@code double} value
-	 */
-	@Override
-	public Object getValue(String argument) {
-		return Double.valueOf(argument);
-	}
+    /**
+     * Creates {@code double} value from
+     * the text of the body of this element.
+     *
+     * @param argument  the text of the body
+     * @return evaluated {@code double} value
+     */
+    @Override
+    public Object getValue(String argument) {
+        return Double.valueOf(argument);
+    }
 }

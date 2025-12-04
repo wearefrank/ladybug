@@ -27,23 +27,24 @@ package org.wearefrank.ladybug.xmldecoder;
 /**
  * This interface represents the result of method execution.
  *
- * @author Sergey A. Malenkov
  * @since 1.7
+ *
+ * @author Sergey A. Malenkov
  */
 public interface ValueObject {
 
-	/**
-	 * Returns the result of method execution.
-	 *
-	 * @return the result of method execution
-	 */
-	Object getValue();
+    /**
+     * Returns the result of method execution.
+     *
+     * @return the result of method execution
+     */
+    Object getValue();
 
-	/**
-	 * Returns {@code void} state of this value object.
-	 *
-	 * @return {@code true} if value can be ignored,
-	 *        {@code false} otherwise
-	 */
-	boolean isVoid();
+    /**
+     * Returns {@code void} state of this value object.
+     *
+     * @return {@code true} if value can be ignored,
+     *         {@code false} otherwise
+     */
+    boolean isVoid();
 }

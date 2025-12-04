@@ -43,20 +43,21 @@ package org.wearefrank.ladybug.xmldecoder;
  * <dd>the identifier of the variable that is intended to store the result
  * </dl>
  *
- * @author Sergey A. Malenkov
  * @since 1.7
+ *
+ * @author Sergey A. Malenkov
  */
 final class ShortElementHandler extends StringElementHandler {
 
-	/**
-	 * Creates {@code short} value from
-	 * the text of the body of this element.
-	 *
-	 * @param argument the text of the body
-	 * @return evaluated {@code short} value
-	 */
-	@Override
-	public Object getValue(String argument) {
-		return Short.decode(argument);
-	}
+    /**
+     * Creates {@code short} value from
+     * the text of the body of this element.
+     *
+     * @param argument  the text of the body
+     * @return evaluated {@code short} value
+     */
+    @Override
+    public Object getValue(String argument) {
+        return Short.decode(argument);
+    }
 }

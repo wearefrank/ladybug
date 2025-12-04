@@ -37,19 +37,20 @@ package org.wearefrank.ladybug.xmldecoder;
  * <dd>the identifier of the variable that is intended to store the result
  * </dl>
  *
- * @author Sergey A. Malenkov
  * @since 1.7
+ *
+ * @author Sergey A. Malenkov
  */
 final class FalseElementHandler extends NullElementHandler {
 
-	/**
-	 * Returns {@code Boolean.FALSE}
-	 * as a value of &lt;false&gt; element.
-	 *
-	 * @return {@code Boolean.FALSE} by default
-	 */
-	@Override
-	public Object getValue() {
-		return Boolean.FALSE;
-	}
+    /**
+     * Returns {@code Boolean.FALSE}
+     * as a value of &lt;false&gt; element.
+     *
+     * @return {@code Boolean.FALSE} by default
+     */
+    @Override
+    public Object getValue() {
+        return Boolean.FALSE;
+    }
 }
