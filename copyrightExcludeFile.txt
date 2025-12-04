@@ -14,6 +14,7 @@ MANIFEST.MF
 README
 LICENSE
 .factorypath
+.editorconfig
 .md
 .class
 .travis
