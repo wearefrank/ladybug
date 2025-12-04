@@ -41,12 +41,14 @@ import org.wearefrank.ladybug.TestTool;
 import org.wearefrank.ladybug.storage.Storage;
 
 import org.wearefrank.ladybug.web.common.Constants;
+import org.wearefrank.ladybug.web.common.MetadataApiImpl;
 import org.wearefrank.ladybug.web.jaxrs.api.ApiBase;
 import org.wearefrank.ladybug.web.jaxrs.api.ApiException;
 
 @Path("/" + Constants.LADYBUG_API_PATH + "/metadata")
 public class MetadataApi extends ApiBase {
-	private @Setter @Inject @Autowired TestTool testTool;
+	@Autowired
+	@Setter private MetadataApiImpl delegate;
 
 	/**
 	 * Searches the storage metadata.
@@ -55,7 +57,6 @@ public class MetadataApi extends ApiBase {
 	 * @param metadataNames The metadata names to return.
 	 * @param limit Maximum number of results to return.
 	 * @param filterHeaders The headers on which we filter.
-	 * @param uriInfo Query parameters for search.
 	 * @param filterParams The regex on which the report names will be filtered
 	 * @return Response containing fields [List[String]] and values [List[List[Object]]].
 	 * @throws ApiException If an exception occurs during metadata search in storage.
@@ -67,40 +68,9 @@ public class MetadataApi extends ApiBase {
 									@QueryParam("metadataNames") List<String> metadataNames,
 									@DefaultValue("-1") @QueryParam("limit") int limit,
 									@QueryParam("filterHeader") List<String> filterHeaders,
-									@QueryParam("filter") List<String> filterParams ,
-									@Context UriInfo uriInfo) {
-		List<String> searchValues = new ArrayList<>();
-		for(String field : metadataNames) {
-			boolean changed = false;
-			for (int filterHeaderIndex = 0; filterHeaderIndex < filterHeaders.size(); filterHeaderIndex++) {
-				if (filterHeaders.get(filterHeaderIndex).equals(field)) {
-					searchValues.add(filterParams.get(filterHeaderIndex));
-					changed = true;
-				}
-			}
-			if(!changed) {
-				searchValues.add(null);
-			}
-		}
+									@QueryParam("filter") List<String> filterParams) {
 		try {
-
-			// Get storage, search for metadata, and return the results.
-			Storage storage = testTool.getStorage(storageName);
-			List<List<Object>> records = storage.getMetadata(limit, metadataNames, searchValues, MetadataExtractor.VALUE_TYPE_GUI);
-			List<LinkedHashMap<String, String>> metadata = new ArrayList<>();
-			for (List<Object> record : records) {
-				LinkedHashMap<String, String> metadataItem = new LinkedHashMap<>();
-				metadataItem.put("storageId", record.get(0).toString());
-				for (int i = 1; i < metadataNames.size(); i++) {
-					String metadataValue = null;
-					if (record.get(i) != null) {
-						metadataValue = record.get(i).toString();
-					}
-					metadataItem.put(metadataNames.get(i), metadataValue);
-				}
-				metadata.add(metadataItem);
-			}
-
+			List<LinkedHashMap<String, String>> metadata = delegate.getMetadataList(storageName, metadataNames, limit, filterHeaders, filterParams);
 			return Response.ok().entity(metadata).build();
 		} catch (Exception e) {
 			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Could not find metadata with limit " + limit + " and filter [" + filterParams + "] - detailed error message - " + e + Arrays.toString(e.getStackTrace())).build();
@@ -118,12 +88,7 @@ public class MetadataApi extends ApiBase {
 	@Path("/{storage}/userHelp")
 	public Response getUserHelp(@PathParam("storage") String storageName, @QueryParam("metadataNames") List<String> metadataNames) {
 		try {
-			Map<String, String> userHelp = new LinkedHashMap<>();
-			Storage storage = testTool.getStorage(storageName);
-			for (String field : metadataNames) {
-				userHelp.put(field, storage.getUserHelp(field));
-			}
-
+			Map<String, String> userHelp = delegate.getUserHelp(storageName, metadataNames);
 			return Response.ok().entity(userHelp).build();
 		} catch (Exception e) {
 			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Could not find user help - detailed error message - " + e + Arrays.toString(e.getStackTrace())).build();
@@ -141,8 +106,8 @@ public class MetadataApi extends ApiBase {
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getMetadataCount(@PathParam("storage") String storageName) {
 		try {
-			Storage storage = testTool.getStorage(storageName);
-			return Response.ok().entity(storage.getSize()).build();
+			int count = delegate.getMetadataCount(storageName);
+			return Response.ok().entity(count).build();
 		} catch (Exception e) {
 			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Could not find metadata count - detailed error message - " + e + Arrays.toString(e.getStackTrace())).build();
 		}

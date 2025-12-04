@@ -599,6 +599,7 @@
   </profiles>
   <modules>
     <module>ladybug-backend-jaxrs</module>
+    <module>ladybug-backend-springmvc</module>
     <module>ladybug-frontend-servlet</module>
     <module>ladybug-common</module>
   </modules>
