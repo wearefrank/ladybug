@@ -16,6 +16,7 @@
 package org.wearefrank.ladybug.web.springmvc.api;
 
 import jakarta.annotation.security.RolesAllowed;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -41,6 +42,7 @@ import org.wearefrank.ladybug.Report;
 @RequestMapping("/testtool")
 @RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 public class TestToolApi extends ApiBase {
+	@Autowired
 	private @Setter TestToolApiImpl delegate;
 
 	/**
