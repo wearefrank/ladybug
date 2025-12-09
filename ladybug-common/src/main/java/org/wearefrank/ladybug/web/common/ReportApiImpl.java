@@ -104,11 +104,16 @@ public class ReportApiImpl {
 	public Map<String, Object> getReport(String storageName,
 										 int storageId,
 										 boolean xml,
-										 boolean globalTransformer) throws Exception {
+										 boolean globalTransformer) throws HttpNotFoundException {
 		Storage storage = testTool.getStorage(storageName);
-		Report report = getReport(storage, storageId);
+		Report report = null;
+		try {
+			report = getReport(storage, storageId);
+		} catch(Exception e) {
+			throw new HttpNotFoundException(e.getMessage());
+		}
 		if (report == null)
-			throw new Exception("Could not find report with id [" + storageId + "]");
+			throw new HttpNotFoundException("Could not find report with id [" + storageId + "]");
 
 		if (globalTransformer) {
 			if (reportXmlTransformer != null)
@@ -138,7 +143,7 @@ public class ReportApiImpl {
 										  int storageId,
 										  String viewName,
 										  boolean invert
-	) throws Exception {
+	) throws HttpNotFoundException {
 		try {
 			Storage storage = testTool.getStorage(storageName);
 			Report report = getReport(storage, storageId);
@@ -163,14 +168,14 @@ public class ReportApiImpl {
 			}
 			return response;
 		} catch (Exception e) {
-			throw new Exception("Exception while getting report [" + storageId + "] from storage [" + storageName + "]", e);
+			throw new HttpNotFoundException("Exception while getting report [" + storageId + "] from storage [" + storageName + "]");
 		}
 	}
 
 	public Map<Integer, Map<String, Object>> getReports(String storageName,
 														List<Integer> storageIds,
 														boolean xml,
-														boolean globalTransformer) throws Exception {
+														boolean globalTransformer) throws HttpNotFoundException {
 		try {
 			Storage storage = testTool.getStorage(storageName);
 			Map<Integer, Map<String, Object>> map = new HashMap<>();
@@ -195,7 +200,7 @@ public class ReportApiImpl {
 			return map;
 
 		} catch (Exception e) {
-			throw new Exception("Exception while getting report [" + storageIds + "] from storage [" + storageName + "] - detailed error message - " + e + Arrays.toString(e.getStackTrace()));
+			throw new HttpNotFoundException("Exception while getting report [" + storageIds + "] from storage [" + storageName + "] - detailed error message - " + e + Arrays.toString(e.getStackTrace()));
 		}
 	}
 
@@ -222,7 +227,7 @@ public class ReportApiImpl {
 		}
 	}
 
-	public void deleteAllReports(String storageName) throws Exception {
+	public void deleteAllReports(String storageName) throws HttpInternalServerErrorException {
 		Storage storage = testTool.getStorage(storageName);
 		List<String> errorMessages = new ArrayList<>();
 		try {
@@ -232,7 +237,7 @@ public class ReportApiImpl {
 			log.error("Failed to clear storage [{}]", storage.getName(), e);
 		}
 		if (!errorMessages.isEmpty()) {
-			throw new Exception(errorMessages.stream().collect(Collectors.joining("\n")));
+			throw new HttpInternalServerErrorException(errorMessages.stream().collect(Collectors.joining("\n")));
 		}
 	}
 
@@ -319,7 +324,7 @@ public class ReportApiImpl {
 		}
 	}
 
-	public Map<String, String> getReportTransformation(String storageName, int storageId) throws Exception {
+	public Map<String, String> getReportTransformation(String storageName, int storageId) throws HttpInternalServerErrorException {
 		try {
 			Storage storage = testTool.getStorage(storageName);
 			String transformation = getReport(storage, storageId).getTransformation();
@@ -327,11 +332,11 @@ public class ReportApiImpl {
 			map.put("transformation", transformation);
 			return map;
 		} catch (StorageException e) {
-			throw new Exception("Could not retrieve transformation of report with storageId [" + storageId + "] - detailed error message - " + e + Arrays.toString(e.getStackTrace()));
+			throw new HttpInternalServerErrorException("Could not retrieve transformation of report with storageId [" + storageId + "] - detailed error message - " + e + Arrays.toString(e.getStackTrace()));
 		}
 	}
 
-	public List<Report> copyReport(String storageName, Map<String, List<Integer>> sources) throws Exception {
+	public List<Report> copyReport(String storageName, Map<String, List<Integer>> sources) throws HttpBadRequestException {
 		Storage target = testTool.getStorage(storageName);
 		Map<String, String> exceptions = new HashMap<>();
 		ArrayList<Report> reports = new ArrayList<>();
@@ -351,7 +356,7 @@ public class ReportApiImpl {
 		}
 		// TODO: Find a better error response code.
 		if (exceptions.size() > 0)
-			throw new Exception("Exceptions have been thrown when trying to copy report - detailed error message - Exceptions:\n" + exceptions);
+			throw new HttpBadRequestException("Exceptions have been thrown when trying to copy report - detailed error message - Exceptions:\n" + exceptions);
 		return reports;
 	}
 

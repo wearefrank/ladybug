@@ -41,6 +41,7 @@ import org.wearefrank.ladybug.TestTool;
 import org.wearefrank.ladybug.storage.Storage;
 
 import org.wearefrank.ladybug.web.common.Constants;
+import org.wearefrank.ladybug.web.common.HttpInternalServerErrorException;
 import org.wearefrank.ladybug.web.common.MetadataApiImpl;
 import org.wearefrank.ladybug.web.jaxrs.api.ApiBase;
 import org.wearefrank.ladybug.web.jaxrs.api.ApiException;
@@ -72,7 +73,7 @@ public class MetadataApi extends ApiBase {
 		try {
 			List<LinkedHashMap<String, String>> metadata = delegate.getMetadataList(storageName, metadataNames, limit, filterHeaders, filterParams);
 			return Response.ok().entity(metadata).build();
-		} catch (Exception e) {
+		} catch (HttpInternalServerErrorException e) {
 			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Could not find metadata with limit " + limit + " and filter [" + filterParams + "] - detailed error message - " + e + Arrays.toString(e.getStackTrace())).build();
 		}
 	}
@@ -108,7 +109,7 @@ public class MetadataApi extends ApiBase {
 		try {
 			int count = delegate.getMetadataCount(storageName);
 			return Response.ok().entity(count).build();
-		} catch (Exception e) {
+		} catch (HttpInternalServerErrorException e) {
 			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Could not find metadata count - detailed error message - " + e + Arrays.toString(e.getStackTrace())).build();
 		}
 	}

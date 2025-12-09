@@ -85,7 +85,7 @@ public class ReportApi extends ApiBase {
 		try {
 			Map<String, Object> result = delegate.getReport(storageName, storageId, xml, globalTransformer);
 			return Response.ok(result).build();
-		} catch(Exception e) {
+		} catch(HttpNotFoundException e) {
 			return Response.status(Response.Status.NOT_FOUND).entity(e.getMessage()).build();
 		}
 	}
@@ -114,7 +114,7 @@ public class ReportApi extends ApiBase {
 			List<String> result = delegate.getCheckpointUids(storageName, storageId, viewName, invert);
 			return Response.ok(result).build();
 		}
-		catch(Exception e) {
+		catch(HttpNotFoundException e) {
 			return Response.status(Response.Status.NOT_FOUND).entity(e.getMessage()).build();
 		}
 	}
@@ -138,7 +138,7 @@ public class ReportApi extends ApiBase {
 		try {
 			Map<Integer, Map<String, Object>> result = delegate.getReports(storageName, storageIds, xml, globalTransformer);
 			return Response.ok(result).build();
-		} catch(Exception e) {
+		} catch(HttpNotFoundException e) {
 			return Response.status(Response.Status.NOT_FOUND).entity(e.getMessage()).build();
 		}
 	}
@@ -171,7 +171,7 @@ public class ReportApi extends ApiBase {
 		try {
 			delegate.deleteAllReports(storageName);
 			return Response.ok().build();
-		} catch(Exception e) {
+		} catch(HttpInternalServerErrorException e) {
 			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e.getMessage()).build();
 		}
 	}
@@ -235,7 +235,7 @@ public class ReportApi extends ApiBase {
 		try {
 			Map<String, String> result = delegate.getReportTransformation(storageName, storageId);
 			return Response.ok(result).build();
-		} catch(Exception e) {
+		} catch(HttpInternalServerErrorException e) {
 			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e.getMessage()).build();
 		}
 	}
@@ -255,7 +255,7 @@ public class ReportApi extends ApiBase {
 		try {
 			List<Report> result = delegate.copyReport(storageName, sources);
 			return Response.ok(result).build();
-		} catch(Exception e) {
+		} catch(HttpBadRequestException e) {
 			return Response.status(Response.Status.BAD_REQUEST).entity(e.getMessage()).build();
 		}
 	}

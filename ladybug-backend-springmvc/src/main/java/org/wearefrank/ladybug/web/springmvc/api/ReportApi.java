@@ -77,7 +77,7 @@ public class ReportApi {
 		try {
 			Map<String, Object> result = delegate.getReport(storageName, storageId, xml, globalTransformer);
 			return ResponseEntity.ok(result);
-		} catch (Exception e) {
+		} catch (HttpNotFoundException e) {
 			return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
 		}
 	}
@@ -104,8 +104,8 @@ public class ReportApi {
 		try {
 			List<String> result = delegate.getCheckpointUids(storageName, storageId, viewName, invert);
 			return ResponseEntity.ok(result);
-		} catch (Exception e) {
-			return new ResponseEntity(e.getMessage(), HttpStatus.NOT_FOUND);
+		} catch (HttpNotFoundException e) {
+			return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
 		}
 	}
 
@@ -127,7 +127,7 @@ public class ReportApi {
 		try {
 			Map<Integer, Map<String, Object>> result = delegate.getReports(storageName, storageIds, xml, globalTransformer);
 			return ResponseEntity.ok(result);
-		} catch(Exception e) {
+		} catch(HttpNotFoundException e) {
 			return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
 		}
 	}
@@ -151,7 +151,7 @@ public class ReportApi {
 		try {
 			delegate.deleteAllReports(storageName);
 			return ResponseEntity.ok().build();
-		} catch(Exception e) {
+		} catch(HttpInternalServerErrorException e) {
 			return ResponseEntity.internalServerError().body(e.getMessage());
 		}
 	}
@@ -204,7 +204,7 @@ public class ReportApi {
 		try {
 			Map<String, String> result = delegate.getReportTransformation(storageName, storageId);
 			return ResponseEntity.ok(result);
-		} catch(Exception e) {
+		} catch(HttpInternalServerErrorException e) {
 			return ResponseEntity.internalServerError().body(e.getMessage());
 		}
 	}
@@ -221,7 +221,7 @@ public class ReportApi {
 		try {
 			List<Report> result = delegate.copyReport(storageName, sources);
 			return ResponseEntity.ok(result);
-		} catch(Exception e) {
+		} catch(HttpBadRequestException e) {
 			return ResponseEntity.badRequest().body(e.getMessage());
 		}
 	}

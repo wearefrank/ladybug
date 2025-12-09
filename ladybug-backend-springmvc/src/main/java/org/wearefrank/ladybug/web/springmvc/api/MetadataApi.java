@@ -21,6 +21,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.wearefrank.ladybug.web.common.HttpInternalServerErrorException;
 import org.wearefrank.ladybug.web.common.MetadataApiImpl;
 
 import java.util.Arrays;
@@ -50,7 +51,7 @@ public class MetadataApi {
 		try {
 			List<LinkedHashMap<String, String>> metadata = delegate.getMetadataList(storageName, metadataNames, limit, filterHeaders, filterParams);
 			return ResponseEntity.ok(metadata);
-		} catch(Exception e) {
+		} catch(HttpInternalServerErrorException e) {
 			return ResponseEntity.internalServerError().body("Could not find metadata with limit " + limit + " and filter [" + filterParams + "] - detailed error message - " + e + Arrays.toString(e.getStackTrace()));
 		}
 	}
@@ -79,7 +80,7 @@ public class MetadataApi {
 		try {
 			int count = delegate.getMetadataCount(storageName);
 			return ResponseEntity.ok(count);
-		} catch (Exception e) {
+		} catch (HttpInternalServerErrorException e) {
 			return ResponseEntity.internalServerError().body("Could not find metadata count - detailed error message - " + e + Arrays.toString(e.getStackTrace()));
 		}
 	}

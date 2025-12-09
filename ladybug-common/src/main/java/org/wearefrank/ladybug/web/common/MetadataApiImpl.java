@@ -22,6 +22,7 @@ import org.springframework.stereotype.Component;
 import org.wearefrank.ladybug.MetadataExtractor;
 import org.wearefrank.ladybug.TestTool;
 import org.wearefrank.ladybug.storage.Storage;
+import org.wearefrank.ladybug.storage.StorageException;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -39,7 +40,7 @@ public class MetadataApiImpl {
 															   List<String> metadataNames,
 															   int limit,
 															   List<String> filterHeaders,
-															   List<String> filterParams) throws Exception {
+															   List<String> filterParams) throws HttpInternalServerErrorException {
 		List<String> searchValues = new ArrayList<>();
 		for (String field : metadataNames) {
 			boolean changed = false;
@@ -55,7 +56,12 @@ public class MetadataApiImpl {
 		}
 		// Get storage, search for metadata, and return the results.
 		Storage storage = testTool.getStorage(storageName);
-		List<List<Object>> records = storage.getMetadata(limit, metadataNames, searchValues, MetadataExtractor.VALUE_TYPE_GUI);
+		List<List<Object>> records = null;
+		try {
+			records = storage.getMetadata(limit, metadataNames, searchValues, MetadataExtractor.VALUE_TYPE_GUI);
+		} catch(Exception e) {
+			throw new HttpInternalServerErrorException(e.getMessage());
+		}
 		List<LinkedHashMap<String, String>> metadata = new ArrayList<>();
 		for (List<Object> record : records) {
 			LinkedHashMap<String, String> metadataItem = new LinkedHashMap<>();
@@ -81,8 +87,12 @@ public class MetadataApiImpl {
 		return userHelp;
 	}
 
-	public int getMetadataCount(String storageName) throws Exception {
-		Storage storage = testTool.getStorage(storageName);
-		return storage.getSize();
+	public int getMetadataCount(String storageName) throws HttpInternalServerErrorException {
+		try {
+			Storage storage = testTool.getStorage(storageName);
+			return storage.getSize();
+		} catch(StorageException e) {
+			throw new HttpInternalServerErrorException(e.getMessage());
+		}
 	}
 }
