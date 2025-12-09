@@ -15,16 +15,10 @@
 */
 package org.wearefrank.ladybug.web.jaxrs.api;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.Map;
 
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import jakarta.annotation.PostConstruct;
-import jakarta.inject.Inject;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;
@@ -37,33 +31,18 @@ import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import lombok.Setter;
-import org.wearefrank.ladybug.MetadataExtractor;
 import org.wearefrank.ladybug.Report;
-import org.wearefrank.ladybug.TestTool;
 import org.wearefrank.ladybug.filter.View;
-import org.wearefrank.ladybug.filter.Views;
-import org.wearefrank.ladybug.storage.CrudStorage;
-import org.wearefrank.ladybug.transform.ReportXmlTransformer;
 
 import org.wearefrank.ladybug.web.common.Constants;
-import org.wearefrank.ladybug.web.jaxrs.api.ApiBase;
+import org.wearefrank.ladybug.web.common.HttpBadRequestException;
+import org.wearefrank.ladybug.web.common.HttpInternalServerErrorException;
+import org.wearefrank.ladybug.web.common.TestToolApiImpl;
 
 @Path("/" + Constants.LADYBUG_API_PATH + "/testtool")
 public class TestToolApi extends ApiBase {
-	private @Setter @Inject @Autowired TestTool testTool;
-	private @Setter @Inject @Autowired MetadataExtractor metadataExtractor;
-	private @Setter @Inject @Autowired ReportXmlTransformer reportXmlTransformer;
-	private @Setter @Inject @Autowired Views views;
-	private String defaultTransformation;
-
-	@PostConstruct
-	public void init() {
-		defaultTransformation = reportXmlTransformer.getXslt();
-	}
-
-	public String getDefaultTransformation() {
-		return defaultTransformation;
-	}
+	@Autowired
+	private @Setter TestToolApiImpl delegate;
 
 	/**
 	 * @return Response containing test tool data.
@@ -72,7 +51,7 @@ public class TestToolApi extends ApiBase {
 	@Path("/")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getInfo() {
-		Map<String, Object> info = getTestToolInfo();
+		Map<String, Object> info = delegate.getTestToolInfo();
 		return Response.ok(info).build();
 	}
 
@@ -80,20 +59,10 @@ public class TestToolApi extends ApiBase {
 	@Path("/reset")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response resetInfo() {
-		testTool.reset();
-		Map<String, Object> info = getTestToolInfo();
+		Map<String, Object> info = delegate.resetInfo();
 		return Response.ok(info).build();
 	}
 
-	public Map<String, Object> getTestToolInfo() {
-		Map<String, Object> map = new HashMap<>(4);
-		map.put("generatorEnabled", testTool.isReportGeneratorEnabled());
-		map.put("estMemory", testTool.getReportsInProgressEstimatedMemoryUsage());
-		map.put("regexFilter", testTool.getRegexFilter());
-		map.put("reportsInProgress", testTool.getNumberOfReportsInProgress());
-		map.put("stubStrategies", testTool.getStubStrategies());
-		return map;
-	}
 
 	/**
 	 * Change settings of the testtool.
@@ -105,25 +74,12 @@ public class TestToolApi extends ApiBase {
 	@Path("/")
 	@Consumes(MediaType.APPLICATION_JSON)
 	public Response updateInfo(Map<String, String> map) {
-		if (map.isEmpty()) {
-			return Response.status(Response.Status.BAD_REQUEST).entity("No settings have been provided - detailed error message - The settings that have been provided are " + map).build();
+		try {
+			delegate.updateInfo(map);
+			return Response.ok().build();
+		} catch(HttpBadRequestException e) {
+			return Response.status(Response.Status.BAD_REQUEST).entity(e.getMessage()).build();
 		}
-
-		if (map.size() > 2) {
-			return Response.status(Response.Status.BAD_REQUEST).entity("Too many settings have been provided - detailed error message - The settings that have been provided are " + map).build();
-		}
-		// TODO: Check user roles.
-		String generatorEnabled = map.remove("generatorEnabled");
-		String regexFilter = map.remove("regexFilter");
-
-		if (StringUtils.isNotEmpty(generatorEnabled)) {
-			testTool.setReportGeneratorEnabled("1".equalsIgnoreCase(generatorEnabled) || "true".equalsIgnoreCase(generatorEnabled));
-			testTool.sendReportGeneratorStatusUpdate();
-		}
-		if (StringUtils.isNotEmpty(regexFilter))
-			testTool.setRegexFilter(regexFilter);
-
-		return Response.ok().build();
 	}
 
 	/**
@@ -136,14 +92,11 @@ public class TestToolApi extends ApiBase {
 	@Path("/in-progress/{index}")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getReportsInProgress(@PathParam("index") int index) {
-		if (index == 0)
-			return Response.status(Response.Status.BAD_REQUEST).entity("No progresses have been queried [" + index + "] and/or are available [" + testTool.getNumberOfReportsInProgress() + "]").build();
-
 		try {
-			Report report = testTool.getReportInProgress(index - 1);
-			return Response.ok(report).build();
-		} catch (Exception e) {
-			return Response.status(Response.Status.BAD_REQUEST).entity("Could not find report in progress with index [" + index + "] - detailed error message - " + e + Arrays.toString(e.getStackTrace())).build();
+			Report result = delegate.getReportsInProgress(index);
+			return Response.ok(result).build();
+		} catch(HttpBadRequestException e) {
+			return Response.status(Response.Status.BAD_REQUEST).entity(e.getMessage()).build();
 		}
 	}
 
@@ -156,14 +109,11 @@ public class TestToolApi extends ApiBase {
 	@DELETE
 	@Path("/in-progress/{index}")
 	public Response deleteReportInProgress(@PathParam("index") int index) {
-		if (index == 0)
-			return Response.status(Response.Status.BAD_REQUEST).entity("No progresses have been queried [" + index + "] or are available [" + testTool.getNumberOfReportsInProgress() + "]").build();
-
 		try {
-			testTool.removeReportInProgress(index - 1);
+			delegate.deleteReportInProgress(index);
 			return Response.ok().build();
-		} catch (Exception e) {
-			return Response.status(Response.Status.BAD_REQUEST).entity("Could not find report in progress with index [" + index + "] :: " + e + Arrays.toString(e.getStackTrace())).build();
+		} catch(HttpBadRequestException e) {
+			return Response.status(Response.Status.BAD_REQUEST).entity(e.getMessage()).build();
 		}
 	}
 
@@ -176,7 +126,7 @@ public class TestToolApi extends ApiBase {
 	@Path("/in-progress/threshold-time")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getReportsInProgressWarningThreshold() {
-		return Response.ok(testTool.getReportsInProgressThreshold()).build();
+		return Response.ok(delegate.getReportsInProgressWarningThreshold()).build();
 	}
 
 	/**
@@ -189,16 +139,14 @@ public class TestToolApi extends ApiBase {
 	@Path("/transformation/")
 	@Consumes(MediaType.APPLICATION_JSON)
 	public Response updateReportTransformation(Map<String, String> map) {
-		String transformation = map.get("transformation");
-		if (StringUtils.isEmpty(transformation)) {
-			return Response.status(Response.Status.BAD_REQUEST).entity("No transformation has been provided").build();
+		try {
+			delegate.updateReportTransformation(map);
+			return Response.ok().build();
+		} catch(HttpBadRequestException e) {
+			return Response.status(Response.Status.BAD_REQUEST).entity(e.getMessage()).build();
+		} catch(HttpInternalServerErrorException e) {
+			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e.getMessage()).build();
 		}
-		String errorMessage = reportXmlTransformer.updateXslt(transformation);
-		if (errorMessage != null) {
-			// Without "- detailed error message -" the message is not shown in the toaster
-			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(errorMessage + " - detailed error message - No detailed error message available").build();
-		}
-		return Response.ok().build();
 	}
 
 	/**
@@ -209,20 +157,12 @@ public class TestToolApi extends ApiBase {
 	@Path("/transformation/{defaultTransformation}")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getReportTransformation(@PathParam("defaultTransformation") boolean defaultTransformation) {
-		String transformation;
-
-		if (defaultTransformation) {
-			transformation = getDefaultTransformation();
-		} else {
-			transformation = reportXmlTransformer.getXslt();
-		}
-
-		if (StringUtils.isEmpty(transformation))
+		Map<String, String> result = delegate.getReportTransformation(defaultTransformation);
+		if (result == null) {
 			return Response.noContent().build();
-
-		Map<String, String> map = new HashMap<>(1);
-		map.put("transformation", transformation);
-		return Response.ok(map).build();
+		} else {
+			return Response.ok(result).build();
+		}
 	}
 
 	/**
@@ -232,35 +172,14 @@ public class TestToolApi extends ApiBase {
 	@Path("/views/")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getViewsResponse() {
-		// Starting from CXF 3.2.0 the setViews() will not be called by Spring when the name of this method is
-		// getViews() instead of getViewsResponse() (with CXF 3.1.18 this was not the case) (maybe Spring's
-		// ExtendedBeanInfo isn't used anymore with newer CXF versions)
-		Map<String, Map<String, Object>> response = new LinkedHashMap<>();
-		for (View view : views) {
-			Map<String, Object> map = new HashMap<>();
-			map.put("name", view.getName());
-			map.put("storageName", view.getDebugStorage().getName());
-			map.put("defaultView", view == views.getDefaultView());
-			map.put("metadataNames", view.getMetadataNames());
-			map.put("metadataLabels", view.getMetadataLabels());
-			map.put("crudStorage", view.getDebugStorage() instanceof CrudStorage);
-			map.put("nodeLinkStrategy", view.getNodeLinkStrategy());
-			map.put("hasCheckpointMatchers", view.hasCheckpointMatchers());
-			Map<String, String> metadataTypes = new HashMap<>();
-			for (String metadataName : view.getMetadataNames()) {
-				metadataTypes.put(metadataName, metadataExtractor.getType(metadataName));
-			}
-			map.put("metadataTypes", metadataTypes);
-			response.put(view.getName(), map);
-		}
-		return Response.ok(response).build();
+		return Response.ok(delegate.getViewsResponse()).build();
 	}
 
 	@PUT
 	@Path("/node-link-strategy")
 	@Consumes(MediaType.APPLICATION_JSON)
 	public Response changeNodeLinkStrategy(@QueryParam("nodeLinkStrategy") String nodeLinkStrategy, @QueryParam("viewName") String viewName) {
-		for (View view : views) {
+		for (View view : delegate.getViews()) {
 			if (viewName.equals(view.getName())) {
 				setSessionAttr(view.getName() + ".NodeLinkStrategy", nodeLinkStrategy);
 				break;
@@ -274,14 +193,13 @@ public class TestToolApi extends ApiBase {
 	@Path("/stub-strategies")
 	@Consumes(MediaType.APPLICATION_JSON)
 	public Response getPossibleStubStrategies() {
-		var strategies = testTool.getStubStrategies();
-		return Response.ok(strategies).build();
+		return Response.ok(delegate.getPossibleStubStrategies()).build();
 	}
 
 	@GET
 	@Path("/version")
 	@Consumes(MediaType.APPLICATION_JSON)
 	public Response getVersion() {
-		return Response.ok(testTool.getVersion()).build();
+		return Response.ok(delegate.getVersion()).build();
 	}
 }

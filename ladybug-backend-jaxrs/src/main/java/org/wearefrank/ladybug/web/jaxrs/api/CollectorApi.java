@@ -28,6 +28,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 
+import org.wearefrank.ladybug.web.common.CollectorApiImpl;
 import org.wearefrank.ladybug.web.common.Constants;
 import org.wearefrank.ladybug.web.jaxrs.api.ApiBase;
 
