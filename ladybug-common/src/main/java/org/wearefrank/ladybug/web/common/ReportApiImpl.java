@@ -110,7 +110,7 @@ public class ReportApiImpl {
 		try {
 			report = getReport(storage, storageId);
 		} catch(Exception e) {
-			throw new HttpNotFoundException(e.getMessage());
+			throw new HttpNotFoundException(e);
 		}
 		if (report == null)
 			throw new HttpNotFoundException("Could not find report with id [" + storageId + "]");
@@ -148,7 +148,7 @@ public class ReportApiImpl {
 			Storage storage = testTool.getStorage(storageName);
 			Report report = getReport(storage, storageId);
 			if (report == null)
-				throw new Exception("Could not find report with id [" + storageId + "]");
+				throw new HttpNotFoundException("Could not find report with id [" + storageId + "]");
 			List<String> response = new ArrayList<String>();
 			for (View view : views) {
 				if (view.getName().equals(viewName)) {
@@ -168,7 +168,7 @@ public class ReportApiImpl {
 			}
 			return response;
 		} catch (Exception e) {
-			throw new HttpNotFoundException("Exception while getting report [" + storageId + "] from storage [" + storageName + "]");
+			throw new HttpNotFoundException("Exception while getting report [" + storageId + "] from storage [" + storageName + "]", e);
 		}
 	}
 
@@ -183,7 +183,7 @@ public class ReportApiImpl {
 			for (int storageId : storageIds) {
 				Report report = getReport(storage, storageId);
 				if (report == null)
-					throw new Exception("Could not find report with id [" + storageId + "]");
+					throw new HttpNotFoundException("Could not find report with id [" + storageId + "]");
 
 				if (globalTransformer) {
 					if (reportXmlTransformer != null)
@@ -200,7 +200,7 @@ public class ReportApiImpl {
 			return map;
 
 		} catch (Exception e) {
-			throw new HttpNotFoundException("Exception while getting report [" + storageIds + "] from storage [" + storageName + "] - detailed error message - " + e + Arrays.toString(e.getStackTrace()));
+			throw new HttpNotFoundException("Exception while getting report [" + storageIds + "] from storage [" + storageName + "] - detailed error message - " + e + Arrays.toString(e.getStackTrace()), e);
 		}
 	}
 
@@ -257,7 +257,7 @@ public class ReportApiImpl {
 			}
 			return reports;
 		} catch (StorageException e) {
-			throw new HttpInternalServerErrorException("Could not retrieve latest [" + number + "] reports - detailed error message - " + e + Arrays.toString(e.getStackTrace()));
+			throw new HttpInternalServerErrorException("Could not retrieve latest [" + number + "] reports - detailed error message - " + e + Arrays.toString(e.getStackTrace()), e);
 		}
 	}
 
@@ -320,7 +320,7 @@ public class ReportApiImpl {
 			result.put("report", report);
 			return result;
 		} catch (StorageException | JsonProcessingException e) {
-			throw new HttpInternalServerErrorException("Could not update report with storageId [" + storageId + "] - detailed error message - " + e + Arrays.toString(e.getStackTrace()));
+			throw new HttpInternalServerErrorException("Could not update report with storageId [" + storageId + "] - detailed error message - " + e + Arrays.toString(e.getStackTrace()), e);
 		}
 	}
 
@@ -332,7 +332,7 @@ public class ReportApiImpl {
 			map.put("transformation", transformation);
 			return map;
 		} catch (StorageException e) {
-			throw new HttpInternalServerErrorException("Could not retrieve transformation of report with storageId [" + storageId + "] - detailed error message - " + e + Arrays.toString(e.getStackTrace()));
+			throw new HttpInternalServerErrorException("Could not retrieve transformation of report with storageId [" + storageId + "] - detailed error message - " + e + Arrays.toString(e.getStackTrace()), e);
 		}
 	}
 
@@ -393,7 +393,7 @@ public class ReportApiImpl {
 			}
 			return reports;
 		} catch (StorageException e) {
-			throw new HttpInternalServerErrorException("Could not retrieve parsed reports from in-memory storage - detailed error message - " + e + Arrays.toString(e.getStackTrace()));
+			throw new HttpInternalServerErrorException("Could not retrieve parsed reports from in-memory storage - detailed error message - " + e + Arrays.toString(e.getStackTrace()), e);
 		}
 	}
 
@@ -413,7 +413,7 @@ public class ReportApiImpl {
 			}
 			return export;
 		} catch (StorageException e) {
-			throw new HttpInternalServerErrorException("Exception while requesting reports with ids [" + storageIds + "] from the storage. - detailed error message - " + e + Arrays.toString(e.getStackTrace()));
+			throw new HttpInternalServerErrorException("Exception while requesting reports with ids [" + storageIds + "] from the storage. - detailed error message - " + e + Arrays.toString(e.getStackTrace()), e);
 		}
 	}
 
@@ -445,9 +445,9 @@ public class ReportApiImpl {
 					throw new HttpBadRequestException("Action parameter can only be either [copy] or [move]");
 				}
 			} catch (StorageException e) {
-				throw new HttpInternalServerErrorException("Storage exception with storage id [" + storageId + "] in storage [" + storageName + "] - detailed error message - " + e + Arrays.toString(e.getStackTrace()));
+				throw new HttpInternalServerErrorException("Storage exception with storage id [" + storageId + "] in storage [" + storageName + "] - detailed error message - " + e + Arrays.toString(e.getStackTrace()), e);
 			} catch (CloneNotSupportedException e) {
-				throw new HttpInternalServerErrorException("Cloning exception for report with storage id [" + storageId + "] in storage [" + storageName + "] - detailed error message - " + e + Arrays.toString(e.getStackTrace()));
+				throw new HttpInternalServerErrorException("Cloning exception for report with storage id [" + storageId + "] in storage [" + storageName + "] - detailed error message - " + e + Arrays.toString(e.getStackTrace()), e);
 			}
 		}
 	}
@@ -467,7 +467,7 @@ public class ReportApiImpl {
 			}
 		} catch (StorageException e) {
 			log.error("Exception while cloning the report", e);
-			throw new HttpBadRequestException("Report could not be found. - detailed error message - " + e + Arrays.toString(e.getStackTrace()));
+			throw new HttpBadRequestException("Report could not be found. - detailed error message - " + e + Arrays.toString(e.getStackTrace()), e);
 		}
 
 		Scanner scanner = new Scanner(map.get("csv"));
@@ -534,7 +534,7 @@ public class ReportApiImpl {
 				reports.add(report);
 			} catch (StorageException e) {
 				e.printStackTrace();
-				throw new HttpInternalServerErrorException(e.getMessage());
+				throw new HttpInternalServerErrorException(e);
 			}
 		}
 		if (customReportAction == null) {

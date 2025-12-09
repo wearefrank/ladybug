@@ -37,4 +37,7 @@ public final class Util {
 		return map.size() == count;
 	}
 
+	public static String fullMessage(Throwable e) {
+		return e.getMessage() + "details: " + e.getStackTrace();
+	}
 }

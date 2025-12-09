@@ -60,7 +60,7 @@ public class MetadataApiImpl {
 		try {
 			records = storage.getMetadata(limit, metadataNames, searchValues, MetadataExtractor.VALUE_TYPE_GUI);
 		} catch(Exception e) {
-			throw new HttpInternalServerErrorException(e.getMessage());
+			throw new HttpInternalServerErrorException(e);
 		}
 		List<LinkedHashMap<String, String>> metadata = new ArrayList<>();
 		for (List<Object> record : records) {
@@ -92,7 +92,7 @@ public class MetadataApiImpl {
 			Storage storage = testTool.getStorage(storageName);
 			return storage.getSize();
 		} catch(StorageException e) {
-			throw new HttpInternalServerErrorException(e.getMessage());
+			throw new HttpInternalServerErrorException(e);
 		}
 	}
 }

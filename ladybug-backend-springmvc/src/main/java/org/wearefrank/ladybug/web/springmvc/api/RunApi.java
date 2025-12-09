@@ -39,6 +39,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import static org.wearefrank.ladybug.web.common.Util.fullMessage;
+
 @RestController
 @RequestMapping("/runner")
 @RolesAllowed("IbisTester")
@@ -72,7 +74,7 @@ public class RunApi extends ApiBase {
 				}
 			}
 		} catch (StorageException e) {
-			errorMessage = "Storage exception: " + e.getMessage();
+			errorMessage = "Storage exception: " + fullMessage(e);
 			log.error(errorMessage, e);
 		}
 		if (errorMessage != null) {

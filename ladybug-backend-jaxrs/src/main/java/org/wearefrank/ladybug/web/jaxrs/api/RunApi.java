@@ -43,6 +43,8 @@ import org.wearefrank.ladybug.transform.ReportXmlTransformer;
 import org.wearefrank.ladybug.web.common.Constants;
 import org.wearefrank.ladybug.web.jaxrs.api.ApiBase;
 
+import static org.wearefrank.ladybug.web.common.Util.fullMessage;
+
 @Path("/" + Constants.LADYBUG_API_PATH + "/runner")
 public class RunApi extends ApiBase {
 	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
@@ -77,7 +79,7 @@ public class RunApi extends ApiBase {
 				}
 			}
 		} catch (StorageException e) {
-			errorMessage = "Storage exception: " + e.getMessage();
+			errorMessage = "Storage exception: " + fullMessage(e);
 			log.error(errorMessage, e);
 		}
 		if (errorMessage != null) {

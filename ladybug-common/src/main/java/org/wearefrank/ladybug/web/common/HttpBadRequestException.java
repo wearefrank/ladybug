@@ -15,8 +15,19 @@
 */
 package org.wearefrank.ladybug.web.common;
 
+import static org.wearefrank.ladybug.web.common.Util.fullMessage;
+
 public class HttpBadRequestException extends Exception {
 	public HttpBadRequestException(String msg) {
 		super(msg);
+	}
+
+	public HttpBadRequestException(Throwable e) {
+		super(fullMessage(e));
+	}
+
+	public HttpBadRequestException(String msg, Throwable e)
+	{
+		super(msg + "caused by: " + fullMessage(e));
 	}
 }

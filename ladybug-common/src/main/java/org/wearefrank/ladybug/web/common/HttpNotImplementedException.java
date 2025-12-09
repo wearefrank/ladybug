@@ -15,8 +15,14 @@
 */
 package org.wearefrank.ladybug.web.common;
 
+import static org.wearefrank.ladybug.web.common.Util.fullMessage;
+
 public class HttpNotImplementedException extends Exception {
 	public HttpNotImplementedException(String msg) {
 		super(msg);
+	}
+
+	public HttpNotImplementedException(Throwable e) {
+		super(fullMessage(e));
 	}
 }

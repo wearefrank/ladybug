@@ -96,7 +96,7 @@ public class TestToolApiImpl {
 		try {
 			return testTool.getReportInProgress(index - 1);
 		} catch (Exception e) {
-			throw new HttpBadRequestException(e.getMessage());
+			throw new HttpBadRequestException(e);
 		}
 	}
 
@@ -107,7 +107,7 @@ public class TestToolApiImpl {
 		try {
 			testTool.removeReportInProgress(index - 1);
 		} catch (Exception e) {
-			throw new HttpBadRequestException("Could not find report in progress with index [" + index + "] :: " + e + Arrays.toString(e.getStackTrace()));
+			throw new HttpBadRequestException("Could not find report in progress with index [" + index + "] :: " + e + Arrays.toString(e.getStackTrace()), e);
 		}
 	}
 

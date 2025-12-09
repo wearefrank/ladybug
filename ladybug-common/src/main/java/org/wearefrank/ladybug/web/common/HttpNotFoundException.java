@@ -15,8 +15,19 @@
 */
 package org.wearefrank.ladybug.web.common;
 
+import static org.wearefrank.ladybug.web.common.Util.fullMessage;
+
 public class HttpNotFoundException extends Exception {
 	public HttpNotFoundException(String msg) {
 		super(msg);
+	}
+
+	public HttpNotFoundException(Throwable e) {
+		super(fullMessage(e));
+	}
+
+	public HttpNotFoundException(String msg, Throwable e)
+	{
+		super(msg + "caused by: " + fullMessage(e));
 	}
 }

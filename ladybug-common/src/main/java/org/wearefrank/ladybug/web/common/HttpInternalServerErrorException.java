@@ -15,8 +15,19 @@
 */
 package org.wearefrank.ladybug.web.common;
 
+import static org.wearefrank.ladybug.web.common.Util.fullMessage;
+
 public class HttpInternalServerErrorException extends Exception {
 	public HttpInternalServerErrorException(String msg) {
 		super(msg);
+	}
+
+	public HttpInternalServerErrorException(Throwable e) {
+		super(fullMessage(e));
+	}
+
+	public HttpInternalServerErrorException(String msg, Throwable e)
+	{
+		super(msg + "caused by: " + fullMessage(e));
 	}
 }
