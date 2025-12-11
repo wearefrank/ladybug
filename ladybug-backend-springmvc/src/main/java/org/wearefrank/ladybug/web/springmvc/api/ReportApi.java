@@ -178,7 +178,7 @@ public class ReportApi {
 	 * @return The updated report.
 	 */
 	@PostMapping(value = "/{storage}/{storageId}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> updateReport(@PathVariable("storage") String storageName, @PathVariable("storageId") int storageId, Map<String, String> map) {
+	public ResponseEntity<?> updateReport(@PathVariable("storage") String storageName, @PathVariable("storageId") int storageId, @RequestBody Map<String, String> map) {
 		try {
 			Map<String, Serializable> result = delegate.updateReport(storageName, storageId, map);
 			return ResponseEntity.ok(result);

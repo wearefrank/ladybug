@@ -263,7 +263,7 @@ public class ReportApiImpl {
 	public Map<String, Serializable> updateReport(String storageName, int storageId, Map<String, String> map) throws HttpBadRequestException, HttpNotFoundException, HttpInternalServerErrorException {
 		String[] fields = new String[]{"name", "path", "variables", "description", "transformation", "checkpointId", "checkpointMessage", "stub", "stubStrategy"};
 		if (map.isEmpty() || !Util.mapContainsOnly(map, null, fields))
-			throw new HttpBadRequestException("No new values or incorrect values have been given for report with storageId [" + storageId + "] - detailed error message - Values given are:\n" + map);
+			throw new HttpBadRequestException("No new values or incorrect values have been given for report with storageId [" + storageId + "] - detailed error message - Values given are:\n" + map.toString());
 
 		try {
 			Storage storage = testTool.getStorage(storageName);
@@ -453,6 +453,10 @@ public class ReportApiImpl {
 
 	public List<String> cloneReport(String storageName, int storageId, Map<String, String> map) throws HttpBadRequestException {
 		CrudStorage storage = (CrudStorage) testTool.getStorage(storageName);
+		String[] mandatoryFields = new String[]{"message", "csv"};
+		String[] optionalFields = new String[]{"force"};
+		if (map.isEmpty() || !Util.mapContainsOnly(map, mandatoryFields, optionalFields))
+			throw new HttpBadRequestException("Invalid request body for ReportApiImpl.cloneReport() [" + storageName + "][" + storageId + "] - request body:\n" + map.toString());
 		Report original;
 		try {
 			original = getReport(storage, storageId);
