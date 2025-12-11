@@ -16,7 +16,6 @@
 package org.wearefrank.ladybug.web.jaxrs.api;
 
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -24,27 +23,19 @@ import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
-import jakarta.inject.Inject;
 import jakarta.ws.rs.DefaultValue;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
-import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.UriInfo;
 import lombok.Setter;
-import org.wearefrank.ladybug.MetadataExtractor;
-import org.wearefrank.ladybug.TestTool;
-import org.wearefrank.ladybug.storage.Storage;
 
 import org.wearefrank.ladybug.web.common.Constants;
 import org.wearefrank.ladybug.web.common.HttpInternalServerErrorException;
 import org.wearefrank.ladybug.web.common.MetadataApiImpl;
-import org.wearefrank.ladybug.web.jaxrs.api.ApiBase;
-import org.wearefrank.ladybug.web.jaxrs.api.ApiException;
 
 @Path("/" + Constants.LADYBUG_API_PATH + "/metadata")
 public class MetadataApi extends ApiBase {

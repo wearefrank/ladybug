@@ -15,7 +15,6 @@
 */
 package org.wearefrank.ladybug.web.common;
 
-import jakarta.inject.Inject;
 import lombok.Setter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

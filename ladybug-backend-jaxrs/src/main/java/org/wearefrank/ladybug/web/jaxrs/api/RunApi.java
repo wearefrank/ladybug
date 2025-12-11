@@ -41,7 +41,6 @@ import org.wearefrank.ladybug.storage.StorageException;
 import org.wearefrank.ladybug.transform.ReportXmlTransformer;
 
 import org.wearefrank.ladybug.web.common.Constants;
-import org.wearefrank.ladybug.web.jaxrs.api.ApiBase;
 
 import static org.wearefrank.ladybug.web.common.Util.fullMessage;
 

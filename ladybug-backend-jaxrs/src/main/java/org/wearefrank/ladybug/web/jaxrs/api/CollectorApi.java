@@ -15,22 +15,15 @@
 */
 package org.wearefrank.ladybug.web.jaxrs.api;
 
-import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import lombok.Setter;
 import org.wearefrank.ladybug.Span;
-import org.wearefrank.ladybug.TestTool;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import java.lang.invoke.MethodHandles;
-import java.util.ArrayList;
 
 import org.wearefrank.ladybug.web.common.CollectorApiImpl;
 import org.wearefrank.ladybug.web.common.Constants;
-import org.wearefrank.ladybug.web.jaxrs.api.ApiBase;
 
 @Path("/" + Constants.LADYBUG_API_PATH + "/collector")
 public class CollectorApi extends ApiBase {
