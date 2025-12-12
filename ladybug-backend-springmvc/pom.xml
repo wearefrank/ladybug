@@ -1,0 +1,54 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>org.wearefrank</groupId>
+  <artifactId>ladybug-backend-springmvc</artifactId>
+  <version>${revision}</version>
+
+  <parent>
+    <groupId>org.wearefrank</groupId>
+    <artifactId>ladybug-parent</artifactId>
+    <version>${revision}</version>
+  </parent>
+
+  <name>Ladybug API protected by Spring MVC authorization</name>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.wearefrank</groupId>
+      <artifactId>ladybug-frontend-servlet</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.wearefrank</groupId>
+      <artifactId>ladybug-common</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.security</groupId>
+      <artifactId>spring-security-web</artifactId>
+      <version>${spring.security.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.security</groupId>
+      <artifactId>spring-security-config</artifactId>
+      <version>${spring.security.version}</version>
+    </dependency>
+    <!-- JSR-250 annotations like @RolesAllowed -->
+    <dependency>
+      <groupId>jakarta.annotation</groupId>
+      <artifactId>jakarta.annotation-api</artifactId>
+      <version>3.0.0</version>
+    </dependency>
+    <dependency>
+      <groupId>jakarta.servlet</groupId>
+      <artifactId>jakarta.servlet-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.projectlombok</groupId>
+      <artifactId>lombok</artifactId>
+    </dependency>
+  </dependencies>
+</project>
