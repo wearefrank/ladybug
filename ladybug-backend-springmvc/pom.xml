@@ -15,11 +15,6 @@
 
   <name>Ladybug API protected by Spring MVC authorization</name>
 
-  <properties>
-    <spring.version>6.2.8</spring.version>
-    <spring.security.version>6.5.2</spring.security.version>
-  </properties>
-
   <dependencies>
     <dependency>
       <groupId>org.wearefrank</groupId>
