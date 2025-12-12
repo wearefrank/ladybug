@@ -30,7 +30,7 @@ jobs:
       uses: scacap/action-surefire-report@v1.9.0
       with:
         check_name: Java CI with Maven test report
-        report_paths: target/surefire-reports/TEST-*.xml
+        report_paths: '**/target/surefire-reports/TEST-*.xml'
         github_token: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Update dependency graph
