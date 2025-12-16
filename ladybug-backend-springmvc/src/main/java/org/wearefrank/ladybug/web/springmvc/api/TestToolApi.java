@@ -41,14 +41,14 @@ import org.wearefrank.ladybug.Report;
 @RestController
 @RequestMapping("/testtool")
 @RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
-public class TestToolApi extends ApiBase {
+public class TestToolApi {
 	@Autowired
 	private @Setter TestToolApiImpl delegate;
 
 	/**
 	 * @return Response containing test tool data.
 	 */
-	@GetMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
+	@GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	public ResponseEntity<?> getInfo() {
 		Map<String, Object> info = delegate.getTestToolInfo();
@@ -67,7 +67,7 @@ public class TestToolApi extends ApiBase {
 	 * @param map New settings that can contain (generatorEnabled, regexFilter)
 	 * @return The response after changing the settings.
 	 */
-	@PostMapping(value = "", consumes = MediaType.APPLICATION_JSON_VALUE)
+	@PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> updateInfo(@RequestBody Map<String, String> map) {
 		try {
 			delegate.updateInfo(map);
@@ -167,7 +167,7 @@ public class TestToolApi extends ApiBase {
 	public ResponseEntity<?> changeNodeLinkStrategy(@RequestParam(name = "nodeLinkStrategy") String nodeLinkStrategy, @RequestParam(name = "viewName") String viewName) {
 		for (View view : delegate.getViews()) {
 			if (viewName.equals(view.getName())) {
-				setSessionAttr(view.getName() + ".NodeLinkStrategy", nodeLinkStrategy);
+				// todo: nodeLinkStrategy
 				break;
 			}
 		}

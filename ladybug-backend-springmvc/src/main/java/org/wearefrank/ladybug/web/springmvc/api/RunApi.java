@@ -44,7 +44,7 @@ import static org.wearefrank.ladybug.web.common.Util.fullMessage;
 @RestController
 @RequestMapping("/runner")
 @RolesAllowed("IbisTester")
-public class RunApi extends ApiBase {
+public class RunApi {
 	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 	private @Setter @Autowired TestTool testTool;
 	private @Setter @Autowired ReportXmlTransformer reportXmlTransformer;
@@ -60,7 +60,6 @@ public class RunApi extends ApiBase {
 				ReportRunner runner = new ReportRunner();
 				runner.setTestTool(testTool);
 				runner.setDebugStorage(testTool.getDebugStorage());
-				runner.setSecurityContext(this);
 				errorMessage = runner.run(Collections.singletonList(report), true, true);
 				if (errorMessage == null) {
 					RunResult runResult = runner.getResults().get(storageId);
