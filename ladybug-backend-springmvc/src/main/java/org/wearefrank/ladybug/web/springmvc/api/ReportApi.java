@@ -68,7 +68,7 @@ public class ReportApi {
 	 * @param globalTransformer True if reportXmlTransformer should be set for the report.
 	 * @return A response containing serialized Report object.
 	 */
-	@GetMapping(value = "/{storage}/{storageId}/", produces = MediaType.APPLICATION_JSON_VALUE)
+	@GetMapping(value = "/{storage}/{storageId}", produces = MediaType.APPLICATION_JSON_VALUE)
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	public ResponseEntity<?> getReport(@PathVariable("storage") String storageName,
 									   @PathVariable("storageId") int storageId,
@@ -118,7 +118,7 @@ public class ReportApi {
 	 * @param globalTransformer True if reportXmlTransformer should be set for the report.
 	 * @return A response containing serialized Report object.
 	 */
-	@GetMapping(value = "/{storage}/", produces = MediaType.APPLICATION_JSON_VALUE)
+	@GetMapping(value = "/{storage}", produces = MediaType.APPLICATION_JSON_VALUE)
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	public ResponseEntity<?> getReports(@PathVariable("storage") String storageName,
 										@RequestParam(name = "storageIds") List<Integer> storageIds,
@@ -365,7 +365,7 @@ public class ReportApi {
 		}
 	}
 
-	@GetMapping(value = "/variables/", produces = MediaType.APPLICATION_JSON_VALUE)
+	@GetMapping(value = "/variables", produces = MediaType.APPLICATION_JSON_VALUE)
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	public ResponseEntity<?> fetchVariables() {
 		return ResponseEntity.ok(delegate.fetchVariables());

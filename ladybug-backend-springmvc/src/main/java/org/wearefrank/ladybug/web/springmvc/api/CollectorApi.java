@@ -34,13 +34,13 @@ public class CollectorApi {
 	@Autowired
 	private @Setter CollectorApiImpl delegate;
 
-	@PostMapping(value = "/")
+	@PostMapping
 	public ResponseEntity<Void> collectSpans(Span[] trace) {
 		delegate.processSpans(trace);
 		return ResponseEntity.ok().build();
 	}
 
-	@PostMapping(value = "/", consumes = MediaType.APPLICATION_JSON_VALUE)
+	@PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<Void> collectSpansJson(Span[] trace) {
 		delegate.processSpans(trace);
 		return ResponseEntity.ok().build();

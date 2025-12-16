@@ -41,7 +41,7 @@ public class MetadataApi {
 	@Autowired
 	private @Setter MetadataApiImpl delegate;
 
-	@GetMapping(value = "/{storage}/", produces = MediaType.APPLICATION_JSON_VALUE)
+	@GetMapping(value = "/{storage}", produces = MediaType.APPLICATION_JSON_VALUE)
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	public ResponseEntity<?> getMetadataList(@PathVariable("storage") String storageName,
 											 @RequestParam(name = "metadataNames") List<String> metadataNames,
