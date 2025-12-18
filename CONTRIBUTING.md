@@ -122,6 +122,7 @@ This document does not provide files and commands you can use literally. There a
 
 # Guidelines for code quality
 
+### About the ladybug-frontend Cypress tests
 The GitHub Actions code has many steps that are executed conditionally. This is easier to read when the keys within each step have a fixed sequence. The sequence is:
 
 * name
@@ -136,3 +137,7 @@ The tests of ladybug-ff-cypress-test produce information that you can use to che
 To the right of the screen, the UI of ladybug-frontend is shown. The properties `ibistesttool.custom` and `configurations.dir` are shown, which allows you to check whether the right Spring profile and the right Frank configurations are used.
 
 Both the folder `ladybug-ff-cypress-test\cypress\e2e\cypress\default` and `ladybug-ff-cypress-test\cypress\e2e\cypress\with-ladybug-ff-test-webapp` have a file `check-test-environment.cy.ts`. In folder `with-ladybug-ff-test-webapp`, it checks that the extra view introduced for testing is present. In folder `default`, it checks that that extra view is NOT present.
+
+### Do not add slashes when doing API calls to the backend
+
+When using the HTTP client, take care what URL you call. TheURL path should not end with a `/`. See PR https://github.com/wearefrank/ladybug-frontend/pull/1150 for examples.
