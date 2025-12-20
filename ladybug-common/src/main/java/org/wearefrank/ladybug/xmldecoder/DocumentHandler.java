@@ -25,12 +25,9 @@
 package org.wearefrank.ladybug.xmldecoder;
 
 import java.beans.ExceptionListener;
-
 import java.io.IOException;
-
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -67,16 +64,17 @@ public final class DocumentHandler extends DefaultHandler {
 
     private ElementHandler handler;
 
-    private final static List<String> SAFE_CLASSES = Arrays.asList(
+    public final static List<String> SAFE_CLASSES = Arrays.asList(
             "org.wearefrank.ladybug.Report",
             "org.wearefrank.ladybug.Checkpoint",
             "java.util.HashMap",
             "java.util.Collections");
 
-    private final static Map<String, String> OLD_REPORT_REPLACEMENT_CLASSES = Map.of(
+    public final static Map<String, String> OLD_REPORT_REPLACEMENT_CLASSES = Map.of(
             "nl.nn.testtool.Report", "org.wearefrank.ladybug.Report",
             "nl.nn.testtool.Checkpoint", "org.wearefrank.ladybug.Checkpoint"
     );
+
     /**
      * Creates new instance of document handler.
      */

@@ -18,7 +18,6 @@ package org.wearefrank.ladybug.util;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.ObjectInputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.zip.GZIPInputStream;
@@ -26,7 +25,6 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 import org.slf4j.Logger;
-
 import org.wearefrank.ladybug.Report;
 import org.wearefrank.ladybug.storage.CrudStorage;
 import org.wearefrank.ladybug.storage.StorageException;
@@ -117,7 +115,7 @@ public class Import {
 				report = (Report)xmlDecoder.readObject();
 				if (log != null) log.debug("Decoded report: " + report.getName());
 			}
-		} catch(ArrayIndexOutOfBoundsException e) {
+		} catch (ArrayIndexOutOfBoundsException e) {
 			// This happens to be the way in which it ends for the
 			// XML Object Decoder
 			if (log != null) log.debug("Last report in file read");
@@ -145,20 +143,20 @@ public class Import {
 	public static Report getReport(InputStream inputStream, Integer storageId, Long storageSize, Logger log) throws StorageException {
 		Report report = null;
 		GZIPInputStream gzipInputStream = null;
-		ObjectInputStream objectInputStream = null;
+		ReportInputStream reportInputStream = null;
 		try {
 			gzipInputStream = new GZIPInputStream(inputStream);
-			objectInputStream = new ObjectInputStream(gzipInputStream);
-			report = (Report)objectInputStream.readObject();
+			reportInputStream = new ReportInputStream(gzipInputStream);
+			report = (Report)reportInputStream.readObject();
 			report.setStorageId(storageId);
 			report.setStorageSize(storageSize);
-		} catch(IOException e) {
+		} catch (IOException e) {
 			logAndThrow(log, e, "IOException reading report " + storageId + " from bytes");
-		} catch(ClassNotFoundException e) {
+		} catch (ClassNotFoundException e) {
 			logAndThrow(log, e, "ClassNotFoundException reading report " + storageId + " from file");
 		} finally {
-			if (objectInputStream != null) {
-				closeInputStream(objectInputStream, "closing object input stream after reading report " + storageId + " from file", log);
+			if (reportInputStream != null) {
+				closeInputStream(reportInputStream, "closing report input stream after reading report " + storageId + " from file", log);
 			}
 			if (gzipInputStream != null) {
 				closeInputStream(gzipInputStream, "closing gzip input stream after reading report " + storageId + " from file", log);
@@ -170,7 +168,7 @@ public class Import {
 	public static void closeInputStream(InputStream inputStream, String action, Logger log) {
 		try {
 			inputStream.close();
-		} catch(IOException e) {
+		} catch (IOException e) {
 			if (log != null) log.warn("IOException " + action, e);
 		}
 	}
@@ -178,7 +176,7 @@ public class Import {
 	public static void closeReader(java.io.Reader reader, String action, Logger log) {
 		try {
 			reader.close();
-		} catch(IOException e) {
+		} catch (IOException e) {
 			log.warn("IOException " + action, e);
 		}
 	}
@@ -186,7 +184,7 @@ public class Import {
 	public static void closeCSVReader(CSVReader csvReader, String action, Logger log) {
 		try {
 			csvReader.close();
-		} catch(IOException e) {
+		} catch (IOException e) {
 			log.warn("IOException " + action, e);
 		}
 	}
