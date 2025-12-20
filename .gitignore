@@ -1,9 +1,8 @@
 /data
-ladybug-common/data
 */target
 /wip
-/.classpath
-/.settings
+.classpath
+.settings
 /skip-replace-inject.txt
 .flattened-pom.xml
 FrankConfig.xsd
