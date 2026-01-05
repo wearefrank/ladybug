@@ -31,14 +31,12 @@ public class CollectorApi extends ApiBase {
     private @Setter CollectorApiImpl delegate;
 
     @POST
-    @Path("/")
     public Response collectSpans(Span[] trace) {
         delegate.processSpans(trace);
         return Response.ok().build();
     }
 
     @POST
-    @Path("/")
     @Consumes(MediaType.APPLICATION_JSON)
     public Response collectSpansJson(Span[] trace) {
         delegate.processSpans(trace);
