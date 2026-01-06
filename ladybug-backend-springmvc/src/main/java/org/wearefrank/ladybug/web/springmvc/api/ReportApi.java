@@ -372,3 +372,4 @@ public class ReportApi {
 		return ResponseEntity.ok(delegate.fetchVariables());
 	}
 }
+
