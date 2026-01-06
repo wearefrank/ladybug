@@ -43,6 +43,7 @@ import org.wearefrank.ladybug.web.common.HttpInternalServerErrorException;
 import org.wearefrank.ladybug.web.common.HttpNotFoundException;
 import org.wearefrank.ladybug.web.common.HttpNotImplementedException;
 import org.wearefrank.ladybug.web.common.ReportApiImpl;
+import org.wearefrank.ladybug.web.common.ReportUpdateRequest;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -178,9 +179,9 @@ public class ReportApi {
 	 * @return The updated report.
 	 */
 	@PostMapping(value = "/{storage}/{storageId}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> updateReport(@PathVariable("storage") String storageName, @PathVariable("storageId") int storageId, @RequestBody Map<String, String> map) {
+	public ResponseEntity<?> updateReport(@PathVariable("storage") String storageName, @PathVariable("storageId") int storageId, @RequestBody ReportUpdateRequest req) {
 		try {
-			Map<String, Serializable> result = delegate.updateReport(storageName, storageId, map);
+			Map<String, Serializable> result = delegate.updateReport(storageName, storageId, req);
 			return ResponseEntity.ok(result);
 		} catch(HttpBadRequestException e) {
 			return ResponseEntity.badRequest().body(e.getMessage());

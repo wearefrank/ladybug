@@ -54,6 +54,7 @@ import org.wearefrank.ladybug.web.common.HttpInternalServerErrorException;
 import org.wearefrank.ladybug.web.common.HttpNotFoundException;
 import org.wearefrank.ladybug.web.common.HttpNotImplementedException;
 import org.wearefrank.ladybug.web.common.ReportApiImpl;
+import org.wearefrank.ladybug.web.common.ReportUpdateRequest;
 
 @Path("/" + Constants.LADYBUG_API_PATH + "/report")
 public class ReportApi extends ApiBase {
@@ -208,9 +209,9 @@ public class ReportApi extends ApiBase {
 	@Path("/{storage}/{storageId}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response updateReport(@PathParam("storage") String storageName, @PathParam("storageId") int storageId, Map<String, String> map) {
+	public Response updateReport(@PathParam("storage") String storageName, @PathParam("storageId") int storageId, ReportUpdateRequest req) {
 		try {
-			Map<String, Serializable> result = delegate.updateReport(storageName, storageId, map);
+			Map<String, Serializable> result = delegate.updateReport(storageName, storageId, req);
 			return Response.ok(result).build();
 		} catch(HttpBadRequestException e) {
 			return Response.status(Response.Status.BAD_REQUEST).entity(e.getMessage()).build();

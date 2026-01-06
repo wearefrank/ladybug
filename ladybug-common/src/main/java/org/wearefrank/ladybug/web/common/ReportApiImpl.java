@@ -15,9 +15,6 @@
 */
 package org.wearefrank.ladybug.web.common;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.inject.Inject;
 import lombok.Getter;
 import lombok.Setter;
@@ -260,11 +257,7 @@ public class ReportApiImpl {
 		}
 	}
 
-	public Map<String, Serializable> updateReport(String storageName, int storageId, Map<String, String> map) throws HttpBadRequestException, HttpNotFoundException, HttpInternalServerErrorException {
-		String[] fields = new String[]{"name", "path", "variables", "description", "transformation", "checkpointId", "checkpointMessage", "stub", "stubStrategy"};
-		if (map.isEmpty() || !Util.mapContainsOnly(map, null, fields))
-			throw new HttpBadRequestException("No new values or incorrect values have been given for report with storageId [" + storageId + "] - detailed error message - Values given are:\n" + map.toString());
-
+	public Map<String, Serializable> updateReport(String storageName, int storageId, ReportUpdateRequest req) throws HttpBadRequestException, HttpNotFoundException, HttpInternalServerErrorException {
 		try {
 			Storage storage = testTool.getStorage(storageName);
 			Report report = getReport(storage, storageId);
@@ -273,32 +266,26 @@ public class ReportApiImpl {
 						+ storageId + "]");
 			}
 
-			if (map.containsKey("name")) report.setName(map.get("name"));
-			if (map.containsKey("path")) report.setPath(TestComponent.normalizePath(map.get("path")));
-			if (map.containsKey("description")) report.setDescription(map.get("description"));
-			if (map.containsKey("transformation")) report.setTransformation(map.get("transformation"));
-			if (map.containsKey("stubStrategy")) report.setStubStrategy(map.get("stubStrategy"));
+			if (req.getName() != null) report.setName(req.getName());
+			if (req.getPath() != null) report.setPath(TestComponent.normalizePath(req.getPath()));
+			if (req.getDescription() != null) report.setDescription(req.getDescription());
+			if (req.getTransformation() != null) report.setTransformation(req.getTransformation());
+			if (req.getStubStrategy() != null) report.setStubStrategy(req.getStubStrategy());
 
-			if (map.containsKey("variables")) {
-				String variablesJson = map.get("variables");
-				Map<String, String> variablesMap = new HashMap<>();
-				if (variablesJson != null && !variablesJson.isEmpty()) {
-					ObjectMapper mapper = new ObjectMapper();
-					variablesMap = mapper.readValue(variablesJson, new TypeReference<Map<String, String>>() {
-					});
-				}
-				if (variablesMap.size() > 0) {
-					report.setVariables(variablesMap);
+			if (req.getVariables() != null) {
+				if (req.getVariables().size() > 0) {
+					report.setVariables(req.getVariables());
 				} else {
 					report.setVariables(null);
 				}
 			}
 
-			if (map.containsKey("checkpointId")) {
-				if (StringUtils.isNotEmpty(map.get("stub"))) {
-					report.getCheckpoints().get(Integer.parseInt(map.get("checkpointId"))).setStub(Integer.parseInt(map.get("stub")));
+			if (req.getCheckpointId() != null) {
+				int checkpointId = Integer.parseInt(req.getCheckpointId());
+				if (StringUtils.isNotEmpty(req.getStub())) {
+					report.getCheckpoints().get(checkpointId).setStub(Integer.parseInt(req.getStub()));
 				} else {
-					report.getCheckpoints().get(Integer.parseInt(map.get("checkpointId"))).setMessage(map.get("checkpointMessage"));
+					report.getCheckpoints().get(checkpointId).setMessage(req.getCheckpointMessage());
 				}
 			}
 
@@ -318,7 +305,7 @@ public class ReportApiImpl {
 			result.put("storageUpdated", storageUpdated);
 			result.put("report", report);
 			return result;
-		} catch (StorageException | JsonProcessingException e) {
+		} catch (StorageException e) {
 			throw new HttpInternalServerErrorException("Could not update report with storageId [" + storageId + "] - detailed error message - " + e + Arrays.toString(e.getStackTrace()), e);
 		}
 	}
