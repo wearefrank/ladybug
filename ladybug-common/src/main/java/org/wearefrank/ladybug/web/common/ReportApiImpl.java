@@ -279,7 +279,7 @@ public class ReportApiImpl {
 			if (req.getStubStrategy() != null) report.setStubStrategy(req.getStubStrategy());
 
 			if (req.getVariables() != null) {
-				if (req.getVariables().size() > 0) {
+				if (!req.getVariables().isEmpty()) {
 					report.setVariables(req.getVariables());
 				} else {
 					report.setVariables(null);
