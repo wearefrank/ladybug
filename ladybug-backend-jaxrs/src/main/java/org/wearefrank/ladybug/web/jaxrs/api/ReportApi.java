@@ -202,7 +202,7 @@ public class ReportApi extends ApiBase {
 	 *
 	 * @param storageName Name of the storage.
 	 * @param storageId Storage id of the report.
-	 * @param map Map containing ["name" or "path" or "variables" or "description" or "transformation" or "checkpointId and "checkpointMessage"].
+	 * @param req Bean with field updates.
 	 * @return The updated report.
 	 */
 	@POST
