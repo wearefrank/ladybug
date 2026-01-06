@@ -129,7 +129,7 @@ public class ReportApi extends ApiBase {
 	 * @return A response containing serialized Report object.
 	 */
 	@GET
-	@Path("/{storage}/")
+	@Path("/{storage}")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getReports(@PathParam("storage") String storageName,
 							   @QueryParam("storageIds") List<Integer> storageIds,
@@ -151,7 +151,7 @@ public class ReportApi extends ApiBase {
 	 * @return "Ok" if deleted properly, "Not implemented" if storage does not support deletion, "Not found" if report does not exist.
 	 */
 	@DELETE
-	@Path("/{storage}/")
+	@Path("/{storage}")
 	public Response deleteReport(@PathParam("storage") String storageName, @QueryParam("storageIds") List<Integer> storageIds) {
 		try {
 			delegate.deleteReport(storageName, storageIds);
@@ -166,7 +166,7 @@ public class ReportApi extends ApiBase {
 	}
 
 	@DELETE
-	@Path("/all/{storage}/")
+	@Path("/all/{storage}")
 	public Response deleteAllReports(@PathParam("storage") String storageName) {
 		try {
 			delegate.deleteAllReports(storageName);

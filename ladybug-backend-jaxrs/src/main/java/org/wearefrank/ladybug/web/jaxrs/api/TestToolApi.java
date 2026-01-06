@@ -48,7 +48,6 @@ public class TestToolApi extends ApiBase {
 	 * @return Response containing test tool data.
 	 */
 	@GET
-	@Path("/")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getInfo() {
 		Map<String, Object> info = delegate.getTestToolInfo();
@@ -71,7 +70,6 @@ public class TestToolApi extends ApiBase {
 	 * @return The response after changing the settings.
 	 */
 	@POST
-	@Path("/")
 	@Consumes(MediaType.APPLICATION_JSON)
 	public Response updateInfo(Map<String, String> map) {
 		try {
@@ -136,7 +134,7 @@ public class TestToolApi extends ApiBase {
 	 * @return The response after changing the transformation.
 	 */
 	@POST
-	@Path("/transformation/")
+	@Path("/transformation")
 	@Consumes(MediaType.APPLICATION_JSON)
 	public Response updateReportTransformation(Map<String, String> map) {
 		try {
@@ -169,7 +167,7 @@ public class TestToolApi extends ApiBase {
 	 * @return The configured views
 	 */
 	@GET
-	@Path("/views/")
+	@Path("/views")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getViewsResponse() {
 		return Response.ok(delegate.getViewsResponse()).build();

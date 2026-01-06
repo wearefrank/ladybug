@@ -54,7 +54,7 @@ public class MetadataApi extends ApiBase {
 	 * @throws ApiException If an exception occurs during metadata search in storage.
 	 */
 	@GET
-	@Path("/{storage}/")
+	@Path("/{storage}")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getMetadataList(@PathParam("storage") String storageName,
 									@QueryParam("metadataNames") List<String> metadataNames,
