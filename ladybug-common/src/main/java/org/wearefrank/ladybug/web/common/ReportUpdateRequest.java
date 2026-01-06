@@ -21,11 +21,14 @@ import java.util.Map;
 
 public class ReportUpdateRequest {
 	private @Getter @Setter String name;
+	private @Getter @Setter Boolean clearPath;
 	private @Getter @Setter String path;
 	private @Getter @Setter Map<String, String> variables;
+	private @Getter @Setter Boolean clearDescription;
 	private @Getter @Setter String description;
+	private @Getter @Setter Boolean clearTransformation;
 	private @Getter @Setter String transformation;
-	private @Getter @Setter String checkpointId;
+	private @Getter @Setter Integer checkpointId;
 	private @Getter @Setter String checkpointMessage;
 	private @Getter @Setter String stub;
 	private @Getter @Setter String stubStrategy;

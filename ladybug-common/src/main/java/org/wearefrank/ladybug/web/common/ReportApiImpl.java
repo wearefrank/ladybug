@@ -267,9 +267,15 @@ public class ReportApiImpl {
 			}
 
 			if (req.getName() != null) report.setName(req.getName());
-			if (req.getPath() != null) report.setPath(TestComponent.normalizePath(req.getPath()));
-			if (req.getDescription() != null) report.setDescription(req.getDescription());
-			if (req.getTransformation() != null) report.setTransformation(req.getTransformation());
+			if (Boolean.TRUE.equals(req.getClearPath())) {
+				report.setPath(null);
+			} else if (req.getPath() != null) report.setPath(TestComponent.normalizePath(req.getPath()));
+			if (Boolean.TRUE.equals(req.getClearDescription())) {
+				report.setDescription(null);
+			} else if (req.getDescription() != null) report.setDescription(req.getDescription());
+			if (Boolean.TRUE.equals(req.getClearTransformation())) {
+				report.setTransformation(null);
+			} else if (req.getTransformation() != null) report.setTransformation(req.getTransformation());
 			if (req.getStubStrategy() != null) report.setStubStrategy(req.getStubStrategy());
 
 			if (req.getVariables() != null) {
@@ -281,7 +287,7 @@ public class ReportApiImpl {
 			}
 
 			if (req.getCheckpointId() != null) {
-				int checkpointId = Integer.parseInt(req.getCheckpointId());
+				int checkpointId = req.getCheckpointId();
 				if (StringUtils.isNotEmpty(req.getStub())) {
 					report.getCheckpoints().get(checkpointId).setStub(Integer.parseInt(req.getStub()));
 				} else {
