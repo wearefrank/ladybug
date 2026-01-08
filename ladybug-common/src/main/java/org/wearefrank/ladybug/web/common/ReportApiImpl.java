@@ -267,15 +267,27 @@ public class ReportApiImpl {
 			}
 
 			if (req.getName() != null) report.setName(req.getName());
-			if (Boolean.TRUE.equals(req.getClearPath())) {
-				report.setPath(null);
-			} else if (req.getPath() != null) report.setPath(TestComponent.normalizePath(req.getPath()));
-			if (Boolean.TRUE.equals(req.getClearDescription())) {
-				report.setDescription(null);
-			} else if (req.getDescription() != null) report.setDescription(req.getDescription());
-			if (Boolean.TRUE.equals(req.getClearTransformation())) {
-				report.setTransformation(null);
-			} else if (req.getTransformation() != null) report.setTransformation(req.getTransformation());
+			if (req.getPath() != null) {
+				if (req.getPath().isEmpty()) {
+					report.setPath(null);
+				} else {
+					report.setPath(TestComponent.normalizePath(req.getPath()));
+				}
+			}
+			if (req.getDescription() != null) {
+				if (req.getDescription().isEmpty()) {
+					report.setDescription(null);
+				} else {
+					report.setDescription(req.getDescription());
+				}
+			}
+			if (req.getTransformation() != null) {
+				if (req.getTransformation().isEmpty()) {
+					report.setTransformation(null);
+				} else {
+					report.setTransformation(req.getTransformation());
+				}
+			}
 			if (req.getStubStrategy() != null) report.setStubStrategy(req.getStubStrategy());
 
 			if (req.getVariables() != null) {

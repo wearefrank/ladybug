@@ -21,12 +21,12 @@ import java.util.Map;
 
 public class ReportUpdateRequest {
 	private @Getter @Setter String name;
-	private @Getter @Setter Boolean clearPath;
+	// Empty string means path has to be cleared.
 	private @Getter @Setter String path;
 	private @Getter @Setter Map<String, String> variables;
-	private @Getter @Setter Boolean clearDescription;
+	// Empty string means description has to be cleared.
 	private @Getter @Setter String description;
-	private @Getter @Setter Boolean clearTransformation;
+	// Empty string means transformation has to be cleared.
 	private @Getter @Setter String transformation;
 	private @Getter @Setter Integer checkpointId;
 	private @Getter @Setter String checkpointMessage;
