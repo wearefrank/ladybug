@@ -14,7 +14,7 @@ import java.lang.invoke.MethodHandles;
 @RestControllerAdvice
 public class ExceptionHandlers {
 	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-	@ExceptionHandler
+	@ExceptionHandler(AccessDeniedException.class)
 	public ResponseEntity<?> handleAccessDeniedException(AccessDeniedException e) {
 		log.error("ExceptionHandlers.handleAccessDeniedException() captured exception", e);
 		return new ResponseEntity<>(e.getMessage(), HttpStatus.FORBIDDEN);
