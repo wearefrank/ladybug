@@ -1,5 +1,5 @@
 /*
-   Copyright 2021-2025 WeAreFrank!
+   Copyright 2021-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -54,6 +54,7 @@ import org.wearefrank.ladybug.web.common.HttpInternalServerErrorException;
 import org.wearefrank.ladybug.web.common.HttpNotFoundException;
 import org.wearefrank.ladybug.web.common.HttpNotImplementedException;
 import org.wearefrank.ladybug.web.common.ReportApiImpl;
+import org.wearefrank.ladybug.web.common.ReportUpdateRequest;
 
 @Path("/" + Constants.LADYBUG_API_PATH + "/report")
 public class ReportApi extends ApiBase {
@@ -201,16 +202,16 @@ public class ReportApi extends ApiBase {
 	 *
 	 * @param storageName Name of the storage.
 	 * @param storageId Storage id of the report.
-	 * @param map Map containing ["name" or "path" or "variables" or "description" or "transformation" or "checkpointId and "checkpointMessage"].
+	 * @param req Bean with field updates.
 	 * @return The updated report.
 	 */
 	@POST
 	@Path("/{storage}/{storageId}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response updateReport(@PathParam("storage") String storageName, @PathParam("storageId") int storageId, Map<String, String> map) {
+	public Response updateReport(@PathParam("storage") String storageName, @PathParam("storageId") int storageId, ReportUpdateRequest req) {
 		try {
-			Map<String, Serializable> result = delegate.updateReport(storageName, storageId, map);
+			Map<String, Serializable> result = delegate.updateReport(storageName, storageId, req);
 			return Response.ok(result).build();
 		} catch(HttpBadRequestException e) {
 			return Response.status(Response.Status.BAD_REQUEST).entity(e.getMessage()).build();
