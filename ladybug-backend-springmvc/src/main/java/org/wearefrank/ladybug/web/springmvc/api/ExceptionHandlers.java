@@ -13,6 +13,12 @@ import java.lang.invoke.MethodHandles;
 @RestControllerAdvice
 public class ExceptionHandlers {
 	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+
+	public ExceptionHandlers() {
+		// TODO: Decrease log level.
+		log.error("Constructing org.wearefrank.ladybug.web.springmvc.api.ExceptionHandlers");
+	}
+
 	@ExceptionHandler(Exception.class)
 	public ResponseEntity<?> handleAccessDeniedException(Exception e) {
 		log.error("ExceptionHandlers.handleAccessDeniedException() captured exception", e);
