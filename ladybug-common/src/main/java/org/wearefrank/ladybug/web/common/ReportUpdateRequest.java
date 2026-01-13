@@ -17,9 +17,23 @@ package org.wearefrank.ladybug.web.common;
 
 import lombok.Getter;
 import lombok.Setter;
+
+import java.util.List;
 import java.util.Map;
 
 public class ReportUpdateRequest {
+	public static class Checkpoint {
+		private @Getter @Setter Integer checkpointId;
+		private @Getter boolean checkpointMessageModified = false;
+		private @Getter String checkpointMessage;
+		private @Getter @Setter String stub;
+
+		public void setCheckpointMessage(String checkpointMessage) {
+			this.checkpointMessageModified = true;
+			this.checkpointMessage = checkpointMessage;
+		}
+	}
+
 	private @Getter @Setter String name;
 	// Empty string means path has to be cleared.
 	private @Getter boolean pathModified = false;
@@ -31,10 +45,8 @@ public class ReportUpdateRequest {
 	// Empty string means transformation has to be cleared.
 	private @Getter boolean transformationModified = false;
 	private @Getter String transformation;
-	private @Getter @Setter Integer checkpointId;
-	private @Getter @Setter String checkpointMessage;
-	private @Getter @Setter String stub;
 	private @Getter @Setter String stubStrategy;
+	private @Getter @Setter List<Checkpoint> checkpoints;
 
 	public void setPath(String path) {
 		this.pathModified = true;

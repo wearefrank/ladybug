@@ -286,13 +286,16 @@ public class ReportApiImpl {
 				}
 			}
 
-			if (req.getCheckpointId() != null) {
-				int checkpointId = req.getCheckpointId();
-				if (StringUtils.isNotEmpty(req.getStub())) {
-					report.getCheckpoints().get(checkpointId).setStub(Integer.parseInt(req.getStub()));
-				} else {
-					report.getCheckpoints().get(checkpointId).setMessage(req.getCheckpointMessage());
-				}
+			if (req.getCheckpoints() != null) {
+				req.getCheckpoints().forEach(c -> {
+					Integer checkpointId = c.getCheckpointId();
+					if (c.isCheckpointMessageModified()) {
+						report.getCheckpoints().get(checkpointId).setMessage(c.getCheckpointMessage());
+					}
+					if (c.getStub() != null) {
+						report.getCheckpoints().get(checkpointId).setStub(Integer.parseInt(c.getStub()));
+					}
+				});
 			}
 
 			report.flushCachedXml();
