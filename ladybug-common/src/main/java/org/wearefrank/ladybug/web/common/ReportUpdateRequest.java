@@ -22,14 +22,32 @@ import java.util.Map;
 public class ReportUpdateRequest {
 	private @Getter @Setter String name;
 	// Empty string means path has to be cleared.
-	private @Getter @Setter String path;
+	private @Getter boolean pathModified = false;
+	private @Getter String path;
 	private @Getter @Setter Map<String, String> variables;
 	// Empty string means description has to be cleared.
-	private @Getter @Setter String description;
+	private @Getter boolean descriptionModified = false;
+	private @Getter String description;
 	// Empty string means transformation has to be cleared.
-	private @Getter @Setter String transformation;
+	private @Getter boolean transformationModified = false;
+	private @Getter String transformation;
 	private @Getter @Setter Integer checkpointId;
 	private @Getter @Setter String checkpointMessage;
 	private @Getter @Setter String stub;
 	private @Getter @Setter String stubStrategy;
+
+	public void setPath(String path) {
+		this.pathModified = true;
+		this.path = path;
+	}
+
+	public void setDescription(String description) {
+		this.descriptionModified = true;
+		this.description = description;
+	}
+
+	public void setTransformation(String transformation) {
+		this.transformationModified = true;
+		this.transformation = transformation;
+	}
 }
