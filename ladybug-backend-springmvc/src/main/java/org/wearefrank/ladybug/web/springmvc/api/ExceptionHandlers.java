@@ -38,6 +38,6 @@ public class ExceptionHandlers {
 	@ExceptionHandler(AuthorizationDeniedException.class)
 	public ResponseEntity<?> handleAccessDeniedException(AuthorizationDeniedException e) {
 		log.error("ExceptionHandlers.handleAccessDeniedException() captured exception", e);
-		return new ResponseEntity<>(e.getMessage(), HttpStatus.FORBIDDEN);
+		return new ResponseEntity<>("Not allowed", HttpStatus.FORBIDDEN);
 	}
 }
