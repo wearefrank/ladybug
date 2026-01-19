@@ -116,7 +116,7 @@ public class ReportsComponent extends BaseComponent implements BeanParent, Actio
 	private TransformationWindow transformationWindow;
 	private WindowPane uploadWindow;
 	private UploadSelect uploadSelect;
-	private Integer firstValueOfLastSelectedRow;
+	private Integer storageIdOfLastSelectedRow;
 	private SelectField downloadSelectField;
 	private BeanParent beanParent;
 	private Echo2Application echo2Application;
@@ -588,8 +588,8 @@ public class ReportsComponent extends BaseComponent implements BeanParent, Actio
 			View view = getSelectedView();
 			Table table = (Table)e.getSource();
 			int selectedIndex = table.getSelectionModel().getMinSelectedIndex();
-			firstValueOfLastSelectedRow = (Integer)metadataSortableTableModel.getValueAt(0, selectedIndex);
-			openReport(view, firstValueOfLastSelectedRow);
+			storageIdOfLastSelectedRow = parseStorageId(metadataSortableTableModel.getValueAt(0, selectedIndex));
+			openReport(view, storageIdOfLastSelectedRow);
 		} else if (e.getActionCommand().equals("OpenAll")) {
 			View view = getSelectedView();
 			for (int i = 0; i < metadataSortableTableModel.getRowCount(); i++) {
@@ -756,6 +756,13 @@ public class ReportsComponent extends BaseComponent implements BeanParent, Actio
 		}
 	}
 
+	private Integer parseStorageId(Object o) {
+		if (o.getClass().isAssignableFrom(Integer.class)) {
+			return (Integer) o;
+		} else {
+			return Integer.valueOf((String) o);
+		}
+	}
 	public void download(Storage storage, List storageIds) throws StorageException {
 		if (storageIds.size() > 0) {
 			String filename = storage.getReport((Integer)storageIds.get(0)).getName();
@@ -925,8 +932,8 @@ public class ReportsComponent extends BaseComponent implements BeanParent, Actio
 		// different row in the new table
 		metadataTable.getSelectionModel().clearSelection();
 		for (int i = 0; i < metadataTableModel.getRowCount(); i++) {
-			if (firstValueOfLastSelectedRow != null
-					&& metadataTableModel.getValueAt(0, i).equals(firstValueOfLastSelectedRow)) {
+			if (storageIdOfLastSelectedRow != null
+					&& parseStorageId(metadataTableModel.getValueAt(0, i)).equals(storageIdOfLastSelectedRow)) {
 				metadataTable.getSelectionModel().setSelectedIndex(i, true);
 			}
 		}
