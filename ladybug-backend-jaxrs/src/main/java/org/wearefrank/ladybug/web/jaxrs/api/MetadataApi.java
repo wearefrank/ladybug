@@ -45,7 +45,7 @@ public class MetadataApi extends ApiBase {
 	/**
 	 * Searches the storage metadata.
 	 *
-	 * @param storageName Name of the storage to search.
+	 * @param viewName Name of the storage to search.
 	 * @param metadataNames The metadata names to return.
 	 * @param limit Maximum number of results to return.
 	 * @param filterHeaders The headers on which we filter.
@@ -54,15 +54,15 @@ public class MetadataApi extends ApiBase {
 	 * @throws ApiException If an exception occurs during metadata search in storage.
 	 */
 	@GET
-	@Path("/{storage}")
+	@Path("/{viewName}")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response getMetadataList(@PathParam("storage") String storageName,
+	public Response getMetadataList(@PathParam("viewName") String viewName,
 									@QueryParam("metadataNames") List<String> metadataNames,
 									@DefaultValue("-1") @QueryParam("limit") int limit,
 									@QueryParam("filterHeader") List<String> filterHeaders,
 									@QueryParam("filter") List<String> filterParams) {
 		try {
-			List<LinkedHashMap<String, String>> metadata = delegate.getMetadataList(storageName, metadataNames, limit, filterHeaders, filterParams);
+			List<LinkedHashMap<String, String>> metadata = delegate.getMetadataList(viewName, metadataNames, limit, filterHeaders, filterParams);
 			return Response.ok().entity(metadata).build();
 		} catch (HttpInternalServerErrorException e) {
 			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Could not find metadata with limit " + limit + " and filter [" + filterParams + "] - detailed error message - " + e + Arrays.toString(e.getStackTrace())).build();
@@ -72,15 +72,15 @@ public class MetadataApi extends ApiBase {
 	/**
 	 * Returns the user help for each filter header.
 	 *
-	 * @param storageName - Name of the storage of the headers.
+	 * @param viewName - Name of the storage of the headers.
 	 * @param metadataNames - the header names.
 	 * @return The user help of each filter header.
 	 */
 	@GET
-	@Path("/{storage}/userHelp")
-	public Response getUserHelp(@PathParam("storage") String storageName, @QueryParam("metadataNames") List<String> metadataNames) {
+	@Path("/{viewName}/userHelp")
+	public Response getUserHelp(@PathParam("viewName") String viewName, @QueryParam("metadataNames") List<String> metadataNames) {
 		try {
-			Map<String, String> userHelp = delegate.getUserHelp(storageName, metadataNames);
+			Map<String, String> userHelp = delegate.getUserHelp(viewName, metadataNames);
 			return Response.ok().entity(userHelp).build();
 		} catch (Exception e) {
 			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Could not find user help - detailed error message - " + e + Arrays.toString(e.getStackTrace())).build();
@@ -90,15 +90,15 @@ public class MetadataApi extends ApiBase {
 	/**
 	 * Gets the count of metadata records.
 	 *
-	 * @param storageName - the storage from which the metadata records reside.
+	 * @param viewName - the storage from which the metadata records reside.
 	 * @return the metadata count.
 	 */
 	@GET
-	@Path("/{storage}/count")
+	@Path("/{viewName}/count")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response getMetadataCount(@PathParam("storage") String storageName) {
+	public Response getMetadataCount(@PathParam("viewName") String viewName) {
 		try {
-			int count = delegate.getMetadataCount(storageName);
+			int count = delegate.getMetadataCount(viewName);
 			return Response.ok().entity(count).build();
 		} catch (HttpInternalServerErrorException e) {
 			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Could not find metadata count - detailed error message - " + e + Arrays.toString(e.getStackTrace())).build();

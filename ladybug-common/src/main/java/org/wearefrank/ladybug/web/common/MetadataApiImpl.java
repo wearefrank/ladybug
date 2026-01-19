@@ -23,6 +23,7 @@ import org.wearefrank.ladybug.MetadataExtractor;
 import org.wearefrank.ladybug.TestTool;
 import org.wearefrank.ladybug.storage.Storage;
 import org.wearefrank.ladybug.storage.StorageException;
+import org.wearefrank.ladybug.filter.Views;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -35,7 +36,9 @@ public class MetadataApiImpl {
 	@Inject
 	@Autowired TestTool testTool;
 
-	public List<LinkedHashMap<String, String>> getMetadataList(String storageName,
+	private @Setter @Autowired Views views;
+
+	public List<LinkedHashMap<String, String>> getMetadataList(String viewName,
 															   List<String> metadataNames,
 															   int limit,
 															   List<String> filterHeaders,
@@ -54,7 +57,7 @@ public class MetadataApiImpl {
 			}
 		}
 		// Get storage, search for metadata, and return the results.
-		Storage storage = testTool.getStorage(storageName);
+		Storage storage = views.getView(viewName).getDebugStorage();
 		List<List<Object>> records = null;
 		try {
 			records = storage.getMetadata(limit, metadataNames, searchValues, MetadataExtractor.VALUE_TYPE_GUI);
@@ -77,18 +80,18 @@ public class MetadataApiImpl {
 		return metadata;
 	}
 
-	public Map<String, String> getUserHelp(String storageName, List<String> metadataNames) {
+	public Map<String, String> getUserHelp(String viewName, List<String> metadataNames) {
 		Map<String, String> userHelp = new LinkedHashMap<>();
-		Storage storage = testTool.getStorage(storageName);
+		Storage storage = views.getView(viewName).getDebugStorage();
 		for (String field : metadataNames) {
 			userHelp.put(field, storage.getUserHelp(field));
 		}
 		return userHelp;
 	}
 
-	public int getMetadataCount(String storageName) throws HttpInternalServerErrorException {
+	public int getMetadataCount(String viewName) throws HttpInternalServerErrorException {
 		try {
-			Storage storage = testTool.getStorage(storageName);
+			Storage storage = views.getView(viewName).getDebugStorage();
 			return storage.getSize();
 		} catch(StorageException e) {
 			throw new HttpInternalServerErrorException(e);

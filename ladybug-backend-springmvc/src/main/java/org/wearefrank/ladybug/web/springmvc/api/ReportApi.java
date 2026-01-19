@@ -157,11 +157,11 @@ public class ReportApi {
 		}
 	}
 
-	@GetMapping(value = "/latest/{storage}/{numberOfReports}")
+	@GetMapping(value = "/latest/{viewName}/{numberOfReports}")
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
-	public ResponseEntity<?> getLatestReports(@PathVariable("storage") String storageName, @PathVariable("numberOfReports") int number) {
+	public ResponseEntity<?> getLatestReports(@PathVariable("viewName") String viewName, @PathVariable("numberOfReports") int number) {
 		try {
-			List<Report> result = delegate.getLatestReports(storageName, number);
+			List<Report> result = delegate.getLatestReports(viewName, number);
 			return ResponseEntity.ok(result);
 		} catch(HttpBadRequestException e) {
 			return ResponseEntity.badRequest().body(e.getMessage());

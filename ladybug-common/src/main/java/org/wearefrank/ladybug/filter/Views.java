@@ -18,6 +18,7 @@ package org.wearefrank.ladybug.filter;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.wearefrank.ladybug.echo2.BeanParent;
 import org.wearefrank.ladybug.echo2.Echo2Application;
@@ -52,6 +53,16 @@ public class Views extends ArrayList<View> implements BeanParent {
 
 	public View getDefaultView() {
 		return defaultView;
+	}
+
+	public View getView(String name) {
+		List<View> candidates = super.stream().filter((v) -> v.getName().equals(name)).collect(Collectors.toList());
+		if (candidates.isEmpty()) {
+			throw new IllegalArgumentException(String.format("There is no storage with name: [%s]", name));
+		} else if(candidates.size() >= 2) {
+			throw new IllegalArgumentException(String.format("There are multiple views with name: [%s]", name));
+		}
+		return candidates.get(0);
 	}
 
 	/**

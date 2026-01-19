@@ -41,15 +41,15 @@ public class MetadataApi {
 	@Autowired
 	private @Setter MetadataApiImpl delegate;
 
-	@GetMapping(value = "/{storage}", produces = MediaType.APPLICATION_JSON_VALUE)
+	@GetMapping(value = "/{viewName}", produces = MediaType.APPLICATION_JSON_VALUE)
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
-	public ResponseEntity<?> getMetadataList(@PathVariable("storage") String storageName,
+	public ResponseEntity<?> getMetadataList(@PathVariable("viewName") String viewName,
 											 @RequestParam(name = "metadataNames") List<String> metadataNames,
 											 @RequestParam(name="limit", defaultValue = "-1") int limit,
 											 @RequestParam(name = "filterHeader", defaultValue = "") List<String> filterHeaders,
 											 @RequestParam(name = "filter", defaultValue = "") List<String> filterParams) {
 		try {
-			List<LinkedHashMap<String, String>> metadata = delegate.getMetadataList(storageName, metadataNames, limit, filterHeaders, filterParams);
+			List<LinkedHashMap<String, String>> metadata = delegate.getMetadataList(viewName, metadataNames, limit, filterHeaders, filterParams);
 			return ResponseEntity.ok(metadata);
 		} catch(HttpInternalServerErrorException e) {
 			return ResponseEntity.internalServerError().body("Could not find metadata with limit " + limit + " and filter [" + filterParams + "] - detailed error message - " + e + Arrays.toString(e.getStackTrace()));
@@ -59,26 +59,26 @@ public class MetadataApi {
 	/**
 	 * Returns the user help for each filter header.
 	 *
-	 * @param storageName - Name of the storage of the headers.
+	 * @param viewName - Name of the storage of the headers.
 	 * @param metadataNames - the header names.
 	 * @return The user help of each filter header.
 	 */
-	@GetMapping(value = "/{storage}/userHelp")
+	@GetMapping(value = "/{viewName}/userHelp")
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
-	public ResponseEntity<?> getUserHelp(@PathVariable("storage") String storageName, @RequestParam(name = "metadataNames") List<String> metadataNames) {
+	public ResponseEntity<?> getUserHelp(@PathVariable("viewName") String viewName, @RequestParam(name = "metadataNames") List<String> metadataNames) {
 		try {
-			Map<String, String> userHelp = delegate.getUserHelp(storageName, metadataNames);
+			Map<String, String> userHelp = delegate.getUserHelp(viewName, metadataNames);
 			return ResponseEntity.ok(userHelp);
 		} catch (Exception e) {
 			return ResponseEntity.internalServerError().body("Could not find user help - detailed error message - " + e + Arrays.toString(e.getStackTrace()));
 		}
 	}
 
-	@GetMapping(value = "/{storage}/count", produces = MediaType.APPLICATION_JSON_VALUE)
+	@GetMapping(value = "/{viewName}/count", produces = MediaType.APPLICATION_JSON_VALUE)
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
-	public ResponseEntity<?> getMetadataCount(@PathVariable("storage") String storageName) {
+	public ResponseEntity<?> getMetadataCount(@PathVariable("viewName") String viewName) {
 		try {
-			int count = delegate.getMetadataCount(storageName);
+			int count = delegate.getMetadataCount(viewName);
 			return ResponseEntity.ok(count);
 		} catch (HttpInternalServerErrorException e) {
 			return ResponseEntity.internalServerError().body("Could not find metadata count - detailed error message - " + e + Arrays.toString(e.getStackTrace()));

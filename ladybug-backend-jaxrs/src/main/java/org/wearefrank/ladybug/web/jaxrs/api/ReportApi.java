@@ -180,15 +180,15 @@ public class ReportApi extends ApiBase {
 	/**
 	 * Get the n latest reports in the storage.
 	 *
-	 * @param storageName Name of the storage.
+	 * @param viewName Name of the storage.
 	 * @param number Number of latest reports to retrieve.
 	 * @return the n latest reports.
 	 */
 	@GET
-	@Path("/latest/{storage}/{numberOfReports}")
-	public Response getLatestReports(@PathParam("storage") String storageName, @PathParam("numberOfReports") int number) {
+	@Path("/latest/{viewName}/{numberOfReports}")
+	public Response getLatestReports(@PathParam("viewName") String viewName, @PathParam("numberOfReports") int number) {
 		try {
-			List<Report> result = delegate.getLatestReports(storageName, number);
+			List<Report> result = delegate.getLatestReports(viewName, number);
 			return Response.ok(result).build();
 		} catch(HttpBadRequestException e) {
 			return Response.status(Response.Status.BAD_REQUEST).entity(e.getMessage()).build();

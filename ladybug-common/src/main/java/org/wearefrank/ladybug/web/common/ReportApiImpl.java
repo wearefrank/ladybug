@@ -237,9 +237,9 @@ public class ReportApiImpl {
 		}
 	}
 
-	public List<Report> getLatestReports(String storageName, int number) throws HttpBadRequestException, HttpInternalServerErrorException {
+	public List<Report> getLatestReports(String viewName, int number) throws HttpBadRequestException, HttpInternalServerErrorException {
 		try {
-			Storage storage = testTool.getStorage(storageName);
+			Storage storage = views.getView(viewName).getDebugStorage();
 			List<List<Object>> metadata = storage.getMetadata(-1, Arrays.asList("storageId", "endTime"),
 					Arrays.asList(null, null), MetadataExtractor.VALUE_TYPE_OBJECT);
 			int amount = Math.min(metadata.size(), number);
