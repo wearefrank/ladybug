@@ -116,7 +116,7 @@ public class ReportsComponent extends BaseComponent implements BeanParent, Actio
 	private TransformationWindow transformationWindow;
 	private WindowPane uploadWindow;
 	private UploadSelect uploadSelect;
-	private String firstValueOfLastSelectedRow;
+	private Integer firstValueOfLastSelectedRow;
 	private SelectField downloadSelectField;
 	private BeanParent beanParent;
 	private Echo2Application echo2Application;
@@ -588,8 +588,8 @@ public class ReportsComponent extends BaseComponent implements BeanParent, Actio
 			View view = getSelectedView();
 			Table table = (Table)e.getSource();
 			int selectedIndex = table.getSelectionModel().getMinSelectedIndex();
-			firstValueOfLastSelectedRow = (String)metadataSortableTableModel.getValueAt(0, selectedIndex);
-			openReport(view, Integer.valueOf(firstValueOfLastSelectedRow));
+			firstValueOfLastSelectedRow = (Integer)metadataSortableTableModel.getValueAt(0, selectedIndex);
+			openReport(view, firstValueOfLastSelectedRow);
 		} else if (e.getActionCommand().equals("OpenAll")) {
 			View view = getSelectedView();
 			for (int i = 0; i < metadataSortableTableModel.getRowCount(); i++) {
