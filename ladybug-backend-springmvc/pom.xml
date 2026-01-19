@@ -36,6 +36,10 @@
       <artifactId>spring-security-config</artifactId>
       <version>${spring.security.version}</version>
     </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+    </dependency>
     <!-- JSR-250 annotations like @RolesAllowed -->
     <dependency>
       <groupId>jakarta.annotation</groupId>
