@@ -34,12 +34,11 @@ public class ExceptionHandlers {
 	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
 	public ExceptionHandlers() {
-		// TODO: Decrease log level.
-		log.error("Constructing org.wearefrank.ladybug.web.springmvc.api.ExceptionHandlers");
+		log.info("Constructing org.wearefrank.ladybug.web.springmvc.api.ExceptionHandlers");
 	}
 
 	@ExceptionHandler(AuthorizationDeniedException.class)
 	public ResponseEntity<String> handleAccessDeniedException(AuthorizationDeniedException e) {
-		log.error("ExceptionHandlers.handleAccessDeniedException() captured exception", e);
+		log.info("ExceptionHandlers.handleAccessDeniedException() captured exception", e);
 		return new ResponseEntity<>("Not allowed", HttpStatus.FORBIDDEN);	}
 }
