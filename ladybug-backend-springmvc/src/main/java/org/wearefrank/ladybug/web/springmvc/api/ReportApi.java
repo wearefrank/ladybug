@@ -77,9 +77,7 @@ public class ReportApi {
 									   @RequestParam(name = "globalTransformer", defaultValue = "false") boolean globalTransformer) {
 		try {
 			Map<String, Object> result = delegate.getReport(storageName, storageId, xml, globalTransformer);
-			// TODO: Restore this line - we check here that errors result in nice toasts.
-			//return ResponseEntity.ok(result);
-			return new ResponseEntity<>("This is a test\nAnd another line", HttpStatus.INTERNAL_SERVER_ERROR);
+			return ResponseEntity.ok(result);
 		} catch (HttpNotFoundException e) {
 			return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
 		}
