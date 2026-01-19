@@ -757,8 +757,7 @@ public class ReportsComponent extends BaseComponent implements BeanParent, Actio
 	}
 
 	private Integer parseStorageId(Object o) {
-		if (o instanceof Integer integer) {
-				return integer;
+		if (o  instanceof Integer) {
 			return (Integer) o;
 		} else {
 			return Integer.valueOf((String) o);
