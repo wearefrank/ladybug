@@ -39,15 +39,7 @@ public class ExceptionHandlers {
 	}
 
 	@ExceptionHandler(AuthorizationDeniedException.class)
-	public ResponseEntity<Object> handleAccessDeniedException(AuthorizationDeniedException e) {
+	public ResponseEntity<String> handleAccessDeniedException(AuthorizationDeniedException e) {
 		log.error("ExceptionHandlers.handleAccessDeniedException() captured exception", e);
-		Map<String, String> json = new HashMap<>();
-		json.put("status", HttpStatus.valueOf(403).getReasonPhrase());
-		// Replace non ASCII characters, tabs, spaces and newlines.
-		json.put("error", "Not allowed");
-
-		ResponseEntity.BodyBuilder builder = ResponseEntity.status(403);
-		builder.contentType(MediaType.APPLICATION_JSON);
-		return builder.body(json);
-	}
+		return new ResponseEntity<>("Not allowed", HttpStatus.FORBIDDEN);	}
 }
