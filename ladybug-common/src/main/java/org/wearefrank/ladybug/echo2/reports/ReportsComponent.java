@@ -763,6 +763,7 @@ public class ReportsComponent extends BaseComponent implements BeanParent, Actio
 			return Integer.valueOf((String) o);
 		}
 	}
+
 	public void download(Storage storage, List storageIds) throws StorageException {
 		if (storageIds.size() > 0) {
 			String filename = storage.getReport((Integer)storageIds.get(0)).getName();
