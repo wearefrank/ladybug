@@ -760,7 +760,7 @@ public class ReportsComponent extends BaseComponent implements BeanParent, Actio
 		if (o  instanceof Integer) {
 			return (Integer) o;
 		} else {
-			return Integer.valueOf((String) o);
+			return Integer.valueOf("" + o);
 		}
 	}
 
