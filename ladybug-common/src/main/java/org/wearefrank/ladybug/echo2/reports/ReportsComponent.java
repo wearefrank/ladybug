@@ -1,5 +1,5 @@
 /*
-   Copyright 2020-2025 WeAreFrank!, 2018-2019 Nationale-Nederlanden
+   Copyright 2020-2026 WeAreFrank!, 2018-2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -116,7 +116,7 @@ public class ReportsComponent extends BaseComponent implements BeanParent, Actio
 	private TransformationWindow transformationWindow;
 	private WindowPane uploadWindow;
 	private UploadSelect uploadSelect;
-	private String firstValueOfLastSelectedRow;
+	private Integer storageIdOfLastSelectedRow;
 	private SelectField downloadSelectField;
 	private BeanParent beanParent;
 	private Echo2Application echo2Application;
@@ -588,8 +588,8 @@ public class ReportsComponent extends BaseComponent implements BeanParent, Actio
 			View view = getSelectedView();
 			Table table = (Table)e.getSource();
 			int selectedIndex = table.getSelectionModel().getMinSelectedIndex();
-			firstValueOfLastSelectedRow = (String)metadataSortableTableModel.getValueAt(0, selectedIndex);
-			openReport(view, Integer.valueOf(firstValueOfLastSelectedRow));
+			storageIdOfLastSelectedRow = parseStorageId(metadataSortableTableModel.getValueAt(0, selectedIndex));
+			openReport(view, storageIdOfLastSelectedRow);
 		} else if (e.getActionCommand().equals("OpenAll")) {
 			View view = getSelectedView();
 			for (int i = 0; i < metadataSortableTableModel.getRowCount(); i++) {
@@ -753,6 +753,14 @@ public class ReportsComponent extends BaseComponent implements BeanParent, Actio
 			}
 			textField.setText(listBoxValues);
 			displayReports(false);
+		}
+	}
+
+	private Integer parseStorageId(Object o) {
+		if (o  instanceof Integer) {
+			return (Integer) o;
+		} else {
+			return Integer.valueOf("" + o);
 		}
 	}
 
@@ -925,8 +933,8 @@ public class ReportsComponent extends BaseComponent implements BeanParent, Actio
 		// different row in the new table
 		metadataTable.getSelectionModel().clearSelection();
 		for (int i = 0; i < metadataTableModel.getRowCount(); i++) {
-			if (firstValueOfLastSelectedRow != null
-					&& metadataTableModel.getValueAt(0, i).equals(firstValueOfLastSelectedRow)) {
+			if (storageIdOfLastSelectedRow != null
+					&& parseStorageId(metadataTableModel.getValueAt(0, i)).equals(storageIdOfLastSelectedRow)) {
 				metadataTable.getSelectionModel().setSelectedIndex(i, true);
 			}
 		}
