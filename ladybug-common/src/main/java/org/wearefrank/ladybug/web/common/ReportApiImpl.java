@@ -293,7 +293,7 @@ public class ReportApiImpl {
 						report.getCheckpoints().get(checkpointId).setMessage(c.getCheckpointMessage());
 					}
 					if (c.getStub() != null) {
-						report.getCheckpoints().get(checkpointId).setStub(Integer.parseInt(c.getStub()));
+						report.getCheckpoints().get(checkpointId).setStub(c.getStub());
 					}
 				});
 			}

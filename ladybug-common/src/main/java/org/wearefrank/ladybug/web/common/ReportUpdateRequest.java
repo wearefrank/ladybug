@@ -26,7 +26,7 @@ public class ReportUpdateRequest {
 		private @Getter @Setter Integer checkpointId;
 		private @Getter boolean checkpointMessageModified = false;
 		private @Getter String checkpointMessage;
-		private @Getter @Setter String stub;
+		private @Getter @Setter Integer stub;
 
 		public void setCheckpointMessage(String checkpointMessage) {
 			this.checkpointMessageModified = true;
