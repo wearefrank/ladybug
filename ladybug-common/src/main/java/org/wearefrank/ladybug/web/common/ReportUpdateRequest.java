@@ -17,19 +17,49 @@ package org.wearefrank.ladybug.web.common;
 
 import lombok.Getter;
 import lombok.Setter;
+
+import java.util.List;
 import java.util.Map;
 
 public class ReportUpdateRequest {
+	public static class Checkpoint {
+		private @Getter @Setter Integer checkpointId;
+		private @Getter boolean checkpointMessageModified = false;
+		private @Getter String checkpointMessage;
+		private @Getter @Setter Integer stub;
+
+		public void setCheckpointMessage(String checkpointMessage) {
+			this.checkpointMessageModified = true;
+			this.checkpointMessage = checkpointMessage;
+		}
+	}
+
 	private @Getter @Setter String name;
 	// Empty string means path has to be cleared.
-	private @Getter @Setter String path;
+	private @Getter boolean pathModified = false;
+	private @Getter String path;
 	private @Getter @Setter Map<String, String> variables;
 	// Empty string means description has to be cleared.
-	private @Getter @Setter String description;
+	private @Getter boolean descriptionModified = false;
+	private @Getter String description;
 	// Empty string means transformation has to be cleared.
-	private @Getter @Setter String transformation;
-	private @Getter @Setter Integer checkpointId;
-	private @Getter @Setter String checkpointMessage;
-	private @Getter @Setter String stub;
+	private @Getter boolean transformationModified = false;
+	private @Getter String transformation;
 	private @Getter @Setter String stubStrategy;
+	private @Getter @Setter List<Checkpoint> checkpoints;
+
+	public void setPath(String path) {
+		this.pathModified = true;
+		this.path = path;
+	}
+
+	public void setDescription(String description) {
+		this.descriptionModified = true;
+		this.description = description;
+	}
+
+	public void setTransformation(String transformation) {
+		this.transformationModified = true;
+		this.transformation = transformation;
+	}
 }

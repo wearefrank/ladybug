@@ -267,26 +267,14 @@ public class ReportApiImpl {
 			}
 
 			if (req.getName() != null) report.setName(req.getName());
-			if (req.getPath() != null) {
-				if (req.getPath().isEmpty()) {
-					report.setPath(null);
-				} else {
-					report.setPath(TestComponent.normalizePath(req.getPath()));
-				}
+			if (req.isPathModified()) {
+				report.setPath(req.getPath());
 			}
-			if (req.getDescription() != null) {
-				if (req.getDescription().isEmpty()) {
-					report.setDescription(null);
-				} else {
-					report.setDescription(req.getDescription());
-				}
+			if (req.isDescriptionModified()) {
+				report.setDescription(req.getDescription());
 			}
-			if (req.getTransformation() != null) {
-				if (req.getTransformation().isEmpty()) {
-					report.setTransformation(null);
-				} else {
-					report.setTransformation(req.getTransformation());
-				}
+			if (req.isTransformationModified()) {
+				report.setTransformation(req.getTransformation());
 			}
 			if (req.getStubStrategy() != null) report.setStubStrategy(req.getStubStrategy());
 
@@ -298,13 +286,16 @@ public class ReportApiImpl {
 				}
 			}
 
-			if (req.getCheckpointId() != null) {
-				int checkpointId = req.getCheckpointId();
-				if (StringUtils.isNotEmpty(req.getStub())) {
-					report.getCheckpoints().get(checkpointId).setStub(Integer.parseInt(req.getStub()));
-				} else {
-					report.getCheckpoints().get(checkpointId).setMessage(req.getCheckpointMessage());
-				}
+			if (req.getCheckpoints() != null) {
+				req.getCheckpoints().forEach(c -> {
+					Integer checkpointId = c.getCheckpointId();
+					if (c.isCheckpointMessageModified()) {
+						report.getCheckpoints().get(checkpointId).setMessage(c.getCheckpointMessage());
+					}
+					if (c.getStub() != null) {
+						report.getCheckpoints().get(checkpointId).setStub(c.getStub());
+					}
+				});
 			}
 
 			report.flushCachedXml();
