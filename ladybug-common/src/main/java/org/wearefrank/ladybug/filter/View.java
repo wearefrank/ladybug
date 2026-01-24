@@ -1,5 +1,5 @@
 /*
-   Copyright 2020, 2022-2025 WeAreFrank!, 2018, 2019 Nationale-Nederlanden
+   Copyright 2020, 2022-2026 WeAreFrank!, 2018, 2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -102,6 +102,13 @@ public class View implements BeanParent {
 		return echo2Application;
 	}
 
+	/**
+	 * Was used by Tibet2 when using old GUI. Check is now done in getReport(), see
+	 * https://github.com/frankframework/frankframework/commit/33c0af92e338c9d001e6ccf44565b44d0a64b6a3
+	 * @param StorageId ...
+	 * @return ...
+	 */
+	@Deprecated
 	public String isOpenReportAllowed(Object StorageId) {
 		return ReportsComponent.OPEN_REPORT_ALLOWED;
 	}
