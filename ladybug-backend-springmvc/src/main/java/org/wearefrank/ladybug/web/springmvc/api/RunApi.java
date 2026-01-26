@@ -65,8 +65,12 @@ public class RunApi {
 					RunResult runResult = runner.getResults().get(storageId);
 					if (runResult.errorMessage == null) {
 						Report runResultReport = runner.getRunResultReport(runResult.correlationId);
-						runResultReport.setTestTool(testTool);
-						result = extractRunResult(report, runResultReport, runner);
+						if (runResultReport == null) {
+							errorMessage = "Rerunning did not produce a new report because the report generator was disabled";
+						} else {
+							runResultReport.setTestTool(testTool);
+							result = extractRunResult(report, runResultReport, runner);
+						}
 					} else {
 						errorMessage = runResult.errorMessage;
 					}
