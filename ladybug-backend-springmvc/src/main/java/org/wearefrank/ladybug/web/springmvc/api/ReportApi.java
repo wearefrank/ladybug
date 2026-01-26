@@ -353,7 +353,7 @@ public class ReportApi {
 
 	@PostMapping(value = "/customreportaction")
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
-	public ResponseEntity<?> processCustomReportAction(@RequestParam(name = "storage") String storageName, List<Integer> reportIds) {
+	public ResponseEntity<?> processCustomReportAction(@RequestParam(name = "storage") String storageName, @RequestBody List<Integer> reportIds) {
 		try {
 			Map<String, String> result = delegate.processCustomReportAction(storageName, reportIds);
 			return ResponseEntity.ok(result);
