@@ -22,16 +22,3 @@ jobs:
         cache: maven
     - name: Build with Maven
       run: mvn -B package
-
-    # The results are reported with the wrong job name. See issue of this GitHub Action:
-    # https://github.com/ScaCap/action-surefire-report/issues/39
-    - name: Publish Test Report
-      if: always()
-      uses: scacap/action-surefire-report@v1.9.0
-      with:
-        check_name: Java CI with Maven test report
-        report_paths: '**/target/surefire-reports/TEST-*.xml'
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-
-    - name: Update dependency graph
-      uses: advanced-security/maven-dependency-submission-action@v5.0.0
