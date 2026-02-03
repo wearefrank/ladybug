@@ -38,7 +38,6 @@ jobs:
             ${{ runner.os }}-pnpm-store-
       - name: Show pnpm version (before pnpm install)
         run: pnpm -v
-        working-directory: ladybug-frontend
       - name: Install Node.js
         uses: actions/setup-node@v4
         with:
