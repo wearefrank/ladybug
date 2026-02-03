@@ -24,12 +24,6 @@ jobs:
         with:
           version: 9.4
           run_install: false
-      - name: Install Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: 'pnpm'
-          cache-dependency-path: 'ladybug-frontend/pnpm-lock.yaml'
       - name: Get pnpm store directory
         id: store-path
         shell: bash
@@ -45,6 +39,12 @@ jobs:
       - name: Show pnpm version (before pnpm install)
         run: pnpm -v
         working-directory: ladybug-frontend
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+          cache-dependency-path: 'ladybug-frontend/pnpm-lock.yaml'
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
         working-directory: ladybug-frontend
