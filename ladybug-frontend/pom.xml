@@ -76,6 +76,20 @@
               </arguments>
             </configuration>
           </execution>
+          <execution>
+            <id>ng test-headless</id>
+            <goals>
+              <goal>exec</goal>
+            </goals>
+            <phase>test</phase>
+            <configuration>
+              <executable>pnpm</executable>
+              <arguments>
+                <argument>run</argument>
+                <argument>test-headless</argument>
+              </arguments>
+            </configuration>
+          </execution>
         </executions>
       </plugin>
       <plugin>
