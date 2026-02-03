@@ -4,30 +4,8 @@ on:
     branches:
       - master
   pull_request:
-  workflow_dispatch:
-    inputs:
-      useRealFrontend:
-        description: If true, test the frontend inside the backend
-        type: boolean
-        default: false
-        required: true
-      mergeMasterToBranch:
-        description: If true, the checkout-out backend is merged with the backend master
-        type: boolean
-        default: false
-        required: true
-      frontendCommitToCheckout:
-        description: Tag or branch of ladybug-frontend to check out - timestamp releases are not tagged
-        required: false
-      backendCommitToCheckout:
-        description: Tag or branch of the backend to test against
-        required: false
-      test-webapp-branch:
-        description: If set, checkout this branch of ladybug-test-webapp
-        required: false
-
 jobs:
-  testing:
+  frontend:
     strategy:
       matrix:
         include:
@@ -35,27 +13,12 @@ jobs:
             selected-specs: cypress/e2e/no-profile/**
           - spring-profile: storage.xml
             selected-specs: cypress/e2e/storage-xml/**
-    name: Unit tests
+    name: Cypress tests
     runs-on: ubuntu-latest
 
     steps:
-      - name: Echo inputs
-        run: echo "useRealFrontend=${{ github.event.inputs.useRealFrontend}}, mergeMasterToBranch=${{ github.event.inputs.mergeMasterToBranch}}, frontendCommitToCheckout=${{ github.event.inputs.frontendCommitToCheckout}}, backendCommitToCheckout=${{ github.event.inputs.backendCommitToCheckout }}"
       - name: Show chosen Spring profile for backend and chosen specs to run
         run: echo "Start backend with Spring profile ${{ matrix.spring-profile }} and run specs ${{ matrix.selected-specs }}"
-      - name: Checkout repository
-        uses: actions/checkout@v2
-        with:
-          path: ladybug-frontend
-      - name: Fetch all tags
-        if: ${{ github.event.inputs.frontendCommitToCheckout }}
-        run: git fetch --all --tags
-        working-directory: "ladybug-frontend"
-      - name: Checkout required version
-        if: ${{ github.event.inputs.frontendCommitToCheckout }}
-        run: git checkout ${{ github.event.inputs.frontendCommitToCheckout }}
-        working-directory: "ladybug-frontend"
-
       - uses: pnpm/action-setup@v4
         name: Install pnpm
         with:
@@ -98,21 +61,14 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-cypress-
 
+      - name: Checkout ladybug
+        uses: actions/checkout@v2
+        with:
+          repository: wearefrank/ladybug
+          path: ladybug
       - name: Set Cypress environment variables
-        run: cp .github/workflows/cypress.env.json.cicd cypress.env.json
-        working-directory: ladybug-frontend
-
-      - name: Run linter
-        run: pnpm run lint
-        if: ${{ github.event.inputs.useRealFrontend != 'true' }}
-        working-directory: ladybug-frontend
-      - name: Run Karma tests
-        working-directory: ladybug-frontend
-        run: pnpm run test-headless
-      - name: Build project
-        run: pnpm run build
-        if: ${{ github.event.inputs.useRealFrontend != 'true' }}
-        working-directory: ladybug-frontend
+        run: cp .github/workflows/cypress.env.json.cicd ladybug-frontend/cypress.env.json
+        working-directory: ladybug
 
       - name: Checkout frank-runner
         uses: actions/checkout@v2
@@ -135,38 +91,11 @@ jobs:
       - name: Make script executable that starts backend
         run: chmod a+x frank-runner/specials/ladybug/restart.sh
 
-      - name: Checkout ladybug
-        uses: actions/checkout@v2
-        with:
-          repository: wearefrank/ladybug
-          path: ladybug
-      - name: Fetch all tags of ladybug
-        if: ${{ github.event.inputs.backendCommitToCheckout }}
-        run: git fetch --all --tags
-        working-directory: "ladybug"
-      - name: Checkout required version of ladybug
-        if: ${{ github.event.inputs.backendCommitToCheckout }}
-        run: git checkout ${{ github.event.inputs.backendCommitToCheckout }}
-        working-directory: "ladybug"
-      - name: Merge backend with its master
-        if: ${{ github.event.inputs.mergeMasterToBranch == 'true' }}
-        run: git merge master
-        working-directory: "ladybug"
       - name: Checkout ladybug-test-webapp
         uses: actions/checkout@v2
         with:
           repository: wearefrank/ladybug-test-webapp
           path: ladybug-test-webapp
-      - name: Fetch all tags of ladybug-test-webapp
-        if: ${{ github.event.inputs.test-webapp-branch }}
-        run: git fetch --all --tags
-        working-directory: ladybug-test-webapp
-      - name: Checkout required version of ladybug-test-webapp
-        if: ${{ github.event.inputs.test-webapp-branch }}
-        run: git checkout ${{ github.event.inputs.test-webapp-branch }}
-        working-directory: ladybug-test-webapp
-
-
       - name: Cache Frank!Runner dependencies - build
         uses: actions/cache@v3
         with:
@@ -203,25 +132,8 @@ jobs:
         run: ./restart.sh
         working-directory: frank-runner/specials/ladybug
 
-      - name: Copy .github/workflows/proxy.cicd.conf.json
-        if: ${{ github.event.inputs.useRealFrontend != 'true' }}
-        working-directory: ladybug-frontend
-        run: cp .github/workflows/proxy.cicd.conf.json src/proxy.conf.json
-      - name: Run cypress with chrome browser (bypass ladybug-frontend within backend)
+      - name: Run cypress with chrome browser
         uses: cypress-io/github-action@v6.6.0
-        if: ${{ github.event.inputs.useRealFrontend != 'true' }}
-        with:
-          working-directory: ladybug-frontend
-          install-command: pnpm install --frozen-lockfile
-          start: |
-            pnpm run ng serve ladybug
-          wait-on: "http://localhost:8090, http://localhost:4200"
-          wait-on-timeout: 1000
-          spec: ${{ matrix.selected-specs }}
-          browser: chrome
-      - name: Run cypress with chrome browser (production frontend that is included in backend)
-        uses: cypress-io/github-action@v6.6.0
-        if: ${{ github.event.inputs.useRealFrontend == 'true' }}
         with:
           working-directory: ladybug-frontend
           # Without this line, this GitHub Action tries to
