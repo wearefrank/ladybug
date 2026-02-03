@@ -1,0 +1,56 @@
+<ng-template #modal>
+  <div class="modal-header">
+    <h3 class="modal-title">Are you sure you want to save changes?</h3>
+    @if (! isConfirmClicked) {
+      <button type="button" class="close" (click)="activeModal?.close()">
+        <span>&times;</span>
+      </button>
+    }
+  </div>
+  <div class="modal-content">
+    @for (part of reportDifferences; track part.name) {
+      @if (part.originalValue || part.difference.length > 0) {
+        <div class="pb-3" data-cy-save-changes-modal>
+          <div class="text-center">{{ part.name }}</div>
+          <hr class="text-dark w-50">
+          <div class="row">
+            <div class="col">
+              <div class="text-center pt-2">Before</div>
+              <div class="changeBox text-left p-1 overflow-auto" [attr.data-cy-changes-form-before]="part.name"
+              >{{ part.originalValue }}
+              </div>
+            </div>
+            <div class="col text-right" [attr.data-cy-changes-form-after]="part.name">
+              <div class="text-center pt-2">After</div>
+              @if (part.colorDifferences) {
+                <div class="changeBox text-left p-1 overflow-auto">
+                  @for (chunk of part.difference; track chunk[1]) {
+                    <span [style.background-color]="getChunkColorForDifferenceModal(+chunk[0])">{{ chunk[1] }}</span>
+                  }
+                </div>
+              } @else {
+                <div class="changeBox text-left p-1 overflow-auto"
+                >{{ part.difference }}
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+      }
+    }
+  </div>
+  @if (isConfirmClicked) {
+    <div class="working">Working...</div>
+  } @else {
+    <div class="modal-footer">
+      <div class="col-md-12 text-center">
+        <button data-cy-difference-modal="confirm" type="button" class="btn btn-info mr-2" (click)="onClickConfirm()"
+        >Save
+        </button>
+        <button type="button" class="btn btn-info ml-2" (click)="closeModal()">Don't save</button>
+      </div>
+    </div>
+  }
+</ng-template>
+
+

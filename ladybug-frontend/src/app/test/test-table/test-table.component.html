@@ -1,0 +1,85 @@
+<div class="table-container">
+  <table data-cy-test="table" mat-table class="test-table" [dataSource]="reports">
+    <ng-container matColumnDef="select">
+      <th mat-header-cell class="table-row-checkbox" *matHeaderCellDef>
+        <input
+          data-cy-test="toggleSelectAll"
+          type="checkbox"
+          title="Select all rows"
+          [checked]="amountOfSelectedReports === reports.length && reports.length !== 0"
+          [disabled]="reports.length === 0"
+          (click)="toggleSelectAll()">
+      </th>
+      <td mat-cell class="table-row-checkbox" *matCellDef="let report">
+        <input type="checkbox" data-cy-test="selectOne" [checked]="report.checked" (click)="toggleCheck(report)">
+      </td>
+    </ng-container>
+    <ng-container matColumnDef="storageId">
+      <th mat-header-cell title="Storage Id" *matHeaderCellDef>Storage Id</th>
+      <td data-cy-test-table="storageId" mat-cell title="Storage Id" *matCellDef="let report">{{ report.storageId }}</td>
+    </ng-container>
+    <ng-container matColumnDef="run">
+      <th mat-header-cell title="Run/Open" *matHeaderCellDef>(Re)run/open</th>
+      <td mat-cell title="Run/Open" *matCellDef="let report">
+        <span class="buttons">
+          <button data-cy-test="runReport" title="Run report" class="btn btn-info button-width"
+                  (click)="runEvent.next(report)"><i class="fa fa-play"></i></button>
+          <button data-cy-test="openReport" title="Open report" class="btn btn-info button-width"
+                  (click)="openReport(report.storageId)"><i class="fa fa-folder-open"></i>
+          </button>
+        </span>
+      </td>
+    </ng-container>
+    <ng-container matColumnDef="name">
+      <th mat-header-cell *matHeaderCellDef>Name</th>
+      <td mat-cell *matCellDef="let report">
+        <span [ngClass]="{'path-highlight': report.fullPath} " (click)="changePath.next(report)">{{ report.fullPath }}</span><span
+        *ngIf="report.fullPath">&nbsp;</span>{{ report.name }}</td>
+    </ng-container>
+    <ng-container matColumnDef="description">
+      <th mat-header-cell *matHeaderCellDef>Description</th>
+      <td mat-cell *matCellDef="let report">{{ report.description }}</td>
+    </ng-container>
+    <ng-container matColumnDef="variables">
+      <th mat-header-cell *matHeaderCellDef>Variables</th>
+      <td mat-cell *matCellDef="let report">
+        @if (report.variables) {
+          <span data-cy-test="variables" style="white-space: pre-wrap;">{{ convertToKeyValueFormat(report.variables) }}</span>
+        }
+      </td>
+    </ng-container>
+    <ng-container matColumnDef="runResults">
+      <th mat-header-cell *matHeaderCellDef>Run result</th>
+      <td mat-cell *matCellDef="let report">
+        @if (report.reranReport; as reranReport) {
+          <span data-cy-test="runResult"
+                [id]="'runResult#' + report.storageId"
+                [style.color]="reranReport.color">
+                      {{ reranReport.resultString }}
+          </span>
+        }
+        @if (report.error) {
+          <span style="color: red">
+            {{ report.error }}
+          </span>
+        }
+      </td>
+    </ng-container>
+    <ng-container matColumnDef="options">
+      <th mat-header-cell *matHeaderCellDef>Options</th>
+      <td mat-cell *matCellDef="let report">
+        @if (report.reranReport) {
+          <span class="buttons">
+            <button data-cy-test="replaceReport" class="btn btn-info" title="Replace report"
+                    disabled (click)="replaceReport(report)">Replace</button>
+            <button data-cy-test="compareReport" class="btn btn-info" title="Compare"
+                    (click)="compareReports(report)">Compare</button>
+          </span>
+        }
+      </td>
+    </ng-container>
+
+    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+    <tr data-cy-test="tableRow" mat-row *matRowDef="let report; columns: displayedColumns;"></tr>
+  </table>
+</div>

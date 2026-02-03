@@ -1,0 +1,54 @@
+@if (anyAlertMessagesPresent && ReportUtil.isCheckPoint(report)) {
+  <div class="mb-2 mx-1">
+    @if (report.noCloseReceivedForStream) {
+      <div class="btn btn-static px-2">
+        No close received for stream
+      </div>
+    }
+    @if (report.streaming) {
+      <div class="btn btn-static px-2">
+        {{ report.waitingForStream ? 'Waiting for message to be' : 'Message is' }} captured asynchronously from
+        a {{ report.streaming.toLowerCase() }} stream
+      </div>
+    }
+
+    @if (report.message === null) {
+      <div class="btn btn-static px-2">
+        Message is null
+      </div>
+    }
+
+    @if (report.message === '') {
+      <div class="btn btn-static px-2">
+        Message is empty string
+      </div>
+    }
+
+    @if (report.stubbed) {
+      <div class="btn btn-static px-2">
+        Message is stubbed
+      </div>
+    }
+
+    @if (report.encoding && report.messageClassName) {
+      <div class="btn btn-static px-2 text-break">
+        Message of type {{ report.messageClassName }} is encoded to string using {{ report.encoding }}
+        @if (report.showConverted) {
+          <span>and displayed using Base64
+              decoded to byte array and byte array decoded to string using UTF-8 (toggle with Base64 button)</span>
+        }
+      </div>
+    }
+    @if (report.preTruncatedMessageLength > 0) {
+      <div class="btn btn-static px-2">
+        Message is truncated ({{ report.preTruncatedMessageLength - (report.message === null ? 0 : report.message.length) }} characters removed)
+      </div>
+    }
+
+    @if (report.stubNotFound) {
+      <div class="btn btn-static px-2">
+        Could not find stub message for {{ report.stubNotFound }}
+      </div>
+    }
+  </div>
+}

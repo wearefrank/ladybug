@@ -1,5 +1,7 @@
 /data
 \data
+/ladybug-frontend
+\ladybug-frontend
 /src/main/java/org/wearefrank/ladybug/xmldecoder/
 \src\main\java\org\wearefrank\ladybug\xmldecoder\
 /src/main/java/org/wearefrank/ladybug/util/CSVReader.java

@@ -1,0 +1,9 @@
+.changeBox {
+  border: solid 1px lightgrey;
+  white-space: pre-wrap;
+}
+
+.working {
+  padding: 10px;
+  font-size: 12px;
+}

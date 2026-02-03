@@ -1,0 +1,22 @@
+<ng-template #modal let-modal>
+  <div class="modal-header">
+    <h5 class="modal-title" id="cloneModal">{{ deleteQuestion }}</h5>
+    <button type="button" class="close" (click)="modal.dismiss()">
+      <span>&times;</span>
+    </button>
+  </div>
+  @if (!deleteAllReports) {
+    <div class="modal-body">
+      <ul>
+        @for (report of reports; track report.storageId) {
+          <li> [{{ report.storageId }}] {{ report.name }}</li>
+        }
+      </ul>
+    </div>
+  }
+  <div class="modal-footer">
+    <button data-cy-delete-modal="confirm" class="btn btn-info" id="confirmDeletion" (click)="deleteReports()">Yes</button>
+    <button class="btn btn-info" (click)="modal.dismiss()">No</button>
+  </div>
+
+</ng-template>

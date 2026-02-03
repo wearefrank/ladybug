@@ -1,0 +1,86 @@
+<div class="row h-100">
+  <div class="col-3 resizable-horizontal p-2 border-right">
+    <app-test-folder-tree (changeFolderEvent)="changeFilter($event)"></app-test-folder-tree>
+  </div>
+  <div class="col">
+    <div class="buttons pt-1">
+      <section class="buttons button-section">
+        <p class="button-section-title">General</p>
+        <button data-cy-test="refresh" class="btn btn-info" title="Reload test reports"
+                (click)="loadData()"><i class="fa fa-refresh"></i></button>
+        <button data-cy-test="settings" class="btn btn-info" title="Options" (click)="testSettingsModal.open()"><i class="fa fa-cog"></i>
+        </button>
+        <button data-cy-test="upload" type="button" class="btn btn-info" title="Upload"
+                (click)="uploadFileTest.click()">
+          <i class="fa fa-upload"></i>
+          <input [(ngModel)]="currentUploadFile" #uploadFileTest data-cy-test="uploadFile" type="file" [hidden]="true"
+                 (change)="uploadReport($event)">
+        </button>
+      </section>
+      <span class="button-divider">&#124;</span>
+      <section class="buttons button-section">
+        <p class="button-section-title">All</p>
+        <button class="btn btn-info" title="Reset" (click)="resetRunner()">Reset</button>
+        <button data-cy-test="deleteAll" class="btn btn-danger" title="Delete all" (click)="openDeleteModal(true)">Delete
+          all
+        </button>
+      </section>
+      <span class="button-divider">&#124;</span>
+      <section class="buttons button-section">
+        <p class="button-section-title">Selected</p>
+        <button data-cy-test="runAll" class="btn btn-info" title="Run selected reports" (click)="runSelected()"><i
+          class="fa fa-play"></i></button>
+        <button data-cy-test="deleteSelected" class="btn btn-danger" title="Delete selected reports"
+                (click)="openDeleteModal(false)"><i class="fa fa-trash"></i></button>
+        <button data-cy-test="copySelected" class="btn btn-info" title="Copy selected reports" (click)="copySelected()">
+          <i class="fa fa-copy"></i></button>
+        <button data-cy-test="downloadBinary" class="btn btn-info" title="Download report" (click)="downloadSelected()">
+          <i class="fa fa-download"></i></button>
+        @if (childrenLoaded && testTableComponent?.amountOfSelectedReports === 2) {
+          <button data-cy-test="compare" class="btn btn-info" title="Compare two selected reports"
+                  (click)="openCompareTab()">
+            Compare
+          </button>
+        }
+        @if (appVariablesService.getVariable('customReportActionButtonText') !== null) {
+          <button data-cy-test="customReportAction" class="btn btn-info" [title]="appVariablesService.getVariable('customReportActionButtonText')"
+                    (click)="processCustomReportAction()">
+              {{ appVariablesService.getVariable('customReportActionButtonText') }}
+          </button>
+        }
+      </section>
+      <span class="button-divider">&#124;</span>
+      <section class="buttons button-section">
+        <p class="button-section-title">One</p>
+        <button class="btn btn-info" title="Clone report" (click)="openCloneModal()">Clone</button>
+      </section>
+    </div>
+
+    <div class="form-group mt-2">
+      <label for="moveToInput">Move/Copy to:</label>
+      <form class="input-group" (ngSubmit)="updatePath()">
+        <input #moveToInput type="text" class="form-control mr-1 my-2 py-0" id="moveToInput" name="filter"
+               [ngModel]="currentFilter"/>
+        <button type="submit" class="btn btn-info my-2 mx-1 px-3" (click)="setUpdatePathAction('move')">Move</button>
+        <button type="submit" class="btn btn-info my-2 mx-1 px-3" (click)="setUpdatePathAction('copy')"><i
+          class="fa fa-copy"></i></button>
+      </form>
+    </div>
+
+    <p>Generator is {{ generatorEnabled|booleanToString: 'enabled':'disabled' }}</p>
+    @if (loading) {
+      <app-loading-spinner/>
+    } @else {
+      <app-test-table
+        [reports]="filteredReports" [currentFilter]="currentFilter"
+        [showStorageIds]="showStorageIds"
+        (changePath)="selectItemInFolderTree($event)"
+        (fullyLoaded)="childComponentsLoaded()" (runEvent)="run($event)">
+      </app-test-table>
+    }
+  </div>
+</div>
+
+<app-test-settings-modal (updateShowStorageIds)="updateShowStorageIds($event)"></app-test-settings-modal>
+<app-clone-modal (cloneReportEvent)="testReportsService.getReports()"></app-clone-modal>
+<app-delete-modal (confirmDeleteEvent)="deleteReports($event)"></app-delete-modal>

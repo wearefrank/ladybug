@@ -1,0 +1,36 @@
+#detailedErrorMessage {
+  overflow-wrap: break-word;
+}
+
+.toast-body {
+  bottom: 0;
+  right: 5px;
+  position: fixed;
+  z-index: 999;
+}
+
+.toast-location {
+  right: 5px;
+}
+
+.toast-location-offset {
+  right: 305px;
+}
+
+.close-icon {
+  position: absolute;
+  right: 0;
+  top: 0;
+  cursor: pointer;
+  font-size: 8pt;
+  padding: 0.25rem;
+
+  &:hover {
+    cursor: pointer;
+    color: white;
+  }
+}
+
+.user-selected-none {
+  user-select: none;
+}

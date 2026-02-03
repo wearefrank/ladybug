@@ -1,0 +1,55 @@
+@if (shouldShowFilter) {
+  <div data-cy-debug="filter-side-drawer" class="filter-vertical-panel" @removeTrigger>
+    <div class="panel-container">
+      <h1 class="h1 filter-label">Filter</h1>
+      <div class="filter-input-container">
+        @for (metadataName of metadataLabels; track metadataName) {
+          <div class="input-container">
+            <label data-cy-debug="filterLabel" class="metadata-input-label">{{ metadataName| shortenedTableHeader | titlecase }}</label>
+            <div class="metadata-input-container input-group">
+              <input
+                class="form-control"
+                type="text"
+                data-cy-debug="tableFilter"
+                [title]="getTooltipSuggestion(toKeyofReport(metadataName))"
+                [ngModel]="filterService.getCurrentFilterContext().get(metadataName)"
+                [matAutocomplete]="auto"
+                (ngModelChange)="updateFilter($event, metadataName)">
+              <div class="input-group-append input-group-append">
+                <button
+                  class="btn btn-sm btn-danger button-clear-text input-group-text"
+                  data-cy-debug="filterClearButton"
+                  (click)="removeFilter(metadataName)">
+                  Clear
+                </button>
+              </div>
+            </div>
+            <mat-autocomplete
+              #auto="matAutocomplete"
+              (optionSelected)="updateFilter($event.option.value, metadataName)">
+              @for (option of currentRecords.get(metadataName.toLocaleLowerCase()); track option) {
+                <mat-option
+                  class="filter-option"
+                  data-cy-debug="matAutocompleteOption"
+                  [value]="option">
+                  {{ option }}
+                </mat-option>
+              }
+            </mat-autocomplete>
+          </div>
+        }
+      </div>
+      <div class="btn-container">
+        <button class="close-filter-btn btn btn-info" data-cy-debug="close-filter-btn" (click)="closeFilter()">
+          Close
+        </button>
+        <button
+          class="clear-filter-btn btn btn-info"
+          data-cy-debug="clear-filter-btn"
+          (click)="filterService.resetFilter()">
+          Clear
+        </button>
+      </div>
+    </div>
+  </div>
+}

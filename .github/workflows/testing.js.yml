@@ -1,0 +1,259 @@
+name: Testing
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      useRealFrontend:
+        description: If true, test the frontend inside the backend
+        type: boolean
+        default: false
+        required: true
+      mergeMasterToBranch:
+        description: If true, the checkout-out backend is merged with the backend master
+        type: boolean
+        default: false
+        required: true
+      frontendCommitToCheckout:
+        description: Tag or branch of ladybug-frontend to check out - timestamp releases are not tagged
+        required: false
+      backendCommitToCheckout:
+        description: Tag or branch of the backend to test against
+        required: false
+      test-webapp-branch:
+        description: If set, checkout this branch of ladybug-test-webapp
+        required: false
+
+jobs:
+  testing:
+    strategy:
+      matrix:
+        include:
+          - spring-profile: none
+            selected-specs: cypress/e2e/no-profile/**
+          - spring-profile: storage.xml
+            selected-specs: cypress/e2e/storage-xml/**
+    name: Unit tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Echo inputs
+        run: echo "useRealFrontend=${{ github.event.inputs.useRealFrontend}}, mergeMasterToBranch=${{ github.event.inputs.mergeMasterToBranch}}, frontendCommitToCheckout=${{ github.event.inputs.frontendCommitToCheckout}}, backendCommitToCheckout=${{ github.event.inputs.backendCommitToCheckout }}"
+      - name: Show chosen Spring profile for backend and chosen specs to run
+        run: echo "Start backend with Spring profile ${{ matrix.spring-profile }} and run specs ${{ matrix.selected-specs }}"
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          path: ladybug-frontend
+      - name: Fetch all tags
+        if: ${{ github.event.inputs.frontendCommitToCheckout }}
+        run: git fetch --all --tags
+        working-directory: "ladybug-frontend"
+      - name: Checkout required version
+        if: ${{ github.event.inputs.frontendCommitToCheckout }}
+        run: git checkout ${{ github.event.inputs.frontendCommitToCheckout }}
+        working-directory: "ladybug-frontend"
+
+      - uses: pnpm/action-setup@v4
+        name: Install pnpm
+        with:
+          version: 9.4
+          run_install: false
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+          cache-dependency-path: 'ladybug-frontend/pnpm-lock.yaml'
+      - name: Get pnpm store directory
+        id: store-path
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_OUTPUT  
+      - uses: actions/cache@v4
+        name: Setup pnpm cache
+        with:
+          path: ${{ steps.store-path.outputs.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+      - name: Show pnpm version (before pnpm install)
+        run: pnpm -v
+        working-directory: ladybug-frontend
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+        working-directory: ladybug-frontend
+
+      - name: Install Cypress
+        run: npx cypress install
+        working-directory: ladybug-frontend
+
+      - uses: actions/cache@v4
+        name: Cache Cypress
+        with:
+          path: ~/.cache/Cypress
+          key: ${{ runner.os }}-cypress-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-cypress-
+
+      - name: Set Cypress environment variables
+        run: cp .github/workflows/cypress.env.json.cicd cypress.env.json
+        working-directory: ladybug-frontend
+
+      - name: Run linter
+        run: pnpm run lint
+        if: ${{ github.event.inputs.useRealFrontend != 'true' }}
+        working-directory: ladybug-frontend
+      - name: Run Karma tests
+        working-directory: ladybug-frontend
+        run: pnpm run test-headless
+      - name: Build project
+        run: pnpm run build
+        if: ${{ github.event.inputs.useRealFrontend != 'true' }}
+        working-directory: ladybug-frontend
+
+      - name: Checkout frank-runner
+        uses: actions/checkout@v2
+        with:
+          repository: wearefrank/frank-runner
+          path: frank-runner
+      - name: Set property to skip backend unit tests
+        run: echo "maven.skip.tests=true" > frank-runner/specials/ladybug/build.properties
+      - name: Set properties to skip backend Javadoc
+        run: echo "maven.skip.javadoc=true" >> frank-runner/specials/ladybug/build.properties
+      - name: Set property to skip checking licenses
+        run: echo "maven.skip.copyright=true" >> frank-runner/specials/ladybug/build.properties
+      - name: Choose Spring profile for backend if it is not "none"
+        run: echo "spring.profiles.active=${{ matrix.spring-profile }}" >> frank-runner/specials/ladybug/build.properties
+        if: ${{ matrix.spring-profile != 'none' }}
+      - name: Set port where ladybug-test-webapp is served
+        run: echo "tomcat.connector.port=8090" > frank-runner/build.properties
+      - name: Prevent Java exception about binding port 443 (for https)
+        run: echo "tomcat.secure.port=8443" >> frank-runner/build.properties
+      - name: Make script executable that starts backend
+        run: chmod a+x frank-runner/specials/ladybug/restart.sh
+
+      - name: Checkout ladybug
+        uses: actions/checkout@v2
+        with:
+          repository: wearefrank/ladybug
+          path: ladybug
+      - name: Fetch all tags of ladybug
+        if: ${{ github.event.inputs.backendCommitToCheckout }}
+        run: git fetch --all --tags
+        working-directory: "ladybug"
+      - name: Checkout required version of ladybug
+        if: ${{ github.event.inputs.backendCommitToCheckout }}
+        run: git checkout ${{ github.event.inputs.backendCommitToCheckout }}
+        working-directory: "ladybug"
+      - name: Merge backend with its master
+        if: ${{ github.event.inputs.mergeMasterToBranch == 'true' }}
+        run: git merge master
+        working-directory: "ladybug"
+      - name: Checkout ladybug-test-webapp
+        uses: actions/checkout@v2
+        with:
+          repository: wearefrank/ladybug-test-webapp
+          path: ladybug-test-webapp
+      - name: Fetch all tags of ladybug-test-webapp
+        if: ${{ github.event.inputs.test-webapp-branch }}
+        run: git fetch --all --tags
+        working-directory: ladybug-test-webapp
+      - name: Checkout required version of ladybug-test-webapp
+        if: ${{ github.event.inputs.test-webapp-branch }}
+        run: git checkout ${{ github.event.inputs.test-webapp-branch }}
+        working-directory: ladybug-test-webapp
+
+
+      - name: Cache Frank!Runner dependencies - build
+        uses: actions/cache@v3
+        with:
+          path: frank-runner/build
+          key: ${{ runner.os }}-frank-runner-build
+          restore-keys: |
+            ${{ runner.os }}-frank-runner-build
+      - name: Cache Frank!Runner dependencies - download
+        uses: actions/cache@v3
+        with:
+          path: frank-runner/download
+          key: ${{ runner.os }}-frank-runner-download
+          restore-keys: |
+            ${{ runner.os }}-frank-runner-download
+      - name: Cache Maven downloads
+        uses: actions/cache@v3
+        with:
+          path: ~/.m2/repository/
+          key: ${{ runner.os }}-maven
+          restore-keys: |
+            ${{ runner.os }}-maven
+      - name: Remove old Tomcat version to keep it out of cache
+        run: rm -rf frank-runner/download/apache-tomcat-9*; rm -rf frank-runner/build/apache-tomcat-9*;
+      - name: Show current time, allows you to check that logs are not old
+        run: date
+      - name: Remove old catalina.out
+        run: rm -rf frank-runner/build/apache-tomcat-9.0.56/logs/catalina.out
+
+      - name: Let Frank!Runner do its downloads
+        run: ./env.sh > installFrankRunnerEnv.log
+        working-directory: frank-runner
+
+      - name: Start server using Frank!Runner in background
+        run: ./restart.sh
+        working-directory: frank-runner/specials/ladybug
+
+      - name: Copy .github/workflows/proxy.cicd.conf.json
+        if: ${{ github.event.inputs.useRealFrontend != 'true' }}
+        working-directory: ladybug-frontend
+        run: cp .github/workflows/proxy.cicd.conf.json src/proxy.conf.json
+      - name: Run cypress with chrome browser (bypass ladybug-frontend within backend)
+        uses: cypress-io/github-action@v6.6.0
+        if: ${{ github.event.inputs.useRealFrontend != 'true' }}
+        with:
+          working-directory: ladybug-frontend
+          install-command: pnpm install --frozen-lockfile
+          start: |
+            pnpm run ng serve ladybug
+          wait-on: "http://localhost:8090, http://localhost:4200"
+          wait-on-timeout: 1000
+          spec: ${{ matrix.selected-specs }}
+          browser: chrome
+      - name: Run cypress with chrome browser (production frontend that is included in backend)
+        uses: cypress-io/github-action@v6.6.0
+        if: ${{ github.event.inputs.useRealFrontend == 'true' }}
+        with:
+          working-directory: ladybug-frontend
+          # Without this line, this GitHub Action tries to
+          # install dependencies without the --legacy-peer-deps option
+          install-command: pnpm install --frozen-lockfile
+          wait-on: "http://localhost:8090"
+          wait-on-timeout: 1000
+          spec: ${{ matrix.selected-specs }}
+          config: baseUrl=http://localhost:8090/ladybug
+          browser: chrome
+  
+      - name: Show files
+        run: tree -d -L 5 .
+        if: failure()
+
+      - name: Store logs
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: logs and videos ${{ matrix.spring-profile }}
+          path: | 
+            frank-runner/specials/ladybug/build.properties
+            frank-runner/build/*/logs/*
+            ladybug-frontend/cypress/screenshots/
+            ladybug-frontend/cypress/videos/
+            ladybug-frontend/cypress/firefox/screenshots/
+            ladybug-frontend/cypress/firefox/videos/
+
+      - name: Store logs
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: installFrankRunnerEnv ${{ matrix.spring-profile }}
+          path: | 
+            frank-runner/installFrankRunnerEnv.log

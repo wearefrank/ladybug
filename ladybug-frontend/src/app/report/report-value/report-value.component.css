@@ -1,0 +1,25 @@
+.variablesLabel {
+  vertical-align: top;
+}
+
+textarea {
+  height: 100px;
+}
+
+.is-invalid {
+  border-color: red;
+}
+
+#copyTransformationButton {
+  margin-left: 10px;
+  margin-bottom: 5px;
+}
+
+.monaco-area {
+  resize: vertical;
+  overflow: auto;
+}
+
+#reportXmlHeader {
+  margin-bottom: 8px;
+}

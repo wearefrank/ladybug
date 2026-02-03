@@ -1,0 +1,176 @@
+@import 'node_modules/bootstrap/dist/css/bootstrap.min.css';
+@import 'node_modules/bootstrap-icons/font/bootstrap-icons.css';
+
+body {
+  font-family:
+    'open sans', 'Helvetica Neue', Helvetica, Arial, sans-serif !important;
+  font-size: 0.7rem !important;
+  line-height: 1 !important;
+  background-color: #f3f3f4 !important;
+  position: relative;
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+}
+
+#ladybug-tabs {
+  display: flex;
+  flex-grow: 0;
+  flex-flow: column;
+  height: 99.5vh;
+  overflow: hidden;
+}
+
+.tab-content {
+  height: 100% !important;
+  min-height: 0 !important;
+}
+
+.tab-content > .active {
+  height: 100% !important;
+}
+
+.btn {
+  font-size: 0.7rem !important;
+}
+
+.form-control {
+  font-size: 0.7rem !important;
+}
+
+.input-group-text {
+  font-size: 0.7rem !important;
+}
+
+.transform-label {
+  font-size: 0.8rem;
+}
+
+.btn-info:hover,
+.btn-info:focus,
+.btn-info:active,
+.btn-info.active,
+.open .dropdown-toggle.btn-info,
+.btn-info:active:focus,
+.btn-info:active:hover,
+.btn-info.active:hover,
+.btn-info.active:focus {
+  background-color: #21b9bb;
+  border-color: #21b9bb;
+  outline: none !important;
+}
+
+.close {
+  outline: none !important;
+}
+
+.row {
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  background-color: white;
+}
+
+.btn-info {
+  border: 1px;
+  background-color: #1ab394 !important;
+  border-color: #1ab394 !important;
+}
+
+.btn-info:focus {
+  outline: none !important;
+  box-shadow: none !important;
+  background-color: #23c6c8 !important;
+}
+
+.btn-info:hover {
+  background-color: #23c6c8 !important;
+  border-color: #23c6c8 !important;
+}
+
+.btn-static {
+  background-color: white;
+  border: 1px solid lightgrey;
+  cursor: default !important;
+}
+
+.as-split-gutter {
+  flex-basis: 5px !important;
+}
+
+.modal-window {
+  z-index: 1000 !important;
+}
+
+.modal-backdrop {
+  z-index: 999 !important;
+}
+
+.w-fit {
+  width: fit-content;
+}
+
+.h-fit {
+  height: fit-content;
+}
+
+.icon-size {
+  font-size: 8pt;
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}
+
+[appCopiedTooltip] {
+  position: relative;
+}
+
+.icon-size {
+  font-size: 1rem;
+}
+
+.even {
+  color: black;
+}
+
+.odd {
+  color: gray;
+}
+
+.bold-icon {
+  -webkit-text-stroke: 0.3px;
+}
+
+.bolder-icon {
+  -webkit-text-stroke: 0.5px;
+}
+
+.scale-down {
+  scale: 0.9;
+}
+
+.red {
+  color: red;
+}
+
+.gap-1 {
+  gap: 0.5rem;
+}
+
+.gap-2 {
+  gap: 0.75rem;
+}
+
+.cdk-overlay-container {
+  z-index: 1100 !important; /* Ensure it is higher than the modal's z-index */
+}
+
+.button-divider {
+  font-size: 1rem;
+  margin: 0 0.5rem;
+  color: darkgrey;
+  user-select: none;
+}

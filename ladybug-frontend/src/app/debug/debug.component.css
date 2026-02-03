@@ -1,0 +1,29 @@
+:host {
+  height: 100%;
+}
+
+.box {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.top {
+  resize: vertical;
+  flex: 0 1 100px;
+}
+
+.bottom {
+  flex: 1 1 auto;
+  overflow-x: hidden;
+}
+
+.debug-tree {
+  flex: 0 1 auto;
+  height: 100%;
+}
+
+.as-split-gutter {
+  flex-basis: 3px !important;
+  background-color: blue !important;
+}

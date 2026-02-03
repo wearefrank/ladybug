@@ -1,0 +1,50 @@
+:host {
+  height: 100%;
+  --border-color: #dee2e6;
+}
+
+td {
+  border: 0;
+  vertical-align: middle;
+  height: fit-content;
+}
+
+tr {
+  line-height: 20px;
+  height: 100%;
+  border-bottom: 1px solid var(--border-color);
+  vertical-align: middle;
+}
+
+.buttons {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  width: fit-content;
+  align-items: center;
+  padding: 0.75rem 0;
+}
+
+.button-width {
+  width: 2.2rem;
+  height: 2rem;
+}
+
+button {
+  height: fit-content;
+}
+
+.button-section {
+  position: relative;
+}
+
+.button-section-title {
+  position: absolute;
+  top: 0;
+  color: grey;
+  width: 100%;
+  max-lines: 1;
+  font-size: 0.6rem;
+  text-align: center;
+}

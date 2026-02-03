@@ -1,0 +1,1 @@
+npx ng test --watch=false

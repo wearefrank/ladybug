@@ -1,0 +1,25 @@
+<div [style.height]="height + 'px'">
+  <app-report-buttons
+    [state$]="buttonStateSubject"
+    [originalCheckpointStubStrategy$]="originalCheckpointStubStrategySubject"
+    [originalReportStubStrategy$]="originalReportStubStrategySubject"
+    [reset$]="buttonComponentResetSubject"
+    [rerunResult$]="rerunResult$"
+    (reportCommand)="onButton($event)"
+    (checkpointStubStrategyChange)="onCheckpointStubStrategyChange($event)"
+    (reportStubStrategyChange)="onReportStubStrategyChange($event)"
+    (downloadRequest)="onDownload($event)">
+  </app-report-buttons>
+  <app-report-alert-message2 data-cy-report="alert-messages" [labels]="labels"></app-report-alert-message2>
+  @if (originalCheckpoint !== undefined && metadataTableVisible) {
+    <app-checkpoint-metadata-table [checkpoint]="originalCheckpoint"></app-checkpoint-metadata-table>
+  }
+  @if (originalCheckpoint !== undefined && messageContextTableVisible) {
+    <app-messagecontext-table [report]="asCheckpoint(originalCheckpoint)"/>
+  }
+  <app-monaco-editor data-cy-element-name="checkpointEditor" [options]="monacoOptions"
+    [editorContentRequest$]="editorContentsSubject" [readOnlyRequest$]="editorReadOnlySubject"
+    (actualEditorContentsChange)="onActualEditorContentsChanged($event)">
+  </app-monaco-editor>
+</div>
+<app-difference-modal (saveChangesEvent)="requestSave()"></app-difference-modal>

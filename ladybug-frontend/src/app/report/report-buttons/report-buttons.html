@@ -1,0 +1,110 @@
+<div data-cy-debug-editor="buttons" class="mb-2 mx-1 buttons">
+  @if (state.isCheckpoint) {
+    <section class="buttons button-section">
+      <p class="button-section-title">Checkpoint</p>
+      @if (state.saveAllowed) {
+      <button
+        data-cy-report="save"
+        class="btn btn-info"
+        title="Save"
+        (click)="save()"
+      ><i class="fa fa-save"></i></button>
+      }
+      <button
+        data-cy-report="prettify"
+        class="btn btn-info"
+        title="prettify"
+        (click)="prettify()"
+      >Prettify</button>
+      <button
+        data-cy-debug-editor="makeNull"
+        title="Make checkpoint value null"
+        class="btn btn-info"
+        (click)="makeNull()"
+      >Make null</button>
+      <button
+        data-cy-open-metadata-table
+        class="btn btn-info h-fit"
+        title="Open metadata table"
+        (click)="toggleMetadataTable()">
+        {{ metadataTableVisible|booleanToString:'Hide' :'Show' }} metadata
+      </button>
+      <button
+        data-cy-open-messagecontext-table
+        class="btn btn-info h-fit"
+        title="Open message context table"
+        (click)="toggleMessageContextTable()">
+        {{ messageContextTableVisible|booleanToString:'Hide' :'Show' }} messagecontext
+      </button>
+      <div class="w-fit mx-1 my-0">
+        <select data-cy-checkpoint-stub-strategy #checkpointStubStrategy id="checkpointStubStrategy" class="form-control" [(ngModel)]="currentCheckpointStubStrategyStr"
+                (ngModelChange)="onCheckpointStubStrategyChange($event)">
+          @for (stubOptionStr of StubStrategy.checkpoints; track stubOptionStr) {
+            <option [ngValue]="stubOptionStr" [selected]="currentCheckpointStubStrategyStr === stubOptionStr">{{ stubOptionStr }}</option>
+          }
+        </select>
+      </div>
+    </section>
+    <span class="button-divider">&#124;</span>
+  }
+  <section class="buttons button-section">
+    <p class="button-section-title">Report</p>
+    @if (state.isReport && state.saveAllowed) {
+    <button
+      data-cy-report="save"
+      class="btn btn-info"
+      title="Save"
+      (click)="save()"
+    ><i class="fa fa-save"></i></button>
+    }
+    <button
+      data-cy-debug-editor="copy"
+      class="btn btn-info"
+      title="Copy report to test tab"
+      (click)="copyReport()"
+    ><i class="fa fa-copy"></i></button>
+    <div ngbDropdown title="Download">
+      <button ngbDropdownToggle class="btn btn-info"><i class="fa fa-download px-2"></i><span
+        class="caret"></span></button>
+      <div ngbDropdownMenu>
+        <button ngbDropdownItem (click)="onDownload({ downloadReport: true, downloadXmlSummary: true})">Report & XML summary</button>
+        <button ngbDropdownItem (click)="onDownload({ downloadReport: false, downloadXmlSummary: true})">XML summary only</button>
+        <button ngbDropdownItem (click)="onDownload({ downloadReport: true, downloadXmlSummary: false})">Report only</button>
+      </div>
+    </div>
+    <button
+      data-cy-report="rerun"
+      class="btn btn-info"
+      [title]="'Rerun original report'"
+      (click)="rerun()"
+    >Rerun
+    </button>
+    @if (state.isReport) {
+      <button
+        data-cy-open-metadata-table
+        class="btn btn-info h-fit"
+        title="Open metadata table"
+        (click)="toggleMetadataTable()">
+        {{ metadataTableVisible|booleanToString:'Hide' :'Show' }} metadata
+      </button>
+    }
+    @if (appVariablesService.getVariable('customReportActionButtonText') !== null) {
+      <button data-cy-report-buttons="customReportAction" class="btn btn-info" [title]="appVariablesService.getVariable('customReportActionButtonText')"
+          (click)="processCustomReportAction()">
+        {{ appVariablesService.getVariable("customReportActionButtonText") }}
+    </button>
+    }
+    <div class="w-fit mx-1 my-0">
+      <select data-cy-report-stub-strategy #reportStubStrategy class="form-control"
+        [(ngModel)]="currentReportStubStrategy"
+        (ngModelChange)="onReportStubStrategyChange($event)">
+        @for (strategy of StubStrategy.report; track strategy) {
+          <option [ngValue]="strategy" [selected]="currentReportStubStrategy === strategy">{{ strategy }}</option>
+        }
+      </select>
+    </div>
+  </section>
+  @if (rerunResult) {
+    <div data-cy-report-buttons="rerunResult" class="rerun-result" [style.color]="rerunResult.equal ? 'green' : 'red'">{{ rerunResult.info }}</div>
+  }
+</div>

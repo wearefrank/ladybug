@@ -1,0 +1,21 @@
+.fa-info-circle:hover {
+  cursor: pointer;
+}
+
+.checkbox {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  /*margin: 0 1rem 0 0;*/
+  /*font-size: 10pt;*/
+  cursor: default !important;
+  height: fit-content;
+
+  > input {
+    margin-left: 0.25rem;
+  }
+
+  > label {
+    margin-bottom: 0;
+  }
+}

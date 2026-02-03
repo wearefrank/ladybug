@@ -1,0 +1,57 @@
+<div class="toast-body" [ngClass]="filterPanelVisible ? 'toast-location-offset' : 'toast-location'">
+  @for (toast of toasts; track toast) {
+    <div class="my-2" [attr.data-cy-toast]="toast.type">
+      <ngb-toast class="fade animate-show animate-hide position-relative"
+                 [ngClass]="{'user-selected-none': toast.detailed}"
+                 [class]="getToastClass(toast.type)"
+                 [autohide]="toast.type !== 'danger'"
+                 [delay]="toast.type === 'info' || toast.type ==='success' ? 3000 : toast.type ==='warning' || toast.type === 'long-success' ? 8000 : 0"
+                 (click)="toast.detailed ? showDetailedErrorMessages(toast) : null"
+                 (hidden)="close(toast)">
+        <i class="fa fa-close close-icon" (click)="close(toast)"></i>
+        <div class="d-flex flex-row align-items-center">
+          @switch (toast.type) {
+            @case ('info') {
+              <i class="bi bi-info-circle"></i>
+            }
+            @case ('success') {
+              <i class="fa fa-check"></i>
+            }
+            @case ('warning') {
+              <i class="fa fa-warning"></i>
+            }
+            @case ('danger') {
+              <i class="bi bi-x-octagon"></i>
+            }
+          }
+          <div class="ml-2 mr-4">{{ toast.message }}</div>
+          @if (toast.toastCallback) {
+            <button data-cy-toast="callback" class="btn btn-info" (click)="executeCallback(toast)">{{ toast.toastCallback.buttonText }}</button>
+          }
+        </div>
+        @if (toast.detailed) {
+          <span>
+            <br>
+            <i>Click to see a more detailed description</i>
+          </span>
+        }
+      </ngb-toast>
+    </div>
+  }
+</div>
+
+<ng-template #modal let-modal>
+  <div class="modal-header">
+    <h5 class="modal-title" id="settingsModal">{{ selected.message }}</h5>
+  </div>
+  <div class="modal-body text-wrap" id="detailedErrorMessage">
+    {{ selected.detailed }}
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-info" id="CopyToClipboard" title="Copy to Clipboard"
+            [cdkCopyToClipboard]="selected.detailed ?? ''"
+            (click)="copyToClipboard()">{{ justCopied ? 'Copied!' : 'Copy to clipboard' }}
+    </button>
+    <button type="button" class="btn btn-info" (click)="modal.dismiss();">Dismiss</button>
+  </div>
+</ng-template>

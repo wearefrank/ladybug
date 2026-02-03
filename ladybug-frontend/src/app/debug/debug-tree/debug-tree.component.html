@@ -1,0 +1,24 @@
+@if (tree && tree.items.length > 0) {
+  <div data-cy-debug-tree="buttons" class="button-row">
+    <button data-cy-debug-tree="closeAll" class="btn btn-info" title="Close All" (click)="closeEntireTree()">
+      <i class="fa fa-times"></i>
+    </button>
+    <button class="btn btn-info" title="Expand All" (click)="tree.expandAll()">
+      <i class="fa fa-expand"></i>
+    </button>
+    <button class="btn btn-info" title="Collapse All" (click)="tree.collapseAll()">
+      <i class="fa fa-compress"></i>
+    </button>
+    <input type="text" name="search" placeholder="&#xF002;" (keyup)="changeSearchTerm($event)"/>
+  </div>
+}
+<div class="m-1 mb-5">
+  <ng-simple-tree
+    #tree
+    data-cy-debug-tree="root"
+    childrenKey="checkpoints"
+    [pathAttribute]="['name', 'storageId', 'uid']"
+    [options]="treeOptions"
+    (itemSelected)="selectReportEvent.emit($event.originalValue)"
+  />
+</div>

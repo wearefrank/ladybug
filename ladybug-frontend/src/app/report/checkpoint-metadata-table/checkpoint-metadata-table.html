@@ -1,0 +1,47 @@
+<div class="d-flex flex-column mb-2">
+  <div class="title">Metadata:</div>
+  <div data-cy-metadata-table="table" class="metadata-table">
+    <div class="table-col first-table-col">
+      <div class="key">Name</div>
+      <div data-cy-metadata-table="reportname" class="value" [appCopyTooltip]="checkpoint.name">{{ checkpoint.name }}</div>
+    </div>
+    <div class="table-col">
+      <div class="key">Type</div>
+      <div class="value" [appCopyTooltip]="checkpoint.typeAsString">{{ checkpoint.typeAsString }}</div>
+    </div>
+    <div class="table-col">
+      <div class="key">Thread name</div>
+      <div class="value" [appCopyTooltip]="checkpoint.threadName">{{ checkpoint.threadName }}</div>
+    </div>
+    <div class="table-col">
+      <div class="key">Source class name</div>
+      <div class="value" [appCopyTooltip]="checkpoint.sourceClassName">{{ checkpoint.sourceClassName }}</div>
+    </div>
+    <div class="table-col">
+      <div class="key">Message class name</div>
+      <!-- TODO: Fix type mismatch, so that we can add the appCopyTooltip directive. Issue https://github.com/wearefrank/ladybug-frontend/issues/1127 -->
+      <div class="value">{{ this.checkpoint.messageClassName }}</div>
+    </div>
+    <div class="table-col">
+      <div class="key">CheckpointUID</div>
+      <div class="value" data-cy-metadata="checkpointUid" [appCopyTooltip]="checkpoint.uid">{{ checkpoint.uid }}</div>
+    </div>
+    <div class="table-col">
+      <div class="key">Level</div>
+      <div class="value" [appCopyTooltip]="checkpoint.level">{{ checkpoint.level }}</div>
+    </div>
+    <div class="table-col">
+      <div class="key">Encoding</div>
+      <!-- TODO: Fix type mismatch so that we can add the appCopyTooltip directive. Issue https://github.com/wearefrank/ladybug-frontend/issues/1127 -->
+      <div class="value">{{ checkpoint.encoding }}</div>
+    </div>
+    <div class="table-col">
+      <div class="key">Number of characters</div>
+      @if (checkpoint.message && checkpoint.message !== null && checkpoint.message.length > 0) {
+        <div class="value" [appCopyTooltip]="checkpoint.message.length">{{ checkpoint.message.length }}</div>
+      } @else {
+        <div class="value"></div>
+      }
+    </div>
+  </div>
+</div>

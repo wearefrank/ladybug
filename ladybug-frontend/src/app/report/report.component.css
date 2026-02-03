@@ -1,0 +1,17 @@
+:host {
+  height: 100%;
+  width: 100%;
+  background-color: white;
+}
+
+.split-size {
+  height: 95% !important;
+}
+
+textarea {
+  height: 100px;
+}
+
+.is-invalid {
+  border-color: red;
+}
