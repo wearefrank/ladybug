@@ -52,7 +52,7 @@ jobs:
 
       - name: Install Cypress
         run: npx cypress install
-        working-directory: ladybug-frontend
+        working-directory: ladybug/ladybug-frontend
 
       - uses: actions/cache@v4
         name: Cache Cypress
@@ -131,7 +131,7 @@ jobs:
       - name: Run cypress with chrome browser
         uses: cypress-io/github-action@v6.6.0
         with:
-          working-directory: ladybug-frontend
+          working-directory: ladybug/ladybug-frontend
           # Without this line, this GitHub Action tries to
           # install dependencies without the --legacy-peer-deps option
           install-command: pnpm install --frozen-lockfile
@@ -153,10 +153,10 @@ jobs:
           path: | 
             frank-runner/specials/ladybug/build.properties
             frank-runner/build/*/logs/*
-            ladybug-frontend/cypress/screenshots/
-            ladybug-frontend/cypress/videos/
-            ladybug-frontend/cypress/firefox/screenshots/
-            ladybug-frontend/cypress/firefox/videos/
+            ladybug/ladybug-frontend/cypress/screenshots/
+            ladybug/ladybug-frontend/cypress/videos/
+            ladybug/ladybug-frontend/cypress/firefox/screenshots/
+            ladybug/ladybug-frontend/cypress/firefox/videos/
 
       - name: Store logs
         uses: actions/upload-artifact@v4
