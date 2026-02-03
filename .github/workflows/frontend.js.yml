@@ -49,9 +49,6 @@ jobs:
           node-version: 20
           cache: 'pnpm'
           cache-dependency-path: 'ladybug/ladybug-frontend/pnpm-lock.yaml'
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-        working-directory: ladybug-frontend
 
       - name: Install Cypress
         run: npx cypress install
