@@ -1,0 +1,350 @@
+<!--  Received from Ali (20240503). Disabled some changes, see comments that start with PREVENT WARNING -->
+<databaseChangeLog
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+		http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.15.xsd">
+
+	<changeSet id="Create MESSAGES" author="Lenard van der Maas" >
+		<validCheckSum>8:d62efb55dd98d6b47709a677e65bbc57</validCheckSum>
+		<createTable tableName="MESSAGES">
+			<column name="ID" autoIncrement="true" type="BIGINT">
+				<constraints primaryKey="true" unique="true" nullable="false"/>
+			</column>
+			<!--Used to correlate all messages from input to output-->
+			<column name="CORRELATION_ID" type="varchar(128)"/>
+			<column name="COMPONENT" type="varchar(16)"/>
+			<column name="CHECKPOINT_NR" type="INT"/>
+			<column name="ENDPOINT_NAME" type="varchar(256)"/>
+			<column name="ENDPOINT_SEQ_NR" type="INT"/>
+			<column name="ACTION" type="varchar(16)"/>
+			<column name="TIMESTAMP" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+			<column name="MESSAGE" type="clob"/>
+			<!--Used to identify the position of this message in the pipeline-->
+			<column name="STATUS" type="varchar(16)" defaultValue="TODO"/>
+			<column name="COMPARE_STATUS" type="varchar(16)" defaultValue="TODO"/>
+			<column name="ALIGN_STATUS" type="varchar(16)" defaultValue="TODO"/>
+		</createTable>
+		<createSequence sequenceName="SEQ_MESSAGES"/>
+	</changeSet>
+
+	<!-- PREVENT WARNING (column already present in a previous changeSet)
+	<changeSet id="Add ENDPOINT_SEQ_NR to MESSAGES" author="Gerrit van Brakel" failOnError="false">
+		<addColumn tableName="MESSAGES">
+			<column name="ENDPOINT_SEQ_NR" type="INT"/>
+			<column name="ALIGN_STATUS" type="varchar(16)" defaultValue="TODO"/>
+		</addColumn>
+	</changeSet -->
+
+	<changeSet id="Add default value to STATUS" author="Lenard van der Maas" failOnError="false">
+		<addDefaultValue columnName="STATUS"
+			defaultValue="TODO"
+			tableName="MESSAGES"/>
+	</changeSet>
+
+	<!-- PREVENT WARNING (sequence already present in a previous changeSet)
+	<changeSet id="SEQ_MESSAGES" author="Lenard van der Maas" failOnError="false">
+		<comment>Set sequence for MESSAGES Table</comment>
+		<createSequence sequenceName="SEQ_MESSAGES"/>
+	</changeSet -->
+
+
+	<changeSet id="Create IDS" author="Lenard van der Maas">
+		<validCheckSum>8:839af190deab3e852442ca6b6d4e0642</validCheckSum>
+		<createTable tableName="IDS">
+			<!--Used to correlate all messages from input to output, and requests to responses-->
+			<column name="CORRELATION_ID" type="varchar(256)">
+				<constraints primaryKey="true" unique="true" nullable="false"/>
+			</column>
+			<column name="ORIGINAL_ID" type="varchar(256)"/>
+			<column name="TIMESTAMP" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+		</createTable>
+	</changeSet>
+
+	<!-- PREVENT WARNING (column already present in a previous changeSet)
+	<changeSet id="Add timestamp to IDS" author="Gerrit van Brakel" failOnError="false">
+		<addColumn tableName="IDS">
+			<column name="TIMESTAMP" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+		</addColumn>
+	</changeSet -->
+
+
+	<changeSet id="Add Index to view cases by timestamp, and match to messages" author="Gerrit van Brakel">
+		<createIndex tableName="IDS" indexName="IX_IDS_01">
+			<column name="TIMESTAMP"/>
+			<column name="CORRELATION_ID"/>
+		</createIndex>
+	</changeSet>
+
+	<!-- PREVENT WARNING (index to be removed not present in a previous changeSet)
+	<changeSet author="Ali Sihab Akcan" id="Drop index PK_MESSAGES_LADYBUG_1 no use">
+	    <preConditions onFail="MARK_RAN" onFailMessage="This index does not exist to be removed.">
+            <indexExists tableName="MESSAGES" indexName="PK_MESSAGES_LADYBUG_1"/>
+	    </preConditions>
+		<dropIndex indexName="PK_MESSAGES_LADYBUG_1" tableName="MESSAGES"/>
+	</changeSet>
+
+	<changeSet author="Ali Sihab Akcan" id="Drop index PK_MESSAGES_LADYBUG_2 no use">
+	    <preConditions onFail="MARK_RAN" onFailMessage="This index does not exist to be removed.">
+            <indexExists tableName="MESSAGES" indexName="PK_MESSAGES_LADYBUG_2"/>
+	    </preConditions>
+		<dropIndex indexName="PK_MESSAGES_LADYBUG_2" tableName="MESSAGES"/>
+	</changeSet>
+
+	<changeSet author="Ali Sihab Akcan" id="Drop index PK_MESSAGES_ID no use">
+	    <preConditions onFail="MARK_RAN" onFailMessage="This index does not exist to be removed.">
+            <indexExists tableName="MESSAGES" indexName="PK_MESSAGES_ID"/>
+	    </preConditions>
+		<dropIndex indexName="PK_MESSAGES_ID" tableName="MESSAGES"/>
+	</changeSet>
+
+	<changeSet author="Ali Sihab Akcan" id="Drop index PK_MESSAGES_COMPARE_STATUS no use">
+	    <preConditions onFail="MARK_RAN" onFailMessage="This index does not exist to be removed.">
+            <indexExists tableName="MESSAGES" indexName="PK_MESSAGES_COMPARE_STATUS"/>
+	    </preConditions>
+		<dropIndex indexName="PK_MESSAGES_COMPARE_STATUS" tableName="MESSAGES"/>
+	</changeSet>
+
+	<changeSet author="Ali Sihab Akcan" id="Drop index PK_MESSAGES_UPDATE_MESSAGE no use">
+	    <preConditions onFail="MARK_RAN" onFailMessage="This index does not exist to be removed.">
+            <indexExists tableName="MESSAGES" indexName="PK_MESSAGES_UPDATE_MESSAGE"/>
+	    </preConditions>
+		<dropIndex indexName="PK_MESSAGES_UPDATE_MESSAGE" tableName="MESSAGES"/>
+	</changeSet>
+
+	<changeSet author="Ali Sihab Akcan" id="Drop index PK_MESSAGES_GET_MATCH no use">
+	    <preConditions onFail="MARK_RAN" onFailMessage="This index does not exist to be removed.">
+            <indexExists tableName="MESSAGES" indexName="PK_MESSAGES_GET_MATCH"/>
+	    </preConditions>
+		<dropIndex indexName="PK_MESSAGES_GET_MATCH" tableName="MESSAGES"/>
+	</changeSet>
+
+	<changeSet author="Ali Sihab Akcan" id="Drop index PK_MESSAGES_LADYBUG_3 no use">
+	    <preConditions onFail="MARK_RAN" onFailMessage="This index does not exist to be removed.">
+            <indexExists tableName="MESSAGES" indexName="PK_MESSAGES_LADYBUG_3"/>
+	    </preConditions>
+		<dropIndex indexName="PK_MESSAGES_LADYBUG_3" tableName="MESSAGES"/>
+	</changeSet>
+
+	<changeSet author="Ali Sihab Akcan" id="Drop index PK_MESSAGES_LADYBUG_4 no use">
+	    <preConditions onFail="MARK_RAN" onFailMessage="This index does not exist to be removed.">
+            <indexExists tableName="MESSAGES" indexName="PK_MESSAGES_LADYBUG_4"/>
+	    </preConditions>
+		<dropIndex indexName="PK_MESSAGES_LADYBUG_4" tableName="MESSAGES"/>
+	</changeSet>
+
+	<changeSet author="Ali Sihab Akcan" id="Drop index PK_MESSAGES_LADYBUG_5 no use">
+	    <preConditions onFail="MARK_RAN" onFailMessage="This index does not exist to be removed.">
+            <indexExists tableName="MESSAGES" indexName="PK_MESSAGES_LADYBUG_5"/>
+	    </preConditions>
+		<dropIndex indexName="PK_MESSAGES_LADYBUG_5" tableName="MESSAGES"/>
+	</changeSet>
+
+	<changeSet author="Ali Sihab Akcan" id="Drop index PK_MESSAGES_DatabasePoller no use">
+	    <preConditions onFail="MARK_RAN" onFailMessage="This index does not exist to be removed.">
+            <indexExists tableName="MESSAGES" indexName="PK_MESSAGES_DatabasePoller"/>
+	    </preConditions>
+		<dropIndex indexName="PK_MESSAGES_DatabasePoller" tableName="MESSAGES"/>
+	</changeSet -->
+
+	<!-- Recreate indices -->
+
+	<changeSet id="Recreate Index for database poller to MESSAGES" author="Ali Sihab Akcan">
+		<createIndex tableName="MESSAGES" indexName="PK_MESSAGES_DatabasePoller">
+			<column name="CORRELATION_ID"/>
+			<column name="ENDPOINT_NAME"/>
+			<column name="ACTION"/>
+			<column name="COMPONENT"/>
+			<column name="ID"/>
+		</createIndex>
+	</changeSet>
+
+	<changeSet id="Add Index for StoreRequest to MESSAGES" author="Ali Sihab Akcan">
+		<createIndex tableName="MESSAGES" indexName="PK_MESSAGES_StoreRequest">
+			<column name="CORRELATION_ID"/>
+			<column name="COMPONENT"/>
+			<column name="ACTION"/>
+		</createIndex>
+	</changeSet>
+
+	<changeSet id="Add Index for DeleteSpecificRecords to MESSAGES" author="Ali Sihab Akcan">
+		<createIndex tableName="MESSAGES" indexName="PK_MESSAGES_DeleteSpecificRecords">
+			<column name="STATUS"/>
+			<column name="TIMESTAMP"/>
+		</createIndex>
+	</changeSet>
+
+	<changeSet id="Add Index for ChangeCheckpointNr to MESSAGES" author="Ali Sihab Akcan">
+		<createIndex tableName="MESSAGES" indexName="PK_MESSAGES_ChangeCheckpointNr">
+			<column name="CORRELATION_ID"/>
+			<column name="ENDPOINT_NAME"/>
+			<column name="COMPONENT"/>
+			<column name="ACTION"/>
+			<column name="CHECKPOINT_NR"/>
+			<column name="STATUS"/>
+		</createIndex>
+	</changeSet>
+
+	<changeSet id="Add Index for GetMatchingMessage to MESSAGES" author="Ali Sihab Akcan">
+		<createIndex tableName="MESSAGES" indexName="PK_MESSAGES_GetMatchingMessage">
+			<column name="CORRELATION_ID"/>
+			<column name="CHECKPOINT_NR"/>
+			<column name="COMPARE_STATUS"/>
+			<column name="COMPONENT"/>
+		</createIndex>
+	</changeSet>
+
+	<changeSet id="Add Index for POM_Metadata_query to MESSAGES" author="Ali Sihab Akcan">
+		<createIndex tableName="MESSAGES" indexName="PK_MESSAGES_POM_Metadata_query">
+			<column name="COMPONENT"/>
+			<column name="CORRELATION_ID"/>
+			<column name="ID"/>
+			<column name="CHECKPOINT_NR"/>
+			<column name="STATUS"/>
+			<column name="TIMESTAMP"/>
+		</createIndex>
+	</changeSet>
+
+	<!-- PREVENT WARNING (index to be removed not present in a previous changeSet)
+	<changeSet author="Ali Sihab Akcan" id="Drop index IX_MESSAGES_DoDiff_TableListener no use">
+		<preConditions onFail="MARK_RAN" onFailMessage="This index does not exist to be removed.">
+			<indexExists tableName="MESSAGES" indexName="IX_MESSAGES_DoDiff_TableListener"/>
+		</preConditions>
+		<dropIndex indexName="IX_MESSAGES_DoDiff_TableListener" tableName="MESSAGES"/>
+	</changeSet -->
+
+	<changeSet id="Recreate Index for DoDiff_TableListener to MESSAGES" author="Ali Sihab Akcan">
+		<createIndex tableName="MESSAGES" indexName="IX_MESSAGES_DoDiff_TableListener">
+			<column name="STATUS"/>
+			<column name="COMPARE_STATUS"/>
+			<column name="COMPONENT"/>
+			<column name="ID"/>
+		</createIndex>
+	</changeSet>
+
+	<changeSet id="Drop obsolete indices" author="Gerrit van Brakel" >
+		<dropIndex indexName="PK_MESSAGES_GetMatchingMessage" tableName="MESSAGES"/>
+		<dropIndex indexName="IX_MESSAGES_DoDiff_TableListener" tableName="MESSAGES"/>
+		<dropIndex indexName="PK_MESSAGES_StoreRequest" tableName="MESSAGES"/>
+	</changeSet>
+
+
+	<changeSet id="Indices for Endpoint_seq_nr" author="Gerrit van Brakel">
+		<createIndex tableName="MESSAGES" indexName="IX_MESSAGES_01">
+			<column name="CORRELATION_ID"/>
+			<column name="ENDPOINT_NAME"/>
+			<column name="ACTION"/>
+			<column name="COMPONENT"/>
+			<column name="ENDPOINT_SEQ_NR"/>
+		</createIndex>
+
+		<createIndex tableName="MESSAGES" indexName="IX_MESSAGES_02">
+			<column name="CORRELATION_ID"/>
+			<column name="ENDPOINT_NAME"/>
+			<column name="ACTION"/>
+			<column name="ENDPOINT_SEQ_NR"/>
+		</createIndex>
+	</changeSet>
+
+	<changeSet id="Indices for Ladybug Metadata" author="Gerrit van Brakel">
+		<createIndex tableName="MESSAGES" indexName="IX_MESSAGES_03">
+			<column name="CORRELATION_ID"/>
+			<column name="COMPONENT"/>
+			<column name="ID"/>
+		</createIndex>
+		<createIndex tableName="MESSAGES" indexName="IX_MESSAGES_04">
+			<column name="CORRELATION_ID"/>
+			<column name="COMPONENT"/>
+			<column name="STATUS"/>
+		</createIndex>
+	</changeSet>
+
+	<changeSet id="Index for Delete" author="Gerrit van Brakel">
+		<preConditions onFail="MARK_RAN" onFailMessage="This index exists no need to recreate">
+			<not>
+				<indexExists tableName="MESSAGES" indexName="IX_MESSAGES_05"/>
+			</not>
+		</preConditions>
+		<createIndex tableName="MESSAGES" indexName="IX_MESSAGES_05">
+			<column name="TIMESTAMP"/>
+		</createIndex>
+	</changeSet>
+
+	<changeSet id="Index DoDiff v2" author="Gerrit van Brakel">
+		<createIndex tableName="MESSAGES" indexName="IX_MESSAGES_08">
+			<column name="COMPARE_STATUS"/>
+			<column name="ID"/>
+		</createIndex>
+		<createIndex tableName="MESSAGES" indexName="IDX_MESSAGES_09">
+			<column name="CORRELATION_ID"/>
+			<column name="COMPONENT"/>
+			<column name="COMPARE_STATUS"/>
+		</createIndex>
+	</changeSet>
+
+	<!-- PREVENT WARNING (index to be removed not present in a previous changeSet)
+	<changeSet id="Drop obsolete IX_MESSAGES_06 index" author="Ali Sihab Akcan" >
+		<preConditions onFail="MARK_RAN" onFailMessage="Index does not exist">
+			<indexExists tableName="MESSAGES" indexName="IX_MESSAGES_06"/>
+		</preConditions>
+		<dropIndex indexName="IX_MESSAGES_06" tableName="MESSAGES"/>
+	</changeSet>
+
+	<changeSet id="Drop obsolete IX_MESSAGES_07 index" author="Ali Sihab Akcan" >
+		<preConditions onFail="MARK_RAN" onFailMessage="Index does not exist">
+			<indexExists tableName="MESSAGES" indexName="IX_MESSAGES_07"/>
+		</preConditions>
+		<dropIndex indexName="IX_MESSAGES_07" tableName="MESSAGES"/>
+	</changeSet -->
+
+
+<!--  
+	<changeSet id="All indices on MESSAGES" author="Gerrit van Brakel">
+		<createIndex tableName="MESSAGES" indexName="IDX_MESSAGES_01">
+			<column name="CORRELATION_ID"/>
+			<column name="ACTION"/>
+			<column name="ENDPOINT_NAME"/>
+			<column name="ENDPOINT_SEQ_NR"/>
+			<column name="CHECKPOINT_NR"/>
+		</createIndex>
+		<createIndex tableName="MESSAGES" indexName="IDX_MESSAGES_02">
+			<column name="CORRELATION_ID"/>
+			<column name="ACTION"/>
+			<column name="COMPONENT"/>
+			<column name="CHECKPOINT_NR"/>
+		</createIndex>
+		<createIndex tableName="MESSAGES" indexName="IDX_MESSAGES_03">
+			<column name="CORRELATION_ID"/>
+			<column name="CHECKPOINT_NR"/>
+		</createIndex>
+		<createIndex tableName="MESSAGES" indexName="IDX_MESSAGES_04">
+			<column name="TIMESTAMP"/>
+		</createIndex>
+		<createIndex tableName="MESSAGES" indexName="IDX_MESSAGES_05">
+			<column name="STATUS"/>
+			<column name="TIMESTAMP"/>
+		</createIndex>
+		<createIndex tableName="MESSAGES" indexName="IDX_MESSAGES_06">
+			<column name="COMPARE_STATUS"/>
+			<column name="ID"/>
+		</createIndex>
+		<createIndex tableName="MESSAGES" indexName="IDX_MESSAGES_07">
+			<column name="CORRELATION_ID"/>
+			<column name="COMPONENT"/>
+			<column name="COMPARE_STATUS"/>
+		</createIndex>
+	</changeSet>
+-->
+
+	<changeSet id="Convert Compare status" author="Gerrit van Brakel">
+		<sql>update MESSAGES set COMPARE_STATUS='none' WHERE COMPARE_STATUS='READY' AND COMPONENT='tibco'</sql>
+	</changeSet>
+
+	<changeSet id="increase length for CORRELATION_ID in MESSAGES table" author="Ali Sihab Akcan">
+		<modifyDataType
+			columnName="CORRELATION_ID"
+			newDataType="varchar(256)"
+			tableName="MESSAGES"/>
+	</changeSet>
+
+</databaseChangeLog>

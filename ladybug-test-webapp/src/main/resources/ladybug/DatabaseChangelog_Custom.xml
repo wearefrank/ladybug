@@ -1,0 +1,25 @@
+<databaseChangeLog
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.26.xsd"
+	>
+
+	<!-- Test adding custom column to LADYBUG table -->
+	<changeSet id="LadybugCustom:1" author="Jaco de Groot">
+		<comment>Add custom column to table LADYBUG</comment>
+		<addColumn tableName="LADYBUG">
+			<column name="CUSTOM" type="VARCHAR(255)"/>
+		</addColumn>
+	</changeSet>
+
+	<include file="ladybug/DatabaseChangelog_ProofOfMigration.xml" errorIfMissing="false"/>
+
+	<changeSet id="Insert test data into table MESSAGES" author="Jaco de Groot">
+		<loadData file="ladybug/DatabaseChangelog_ProofOfMigration.csv" tableName="MESSAGES"/>
+	</changeSet>
+
+	<changeSet id="Insert test data into table IDS" author="Jaco de Groot">
+		<loadData file="ladybug/DatabaseChangelog_ProofOfMigrationIds.csv" tableName="IDS"/>
+	</changeSet>
+
+</databaseChangeLog>
