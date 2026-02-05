@@ -1,0 +1,33 @@
+input[type='text'] {
+  width: 30px;
+  height: 30px;
+  box-sizing: border-box;
+  border: 2px solid #ccc;
+  border-radius: 4px;
+  font-size: 16px;
+  background-color: white;
+  font-family: FontAwesome;
+  background-position: 10px 10px;
+  background-repeat: no-repeat;
+  -webkit-transition: width 0.4s ease-in-out;
+  transition: width 0.4s ease-in-out;
+}
+
+input[type='text']:focus {
+  width: 30%;
+}
+
+.button-row {
+  position: sticky;
+  display: flex;
+  width: 100%;
+  flex-direction: row;
+  align-items: center;
+  margin: 0 0.25rem 0.5rem 0;
+  gap: 0 0.25rem;
+  top: 0;
+  padding: 0.25rem;
+  /*padding-bottom: 0.25rem;*/
+  background-color: white;
+  z-index: 10;
+}

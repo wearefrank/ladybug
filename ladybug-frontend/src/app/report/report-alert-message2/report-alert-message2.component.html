@@ -1,0 +1,54 @@
+@if (labels !== undefined) {
+  <div class="mb-2 mx-1">
+    @if (labels.isReadOnly) {
+      <div class="btn btn-static px-2" title="You can edit but not save this form">
+        Read only
+      </div>
+    }
+
+    @if (labels.isEdited) {
+      <div class="btn btn-static px-2">
+        Edited
+      </div>
+    }
+
+    @if (labels.isMessageNull) {
+      <div class="btn btn-static px-2">
+        Message is null
+      </div>
+    }
+
+    @if (labels.isMessageEmpty) {
+      <div class="btn btn-static px-2">
+        Message is empty string
+      </div>
+    }
+
+    @if (labels.stubbed) {
+      <div class="btn btn-static px-2">
+        Message is stubbed
+      </div>
+    }
+
+    @if (labels.encoding !== undefined) {
+      @if (labels.messageClassName) {
+        <div class="btn btn-static px-2 text-break">
+          Message of type {{ labels.messageClassName }} is encoded to string using {{ labels.encoding }}
+        </div>
+      } @else {
+        Message is encoded to string using {{ labels.encoding }}
+      }
+    }
+    @if (labels.charactersRemoved > 0) {
+      <div class="btn btn-static px-2">
+        Message is truncated ({{ labels.charactersRemoved }} characters removed)
+      </div>
+    }
+
+    @if (labels.stubNotFound) {
+      <div class="btn btn-static px-2">
+        Could not find stub message for {{ labels.stubNotFound }}
+      </div>
+    }
+  </div>
+}

@@ -1,0 +1,4 @@
+<div class="trees-container row col-12 p-2">
+  <ng-simple-tree #leftTree class="w-50 h-fit" [options]="leftTreeOptions" (click)="syncTrees('left')"/>
+  <ng-simple-tree #rightTree class="w-50 h-fit" [options]="rightTreeOptions" (click)="syncTrees('right')"/>
+</div>

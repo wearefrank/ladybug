@@ -1,0 +1,65 @@
+.filter-vertical-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  height: 100%;
+  width: 300px;
+  background-color: #f0f0f0;
+  box-shadow: 0 0 8px 1px gray;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+}
+
+.panel-container {
+  position: relative;
+  height: 100%;
+}
+
+.filter-input-container {
+  margin: 1rem 1rem;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 4;
+  overflow-y: auto;
+  max-height: 800px;
+  height: 80%;
+}
+
+.input-container {
+  display: flex;
+  flex-direction: column;
+  margin: 0.6rem;
+}
+
+.btn-container {
+  display: flex;
+  width: calc(100% - 2rem);
+  justify-content: space-between;
+  margin: 1rem;
+  position: absolute;
+  bottom: 0;
+  z-index: 5;
+}
+
+.filter-label {
+  margin-left: 1rem;
+  margin-top: 1rem;
+  font-size: 1.5rem;
+  text-decoration: underline;
+}
+
+.metadata-input-label {
+  font-weight: bold;
+  font-size: 0.9rem;
+}
+
+.metadata-input-container {
+  display: flex;
+}
+
+.filter-option {
+  font-size: 0.9rem;
+  word-break: break-all;
+  border-bottom: 1px solid lightgray;
+}

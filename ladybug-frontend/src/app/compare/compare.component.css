@@ -1,0 +1,33 @@
+#container {
+  display: flex;
+  flex-direction: column;
+  background-color: white;
+  height: 94vh;
+}
+
+.compare-header {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  height: 50px;
+  border-bottom: 1px solid #dee2e6;
+
+  & > label {
+    margin: 0;
+  }
+}
+
+.trees {
+  resize: vertical;
+  overflow: auto;
+}
+
+.text-diff-container {
+  border-top: 1px solid #dee2e6;
+  padding-top: 1.25rem;
+  height: 100%;
+}
+
+.diff-editor {
+  height: 100%;
+}

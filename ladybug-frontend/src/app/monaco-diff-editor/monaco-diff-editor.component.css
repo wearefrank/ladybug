@@ -1,0 +1,9 @@
+:host {
+  height: 100%;
+  resize: vertical;
+  overflow: auto;
+}
+
+.diff-editor {
+  height: 100%;
+}

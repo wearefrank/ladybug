@@ -1,0 +1,6 @@
+{
+  "/api": {
+    "target": "http://localhost/ladybug",
+    "secure": false
+  }
+}

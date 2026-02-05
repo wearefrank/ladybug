@@ -1,0 +1,21 @@
+<div class="d-flex flex-column mb-2">
+  <div class="title">Metadata:</div>
+  <div data-cy-metadata-table="table" class="metadata-table">
+    <div class="table-col">
+      <div class="key">StorageId</div>
+      <div class="value" data-cy-metadata="storageId" [appCopyTooltip]="report.storageId">{{ report.storageId }}</div>
+    </div>
+    <div class="table-col">
+      <div class="key">Storage</div>
+      <div class="value" [appCopyTooltip]="report.storageName">{{ report.storageName }}</div>
+    </div>
+    <div class="table-col">
+      <div class="key">Estimated memory usage</div>
+      <div class="value" [appCopyTooltip]="report.estimatedMemoryUsage">{{ report.estimatedMemoryUsage }}</div>
+    </div>
+    <div class="table-col">
+      <div class="key">CorrelationId</div>
+      <div class="value" [appCopyTooltip]="report.correlationId">{{ report.correlationId }}</div>
+    </div>
+  </div>
+</div>

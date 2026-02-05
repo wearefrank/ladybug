@@ -24,7 +24,7 @@
     <dependency>
       <groupId>org.wearefrank</groupId>
       <artifactId>ladybug-frontend</artifactId>
-      <version>${frontend.version}</version>
+      <version>${revision}</version>
     </dependency>
     <dependency>
       <groupId>jakarta.servlet</groupId>

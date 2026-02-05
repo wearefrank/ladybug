@@ -1,5 +1,9 @@
 /data
 \data
+/ladybug-frontend
+\ladybug-frontend
+/.husky
+\.husky
 /src/main/java/org/wearefrank/ladybug/xmldecoder/
 \src\main\java\org\wearefrank\ladybug\xmldecoder\
 /src/main/java/org/wearefrank/ladybug/util/CSVReader.java

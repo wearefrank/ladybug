@@ -1,0 +1,13 @@
+<div class="d-flex flex-column mb-2" data-cy-messagecontext-table="table">
+  @if (messageContextData.length > 0) {
+    <div class="title">MessageContext:</div>
+    <div class="metadata-table">
+        @for (entry of messageContextData; track entry[0]) {
+        <div class="table-col first-table-col">
+          <div class="key">{{ entry[0] }}</div>
+          <div data-cy-messagecontext-table="value" class="value" [appCopyTooltip]="entry[1]">{{ entry[1] }}</div>
+        </div>
+        }
+    </div>
+  }
+</div>

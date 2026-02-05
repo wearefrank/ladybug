@@ -1,0 +1,46 @@
+.nav-link {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.nav-link,
+.nav-link a {
+  color: #a7b1c2;
+}
+
+.nav-link.active,
+.nav-link.active a {
+  color: #495057;
+}
+
+a:hover {
+  text-decoration: none;
+}
+
+.nav-item:hover {
+  background-color: rgba(255, 255, 255, 0.9) !important;
+}
+
+.close-tab {
+  font-size: 11pt;
+  margin-left: 0.25rem;
+  margin-right: -0.6375rem;
+
+  &:hover {
+    cursor: pointer;
+    color: red;
+  }
+}
+
+.version {
+  margin: auto 0.25rem auto auto;
+  display: flex;
+  gap: 0.25rem;
+  align-items: center;
+}
+
+.mascot {
+  width: 1.2rem;
+  height: 1.2rem;
+}

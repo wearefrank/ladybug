@@ -1,0 +1,13 @@
+@if (activeFilters) {
+  <div class="d-flex flex-row">
+    @for (filter of activeFilters | dictionary; track filter; let isFirst = $first) {
+        @if (filter.value !== '') {
+          <span class="filter-container d-flex align-items-center rounded-pill px-3 py-2 text-white "
+                [title]="'Active filter for ' + filter.key"
+                [ngClass]="{'ml-1': !isFirst}">
+          {{ filter.key|titlecase }}: {{ filter.value }}
+          </span>
+        }
+    }
+  </div>
+}

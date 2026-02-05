@@ -1,0 +1,167 @@
+name: Testing
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+jobs:
+  frontend:
+    strategy:
+      matrix:
+        include:
+          - spring-profile: none
+            selected-specs: cypress/e2e/no-profile/**
+          - spring-profile: storage.xml
+            selected-specs: cypress/e2e/storage-xml/**
+    name: Cypress tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Show chosen Spring profile for backend and chosen specs to run
+        run: echo "Start backend with Spring profile ${{ matrix.spring-profile }} and run specs ${{ matrix.selected-specs }}"
+      - name: Checkout ladybug
+        uses: actions/checkout@v2
+        with:
+          repository: wearefrank/ladybug
+          path: ladybug
+      - uses: pnpm/action-setup@v4
+        name: Install pnpm
+        with:
+          version: 9.4
+          run_install: false
+      - name: Get pnpm store directory
+        id: store-path
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_OUTPUT  
+      - uses: actions/cache@v4
+        name: Setup pnpm cache
+        with:
+          path: ${{ steps.store-path.outputs.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+      - name: Show pnpm version (before pnpm install)
+        run: pnpm -v
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+          cache-dependency-path: 'ladybug/ladybug-frontend/pnpm-lock.yaml'
+
+      - name: Install Cypress
+        run: npx cypress install
+        working-directory: ladybug/ladybug-frontend
+
+      - uses: actions/cache@v4
+        name: Cache Cypress
+        with:
+          path: ~/.cache/Cypress
+          key: ${{ runner.os }}-cypress-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-cypress-
+
+      - name: Set Cypress environment variables
+        run: cp .github/workflows/cypress.env.json.cicd ladybug-frontend/cypress.env.json
+        working-directory: ladybug
+
+      - name: Checkout frank-runner
+        uses: actions/checkout@v2
+        with:
+          repository: wearefrank/frank-runner
+          path: frank-runner
+      - name: Set property to skip backend unit tests
+        run: echo "maven.skip.tests=true" > frank-runner/specials/ladybug/build.properties
+      - name: Set properties to skip backend Javadoc
+        run: echo "maven.skip.javadoc=true" >> frank-runner/specials/ladybug/build.properties
+      - name: Set property to skip checking licenses
+        run: echo "maven.skip.copyright=true" >> frank-runner/specials/ladybug/build.properties
+      - name: Choose Spring profile for backend if it is not "none"
+        run: echo "spring.profiles.active=${{ matrix.spring-profile }}" >> frank-runner/specials/ladybug/build.properties
+        if: ${{ matrix.spring-profile != 'none' }}
+      - name: Set port where ladybug-test-webapp is served
+        run: echo "tomcat.connector.port=8090" > frank-runner/build.properties
+      - name: Prevent Java exception about binding port 443 (for https)
+        run: echo "tomcat.secure.port=8443" >> frank-runner/build.properties
+      - name: Make script executable that starts backend
+        run: chmod a+x frank-runner/specials/ladybug/restart.sh
+
+      - name: Checkout ladybug-test-webapp
+        uses: actions/checkout@v2
+        with:
+          repository: wearefrank/ladybug-test-webapp
+          path: ladybug-test-webapp
+      - name: Cache Frank!Runner dependencies - build
+        uses: actions/cache@v3
+        with:
+          path: frank-runner/build
+          key: ${{ runner.os }}-frank-runner-build
+          restore-keys: |
+            ${{ runner.os }}-frank-runner-build
+      - name: Cache Frank!Runner dependencies - download
+        uses: actions/cache@v3
+        with:
+          path: frank-runner/download
+          key: ${{ runner.os }}-frank-runner-download
+          restore-keys: |
+            ${{ runner.os }}-frank-runner-download
+      - name: Cache Maven downloads
+        uses: actions/cache@v3
+        with:
+          path: ~/.m2/repository/
+          key: ${{ runner.os }}-maven
+          restore-keys: |
+            ${{ runner.os }}-maven
+      - name: Remove old Tomcat version to keep it out of cache
+        run: rm -rf frank-runner/download/apache-tomcat-9*; rm -rf frank-runner/build/apache-tomcat-9*;
+      - name: Show current time, allows you to check that logs are not old
+        run: date
+      - name: Remove old catalina.out
+        run: rm -rf frank-runner/build/apache-tomcat-9.0.56/logs/catalina.out
+
+      - name: Let Frank!Runner do its downloads
+        run: ./env.sh > installFrankRunnerEnv.log
+        working-directory: frank-runner
+
+      - name: Start server using Frank!Runner in background
+        run: ./restart.sh
+        working-directory: frank-runner/specials/ladybug
+
+      - name: Run cypress with chrome browser
+        uses: cypress-io/github-action@v6.6.0
+        with:
+          working-directory: ladybug/ladybug-frontend
+          # Without this line, this GitHub Action tries to
+          # install dependencies without the --legacy-peer-deps option
+          install-command: pnpm install --frozen-lockfile
+          wait-on: "http://localhost:8090"
+          wait-on-timeout: 1000
+          spec: ${{ matrix.selected-specs }}
+          config: baseUrl=http://localhost:8090/ladybug
+          browser: chrome
+  
+      - name: Show files
+        run: tree -d -L 5 .
+        if: failure()
+
+      - name: Store logs
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: logs and videos ${{ matrix.spring-profile }}
+          path: | 
+            frank-runner/specials/ladybug/build.properties
+            frank-runner/build/*/logs/*
+            ladybug/ladybug-frontend/cypress/screenshots/
+            ladybug/ladybug-frontend/cypress/videos/
+            ladybug/ladybug-frontend/cypress/firefox/screenshots/
+            ladybug/ladybug-frontend/cypress/firefox/videos/
+
+      - name: Store logs
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: installFrankRunnerEnv ${{ matrix.spring-profile }}
+          path: | 
+            frank-runner/installFrankRunnerEnv.log

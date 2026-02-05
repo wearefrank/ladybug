@@ -1,0 +1,114 @@
+.table-container {
+  resize: vertical;
+  overflow: auto;
+  height: 31vh;
+}
+
+.highlight {
+  filter: brightness(85%);
+}
+
+.upload {
+  display: none;
+}
+
+.table-wrapper {
+  width: 100% !important;
+  flex-flow: column;
+  height: 100%;
+}
+
+th {
+  padding: 0 0 0 0;
+}
+
+.table-col:hover {
+  cursor: pointer;
+  filter: brightness(85%);
+}
+
+.table-row-checkbox {
+  display: table-cell;
+  flex-direction: row;
+  justify-content: center;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.header-padding {
+  padding-top: 0.125rem;
+  padding-bottom: 0.125rem;
+  border-top: 0;
+  border-bottom-width: 1px;
+}
+
+.table-cell {
+  width: fit-content;
+  vertical-align: middle;
+}
+
+.header-cell > div {
+  margin: 0 auto auto 0;
+}
+
+.filter-header {
+  vertical-align: middle;
+  padding-right: 0.25rem;
+}
+
+.vertical-middle {
+  vertical-align: middle;
+}
+
+.input-field {
+  width: 4rem;
+}
+
+.input-group-container {
+  width: auto;
+}
+
+.filter-option {
+  height: fit-content;
+
+  > span {
+    font-size: 9pt;
+  }
+}
+
+.progress-report-timeout {
+  color: red;
+  margin: 0;
+  width: fit-content;
+}
+
+.alert-danger {
+  margin-bottom: 0;
+}
+
+.mat-mdc-header-row {
+  height: auto;
+  font-size: inherit;
+}
+
+.mat-mdc-row {
+  height: auto;
+  font-size: inherit;
+}
+
+td.mat-mdc-cell {
+  border: none;
+}
+
+.button-row {
+  margin: 0.25rem 0.25rem 0.75rem 0.25rem;
+}
+
+.button-row,
+.progress-buttons {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.25rem 0.375rem;
+  flex-wrap: wrap;
+}

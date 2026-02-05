@@ -1,0 +1,7 @@
+<select #dropdown data-cy-change-view-dropdown class="form-control" (change)="changeView(+dropdown.value)">
+  @for (view of views; track view.name; let index = $index) {
+    <option [style.width]="viewDropdownBoxWidth" [selected]="currentView.name === view.name"
+            [value]="index">{{ view.name }}
+    </option>
+  }
+</select>

@@ -1,0 +1,40 @@
+.buttons {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  width: fit-content;
+  align-items: center;
+  padding-top: 0.75rem;
+}
+
+.button-width {
+  width: 2.2rem;
+  height: 2rem;
+}
+
+button {
+  height: fit-content;
+}
+
+.button-section {
+  position: relative;
+}
+
+.button-section-title {
+  position: absolute;
+  top: 0;
+  color: grey;
+  width: 100%;
+  max-lines: 1;
+  font-size: 0.6rem;
+  text-align: center;
+}
+
+/* Border color and padding were copied from elsewhere using F12 and inspect */
+.rerun-result {
+  padding: .375rem .75rem;
+  font-size: 10pt;
+  width: fit-content;
+  border: 1pt solid #ced4da;
+}

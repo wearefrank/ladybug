@@ -1,0 +1,77 @@
+td {
+  border: 0;
+  vertical-align: middle;
+  font-size: 11px;
+  max-width: 40rem;
+  word-wrap: break-word;
+}
+
+.mat-mdc-row:hover {
+  background-color: #eeeeee;
+}
+
+tr {
+  line-height: 20px;
+  height: 100%;
+  border-bottom: 1px solid var(--border-color);
+  vertical-align: middle;
+}
+
+.buttons {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  width: fit-content;
+}
+
+.button-width {
+  width: 2.2rem;
+  height: 2rem;
+}
+
+button {
+  height: fit-content;
+}
+
+.table-container {
+  overflow: auto;
+  height: 80vh;
+}
+
+.test-table td {
+  padding-bottom: 0.75rem;
+  padding-top: 0.75rem;
+}
+
+.test-table th {
+  padding-bottom: 0.25rem;
+  padding-top: 0.25rem;
+  text-align: left;
+  vertical-align: middle;
+}
+
+thead {
+  width: 100% !important;
+}
+
+.table-row-checkbox {
+  text-align: center;
+  vertical-align: middle;
+  width: 1rem;
+}
+
+.test-table {
+  table-layout: fixed;
+}
+
+.path-highlight {
+  background-color: #fdc300;
+  border-radius: 5px;
+  padding: 0.25rem;
+  cursor: pointer;
+
+  &:hover {
+    background-color: rgba(253, 195, 0, 0.6);
+  }
+}

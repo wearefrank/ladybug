@@ -1,0 +1,7 @@
+.filter-container {
+  background-color: rgba(26, 179, 148);
+}
+
+div:hover {
+  cursor: pointer;
+}
