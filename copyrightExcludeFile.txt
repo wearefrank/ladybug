@@ -4,6 +4,8 @@
 \ladybug-frontend
 /.husky
 \.husky
+/src/main/webapp/
+\src\main\webapp\
 /src/main/java/org/wearefrank/ladybug/xmldecoder/
 \src\main\java\org\wearefrank\ladybug\xmldecoder\
 /src/main/java/org/wearefrank/ladybug/util/CSVReader.java
