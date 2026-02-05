@@ -1,5 +1,5 @@
 /*
-   Copyright 2021, 2024 WeAreFrank!
+   Copyright 2021, 2024, 2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,15 +20,14 @@ import java.lang.invoke.MethodHandles;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.wearefrank.ladybug.web.FrontendServlet;
+import org.wearefrank.ladybug.web.jaxrs.ApiServlet;
 
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletContextEvent;
 import jakarta.servlet.ServletContextListener;
 import jakarta.servlet.ServletRegistration;
 import jakarta.servlet.annotation.WebListener;
-
-import org.wearefrank.ladybug.web.jaxrs.ApiServlet;
-import org.wearefrank.ladybug.web.FrontendServlet;
 
 /**
  * One of several methods to add the Ladybug servlets to an application. For this method to work in Tomcat make sure

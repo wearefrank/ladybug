@@ -3,11 +3,16 @@
 
   <groupId>org.wearefrank</groupId>
   <artifactId>ladybug-test-webapp</artifactId>
-  <version>1.0-SNAPSHOT</version>
+  <version>${revision}</version>
+
+  <parent>
+    <groupId>org.wearefrank</groupId>
+    <artifactId>ladybug-parent</artifactId>
+    <version>${revision}</version>
+  </parent>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <ladybug.version>4.0-SNAPSHOT</ladybug.version>
   </properties>
 
   <name>Ladybug Test Tool Test Webapp</name>
@@ -18,7 +23,7 @@
     <dependency>
       <groupId>org.wearefrank</groupId>
       <artifactId>ladybug-backend-jaxrs</artifactId>
-      <version>${ladybug.version}</version>
+      <version>${revision}</version>
     </dependency>
     <!-- Reuse transformReport.xslt from ibis-ladybug test resources. See also https://maven.apache.org/plugins/maven-jar-plugin/examples/create-test-jar.html -->
     <dependency>
@@ -26,7 +31,7 @@
       <artifactId>ladybug-common</artifactId>
       <classifier>tests</classifier>
       <type>test-jar</type>
-      <version>${ladybug.version}</version>
+      <version>${revision}</version>
     </dependency>
     <!--
     Without this dependency system out will show:

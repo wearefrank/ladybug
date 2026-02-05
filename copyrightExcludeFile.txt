@@ -10,6 +10,8 @@
 \src\main\java\org\wearefrank\ladybug\util\CSVReader.java
 /src/test/
 \src\test\
+/src/main/resources/
+\src\main\resources\
 /wip
 \wip
 /.idea
