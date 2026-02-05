@@ -17,7 +17,7 @@
     "e2e-jar": "cypress run --config baseUrl=http://localhost/ladybug/",
     "lint": "npx eslint",
     "lintQuiet": "npx eslint --quiet",
-    "prepare": "husky install"
+    "prepare": "cd .. && husky ladybug-frontend/.husky"
   },
   "dependencies": {
     "@angular/animations": "20.3.16",
