@@ -87,11 +87,6 @@ jobs:
       - name: Make script executable that starts backend
         run: chmod a+x frank-runner/specials/ladybug/restart.sh
 
-      - name: Checkout ladybug-test-webapp
-        uses: actions/checkout@v2
-        with:
-          repository: wearefrank/ladybug-test-webapp
-          path: ladybug-test-webapp
       - name: Cache Frank!Runner dependencies - build
         uses: actions/cache@v3
         with:
