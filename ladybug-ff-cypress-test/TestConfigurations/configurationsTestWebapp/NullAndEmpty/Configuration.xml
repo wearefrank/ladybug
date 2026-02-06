@@ -1,0 +1,18 @@
+<Configuration
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="../FrankConfig.xsd">
+    <Adapter name="NullAndEmpty">
+        <Receiver>
+            <ApiListener name="NullAndEmpty" method="GET" uriPattern="nullAndEmpty"/>
+        </Receiver>
+        <Pipeline>
+            <Pipe className="org.wearefrank.ladybug.ff.test.webapp.ToStreamPipe" name="emptyCharacterStream"
+                  streamKind="CHARACTER_EMPTY" />
+            <Pipe className="org.wearefrank.ladybug.ff.test.webapp.ToStreamPipe" name="emptyBinaryStream"
+                  streamKind="BINARY_EMPTY" />
+            <EchoPipe name="normal" getInputFromFixedValue="something"></EchoPipe>
+            <Pipe className="org.wearefrank.ladybug.ff.test.webapp.ToStreamPipe" name="stream"
+                  streamKind="CHARACTER" />
+        </Pipeline>
+    </Adapter>
+</Configuration>

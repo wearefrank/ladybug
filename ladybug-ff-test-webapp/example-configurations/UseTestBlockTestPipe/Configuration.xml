@@ -1,0 +1,34 @@
+<Configuration
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:noNamespaceSchemaLocation="../FrankConfig.xsd"
+>
+	<!--
+		Produces a text block of a given number of rows and a given number of columns.
+		In every column except the first, the character is calculated from the column index.
+		Indexes 0 - 9 are digits 0 - 9. Indexes 10 - 35 are characters a - z.
+		Indexes 36 - 61 are characters A - Z. From index 62 onwards, the characters
+		are repeated again like for indexes 0 - 61.
+
+		For the first column, the calculation is not applied to the column index
+		but to the row index. This makes it easy to see row indexes and column
+		indexes from the shown character.
+
+		The number of rows and the number of columns come from the input message,
+		separated by a single space. When the input message is "63 3", the
+		following output is produces:
+
+		0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0
+		1123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0
+		2123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0
+	-->
+	<Adapter name="UseTextBlockPipe">
+		<Receiver>
+			<JavaListener name="UseTextBlockPipe" />
+		</Receiver>
+		<Pipeline>
+			<pipe className="org.wearefrank.ladybug.ff.test.webapp.TextBlockTestPipe"
+				name="testPipe">
+			</pipe>
+		</Pipeline>
+	</Adapter>
+</Configuration>

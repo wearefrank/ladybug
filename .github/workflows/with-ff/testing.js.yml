@@ -1,0 +1,353 @@
+# When maintaining this file, please have a fixed sequence
+# of the keys within a step:
+#   name, id, if, working-directory, run/uses, others.
+# 
+name: Testing
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      buildLatestFFandLadybugCode:
+        description: If true, build code of frankframework, ladybug and ladybug-frontend and start server from frank-runner/specials/ladybug
+        type: boolean
+        default: false
+        required: true
+      ffFork:
+        description: If buildLatestFfandLadybugCode and if supplied, clone the Frank!Framework from this user or organization. Examples are "mhdirkse" or "jacodg".
+        type: string
+        required: false
+      ffBranch:
+        description: If buildLatestFfandLadybugCode and if supplied, check out this branch of Frank!Framework
+        type: string
+        required: false
+      backendBranch:
+        description: If buildLatestFFandLadybugCode and if supplied, check out this branch of ladybug backend
+        type: string
+        required: false
+      frontendBranch:
+        description: If buildLatestFFandLadybugCode and if supplied, check out this branch of ladybug-frontend
+        type: string
+        required: false
+jobs:
+  testing:
+    strategy:
+      fail-fast: false
+      matrix:
+        test-app: ["false", "true"]
+        storage: ["file", "database"]
+        dtap: ["LOC", "PRD"]
+        exclude:
+          - dtap: "PRD"
+            test-app: "true"
+          - dtap: "PRD"
+            storage: "database"
+        include:
+          - test-app: "false"
+            configurations: configurationsDefault
+          - test-app: "true"
+            configurations: configurationsTestWebapp
+          - dtap: "LOC"
+            test-app: "false"
+            specs: "cypress/e2e/cypress/common-over-test-envs/**,cypress/e2e/cypress/default/**"
+          - dtap: "LOC"
+            test-app: "true"
+            specs: "cypress/e2e/cypress/common-over-test-envs/**,cypress/e2e/cypress/with-ladybug-ff-test-webapp/**"
+          - dtap: "PRD"
+            specs: "cypress/e2e/cypress/common-over-test-envs/**,cypress/e2e/cypress/prd/**"
+          - storage: "file"
+            debugStorageName: "FileDebugStorage"
+          - storage: "database"
+            debugStorageName: "DatabaseDebugStorage"
+    name: test-app = ${{ matrix.test-app }}, Ladybug storage = ${{ matrix.storage }}, dtap.stage=${{ matrix.dtap }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Decide about building the code
+        id: decideAboutBuildCode
+        run: if [[ "${{ github.event.inputs.buildLatestFFandLadybugCode }}" == "" ]]; then echo "false"; else echo "${{ github.event.inputs.buildLatestFFandLadybugCode }}"; fi > temp; echo "buildCode=$(cat temp)" >> $GITHUB_OUTPUT
+      - name: Show decision
+        run: echo "buildCode is ${{ steps.decideAboutBuildCode.outputs.buildCode }}"
+      - name: Check that ffFork is only set if it can be applied
+        if: ${{ inputs.ffFork != '' && steps.decideAboutBuildCode.outputs.buildCode == 'false' }}
+        run: exit 1
+      - name: Check that ffBranch is only set if it can be applied
+        if: ${{ inputs.ffBranch != '' && steps.decideAboutBuildCode.outputs.buildCode == 'false' }}
+        run: exit 1
+      - name: Check that backendBranch is only set if it can be applied
+        if: ${{ inputs.backendBranch != '' && steps.decideAboutBuildCode.outputs.buildCode == 'false' }}
+        run: exit 1
+      - name: Check that frontendBranch is only set if it can be applied
+        if: ${{ inputs.frontendBranch != '' && steps.decideAboutBuildCode.outputs.buildCode == 'false' }}
+        run: exit 1
+      - name: Cache Frank!Runner dependencies - build
+        uses: actions/cache@v3
+        with:
+          path: frank-runner/build
+          key: ${{ runner.os }}-frank-runner-build
+          restore-keys: |
+            ${{ runner.os }}-frank-runner-build
+      - name: Cache Frank!Runner dependencies - download
+        uses: actions/cache@v3
+        with:
+          path: frank-runner/download
+          key: ${{ runner.os }}-frank-runner-download
+          restore-keys: |
+            ${{ runner.os }}-frank-runner-download
+      - name: Checkout Frank!Runner
+        uses: actions/checkout@v4
+        with:
+          repository: wearefrank/frank-runner
+          path: frank-runner
+      - name: Checkout ladybug-ff-cypress-test
+        uses: actions/checkout@v4
+        with:
+          path: ladybug-ff-cypress-test  
+      - name: Checkout ladybug-frontend
+        if: ${{ steps.decideAboutBuildCode.outputs.buildCode == 'true' }}
+        uses: actions/checkout@v4
+        with:
+          repository: wearefrank/ladybug-frontend
+          path: ladybug-frontend
+      - name: Fetch ladybug-frontend branch to checkout
+        if: ${{ inputs.frontendBranch != '' }}
+        working-directory: ladybug-frontend
+        run: git fetch origin ${{ inputs.frontendBranch }}
+      - name: Checkout ladybug-frontend branch to checkout
+        if: ${{ inputs.frontendBranch != '' }}
+        working-directory: ladybug-frontend
+        run: git checkout --track origin/${{ inputs.frontendBranch }}
+
+      - name: Checkout ladybug (backend)
+        if: ${{ steps.decideAboutBuildCode.outputs.buildCode == 'true' }}
+        uses: actions/checkout@v4
+        with:
+          repository: wearefrank/ladybug
+          path: ladybug
+      - name: Fetch ladybug branch to checkout
+        if: ${{ inputs.backendBranch != '' }}
+        working-directory: ladybug
+        run: git fetch origin ${{ inputs.backendBranch }}
+      - name: Checkout ladybug branch to checkout
+        if: ${{ inputs.backendBranch != '' }}
+        working-directory: ladybug
+        run: git checkout --track origin/${{ inputs.backendBranch }}
+
+      - name: Checkout frankframework - default
+        if: ${{ steps.decideAboutBuildCode.outputs.buildCode == 'true' && inputs.ffFork == '' }}
+        uses: actions/checkout@v4
+        with:
+          repository: frankframework/frankframework
+          path: frankframework
+      - name: Checkout frankframework - fork
+        if: ${{ steps.decideAboutBuildCode.outputs.buildCode == 'true' && inputs.ffFork != '' }}
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ inputs.ffFork }}/frankframework
+          path: frankframework
+      - name: Fetch FF branch to checkout
+        if: ${{ inputs.ffBranch != '' }}
+        working-directory: frankframework
+        run: git fetch origin ${{ inputs.ffBranch }}
+      - name: Checkout FF branch to checkout
+        if: ${{ inputs.ffBranch != '' }}
+        working-directory: frankframework
+        run: git checkout --track origin/${{ inputs.ffBranch }}
+
+      - name: Check out ladybug-ff-test-webapp
+        if: ${{ matrix.test-app == 'true' }}
+        uses: actions/checkout@v4
+        with:
+          repository: wearefrank/ladybug-ff-test-webapp
+          path: ladybug-ff-test-webapp
+
+      - name: Calculate path to Frank application (1)
+        if: ${{ steps.decideAboutBuildCode.outputs.buildCode == 'false' && matrix.test-app == 'false' }}
+        run: echo "FRANK_APP=$(realpath frank-runner/examples/Frank2Example1)" >> $GITHUB_ENV
+      - name: Calculate path to Frank application (2)
+        if: ${{ matrix.test-app == 'true' }}
+        run: echo "FRANK_APP=$(realpath ladybug-ff-test-webapp)" >> $GITHUB_ENV
+      - name: Calculate path to Frank application (3)
+        if: ${{ steps.decideAboutBuildCode.outputs.buildCode == 'true' && matrix.test-app == 'false' }}
+        run: echo "FRANK_APP=$(realpath frankframework/webapp)" >> $GITHUB_ENV
+      - name: Get relative path of ladybug-ff-cypress-test
+        id: relative-path-to-ladybug
+        run: echo "RELATIVE_PATH_TO_LADYBUG_FF_TEST_WEBAPP=$(realpath --relative-to=$FRANK_APP ladybug-ff-cypress-test)" >> $GITHUB_OUTPUT
+      - name: Calculate path to resources (1)
+        if: ${{ steps.decideAboutBuildCode.outputs.buildCode == 'false' && matrix.test-app == 'false' }}
+        run: echo "RESOURCES_DIR=$FRANK_APP/classes" >> $GITHUB_ENV
+      - name: Calculate path to resources (2)
+        if: ${{ steps.decideAboutBuildCode.outputs.buildCode == 'true' || matrix.test-app == 'true' }}
+        run: echo "RESOURCES_DIR=$FRANK_APP/src/main/resources" >> $GITHUB_ENV
+      - name: Show FRANK_APP and RELATIVE_PATH_TO_LADYBUG_FF_TEST_WEBAPP
+        run: echo "FRANK_APP=$FRANK_APP and RELATIVE_PATH_TO_LADYBUG_FF_TEST_WEBAPP=${{ steps.relative-path-to-ladybug.outputs.RELATIVE_PATH_TO_LADYBUG_FF_TEST_WEBAPP }}"
+      - name: Show RESOURCES_DIR
+        run: echo "RESOURCES_DIR=$RESOURCES_DIR"
+
+      - name: See commit number of checked-out frank-runner
+        working-directory: frank-runner
+        run: git log -1
+      - name: Initialize build.properties of frank-runner
+        run: cp ladybug-ff-cypress-test/.github/workflows/build-frankrunner-unconditional.properties frank-runner/build.properties
+      - name: Set dtap.stage in build.properties
+        if: ${{ matrix.dtap == 'PRD' }}
+        run: echo "dtap.stage=PRD" >> frank-runner/build.properties
+      - name: Load configurations from ladybug-ff-cypress-test
+        run: echo "override.configurations.dir=${{ steps.relative-path-to-ladybug.outputs.RELATIVE_PATH_TO_LADYBUG_FF_TEST_WEBAPP }}/TestConfigurations/${{ matrix.configurations }}" >> frank-runner/build.properties
+      - name: Set properties so that FF! uses database
+        if: ${{ matrix.storage == 'database' }}
+        run: cat ladybug-ff-cypress-test/.github/workflows/DeploymentSpecifics-enable-database.properties >> $RESOURCES_DIR/DeploymentSpecifics.properties
+      - name: Require authentication
+        if: ${{ matrix.dtap == 'PRD' }}
+        run: cat ladybug-ff-cypress-test/.github/workflows/DeploymentSpecifics-authorization.properties >> $RESOURCES_DIR/DeploymentSpecifics.properties
+      - name: Copy localUsers.yml
+        if: ${{ matrix.dtap == 'PRD' }}
+        run: cp ladybug-ff-cypress-test/.github/workflows/localUsers.yml.txt $RESOURCES_DIR/localUsers.yml
+      - name: Copy cypress.config_cicd.ts to cypress.config.ts to listen to correct port
+        working-directory: ladybug-ff-cypress-test
+        run: cp cypress.config_cicd.ts cypress.config.ts
+      - name: Use Node.js 20.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+          cache: "yarn"
+          cache-dependency-path: "**/yarn.lock"
+      - name: Update yarn
+        working-directory: "ladybug-ff-cypress-test"
+        run: corepack enable
+      - name: Show node version
+        working-directory: "ladybug-ff-cypress-test"
+        run: node -v
+      - name: Show yarn version
+        working-directory: "ladybug-ff-cypress-test"
+        run: yarn -v
+      - name: Install packages
+        working-directory: ladybug-ff-cypress-test
+        run: yarn install --immutable
+      - name: Show current time, allows you to check that logs are not old
+        run: date
+      - name: Let Frank!Runner do its downloads
+        working-directory: ladybug-ff-cypress-test
+        run: yarn run installFrankRunnerEnv
+      - name: Delete old Ladybug test reports
+        working-directory: frank-runner
+        run: find . -path './build/apache-tomcat*/logs/testtool*' -delete
+      - name: Remove old catalina.out
+        working-directory: frank-runner
+        run: find . -path './build/apache-tomcat*/catalina.out' -delete
+      # Build the latest code if buildLatestFFandLadybugCode
+      - name: Cache Maven downloads
+        if: ${{ steps.decideAboutBuildCode.outputs.buildCode == 'true' }}
+        uses: actions/cache@v3
+        with:
+          path: ~/.m2/repository/
+          key: ${{ runner.os }}-maven
+          restore-keys: |
+            ${{ runner.os }}-maven
+      - name: Put build.properties in ladybug-ff-test-webapp
+        if: ${{ matrix.test-app == 'true' }}  
+        run: cp build-ladybug-ff-test-webapp.properties ../../../ladybug-ff-test-webapp/build.properties
+        working-directory: ladybug-ff-cypress-test/.github/workflows
+      - name: Adjust pom.xml files so that ladybug-frontend, ladybug and frankframework reference each other
+        if: ${{ steps.decideAboutBuildCode.outputs.buildCode == 'true' && matrix.test-app == 'false' }}
+        working-directory: frank-runner/specials/util/syncPomVersions
+        run: ./run.sh
+      # If use the latest FF! build for ladybug-ff-test-webapp, we do not need to sync. Version is just referred as LATEST.
+      - name: Adjust pom.xml files so that ladybug-ff-test-webapp, FF!, ladybug and ladybug-frontend can find each other
+        if: ${{ steps.decideAboutBuildCode.outputs.buildCode == 'true' && matrix.test-app == 'true' }}
+        working-directory: frank-runner/specials/util/syncPomVersions
+        run: ./runIncludingLadybugFfTestWebapp.sh
+      - name: Build ladybug-frontend
+        if: ${{ steps.decideAboutBuildCode.outputs.buildCode == 'true' }}
+        working-directory: frank-runner/specials/ladybug-frontend
+        run: ./run.sh
+      - name: Put build.properties in iaf-webapp
+        if: ${{ steps.decideAboutBuildCode.outputs.buildCode == 'true' }}
+        working-directory: ladybug-ff-cypress-test/.github/workflows
+        run: cp build-iaf-webapp.properties ../../../frank-runner/specials/iaf-webapp/build.properties
+        # When frank-runner/specials/iaf-webapp is executed, we always get the Maven artifacts in .m2.
+      - name: Do not start build from iaf-webapp if running ladybug-ff-test-webapp
+        if: ${{ steps.decideAboutBuildCode.outputs.buildCode == 'true' && matrix.test-app == 'true' }}
+        working-directory: frank-runner/specials/iaf-webapp
+        run: echo -e "\nskip.start=true" >> build.properties
+      - name: Put build.properties in ladybug
+        if: ${{ steps.decideAboutBuildCode.outputs.buildCode == 'true' }}
+        working-directory: ladybug-ff-cypress-test/.github/workflows
+        run: cp build-ladybug.properties ../../../frank-runner/specials/ladybug/build.properties
+      - name: Start server using Frank!Runner in background (official release) - no ladybug-ff-test-webapp
+        if: ${{ steps.decideAboutBuildCode.outputs.buildCode == 'false' && matrix.test-app == 'false' }}
+        working-directory: frank-runner
+        run: ./restart.sh > serverStartLog.log &
+      - name: Start server of locally-built code - no ladybug-ff-test-webapp
+        if: ${{ steps.decideAboutBuildCode.outputs.buildCode == 'true' && matrix.test-app == 'false' }}
+        working-directory: frank-runner/specials/ladybug
+        run: ./restart.sh > serverStartLog.log &
+      - name: Build frank-runner/specials/iaf-webapp but do not start it
+        if: ${{ steps.decideAboutBuildCode.outputs.buildCode == 'true' && matrix.test-app == 'true' }}
+        working-directory: frank-runner/specials/ladybug
+        run: ./restart.sh > buildIafWebapp.log
+      - name: Start ladybug-ff-test-webapp with FF! build we have (built) as Maven artifact
+        if: ${{ matrix.test-app == 'true' }}
+        working-directory: ladybug-ff-test-webapp
+        run: ./restart.sh > serverStartLog.log &
+      - name: Wait for server to be available
+        working-directory: ladybug-ff-cypress-test/.github/workflows
+        run: ./waitForUrl.sh http://localhost:8090 900
+      - name: Be sure there are no old videos
+        run: rm -rf ladybug-ff-cypress-test/cypress/videos
+      - name: Be sure there are no old screenshots
+        run: rm -rf ladybug-ff-cypress-test/cypress/screenshots
+      - name: Try to access server directly with curl
+        run: curl -v -i http://localhost:8090
+      - name: Run the tests
+        working-directory: ladybug-ff-cypress-test
+        run: yarn cypress run --spec "${{ matrix.specs }}" --env "debugStorageName=${{ matrix.debugStorageName }}"
+      - name: Show files
+        if: failure()
+        run: tree -L 5 .
+      - name: Store ladybug (backend) pom.xml
+        if: ${{ failure() && steps.decideAboutBuildCode.outputs.buildCode == 'true' }}
+        uses: actions/upload-artifact@v4.4.0
+        with:
+          name: ladybug pom.xml test-app = ${{ matrix.test-app }} storage = ${{ matrix.storage }} dtap=${{ matrix.dtap }}
+          path: ladybug/pom.xml
+      - name: Store logs
+        if: failure()
+        uses: actions/upload-artifact@v4.4.0
+        with:
+          name: data test-app = ${{ matrix.test-app }} storage = ${{ matrix.storage }} dtap=${{ matrix.dtap }}
+          path: |
+            frank-runner/specials/ladybug/
+            ladybug-ff-cypress-test/cypress/videos/
+      - name: Store logs that appear under Tomcat
+        if: failure()
+        uses: actions/upload-artifact@v4.4.0
+        with:
+          name: tomcat logs - test-app = ${{ matrix.test-app }} storage = ${{ matrix.storage }} dtap=${{ matrix.dtap }}
+          path: |
+            frank-runner/build/apache-tomcat-10*/logs/*
+      # Zip file becomes corrupt if you try to include non-existing files.
+      - name: Store logs that only exist for test webapp
+        if: ${{ failure() && matrix.test-app == 'false' }}
+        uses: actions/upload-artifact@v4.4.0
+        with:
+          name: logs = ${{ matrix.test-app }} storage = ${{ matrix.storage }} dtap=${{ matrix.dtap }}
+          path: |
+            frank-runner/serverStartLog.log
+            frank-runner/build/**/apache-tomcat-1*/logs/
+      - name: Store logs that only exist for PRD
+        if: ${{ failure() && matrix.dtap == 'PRD' }}
+        uses: actions/upload-artifact@v4.4.0
+        with:
+          name: DeploymentSpecifics.properties test-app = ${{ matrix.test-app }} storage = ${{ matrix.storage }} dtap=${{ matrix.dtap }}
+          path: |
+            ${{ env.RESOURCES_DIR }}/DeploymentSpecifics.properties
+      - name: Store logs for ladybug-ff-test-webapp
+        if: ${{ failure() && matrix.test-app == 'true' }}
+        uses: actions/upload-artifact@v4.4.0
+        with:
+          name: ladybug-ff-test-webapp related storage = ${{ matrix.storage }} dtap=${{ matrix.dtap }}
+          path: |
+            frank-runner/specials/ladybug/buildIafWebapp.log
+            ladybug-ff-test-webapp/serverStartLog.log

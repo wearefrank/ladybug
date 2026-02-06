@@ -1,0 +1,47 @@
+<Configuration
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="../FrankConfig.xsd"
+>
+    <Adapter name="UseToStreamPipeChar">
+        <Receiver>
+            <JavaListener name="UseToStreamPipeChar" />
+        </Receiver>
+        <Pipeline>
+            <EchoPipe name="haveMessage" getInputFromFixedValue="Hello World"></EchoPipe>
+            <Pipe className="org.wearefrank.ladybug.ff.test.webapp.ToStreamPipe" name="testPipe"
+                  streamKind="CHARACTER" />
+            <EchoPipe name="discard" getInputFromFixedValue="New value" />
+        </Pipeline>
+    </Adapter>
+    <Adapter name="UseToStreamPipeBin">
+        <Receiver>
+            <JavaListener name="UseToStreamPipeChar" />
+        </Receiver>
+        <Pipeline>
+            <EchoPipe name="haveMessage" getInputFromFixedValue="Hello World"></EchoPipe>
+            <Pipe className="org.wearefrank.ladybug.ff.test.webapp.ToStreamPipe" name="testPipe"
+                  streamKind="BINARY" />
+            <EchoPipe name="discard" getInputFromFixedValue="New value" />
+        </Pipeline>
+    </Adapter>
+    <Adapter name="UseToStreamPipeEmptyBin">
+        <Receiver>
+            <JavaListener name="UseToStreamPipeEmptyBin" />
+        </Receiver>
+        <Pipeline>
+            <Pipe className="org.wearefrank.ladybug.ff.test.webapp.ToStreamPipe" name="testPipe"
+                  streamKind="BINARY_EMPTY" />
+            <EchoPipe name="read-empty" />
+        </Pipeline>
+    </Adapter>
+    <Adapter name="UseToStreamPipeEmptyChar">
+        <Receiver>
+            <JavaListener name="UseToStreamPipeEmptyChar" />
+        </Receiver>
+        <Pipeline>
+            <Pipe className="org.wearefrank.ladybug.ff.test.webapp.ToStreamPipe" name="testPipe"
+                  streamKind="CHARACTER_EMPTY" />
+            <EchoPipe name="read-empty" />
+        </Pipeline>
+    </Adapter>
+</Configuration>

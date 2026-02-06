@@ -1,0 +1,5 @@
+.vscode
+.yarn/install-state.gz
+node_modules
+cypress/screenshots
+cypress/videos
