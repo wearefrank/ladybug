@@ -94,7 +94,6 @@ jobs:
           repository: wearefrank/frank-runner
           path: frank-runner
       - name: Checkout ladybug
-        if: ${{ steps.decideAboutBuildCode.outputs.buildCode == 'true' }}
         uses: actions/checkout@v4
         with:
           repository: wearefrank/ladybug
