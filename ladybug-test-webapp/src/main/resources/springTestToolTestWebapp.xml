@@ -258,7 +258,7 @@
 		<!-- Configure Test tab with xml storage -->
 		<bean name="testStorage" class="org.wearefrank.ladybug.storage.xml.XmlStorage">
 			<property name="name" value="Test"/>
-			<property name="reportsFolder" value="ladybug-test-webapp/src/test/testtool"/>
+			<property name="reportsFolder" value="../ladybug/ladybug-test-webapp/src/test/testtool"/>
 		</bean>
 	</beans>
 
