@@ -4,12 +4,16 @@
 \ladybug-frontend
 /.husky
 \.husky
+/src/main/webapp/
+\src\main\webapp\
 /src/main/java/org/wearefrank/ladybug/xmldecoder/
 \src\main\java\org\wearefrank\ladybug\xmldecoder\
 /src/main/java/org/wearefrank/ladybug/util/CSVReader.java
 \src\main\java\org\wearefrank\ladybug\util\CSVReader.java
 /src/test/
 \src\test\
+/src/main/resources/
+\src\main\resources\
 /wip
 \wip
 /.idea

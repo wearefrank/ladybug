@@ -1,0 +1,293 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans
+	xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:task="http://www.springframework.org/schema/task"
+	xmlns:util="http://www.springframework.org/schema/util"
+	xsi:schemaLocation="
+		http://www.springframework.org/schema/beans   http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+		http://www.springframework.org/schema/task    http://www.springframework.org/schema/task/spring-task.xsd
+		http://www.springframework.org/schema/util    http://www.springframework.org/schema/util/spring-util.xsd
+	"
+	default-lazy-init="true"
+	>
+
+	<!-- Make ${ladybug.dir:ladybug} read system property ladybug.dir with default value ladybug -->
+	<context:property-placeholder/>
+
+	<context:component-scan base-package="org.wearefrank.ladybug"/>
+
+	<bean name="testTool" class="org.wearefrank.ladybug.TestTool">
+		<property name="configName" value="Ladybug Test Webapp"/>
+		<property name="configVersion" value="1.0"/>
+		<property name="maxCheckpoints" value="1000"/>
+		<property name="maxMemoryUsage" value="1000000"/>
+		<property name="maxMessageLength" value="100000"/>
+		<property name="regexFilter" value=".*"/>
+		<property name="rerunner"><ref bean="rerunner"/></property>
+	</bean>
+
+	<bean name="metadataExtractor" class="org.wearefrank.ladybug.MetadataExtractor">
+		<property name="extraMetadataFieldExtractors">
+			<list>
+				<bean class="org.wearefrank.ladybug.metadata.RegexMetadataFieldExtractor">
+					<!-- See LadybugCustomDatabaseChangelog.xml -->
+					<property name="name" value="custom"/>
+					<property name="label" value="Custom"/>
+					<property name="regex" value="(Hello).*"/>
+				</bean>
+			</list>
+		</property>
+	</bean>
+
+	<bean name="whiteBoxView" class="org.wearefrank.ladybug.filter.View">
+		<property name="name" value="White box"/>
+	</bean>
+
+	<!-- Demonstrate/test different list of columns for debug tab using a view -->
+	<bean name="nameOnlyView" class="org.wearefrank.ladybug.filter.View">
+		<property name="name" value="Report name only"/>
+		<property name="metadataNames">
+			<list>
+				<value>storageId</value><!-- Without storageId the report cannot be opened -->
+				<value>name</value>
+			</list>
+		</property>
+	</bean>
+
+	<bean name="fileStorageView" class="org.wearefrank.ladybug.filter.View">
+		<property name="name" value="File storage"/>
+		<property name="debugStorage">
+			<ref bean="fileStorage"/>
+		</property>
+	</bean>
+
+	<bean name="databaseStorageView" class="org.wearefrank.ladybug.filter.View">
+		<property name="name" value="Database storage"/>
+		<property name="debugStorage">
+			<ref bean="databaseStorage"/>
+		</property>
+		<property name="metadataNames">
+			<list>
+				<value>storageId</value>
+				<value>endTime</value>
+				<value>duration</value>
+				<value>name</value>
+				<value>correlationId</value>
+				<value>status</value>
+				<value>numberOfCheckpoints</value>
+				<value>estimatedMemoryUsage</value>
+				<value>storageSize</value>
+				<value>custom</value>
+			</list>
+		</property>
+	</bean>
+
+	<bean name="blackBoxView" class="org.wearefrank.ladybug.filter.View" parent="whiteBoxView">
+		<property name="name" value="Black box"/>
+		<property name="checkpointMatchers">
+			<bean class="org.wearefrank.ladybug.test.webapp.test.webapp.Matcher"/>
+		</property>
+	</bean>
+
+	<bean name="lowLevelErrorTestView" class="org.wearefrank.ladybug.filter.View">
+		<property name="name" value="Low level error demo view" />
+		<property name="debugStorage">
+			<ref bean="errorGeneratingStorage"/>
+		</property>
+	</bean>
+	<bean name="views" class="org.wearefrank.ladybug.filter.Views">
+		<property name="views">
+			<list>
+				<ref bean="nameOnlyView"/>
+				<ref bean="blackBoxView"/>
+				<ref bean="whiteBoxView"/>
+				<ref bean="fileStorageView"/>
+				<ref bean="databaseStorageView"/>
+				<ref bean="proofOfMigrationView"/><!-- See Config.java -->
+				<ref bean="proofOfMigrationErrorsView"/><!-- See Config.java -->
+				<ref bean="lowLevelErrorTestView" />
+			</list>
+		</property>
+		<property name="defaultView" ref="defaultView"/>
+	</bean>
+
+	<!-- Profiles can override the default view with this bean -->
+	<bean name="defaultView" class="java.lang.String">
+		<!-- Demonstrate/test setting default view to other than first view in the list  -->
+		<constructor-arg value="White box"/>
+	</bean>
+
+	<bean name="xsltResource" class="java.lang.String">
+		<constructor-arg value="org/wearefrank/ladybug/test/junit/transformReport.xslt"/>
+	</bean>
+
+	<bean name="rerunner" class="org.wearefrank.ladybug.test.webapp.test.webapp.SimpleRerunner"/>
+
+	<bean name="customReportAction" class="org.wearefrank.ladybug.test.webapp.extensions.DummyReportAction"/>
+
+	<!--  Enable security elements in web.xml to test roles -->
+
+	<util:list id="observerRoles">
+		<value>IbisObserver</value>
+		<value>IbisDataAdmin</value>
+		<value>IbisAdmin</value>
+		<value>IbisTester</value>
+	</util:list>
+
+	<util:list id="dataAdminRoles">
+		<value>IbisDataAdmin</value>
+		<value>IbisAdmin</value>
+		<value>IbisTester</value>
+	</util:list>
+
+	<util:list id="testerRoles">
+		<value>IbisTester</value>
+	</util:list>
+
+	<!-- Use memory storage by default as Cypress tests depend on memory storage / starting with empty storages -->
+
+	<bean name="debugStorage" class="org.wearefrank.ladybug.storage.memory.MemoryLogStorage">
+		<property name="name" value="Debug"/>
+	</bean>
+
+	<bean name="testStorage" class="org.wearefrank.ladybug.storage.memory.MemoryCrudStorage">
+		<property name="name" value="Test"/>
+	</bean>
+
+	<bean name="reportsFilename" class="java.lang.String">
+		<constructor-arg value="../${ladybug.dir:ladybug}/data/file-storage/ladybug.tts"/>
+	</bean>
+
+	<bean name="metadataFilename" class="java.lang.String">
+		<constructor-arg value="../${ladybug.dir:ladybug}/data/file-storage/ladybug.ttm"/>
+	</bean>
+
+	<bean name="fileStorage" class="org.wearefrank.ladybug.storage.file.Storage">
+		<property name="name" value="fileStorage"/>
+		<property name="reportsFilename" value="#{reportsFilename}"/>
+		<property name="metadataFilename" value="#{metadataFilename}"/>
+	</bean>
+
+	<bean name="errorGeneratingStorage" class="org.wearefrank.ladybug.test.webapp.storages.ErrorGeneratingStorage">
+		<property name="name" value="errorGeneratingStorage" />
+	</bean>
+
+	<bean name="maxStorageSize" class="java.lang.String">
+		<constructor-arg value="#{10 * 1024 * 1024}"/>
+	</bean>
+
+	<!--
+	DatabaseCrudStorage will make it possible to edit and delete reports in the Debug tab (with new GUI). This is okay
+	for testing purposes but don't copy this for other situations without careful consideration / reading the LogStorage
+	JavaDoc.
+	-->
+	<bean
+		name="databaseStorage"
+		class="org.wearefrank.ladybug.storage.database.DatabaseCrudStorage"
+		depends-on="ladybugDatabaseChangelog"
+		>
+		<property name="name" value="databaseStorage"/>
+		<property name="maxStorageSize" value="#{maxStorageSize}"/>
+		<property name="storeReportXml" value="true"/>
+	</bean>
+
+	<!--
+	Without connection pooling (considerably slows down GUI performance). E.g. when using:
+	<bean name="ladybugDataSource" class="org.h2.jdbcx.JdbcDataSource">
+		<property name="URL" value="jdbc:h2:../${ladybug.dir:ladybug}/data/database-storage/ladybug"/>
+	</bean>
+	-->
+	<bean name="ladybugDataSource" class="org.apache.commons.dbcp2.BasicDataSource" destroy-method="close">
+		<property name="driverClassName" value="org.h2.Driver"/>
+		<property name="url" value="jdbc:h2:../${ladybug.dir:ladybug}/data/database-storage/ladybug"/>
+	</bean>
+
+	<bean name="ladybugDatabaseChangelog" class="liquibase.integration.spring.SpringLiquibase">
+		<property name="dataSource" ref="ladybugDataSource" />
+		<property name="changeLog" value="classpath:ladybug/DatabaseChangelog.xml" />
+	</bean>
+
+	<!-- Test logging thread info of reports in progress -->
+
+	<bean name="closeReportsTask" class="org.wearefrank.ladybug.CloseReportsTask">
+		<property name="logThreadInfoMinReportAge" value="#{10 * 1000}"/>
+		<property name="logThreadInfoMaxReportAge" value="#{20 * 1000}"/>
+	</bean>
+
+	<task:scheduler id="closeReportsScheduler"/>
+
+	<task:scheduled-tasks scheduler="closeReportsScheduler">
+		<task:scheduled ref="closeReportsTask" method="closeReports" fixed-delay="#{10 * 1000}" />
+	</task:scheduled-tasks>
+
+	<!-- OpenTelemetry -->
+
+	<!-- Zipkin:
+	<bean name="openTelemetryEndpoint" class="java.lang.String">
+		<constructor-arg value="http://localhost:9411"/>
+	</bean>
+	-->
+
+	<!-- Jaeger:
+	<bean name="openTelemetryEndpoint" class="java.lang.String">
+		<constructor-arg value="jaeger"/>
+	</bean>
+	-->
+
+	<!-- Profiles -->
+
+	<beans profile="storage.file">
+		<!-- White box view and TestTool (creating and storing reports) are using debugStorage -->
+		<bean name="debugStorage" class="org.wearefrank.ladybug.storage.file.Storage">
+			<property name="name" value="Debug"/>
+			<property name="reportsFilename" value="../${ladybug.dir:ladybug}/data/file-storage/ladybug.tts"/>
+			<property name="metadataFilename" value="../${ladybug.dir:ladybug}/data/file-storage/ladybug.ttm"/>
+		</bean>
+		<!-- Configure Test tab with file storage -->
+		<bean name="testStorage" class="org.wearefrank.ladybug.storage.file.TestStorage">
+			<property name="name" value="Test"/>
+			<property name="reportsFilename" value="../${ladybug.dir:ladybug}/data/file-storage/ladybug.tts"/>
+			<property name="metadataFilename" value="../${ladybug.dir:ladybug}/data/file-storage/ladybug.ttm"/>
+		</bean>
+	</beans>
+
+	<beans profile="storage.xml">
+		<!-- Configure Test tab with xml storage -->
+		<bean name="testStorage" class="org.wearefrank.ladybug.storage.xml.XmlStorage">
+			<property name="name" value="Test"/>
+			<property name="reportsFolder" value="../ladybug/ladybug-test-webapp/src/test/testtool"/>
+		</bean>
+	</beans>
+
+	<beans profile="storage.database">
+		<!-- White box view and TestTool (creating and storing reports) are using debugStorage -->
+		<bean
+			name="debugStorage"
+			class="org.wearefrank.ladybug.storage.database.DatabaseLogStorage"
+			depends-on="ladybugDatabaseChangelog"
+			>
+			<property name="name" value="Debug"/>
+			<property name="maxStorageSize" value="#{maxStorageSize}"/>
+			<property name="storeReportXml" value="true"/>
+		</bean>
+		<!-- Configure Test tab with database storage -->
+		<bean
+			name="testStorage"
+			class="org.wearefrank.ladybug.storage.database.DatabaseTestStorage"
+			depends-on="ladybugDatabaseChangelog"
+			>
+			<property name="name" value="Test"/>
+		</bean>
+	</beans>
+
+	<beans profile="storage.proofofmigration">
+		<!-- Set dropdown with views to "Proof of migration" by default -->
+		<bean name="defaultView" class="java.lang.String">
+			<constructor-arg value="Proof of migration storage"/>
+		</bean>
+	</beans>
+
+</beans>

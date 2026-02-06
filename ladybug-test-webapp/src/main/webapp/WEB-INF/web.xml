@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app
+		xmlns="http://java.sun.com/xml/ns/javaee"
+		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"
+		version="3.0"
+	>
+
+	<display-name>TestTool</display-name>
+
+	<!--
+	When this listener is omitted the webapp servlet will fall back to using ClassPathXmlApplicationContext. In which
+	case Tomcat will start faster (like 1,5 seconds instead of 6 seconds) as it will wait loading the Spring config
+	until a user makes a request to the servlet. This doesn't work for the new GUI.
+	-->
+	<listener>
+		<listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+	</listener>
+
+	<listener>
+		<listener-class>org.wearefrank.ladybug.test.webapp.web.ServletListener</listener-class>
+	</listener>
+
+	<servlet>
+		<servlet-name>TestToolServlet</servlet-name>
+		<servlet-class>org.wearefrank.ladybug.test.webapp.test.webapp.Servlet</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>TestToolServlet</servlet-name>
+		<url-pattern>/testtool</url-pattern>
+	</servlet-mapping>
+
+	<servlet>
+		<servlet-name>H2Servlet</servlet-name>
+		<servlet-class>org.h2.server.web.JakartaWebServlet</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>H2Servlet</servlet-name>
+		<url-pattern>/h2/*</url-pattern>
+	</servlet-mapping>
+
+	<!--
+	Allows the Ladybug API to be called from other domains. This makes it possible to experiment with uploading test
+	results (reports) from another application with the end goal to add a "Show in Ladybug" link or button in CI/CD
+	environments. Don't copy this to a production system without careful consideration!
+	 -->
+	<filter>
+		<filter-name>CorsFilter</filter-name>
+		<filter-class>org.apache.catalina.filters.CorsFilter</filter-class>
+		<init-param>
+			<param-name>cors.allowed.origins</param-name>
+			<param-value>*</param-value>
+		</init-param>
+	</filter>
+	<filter-mapping>
+		<filter-name>CorsFilter</filter-name>
+		<url-pattern>/ladybug/api/*</url-pattern>
+	</filter-mapping>
+
+	<!--
+	Enable security elements below to test security
+	See also ApiAuthorizationFilter.java and *Roles beans in springTestToolTestWebapp.xml
+	<login-config>
+		<auth-method>BASIC</auth-method>
+		<realm-name>Ladybug test webapp</realm-name>
+	</login-config>
+	<security-constraint>
+		<web-resource-collection>
+			<web-resource-name>All resources</web-resource-name>
+			<url-pattern>/*</url-pattern>
+		</web-resource-collection>
+		<auth-constraint>
+			<role-name>IbisObserver</role-name>
+			<role-name>IbisAdmin</role-name>
+			<role-name>IbisDataAdmin</role-name>
+			<role-name>IbisTester</role-name>
+			<role-name>IbisWebService</role-name>
+		</auth-constraint>
+	</security-constraint>
+	-->
+
+</web-app>

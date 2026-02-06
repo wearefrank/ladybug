@@ -648,5 +648,6 @@
     <module>ladybug-frontend-servlet</module>
     <module>ladybug-common</module>
     <module>ladybug-frontend</module>
+    <module>ladybug-test-webapp</module>
   </modules>
 </project>
