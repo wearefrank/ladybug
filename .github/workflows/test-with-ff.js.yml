@@ -156,7 +156,7 @@ jobs:
         working-directory: frank-runner
         run: git log -1
       - name: Initialize build.properties of frank-runner
-        run: cp ladybug/ladybug-ff-cypress-test/.github/workflows/with-ff/build-frankrunner-unconditional.properties frank-runner/build.properties
+        run: cp ladybug/.github/workflows/with-ff/build-frankrunner-unconditional.properties frank-runner/build.properties
       - name: Set dtap.stage in build.properties
         if: ${{ matrix.dtap == 'PRD' }}
         run: echo "dtap.stage=PRD" >> frank-runner/build.properties
@@ -164,13 +164,13 @@ jobs:
         run: echo "override.configurations.dir=${{ steps.relative-path-to-ladybug.outputs.RELATIVE_PATH_TO_LADYBUG_FF_TEST_WEBAPP }}/TestConfigurations/${{ matrix.configurations }}" >> frank-runner/build.properties
       - name: Set properties so that FF! uses database
         if: ${{ matrix.storage == 'database' }}
-        run: cat ladybug/ladybug-ff-cypress-test/.github/workflows/with-ff/DeploymentSpecifics-enable-database.properties >> $RESOURCES_DIR/DeploymentSpecifics.properties
+        run: cat ladybug/.github/workflows/with-ff/DeploymentSpecifics-enable-database.properties >> $RESOURCES_DIR/DeploymentSpecifics.properties
       - name: Require authentication
         if: ${{ matrix.dtap == 'PRD' }}
-        run: cat ladybug/ladybug-ff-cypress-test/.github/workflows/with-ff/DeploymentSpecifics-authorization.properties >> $RESOURCES_DIR/DeploymentSpecifics.properties
+        run: cat ladybug/.github/workflows/with-ff/DeploymentSpecifics-authorization.properties >> $RESOURCES_DIR/DeploymentSpecifics.properties
       - name: Copy localUsers.yml
         if: ${{ matrix.dtap == 'PRD' }}
-        run: cp ladybug/ladybug-ff-cypress-test/.github/workflows/with-ff/localUsers.yml.txt $RESOURCES_DIR/localUsers.yml
+        run: cp ladybug/.github/workflows/with-ff/localUsers.yml.txt $RESOURCES_DIR/localUsers.yml
       - name: Copy cypress.config_cicd.ts to cypress.config.ts to listen to correct port
         working-directory: ladybug/ladybug-ff-cypress-test
         run: cp cypress.config_cicd.ts cypress.config.ts
@@ -215,7 +215,7 @@ jobs:
       - name: Put build.properties in ladybug-ff-test-webapp
         if: ${{ matrix.test-app == 'true' }}  
         run: cp with-ff/build-ladybug-ff-test-webapp.properties ../../../ladybug-ff-test-webapp/build.properties
-        working-directory: ladybug/ladybug-ff-cypress-test/.github/workflows
+        working-directory: ladybug/.github/workflows
       - name: Adjust pom.xml files so that ladybug and frankframework reference each other
         if: ${{ steps.decideAboutBuildCode.outputs.buildCode == 'true' && matrix.test-app == 'false' }}
         working-directory: frank-runner/specials/util/syncPomVersions
@@ -227,8 +227,8 @@ jobs:
         run: ./runIncludingLadybugFfTestWebapp.sh
       - name: Put build.properties in iaf-webapp
         if: ${{ steps.decideAboutBuildCode.outputs.buildCode == 'true' }}
-        working-directory: ladybug/ladybug-ff-cypress-test/.github/workflows
-        run: cp with-ff/build-iaf-webapp.properties ../../../../frank-runner/specials/iaf-webapp/build.properties
+        working-directory: ladybug/.github/workflows
+        run: cp with-ff/build-iaf-webapp.properties ../../../frank-runner/specials/iaf-webapp/build.properties
         # When frank-runner/specials/iaf-webapp is executed, we always get the Maven artifacts in .m2.
       - name: Do not start build from iaf-webapp if running ladybug-ff-test-webapp
         if: ${{ steps.decideAboutBuildCode.outputs.buildCode == 'true' && matrix.test-app == 'true' }}
@@ -236,8 +236,8 @@ jobs:
         run: echo -e "\nskip.start=true" >> build.properties
       - name: Put build.properties in ladybug
         if: ${{ steps.decideAboutBuildCode.outputs.buildCode == 'true' }}
-        working-directory: ladybug/ladybug-ff-cypress-test/.github/workflows
-        run: cp with-ff/build-ladybug.properties ../../../../frank-runner/specials/ladybug/build.properties
+        working-directory: ladybug/.github/workflows
+        run: cp with-ff/build-ladybug.properties ../../../frank-runner/specials/ladybug/build.properties
       - name: Start server using Frank!Runner in background (official release) - no ladybug-ff-test-webapp
         if: ${{ steps.decideAboutBuildCode.outputs.buildCode == 'false' && matrix.test-app == 'false' }}
         working-directory: frank-runner
@@ -255,7 +255,7 @@ jobs:
         working-directory: ladybug/ladybug-ff-test-webapp
         run: ./restart.sh > serverStartLog.log &
       - name: Wait for server to be available
-        working-directory: ladybug/ladybug-ff-cypress-test/.github/workflows/with-ff
+        working-directory: ladybug/.github/workflows/with-ff
         run: ./waitForUrl.sh http://localhost:8090 900
       - name: Be sure there are no old videos
         run: rm -rf ladybug/ladybug-ff-cypress-test/cypress/videos
