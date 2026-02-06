@@ -2,6 +2,10 @@
 \data
 /ladybug-frontend
 \ladybug-frontend
+/ladybug-ff-test-webapp
+\ladybug-ff-test-webapp
+/ladybug-ff-cypress-test
+\ladybug-ff-cypress-test
 /.husky
 \.husky
 /src/main/webapp/

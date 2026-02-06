@@ -1,0 +1,16 @@
+<project default="restart-ladybug-ff-test-webapp" xmlns:if="ant:if" xmlns:unless="ant:unless">
+	<target name="restart-ladybug-ff-test-webapp">
+		<property name="project.dir" value="ladybug/ladybug-ff-test-webapp"/>
+		<condition property="exe" value="../../frank-runner/restart.bat" else="/bin/bash"><os family="windows"/></condition>
+		<condition property="arg" value="../../frank-runner/restart.sh" else=""><os family="unix"/></condition>
+		<property file="build.properties"/>
+		<exec executable="${exe}" vmlauncher="false" failonerror="true">
+			<arg value="${arg}"/>
+			<arg value="-Dproject.dir=${project.dir}"/>
+			<arg value="-Dconfigurations.dir=${configurations.dir}" if:set="configurations.dir"/><!-- Run webapp with configurations and tests from another project as it doesn't have it's own -->
+			<arg value="-Dibistesttool.custom=${ibistesttool.custom}" if:set="ibistesttool.custom" />
+			<!-- <arg value="-Dibistesttool.custom=ViewsTest"/> -->
+			<!-- <arg value="-Ddtap.stage=PRD"/> -->
+		</exec>
+	</target>
+</project>

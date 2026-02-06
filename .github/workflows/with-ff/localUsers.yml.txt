@@ -1,0 +1,16 @@
+users:
+  - username: webservice
+    password: IbisWebService
+    roles: IbisWebServer
+  - username: observer
+    password: IbisObserver
+    roles: IbisObserver
+  - username: dataAdmin
+    password: IbisDataAdmin
+    roles: IbisDataAdmin
+  - username: admin
+    password: IbisAdmin
+    roles: IbisAdmin
+  - username: tester
+    password: IbisTester
+    roles: IbisTester

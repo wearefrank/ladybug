@@ -1,0 +1,31 @@
+{
+  "name": "ladybug-ff-cypress-test",
+  "version": "1.0.0",
+  "description": "Tests for Ladybug in combination with the F!F",
+  "main": "index.ts",
+  "repository": "https://github.com/wearefrank/ladybug-ff-cypress-test",
+  "author": "Martijn Dirkse <martijn@integrationpartners.nl>",
+  "license": "MIT",
+  "dependencies": {
+    "cypress": "^13.7.3",
+    "husky": "^9.0.11",
+    "typescript": "*"
+  },
+  "scripts": {
+    "lint": "eslint cypress/**/*.ts",
+    "batch-file-storage": "cypress run --env \"debugStorageName=FileDebugStorage\"",
+    "batch-database-storage": "cypress run --env \"debugStorageName=DatabaseDebugStorage\"",
+    "interactive-file-storage": "cypress open --env \"debugStorageName=FileDebugStorage\"",
+    "interactive-database-storage": "cypress open --env \"debugStorageName=DatabaseDebugStorage\"",
+    "installFrankRunnerEnv": "cd ../../frank-runner && ./env.sh > installFrankRunnerEnv.log"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^6.4.0",
+    "eslint": "^8.0.1",
+    "eslint-config-standard-with-typescript": "^43.0.1",
+    "eslint-plugin-import": "^2.25.2",
+    "eslint-plugin-n": "^15.0.0 || ^16.0.0 ",
+    "eslint-plugin-promise": "^6.0.0"
+  },
+  "packageManager": "yarn@4.1.1"
+}
