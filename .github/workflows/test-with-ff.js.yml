@@ -213,7 +213,7 @@ jobs:
             ${{ runner.os }}-maven
       - name: Put build.properties in ladybug-ff-test-webapp
         if: ${{ matrix.test-app == 'true' }}  
-        run: cp with-ff/build-ladybug-ff-test-webapp.properties ../../../ladybug-ff-test-webapp/build.properties
+        run: cp with-ff/build-ladybug-ff-test-webapp.properties ../../ladybug-ff-test-webapp/build.properties
         working-directory: ladybug/.github/workflows
       - name: Adjust pom.xml files so that ladybug and frankframework reference each other
         if: ${{ steps.decideAboutBuildCode.outputs.buildCode == 'true' && matrix.test-app == 'false' }}
