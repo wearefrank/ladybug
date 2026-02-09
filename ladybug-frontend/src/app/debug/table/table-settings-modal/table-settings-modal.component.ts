@@ -210,8 +210,8 @@ export class TableSettingsModalComponent implements OnInit, OnDestroy {
     return result;
   }
 
-  protected saveAndClose(): void {
-    this.saveSettings();
+  protected async saveAndClose(): Promise<void> {
+    await this.saveSettings();
     this.activeUnsavedChangesModal?.close();
     this.closeSettingsModal();
   }

@@ -91,6 +91,7 @@ public class ApiAuthorizationFilter implements ContainerRequestFilter {
 		if (constructorDone) log.info("Set observer roles");
 		addConfigurationPart("GET/"  + Constants.LADYBUG_API_PATH + "/testtool.*$", observerRoles);
 		addConfigurationPart("POST/" + Constants.LADYBUG_API_PATH + "/testtool/transformation$", observerRoles);
+		addConfigurationPart("POST/" + Constants.LADYBUG_API_PATH + "/testtool/transformation/reset$", observerRoles);
 		addConfigurationPart("GET/"  + Constants.LADYBUG_API_PATH + "/report/variables$", observerRoles);
 		addConfigurationPart("POST/" + Constants.LADYBUG_API_PATH + "/report/customreportaction$", observerRoles);
 		addConfigurationPart("PUT/"  + Constants.LADYBUG_API_PATH + "/testtool/node-link-strategy$", observerRoles);

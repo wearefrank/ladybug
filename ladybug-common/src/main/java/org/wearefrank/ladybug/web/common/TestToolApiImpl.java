@@ -43,16 +43,7 @@ public class TestToolApiImpl {
 	private @Setter @Inject @Autowired MetadataExtractor metadataExtractor;
 	private @Setter @Inject @Autowired ReportXmlTransformer reportXmlTransformer;
 	private @Setter @Inject @Autowired Views views;
-	private String defaultTransformation;
 
-	@PostConstruct
-	public void init() {
-		defaultTransformation = reportXmlTransformer.getXslt();
-	}
-
-	public String getDefaultTransformation() {
-		return defaultTransformation;
-	}
 
 	public Map<String, Object> getTestToolInfo() {
 		Map<String, Object> map = new HashMap<>(4);
@@ -120,6 +111,7 @@ public class TestToolApiImpl {
 		if (StringUtils.isEmpty(transformation)) {
 			throw new HttpBadRequestException("No transformation has been provided");
 		}
+		transformation = transformation.replace("\r\n", "\n");
 		String errorMessage = reportXmlTransformer.updateXslt(transformation);
 		if (errorMessage != null) {
 			// Without "- detailed error message -" the message is not shown in the toaster
@@ -127,15 +119,12 @@ public class TestToolApiImpl {
 		}
 	}
 
-	public Map<String, String> getReportTransformation(boolean defaultTransformation) {
-		String transformation;
+	public void restoreDefaultXsltTransformation() {
+		reportXmlTransformer.restoreDefaultXslt();
+	}
 
-		if (defaultTransformation) {
-			transformation = getDefaultTransformation();
-		} else {
-			transformation = reportXmlTransformer.getXslt();
-		}
-
+	public Map<String, String> getReportTransformation() {
+		String transformation = reportXmlTransformer.getXslt();
 		if (StringUtils.isEmpty(transformation))
 			return null;
 

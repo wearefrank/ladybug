@@ -78,7 +78,7 @@ export class SettingsService {
       );
       const transformationPromise: Promise<Transformation> = firstValueFrom(
         this.httpService
-          .getTransformation(false)
+          .getTransformation()
           .pipe(catchError(this.handleErrorWithRethrowMessage('Could not load default report transformation'))),
       );
       Promise.all([settingsPromise, transformationPromise])
@@ -134,18 +134,12 @@ export class SettingsService {
             ),
           ),
       );
-      const transformationPromise: Promise<Transformation> = firstValueFrom(
+      const transformationBackToFactoryPromise: Promise<void> = firstValueFrom(
         this.httpService
-          .getTransformation(true)
-          .pipe(
-            catchError(
-              this.handleErrorWithRethrowMessage(
-                'Could not restore default report transformation to factory transformation',
-              ),
-            ),
-          ),
+          .restoreFactoryTransformation()
+          .pipe(catchError(this.handleErrorWithRethrowMessage('Could not restore factory report transformation'))),
       );
-      return Promise.all([settingsPromise, transformationPromise])
+      return Promise.all([settingsPromise, transformationBackToFactoryPromise])
         .then(() => this.refresh())
         .then(() => resolve())
         .catch(() => reject('Failed to restore factory settings'));

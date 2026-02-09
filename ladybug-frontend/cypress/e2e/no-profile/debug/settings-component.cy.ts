@@ -59,7 +59,7 @@ describe('Tests for settings component', () => {
   describe('Restore, factory reset, save', () => {
     beforeEach(() => {
       cy.debugTabBackToFactorySettings();
-      cy.get('@openSettingsModal').click();
+      cy.get('[data-cy-debug="openSettings"]').as('openSettingsModal').click();
       cy.get('[data-cy-settings="nav-client"]').click();
       cy.get('[data-cy-settings="openLatestReports"]').invoke('val').should('equal', '10');
       cy.get('[data-cy-settings="showAmount"]').should('not.be.checked');
@@ -67,6 +67,7 @@ describe('Tests for settings component', () => {
         'have.text',
         '1x',
       );
+      cy.get('[data-cy-settings-transformation-enabled]').should('be.checked');
       cy.get('[data-cy-settings="nav-server"]').click();
       cy.get('[data-cy-settings="generatorEnabled"] option:selected').should(
         'have.text',
@@ -78,6 +79,169 @@ describe('Tests for settings component', () => {
       cy.get('[data-cy-settings="close"]').should('not.exist');
     })
 
-    it('Dummy test', () => {})
+    it('When change of number of reports is discarded then not changed and when saved then changed', () => {
+      cy.get('[data-cy-debug="openSettings"]').as('openSettingsModal').click();
+      cy.get('[data-cy-settings="nav-client"]').as('client').click();
+      cy.get('[data-cy-settings="openLatestReports"]').as('numberOfReports').type('{selectAll}8');
+      cy.get('[data-cy-settings="close"]').as('close').click();
+      cy.get('[data-cy-debug-confirm="discard"]').click();
+      cy.get('@openSettingsModal').click();
+      cy.get('@client').click();
+      cy.get('@numberOfReports').invoke('val').should('equal', '10');
+      cy.get('@numberOfReports').type('{selectAll}8');
+      cy.get('@close').click();
+      cy.get('[data-cy-debug-confirm="save"]').click();
+      cy.get('[data-cy-debug="openSettings"]').as('openSettingsModal').click();
+      cy.get('[data-cy-settings="nav-client"]').as('client').click();
+      cy.get('@numberOfReports').invoke('val').should('equal', '8');
+      cy.get('[data-cy-settings="factoryReset"]').click();
+      cy.get('[data-cy-debug="openSettings"]').as('openSettingsModal').click();
+      cy.get('[data-cy-settings="nav-client"]').as('client').click();
+      cy.get('@numberOfReports').invoke('val').should('equal', '10');
+      cy.get('[data-cy-settings="close"]').as('close').click();
+    })
+
+    it('When change of show multiple is discarded then not changed and when saved then changed', () => {
+      cy.get('[data-cy-debug="openSettings"]').as('openSettingsModal').click();
+      cy.get('[data-cy-settings="nav-client"]').as('client').click();
+      cy.get('[data-cy-settings="showAmount"]').as('showMultiple').check();
+      cy.get('[data-cy-settings="close"]').as('close').click();
+      cy.get('[data-cy-debug-confirm="discard"]').click();
+      cy.get('@openSettingsModal').click();
+      cy.get('@client').click();
+      cy.get('@showMultiple').should('not.be.checked');
+      cy.get('@showMultiple').check();
+      cy.get('@close').click();
+      cy.get('[data-cy-debug-confirm="save"]').click();
+      cy.get('@openSettingsModal').click();
+      cy.get('@client').click();
+      cy.get('@showMultiple').should('be.checked');      
+      cy.get('[data-cy-settings="factoryReset"]').click();
+      cy.get('[data-cy-debug="openSettings"]').as('openSettingsModal').click();
+      cy.get('[data-cy-settings="nav-client"]').as('client').click();
+      cy.get('@showMultiple').should('not.be.checked');
+      cy.get('[data-cy-settings="close"]').as('close').click();
+    })
+
+    it('When change of table spacing is discarded then not changed and when saved then changed', () => {
+      cy.get('[data-cy-debug="openSettings"]').as('openSettingsModal').click();
+      cy.get('[data-cy-settings="nav-client"]').as('client').click();
+      cy.get('[data-cy-settings="spacingDropdown"]').select('5x');
+      cy.get('[data-cy-settings="close"]').as('close').click();
+      cy.get('[data-cy-debug-confirm="discard"]').click();
+      cy.get('@openSettingsModal').click();
+      cy.get('@client').click();
+      cy.get('[data-cy-settings="spacingDropdown"] option:selected').should(
+        'have.text',
+        '1x',
+      );
+      cy.get('[data-cy-settings="spacingDropdown"]').select('5x');
+      cy.get('@close').click();
+      cy.get('[data-cy-debug-confirm="save"]').click();
+      cy.get('@openSettingsModal').click();
+      cy.get('@client').click();
+      cy.get('[data-cy-settings="spacingDropdown"] option:selected').should(
+        'have.text',
+        '5x',
+      );
+      cy.get('[data-cy-settings="factoryReset"]').click();
+      cy.get('[data-cy-debug="openSettings"]').as('openSettingsModal').click();
+      cy.get('[data-cy-settings="nav-client"]').as('client').click();
+      cy.get('[data-cy-settings="spacingDropdown"] option:selected').should(
+        'have.text',
+        '1x',
+      );
+      cy.get('[data-cy-settings="close"]').as('close').click();
+    })
+
+    it('When transformation enabled choice change is discarded then not changed and when saved then changed', () => {
+      cy.get('[data-cy-debug="openSettings"]').as('openSettingsModal').click();
+      cy.get('[data-cy-settings="nav-client"]').as('client').click();
+      cy.get('[data-cy-settings-transformation-enabled]').as('transformationEnabled').uncheck();
+      cy.get('[data-cy-settings="close"]').as('close').click();
+      cy.get('[data-cy-debug-confirm="discard"]').click();
+      cy.get('@openSettingsModal').click();
+      cy.get('@client').click();
+      cy.get('@transformationEnabled').should('be.checked')
+      cy.get('@transformationEnabled').uncheck();
+      cy.get('@close').click();
+      cy.get('[data-cy-debug-confirm="save"]').click();
+      cy.get('@openSettingsModal').click();
+      cy.get('[data-cy-settings="nav-client"]').as('client').click();
+      cy.get('@transformationEnabled').should('not.be.checked')
+      cy.get('[data-cy-settings="factoryReset"]').click();
+      cy.get('@openSettingsModal').click();
+      cy.get('@client').click();
+      cy.get('@transformationEnabled').should('be.checked')
+      cy.get('[data-cy-settings="close"]').as('close').click();
+    })
+
+    it('When generator enabled choice change is discarded then not changed and when saved then changed', () => {
+      cy.get('[data-cy-debug="openSettings"]').as('openSettingsModal').click();
+      cy.get('[data-cy-settings="nav-server"]').as('server').click();
+      cy.get('[data-cy-settings="generatorEnabled"]').select('Disabled');
+      cy.get('[data-cy-settings="close"]').as('close').click();
+      cy.get('[data-cy-debug-confirm="discard"]').click();
+      cy.get('@openSettingsModal').click();
+      cy.get('@server').click();
+      cy.get('[data-cy-settings="generatorEnabled"] option:selected').should(
+        'have.text',
+        'Enabled'
+      )
+      cy.get('[data-cy-settings="generatorEnabled"]').select('Disabled');
+      cy.get('@close').click();
+      cy.get('[data-cy-debug-confirm="save"]').click();
+      cy.get('@openSettingsModal').click();
+      cy.get('@server').click();
+      cy.get('[data-cy-settings="generatorEnabled"] option:selected').should(
+        'have.text',
+        'Disabled'
+      )
+      cy.get('[data-cy-settings="factoryReset"]').click();
+      cy.get('@openSettingsModal').click();
+      cy.get('@server').click();
+      cy.get('[data-cy-settings="generatorEnabled"] option:selected').should(
+        'have.text',
+        'Enabled'
+      )
+      cy.get('[data-cy-settings="close"]').as('close').click();
+    })
+
+    it('When transformation change is discarded then not changed and when saved then changed - valid XSLT', () => {
+      cy.fixture('empty.xslt').then((emptyXslt: string) => {
+        emptyXslt = emptyXslt.replace('\r\n', '\n');
+        const LENGTH_ALTERNATIVE_XSLT = emptyXslt.length;
+        const LENGTH_THRESHOLD = LENGTH_ALTERNATIVE_XSLT + 10;
+        cy.get('[data-cy-debug="openSettings"]').as('openSettingsModal').click();
+        cy.get('[data-cy-settings="nav-server"]').as('server').click();
+        cy.get('[data-cy-settings-transformation]').as('transformation').invoke('val').should('have.length.gt', LENGTH_THRESHOLD);
+        cy.get('@transformation').clear().type(emptyXslt);
+        cy.get('[data-cy-settings="close"]').as('close').click();
+        cy.get('[data-cy-debug-confirm="discard"]').click();
+        cy.get('@openSettingsModal').click();
+        cy.get('@server').click();
+        cy.get('@transformation').invoke('val').should('have.length.gt', LENGTH_THRESHOLD);
+        cy.get('@transformation').clear().type(emptyXslt);
+        cy.get('@close').click();
+        cy.get('[data-cy-debug-confirm="save"]').click();
+        cy.get('@openSettingsModal').click();
+        cy.get('@server').click();
+        cy.get('@transformation').invoke('val').then((raw) => {
+          expect(typeof raw).to.equal('string');
+          expect(normalize(raw as string)).to.equal(normalize(emptyXslt));
+        });
+        cy.get('[data-cy-settings="factoryReset"]').click();
+        cy.get('@openSettingsModal').click();
+        cy.get('@server').click();
+        cy.get('@transformation').invoke('val').should('have.length.gt', LENGTH_THRESHOLD);
+        cy.get('[data-cy-settings="close"]').as('close').click();
+      })
+    })
   })
 });
+
+// For some reason Cypress adds extra line endings when typing the text
+// in the text area. We compensate for this here.
+function normalize(s: string): string {
+  return s.replace('\r\n', '\n').replace('\n\n', '\n').replace('\r\n', '\n').replace('\n\n', '\n');
+}

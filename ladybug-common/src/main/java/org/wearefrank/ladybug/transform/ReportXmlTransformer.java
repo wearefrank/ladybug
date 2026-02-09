@@ -31,6 +31,7 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
+import lombok.Getter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -92,6 +93,10 @@ public class ReportXmlTransformer {
 			createTransformerException = e;
 			log.debug(createTransformerError, createTransformerException);
 		}
+	}
+
+	public void restoreDefaultXslt() {
+		init();
 	}
 
 	public String updateXslt(String xslt) {

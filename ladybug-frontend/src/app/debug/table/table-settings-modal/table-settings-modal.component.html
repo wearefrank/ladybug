@@ -116,8 +116,8 @@
   <div class="modal-body">
     <h3>You have unsaved changes, are you sure you want to close?</h3>
     <div class="d-flex flex-row justify-content-between">
-      <button class="btn btn-success" (click)="saveAndClose()">Save and close</button>
-      <button class="btn btn-outline-danger" (click)="closeWithoutSaving()">Discard and close</button>
+      <button data-cy-debug-confirm="save" class="btn btn-success" (click)="saveAndClose()">Save and close</button>
+      <button data-cy-debug-confirm="discard" class="btn btn-outline-danger" (click)="closeWithoutSaving()">Discard and close</button>
     </div>
   </div>
 </ng-template>
