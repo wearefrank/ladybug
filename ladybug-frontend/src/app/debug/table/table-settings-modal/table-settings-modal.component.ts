@@ -40,6 +40,7 @@ export class TableSettingsModalComponent implements OnInit, OnDestroy {
   protected readonly generatorEnabledKey: string = 'generatorEnabled';
   protected readonly regexFilterKey: string = 'regexFilter';
   protected readonly transformationKey: string = 'transformation';
+  protected readonly transformationEnabledKey: string = 'transformationEnabled';
 
   protected readonly spacingOptions: number[] = [0, 1, 2, 3, 4, 5, 6, 7, 8];
 
@@ -50,6 +51,7 @@ export class TableSettingsModalComponent implements OnInit, OnDestroy {
     [this.showMultipleFilesKey]: new FormControl(false),
     [this.tableSpacingKey]: new FormControl(0),
     [this.amountOfRecordsShownKey]: new FormControl(0),
+    [this.transformationEnabledKey]: new FormControl(true),
     [this.generatorEnabledKey]: new FormControl(false),
     [this.regexFilterKey]: new FormControl(''),
     [this.transformationKey]: new FormControl(''),
@@ -109,6 +111,9 @@ export class TableSettingsModalComponent implements OnInit, OnDestroy {
     this.settingsForm
       .get(this.amountOfRecordsShownKey)
       ?.setValue(this.clientSettingsService.getAmountOfRecordsInTable());
+    this.settingsForm
+      .get(this.transformationEnabledKey)
+      ?.setValue(this.clientSettingsService.isTransformationEnabled());
     this.settingsForm.get(this.generatorEnabledKey)?.setValue(this.serverSettingsService.isGeneratorEnabled());
     this.settingsForm.get(this.regexFilterKey)?.setValue(this.serverSettingsService.getRegexFilter());
     this.settingsForm.get(this.transformationKey)?.setValue(this.serverSettingsService.getTransformation());
@@ -153,6 +158,7 @@ export class TableSettingsModalComponent implements OnInit, OnDestroy {
     this.clientSettingsService.setShowMultipleReportsatATime(this.settingsForm.value[this.showMultipleFilesKey]);
     this.clientSettingsService.setAmountOfRecordsInTable(this.settingsForm.value[this.amountOfRecordsShownKey]);
     this.clientSettingsService.setTableSpacing(this.settingsForm.value[this.tableSpacingKey]);
+    this.clientSettingsService.setTransformationEnabled(this.settingsForm.value[this.transformationEnabledKey]);
   }
 
   // TODO: Error handling?
@@ -167,11 +173,13 @@ export class TableSettingsModalComponent implements OnInit, OnDestroy {
     const formMultipleFilesEnabled: boolean | null = this.settingsForm.value[this.showMultipleFilesKey];
     const formTableSpacing: number | null = this.settingsForm.value[this.tableSpacingKey];
     const formAmountOfRecordsShown: number | null = this.settingsForm.value[this.amountOfRecordsShownKey];
+    const formTransformationEnabled: boolean | null = this.settingsForm.value[this.transformationEnabledKey];
     this.unsavedChanges =
       this.formServerSettingsChanged() ||
       formMultipleFilesEnabled !== this.clientSettingsService.isShowMultipleReportsAtATime() ||
       formTableSpacing !== this.clientSettingsService.getTableSpacing() ||
-      formAmountOfRecordsShown !== this.clientSettingsService.getAmountOfRecordsInTable();
+      formAmountOfRecordsShown !== this.clientSettingsService.getAmountOfRecordsInTable() ||
+      formTransformationEnabled !== this.clientSettingsService.isTransformationEnabled();
     console.log(`Finishing formHasChanged() with unsaved changes=${this.unsavedChanges}`);
   }
 

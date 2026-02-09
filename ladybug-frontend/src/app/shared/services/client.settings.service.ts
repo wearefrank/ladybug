@@ -41,10 +41,20 @@ export class ClientSettingsService {
     this.amountOfRecordsInTableSubject.next(value);
   }
 
+  public isTransformationEnabled(): boolean {
+    const raw: string | null = localStorage.getItem(this.transformationEnabledKey);
+    return raw === 'true';
+  }
+
+  public setTransformationEnabled(value: boolean): void {
+    localStorage.setItem(this.transformationEnabledKey, value ? 'true' : 'false');
+  }
+
   private readonly tableSpacingKey = 'tableSpacing';
   private readonly showMultipleRecordsAtATimeKey = 'showMultipleFilesAtATime';
   private readonly defaultAmountOfRecordsInTable: number = 10;
   private readonly amountOfRecordsInTableKey = 'amountOfRecordsInTable';
+  private readonly transformationEnabledKey = 'transformationEnabled';
 
   private showMultipleAtATimeSubject = new BehaviorSubject<boolean>(this.isShowMultipleReportsAtATime());
   public showMultipleAtATimeObservable = this.showMultipleAtATimeSubject as Observable<boolean>;
@@ -57,5 +67,6 @@ export class ClientSettingsService {
     this.setAmountOfRecordsInTable(10);
     this.setShowMultipleReportsatATime(false);
     this.setTableSpacing(1);
+    this.setTransformationEnabled(true);
   }
 }

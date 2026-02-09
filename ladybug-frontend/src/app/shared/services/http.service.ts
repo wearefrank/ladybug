@@ -14,6 +14,7 @@ import { UpdateReport } from '../interfaces/update-report';
 import { UpdateReportResponse } from '../interfaces/update-report-response';
 import { Transformation } from '../interfaces/transformation';
 import { TableSettings } from '../interfaces/table-settings';
+import { ClientSettingsService } from './client.settings.service';
 
 @Injectable({
   providedIn: 'root',
@@ -21,6 +22,7 @@ import { TableSettings } from '../interfaces/table-settings';
 export class HttpService {
   private readonly headers: HttpHeaders = new HttpHeaders().set('Content-Type', 'application/json');
   private http = inject(HttpClient);
+  private clientSettingsService = inject(ClientSettingsService);
 
   getViews(): Observable<View[]> {
     return this.http.get<Record<string, View>>('api/testtool/views').pipe(map((response) => Object.values(response)));
@@ -72,8 +74,11 @@ export class HttpService {
   }
 
   getReport(reportId: number, storage: string): Observable<Report> {
+    const transformationEnabled: string = this.clientSettingsService.isTransformationEnabled() ? 'true' : 'false';
     return this.http
-      .get<Record<string, Report | string>>(`api/report/${storage}/${reportId}?xml=true&globalTransformer=true`)
+      .get<
+        Record<string, Report | string>
+      >(`api/report/${storage}/${reportId}?xml=true&globalTransformer=${transformationEnabled}`)
       .pipe(
         map((e) => {
           const report = e['report'] as Report;
