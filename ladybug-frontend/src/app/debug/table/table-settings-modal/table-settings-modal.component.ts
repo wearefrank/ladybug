@@ -1,18 +1,12 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
-import { Component, EventEmitter, inject, OnDestroy, Output, TemplateRef, ViewChild } from '@angular/core';
-import { FormGroup, ReactiveFormsModule, UntypedFormControl } from '@angular/forms';
+import { Component, inject, OnDestroy, OnInit, TemplateRef, ViewChild } from '@angular/core';
+import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { NgbActiveModal, NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { HttpService } from '../../../shared/services/http.service';
-import { SettingsService } from '../../../shared/services/settings.service';
-import { catchError, firstValueFrom, Subscription } from 'rxjs';
+import { ServerSettings, SettingsService } from '../../../shared/services/settings.service';
+import { Subscription } from 'rxjs';
 import { ToastService } from '../../../shared/services/toast.service';
-import { UploadParameters } from 'src/app/shared/interfaces/upload-params';
-import { ErrorHandling } from 'src/app/shared/classes/error-handling.service';
-import { OptionsSettings } from '../../../shared/interfaces/options-settings';
 import { VersionService } from '../../../shared/services/version.service';
 import { CopyTooltipDirective } from '../../../shared/directives/copy-tooltip.directive';
-import { DebugTabService } from '../../debug-tab.service';
+import { ClientSettingsService } from 'src/app/shared/services/client.settings.service';
 
 @Component({
   selector: 'app-table-settings-modal',
@@ -21,9 +15,7 @@ import { DebugTabService } from '../../debug-tab.service';
   standalone: true,
   imports: [ReactiveFormsModule, CopyTooltipDirective],
 })
-export class TableSettingsModalComponent implements OnDestroy {
-  @Output() openLatestReportsEvent: EventEmitter<number> = new EventEmitter<number>();
-
+export class TableSettingsModalComponent implements OnInit, OnDestroy {
   @ViewChild('modal') protected settingsModalElement!: TemplateRef<HTMLElement>;
   @ViewChild('unsavedChangesModal')
   protected unsavedChangesModalElement!: TemplateRef<HTMLElement>;
@@ -31,14 +23,11 @@ export class TableSettingsModalComponent implements OnDestroy {
   // Cannot be defined after protected members because they
   // are used to initialize the protected members.
   private modalService = inject(NgbModal);
-  private httpService = inject(HttpService);
-  private settingsService = inject(SettingsService);
+  public clientSettingsService = inject(ClientSettingsService);
+  public serverSettingsService = inject(SettingsService);
   private toastService = inject(ToastService);
-  private errorHandler = inject(ErrorHandling);
   private versionService = inject(VersionService);
-  private debugTabService = inject(DebugTabService);
 
-  protected showMultipleAtATime = false;
   protected unsavedChanges = false;
 
   protected backendVersion?: string;
@@ -47,34 +36,37 @@ export class TableSettingsModalComponent implements OnDestroy {
   //Form Control Name keys
   protected readonly showMultipleFilesKey: string = 'showMultipleFilesAtATime';
   protected readonly tableSpacingKey: string = 'tableSpacing';
+  protected readonly amountOfRecordsShownKey: string = 'amountOfRecordsShown';
   protected readonly generatorEnabledKey: string = 'generatorEnabled';
   protected readonly regexFilterKey: string = 'regexFilter';
-  protected readonly transformationEnabledKey: string = 'transformationEnabled';
   protected readonly transformationKey: string = 'transformation';
-
-  protected readonly defaultRegexValue: string = '.*';
-  protected readonly defaultGeneratorEnabled: string = 'Enabled';
 
   protected readonly spacingOptions: number[] = [0, 1, 2, 3, 4, 5, 6, 7, 8];
 
-  protected tableSpacing = 1;
+  protected readonly SERVER = 'Server';
+  protected readonly CLIENT = 'Client';
+
   protected settingsForm: FormGroup = new FormGroup({
-    [this.showMultipleFilesKey]: new UntypedFormControl(this.settingsService.defaultShowMultipleFilesAtATime),
-    [this.tableSpacingKey]: new UntypedFormControl(this.settingsService.defaultTableSpacing),
-    [this.generatorEnabledKey]: new UntypedFormControl(this.defaultGeneratorEnabled),
-    [this.regexFilterKey]: new UntypedFormControl(this.defaultRegexValue),
-    [this.transformationEnabledKey]: new UntypedFormControl(true),
-    [this.transformationKey]: new UntypedFormControl(''),
+    [this.showMultipleFilesKey]: new FormControl(false),
+    [this.tableSpacingKey]: new FormControl(0),
+    [this.amountOfRecordsShownKey]: new FormControl(0),
+    [this.generatorEnabledKey]: new FormControl(false),
+    [this.regexFilterKey]: new FormControl(''),
+    [this.transformationKey]: new FormControl(''),
   });
 
-  private formValueOnStart: any;
   private subscriptions: Subscription = new Subscription();
   private activeSettingsModal?: NgbActiveModal;
   private activeUnsavedChangesModal?: NgbActiveModal;
 
+  protected activeTab: string = this.SERVER;
+
   constructor() {
     this.getApplicationVersions();
-    this.subscribeToSettingsServiceObservables();
+  }
+
+  ngOnInit(): void {
+    this.serverSettingsService.init().then(() => this.loadSettings());
   }
 
   ngOnDestroy(): void {
@@ -90,131 +82,124 @@ export class TableSettingsModalComponent implements OnDestroy {
     });
   }
 
-  subscribeToSettingsServiceObservables(): void {
-    const showMultipleSubscription: Subscription = this.settingsService.showMultipleAtATimeObservable.subscribe({
-      next: (value: boolean): void => {
-        this.showMultipleAtATime = value;
-        this.settingsForm.get(this.showMultipleFilesKey)?.setValue(this.showMultipleAtATime);
-      },
-    });
-    this.subscriptions.add(showMultipleSubscription);
-    const tableSpacingSubscription: Subscription = this.settingsService.tableSpacingObservable.subscribe({
-      next: (value: number): void => {
-        this.tableSpacing = value;
-        this.settingsForm.get(this.tableSpacingKey)?.setValue(this.tableSpacing);
-      },
-    });
-    this.subscriptions.add(tableSpacingSubscription);
-  }
-
   async open(): Promise<void> {
+    console.log('Opening debug settings dialog');
     await this.loadSettings();
     this.activeSettingsModal = this.modalService.open(this.settingsModalElement);
   }
 
   closeSettingsModal(): void {
-    this.activeSettingsModal?.close();
+    console.log(
+      `Closing debug settings modal with unsavedChanges=${this.unsavedChanges} and table spacing ${this.settingsForm.value[this.tableSpacingKey]}`,
+    );
     if (this.unsavedChanges) {
       this.activeUnsavedChangesModal = this.modalService.open(this.unsavedChangesModalElement, { backdrop: 'static' });
+    } else {
+      this.activeSettingsModal?.close();
     }
   }
 
   async loadSettings(): Promise<void> {
-    const settingsResponse: OptionsSettings = await firstValueFrom(
-      this.httpService.getSettings().pipe(catchError(this.errorHandler.handleError())),
-    );
-    this.saveResponseSetting(settingsResponse);
-    if (localStorage.getItem('transformationEnabled')) {
-      this.settingsForm
-        .get(this.transformationEnabledKey)
-        ?.setValue(localStorage.getItem('transformationEnabled') == 'true');
-    }
-    this.settingsForm.get(this.showMultipleFilesKey)?.setValue(this.showMultipleAtATime);
-    const transformationResponse = await firstValueFrom(
-      this.httpService.getTransformation(false).pipe(catchError(this.errorHandler.handleError())),
-    );
-    this.settingsForm.get(this.transformationKey)?.setValue(transformationResponse.transformation);
-    if (!this.formValueOnStart) {
-      this.formValueOnStart = this.settingsForm.value;
-    }
+    // TODO: Error handling?
+    await this.serverSettingsService.refresh();
+    this.settingsForm
+      .get(this.showMultipleFilesKey)
+      ?.setValue(this.clientSettingsService.isShowMultipleReportsAtATime());
+    this.settingsForm.get(this.tableSpacingKey)?.setValue(this.clientSettingsService.getTableSpacing());
+    this.settingsForm
+      .get(this.amountOfRecordsShownKey)
+      ?.setValue(this.clientSettingsService.getAmountOfRecordsInTable());
+    this.settingsForm.get(this.generatorEnabledKey)?.setValue(this.serverSettingsService.isGeneratorEnabled());
+    this.settingsForm.get(this.regexFilterKey)?.setValue(this.serverSettingsService.getRegexFilter());
+    this.settingsForm.get(this.transformationKey)?.setValue(this.serverSettingsService.getTransformation());
+    this.unsavedChanges = false;
   }
 
   onClickSave(): void {
-    this.saveSettings();
+    this.saveSettings().then(() => this.closeSettingsModal());
+  }
+
+  // TODO: How to do error handling here?
+  saveSettings(): Promise<void> {
+    return new Promise((resolve, reject) => {
+      if (this.formServerSettingsChanged()) {
+        const body: ServerSettings = {
+          isGeneratorEnabled: this.getFormGeneratorEnabled(),
+          regexFilter: this.settingsForm.value[this.regexFilterKey],
+          transformation: this.settingsForm.value[this.transformationKey],
+        };
+        this.serverSettingsService
+          .save(body)
+          .catch(() => {
+            this.toastService.showDanger('Failed to save settings');
+            reject();
+          })
+          .then(() => this.saveClientSettings())
+          .then(() => this.toastService.showSuccess('Settings saved!'))
+          .then(() => this.loadSettings())
+          .catch(() => {
+            this.toastService.showDanger('Failer to reload settings after saving change');
+            reject();
+          })
+          .then(() => resolve());
+      } else {
+        this.saveClientSettings();
+        this.loadSettings().then(() => resolve());
+      }
+    });
+  }
+
+  private saveClientSettings(): void {
+    this.clientSettingsService.setShowMultipleReportsatATime(this.settingsForm.value[this.showMultipleFilesKey]);
+    this.clientSettingsService.setAmountOfRecordsInTable(this.settingsForm.value[this.amountOfRecordsShownKey]);
+    this.clientSettingsService.setTableSpacing(this.settingsForm.value[this.tableSpacingKey]);
+  }
+
+  // TODO: Error handling?
+  async factoryReset(): Promise<void> {
+    await this.serverSettingsService.backToFactory();
+    await this.clientSettingsService.backToFactory();
+    await this.loadSettings();
     this.closeSettingsModal();
   }
 
-  saveSettings(): void {
-    this.saveToLocalStorage();
-    const transformation = this.settingsForm.get(this.transformationKey)?.value;
-    this.httpService.postTransformation(transformation).pipe(catchError(this.errorHandler.handleError())).subscribe();
-    const tableSpacing = this.settingsForm.get(this.tableSpacingKey);
-    this.settingsService.setTableSpacing(Number(tableSpacing?.value));
-    const showMultipleAtATime = this.settingsForm.get(this.showMultipleFilesKey);
-    this.settingsService.setShowMultipleAtATime(showMultipleAtATime?.value);
-    const generatorEnabled: boolean = this.settingsForm.get(this.generatorEnabledKey)?.value === 'Enabled';
-    const regexValue = this.settingsForm.get(this.regexFilterKey)?.value;
-    const regexFilter = regexValue === '' ? this.defaultRegexValue : regexValue;
-    const data: UploadParameters = {
-      generatorEnabled: generatorEnabled,
-      regexFilter: regexFilter,
-    };
-    this.httpService
-      .postSettings(data)
-      .pipe(catchError(this.errorHandler.handleError()))
-      .subscribe(() => this.toastService.showSuccess('Settings saved!'));
-
-    if (this.debugTabService.hasAnyReportsOpen()) {
-      this.toastService.showWarning('Reopen report to see updated XML', {
-        buttonText: 'Reopen',
-        callback: () => this.debugTabService.refreshTree(),
-      });
-    }
-    this.unsavedChanges = false;
-    this.formValueOnStart = this.settingsForm.value;
-  }
-
-  saveToLocalStorage(): void {
-    localStorage.setItem('generatorEnabled', this.settingsForm.get(this.generatorEnabledKey)?.value);
-    localStorage.setItem('transformationEnabled', this.settingsForm.get(this.transformationEnabledKey)?.value);
-  }
-
-  openLatestReports(amount: number): void {
-    this.openLatestReportsEvent.next(amount);
-  }
-
-  async factoryReset(): Promise<void> {
-    this.settingsForm.reset();
-    this.settingsService.setShowMultipleAtATime();
-    this.settingsService.setTableSpacing();
-    const optionsResponse = await firstValueFrom(
-      this.httpService.resetSettings().pipe(catchError(this.errorHandler.handleError())),
-    );
-    this.saveResponseSetting(optionsResponse);
-    const transformationResponse = await firstValueFrom(
-      this.httpService.getTransformation(true).pipe(catchError(this.errorHandler.handleError())),
-    );
-    this.settingsForm.get(this.transformationKey)?.setValue(transformationResponse.transformation);
-    this.saveSettings();
-    this.activeSettingsModal?.close();
-  }
-
-  saveResponseSetting(response: OptionsSettings): void {
-    const generatorStatus = response.generatorEnabled ? 'Enabled' : 'Disabled';
-    localStorage.setItem(this.generatorEnabledKey, generatorStatus);
-    this.settingsForm.get(this.generatorEnabledKey)?.setValue(generatorStatus);
-    this.settingsForm.get(this.regexFilterKey)?.setValue(response.regexFilter);
-  }
-
   protected formHasChanged(): void {
-    const currentFormValue = this.settingsForm.value;
-    let unsavedChanges = false;
-    for (let [key, value] of Object.entries(this.formValueOnStart)) {
-      if (currentFormValue[key] !== value) {
-        unsavedChanges = true;
-      }
-    }
-    this.unsavedChanges = unsavedChanges;
+    const formMultipleFilesEnabled: boolean | null = this.settingsForm.value[this.showMultipleFilesKey];
+    const formTableSpacing: number | null = this.settingsForm.value[this.tableSpacingKey];
+    const formAmountOfRecordsShown: number | null = this.settingsForm.value[this.amountOfRecordsShownKey];
+    this.unsavedChanges =
+      this.formServerSettingsChanged() ||
+      formMultipleFilesEnabled !== this.clientSettingsService.isShowMultipleReportsAtATime() ||
+      formTableSpacing !== this.clientSettingsService.getTableSpacing() ||
+      formAmountOfRecordsShown !== this.clientSettingsService.getAmountOfRecordsInTable();
+    console.log(`Finishing formHasChanged() with unsaved changes=${this.unsavedChanges}`);
+  }
+
+  protected formServerSettingsChanged(): boolean {
+    console.log('Enter TableSettingsModalComponent.formServerSettingsChanged()');
+    const formRegexFilter: string | null = this.settingsForm.value[this.regexFilterKey];
+    const formTransformation: string | null = this.settingsForm.value[this.transformationKey];
+    console.log(`Current generator enabled status: ${this.serverSettingsService.isGeneratorEnabled()}`);
+    console.log(
+      `Generator enabled changed: ${this.getFormGeneratorEnabled() !== this.serverSettingsService.isGeneratorEnabled()}`,
+    );
+    console.log(`Type of current generator enabled: ${typeof this.getFormGeneratorEnabled()}`);
+    console.log(`Type of form generator enabled: ${typeof this.getFormGeneratorEnabled()}`);
+    const result: boolean =
+      this.getFormGeneratorEnabled() !== this.serverSettingsService.isGeneratorEnabled() ||
+      formRegexFilter !== this.serverSettingsService.getRegexFilter() ||
+      formTransformation !== this.serverSettingsService.getTransformation();
+    console.log(`Leave TableSettingsModalComponent.formServerSettingsChanged() with result ${result}`);
+    return result;
+  }
+
+  private getFormGeneratorEnabled(): boolean {
+    const formReportGeneratorEnabled: boolean | null = this.settingsForm.value[this.generatorEnabledKey];
+    const result: boolean = formReportGeneratorEnabled === true;
+    console.log(
+      `formReportGeneratorEnabled: ${formReportGeneratorEnabled}, type ${typeof formReportGeneratorEnabled}, returning ${result}`,
+    );
+    return result;
   }
 
   protected saveAndClose(): void {
@@ -225,8 +210,19 @@ export class TableSettingsModalComponent implements OnDestroy {
 
   protected async closeWithoutSaving(): Promise<void> {
     await this.loadSettings();
-    this.unsavedChanges = false;
     this.activeUnsavedChangesModal?.close();
     this.closeSettingsModal();
+  }
+
+  getNavClasses(tab: string): string[] {
+    const result = ['nav-link'];
+    if (tab === this.activeTab) {
+      result.push('active');
+    }
+    return result;
+  }
+
+  selectNav(tab: string): void {
+    this.activeTab = tab;
   }
 }

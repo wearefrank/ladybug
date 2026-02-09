@@ -93,6 +93,8 @@ declare global {
       copyReportsToTestTab(names: string[]): Chainable;
 
       editCheckpointValue(value: string): Chainable;
+
+      debugTabBackToFactorySettings(): Chainable;
     }
   }
 }
@@ -285,7 +287,8 @@ Cypress.Commands.add(
   'enableShowMultipleInDebugTree' as keyof Chainable,
   (): void => {
     cy.get('[data-cy-debug="openSettings"]').click();
-    cy.get('[data-cy-settings="showAmount"]').click();
+    cy.get('[data-cy-settings="nav-client"]').click();
+    cy.get('[data-cy-settings="showAmount"]').check();
     cy.get('[data-cy-settings="saveChanges"]').click();
   },
 );
@@ -429,6 +432,11 @@ Cypress.Commands.add('editCheckpointValue' as keyof Chainable, (value: string): 
     }]);
   });
 });
+
+Cypress.Commands.add('debugTabBackToFactorySettings' as keyof Chainable, (): Chainable => {
+  cy.get('[data-cy-debug="openSettings"]').as('openSettingsModal').click();
+  cy.get('[data-cy-settings="factoryReset"]').click();
+})
 
 function awaitLoadingSpinner(): void {
   cy.get('[data-cy-loading-spinner]', { timeout: 10000 }).should('not.exist');

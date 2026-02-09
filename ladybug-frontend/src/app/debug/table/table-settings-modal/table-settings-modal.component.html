@@ -8,7 +8,6 @@
   </div>
 
   <form [formGroup]="settingsForm" (change)="formHasChanged()">
-
     <div class="modal-body container">
       <div>
         <h5>Info</h5>
@@ -24,79 +23,71 @@
         </div>
       </div>
       <hr>
-      <div class="form-group">
-        <h5>Debug tree</h5>
-        <div class="checkbox " title="When checked, file tree shows multiple files">
-          <label for="show-multiple">Show multiple files in debug file-tree</label>
-          <input class="btn btn-info my-2 p-1 w-fit" data-cy-settings="showAmount" id="show-multiple"
-                 type="checkbox" [formControlName]="showMultipleFilesKey">
-        </div>
-      </div>
-      <hr>
-      <hr>
-      <div class="form-group">
-        <h5>Report table</h5>
-        <div title="Configure the amount of spacing in the report table">
-          <label for="show-multiple">Spacing for report table</label>
-          <select data-cy-settings="spacingDropdown" class="form-control custom-select mr-sm-2"
-                  [formControlName]="tableSpacingKey">
-            @for (option of spacingOptions; track option) {
-              <option [value]="option"
-                      [selected]="option === tableSpacing"><span>{{ option }}x</span></option>
-            }
-          </select>
-        </div>
-      </div>
-      <hr>
-      <div class="form-group">
-        <label>Report generator</label>
-        <select class="form-control custom-select mr-sm-2" data-cy-settings="generatorEnabled" [formControlName]="generatorEnabledKey">
-          <option>Enabled</option>
-          <option>Disabled</option>
-        </select>
-      </div>
-
-
-      <div class="form-group">
-        <label for="openLatestReports">Open latest reports</label>
-        <div class="input-group">
-          <input #numberInput type="number" value="10" class="form-control" placeholder="10" id="openLatestReports" />
-          <div class="input-group-append">
-            <button class="btn btn-info" type="button" (click)="openLatestReports(+numberInput.value)">Open</button>
+      <div class="tabbed">
+        <ul class="nav nav-tabs">
+          <li class="nav-item">
+            <a data-cy-settings="nav-server" [class]="getNavClasses(SERVER)" (click)="selectNav(SERVER)">{{ SERVER }}</a>
+          </li>
+          <li class="nav-item">
+            <a data-cy-settings="nav-client" [class]="getNavClasses(CLIENT)" (click)="selectNav(CLIENT)">{{ CLIENT }}</a>
+          </li>
+        </ul>
+        @if (activeTab === SERVER) {
+          <div class="form-group">
+            <label>Report generator</label>
+            <select class="form-control custom-select mr-sm-2" data-cy-settings="generatorEnabled"
+              [formControlName]="generatorEnabledKey">
+              <option [ngValue]="false">Disabled</option>
+              <option [ngValue]="true">Enabled</option>
+            </select>
           </div>
-        </div>
-        <div class="form-check-inline ml-1 mt-2">
-          <input class="form-check-input" type="checkbox" id="openReportCheckbox">
-          <label class="form-check-label" for="openReportCheckbox">
-            Exclude reports with empty report.xml
-          </label>
-        </div>
-      </div>
-      <div class="form-group">
-        <label for="openLatestReports">Report filter (regex)</label>
-        <div class="input-group">
-          <input type="search" title="Example 1 (only store report when name is Hello World):
-Hello World
+          <div class="form-group">
+            <label>Report filter (regex)</label>
+            <div class="input-group">
+              <input data-cy-settings="regexFilter" type="search" [formControlName]="regexFilterKey" title="Example 1 (only store report when name is Hello World):
+    Hello World
 
-Example 2 (only store report when name contains Hello or World):
-.*(Hello|World).*
+    Example 2 (only store report when name contains Hello or World):
+    .*(Hello|World).*
 
-Example 3 (only store report when name doesn't start with Hello World):
-^(?!Hello World).*" class="form-control"
-                 [placeholder]="defaultRegexValue" [formControlName]="regexFilterKey" />
-        </div>
-      </div>
-      <div class="dropdown-divider"></div>
-      <div class="form-group form-check-inline">
-        <input class="form-check-input" type="checkbox" data-cy-settings-transformation-enabled [formControlName]="transformationEnabledKey">
-        <label class="form-check-label transform-label">
-          Use transformation for <code>report.xml</code>
-        </label>
-      </div>
-      <div class="form-group">
-        <label>Transformation <i class="fa fa-info-circle"
-                                 title="To see the change of the transformation, please reopen the current report or open a new one."></i></label>
-        <textarea class="form-control" rows="10" data-cy-settings-transformation [formControlName]="transformationKey"></textarea>
+    Example 3 (only store report when name doesn't start with Hello World):
+    ^(?!Hello World).*" class="form-control"/>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Transformation <i class="fa fa-info-circle"
+                                    title="To see the change of the transformation, please reopen the current report or open a new one."></i></label>
+            <textarea class="form-control" rows="10" data-cy-settings-transformation
+              [formControlName]="transformationKey"></textarea>
+          </div>
+        }
+        @if (activeTab === CLIENT) {
+          <div class="form-group">
+            <label for="openLatestReports">Maximum number of reports shown</label>
+            <div class="input-group">
+              <input data-cy-settings="openLatestReports" type="number" class="form-control" [formControlName]="amountOfRecordsShownKey" id="openLatestReports" />
+            </div>
+          </div>
+          <div class="form-group">
+            <div title="Configure the amount of spacing in the report table">
+              <label>Spacing for report table</label>
+              <select data-cy-settings="spacingDropdown" class="form-control custom-select mr-sm-2"
+                      [formControlName]="tableSpacingKey">
+                @for (option of spacingOptions; track option) {
+                  <option [value]="option"
+                          [selected]="option === clientSettingsService.getTableSpacing()"><span>{{ option }}x</span></option>
+                }
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <div class="checkbox " title="When checked, debug tree shows multiple files">
+              <label for="show-multiple">Show multiple files in debug tree</label>
+              <input data-cy-settings="showAmount" class="btn btn-info my-2 p-1 w-fit" id="show-multiple"
+                    type="checkbox" [formControlName]="showMultipleFilesKey">
+            </div>
+          </div>
+        }
       </div>
     </div>
     <div class="modal-footer">

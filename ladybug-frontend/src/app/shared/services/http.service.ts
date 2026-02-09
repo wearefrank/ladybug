@@ -72,11 +72,8 @@ export class HttpService {
   }
 
   getReport(reportId: number, storage: string): Observable<Report> {
-    const transformationEnabled = localStorage.getItem('transformationEnabled') === 'true';
     return this.http
-      .get<
-        Record<string, Report | string>
-      >(`api/report/${storage}/${reportId}?xml=true&globalTransformer=${transformationEnabled}`)
+      .get<Record<string, Report | string>>(`api/report/${storage}/${reportId}?xml=true&globalTransformer=true`)
       .pipe(
         map((e) => {
           const report = e['report'] as Report;

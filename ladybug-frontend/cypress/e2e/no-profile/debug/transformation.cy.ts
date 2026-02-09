@@ -8,17 +8,16 @@ describe('Tests for report transformation', () => {
     // Factory reset in settings dialog. Resets
     // transformation to factory value.
     cy.get('[data-cy-settings="factoryReset"]').click();
-    cy.get('[data-cy-settings="saveChanges"]').click();
   });
 
   it('Should see updated metadata when updating transformation field', () => {
     cy.visit('');
     cy.get('[data-cy-debug="openSettings"]').click();
+    cy.get('[data-cy-settings="nav-server"]').as('serverTab').click();
     cy.get('[data-cy-settings-transformation]').type('{selectAll}{del}');
     cy.get('[data-cy-settings-transformation]').within((textArea) => {
       cy.fixture('ignoreName.xslt').then((newText) => cy.wrap(textArea).type(newText));
     });
-    cy.get('[data-cy-settings-transformation-enabled]').check();
     cy.get('[data-cy-settings="saveChanges"]').click();
     cy.createOtherReport();
     cy.get('[data-cy-debug="refresh"]').click();
