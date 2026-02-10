@@ -179,9 +179,6 @@ export class TableComponent implements OnInit, OnDestroy {
     const amountOfRecordsInTableSubscription = this.clientSettingsService.amountOfRecordsInTableObservable.subscribe(
       (value) => {
         this.tableSettings.displayAmount = value;
-        console.log(
-          'TableComponent.subscribeToObservables(): Calling retrieveRecords() because amount records shown setting changed',
-        );
         if (!this.isLoadingData) {
           this.retrieveRecords();
         }
@@ -218,7 +215,6 @@ export class TableComponent implements OnInit, OnDestroy {
   loadData(showToast = true): void {
     this.isLoadingData = true;
     this.tableSettings.tableLoaded = false;
-    console.log('TableComponent.loadData() calls retrieveRecords');
     this.retrieveRecords(showToast);
     this.loadMetadataCount();
     this.loadReportInProgressThreshold();

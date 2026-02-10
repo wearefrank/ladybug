@@ -5,6 +5,19 @@ import { BehaviorSubject, Observable } from 'rxjs';
   providedIn: 'root',
 })
 export class ClientSettingsService {
+  private readonly tableSpacingKey = 'tableSpacing';
+  private readonly showMultipleRecordsAtATimeKey = 'showMultipleFilesAtATime';
+  private readonly defaultAmountOfRecordsInTable: number = 10;
+  private readonly amountOfRecordsInTableKey = 'amountOfRecordsInTable';
+  private readonly transformationEnabledKey = 'transformationEnabled';
+
+  private showMultipleAtATimeSubject = new BehaviorSubject<boolean>(this.isShowMultipleReportsAtATime());
+  public showMultipleAtATimeObservable = this.showMultipleAtATimeSubject as Observable<boolean>;
+  private tableSpacingSubject = new BehaviorSubject<number>(this.getTableSpacing());
+  public tableSpacingObservable = this.tableSpacingSubject as Observable<number>;
+  private amountOfRecordsInTableSubject = new BehaviorSubject<number>(this.getAmountOfRecordsInTable());
+  public amountOfRecordsInTableObservable = this.amountOfRecordsInTableSubject as Observable<number>;
+
   public isShowMultipleReportsAtATime(): boolean {
     return localStorage.getItem(this.showMultipleRecordsAtATimeKey) === 'true';
   }
@@ -49,19 +62,6 @@ export class ClientSettingsService {
   public setTransformationEnabled(value: boolean): void {
     localStorage.setItem(this.transformationEnabledKey, value ? 'true' : 'false');
   }
-
-  private readonly tableSpacingKey = 'tableSpacing';
-  private readonly showMultipleRecordsAtATimeKey = 'showMultipleFilesAtATime';
-  private readonly defaultAmountOfRecordsInTable: number = 10;
-  private readonly amountOfRecordsInTableKey = 'amountOfRecordsInTable';
-  private readonly transformationEnabledKey = 'transformationEnabled';
-
-  private showMultipleAtATimeSubject = new BehaviorSubject<boolean>(this.isShowMultipleReportsAtATime());
-  public showMultipleAtATimeObservable = this.showMultipleAtATimeSubject as Observable<boolean>;
-  private tableSpacingSubject = new BehaviorSubject<number>(this.getTableSpacing());
-  public tableSpacingObservable = this.tableSpacingSubject as Observable<number>;
-  private amountOfRecordsInTableSubject = new BehaviorSubject<number>(this.getAmountOfRecordsInTable());
-  public amountOfRecordsInTableObservable = this.amountOfRecordsInTableSubject as Observable<number>;
 
   public backToFactory(): void {
     this.setAmountOfRecordsInTable(10);

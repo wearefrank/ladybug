@@ -85,15 +85,11 @@ export class TableSettingsModalComponent implements OnInit, OnDestroy {
   }
 
   async open(): Promise<void> {
-    console.log('Opening debug settings dialog');
     await this.loadSettings();
     this.activeSettingsModal = this.modalService.open(this.settingsModalElement);
   }
 
   closeSettingsModal(): void {
-    console.log(
-      `Closing debug settings modal with unsavedChanges=${this.unsavedChanges} and table spacing ${this.settingsForm.value[this.tableSpacingKey]}`,
-    );
     if (this.unsavedChanges) {
       this.activeUnsavedChangesModal = this.modalService.open(this.unsavedChangesModalElement, { backdrop: 'static' });
     } else {
@@ -178,7 +174,6 @@ export class TableSettingsModalComponent implements OnInit, OnDestroy {
       formTableSpacing !== this.clientSettingsService.getTableSpacing() ||
       formAmountOfRecordsShown !== this.clientSettingsService.getAmountOfRecordsInTable() ||
       formTransformationEnabled !== this.clientSettingsService.isTransformationEnabled();
-    console.log(`Finishing formHasChanged() with unsaved changes=${this.unsavedChanges}`);
   }
 
   protected formServerSettingsChanged(): boolean {
