@@ -1,5 +1,8 @@
 describe('Tests for report transformation', () => {
-  before(() => cy.resetApp());
+  before(() => {
+    cy.resetApp();
+    cy.debugTabBackToFactorySettings();
+  });
 
 
   afterEach(() => {
