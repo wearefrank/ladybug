@@ -96,6 +96,8 @@ public class ReportXmlTransformer {
 	}
 
 	public void restoreDefaultXslt() {
+		createTransformerError = null;
+		createTransformerException = null;
 		init();
 	}
 

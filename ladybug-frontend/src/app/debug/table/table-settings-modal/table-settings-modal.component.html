@@ -86,11 +86,11 @@
               Use transformation for <code>report.xml</code>
             </label>
           </div>
-          <div class="form-group">
+          <div class="form-group form-check-inline">
             <div class="checkbox " title="When checked, debug tree shows multiple files">
-              <label for="show-multiple">Show multiple files in debug tree</label>
-              <input data-cy-settings="showAmount" class="btn btn-info my-2 p-1 w-fit" id="show-multiple"
+              <input data-cy-settings="showAmount" class="form-check-input" id="show-multiple"
                     type="checkbox" [formControlName]="showMultipleFilesKey">
+              <label class="form-check-label transform-label" for="show-multiple">Show multiple files in debug tree</label>
             </div>
           </div>
         }
@@ -100,7 +100,7 @@
       <button data-cy-settings="factoryReset" title="Reset and save factory settings" type="button" class="btn btn-info"
               (click)="factoryReset()"><i
         class="fa fa-refresh"></i></button>
-      <button title="Revert changes" type="button" class="btn btn-info" (click)="loadSettings()"><i
+      <button data-cy-settings="revertChanges" title="Revert changes" type="button" class="btn btn-info" (click)="loadSettings()"><i
         class="fa fa-undo"></i></button>
       <button data-cy-settings="saveChanges" title="Save changes" type="submit" id="saveTableSettings"
               class="btn btn-info" (click)="onClickSave()"><i class="fa fa-save"></i></button>

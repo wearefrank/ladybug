@@ -1,11 +1,10 @@
 import { inject, Injectable } from '@angular/core';
-import { catchError, firstValueFrom, Observable } from 'rxjs';
+import { catchError, firstValueFrom } from 'rxjs';
 import { HttpService } from './http.service';
 import { OptionsSettings } from '../interfaces/options-settings';
 import { Transformation } from '../interfaces/transformation';
 import { ErrorHandling } from '../classes/error-handling.service';
 import { UploadParameters } from '../interfaces/upload-params';
-import { HttpErrorResponse } from '@angular/common/http';
 
 export interface ServerSettings {
   isGeneratorEnabled: boolean;
@@ -19,7 +18,6 @@ export interface ServerSettings {
 export class SettingsService {
   private httpService = inject(HttpService);
   private errorHandler = inject(ErrorHandling);
-
   private static INITIALIZATION_IDLE = 0;
   private static INITIALIZATION_BUSY = 1;
   public static INITIALIZATION_SUCCESS = 2;
@@ -27,6 +25,9 @@ export class SettingsService {
   private static INITIALIZATION_POLL_INTERVAL_MS = 100;
 
   private initializationState = SettingsService.INITIALIZATION_IDLE;
+  private _isGeneratorEnabled = false;
+  private _regexFilter: string | null = null;
+  private _transformation: string | null = null;
 
   // Life cycle hooks like ngOnInit are not available for services.
   // Therefore this method is introduced. It should be run by every
@@ -68,32 +69,21 @@ export class SettingsService {
   }
 
   public refresh(): Promise<void> {
-    return new Promise<void>((resolve, reject) => {
+    return new Promise<void>((resolve) => {
       const settingsPromise: Promise<OptionsSettings> = firstValueFrom(
-        this.httpService
-          .getSettings()
-          .pipe(
-            catchError(this.handleErrorWithRethrowMessage('Could not load settings generatorEnabled or regexFilter')),
-          ),
+        this.httpService.getSettings().pipe(catchError(this.errorHandler.handleError())),
       );
       const transformationPromise: Promise<Transformation> = firstValueFrom(
-        this.httpService
-          .getTransformation()
-          .pipe(catchError(this.handleErrorWithRethrowMessage('Could not load default report transformation'))),
+        this.httpService.getTransformation().pipe(catchError(this.errorHandler.handleError())),
       );
-      Promise.all([settingsPromise, transformationPromise])
-        .then((values) => {
-          const optionsSettings: OptionsSettings = values[0];
-          const transformation: Transformation = values[1];
-          console.log(
-            `SettingsService.refreshFrankAppSettings(): _isGeneratorEnabled from ${this._isGeneratorEnabled} to ${optionsSettings.generatorEnabled}`,
-          );
-          this._isGeneratorEnabled = optionsSettings.generatorEnabled;
-          this._regexFilter = optionsSettings.regexFilter;
-          this._transformation = transformation.transformation;
-          resolve();
-        })
-        .catch(() => reject('Failed to obtain debug tab settings from server'));
+      Promise.all([settingsPromise, transformationPromise]).then((values) => {
+        const optionsSettings: OptionsSettings = values[0];
+        const transformation: Transformation = values[1];
+        this._isGeneratorEnabled = optionsSettings.generatorEnabled;
+        this._regexFilter = optionsSettings.regexFilter;
+        this._transformation = transformation.transformation;
+        resolve();
+      });
     });
   }
 
@@ -104,16 +94,12 @@ export class SettingsService {
         regexFilter: settings.regexFilter === null ? '' : settings.regexFilter,
       };
       const settingsPromise: Promise<void> = firstValueFrom(
-        this.httpService
-          .postSettings(uploadParameters)
-          .pipe(
-            catchError(this.handleErrorWithRethrowMessage('Could not save settings generatorEnabled and regexFilter')),
-          ),
+        this.httpService.postSettings(uploadParameters).pipe(catchError(this.errorHandler.handleError())),
       );
       const transformationPromise: Promise<void> = firstValueFrom(
         this.httpService
           .postTransformation(settings.transformation === null ? '' : settings.transformation)
-          .pipe(catchError(this.handleErrorWithRethrowMessage('Could not load default report transformation'))),
+          .pipe(catchError(this.errorHandler.handleError())),
       );
       Promise.all([settingsPromise, transformationPromise])
         .then(() => resolve())
@@ -124,38 +110,15 @@ export class SettingsService {
   public backToFactory(): Promise<void> {
     return new Promise<void>((resolve, reject) => {
       const settingsPromise = firstValueFrom(
-        this.httpService
-          .resetSettings()
-          .pipe(
-            catchError(
-              this.handleErrorWithRethrowMessage(
-                'Failed to restore factory values for generatorEnabled and regexFilter',
-              ),
-            ),
-          ),
+        this.httpService.resetSettings().pipe(catchError(this.errorHandler.handleError())),
       );
       const transformationBackToFactoryPromise: Promise<void> = firstValueFrom(
-        this.httpService
-          .restoreFactoryTransformation()
-          .pipe(catchError(this.handleErrorWithRethrowMessage('Could not restore factory report transformation'))),
+        this.httpService.restoreFactoryTransformation().pipe(catchError(this.errorHandler.handleError())),
       );
       return Promise.all([settingsPromise, transformationBackToFactoryPromise])
         .then(() => this.refresh())
         .then(() => resolve())
         .catch(() => reject('Failed to restore factory settings'));
     });
-  }
-
-  private _isGeneratorEnabled = false;
-  private _regexFilter: string | null = null;
-  private _transformation: string | null = null;
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private handleErrorWithRethrowMessage(message: string): (error: HttpErrorResponse) => Observable<any> {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return (error: HttpErrorResponse): Observable<any> => {
-      this.errorHandler.handleError()(error);
-      throw new Error(message);
-    };
   }
 }

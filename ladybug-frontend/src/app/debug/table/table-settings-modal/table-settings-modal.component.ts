@@ -102,7 +102,6 @@ export class TableSettingsModalComponent implements OnInit, OnDestroy {
   }
 
   async loadSettings(): Promise<void> {
-    // TODO: Error handling?
     await this.serverSettingsService.refresh();
     this.settingsForm
       .get(this.showMultipleFilesKey)
@@ -161,7 +160,6 @@ export class TableSettingsModalComponent implements OnInit, OnDestroy {
     this.clientSettingsService.setTransformationEnabled(this.settingsForm.value[this.transformationEnabledKey]);
   }
 
-  // TODO: Error handling?
   async factoryReset(): Promise<void> {
     await this.serverSettingsService.backToFactory();
     await this.clientSettingsService.backToFactory();
@@ -184,29 +182,18 @@ export class TableSettingsModalComponent implements OnInit, OnDestroy {
   }
 
   protected formServerSettingsChanged(): boolean {
-    console.log('Enter TableSettingsModalComponent.formServerSettingsChanged()');
     const formRegexFilter: string | null = this.settingsForm.value[this.regexFilterKey];
     const formTransformation: string | null = this.settingsForm.value[this.transformationKey];
-    console.log(`Current generator enabled status: ${this.serverSettingsService.isGeneratorEnabled()}`);
-    console.log(
-      `Generator enabled changed: ${this.getFormGeneratorEnabled() !== this.serverSettingsService.isGeneratorEnabled()}`,
-    );
-    console.log(`Type of current generator enabled: ${typeof this.getFormGeneratorEnabled()}`);
-    console.log(`Type of form generator enabled: ${typeof this.getFormGeneratorEnabled()}`);
     const result: boolean =
       this.getFormGeneratorEnabled() !== this.serverSettingsService.isGeneratorEnabled() ||
       formRegexFilter !== this.serverSettingsService.getRegexFilter() ||
       formTransformation !== this.serverSettingsService.getTransformation();
-    console.log(`Leave TableSettingsModalComponent.formServerSettingsChanged() with result ${result}`);
     return result;
   }
 
   private getFormGeneratorEnabled(): boolean {
     const formReportGeneratorEnabled: boolean | null = this.settingsForm.value[this.generatorEnabledKey];
     const result: boolean = formReportGeneratorEnabled === true;
-    console.log(
-      `formReportGeneratorEnabled: ${formReportGeneratorEnabled}, type ${typeof formReportGeneratorEnabled}, returning ${result}`,
-    );
     return result;
   }
 
