@@ -1,5 +1,5 @@
 /*
-   Copyright 2025 WeAreFrank!
+   Copyright 2025, 2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -139,14 +139,19 @@ public class TestToolApi {
 		}
 	}
 
+	@PostMapping(value = "/transformation/reset")
+	public ResponseEntity<?> restoreDefaultXsltTransformation() {
+		delegate.restoreDefaultXsltTransformation();
+		return ResponseEntity.ok().build();
+	}
+
 	/**
-	 * @param defaultTransformation Boolean to check if we need to use the default transformation
 	 * @return Response containing the current default transformation of the test tool.
 	 */
-	@GetMapping(value = "/transformation/{defaultTransformation}", produces = MediaType.APPLICATION_JSON_VALUE)
+	@GetMapping(value = "/transformation", produces = MediaType.APPLICATION_JSON_VALUE)
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
-	public ResponseEntity<?> getReportTransformation(@PathVariable("defaultTransformation") boolean defaultTransformation) {
-		Map<String, String> result = delegate.getReportTransformation(defaultTransformation);
+	public ResponseEntity<?> getReportTransformation() {
+		Map<String, String> result = delegate.getReportTransformation();
 		if (result == null) {
 			return ResponseEntity.noContent().build();
 		} else {
