@@ -57,6 +57,7 @@ public class TestToolApiImpl {
 
 	public Map<String, Object> resetInfo() {
 		testTool.reset();
+		testTool.sendReportGeneratorStatusUpdate();
 		return getTestToolInfo();
 	}
 
