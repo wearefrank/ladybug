@@ -30,11 +30,6 @@ export class TableSettingsModalComponent implements OnInit, OnDestroy {
 
   protected unsavedChanges = false;
 
-  // TODO: Remove these two fields and remove some related backend code.
-  // There is no distinct frontend version anymore.
-  protected backendVersion?: string;
-  protected frontendVersion?: string;
-
   //Form Control Name keys
   protected readonly showMultipleFilesKey: string = 'showMultipleFilesAtATime';
   protected readonly tableSpacingKey: string = 'tableSpacing';
@@ -65,25 +60,12 @@ export class TableSettingsModalComponent implements OnInit, OnDestroy {
 
   protected activeTab: string = this.SERVER;
 
-  constructor() {
-    this.getApplicationVersions();
-  }
-
   ngOnInit(): void {
     this.serverSettingsService.init().then(() => this.loadSettings());
   }
 
   ngOnDestroy(): void {
     this.subscriptions.unsubscribe();
-  }
-
-  getApplicationVersions(): void {
-    this.versionService.getFrontendVersion().then((frontendVersion: string): void => {
-      this.frontendVersion = frontendVersion;
-    });
-    this.versionService.getBackendVersion().then((backendVersion: string): void => {
-      this.backendVersion = backendVersion;
-    });
   }
 
   async open(): Promise<void> {

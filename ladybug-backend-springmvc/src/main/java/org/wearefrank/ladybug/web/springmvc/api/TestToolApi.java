@@ -56,6 +56,7 @@ public class TestToolApi {
 	}
 
 	@GetMapping(value = "/reset", produces = MediaType.APPLICATION_JSON_VALUE)
+	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	public ResponseEntity<?> resetInfo() {
 		Map<String, Object> info = delegate.resetInfo();
 		return ResponseEntity.ok(info);
@@ -128,6 +129,7 @@ public class TestToolApi {
 	 * @return The response after changing the transformation.
 	 */
 	@PostMapping(value = "/transformation", consumes = MediaType.APPLICATION_JSON_VALUE)
+	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	public ResponseEntity<?> updateReportTransformation(@RequestBody Map<String, String> map) {
 		try {
 			delegate.updateReportTransformation(map);
@@ -140,6 +142,7 @@ public class TestToolApi {
 	}
 
 	@PostMapping(value = "/transformation/reset")
+	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	public ResponseEntity<?> restoreDefaultXsltTransformation() {
 		delegate.restoreDefaultXsltTransformation();
 		return ResponseEntity.ok().build();
