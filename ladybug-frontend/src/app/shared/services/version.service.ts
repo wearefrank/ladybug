@@ -6,16 +6,14 @@ import { firstValueFrom } from 'rxjs';
   providedIn: 'root',
 })
 export class VersionService {
-  packageJsonPath = 'assets/package.json';
-  frontendVersion?: string;
-  backendVersion?: string;
+  version?: string;
 
   private httpService = inject(HttpService);
 
-  async getBackendVersion(): Promise<string> {
-    if (!this.backendVersion) {
-      this.backendVersion = await firstValueFrom(this.httpService.getBackendVersion());
+  async getVersion(): Promise<string> {
+    if (!this.version) {
+      this.version = await firstValueFrom(this.httpService.getVersion());
     }
-    return this.backendVersion;
+    return this.version;
   }
 }

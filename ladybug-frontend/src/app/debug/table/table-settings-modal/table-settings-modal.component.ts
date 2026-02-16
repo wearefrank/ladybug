@@ -5,7 +5,6 @@ import { ServerSettings, SettingsService } from '../../../shared/services/settin
 import { Subscription } from 'rxjs';
 import { ToastService } from '../../../shared/services/toast.service';
 import { VersionService } from '../../../shared/services/version.service';
-import { CopyTooltipDirective } from '../../../shared/directives/copy-tooltip.directive';
 import { ClientSettingsService } from 'src/app/shared/services/client.settings.service';
 
 @Component({
@@ -13,7 +12,7 @@ import { ClientSettingsService } from 'src/app/shared/services/client.settings.s
   templateUrl: './table-settings-modal.component.html',
   styleUrls: ['./table-settings-modal.component.css'],
   standalone: true,
-  imports: [ReactiveFormsModule, CopyTooltipDirective],
+  imports: [ReactiveFormsModule],
 })
 export class TableSettingsModalComponent implements OnInit, OnDestroy {
   @ViewChild('modal') protected settingsModalElement!: TemplateRef<HTMLElement>;

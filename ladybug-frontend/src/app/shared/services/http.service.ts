@@ -208,7 +208,7 @@ export class HttpService {
     });
   }
 
-  getBackendVersion(): Observable<string> {
+  getVersion(): Observable<string> {
     return this.http.get('api/testtool/version', {
       responseType: 'text',
     });

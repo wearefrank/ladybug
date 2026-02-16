@@ -21,21 +21,11 @@ describe('VersionService', () => {
     expect(service).toBeTruthy();
   });
 
-  it('should set version from package.json', async () => {
-    const frontendVersionPromise = service.getFrontendVersion();
-    const backendVersionPromise = service.getBackendVersion();
-    const mockPackageJson = { version: '1.0-TEST' };
-
-    const frontendVersionRequest = httpTestingController.expectOne(service.packageJsonPath);
-
-    const backendVersionReg = httpTestingController.expectOne('api/testtool/version');
-    frontendVersionRequest.flush(mockPackageJson);
-    backendVersionReg.flush('3.0-TEST');
-
-    const frontendVersion = await frontendVersionPromise;
-    const backendVersion = await backendVersionPromise;
-
-    expect(frontendVersion).toEqual('1.0-TEST');
-    expect(backendVersion).toEqual('3.0-TEST');
+  it('should set version', async () => {
+    const versionPromise = service.getVersion();
+    const versionReg = httpTestingController.expectOne('api/testtool/version');
+    versionReg.flush('3.0-TEST');
+    const version = await versionPromise;
+    expect(version).toEqual('3.0-TEST');
   });
 });
