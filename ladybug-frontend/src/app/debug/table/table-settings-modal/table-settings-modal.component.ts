@@ -30,6 +30,8 @@ export class TableSettingsModalComponent implements OnInit, OnDestroy {
 
   protected unsavedChanges = false;
 
+  // TODO: Remove these two fields and remove some related backend code.
+  // There is no distinct frontend version anymore.
   protected backendVersion?: string;
   protected frontendVersion?: string;
 
@@ -44,8 +46,8 @@ export class TableSettingsModalComponent implements OnInit, OnDestroy {
 
   protected readonly spacingOptions: number[] = [0, 1, 2, 3, 4, 5, 6, 7, 8];
 
-  protected readonly SERVER = 'Server';
-  protected readonly CLIENT = 'Client';
+  protected readonly SERVER = 'Everyone';
+  protected readonly CLIENT = 'Personal';
 
   protected settingsForm: FormGroup = new FormGroup({
     [this.showMultipleFilesKey]: new FormControl(false),
