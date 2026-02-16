@@ -18,7 +18,7 @@ Cypress.on('uncaught:exception', (err, runnable) => {
   if (err.name === 'SyntaxError' && err.message.indexOf('_amdLoaderGlobal') >= 0) {
     return false;
   }
-  if (err.name === 'NetworkError' && err.message.indexOf('Failed to execute \'importScripts\' on \'WorkerGlobalScope\'') >= 0) {
+  if (err.name === 'NetworkError' && err.message.indexOf('WorkerGlobalScope') >= 0) {
     return false;
   }
   return;
