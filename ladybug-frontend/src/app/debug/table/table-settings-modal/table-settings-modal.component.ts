@@ -103,7 +103,7 @@ export class TableSettingsModalComponent implements OnInit, OnDestroy {
     this.saveSettings().then(() => this.closeSettingsModal());
   }
 
-  // TODO: How to do error handling here?
+  // TODO: Issue https://github.com/wearefrank/ladybug/issues/628
   saveSettings(): Promise<void> {
     return new Promise((resolve, reject) => {
       if (this.formServerSettingsChanged()) {

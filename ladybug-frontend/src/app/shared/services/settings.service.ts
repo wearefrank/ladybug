@@ -87,27 +87,48 @@ export class SettingsService {
     });
   }
 
+  // IbisObserver is not allowed to change enable/disable the report generator or to change the regex.
+  // IbisObserver is allowed to change the report transformation.
+  // So we send only the transformation update request when possible.
   public async save(settings: ServerSettings): Promise<void> {
-    return new Promise((resolve, reject) => {
+    const isSettingsChanged =
+      settings.isGeneratorEnabled !== this._isGeneratorEnabled || settings.regexFilter !== this._regexFilter;
+    const isTransformationChanged = settings.transformation !== this._transformation;
+    const requests: Promise<void>[] = [];
+    if (isSettingsChanged) {
       const uploadParameters: UploadParameters = {
         generatorEnabled: settings.isGeneratorEnabled,
         regexFilter: settings.regexFilter === null ? '' : settings.regexFilter,
       };
-      const settingsPromise: Promise<void> = firstValueFrom(
-        this.httpService.postSettings(uploadParameters).pipe(catchError(this.errorHandler.handleError())),
+      requests.push(
+        firstValueFrom(
+          this.httpService.postSettings(uploadParameters).pipe(catchError(this.errorHandler.handleError())),
+        ),
       );
-      const transformationPromise: Promise<void> = firstValueFrom(
-        this.httpService
-          .postTransformation(settings.transformation === null ? '' : settings.transformation)
-          .pipe(catchError(this.errorHandler.handleError())),
+    }
+    if (isTransformationChanged) {
+      requests.push(
+        firstValueFrom(
+          this.httpService
+            .postTransformation(settings.transformation === null ? '' : settings.transformation)
+            .pipe(catchError(this.errorHandler.handleError())),
+        ),
       );
-      Promise.all([settingsPromise, transformationPromise])
+    }
+    return new Promise((resolve, reject) => {
+      Promise.all(requests)
+        .then(() => {
+          this._isGeneratorEnabled = settings.isGeneratorEnabled;
+          this._regexFilter = settings.regexFilter;
+          this._transformation = settings.transformation;
+        })
         .then(() => resolve())
         .catch(() => reject('Failed to save debug tab settings toserver'));
     });
   }
 
   public backToFactory(): Promise<void> {
+    // All roles have permission to do this. No need to check for changes before doint the HTTP calls.
     return new Promise<void>((resolve, reject) => {
       const settingsPromise = firstValueFrom(
         this.httpService.resetSettings().pipe(catchError(this.errorHandler.handleError())),

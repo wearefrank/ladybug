@@ -90,7 +90,7 @@ export class HttpService {
   }
 
   getReports(reportIds: number[], storage: string): Observable<Record<string, CompareReport>> {
-    const transformationEnabled = localStorage.getItem('transformationEnabled') === 'true';
+    const transformationEnabled = this.clientSettingsService.isTransformationEnabled() ? 'true' : 'false';
     return this.http
       .get<
         Record<string, CompareReport>
