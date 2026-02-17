@@ -64,6 +64,7 @@ public class TestTool {
 	private Debugger debugger;
 	private Rerunner rerunner;
 	private boolean reportGeneratorEnabled = true;
+	private boolean defaultReportGeneratorEnabledSet = false;
 	private boolean defaultReportGeneratorEnabled = true;
 	private List<Report> reportsInProgress = new ArrayList<Report>();
 	private Map<String, Report> reportsInProgressByCorrelationId = new HashMap<String, Report>();
@@ -75,6 +76,7 @@ public class TestTool {
 	private MessageCapturer messageCapturer = new MessageCapturerImpl();
 	private MessageTransformer messageTransformer;
 	private String regexFilter;
+	private boolean defaultRegexFilterSet = false;
 	private String defaultRegexFilter;
 	public static final String STUB_STRATEGY_STUB_ALL_EXTERNAL_CONNECTION_CODE = "Stub all external connection code";
 	public static final String STUB_STRATEGY_NEVER = "Never";
@@ -105,10 +107,6 @@ public class TestTool {
 
 	@PostConstruct
 	public void init() {
-		log.info("Setting defaultRegexFilter to {}", regexFilter);
-		defaultRegexFilter = regexFilter;
-		log.info("Setting defaultReportGeneratorEnabled to {}", reportGeneratorEnabled);
-		defaultReportGeneratorEnabled = reportGeneratorEnabled;
 		if (openTelemetryEndpoint != null) {
 			tracer = OpenTelemetryUtil.getOpenTelemetryTracer(openTelemetryEndpoint);
 		}
@@ -185,6 +183,13 @@ public class TestTool {
 	}
 
 	public void setReportGeneratorEnabled(boolean reportGeneratorEnabled) {
+		if (!this.defaultReportGeneratorEnabledSet) {
+			log.info("TestTool.setReportGeneratorEnabled(): set defaultReportGeneratorEnabled={} and reportGeneratorEnabled={}", reportGeneratorEnabled, reportGeneratorEnabled);
+			this.defaultReportGeneratorEnabled = reportGeneratorEnabled;
+			this.defaultReportGeneratorEnabledSet = true;
+		} else {
+			log.info("TestTool.setReportGeneratorEnabled(): set reportGeneratorEnabled={}", reportGeneratorEnabled);
+		}
 		this.reportGeneratorEnabled = reportGeneratorEnabled;
 	}
 	
@@ -227,6 +232,13 @@ public class TestTool {
 	}
 
 	public void setRegexFilter(String regexFilter) {
+		if (!this.defaultRegexFilterSet) {
+			log.info("TestTool.setRegexFilter() set defaultRegexFilter={} and regexFilter={}", regexFilter, regexFilter);
+			this.defaultRegexFilter = regexFilter;
+			this.defaultRegexFilterSet = true;
+		} else {
+			log.info("TestTool.setRegexFilter() set regexFilter={}", regexFilter);
+		}
 		this.regexFilter = regexFilter;
 	}
 
