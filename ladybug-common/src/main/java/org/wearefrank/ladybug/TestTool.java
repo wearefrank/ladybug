@@ -105,7 +105,9 @@ public class TestTool {
 
 	@PostConstruct
 	public void init() {
+		log.info("Setting defaultRegexFilter to {}", regexFilter);
 		defaultRegexFilter = regexFilter;
+		log.info("Setting defaultReportGeneratorEnabled to {}", reportGeneratorEnabled);
 		defaultReportGeneratorEnabled = reportGeneratorEnabled;
 		if (openTelemetryEndpoint != null) {
 			tracer = OpenTelemetryUtil.getOpenTelemetryTracer(openTelemetryEndpoint);
@@ -166,6 +168,7 @@ public class TestTool {
 	}
 
 	public void setDebugger(Debugger debugger) {
+		log.info("TestTool.setDebugger() called");
 		this.debugger = debugger;
 	}
 	
