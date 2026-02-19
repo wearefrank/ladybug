@@ -55,6 +55,10 @@ public class TestToolApi {
 		return ResponseEntity.ok(info);
 	}
 
+	// IbisObserver is permitted to revert the generatorEnabled state and the regex filter to factory
+	// defaults. These factory defaults are considered secure. But IbisObserver is not permitted to change
+	// the generatorEnabled state or the regex filter arbitrarily. The IbisDataAdmin controls which data is
+	// stored by ladybug by default.
 	@GetMapping(value = "/reset", produces = MediaType.APPLICATION_JSON_VALUE)
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	public ResponseEntity<?> resetInfo() {
@@ -122,6 +126,8 @@ public class TestToolApi {
 		return ResponseEntity.ok(delegate.getReportsInProgressWarningThreshold());
 	}
 
+	// It is intended that IbisObserver has full control over the report transformation. The report transformation
+	// is not a means to hide sensitive information. When a report is opened, all information is visible anyway.
 	/**
 	 * Change the default transformation.
 	 *
