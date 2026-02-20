@@ -33,27 +33,23 @@ export class SettingsService {
   // Therefore this method is introduced. It should be run by every
   // component injecting this service.
   // As a consequence it should work when executed in parallel.
-  public init(): Promise<number> {
-    return new Promise((resolve) => {
-      if (this.initializationState === SettingsService.INITIALIZATION_IDLE) {
-        this.initializationState = SettingsService.INITIALIZATION_BUSY;
-        this.refresh()
-          .then(() => {
-            this.initializationState = SettingsService.INITIALIZATION_SUCCESS;
-            resolve(this.initializationState);
-          })
-          .catch(() => {
-            this.initializationState = SettingsService.INITIALIZATION_ERROR;
-            resolve(this.initializationState);
-          });
-      } else if (this.initializationState === SettingsService.INITIALIZATION_BUSY) {
-        setTimeout(() => {
-          this.init().then((result) => resolve(result));
-        }, SettingsService.INITIALIZATION_POLL_INTERVAL_MS);
-      } else {
-        resolve(this.initializationState);
+  public async init(): Promise<number> {
+    if (this.initializationState === SettingsService.INITIALIZATION_IDLE) {
+      this.initializationState = SettingsService.INITIALIZATION_BUSY;
+      try {
+        await this.refresh();
+        this.initializationState = SettingsService.INITIALIZATION_SUCCESS;
+        return this.initializationState;
+      } catch {
+        this.initializationState = SettingsService.INITIALIZATION_ERROR;
+        return this.initializationState;
       }
-    });
+    } else if (this.initializationState === SettingsService.INITIALIZATION_BUSY) {
+      await new Promise((resolve) => setTimeout(resolve, SettingsService.INITIALIZATION_POLL_INTERVAL_MS));
+      return this.init();
+    } else {
+      return this.initializationState;
+    }
   }
 
   public isGeneratorEnabled(): boolean {

@@ -40,7 +40,7 @@ export class TableSettingsModalComponent implements OnInit, OnDestroy {
 
   protected readonly spacingOptions: number[] = [0, 1, 2, 3, 4, 5, 6, 7, 8];
 
-  protected readonly SERVER = 'Everyone';
+  protected readonly GLOBAL = 'Everyone';
   protected readonly CLIENT = 'Personal';
 
   protected settingsForm: FormGroup = new FormGroup({
@@ -57,7 +57,7 @@ export class TableSettingsModalComponent implements OnInit, OnDestroy {
   private activeSettingsModal?: NgbActiveModal;
   private activeUnsavedChangesModal?: NgbActiveModal;
 
-  protected activeTab: string = this.SERVER;
+  protected activeTab: string = this.GLOBAL;
 
   ngOnInit(): void {
     this.serverSettingsService.init().then(() => this.loadSettings());

@@ -12,10 +12,12 @@ export class ClientSettingsService {
   private readonly transformationEnabledKey = 'transformationEnabled';
 
   private showMultipleAtATimeSubject = new BehaviorSubject<boolean>(this.isShowMultipleReportsAtATime());
-  public showMultipleAtATimeObservable = this.showMultipleAtATimeSubject as Observable<boolean>;
   private tableSpacingSubject = new BehaviorSubject<number>(this.getTableSpacing());
-  public tableSpacingObservable = this.tableSpacingSubject as Observable<number>;
   private amountOfRecordsInTableSubject = new BehaviorSubject<number>(this.getAmountOfRecordsInTable());
+
+  // Cannot put public properties first because properties cannot be used before their initialization.
+  public showMultipleAtATimeObservable = this.showMultipleAtATimeSubject as Observable<boolean>;
+  public tableSpacingObservable = this.tableSpacingSubject as Observable<number>;
   public amountOfRecordsInTableObservable = this.amountOfRecordsInTableSubject as Observable<number>;
 
   public isShowMultipleReportsAtATime(): boolean {
@@ -43,7 +45,7 @@ export class ClientSettingsService {
     const raw: string | null = localStorage.getItem(this.amountOfRecordsInTableKey);
     if (raw !== null) {
       const parsed: number = +raw;
-      const isInvalid: boolean = Number.isNaN(parsed) || parsed === 0 || !Number.isInteger(parsed);
+      const isInvalid: boolean = !Number.isInteger(parsed);
       return isInvalid ? this.defaultAmountOfRecordsInTable : parsed;
     }
     return this.defaultAmountOfRecordsInTable;

@@ -12,13 +12,13 @@
       <div class="tabbed">
         <ul class="nav nav-tabs">
           <li class="nav-item">
-            <a data-cy-settings="nav-server" [class]="getNavClasses(SERVER)" (click)="selectNav(SERVER)">{{ SERVER }}</a>
+            <a data-cy-settings="nav-server" [class]="getNavClasses(GLOBAL)" (click)="selectNav(GLOBAL)">{{ GLOBAL }}</a>
           </li>
           <li class="nav-item">
             <a data-cy-settings="nav-client" [class]="getNavClasses(CLIENT)" (click)="selectNav(CLIENT)">{{ CLIENT }}</a>
           </li>
         </ul>
-        @if (activeTab === SERVER) {
+        @if (activeTab === GLOBAL) {
           <div class="form-group">
             <label>Report generator</label>
             <select class="form-control custom-select mr-sm-2" data-cy-settings="generatorEnabled"
