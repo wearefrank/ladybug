@@ -44,14 +44,14 @@ describe('Tests for settings component', () => {
     cy.checkFileTreeLength(1);
     cy.get('@openSettingsModal').click();
     cy.get('@clientTab').click();
-    cy.get('[data-cy-settings="showAmount"]').click();
+    cy.get('[data-cy-settings="showAmount"]').check();
     cy.get('[data-cy-settings="showAmount"]').should('be.checked');
     cy.get('[data-cy-settings="saveChanges"]').click();
     cy.get('[data-cy-record-table-index="0"]').click();
     cy.checkFileTreeLength(2);
     cy.get('@openSettingsModal').click();
     cy.get('@clientTab').click();
-    cy.get('[data-cy-settings="showAmount"]').click();
+    cy.get('[data-cy-settings="showAmount"]').uncheck();
     cy.get('[data-cy-settings="saveChanges"]').click();
     cy.checkFileTreeLength(1);
   });
