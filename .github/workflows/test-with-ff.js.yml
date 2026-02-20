@@ -268,9 +268,8 @@ jobs:
       - name: Show files
         if: failure()
         run: tree -L 5 .
-      # TODO: When I have seen this test work, store only on failure() again.
       - name: Store logs
-        if: always()
+        if: failure()
         uses: actions/upload-artifact@v4.4.0
         with:
           name: data test-app = ${{ matrix.test-app }} storage = ${{ matrix.storage }} dtap=${{ matrix.dtap }}
