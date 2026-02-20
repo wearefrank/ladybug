@@ -7,7 +7,7 @@
 	<packaging>war</packaging>
 	<properties>
 		<revision>0.0.1-SNAPSHOT</revision>
-		<ff.version>LATEST</ff.version>
+		<ff.version>10.1.0-20260214.042336</ff.version>
 	</properties>
 	<dependencies>
 		<dependency>
