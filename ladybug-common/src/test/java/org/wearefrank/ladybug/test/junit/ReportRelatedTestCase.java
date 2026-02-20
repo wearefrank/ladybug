@@ -129,7 +129,8 @@ public class ReportRelatedTestCase {
 		List<ILoggingEvent> loggingEvents = listAppender.list;
 		int count = 0;
 		for (ILoggingEvent loggingEvent : loggingEvents) {
-			if (loggingEvent.getLoggerName().startsWith("org.wearefrank.ladybug.test.junit")) {
+			if (loggingEvent.getLoggerName().startsWith("org.wearefrank.ladybug.test.junit") ||
+				loggingEvent.getMessage().contains("TestTool.setRegexFilter()")) {
 				count++;
 			} else {
 				assertNull(loggingEvent.getMessage()); // Shows log message when it fails

@@ -14,6 +14,7 @@ import { UpdateReport } from '../interfaces/update-report';
 import { UpdateReportResponse } from '../interfaces/update-report-response';
 import { Transformation } from '../interfaces/transformation';
 import { TableSettings } from '../interfaces/table-settings';
+import { ClientSettingsService } from './client.settings.service';
 
 @Injectable({
   providedIn: 'root',
@@ -21,6 +22,7 @@ import { TableSettings } from '../interfaces/table-settings';
 export class HttpService {
   private readonly headers: HttpHeaders = new HttpHeaders().set('Content-Type', 'application/json');
   private http = inject(HttpClient);
+  private clientSettingsService = inject(ClientSettingsService);
 
   getViews(): Observable<View[]> {
     return this.http.get<Record<string, View>>('api/testtool/views').pipe(map((response) => Object.values(response)));
@@ -72,7 +74,7 @@ export class HttpService {
   }
 
   getReport(reportId: number, storage: string): Observable<Report> {
-    const transformationEnabled = localStorage.getItem('transformationEnabled') === 'true';
+    const transformationEnabled: string = this.clientSettingsService.isTransformationEnabled() ? 'true' : 'false';
     return this.http
       .get<
         Record<string, Report | string>
@@ -88,7 +90,7 @@ export class HttpService {
   }
 
   getReports(reportIds: number[], storage: string): Observable<Record<string, CompareReport>> {
-    const transformationEnabled = localStorage.getItem('transformationEnabled') === 'true';
+    const transformationEnabled = this.clientSettingsService.isTransformationEnabled() ? 'true' : 'false';
     return this.http
       .get<
         Record<string, CompareReport>
@@ -136,8 +138,12 @@ export class HttpService {
     });
   }
 
-  getTransformation(defaultTransformation: boolean): Observable<Transformation> {
-    return this.http.get<Transformation>(`api/testtool/transformation/${defaultTransformation}`);
+  restoreFactoryTransformation(): Observable<void> {
+    return this.http.post<void>('api/testtool/transformation/reset', '');
+  }
+
+  getTransformation(): Observable<Transformation> {
+    return this.http.get<Transformation>(`api/testtool/transformation`);
   }
 
   getSettings(): Observable<OptionsSettings> {
@@ -202,7 +208,7 @@ export class HttpService {
     });
   }
 
-  getBackendVersion(): Observable<string> {
+  getVersion(): Observable<string> {
     return this.http.get('api/testtool/version', {
       responseType: 'text',
     });

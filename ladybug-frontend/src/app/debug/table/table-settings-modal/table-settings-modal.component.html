@@ -8,102 +8,88 @@
   </div>
 
   <form [formGroup]="settingsForm" (change)="formHasChanged()">
-
     <div class="modal-body container">
-      <div>
-        <h5>Info</h5>
-        <div class="d-flex flex-column gap-2">
-          <div class="d-flex flex-row gap-1">
-            <p class="m-0">Backend Version: {{ backendVersion }}</p>
-            <i class="bi bi-copy cursor-pointer" [appCopyTooltip]="backendVersion"></i>
+      <div class="tabbed">
+        <ul class="nav nav-tabs">
+          <li class="nav-item">
+            <a data-cy-settings="nav-server" [class]="getNavClasses(GLOBAL)" (click)="selectNav(GLOBAL)">{{ GLOBAL }}</a>
+          </li>
+          <li class="nav-item">
+            <a data-cy-settings="nav-client" [class]="getNavClasses(CLIENT)" (click)="selectNav(CLIENT)">{{ CLIENT }}</a>
+          </li>
+        </ul>
+        @if (activeTab === GLOBAL) {
+          <div class="form-group">
+            <label>Report generator</label>
+            <select class="form-control custom-select mr-sm-2" data-cy-settings="generatorEnabled"
+              [formControlName]="generatorEnabledKey">
+              <option [ngValue]="false">Disabled</option>
+              <option [ngValue]="true">Enabled</option>
+            </select>
           </div>
-          <div class="d-flex flex-row gap-1">
-            <p class="m-0">Frontend Version: {{ frontendVersion }}</p>
-            <i class="bi bi-copy cursor-pointer" [appCopyTooltip]="frontendVersion"></i>
+          <div class="form-group">
+            <label>Report filter (regex)</label>
+            <div class="input-group">
+              <input data-cy-settings="regexFilter" type="search" [formControlName]="regexFilterKey" title="Example 1 (only store report when name is Hello World):
+    Hello World
+
+    Example 2 (only store report when name contains Hello or World):
+    .*(Hello|World).*
+
+    Example 3 (only store report when name doesn't start with Hello World):
+    ^(?!Hello World).*" class="form-control"/>
+            </div>
           </div>
-        </div>
-      </div>
-      <hr>
-      <div class="form-group">
-        <h5>Debug tree</h5>
-        <div class="checkbox " title="When checked, file tree shows multiple files">
-          <label for="show-multiple">Show multiple files in debug file-tree</label>
-          <input class="btn btn-info my-2 p-1 w-fit" data-cy-settings="showAmount" id="show-multiple"
-                 type="checkbox" [formControlName]="showMultipleFilesKey">
-        </div>
-      </div>
-      <hr>
-      <hr>
-      <div class="form-group">
-        <h5>Report table</h5>
-        <div title="Configure the amount of spacing in the report table">
-          <label for="show-multiple">Spacing for report table</label>
-          <select data-cy-settings="spacingDropdown" class="form-control custom-select mr-sm-2"
-                  [formControlName]="tableSpacingKey">
-            @for (option of spacingOptions; track option) {
-              <option [value]="option"
-                      [selected]="option === tableSpacing"><span>{{ option }}x</span></option>
-            }
-          </select>
-        </div>
-      </div>
-      <hr>
-      <div class="form-group">
-        <label>Report generator</label>
-        <select class="form-control custom-select mr-sm-2" data-cy-settings="generatorEnabled" [formControlName]="generatorEnabledKey">
-          <option>Enabled</option>
-          <option>Disabled</option>
-        </select>
-      </div>
-
-
-      <div class="form-group">
-        <label for="openLatestReports">Open latest reports</label>
-        <div class="input-group">
-          <input #numberInput type="number" value="10" class="form-control" placeholder="10" id="openLatestReports" />
-          <div class="input-group-append">
-            <button class="btn btn-info" type="button" (click)="openLatestReports(+numberInput.value)">Open</button>
+          <div class="form-group">
+            <label>Transformation <i class="fa fa-info-circle"
+                                    title="To see the change of the transformation, please reopen the current report or open a new one."></i></label>
+            <textarea class="form-control" rows="10" data-cy-settings-transformation
+              [formControlName]="transformationKey"></textarea>
           </div>
-        </div>
-        <div class="form-check-inline ml-1 mt-2">
-          <input class="form-check-input" type="checkbox" id="openReportCheckbox">
-          <label class="form-check-label" for="openReportCheckbox">
-            Exclude reports with empty report.xml
-          </label>
-        </div>
-      </div>
-      <div class="form-group">
-        <label for="openLatestReports">Report filter (regex)</label>
-        <div class="input-group">
-          <input type="search" title="Example 1 (only store report when name is Hello World):
-Hello World
-
-Example 2 (only store report when name contains Hello or World):
-.*(Hello|World).*
-
-Example 3 (only store report when name doesn't start with Hello World):
-^(?!Hello World).*" class="form-control"
-                 [placeholder]="defaultRegexValue" [formControlName]="regexFilterKey" />
-        </div>
-      </div>
-      <div class="dropdown-divider"></div>
-      <div class="form-group form-check-inline">
-        <input class="form-check-input" type="checkbox" data-cy-settings-transformation-enabled [formControlName]="transformationEnabledKey">
-        <label class="form-check-label transform-label">
-          Use transformation for <code>report.xml</code>
-        </label>
-      </div>
-      <div class="form-group">
-        <label>Transformation <i class="fa fa-info-circle"
-                                 title="To see the change of the transformation, please reopen the current report or open a new one."></i></label>
-        <textarea class="form-control" rows="10" data-cy-settings-transformation [formControlName]="transformationKey"></textarea>
+        }
+        @if (activeTab === CLIENT) {
+          <div class="form-group">
+            <label for="openLatestReports">Maximum number of reports shown</label>
+            <div class="input-group">
+              <input data-cy-settings="openLatestReports" type="number" class="form-control" [formControlName]="amountOfRecordsShownKey" id="openLatestReports" />
+            </div>
+          </div>
+          <div class="form-group">
+            <div title="Configure the amount of spacing in the report table">
+              <label>Spacing for report table</label>
+              <select data-cy-settings="spacingDropdown" class="form-control custom-select mr-sm-2"
+                      [formControlName]="tableSpacingKey">
+                @for (option of spacingOptions; track option) {
+                  <option [value]="option"
+                          [selected]="option === clientSettingsService.getTableSpacing()"><span>{{ option }}x</span></option>
+                }
+              </select>
+            </div>
+          </div>
+          <div class="form-group form-check-inline">
+            <div class="checkbox" title="When checked, the report transformation is applied when showing report XML">
+              <input data-cy-settings-transformation-enabled class="form-check-input" type="checkbox" [formControlName]="transformationEnabledKey">
+              <label class="form-check-label transform-label">
+                Use transformation for report XML
+              </label>
+            </div>
+          </div>
+          <br>
+          <div class="form-group form-check-inline">
+            <div class="checkbox" title="When checked, debug tree can show multiple reports">
+              <input data-cy-settings="showAmount" class="form-check-input" id="show-multiple"
+                    type="checkbox" [formControlName]="showMultipleFilesKey">
+              <label class="form-check-label transform-label" for="show-multiple">Show multiple reports in debug tree</label>
+            </div>
+          </div>
+        }
       </div>
     </div>
     <div class="modal-footer">
       <button data-cy-settings="factoryReset" title="Reset and save factory settings" type="button" class="btn btn-info"
               (click)="factoryReset()"><i
         class="fa fa-refresh"></i></button>
-      <button title="Revert changes" type="button" class="btn btn-info" (click)="loadSettings()"><i
+      <button data-cy-settings="revertChanges" title="Revert changes" type="button" class="btn btn-info" (click)="loadSettings()"><i
         class="fa fa-undo"></i></button>
       <button data-cy-settings="saveChanges" title="Save changes" type="submit" id="saveTableSettings"
               class="btn btn-info" (click)="onClickSave()"><i class="fa fa-save"></i></button>
@@ -119,8 +105,8 @@ Example 3 (only store report when name doesn't start with Hello World):
   <div class="modal-body">
     <h3>You have unsaved changes, are you sure you want to close?</h3>
     <div class="d-flex flex-row justify-content-between">
-      <button class="btn btn-success" (click)="saveAndClose()">Save and close</button>
-      <button class="btn btn-outline-danger" (click)="closeWithoutSaving()">Discard and close</button>
+      <button data-cy-debug-confirm="save" class="btn btn-success" (click)="saveAndClose()">Save and close</button>
+      <button data-cy-debug-confirm="discard" class="btn btn-outline-danger" (click)="closeWithoutSaving()">Discard and close</button>
     </div>
   </div>
 </ng-template>

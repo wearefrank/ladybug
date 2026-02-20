@@ -1,5 +1,5 @@
 /*
-   Copyright 2025 WeAreFrank!
+   Copyright 2025, 2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -55,7 +55,12 @@ public class TestToolApi {
 		return ResponseEntity.ok(info);
 	}
 
+	// IbisObserver is permitted to revert the generatorEnabled state and the regex filter to factory
+	// defaults. These factory defaults are considered secure. But IbisObserver is not permitted to change
+	// the generatorEnabled state or the regex filter arbitrarily. The IbisDataAdmin controls which data is
+	// stored by ladybug by default.
 	@GetMapping(value = "/reset", produces = MediaType.APPLICATION_JSON_VALUE)
+	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	public ResponseEntity<?> resetInfo() {
 		Map<String, Object> info = delegate.resetInfo();
 		return ResponseEntity.ok(info);
@@ -121,6 +126,8 @@ public class TestToolApi {
 		return ResponseEntity.ok(delegate.getReportsInProgressWarningThreshold());
 	}
 
+	// It is intended that IbisObserver has full control over the report transformation. The report transformation
+	// is not a means to hide sensitive information. When a report is opened, all information is visible anyway.
 	/**
 	 * Change the default transformation.
 	 *
@@ -128,6 +135,7 @@ public class TestToolApi {
 	 * @return The response after changing the transformation.
 	 */
 	@PostMapping(value = "/transformation", consumes = MediaType.APPLICATION_JSON_VALUE)
+	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	public ResponseEntity<?> updateReportTransformation(@RequestBody Map<String, String> map) {
 		try {
 			delegate.updateReportTransformation(map);
@@ -139,14 +147,20 @@ public class TestToolApi {
 		}
 	}
 
+	@PostMapping(value = "/transformation/reset")
+	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	public ResponseEntity<?> restoreDefaultXsltTransformation() {
+		delegate.restoreDefaultXsltTransformation();
+		return ResponseEntity.ok().build();
+	}
+
 	/**
-	 * @param defaultTransformation Boolean to check if we need to use the default transformation
 	 * @return Response containing the current default transformation of the test tool.
 	 */
-	@GetMapping(value = "/transformation/{defaultTransformation}", produces = MediaType.APPLICATION_JSON_VALUE)
+	@GetMapping(value = "/transformation", produces = MediaType.APPLICATION_JSON_VALUE)
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
-	public ResponseEntity<?> getReportTransformation(@PathVariable("defaultTransformation") boolean defaultTransformation) {
-		Map<String, String> result = delegate.getReportTransformation(defaultTransformation);
+	public ResponseEntity<?> getReportTransformation() {
+		Map<String, String> result = delegate.getReportTransformation();
 		if (result == null) {
 			return ResponseEntity.noContent().build();
 		} else {

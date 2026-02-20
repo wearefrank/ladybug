@@ -29,7 +29,7 @@ import { ReportComponent } from './report/report.component';
 export class AppComponent implements OnInit, OnDestroy {
   @ViewChild(CompareComponent) compareComponent!: CompareComponent;
   @ViewChild(TestComponent) testComponent!: TestComponent;
-  frontendVersion?: string;
+  version?: string;
   title = 'ladybug';
   tabs: Tab[] = [];
   newTabSubscription!: Subscription;
@@ -48,7 +48,7 @@ export class AppComponent implements OnInit, OnDestroy {
   private appVariablesService = inject(AppVariablesService);
 
   ngOnInit(): void {
-    this.fetchAndSetFrontendVersion();
+    this.fetchAndSetVersion();
     this.subscribeToServices();
     this.getStubStrategies();
     this.appVariablesService.fetchCustomReportActionButtonText();
@@ -58,9 +58,9 @@ export class AppComponent implements OnInit, OnDestroy {
     this.unsubscribeAll();
   }
 
-  async fetchAndSetFrontendVersion(): Promise<void> {
-    this.frontendVersion = await this.versionService.getFrontendVersion();
-    this.titleService.setTitle(`Ladybug - v${this.frontendVersion}`);
+  async fetchAndSetVersion(): Promise<void> {
+    this.version = await this.versionService.getVersion();
+    this.titleService.setTitle(`Ladybug - v${this.version}`);
   }
 
   subscribeToServices(): void {

@@ -25,6 +25,11 @@
 		<property name="maxCheckpoints" value="1000"/>
 		<property name="maxMemoryUsage" value="1000000"/>
 		<property name="maxMessageLength" value="100000"/>
+		<!-- These are added here to force Spring to call the setters.
+		     This is needed because the first setter calls are saved
+		     as the defaults. Without these, the first change by
+		     the user is taken as default -->
+		<property name="reportGeneratorEnabled" value="true"/>
 		<property name="regexFilter" value=".*"/>
 		<property name="rerunner"><ref bean="rerunner"/></property>
 	</bean>

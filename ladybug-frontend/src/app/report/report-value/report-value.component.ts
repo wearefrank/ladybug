@@ -293,7 +293,7 @@ export class ReportValueComponent implements OnInit, OnDestroy {
       if (choice === true) {
         // TODO: Rethrow error when obtaining transformation fails? Issue https://github.com/wearefrank/ladybug-frontend/issues/1133.
         const transformationResponsePromise: Promise<Transformation> = firstValueFrom(
-          this.http.getTransformation(false).pipe(catchError(this.errorHandler.handleError())),
+          this.http.getTransformation().pipe(catchError(this.errorHandler.handleError())),
         );
         transformationResponsePromise.then((transformationResponse) =>
           this.transformationContentRequestSubject.next(transformationResponse.transformation),

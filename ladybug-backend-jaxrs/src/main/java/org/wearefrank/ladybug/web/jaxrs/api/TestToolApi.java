@@ -147,15 +147,21 @@ public class TestToolApi extends ApiBase {
 		}
 	}
 
+	@POST
+	@Path("/transformation/reset")
+	public Response restoreDefaultXsltTransformation() {
+		delegate.restoreDefaultXsltTransformation();
+		return Response.ok().build();
+	}
+
 	/**
-	 * @param defaultTransformation Boolean to check if we need to use the default transformation
 	 * @return Response containing the current default transformation of the test tool.
 	 */
 	@GET
-	@Path("/transformation/{defaultTransformation}")
+	@Path("/transformation")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response getReportTransformation(@PathParam("defaultTransformation") boolean defaultTransformation) {
-		Map<String, String> result = delegate.getReportTransformation(defaultTransformation);
+	public Response getReportTransformation() {
+		Map<String, String> result = delegate.getReportTransformation();
 		if (result == null) {
 			return Response.noContent().build();
 		} else {

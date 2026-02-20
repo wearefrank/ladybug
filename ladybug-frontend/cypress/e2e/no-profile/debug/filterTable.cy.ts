@@ -12,6 +12,7 @@ describe('Tests for table filter', () => {
   it('Should change table size when changing display amount', () => {
     // We only assume here that the default is two or more.
     cy.assertDebugTableLength(2);
+    // The HTML element and its model are numbers. Empty string is 0.
     cy.get('[data-cy-debug="displayAmount"]').type('{selectAll}{del}{enter}');
     cy.assertDebugTableLength(0);
     // From now on, we type one character at a time. Cypress can type very rapidly.
