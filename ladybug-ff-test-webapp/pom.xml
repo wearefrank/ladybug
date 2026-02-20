@@ -20,7 +20,7 @@
 			<groupId>org.frankframework</groupId>
 			<artifactId>frankframework-core</artifactId>
 			<version>${ff.version}</version>
-			<scope>compile</scope>
+			<scope>provided</scope>
 		</dependency>
 	</dependencies>
 
