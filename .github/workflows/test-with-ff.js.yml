@@ -264,7 +264,7 @@ jobs:
         run: curl -v -i http://localhost:8090
       - name: Run the tests
         working-directory: ladybug/ladybug-ff-cypress-test
-        run: yarn cypress run --spec "${{ matrix.specs }}" --env "debugStorageName=${{ matrix.debugStorageName }}" -env "frankProjectResourcesDir=${{ env.RESOURCES_DIR }}"
+        run: yarn cypress run --spec "${{ matrix.specs }}" --env "debugStorageName=${{ matrix.debugStorageName }}" --env "frankProjectResourcesDir=${{ env.RESOURCES_DIR }}"
       - name: Show files
         if: failure()
         run: tree -L 5 .
