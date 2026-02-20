@@ -20,7 +20,13 @@
 			<groupId>org.frankframework</groupId>
 			<artifactId>frankframework-core</artifactId>
 			<version>${ff.version}</version>
-			<scope>compile</scope>
+			<!-- Have it at compile time but omit when packaging the ladybug-ff-test-webapp war.
+			     During compilation of custom Java classes the FF! classes have to be known.
+				 Do not include frankframework-core when packaging because the libraries are in
+				 frankframework-webapp already. When you add frankframework-core with scope compile,
+				 the build fails because it tries to download transitive dependencies that are not on
+				 the Nexus server of WeAreFrank! -->
+			<scope>provided</scope>
 		</dependency>
 	</dependencies>
 
