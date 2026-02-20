@@ -45,7 +45,7 @@ export class ClientSettingsService {
     const raw: string | null = localStorage.getItem(this.amountOfRecordsInTableKey);
     if (raw !== null) {
       const parsed: number = +raw;
-      const isInvalid: boolean = !Number.isInteger(parsed);
+      const isInvalid = !Number.isInteger(parsed);
       return isInvalid ? this.defaultAmountOfRecordsInTable : parsed;
     }
     return this.defaultAmountOfRecordsInTable;
