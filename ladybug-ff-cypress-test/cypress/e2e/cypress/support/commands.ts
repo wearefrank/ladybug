@@ -35,6 +35,7 @@ declare namespace Cypress {
     createReportWithTestPipelineApi(config: string, adapter: string, message: string, username?: string, password?: string): Chainable<any>
     getNumLadybugReportsForNameFilter(name: string): Chainable<number>
     createReportInLadybug(config: string, adapter: string, message: string, username?: string, password?: string): Chainable<number>
+    createReportAndOpen(config: string, adapter: string, message: string, username?: string, password?: string);
     getAllStorageIdsInTable(): Chainable<number[]>
     guardedCopyReportToTestTab(alias: string)
     checkTestTabHasReportNamed(name: string): Cypress.Chainable<any>
@@ -160,6 +161,19 @@ Cypress.Commands.add('createReportInLadybug', (config: string, adapter: string, 
       cy.log(`Last created report has storageId ${storageId.toString()}`)
       return cy.wrap(storageId)
     })
+  })
+})
+
+Cypress.Commands.add('createReportAndOpen', (config: string, adapter: string, message: string, username?: string, password?: string) => {
+  cy.createReportInLadybug('Example1a', 'Adapter1a', 'xxx').then(storageId => {
+    cy.wrap('Found report just created, storageId=' + storageId)
+    cy.inIframeBody('[data-cy-debug="tableRow"]')
+      .find('td:nth-child(2)').each($cell => {
+        if (parseInt($cell.text()) === storageId) {
+          cy.wrap('Going to click cell with text' + $cell.text())
+          cy.wrap($cell).click()
+        }
+      })
   })
 })
 

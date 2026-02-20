@@ -264,7 +264,7 @@ jobs:
         run: curl -v -i http://localhost:8090
       - name: Run the tests
         working-directory: ladybug/ladybug-ff-cypress-test
-        run: yarn cypress run --spec "${{ matrix.specs }}" --env "debugStorageName=${{ matrix.debugStorageName }}"
+        run: yarn cypress run --spec "${{ matrix.specs }}" --env "debugStorageName=${{ matrix.debugStorageName }},frankProjectResourcesDir=${{ env.RESOURCES_DIR }}"
       - name: Show files
         if: failure()
         run: tree -L 5 .
@@ -284,7 +284,7 @@ jobs:
           path: |
             frank-runner/build/apache-tomcat-10*/logs/*
       # Zip file becomes corrupt if you try to include non-existing files.
-      - name: Store logs that only exist for test webapp
+      - name: Store logs that only exist without webapp
         if: ${{ failure() && matrix.test-app == 'false' }}
         uses: actions/upload-artifact@v4.4.0
         with:
