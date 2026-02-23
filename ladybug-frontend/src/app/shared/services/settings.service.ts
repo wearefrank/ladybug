@@ -64,23 +64,19 @@ export class SettingsService {
     return this._transformation;
   }
 
-  public refresh(): Promise<void> {
-    return new Promise<void>((resolve) => {
-      const settingsPromise: Promise<OptionsSettings> = firstValueFrom(
-        this.httpService.getSettings().pipe(catchError(this.errorHandler.handleError())),
-      );
-      const transformationPromise: Promise<Transformation> = firstValueFrom(
-        this.httpService.getTransformation().pipe(catchError(this.errorHandler.handleError())),
-      );
-      Promise.all([settingsPromise, transformationPromise]).then((values) => {
-        const optionsSettings: OptionsSettings = values[0];
-        const transformation: Transformation = values[1];
-        this._isGeneratorEnabled = optionsSettings.generatorEnabled;
-        this._regexFilter = optionsSettings.regexFilter;
-        this._transformation = transformation.transformation;
-        resolve();
-      });
-    });
+  public async refresh(): Promise<void> {
+    const settingsPromise: Promise<OptionsSettings> = firstValueFrom(
+      this.httpService.getSettings().pipe(catchError(this.errorHandler.handleError())),
+    );
+    const transformationPromise: Promise<Transformation> = firstValueFrom(
+      this.httpService.getTransformation().pipe(catchError(this.errorHandler.handleError())),
+    );
+    await Promise.all([settingsPromise, transformationPromise]);
+    const optionsSettings: OptionsSettings = await settingsPromise;
+    const transformation: Transformation = await transformationPromise;
+    this._isGeneratorEnabled = optionsSettings.generatorEnabled;
+    this._regexFilter = optionsSettings.regexFilter;
+    this._transformation = transformation.transformation;
   }
 
   // IbisObserver is not allowed to change enable/disable the report generator or to change the regex.
@@ -111,31 +107,29 @@ export class SettingsService {
         ),
       );
     }
-    return new Promise((resolve, reject) => {
-      Promise.all(requests)
-        .then(() => {
-          this._isGeneratorEnabled = settings.isGeneratorEnabled;
-          this._regexFilter = settings.regexFilter;
-          this._transformation = settings.transformation;
-        })
-        .then(() => resolve())
-        .catch(() => reject('Failed to save debug tab settings toserver'));
-    });
+    try {
+      await Promise.all(requests);
+      this._isGeneratorEnabled = settings.isGeneratorEnabled;
+      this._regexFilter = settings.regexFilter;
+      this._transformation = settings.transformation;
+    } catch {
+      throw new Error('Failed to save debug tab settings toserver');
+    }
   }
 
-  public backToFactory(): Promise<void> {
+  public async backToFactory(): Promise<void> {
     // All roles have permission to do this. No need to check for changes before doint the HTTP calls.
-    return new Promise<void>((resolve, reject) => {
-      const settingsPromise = firstValueFrom(
-        this.httpService.resetSettings().pipe(catchError(this.errorHandler.handleError())),
-      );
-      const transformationBackToFactoryPromise: Promise<void> = firstValueFrom(
-        this.httpService.restoreFactoryTransformation().pipe(catchError(this.errorHandler.handleError())),
-      );
-      return Promise.all([settingsPromise, transformationBackToFactoryPromise])
-        .then(() => this.refresh())
-        .then(() => resolve())
-        .catch(() => reject('Failed to restore factory settings'));
-    });
+    const settingsPromise = firstValueFrom(
+      this.httpService.resetSettings().pipe(catchError(this.errorHandler.handleError())),
+    );
+    const transformationBackToFactoryPromise: Promise<void> = firstValueFrom(
+      this.httpService.restoreFactoryTransformation().pipe(catchError(this.errorHandler.handleError())),
+    );
+    try {
+      await Promise.all([settingsPromise, transformationBackToFactoryPromise]);
+      this.refresh();
+    } catch {
+      throw new Error('Failed to restore factory settings');
+    }
   }
 }
