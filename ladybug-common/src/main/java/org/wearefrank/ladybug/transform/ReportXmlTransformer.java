@@ -1,5 +1,5 @@
 /*
-   Copyright 2020-2025 WeAreFrank!, 2018-2019 Nationale-Nederlanden
+   Copyright 2020-2026 WeAreFrank!, 2018-2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -31,6 +31,7 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
+import lombok.Getter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -92,6 +93,12 @@ public class ReportXmlTransformer {
 			createTransformerException = e;
 			log.debug(createTransformerError, createTransformerException);
 		}
+	}
+
+	public void restoreDefaultXslt() {
+		createTransformerError = null;
+		createTransformerException = null;
+		init();
 	}
 
 	public String updateXslt(String xslt) {

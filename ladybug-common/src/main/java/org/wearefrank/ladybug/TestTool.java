@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2025 WeAreFrank!, 2018 Nationale-Nederlanden
+   Copyright 2019-2026 WeAreFrank!, 2018 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -64,6 +64,7 @@ public class TestTool {
 	private Debugger debugger;
 	private Rerunner rerunner;
 	private boolean reportGeneratorEnabled = true;
+	private boolean defaultReportGeneratorEnabledSet = false;
 	private boolean defaultReportGeneratorEnabled = true;
 	private List<Report> reportsInProgress = new ArrayList<Report>();
 	private Map<String, Report> reportsInProgressByCorrelationId = new HashMap<String, Report>();
@@ -75,6 +76,7 @@ public class TestTool {
 	private MessageCapturer messageCapturer = new MessageCapturerImpl();
 	private MessageTransformer messageTransformer;
 	private String regexFilter;
+	private boolean defaultRegexFilterSet = false;
 	private String defaultRegexFilter;
 	public static final String STUB_STRATEGY_STUB_ALL_EXTERNAL_CONNECTION_CODE = "Stub all external connection code";
 	public static final String STUB_STRATEGY_NEVER = "Never";
@@ -105,8 +107,6 @@ public class TestTool {
 
 	@PostConstruct
 	public void init() {
-		defaultRegexFilter = regexFilter;
-		defaultReportGeneratorEnabled = reportGeneratorEnabled;
 		if (openTelemetryEndpoint != null) {
 			tracer = OpenTelemetryUtil.getOpenTelemetryTracer(openTelemetryEndpoint);
 		}
@@ -166,6 +166,7 @@ public class TestTool {
 	}
 
 	public void setDebugger(Debugger debugger) {
+		log.trace("TestTool.setDebugger() called");
 		this.debugger = debugger;
 	}
 	
@@ -182,6 +183,13 @@ public class TestTool {
 	}
 
 	public void setReportGeneratorEnabled(boolean reportGeneratorEnabled) {
+		if (!this.defaultReportGeneratorEnabledSet) {
+			log.debug("{} Ladybug ReportGenerator and set default", reportGeneratorEnabled ? "Enabled" : "Disabled");
+			this.defaultReportGeneratorEnabled = reportGeneratorEnabled;
+			this.defaultReportGeneratorEnabledSet = true;
+		} else {
+			log.debug("{} Ladybug ReportGenerator", reportGeneratorEnabled ? "Enabled" : "Disabled");
+		}
 		this.reportGeneratorEnabled = reportGeneratorEnabled;
 	}
 	
@@ -224,6 +232,13 @@ public class TestTool {
 	}
 
 	public void setRegexFilter(String regexFilter) {
+		if (!this.defaultRegexFilterSet) {
+			log.info("TestTool.setRegexFilter() set defaultRegexFilter={} and regexFilter={}", regexFilter, regexFilter);
+			this.defaultRegexFilter = regexFilter;
+			this.defaultRegexFilterSet = true;
+		} else {
+			log.info("TestTool.setRegexFilter() set regexFilter={}", regexFilter);
+		}
 		this.regexFilter = regexFilter;
 	}
 
