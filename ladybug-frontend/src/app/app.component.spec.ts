@@ -7,7 +7,7 @@ import { VersionService } from './shared/services/version.service';
 import { provideRouter } from '@angular/router';
 
 class MockVersionService {
-  getFrontendVersion = jasmine.createSpy('getFrontendVersion').and.returnValue(Promise.resolve('1.0-TEST'));
+  getVersion = jasmine.createSpy('getVersion').and.returnValue(Promise.resolve('1.0-TEST'));
 }
 
 describe('AppComponent', () => {
@@ -38,9 +38,9 @@ describe('AppComponent', () => {
   it('should set the title correctly based on frontend version from version service', async () => {
     spyOn(titleService, 'setTitle');
 
-    await component.fetchAndSetFrontendVersion();
+    await component.fetchAndSetVersion();
 
     expect(titleService.setTitle).toHaveBeenCalledWith('Ladybug - v1.0-TEST');
-    expect(component.frontendVersion).toEqual('1.0-TEST');
+    expect(component.version).toEqual('1.0-TEST');
   });
 });

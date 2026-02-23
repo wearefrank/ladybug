@@ -4,7 +4,6 @@ import { Component, EventEmitter, inject, Input, OnDestroy, Output, ViewChild } 
 import { Report } from '../../shared/interfaces/report';
 import { catchError, firstValueFrom, Observable, Subscription } from 'rxjs';
 import { HttpService } from '../../shared/services/http.service';
-import { SettingsService } from '../../shared/services/settings.service';
 import { CreateTreeItem, FileTreeItem, FileTreeOptions, NgSimpleFileTree } from 'ng-simple-file-tree';
 import { ReportHierarchyTransformer } from '../../shared/classes/report-hierarchy-transformer';
 import { SimpleFileTreeUtil as SimpleFileTreeUtility } from '../../shared/util/simple-file-tree-util';
@@ -12,6 +11,7 @@ import { View } from '../../shared/interfaces/view';
 import { DebugTabService } from '../debug-tab.service';
 import { ErrorHandling } from '../../shared/classes/error-handling.service';
 import { RefreshCondition } from '../../shared/interfaces/refresh-condition';
+import { ClientSettingsService } from 'src/app/shared/services/client.settings.service';
 
 @Component({
   selector: 'app-debug-tree',
@@ -43,7 +43,7 @@ export class DebugTreeComponent implements OnDestroy {
   private lastReport?: Report | null;
 
   private httpService = inject(HttpService);
-  private settingsService = inject(SettingsService);
+  private clientSettingsService = inject(ClientSettingsService);
   private debugTab = inject(DebugTabService);
   private errorHandler = inject(ErrorHandling);
 
@@ -64,7 +64,7 @@ export class DebugTreeComponent implements OnDestroy {
   }
 
   subscribeToSubscriptions(): void {
-    const showMultipleSubscription: Subscription = this.settingsService.showMultipleAtATimeObservable.subscribe({
+    const showMultipleSubscription: Subscription = this.clientSettingsService.showMultipleAtATimeObservable.subscribe({
       next: (value: boolean) => {
         this.showMultipleAtATime = value;
         if (!this.showMultipleAtATime) {
