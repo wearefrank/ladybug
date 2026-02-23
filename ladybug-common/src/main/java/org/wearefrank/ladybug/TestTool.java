@@ -166,7 +166,7 @@ public class TestTool {
 	}
 
 	public void setDebugger(Debugger debugger) {
-		log.info("TestTool.setDebugger() called");
+		log.trace("TestTool.setDebugger() called");
 		this.debugger = debugger;
 	}
 	
@@ -184,11 +184,11 @@ public class TestTool {
 
 	public void setReportGeneratorEnabled(boolean reportGeneratorEnabled) {
 		if (!this.defaultReportGeneratorEnabledSet) {
-			log.info("TestTool.setReportGeneratorEnabled(): set defaultReportGeneratorEnabled={} and reportGeneratorEnabled={}", reportGeneratorEnabled, reportGeneratorEnabled);
+			log.debug("{} Ladybug ReportGenerator and set default", reportGeneratorEnabled ? "Enabled" : "Disabled");
 			this.defaultReportGeneratorEnabled = reportGeneratorEnabled;
 			this.defaultReportGeneratorEnabledSet = true;
 		} else {
-			log.info("{} Ladybug ReportGenerator", reportGeneratorEnabled ? "Enabled" : "Disabled");
+			log.debug("{} Ladybug ReportGenerator", reportGeneratorEnabled ? "Enabled" : "Disabled");
 		}
 		this.reportGeneratorEnabled = reportGeneratorEnabled;
 	}
