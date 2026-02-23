@@ -17,12 +17,11 @@
           <i class="fa fa-download px-2"></i><span class="caret"></span>
         </button>
         <div ngbDropdownMenu>
-          <div class="checkbox" title="When checked, omit empty reports (after applying the report transformation)">
-            <input data-cy-debug="downloadSkipEmptyReports" type="checkbox">
-            <label class="form-check-label transform-label">
-              Omit empty reports
-            </label>
+          <div class="dropdown-checkbox">
+            <input data-cy-debug="downloadSkipEmptyReports" type="checkbox" [(ngModel)]="downloadSkipEmptyReports">
+            <label class="dropdown-checkbox-label">Omit empty reports</label>
           </div>
+          <hr class="dropdown-separator"/>
           <button ngbDropdownItem (click)="downloadReports(true, true)">
             Report & XML summary
           </button>

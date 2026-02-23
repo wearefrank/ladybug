@@ -115,6 +115,7 @@ export class TableComponent implements OnInit, OnDestroy {
   protected appVariablesService = inject(AppVariablesService);
 
   protected currentUploadFile = '';
+  protected downloadSkipEmptyReports = false;
 
   private reportsInProgress: Record<string, number> = {};
 
