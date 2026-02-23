@@ -6,9 +6,9 @@ describe('Tests for report transformation', () => {
     cy.clearDebugStore();
     cy.get('[data-cy-debug="openSettings"]').click();
     // Factory reset in settings dialog. Resets
-    // transformation to factory value.
+    // transformation to factory value. This
+    // also closes the dialog.
     cy.get('[data-cy-settings="factoryReset"]').click();
-    cy.get('[data-cy-settings="saveChanges"]').click();
   });
 
   it('Should see updated metadata when updating transformation field', () => {
