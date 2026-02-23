@@ -4,7 +4,6 @@ import { NgbActiveModal, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ServerSettings, SettingsService } from '../../../shared/services/settings.service';
 import { Subscription } from 'rxjs';
 import { ToastService } from '../../../shared/services/toast.service';
-import { VersionService } from '../../../shared/services/version.service';
 import { ClientSettingsService } from 'src/app/shared/services/client.settings.service';
 
 @Component({
@@ -25,7 +24,6 @@ export class TableSettingsModalComponent implements OnInit, OnDestroy {
   public clientSettingsService = inject(ClientSettingsService);
   public serverSettingsService = inject(SettingsService);
   private toastService = inject(ToastService);
-  private versionService = inject(VersionService);
 
   protected unsavedChanges = false;
 

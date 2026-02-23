@@ -264,11 +264,14 @@ describe('Tests for settings component', () => {
       cy.get('[data-cy-debug="openSettings"]').as('openSettingsModal').click();
       cy.get('[data-cy-settings="nav-client"]').as('client').click();
       cy.get('[data-cy-settings="openLatestReports"]').as('numberOfReports').type('{esc}');
-      cy.get('@openSettingsModal');
-      cy.get('@client').click();
-      cy.get('@numberOfReports').type('{selectAll}8{enter}');
+      cy.get('@numberOfReports').should('not.exist');
+      cy.wait(200);
       cy.get('@openSettingsModal').click();
       cy.get('@client').click();
+      cy.get('@numberOfReports').should('be.enabled').type('{selectAll}8{enter}');
+      cy.get('@openSettingsModal').click();
+      cy.get('@client').click();
+      cy.get('@numberOfReports').should('be.enabled');
       cy.get('@numberOfReports').invoke('val').should('equal', '8');
       cy.get('[data-cy-settings="factoryReset"]').click();
       cy.get('@openSettingsModal').click();
