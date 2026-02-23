@@ -268,7 +268,9 @@ describe('Tests for settings component', () => {
       cy.wait(200);
       cy.get('@openSettingsModal').click();
       cy.get('@client').click();
-      cy.get('@numberOfReports').should('be.enabled').type('{selectAll}8{enter}');
+      cy.get('@numberOfReports').should('be.enabled').type('{selectAll}8');
+      cy.get('@numberOfReports').invoke('val').should('equal', '8');
+      cy.get('@numberOfReports').click().type('{enter}');
       cy.get('@openSettingsModal').click();
       cy.get('@client').click();
       cy.get('@numberOfReports').should('be.enabled');
