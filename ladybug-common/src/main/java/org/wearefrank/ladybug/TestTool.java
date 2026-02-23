@@ -188,7 +188,7 @@ public class TestTool {
 			this.defaultReportGeneratorEnabled = reportGeneratorEnabled;
 			this.defaultReportGeneratorEnabledSet = true;
 		} else {
-			log.info("TestTool.setReportGeneratorEnabled(): set reportGeneratorEnabled={}", reportGeneratorEnabled);
+			log.info("{} Ladybug ReportGenerator", reportGeneratorEnabled ? "Enabled" : "Disabled");
 		}
 		this.reportGeneratorEnabled = reportGeneratorEnabled;
 	}
