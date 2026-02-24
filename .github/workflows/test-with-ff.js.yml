@@ -6,7 +6,7 @@ name: Test with FF!
 on:
   push:
     branches:
-      - main
+      - master
   pull_request:
   workflow_dispatch:
     inputs:
