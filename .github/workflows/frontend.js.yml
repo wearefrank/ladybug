@@ -1,4 +1,4 @@
-name: Testing
+name: Test without FF!
 on:
   push:
     branches:

@@ -74,25 +74,25 @@ jobs:
       - name: Check that backendBranch is only set if it can be applied
         if: ${{ inputs.backendBranch != '' && steps.decideAboutBuildCode.outputs.buildCode == 'false' }}
         run: exit 1
-      - name: Cache Frank!Runner dependencies - build
-        uses: actions/cache@v3
-        with:
-          path: frank-runner/build
-          key: ${{ runner.os }}-frank-runner-build
-          restore-keys: |
-            ${{ runner.os }}-frank-runner-build
-      - name: Cache Frank!Runner dependencies - download
-        uses: actions/cache@v3
-        with:
-          path: frank-runner/download
-          key: ${{ runner.os }}-frank-runner-download
-          restore-keys: |
-            ${{ runner.os }}-frank-runner-download
       - name: Checkout Frank!Runner
         uses: actions/checkout@v4
         with:
           repository: wearefrank/frank-runner
           path: frank-runner
+      - name: Cache Frank!Runner dependencies - build
+        uses: actions/cache@v3
+        with:
+          path: frank-runner/build
+          key: ${{ runner.os }}-frank-runner-build-withff
+          restore-keys: |
+            ${{ runner.os }}-frank-runner-build-withff
+      - name: Cache Frank!Runner dependencies - download
+        uses: actions/cache@v3
+        with:
+          path: frank-runner/download
+          key: ${{ runner.os }}-frank-runner-download-withff
+          restore-keys: |
+            ${{ runner.os }}-frank-runner-download-withff
       - name: Checkout ladybug
         uses: actions/checkout@v4
         with:
@@ -204,7 +204,7 @@ jobs:
         run: find . -path './build/apache-tomcat*/catalina.out' -delete
       # Build the latest code if buildLatestFFandLadybugCode
       - name: Cache Maven downloads
-        if: ${{ steps.decideAboutBuildCode.outputs.buildCode == 'true' }}
+        if: ${{ steps.decideAboutBuildCode.outputs.buildCode == 'true' || matrix.test-app == 'true' }}
         uses: actions/cache@v3
         with:
           path: ~/.m2/repository/
@@ -255,7 +255,7 @@ jobs:
         run: ./restart.sh > serverStartLog.log &
       - name: Wait for server to be available
         working-directory: ladybug/.github/workflows/with-ff
-        run: ./waitForUrl.sh http://localhost:8090 900
+        run: ./waitForUrl.sh http://localhost:8090 1800
       - name: Be sure there are no old videos
         run: rm -rf ladybug/ladybug-ff-cypress-test/cypress/videos
       - name: Be sure there are no old screenshots
@@ -307,3 +307,4 @@ jobs:
           path: |
             frank-runner/specials/ladybug/buildIafWebapp.log
             ladybug/ladybug-ff-test-webapp/serverStartLog.log
+
