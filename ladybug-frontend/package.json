@@ -62,7 +62,7 @@
     "@types/bootstrap": "^4.6.6",
     "@types/diff-match-patch": "1.0.36",
     "@types/jasmine": "6.0.0",
-    "@types/node": "25.1.0",
+    "@types/node": "25.2.0",
     "@typescript-eslint/eslint-plugin": "^8.44.1",
     "@typescript-eslint/parser": "^8.54.0",
     "chai-match": "^1.1.1",
