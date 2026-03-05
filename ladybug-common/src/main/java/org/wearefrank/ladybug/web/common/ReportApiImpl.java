@@ -408,7 +408,7 @@ public class ReportApiImpl {
 		ReportSummaryChoice exportReportXml = ReportSummaryChoice.fromString(exportReportXmlParam);
 		log.debug("Choice for exporting report summary is [{}]", exportReportXml.toString());
 		Consumer<Report> globalXsltSetter = (report) -> {};
-		if (reportXmlTransformer != null && exportReportXml != ReportSummaryChoice.NO_DEFAULT_XSLT) {
+		if (reportXmlTransformer != null && exportReportXml.isGlobalXsltApplied()) {
 			log.debug("Every report being considered will get the global report XML transformer");
 			globalXsltSetter = (report) -> report.setGlobalReportXmlTransformer(reportXmlTransformer);
 		}
@@ -418,14 +418,14 @@ public class ReportApiImpl {
 				log.debug("One report was selected for download");
 				Report report = getReport(storage, storageIds.get(0));
 				globalXsltSetter.accept(report);
-				export = Export.export(report, exportReport, exportReportXml != ReportSummaryChoice.OMIT, globalXsltSetter);
+				export = Export.export(report, exportReport, exportReportXml.isSummaryExported(), globalXsltSetter);
 			} else {
 				log.debug("Multiple reports were selected for download");
 				export = Export.export(
 						storage,
 						storageIds,
 						exportReport,
-						exportReportXml != ReportSummaryChoice.OMIT,
+						exportReportXml.isSummaryExported(),
 						globalXsltSetter,
 						forMultipleOmitIfXmlEmpty);
 			}

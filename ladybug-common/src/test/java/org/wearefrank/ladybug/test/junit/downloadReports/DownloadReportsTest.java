@@ -280,6 +280,21 @@ public class DownloadReportsTest {
 	}
 
 	@Test
+	public void whenDefaultXsltNotAppliedThenCannotOmitEmpty() throws Exception {
+		setGlobalXsltThatMakesSecondEmpty();
+		ExportResult result = reportApiImpl.downloadFile(
+				"testStorage", "true", "omit_no_default_xslt", true,
+				Arrays.asList(new Integer[] {storageIdOfFirst, storageIdOfSecond}));
+		Assert.assertTrue(result.getSuggestedFilename().endsWith(".zip"));
+		List<String> entries = getZipEntries(result.getTempFile());
+		Assert.assertEquals(2, entries.size());
+		Assert.assertTrue(entries.get(0).endsWith(".ttr"));
+		Assert.assertTrue(entries.get(0).contains("first"));
+		Assert.assertTrue(entries.get(1).endsWith(".ttr"));
+		Assert.assertTrue(entries.get(1).contains("second"));
+	}
+
+	@Test
 	public void whenOneReportSummaryDownloadedThenOmitEmptyNeglected() throws Exception {
 		setGlobalXsltThatMakesSecondEmpty();
 		ExportResult result = reportApiImpl.downloadFile(

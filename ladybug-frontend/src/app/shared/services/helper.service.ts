@@ -9,9 +9,11 @@ export class HelperService {
   private clientSettingsService = inject(ClientSettingsService);
 
   download(queryString: string, storage: string, exportBinary: boolean, exportXML: boolean): void {
-    let xmlChoice = 'omit';
+    let xmlChoice: string;
     if (exportXML) {
       xmlChoice = this.clientSettingsService.isTransformationEnabled() ? 'with_default_xslt' : 'no_default_xslt';
+    } else {
+      xmlChoice = this.clientSettingsService.isTransformationEnabled() ? 'omit' : 'omit_no_default_xslt';
     }
     window.open(
       `api/report/download/${storage}/${exportBinary}/${xmlChoice}/${this.clientSettingsService.isForMultipleOmitIfXmlEmpty()}?${queryString.slice(0, -1)}`,

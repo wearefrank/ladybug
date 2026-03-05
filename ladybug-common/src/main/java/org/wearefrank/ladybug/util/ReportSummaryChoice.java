@@ -15,24 +15,23 @@
 */
 package org.wearefrank.ladybug.util;
 
-/*
-	This choice also applies when reports are downloaded without report summaries.
-	In that case the XML of every report is generated. If a report has an empty
-	XML, then the report is omitted.
+import lombok.Getter;
 
-	Still there is no need for a choice SKIP_DEFAULT_XSLT_AND_OMIT. If reports are
-	downloaded and the default XSLT is to be neglected, then reports cannot be empty
-	so skipping empty reports should not be requested.
-
-	Reports in the test tab can have an empty XML because of the report specific
-	transformation. But the test only allows you to download one report at a time.
-	If you are downloading a single report, there is no option to omit reports
-	with empty XML.
- */
 public enum ReportSummaryChoice {
-	OMIT,
-	NO_DEFAULT_XSLT,
-	WITH_DEFAULT_XSLT;
+	// When omitting reports with empty XML, do apply the default XSLT transformation to see if empty.
+	OMIT(true, false),
+	// When omitting reports with empty XML, do NOT apply the default XSLT transformation to see if empty.
+	OMIT_NO_DEFAULT_XSLT(false, false),
+	NO_DEFAULT_XSLT(false, true),
+	WITH_DEFAULT_XSLT(true, true);
+
+	private @Getter boolean globalXsltApplied;
+	private @Getter boolean summaryExported;
+
+	ReportSummaryChoice(boolean globalXsltApplied, boolean summaryExported) {
+		this.globalXsltApplied = globalXsltApplied;
+		this.summaryExported = summaryExported;
+	}
 
 	static ReportSummaryChoice fromBoolean(boolean v) {
 		if (v) {
