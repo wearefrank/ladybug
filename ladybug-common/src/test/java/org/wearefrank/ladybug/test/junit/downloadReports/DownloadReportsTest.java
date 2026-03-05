@@ -1,6 +1,7 @@
 package org.wearefrank.ladybug.test.junit.downloadReports;
 
 import io.micrometer.common.util.StringUtils;
+import liquibase.util.FileUtil;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.Assert;
@@ -22,6 +23,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -33,6 +35,8 @@ import org.wearefrank.ladybug.util.ExportResult;
 import org.wearefrank.ladybug.web.common.ReportApiImpl;
 
 public class DownloadReportsTest {
+	private static final int NUM_BYTES_TO_READ = 200;
+
 	private ApplicationContext context = Common.CONTEXT_MEM_STORAGE;
 
 	private Resource reportTransformationForEmptyReports =
@@ -128,21 +132,24 @@ public class DownloadReportsTest {
 	@Test
 	public void whenDownloadingOneReportSummaryRequestedThenXmlFile() throws Exception {
 		ExportResult result = reportApiImpl.downloadFile(
-				"testStorage", "false", "with_default_xslt", Arrays.asList(new Integer[] {storageIdOfFirst}));
+				"testStorage", "false", "with_default_xslt",
+				Arrays.asList(new Integer[] {storageIdOfFirst}));
 		Assert.assertTrue(result.getSuggestedFilename().endsWith(".xml"));
 	}
 
 	@Test
 	public void whenDownloadingOneReportRequestedThenTtsFile() throws Exception {
 		ExportResult result = reportApiImpl.downloadFile(
-				"testStorage", "true", "omit", Arrays.asList(new Integer[] {storageIdOfFirst}));
+				"testStorage", "true", "omit",
+				Arrays.asList(new Integer[] {storageIdOfFirst}));
 		Assert.assertTrue(result.getSuggestedFilename().endsWith(".ttr"));
 	}
 
 	@Test
 	public void whenDownloadingReportAndSummaryThenZipFile() throws Exception {
 		ExportResult result = reportApiImpl.downloadFile(
-				"testStorage", "true", "with_default_xslt", Arrays.asList(new Integer[] {storageIdOfFirst}));
+				"testStorage", "true", "with_default_xslt",
+				Arrays.asList(new Integer[] {storageIdOfFirst}));
 		Assert.assertTrue(result.getSuggestedFilename().endsWith(".zip"));
 		List<String> zipEntries = getZipEntries(result.getTempFile());
 		Assert.assertEquals(2, zipEntries.size());
@@ -154,7 +161,8 @@ public class DownloadReportsTest {
 	@Test
 	public void whenDownloadingTwoSummariesThenZipWithTwoXml() throws Exception {
 		ExportResult result = reportApiImpl.downloadFile(
-				"testStorage", "false", "with_default_xslt", Arrays.asList(new Integer[] {storageIdOfFirst, storageIdOfSecond}));
+				"testStorage", "false", "with_default_xslt",
+				Arrays.asList(new Integer[] {storageIdOfFirst, storageIdOfSecond}));
 		Assert.assertTrue(result.getSuggestedFilename().endsWith(".zip"));
 		List<String> zipEntries = getZipEntries(result.getTempFile());
 		Assert.assertEquals(2, zipEntries.size());
@@ -162,6 +170,78 @@ public class DownloadReportsTest {
 		boolean hasFirst = zipEntries.stream().anyMatch(s -> s.contains("first"));
 		boolean hasSecond = zipEntries.stream().anyMatch(s -> s.contains("second"));
 		Assert.assertTrue(hasFirst && hasSecond);
+	}
+
+	@Test
+	public void whenOneReportSummaryDownloadedWithDefaultXsltThenApplied() throws Exception {
+		setGlobalXsltThatProducesTransformedReport();
+		ExportResult result = reportApiImpl.downloadFile(
+				"testStorage", "false", "with_default_xslt",
+				Arrays.asList(new Integer[] {storageIdOfFirst}));
+		Assert.assertTrue(result.getSuggestedFilename().endsWith(".xml"));
+		String contents = FileUtil.getContents(result.getTempFile());
+		Assert.assertTrue(contents.contains("TransformedReport"));
+	}
+
+	@Test
+	public void whenOneReportSummaryDownloadedWithoutDefaultXsltThenNotApplied() throws Exception {
+		setGlobalXsltThatProducesTransformedReport();
+		ExportResult result = reportApiImpl.downloadFile(
+				"testStorage", "false", "no_default_xslt",
+				Arrays.asList(new Integer[] {storageIdOfFirst}));
+		Assert.assertTrue(result.getSuggestedFilename().endsWith(".xml"));
+		String contents = FileUtil.getContents(result.getTempFile());
+		Assert.assertFalse(contents.contains("TransformedReport"));
+	}
+
+	@Test
+	public void whenOneReportDownloadedWithDefaultXsltThenApplied() throws Exception {
+		setGlobalXsltThatProducesTransformedReport();
+		ExportResult result = reportApiImpl.downloadFile(
+				"testStorage", "true", "with_default_xslt",
+				Arrays.asList(new Integer[] {storageIdOfFirst}));
+		Assert.assertTrue(result.getSuggestedFilename().endsWith(".zip"));
+		List<String> contents = getZipEntriesContents(result.getTempFile());
+		Assert.assertTrue(contents.stream().anyMatch(s -> s.contains("TransformedReport")));
+	}
+
+	@Test
+	public void whenOneReportDownloadedWithoutDefaultXsltThenNotApplied() throws Exception {
+		setGlobalXsltThatProducesTransformedReport();
+		ExportResult result = reportApiImpl.downloadFile(
+				"testStorage", "true", "no_default_xslt",
+				Arrays.asList(new Integer[] {storageIdOfFirst}));
+		Assert.assertTrue(result.getSuggestedFilename().endsWith(".zip"));
+		List<String> contents = getZipEntriesContents(result.getTempFile());
+		Assert.assertTrue(contents.stream().noneMatch(s -> s.contains("TransformedReport")));
+	}
+
+	@Test
+	public void whenTwoReportsDownloadedWithDefaultXsltThenApplied() throws Exception {
+		setGlobalXsltThatProducesTransformedReport();
+		ExportResult result = reportApiImpl.downloadFile(
+				"testStorage", "false", "with_default_xslt",
+				Arrays.asList(new Integer[] {storageIdOfFirst, storageIdOfSecond}));
+		Assert.assertTrue(result.getSuggestedFilename().endsWith(".zip"));
+		List<String> contents = getZipEntriesContents(result.getTempFile());
+		Assert.assertTrue(contents.stream().allMatch(s -> s.contains("TransformedReport")));
+	}
+
+	@Test
+	public void whenTwoReportsDownloadedWithoutDefaultXsltThenNotApplied() throws Exception {
+		setGlobalXsltThatProducesTransformedReport();
+		ExportResult result = reportApiImpl.downloadFile(
+				"testStorage", "false", "no_default_xslt",
+				Arrays.asList(new Integer[] {storageIdOfFirst, storageIdOfSecond}));
+		Assert.assertTrue(result.getSuggestedFilename().endsWith(".zip"));
+		List<String> contents = getZipEntriesContents(result.getTempFile());
+		Assert.assertTrue(contents.stream().noneMatch(s -> s.contains("TransformedReport")));
+	}
+
+	private void setGlobalXsltThatProducesTransformedReport() {
+		ReportXmlTransformer global = new ReportXmlTransformer();
+		global.updateXslt(xsltThatLeavesTrace);
+		reportApiImpl.setReportXmlTransformer(global);
 	}
 
 	private List<String> getZipEntries(File f) throws IOException {
@@ -175,5 +255,32 @@ public class DownloadReportsTest {
 		}
 		z.close();
 		return result;
+	}
+
+	private List<String> getZipEntriesContents(File f) throws IOException {
+		List<String> result = new ArrayList<>();
+		InputStream is = new FileInputStream(f);
+		ZipInputStream z = new ZipInputStream(is);
+		ZipEntry e;
+		while((e = z.getNextEntry()) != null) {
+			result.add(getFirstBytesAsString(z));
+			z.closeEntry();
+		}
+		z.close();
+		return result;
+	}
+
+	private String getFirstBytesAsString(ZipInputStream z) throws IOException {
+		byte[] result = new byte[NUM_BYTES_TO_READ];
+		int indexInResult = 0;
+		byte[] buffer = new byte[NUM_BYTES_TO_READ];
+		int len = 0;
+		while ((len = z.read(buffer)) > 0) {
+			int indexInBuffer = 0;
+			while (indexInResult < NUM_BYTES_TO_READ && indexInBuffer < len) {
+				result[indexInResult++] = buffer[indexInBuffer++];
+			}
+		}
+		return StandardCharsets.UTF_8.decode(ByteBuffer.wrap(result)).toString();
 	}
 }
