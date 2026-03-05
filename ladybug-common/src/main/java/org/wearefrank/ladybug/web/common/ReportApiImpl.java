@@ -41,6 +41,7 @@ import org.wearefrank.ladybug.storage.memory.MemoryCrudStorage;
 import org.wearefrank.ladybug.transform.ReportXmlTransformer;
 import org.wearefrank.ladybug.util.Export;
 import org.wearefrank.ladybug.util.ExportResult;
+import org.wearefrank.ladybug.util.ReportSummaryChoice;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -55,6 +56,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Scanner;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -392,22 +394,45 @@ public class ReportApiImpl {
 		}
 	}
 
-	public ExportResult downloadFile(String storageName, String exportReportParam, String exportReportXmlParam, List<Integer> storageIds) throws HttpBadRequestException, HttpInternalServerErrorException {
+	public ExportResult downloadFile(
+			String storageName,
+			String exportReportParam,
+			String exportReportXmlParam,
+			boolean forMultipleOmitIfXmlEmpty,
+			List<Integer> storageIds) throws HttpBadRequestException, HttpInternalServerErrorException {
+		log.debug("Enter ReportApiImpl.downloadFile()");
 		Storage storage = testTool.getStorage(storageName);
 		if (storageIds == null || storageIds.isEmpty())
 			throw new HttpBadRequestException("No storage ids have been provided");
 		boolean exportReport = exportReportParam.equalsIgnoreCase("true") || exportReportParam.equals("1");
-		boolean exportReportXml = exportReportXmlParam.equalsIgnoreCase("true") || exportReportXmlParam.equals("1");
+		ReportSummaryChoice exportReportXml = ReportSummaryChoice.fromString(exportReportXmlParam);
+		log.debug("Choice for exporting report summary is [{}]", exportReportXml.toString());
+		Consumer<Report> globalXsltSetter = (report) -> {};
+		if (reportXmlTransformer != null && exportReportXml.isGlobalXsltApplied()) {
+			log.debug("Every report being considered will get the global report XML transformer");
+			globalXsltSetter = (report) -> report.setGlobalReportXmlTransformer(reportXmlTransformer);
+		}
 		try {
 			ExportResult export;
 			if (storageIds.size() == 1) {
+				log.debug("One report was selected for download");
 				Report report = getReport(storage, storageIds.get(0));
-				export = Export.export(report, exportReport, exportReportXml);
+				globalXsltSetter.accept(report);
+				export = Export.export(report, exportReport, exportReportXml.isSummaryExported(), globalXsltSetter);
 			} else {
-				export = Export.export(storage, storageIds, exportReport, exportReportXml);
+				log.debug("Multiple reports were selected for download");
+				export = Export.export(
+						storage,
+						storageIds,
+						exportReport,
+						exportReportXml.isSummaryExported(),
+						globalXsltSetter,
+						forMultipleOmitIfXmlEmpty);
 			}
+			log.debug("Leave ReportApiImpl.downloadFile()");
 			return export;
 		} catch (StorageException e) {
+			log.error("Storage exception during report download", e);
 			throw new HttpInternalServerErrorException("Exception while requesting reports with ids [" + storageIds + "] from the storage. - detailed error message - " + e + Arrays.toString(e.getStackTrace()), e);
 		}
 	}

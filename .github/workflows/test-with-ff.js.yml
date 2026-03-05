@@ -7,7 +7,9 @@ on:
   push:
     branches:
       - master
-  pull_request:
+  # Martijn would love to add "pull_request:" here, but that would take too many GitHub Actions minutes.
+  # The tests need more than a quarter only to start the backend. This should not be done for
+  # every tiny commit on a PR.
   workflow_dispatch:
     inputs:
       buildLatestFFandLadybugCode:

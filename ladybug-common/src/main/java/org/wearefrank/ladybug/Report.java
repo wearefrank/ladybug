@@ -1,5 +1,5 @@
 /*
-   Copyright 2018-2025 WeAreFrank!
+   Copyright 2018-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -233,6 +233,7 @@ public class Report implements Serializable {
 	@Transient
 	@JsonIgnore
 	public void setGlobalReportXmlTransformer(ReportXmlTransformer globalReportXmlTransformer) {
+		log.debug("Report.setGlobalReportXmlTransformer called with {} value", globalReportXmlTransformer == null ? "null" : "non-null");
 		this.globalReportXmlTransformer = globalReportXmlTransformer;
 	}
 
@@ -921,7 +922,9 @@ public class Report implements Serializable {
 	}
 
 	public String toXml(ReportRunner reportRunner) {
+		log.debug("Enter Report.toXml() for report with storage id {}", getStorageId());
 		if (xml == null) {
+			log.debug("No XML was cached, calculating it");
 			StringBuilder builder = new StringBuilder();
 			builder.append("<Report");
 			builder.append(" Name=\"" + EscapeUtil.escapeXml(name) + "\"");
@@ -997,15 +1000,18 @@ public class Report implements Serializable {
 			builder.append("</Report>");
 			xml = builder.toString();
 			if (reportXmlTransformer != null || (transformation != null && transformation.trim().length() > 0)) {
+				log.debug("Transorming raw XML using report-specific transformation");
 				if (reportXmlTransformer == null) {
 					reportXmlTransformer = new ReportXmlTransformer();
 					reportXmlTransformer.setXslt(transformation);
 				}
 				xml = reportXmlTransformer.transform(xml);
 			} else if (globalReportXmlTransformer != null) {
+				log.debug("Transorming raw XML using global transformation");
 				xml = globalReportXmlTransformer.transform(xml);
 			}
 		}
+		log.debug("Leave Report.toXml()");
 		return xml;
 	}
 

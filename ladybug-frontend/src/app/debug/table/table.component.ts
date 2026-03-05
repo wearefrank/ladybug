@@ -574,6 +574,15 @@ export class TableComponent implements OnInit, OnDestroy {
     return [headers.join(','), ...rows].join('\n');
   }
 
+  onDownloadSkipEmptyReportsChanged($event: any): void {
+    let value = false;
+    if ($event?.target.checked()) {
+      value = true;
+    }
+    console.log(`Set clientSettingsService.setForMultipleOmitIfXmlEmpty(${value})`);
+    this.clientSettingsService.setForMultipleOmitIfXmlEmpty(value);
+  }
+
   uploadReports(event: Event): void {
     // Allow the same file to be uploaded again.
     this.currentUploadFile = '';

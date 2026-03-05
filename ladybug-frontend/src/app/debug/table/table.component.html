@@ -17,6 +17,10 @@
           <i class="fa fa-download px-2"></i><span class="caret"></span>
         </button>
         <div ngbDropdownMenu>
+          <div class="dropdown-checkbox">
+            <input data-cy-debug="downloadSkipEmptyReports" type="checkbox" (change)="onDownloadSkipEmptyReportsChanged($event)">
+            <label class="dropdown-checkbox-label">If multiple selected, then omit empty reports</label>
+          </div>
           <button ngbDropdownItem (click)="downloadReports(true, true)">
             Report & XML summary
           </button>
@@ -26,8 +30,9 @@
           <button ngbDropdownItem (click)="downloadReports(true, false)">
             Report only
           </button>
+          <hr class="dropdown-separator"/>
           <button ngbDropdownItem (click)="downloadReportsAsCsv()">
-            CSV summary only
+            CSV summary only (empty reports included)
           </button>
         </div>
       </div>

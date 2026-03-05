@@ -112,3 +112,26 @@ td.mat-mdc-cell {
   gap: 0.25rem 0.375rem;
   flex-wrap: wrap;
 }
+
+.dropdown-checkbox {
+    display: block;
+    width: 100%;
+    padding-left: 1.5rem;
+    padding-bottom: 0rem;
+    clear: both;
+    font-weight: 400;
+    color: #212529;
+    text-align: inherit;
+    white-space: nowrap;
+    background-color: transparent;
+    border: 0;
+}
+
+.dropdown-checkbox-label {
+  padding-left: .7rem;
+}
+
+.dropdown-separator {
+  margin-top: .4rem;
+  margin-bottom: .4rem;
+}
