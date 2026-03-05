@@ -18,6 +18,9 @@
 		<property name="debugStorage">
 			<ref bean="debugStorage"/>
 		</property>
+		<property name="testStorage">
+			<ref bean="testStorage"/>
+		</property>
 	</bean>
 
 	<bean name="debugStorage" class="org.wearefrank.ladybug.storage.memory.MemoryLogStorage" autowire="byName">
@@ -29,4 +32,12 @@
 		</property>
 	</bean>
 
+	<bean name="testStorage" class="org.wearefrank.ladybug.storage.memory.MemoryCrudStorage" autowire="byName">
+		<property name="initialStorageId">
+			<value>2614</value>
+		</property>
+		<property name="metadataExtractor">
+			<bean class="org.wearefrank.ladybug.MetadataExtractor"/>
+		</property>
+	</bean>
 </beans>
