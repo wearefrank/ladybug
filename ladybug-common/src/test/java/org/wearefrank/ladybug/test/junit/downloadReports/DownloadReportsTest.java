@@ -128,21 +128,21 @@ public class DownloadReportsTest {
 	@Test
 	public void whenDownloadingOneReportSummaryRequestedThenXmlFile() throws Exception {
 		ExportResult result = reportApiImpl.downloadFile(
-				"testStorage", "false", "true", Arrays.asList(new Integer[] {storageIdOfFirst}));
+				"testStorage", "false", "with_default_xslt", Arrays.asList(new Integer[] {storageIdOfFirst}));
 		Assert.assertTrue(result.getSuggestedFilename().endsWith(".xml"));
 	}
 
 	@Test
 	public void whenDownloadingOneReportRequestedThenTtsFile() throws Exception {
 		ExportResult result = reportApiImpl.downloadFile(
-				"testStorage", "true", "false", Arrays.asList(new Integer[] {storageIdOfFirst}));
+				"testStorage", "true", "omit", Arrays.asList(new Integer[] {storageIdOfFirst}));
 		Assert.assertTrue(result.getSuggestedFilename().endsWith(".ttr"));
 	}
 
 	@Test
 	public void whenDownloadingReportAndSummaryThenZipFile() throws Exception {
 		ExportResult result = reportApiImpl.downloadFile(
-				"testStorage", "true", "true", Arrays.asList(new Integer[] {storageIdOfFirst}));
+				"testStorage", "true", "with_default_xslt", Arrays.asList(new Integer[] {storageIdOfFirst}));
 		Assert.assertTrue(result.getSuggestedFilename().endsWith(".zip"));
 		List<String> zipEntries = getZipEntries(result.getTempFile());
 		Assert.assertEquals(2, zipEntries.size());
@@ -154,7 +154,7 @@ public class DownloadReportsTest {
 	@Test
 	public void whenDownloadingTwoSummariesThenZipWithTwoXml() throws Exception {
 		ExportResult result = reportApiImpl.downloadFile(
-				"testStorage", "false", "true", Arrays.asList(new Integer[] {storageIdOfFirst, storageIdOfSecond}));
+				"testStorage", "false", "with_default_xslt", Arrays.asList(new Integer[] {storageIdOfFirst, storageIdOfSecond}));
 		Assert.assertTrue(result.getSuggestedFilename().endsWith(".zip"));
 		List<String> zipEntries = getZipEntries(result.getTempFile());
 		Assert.assertEquals(2, zipEntries.size());
