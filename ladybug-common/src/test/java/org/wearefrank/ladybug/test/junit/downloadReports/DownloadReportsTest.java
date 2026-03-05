@@ -10,6 +10,7 @@ import org.springframework.util.FileCopyUtils;
 import org.springframework.util.ResourceUtils;
 import org.wearefrank.ladybug.Report;
 import org.wearefrank.ladybug.TestTool;
+import org.wearefrank.ladybug.storage.CrudStorage;
 import org.wearefrank.ladybug.storage.StorageException;
 import org.wearefrank.ladybug.test.junit.Common;
 import org.wearefrank.ladybug.test.junit.ReportRelatedTestCase;
@@ -53,18 +54,21 @@ public class DownloadReportsTest {
 		testTool.endpoint(correlationIdOfSecond, "FakeClassName", "DownloadReportsTest second report", "End of second");
 		Report firstReport = ReportRelatedTestCase.findAndGetReport(testTool, testTool.getDebugStorage(), correlationIdOfFirst);
 		Report secondReport = ReportRelatedTestCase.findAndGetReport(testTool, testTool.getDebugStorage(), correlationIdOfSecond);
+		firstReport.setTransformation(transformerXslt);
+		secondReport.setTransformation(transformerXslt);
+		CrudStorage crudStorage = (CrudStorage) testTool.getTestStorage();
+		crudStorage.store(firstReport);
+		crudStorage.store(secondReport);
 		storageIdOfFirst = firstReport.getStorageId();
 		storageIdOfSecond = secondReport.getStorageId();
 	}
 
 	@Test
 	public void testReportsExistAndAreAsNeeded() throws StorageException {
-		Report firstReport = testTool.getDebugStorage().getReport(storageIdOfFirst);
-		Report secondReport = testTool.getDebugStorage().getReport(storageIdOfSecond);
+		Report firstReport = testTool.getTestStorage().getReport(storageIdOfFirst);
+		Report secondReport = testTool.getTestStorage().getReport(storageIdOfSecond);
 		Assert.assertEquals(2, firstReport.getCheckpoints().size());
 		Assert.assertEquals(2, secondReport.getCheckpoints().size());
-		firstReport.setTransformation(transformerXslt);
-		secondReport.setTransformation(transformerXslt);
 		Assert.assertTrue(StringUtils.isNotEmpty(firstReport.toXml()));
 		Assert.assertEquals("", secondReport.toXml());
 	}
