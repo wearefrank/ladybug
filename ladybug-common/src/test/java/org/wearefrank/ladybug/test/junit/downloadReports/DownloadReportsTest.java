@@ -132,7 +132,7 @@ public class DownloadReportsTest {
 	@Test
 	public void whenDownloadingOneReportSummaryRequestedThenXmlFile() throws Exception {
 		ExportResult result = reportApiImpl.downloadFile(
-				"testStorage", "false", "with_default_xslt",
+				"testStorage", "false", "with_default_xslt", false,
 				Arrays.asList(new Integer[] {storageIdOfFirst}));
 		Assert.assertTrue(result.getSuggestedFilename().endsWith(".xml"));
 	}
@@ -140,7 +140,7 @@ public class DownloadReportsTest {
 	@Test
 	public void whenDownloadingOneReportRequestedThenTtsFile() throws Exception {
 		ExportResult result = reportApiImpl.downloadFile(
-				"testStorage", "true", "omit",
+				"testStorage", "true", "omit", false,
 				Arrays.asList(new Integer[] {storageIdOfFirst}));
 		Assert.assertTrue(result.getSuggestedFilename().endsWith(".ttr"));
 	}
@@ -148,7 +148,7 @@ public class DownloadReportsTest {
 	@Test
 	public void whenDownloadingReportAndSummaryThenZipFile() throws Exception {
 		ExportResult result = reportApiImpl.downloadFile(
-				"testStorage", "true", "with_default_xslt",
+				"testStorage", "true", "with_default_xslt", false,
 				Arrays.asList(new Integer[] {storageIdOfFirst}));
 		Assert.assertTrue(result.getSuggestedFilename().endsWith(".zip"));
 		List<String> zipEntries = getZipEntries(result.getTempFile());
@@ -161,7 +161,7 @@ public class DownloadReportsTest {
 	@Test
 	public void whenDownloadingTwoSummariesThenZipWithTwoXml() throws Exception {
 		ExportResult result = reportApiImpl.downloadFile(
-				"testStorage", "false", "with_default_xslt",
+				"testStorage", "false", "with_default_xslt", false,
 				Arrays.asList(new Integer[] {storageIdOfFirst, storageIdOfSecond}));
 		Assert.assertTrue(result.getSuggestedFilename().endsWith(".zip"));
 		List<String> zipEntries = getZipEntries(result.getTempFile());
@@ -176,7 +176,7 @@ public class DownloadReportsTest {
 	public void whenOneReportSummaryDownloadedWithDefaultXsltThenApplied() throws Exception {
 		setGlobalXsltThatProducesTransformedReport();
 		ExportResult result = reportApiImpl.downloadFile(
-				"testStorage", "false", "with_default_xslt",
+				"testStorage", "false", "with_default_xslt", false,
 				Arrays.asList(new Integer[] {storageIdOfFirst}));
 		Assert.assertTrue(result.getSuggestedFilename().endsWith(".xml"));
 		String contents = FileUtil.getContents(result.getTempFile());
@@ -187,7 +187,7 @@ public class DownloadReportsTest {
 	public void whenOneReportSummaryDownloadedWithoutDefaultXsltThenNotApplied() throws Exception {
 		setGlobalXsltThatProducesTransformedReport();
 		ExportResult result = reportApiImpl.downloadFile(
-				"testStorage", "false", "no_default_xslt",
+				"testStorage", "false", "no_default_xslt", false,
 				Arrays.asList(new Integer[] {storageIdOfFirst}));
 		Assert.assertTrue(result.getSuggestedFilename().endsWith(".xml"));
 		String contents = FileUtil.getContents(result.getTempFile());
@@ -198,7 +198,7 @@ public class DownloadReportsTest {
 	public void whenOneReportDownloadedWithDefaultXsltThenApplied() throws Exception {
 		setGlobalXsltThatProducesTransformedReport();
 		ExportResult result = reportApiImpl.downloadFile(
-				"testStorage", "true", "with_default_xslt",
+				"testStorage", "true", "with_default_xslt", false,
 				Arrays.asList(new Integer[] {storageIdOfFirst}));
 		Assert.assertTrue(result.getSuggestedFilename().endsWith(".zip"));
 		List<String> contents = getZipEntriesContents(result.getTempFile());
@@ -209,7 +209,7 @@ public class DownloadReportsTest {
 	public void whenOneReportDownloadedWithoutDefaultXsltThenNotApplied() throws Exception {
 		setGlobalXsltThatProducesTransformedReport();
 		ExportResult result = reportApiImpl.downloadFile(
-				"testStorage", "true", "no_default_xslt",
+				"testStorage", "true", "no_default_xslt", false,
 				Arrays.asList(new Integer[] {storageIdOfFirst}));
 		Assert.assertTrue(result.getSuggestedFilename().endsWith(".zip"));
 		List<String> contents = getZipEntriesContents(result.getTempFile());
@@ -217,30 +217,88 @@ public class DownloadReportsTest {
 	}
 
 	@Test
-	public void whenTwoReportsDownloadedWithDefaultXsltThenApplied() throws Exception {
+	public void whenTwoReportSummariesDownloadedWithDefaultXsltThenApplied() throws Exception {
 		setGlobalXsltThatProducesTransformedReport();
 		ExportResult result = reportApiImpl.downloadFile(
-				"testStorage", "false", "with_default_xslt",
+				"testStorage", "false", "with_default_xslt", false,
 				Arrays.asList(new Integer[] {storageIdOfFirst, storageIdOfSecond}));
 		Assert.assertTrue(result.getSuggestedFilename().endsWith(".zip"));
 		List<String> contents = getZipEntriesContents(result.getTempFile());
+		Assert.assertEquals(2, contents.size());
 		Assert.assertTrue(contents.stream().allMatch(s -> s.contains("TransformedReport")));
 	}
 
 	@Test
-	public void whenTwoReportsDownloadedWithoutDefaultXsltThenNotApplied() throws Exception {
+	public void whenTwoReportSummariesDownloadedWithoutDefaultXsltThenNotApplied() throws Exception {
 		setGlobalXsltThatProducesTransformedReport();
 		ExportResult result = reportApiImpl.downloadFile(
-				"testStorage", "false", "no_default_xslt",
+				"testStorage", "false", "no_default_xslt", false,
 				Arrays.asList(new Integer[] {storageIdOfFirst, storageIdOfSecond}));
 		Assert.assertTrue(result.getSuggestedFilename().endsWith(".zip"));
 		List<String> contents = getZipEntriesContents(result.getTempFile());
+		Assert.assertEquals(2, contents.size());
 		Assert.assertTrue(contents.stream().noneMatch(s -> s.contains("TransformedReport")));
+	}
+
+	@Test
+	public void whenMultipleReportSummariesDownloadedAndEmptyOmittedThenDone() throws Exception {
+		setGlobalXsltThatMakesSecondEmpty();
+		ExportResult result = reportApiImpl.downloadFile(
+				"testStorage", "false", "with_default_xslt", true,
+				Arrays.asList(new Integer[] {storageIdOfFirst, storageIdOfSecond}));
+		Assert.assertTrue(result.getSuggestedFilename().endsWith(".zip"));
+		List<String> entries = getZipEntries(result.getTempFile());
+		Assert.assertEquals(1, entries.size());
+		Assert.assertTrue(entries.get(0).endsWith(".xml"));
+		Assert.assertTrue(entries.get(0).contains("first"));
+	}
+
+	@Test
+	public void whenMultipleReportSummariesDownloadedAndNotEmptyOmittedThenHaveAll() throws Exception {
+		setGlobalXsltThatMakesSecondEmpty();
+		ExportResult result = reportApiImpl.downloadFile(
+				"testStorage", "false", "with_default_xslt", false,
+				Arrays.asList(new Integer[] {storageIdOfFirst, storageIdOfSecond}));
+		Assert.assertTrue(result.getSuggestedFilename().endsWith(".zip"));
+		List<String> entries = getZipEntries(result.getTempFile());
+		Assert.assertEquals(2, entries.size());
+		Assert.assertTrue(entries.get(0).endsWith(".xml"));
+		Assert.assertTrue(entries.get(1).endsWith(".txt"));
+	}
+
+	@Test
+	public void whenMultipleReportsDownloadedAndEmptyOmittedThenDone() throws Exception {
+		setGlobalXsltThatMakesSecondEmpty();
+		ExportResult result = reportApiImpl.downloadFile(
+				"testStorage", "true", "omit", true,
+				Arrays.asList(new Integer[] {storageIdOfFirst, storageIdOfSecond}));
+		Assert.assertTrue(result.getSuggestedFilename().endsWith(".zip"));
+		List<String> entries = getZipEntries(result.getTempFile());
+		Assert.assertEquals(1, entries.size());
+		Assert.assertTrue(entries.get(0).endsWith(".ttr"));
+		Assert.assertTrue(entries.get(0).contains("first"));
+	}
+
+	@Test
+	public void whenOneReportSummaryDownloadedThenOmitEmptyNeglected() throws Exception {
+		setGlobalXsltThatMakesSecondEmpty();
+		ExportResult result = reportApiImpl.downloadFile(
+				"testStorage", "false", "with_default_xslt", true,
+				Arrays.asList(new Integer[] {storageIdOfSecond}));
+		Assert.assertTrue(result.getSuggestedFilename().endsWith(".txt"));
+		String contents = FileUtil.getContents(result.getTempFile());
+		Assert.assertEquals(0, contents.length());
 	}
 
 	private void setGlobalXsltThatProducesTransformedReport() {
 		ReportXmlTransformer global = new ReportXmlTransformer();
 		global.updateXslt(xsltThatLeavesTrace);
+		reportApiImpl.setReportXmlTransformer(global);
+	}
+
+	private void setGlobalXsltThatMakesSecondEmpty() {
+		ReportXmlTransformer global = new ReportXmlTransformer();
+		global.updateXslt(xsltForEmptyReports);
 		reportApiImpl.setReportXmlTransformer(global);
 	}
 

@@ -13,7 +13,9 @@ export class HelperService {
     if (exportXML) {
       xmlChoice = this.clientSettingsService.isTransformationEnabled() ? 'with_default_xslt' : 'no_default_xslt';
     }
-    window.open(`api/report/download/${storage}/${exportBinary}/${xmlChoice}?${queryString.slice(0, -1)}`);
+    window.open(
+      `api/report/download/${storage}/${exportBinary}/${xmlChoice}/${this.clientSettingsService.isForMultipleOmitIfXmlEmpty()}?${queryString.slice(0, -1)}`,
+    );
   }
 
   getSelectedIds(reports: BaseReport[]): number[] {

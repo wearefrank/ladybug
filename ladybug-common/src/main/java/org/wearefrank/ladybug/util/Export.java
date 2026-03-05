@@ -53,8 +53,9 @@ public class Export {
 	}
 
 	public static ExportResult export(Storage storage, List storageIds, boolean exportReport,
-											boolean exportReportXml, Consumer<Report> globalXsltSetter) {
-		return export(storage, storageIds, null, exportReport, exportReportXml, null, null, globalXsltSetter);
+											boolean exportReportXml, Consumer<Report> globalXsltSetter,
+									  		boolean forMultipleOmitIfXmlEmpty) {
+		return export(storage, storageIds, null, exportReport, exportReportXml, null, null, globalXsltSetter, forMultipleOmitIfXmlEmpty);
 	}
 
 	public static ExportResult export(Storage storage,
@@ -66,7 +67,7 @@ public class Export {
 			String suggestedFilenameWithoutExtension, boolean exportReport,
 			boolean exportReportXml) {
 		return export(storage, null, null, exportReport, exportReportXml, null,
-				suggestedFilenameWithoutExtension, null);
+				suggestedFilenameWithoutExtension, null, false);
 	}
 
 	public static ExportResult export(Report report) {
@@ -78,11 +79,11 @@ public class Export {
 	}
 
 	public static ExportResult export(Report report, boolean exportReport, boolean exportReportXml, Consumer<Report> globalXsltSetter) {
-		return export(null, null, report, exportReport, exportReportXml, null, null, globalXsltSetter);
+		return export(null, null, report, exportReport, exportReportXml, null, null, globalXsltSetter, false);
 	}
 
 	public static ExportResult export(Report report, Checkpoint checkpoint) {
-		return export(null, null, report, true, false, checkpoint, null, null);
+		return export(null, null, report, true, false, checkpoint, null, null, false);
 	}
 
 	public static ExportResult export(Checkpoint checkpoint) {
@@ -92,7 +93,7 @@ public class Export {
 	private static ExportResult export(Storage storage, List storageIds, Report report,
 			boolean exportReport, boolean exportReportXml,
 			Checkpoint checkpoint, String suggestedFilenameWithoutExtension,
-			Consumer<Report> globalXsltSetter) {
+			Consumer<Report> globalXsltSetter, boolean forMultipleOmitIfXmlEmpty) {
 		log.debug("Enter Export.export() with {} globalXsltSetter", globalXsltSetter == null ? "null" : "non-null");
 		ExportResult exportResult = new ExportResult();
 		FileOutputStream fileOutputStream = null;
@@ -125,6 +126,8 @@ public class Export {
 						if (report == null)
 							continue;
 						if (globalXsltSetter != null) globalXsltSetter.accept(report);
+						if (forMultipleOmitIfXmlEmpty && report.toXml().length() == 0)
+							continue;
 					} catch (Exception e) {
 						exportResult.setErrorMessage(e.toString());
 						continue;

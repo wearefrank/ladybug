@@ -394,7 +394,12 @@ public class ReportApiImpl {
 		}
 	}
 
-	public ExportResult downloadFile(String storageName, String exportReportParam, String exportReportXmlParam, List<Integer> storageIds) throws HttpBadRequestException, HttpInternalServerErrorException {
+	public ExportResult downloadFile(
+			String storageName,
+			String exportReportParam,
+			String exportReportXmlParam,
+			boolean forMultipleOmitIfXmlEmpty,
+			List<Integer> storageIds) throws HttpBadRequestException, HttpInternalServerErrorException {
 		log.debug("Enter ReportApiImpl.downloadFile()");
 		Storage storage = testTool.getStorage(storageName);
 		if (storageIds == null || storageIds.isEmpty())
@@ -416,7 +421,13 @@ public class ReportApiImpl {
 				export = Export.export(report, exportReport, exportReportXml != ReportSummaryChoice.OMIT, globalXsltSetter);
 			} else {
 				log.debug("Multiple reports were selected for download");
-				export = Export.export(storage, storageIds, exportReport, exportReportXml != ReportSummaryChoice.OMIT, globalXsltSetter);
+				export = Export.export(
+						storage,
+						storageIds,
+						exportReport,
+						exportReportXml != ReportSummaryChoice.OMIT,
+						globalXsltSetter,
+						forMultipleOmitIfXmlEmpty);
 			}
 			log.debug("Leave ReportApiImpl.downloadFile()");
 			return export;

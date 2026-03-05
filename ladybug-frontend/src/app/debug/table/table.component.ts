@@ -115,7 +115,6 @@ export class TableComponent implements OnInit, OnDestroy {
   protected appVariablesService = inject(AppVariablesService);
 
   protected currentUploadFile = '';
-  protected downloadSkipEmptyReports = false;
 
   private reportsInProgress: Record<string, number> = {};
 
@@ -573,6 +572,15 @@ export class TableComponent implements OnInit, OnDestroy {
     const rows = items.map((row) => headers.map((field) => this.escapeCsvValue(row[field])).join(','));
 
     return [headers.join(','), ...rows].join('\n');
+  }
+
+  onDownloadSkipEmptyReportsChanged($event: any): void {
+    let value = false;
+    if ($event?.target.checked()) {
+      value = true;
+    }
+    console.log(`Set clientSettingsService.setForMultipleOmitIfXmlEmpty(${value})`);
+    this.clientSettingsService.setForMultipleOmitIfXmlEmpty(value);
   }
 
   uploadReports(event: Event): void {
