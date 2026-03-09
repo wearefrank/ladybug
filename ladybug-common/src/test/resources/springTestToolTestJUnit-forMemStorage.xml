@@ -62,7 +62,8 @@
 	<bean name="fakeView" class="org.wearefrank.ladybug.filter.View">
 		<!-- ReportApiImpl receives a storage name that is part of the HTTP request.
 		     The storage name is resolved by considering the views and the debug storage of each view.
-		     When such a debug storage has a matching name, then that is the referred storage
+		     When such a debug storage has a matching name, then that is the referred storage. The tests
+		     of DownloadReportsTest.java access the CRUD storage "testStorage" via a ReportApiImpl object.
 		-->
 		<property name="debugStorage">
 			<ref bean="testStorage"/>

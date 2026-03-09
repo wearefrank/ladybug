@@ -579,6 +579,7 @@ export class TableComponent implements OnInit, OnDestroy {
     if ($event?.target.checked()) {
       value = true;
     }
+    // TODO: Remove before merging.
     console.log(`Set clientSettingsService.setForMultipleOmitIfXmlEmpty(${value})`);
     this.clientSettingsService.setForMultipleOmitIfXmlEmpty(value);
   }

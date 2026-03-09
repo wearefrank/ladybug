@@ -80,5 +80,8 @@ export class ClientSettingsService {
     this.setShowMultipleReportsatATime(false);
     this.setTableSpacing(1);
     this.setTransformationEnabled(true);
+    // forMultipleOmitIfXmlEmpty is not part of the factory reset
+    // because this setting is not managed via the debug tab settings
+    // dialog.
   }
 }

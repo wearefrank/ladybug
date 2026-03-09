@@ -138,7 +138,7 @@ public class DownloadReportsTest {
 	}
 
 	@Test
-	public void whenDownloadingOneReportRequestedThenTtsFile() throws Exception {
+	public void whenDownloadingOneReportRequestedThenTtrFile() throws Exception {
 		ExportResult result = reportApiImpl.downloadFile(
 				"testStorage", "true", "omit", false,
 				Arrays.asList(new Integer[] {storageIdOfFirst}));
@@ -202,6 +202,7 @@ public class DownloadReportsTest {
 				Arrays.asList(new Integer[] {storageIdOfFirst}));
 		Assert.assertTrue(result.getSuggestedFilename().endsWith(".zip"));
 		List<String> contents = getZipEntriesContents(result.getTempFile());
+		Assert.assertEquals(2, contents.size());
 		Assert.assertTrue(contents.stream().anyMatch(s -> s.contains("TransformedReport")));
 	}
 
@@ -213,6 +214,7 @@ public class DownloadReportsTest {
 				Arrays.asList(new Integer[] {storageIdOfFirst}));
 		Assert.assertTrue(result.getSuggestedFilename().endsWith(".zip"));
 		List<String> contents = getZipEntriesContents(result.getTempFile());
+		Assert.assertEquals(2, contents.size());
 		Assert.assertTrue(contents.stream().noneMatch(s -> s.contains("TransformedReport")));
 	}
 
