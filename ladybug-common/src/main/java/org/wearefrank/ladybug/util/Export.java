@@ -31,7 +31,9 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.zip.GZIPOutputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -98,26 +100,31 @@ public class Export {
 		ExportResult exportResult = new ExportResult();
 		FileOutputStream fileOutputStream = null;
 		ZipOutputStream zipOutputStream = null;
+		BiFunction<String, Integer, String> outputFileNameExtender = (fname, numReports) -> fname;
 		try {
 			if (storage != null) {
 				if (storageIds == null || storageIds.isEmpty())
 					storageIds = storage.getStorageIds();
 				if (suggestedFilenameWithoutExtension == null) {
 					suggestedFilenameWithoutExtension = "Ladybug "+storage.getName();
-					suggestedFilenameWithoutExtension += " "+new SimpleDateFormat("yyyyMMdd-HHmm").format(new Date());
-					int size = storageIds.size();
-					suggestedFilenameWithoutExtension += " (" + size;
-					if (size == 1) {
-						suggestedFilenameWithoutExtension += " report)";
-					} else {
-						suggestedFilenameWithoutExtension += " reports)";
-					}
+					outputFileNameExtender = (original, numReports) -> {
+						String result = original + " "+new SimpleDateFormat("yyyyMMdd-HHmm").format(new Date());
+						result += " (" + numReports.toString();
+						if (numReports == 1) {
+							result += " report)";
+						} else {
+							result += " reports)";
+						}
+						result += ".zip";
+						return result;
+					};
 				}
 				fileOutputStream = createTempFile(
 						suggestedFilenameWithoutExtension, ".zip",
 						exportResult);
 				zipOutputStream = new ZipOutputStream(fileOutputStream);
 				Set duplicateCheck = new HashSet();
+				int numActualReports = 0;
 				Iterator iterator = storageIds.iterator();
 				while (iterator.hasNext()) {
 					try {
@@ -128,6 +135,7 @@ public class Export {
 						if (globalXsltSetter != null) globalXsltSetter.accept(report);
 						if (forMultipleOmitIfXmlEmpty && report.toXml().length() == 0)
 							continue;
+						++numActualReports;
 					} catch (Exception e) {
 						exportResult.setErrorMessage(e.toString());
 						continue;
@@ -149,6 +157,7 @@ public class Export {
 						writeReportXml(reportXml, zipEntryName, zipOutputStream);
 					}
 				}
+				exportResult.setSuggestedFilename(outputFileNameExtender.apply(exportResult.getSuggestedFilename(), numActualReports));
 			} else if (report != null && !exportReport && exportReportXml) {
 				String reportXml = report.toXml();
 				fileOutputStream = createTempFile(

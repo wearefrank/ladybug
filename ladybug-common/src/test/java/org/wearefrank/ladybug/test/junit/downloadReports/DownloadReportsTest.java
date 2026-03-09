@@ -249,6 +249,7 @@ public class DownloadReportsTest {
 				"testStorage", "false", "with_default_xslt", "true",
 				Arrays.asList(new Integer[] {storageIdOfFirst, storageIdOfSecond}));
 		Assert.assertTrue(result.getSuggestedFilename().endsWith(".zip"));
+		Assert.assertTrue(result.getSuggestedFilename().contains("(1 report)"));
 		List<String> entries = getZipEntries(result.getTempFile());
 		Assert.assertEquals(1, entries.size());
 		Assert.assertTrue(entries.get(0).endsWith(".xml"));
@@ -262,6 +263,7 @@ public class DownloadReportsTest {
 				"testStorage", "false", "with_default_xslt", "false",
 				Arrays.asList(new Integer[] {storageIdOfFirst, storageIdOfSecond}));
 		Assert.assertTrue(result.getSuggestedFilename().endsWith(".zip"));
+		Assert.assertTrue(result.getSuggestedFilename().contains("(2 reports)"));
 		List<String> entries = getZipEntries(result.getTempFile());
 		Assert.assertEquals(2, entries.size());
 		Assert.assertTrue(entries.get(0).endsWith(".xml"));
@@ -274,6 +276,7 @@ public class DownloadReportsTest {
 		ExportResult result = reportApiImpl.downloadFile(
 				"testStorage", "true", "omit", "true",
 				Arrays.asList(new Integer[] {storageIdOfFirst, storageIdOfSecond}));
+		Assert.assertTrue(result.getSuggestedFilename().contains("(1 report)"));
 		Assert.assertTrue(result.getSuggestedFilename().endsWith(".zip"));
 		List<String> entries = getZipEntries(result.getTempFile());
 		Assert.assertEquals(1, entries.size());
@@ -288,6 +291,7 @@ public class DownloadReportsTest {
 				"testStorage", "true", "omit_no_default_xslt", "true",
 				Arrays.asList(new Integer[] {storageIdOfFirst, storageIdOfSecond}));
 		Assert.assertTrue(result.getSuggestedFilename().endsWith(".zip"));
+		Assert.assertTrue(result.getSuggestedFilename().contains("(2 reports)"));
 		List<String> entries = getZipEntries(result.getTempFile());
 		Assert.assertEquals(2, entries.size());
 		Assert.assertTrue(entries.get(0).endsWith(".ttr"));
