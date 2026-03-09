@@ -100,9 +100,9 @@ public class Export {
 		ExportResult exportResult = new ExportResult();
 		FileOutputStream fileOutputStream = null;
 		ZipOutputStream zipOutputStream = null;
-		BiFunction<String, Integer, String> outputFileNameExtender = (fname, numReports) -> fname;
 		try {
 			if (storage != null) {
+				BiFunction<String, Integer, String> outputFileNameExtender = (fname, numReports) -> fname;
 				if (storageIds == null || storageIds.isEmpty())
 					storageIds = storage.getStorageIds();
 				if (suggestedFilenameWithoutExtension == null) {
@@ -120,7 +120,7 @@ public class Export {
 					};
 				}
 				fileOutputStream = createTempFile(
-						suggestedFilenameWithoutExtension, ".zip",
+						suggestedFilenameWithoutExtension, "",
 						exportResult);
 				zipOutputStream = new ZipOutputStream(fileOutputStream);
 				Set duplicateCheck = new HashSet();
