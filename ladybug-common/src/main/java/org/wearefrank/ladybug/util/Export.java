@@ -1,5 +1,5 @@
 /*
-   Copyright 2020-2022, 2024, 2025 WeAreFrank!, 2018 Nationale-Nederlanden
+   Copyright 2020-2022, 2024, 2025, 2026 WeAreFrank!, 2018 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -31,6 +31,9 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.function.BiFunction;
+import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.zip.GZIPOutputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -52,8 +55,9 @@ public class Export {
 	}
 
 	public static ExportResult export(Storage storage, List storageIds, boolean exportReport,
-											boolean exportReportXml) {
-		return export(storage, storageIds, null, exportReport, exportReportXml, null, null);
+											boolean exportReportXml, Consumer<Report> globalXsltSetter,
+									  		boolean forMultipleOmitIfXmlEmpty) {
+		return export(storage, storageIds, null, exportReport, exportReportXml, null, null, globalXsltSetter, forMultipleOmitIfXmlEmpty);
 	}
 
 	public static ExportResult export(Storage storage,
@@ -64,65 +68,74 @@ public class Export {
 	public static ExportResult export(Storage storage,
 			String suggestedFilenameWithoutExtension, boolean exportReport,
 			boolean exportReportXml) {
-		return export(storage, null, exportReport, exportReportXml, null,
-				suggestedFilenameWithoutExtension);
+		return export(storage, null, null, exportReport, exportReportXml, null,
+				suggestedFilenameWithoutExtension, null, false);
 	}
 
 	public static ExportResult export(Report report) {
 		return export(report, true, false);
 	}
 
-	public static ExportResult export(Report report, boolean exportReport,
-			boolean exportReportXml) {
-		return export(null, report, exportReport, exportReportXml, null,
-				null);
+	public static ExportResult export(Report report, boolean exportReport, boolean exportReportXml) {
+		return export(report, exportReport, exportReportXml, null);
+	}
+
+	public static ExportResult export(Report report, boolean exportReport, boolean exportReportXml, Consumer<Report> globalXsltSetter) {
+		return export(null, null, report, exportReport, exportReportXml, null, null, globalXsltSetter, false);
 	}
 
 	public static ExportResult export(Report report, Checkpoint checkpoint) {
-		return export(null, report, true, false, checkpoint, null);
+		return export(null, null, report, true, false, checkpoint, null, null, false);
 	}
 
 	public static ExportResult export(Checkpoint checkpoint) {
-		return export(null, null, false, false, checkpoint, null);
+		return export(null, checkpoint);
 	}
 
-	private static ExportResult export(Storage storage, Report report,
-									   boolean exportReport, boolean exportReportXml,
-									   Checkpoint checkpoint, String suggestedFilenameWithoutExtension) {
-		return export(storage, null, report, exportReport, exportReportXml, checkpoint, suggestedFilenameWithoutExtension);
-	}
 	private static ExportResult export(Storage storage, List storageIds, Report report,
 			boolean exportReport, boolean exportReportXml,
-			Checkpoint checkpoint, String suggestedFilenameWithoutExtension) {
+			Checkpoint checkpoint, String suggestedFilenameWithoutExtension,
+			Consumer<Report> globalXsltSetter, boolean forMultipleOmitIfXmlEmpty) {
+		log.debug("Enter Export.export() with {} globalXsltSetter", globalXsltSetter == null ? "null" : "non-null");
 		ExportResult exportResult = new ExportResult();
 		FileOutputStream fileOutputStream = null;
 		ZipOutputStream zipOutputStream = null;
 		try {
 			if (storage != null) {
+				BiFunction<String, Integer, String> outputFileNameExtender = (fname, numReports) -> fname;
 				if (storageIds == null || storageIds.isEmpty())
 					storageIds = storage.getStorageIds();
 				if (suggestedFilenameWithoutExtension == null) {
 					suggestedFilenameWithoutExtension = "Ladybug "+storage.getName();
-					suggestedFilenameWithoutExtension += " "+new SimpleDateFormat("yyyyMMdd-HHmm").format(new Date());
-					int size = storageIds.size();
-					suggestedFilenameWithoutExtension += " (" + size;
-					if (size == 1) {
-						suggestedFilenameWithoutExtension += " report)";
-					} else {
-						suggestedFilenameWithoutExtension += " reports)";
-					}
+					outputFileNameExtender = (original, numReports) -> {
+						String result = original + " "+new SimpleDateFormat("yyyyMMdd-HHmm").format(new Date());
+						result += " (" + numReports.toString();
+						if (numReports == 1) {
+							result += " report)";
+						} else {
+							result += " reports)";
+						}
+						result += ".zip";
+						return result;
+					};
 				}
 				fileOutputStream = createTempFile(
-						suggestedFilenameWithoutExtension, ".zip",
+						suggestedFilenameWithoutExtension, "",
 						exportResult);
 				zipOutputStream = new ZipOutputStream(fileOutputStream);
 				Set duplicateCheck = new HashSet();
+				int numActualReports = 0;
 				Iterator iterator = storageIds.iterator();
 				while (iterator.hasNext()) {
 					try {
 						report = storage.getReport((Integer) iterator.next());
+						log.debug("Retrieved report for storage id {}", report.getStorageId());
 						if (report == null)
 							continue;
+						if (globalXsltSetter != null) globalXsltSetter.accept(report);
+						if (forMultipleOmitIfXmlEmpty && report.toXml().length() == 0)
+							continue;
+						++numActualReports;
 					} catch (Exception e) {
 						exportResult.setErrorMessage(e.toString());
 						continue;
@@ -144,6 +157,7 @@ public class Export {
 						writeReportXml(reportXml, zipEntryName, zipOutputStream);
 					}
 				}
+				exportResult.setSuggestedFilename(outputFileNameExtender.apply(exportResult.getSuggestedFilename(), numActualReports));
 			} else if (report != null && !exportReport && exportReportXml) {
 				String reportXml = report.toXml();
 				fileOutputStream = createTempFile(

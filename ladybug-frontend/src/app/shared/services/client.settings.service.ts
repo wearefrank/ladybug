@@ -10,6 +10,7 @@ export class ClientSettingsService {
   private readonly defaultAmountOfRecordsInTable: number = 10;
   private readonly amountOfRecordsInTableKey = 'amountOfRecordsInTable';
   private readonly transformationEnabledKey = 'transformationEnabled';
+  private readonly forMultipleOmitIfXmlEmptyKey = 'forMultipleOmitIfXmlEmpty';
 
   private showMultipleAtATimeSubject = new BehaviorSubject<boolean>(this.isShowMultipleReportsAtATime());
   private tableSpacingSubject = new BehaviorSubject<number>(this.getTableSpacing());
@@ -65,10 +66,22 @@ export class ClientSettingsService {
     localStorage.setItem(this.transformationEnabledKey, value ? 'true' : 'false');
   }
 
+  public isForMultipleOmitIfXmlEmpty(): boolean {
+    const raw: string | null = localStorage.getItem(this.forMultipleOmitIfXmlEmptyKey);
+    return raw === 'true';
+  }
+
+  public setForMultipleOmitIfXmlEmpty(value: boolean): void {
+    localStorage.setItem(this.forMultipleOmitIfXmlEmptyKey, value ? 'true' : 'false');
+  }
+
   public backToFactory(): void {
     this.setAmountOfRecordsInTable(10);
     this.setShowMultipleReportsatATime(false);
     this.setTableSpacing(1);
     this.setTransformationEnabled(true);
+    // forMultipleOmitIfXmlEmpty is not part of the factory reset
+    // because this setting is not managed via the debug tab settings
+    // dialog.
   }
 }
