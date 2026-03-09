@@ -284,12 +284,12 @@ public class ReportApi {
 	 * @param storageIds List of storage ids to download.
 	 * @return The response when downloading a file.
 	 */
-	@GetMapping(value = "/download/{storage}/{exportReport}/{exportReportXml}", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+	@GetMapping(value = "/download/{storage}/{exportReport}/{exportReportXml}/{forMultipleOmitIfXmlEmpty}", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	public ResponseEntity<?> downloadFile(@PathVariable("storage") String storageName,
 										  @PathVariable("exportReport") String exportReportParam,
 										  @PathVariable("exportReportXml") String exportReportXmlParam,
-										  @PathVariable("forMultipleOmitIfXmlEmptyParam") String forMultipleOmitIfXmlEmptyParam,
+										  @PathVariable("forMultipleOmitIfXmlEmpty") String forMultipleOmitIfXmlEmptyParam,
 										  @RequestParam(name = "id") List<Integer> storageIds) {
 		try {
 			ExportResult result = delegate.downloadFile(storageName, exportReportParam, exportReportXmlParam, forMultipleOmitIfXmlEmptyParam, storageIds);

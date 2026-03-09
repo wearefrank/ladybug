@@ -324,13 +324,13 @@ public class ReportApi extends ApiBase {
 	 * @return The response when downloading a file.
 	 */
 	@GET
-	@Path("/download/{storage}/{exportReport}/{exportReportXml}")
+	@Path("/download/{storage}/{exportReport}/{exportReportXml}/{forMultipleOmitIfXmlEmpty}")
 	@Produces("application/octet-stream")
 	@Consumes(MediaType.APPLICATION_JSON)
 	public Response downloadFile(@PathParam("storage") String storageName,
 								 @PathParam("exportReport") String exportReportParam,
 								 @PathParam("exportReportXml") String exportReportXmlParam,
-								 @PathParam("forMultipleOmitIfXmlEmptyParam") String forMultipleOmitIfXmlEmptyParam,
+								 @PathParam("forMultipleOmitIfXmlEmpty") String forMultipleOmitIfXmlEmptyParam,
 								 @QueryParam("id") List<Integer> storageIds) {
 		try {
 			ExportResult result = delegate.downloadFile(storageName, exportReportParam, exportReportXmlParam, forMultipleOmitIfXmlEmptyParam, storageIds);
