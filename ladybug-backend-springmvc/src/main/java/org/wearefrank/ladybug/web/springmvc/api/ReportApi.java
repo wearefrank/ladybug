@@ -279,7 +279,7 @@ public class ReportApi {
 	 * @param storageName Name of the storage.
 	 * @param exportReportParam "true" or "1" to save the serialized version of report.
 	 * @param exportReportXmlParam "true" or "1" to save Xml version of report.
-	 * @param forMultipleOmitIfXmlEmptyParam if multiple storage ids provided them omit the ones with zero XML after
+	 * @param forMultipleOmitIfXmlEmptyParam if multiple storage ids provided then omit the ones with zero XML after
 	 *                                  applying the (optional) applicable XSLT transformation.
 	 * @param storageIds List of storage ids to download.
 	 * @return The response when downloading a file.
