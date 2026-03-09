@@ -18,7 +18,7 @@
         </button>
         <div ngbDropdownMenu>
           <div class="dropdown-checkbox">
-            <input data-cy-debug="downloadSkipEmptyReports" type="checkbox" (change)="onDownloadSkipEmptyReportsChanged($event)">
+            <input data-cy-debug="forMultipleOmitIfXmlEmpty" type="checkbox" (change)="onForMultipleOmitIfXmlEmptyChanged($event)">
             <label class="dropdown-checkbox-label">If multiple selected, then omit empty reports</label>
           </div>
           <button ngbDropdownItem (click)="downloadReports(true, true)">

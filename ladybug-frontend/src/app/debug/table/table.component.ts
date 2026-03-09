@@ -574,7 +574,7 @@ export class TableComponent implements OnInit, OnDestroy {
     return [headers.join(','), ...rows].join('\n');
   }
 
-  onDownloadSkipEmptyReportsChanged($event: any): void {
+  onForMultipleOmitIfXmlEmptyChanged($event: any): void {
     let value = false;
     if ($event?.target.checked()) {
       value = true;
