@@ -576,7 +576,7 @@ export class TableComponent implements OnInit, OnDestroy {
 
   onForMultipleOmitIfXmlEmptyChanged($event: any): void {
     let value = false;
-    if ($event?.target.checked()) {
+    if ($event?.target.checked) {
       value = true;
     }
     // TODO: Remove before merging.

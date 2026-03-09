@@ -406,6 +406,7 @@ public class ReportApiImpl {
 			throw new HttpBadRequestException("No storage ids have been provided");
 		boolean exportReport = exportReportParam.equalsIgnoreCase("true") || exportReportParam.equals("1");
 		boolean forMultipleOmitIfXmlEmpty = forMultipleOmitIfXmlEmptyParam.equalsIgnoreCase("true") || forMultipleOmitIfXmlEmptyParam.equals("1");
+		log.debug("forMultipleOmitIfXmlEmpty={}", forMultipleOmitIfXmlEmpty);
 		ReportSummaryChoice exportReportXml = ReportSummaryChoice.fromString(exportReportXmlParam);
 		log.debug("Choice for exporting report summary is [{}]", exportReportXml.toString());
 		Consumer<Report> globalXsltSetter = (report) -> {};
