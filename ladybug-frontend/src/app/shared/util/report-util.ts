@@ -6,7 +6,7 @@ type ReportOrCheckpoint = Report | Checkpoint | CreateTreeItem | FileTreeItem | 
 
 export const ReportUtil = {
   isReport(node: ReportOrCheckpoint): node is Report {
-    return !!node && !!(node as Report).xml;
+    return !!node && !!(node as Report).correlationId;
   },
 
   isCheckPoint(node: ReportOrCheckpoint): node is Checkpoint {
