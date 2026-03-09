@@ -398,13 +398,14 @@ public class ReportApiImpl {
 			String storageName,
 			String exportReportParam,
 			String exportReportXmlParam,
-			boolean forMultipleOmitIfXmlEmpty,
+			String forMultipleOmitIfXmlEmptyParam,
 			List<Integer> storageIds) throws HttpBadRequestException, HttpInternalServerErrorException {
 		log.debug("Enter ReportApiImpl.downloadFile()");
 		Storage storage = testTool.getStorage(storageName);
 		if (storageIds == null || storageIds.isEmpty())
 			throw new HttpBadRequestException("No storage ids have been provided");
 		boolean exportReport = exportReportParam.equalsIgnoreCase("true") || exportReportParam.equals("1");
+		boolean forMultipleOmitIfXmlEmpty = forMultipleOmitIfXmlEmptyParam.equalsIgnoreCase("true") || forMultipleOmitIfXmlEmptyParam.equals("1");
 		ReportSummaryChoice exportReportXml = ReportSummaryChoice.fromString(exportReportXmlParam);
 		log.debug("Choice for exporting report summary is [{}]", exportReportXml.toString());
 		Consumer<Report> globalXsltSetter = (report) -> {};

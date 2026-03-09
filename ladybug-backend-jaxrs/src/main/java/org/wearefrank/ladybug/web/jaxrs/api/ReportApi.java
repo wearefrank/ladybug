@@ -318,7 +318,7 @@ public class ReportApi extends ApiBase {
 	 * @param storageName Name of the storage.
 	 * @param exportReportParam "true" or "1" to save the serialized version of report.
 	 * @param exportReportXmlParam "true" or "1" to save Xml version of report.
-	 * @param forMultipleOmitIfXmlEmpty if multiple storage ids provided them omit the ones with zero XML after
+	 * @param forMultipleOmitIfXmlEmptyParam if multiple storage ids provided them omit the ones with zero XML after
 	 *                                  applying the (optional) applicable XSLT transformation.
 	 * @param storageIds List of storage ids to download.
 	 * @return The response when downloading a file.
@@ -330,10 +330,10 @@ public class ReportApi extends ApiBase {
 	public Response downloadFile(@PathParam("storage") String storageName,
 								 @PathParam("exportReport") String exportReportParam,
 								 @PathParam("exportReportXml") String exportReportXmlParam,
-								 @PathParam("forMultipleOmitIfXmlEmpty") boolean forMultipleOmitIfXmlEmpty,
+								 @PathParam("forMultipleOmitIfXmlEmptyParam") String forMultipleOmitIfXmlEmptyParam,
 								 @QueryParam("id") List<Integer> storageIds) {
 		try {
-			ExportResult result = delegate.downloadFile(storageName, exportReportParam, exportReportXmlParam, forMultipleOmitIfXmlEmpty, storageIds);
+			ExportResult result = delegate.downloadFile(storageName, exportReportParam, exportReportXmlParam, forMultipleOmitIfXmlEmptyParam, storageIds);
 			Response.ResponseBuilder response = Response.ok(result.getTempFile(), MediaType.APPLICATION_OCTET_STREAM);
 			response.header("Content-Disposition", "attachment; filename=" + result.getSuggestedFilename());
 			return response.build();

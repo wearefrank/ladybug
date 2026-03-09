@@ -279,7 +279,7 @@ public class ReportApi {
 	 * @param storageName Name of the storage.
 	 * @param exportReportParam "true" or "1" to save the serialized version of report.
 	 * @param exportReportXmlParam "true" or "1" to save Xml version of report.
-	 * @param forMultipleOmitIfXmlEmpty if multiple storage ids provided them omit the ones with zero XML after
+	 * @param forMultipleOmitIfXmlEmptyParam if multiple storage ids provided them omit the ones with zero XML after
 	 *                                  applying the (optional) applicable XSLT transformation.
 	 * @param storageIds List of storage ids to download.
 	 * @return The response when downloading a file.
@@ -289,10 +289,10 @@ public class ReportApi {
 	public ResponseEntity<?> downloadFile(@PathVariable("storage") String storageName,
 										  @PathVariable("exportReport") String exportReportParam,
 										  @PathVariable("exportReportXml") String exportReportXmlParam,
-										  @PathVariable("forMultipleOmitIfXmlEmpty") boolean forMultipleOmitIfXmlEmpty,
+										  @PathVariable("forMultipleOmitIfXmlEmptyParam") String forMultipleOmitIfXmlEmptyParam,
 										  @RequestParam(name = "id") List<Integer> storageIds) {
 		try {
-			ExportResult result = delegate.downloadFile(storageName, exportReportParam, exportReportXmlParam, forMultipleOmitIfXmlEmpty, storageIds);
+			ExportResult result = delegate.downloadFile(storageName, exportReportParam, exportReportXmlParam, forMultipleOmitIfXmlEmptyParam, storageIds);
 			HttpHeaders responseHeaders = new HttpHeaders();
 			responseHeaders.add("Content-Disposition", "attachment; filename=" + result.getSuggestedFilename());
 			Resource resource = new FileSystemResource(result.getTempFile());
