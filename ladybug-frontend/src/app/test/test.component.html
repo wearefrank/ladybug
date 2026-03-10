@@ -8,7 +8,7 @@
         <p class="button-section-title">General</p>
         <button data-cy-test="refresh" class="btn btn-info" title="Reload test reports"
                 (click)="loadData()"><i class="fa fa-refresh"></i></button>
-        <button data-cy-test="settings" class="btn btn-info" title="Options" (click)="clientSettingsService.toggleShowStorageIdsInTestTab()">
+        <button data-cy-test="showHideStorageIds" class="btn btn-info" title="Options" (click)="clientSettingsService.toggleShowStorageIdsInTestTab()">
           {{ clientSettingsService.isShowStorageIdsInTestTab() ? 'Hide' : 'Show'}} storage ids
         </button>
         <button data-cy-test="upload" type="button" class="btn btn-info" title="Upload"
