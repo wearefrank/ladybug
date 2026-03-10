@@ -67,7 +67,7 @@
       </form>
     </div>
 
-    <p>Generator is {{ generatorEnabled|booleanToString: 'enabled':'disabled' }}</p>
+    <p>Generator is {{ this.settingsService.isGeneratorEnabled()|booleanToString: 'enabled':'disabled' }}</p>
     @if (loading) {
       <app-loading-spinner/>
     } @else {

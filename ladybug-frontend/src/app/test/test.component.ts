@@ -13,7 +13,6 @@ import { UpdatePathSettings } from '../shared/interfaces/update-path-settings';
 import { TestFolderTreeComponent } from './test-folder-tree/test-folder-tree.component';
 import { FormsModule, NgModel, ReactiveFormsModule } from '@angular/forms';
 import { TestListItem } from '../shared/interfaces/test-list-item';
-import { OptionsSettings } from '../shared/interfaces/options-settings';
 import { ErrorHandling } from '../shared/classes/error-handling.service';
 import { BooleanToStringPipe } from '../shared/pipes/boolean-to-string.pipe';
 import { HttpErrorResponse } from '@angular/common/http';
@@ -25,6 +24,7 @@ import { TabService } from '../shared/services/tab.service';
 import { CompareData } from '../compare/compare-data';
 import { CompareReport } from '../shared/interfaces/compare-reports';
 import { TestRefreshService } from './test-refresh.service';
+import { SettingsService } from '../shared/services/settings.service';
 
 export const updatePathActionConst = ['move', 'copy'] as const;
 export type UpdatePathAction = (typeof updatePathActionConst)[number];
@@ -62,7 +62,6 @@ export class TestComponent implements OnInit, OnDestroy {
 
   protected reports: TestListItem[] = [];
   protected filteredReports: TestListItem[] = [];
-  protected generatorEnabled = false;
   protected currentFilter = '';
   protected loading = true;
   protected showStorageIds?: boolean;
@@ -70,6 +69,7 @@ export class TestComponent implements OnInit, OnDestroy {
 
   protected testReportsService = inject(TestReportsService);
   protected appVariablesService = inject(AppVariablesService);
+  protected settingsService = inject(SettingsService);
   protected currentUploadFile = '';
 
   private updatePathAction: UpdatePathAction = 'move';
@@ -84,13 +84,12 @@ export class TestComponent implements OnInit, OnDestroy {
   private ngZone = inject(NgZone);
 
   constructor() {
+    this.settingsService.init();
     this.getStorageIdsFromLocalStorage();
-    this.setGeneratorStatusFromLocalStorage();
   }
 
   ngOnInit(): void {
     this.loadData();
-    localStorage.removeItem('generatorEnabled');
     this.testRefreshServiceSubscription = this.testRefreshService.refreshAll$.subscribe(() => {
       this.ngZone.run(() => this.loadData());
     });
@@ -107,23 +106,6 @@ export class TestComponent implements OnInit, OnDestroy {
 
   updateShowStorageIds(show: boolean): void {
     this.showStorageIds = show;
-  }
-
-  setGeneratorStatusFromLocalStorage(): void {
-    const generatorStatus: string | null = localStorage.getItem('generatorEnabled');
-    if (generatorStatus && generatorStatus.length <= 5) {
-      this.generatorEnabled = generatorStatus === 'true';
-    } else {
-      this.httpService
-        .getSettings()
-        .pipe(catchError(this.errorHandler.handleError()))
-        .subscribe({
-          next: (response: OptionsSettings) => {
-            this.generatorEnabled = response.generatorEnabled;
-            localStorage.setItem('generatorEnabled', String(this.generatorEnabled));
-          },
-        });
-    }
   }
 
   loadData(path?: string): void {
@@ -161,7 +143,7 @@ export class TestComponent implements OnInit, OnDestroy {
   }
 
   run(report: TestListItem): void {
-    if (this.generatorEnabled) {
+    if (this.settingsService.isGeneratorEnabled()) {
       this.httpService
         .runReport(this.testReportsService.storageName, report.storageId)
         .pipe(
