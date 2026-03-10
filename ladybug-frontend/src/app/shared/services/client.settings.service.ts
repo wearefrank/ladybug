@@ -89,7 +89,6 @@ export class ClientSettingsService {
   }
 
   public toggleShowStorageIdsInTestTab(): void {
-    console.log(`ClientSettingsService.toggleShowStorageIdsInTestTab()`);
     this.setShowStorageIdsInTestTab(!this.isShowStorageIdsInTestTab());
   }
 

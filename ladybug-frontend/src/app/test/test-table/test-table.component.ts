@@ -78,10 +78,8 @@ export class TestTableComponent implements OnInit, OnDestroy, OnChanges, AfterCo
   private subscriptions = new Subscription();
 
   ngOnInit(): void {
-    console.log('TestTableComponent.ngOnInit()');
     this.subscriptions.add(
       this.clientSettingsService.showStorageIdsInTestTabObservable.subscribe((value) => {
-        console.log(`Received update of showStorageIdsInTestTab: ${value}`);
         this.showStorageIds = value;
         this.updateDisplayColumn();
       }),
