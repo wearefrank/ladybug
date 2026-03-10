@@ -215,7 +215,7 @@ export class TestComponent implements OnInit, OnDestroy {
       for (let report of selectedReports) {
         queryString += `id=${report.storageId}&`;
       }
-      this.helperService.download(queryString, this.testReportsService.storageName, true, false);
+      this.helperService.download(queryString, this.testReportsService.storageName, true, false, false);
     } else {
       this.toastService.showWarning('No Report Selected!');
     }
