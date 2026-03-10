@@ -11,15 +11,18 @@ export class ClientSettingsService {
   private readonly amountOfRecordsInTableKey = 'amountOfRecordsInTable';
   private readonly transformationEnabledKey = 'transformationEnabled';
   private readonly forMultipleOmitIfXmlEmptyKey = 'forMultipleOmitIfXmlEmpty';
+  private readonly showStorageIdsInTestTabKey = 'showReportStorageIds';
 
   private showMultipleAtATimeSubject = new BehaviorSubject<boolean>(this.isShowMultipleReportsAtATime());
   private tableSpacingSubject = new BehaviorSubject<number>(this.getTableSpacing());
   private amountOfRecordsInTableSubject = new BehaviorSubject<number>(this.getAmountOfRecordsInTable());
+  private showStorageIdsInTestTabSubject = new BehaviorSubject<boolean>(this.isShowStorageIdsInTestTab());
 
   // Cannot put public properties first because properties cannot be used before their initialization.
   public showMultipleAtATimeObservable = this.showMultipleAtATimeSubject as Observable<boolean>;
   public tableSpacingObservable = this.tableSpacingSubject as Observable<number>;
   public amountOfRecordsInTableObservable = this.amountOfRecordsInTableSubject as Observable<number>;
+  public showStorageIdsInTestTabObservable = this.showStorageIdsInTestTabSubject as Observable<boolean>;
 
   public isShowMultipleReportsAtATime(): boolean {
     return localStorage.getItem(this.showMultipleRecordsAtATimeKey) === 'true';
@@ -75,13 +78,27 @@ export class ClientSettingsService {
     localStorage.setItem(this.forMultipleOmitIfXmlEmptyKey, value ? 'true' : 'false');
   }
 
+  public isShowStorageIdsInTestTab(): boolean {
+    const raw: string | null = localStorage.getItem(this.showStorageIdsInTestTabKey);
+    return raw === 'true';
+  }
+
+  public setShowStorageIdsInTestTab(value: boolean): void {
+    localStorage.setItem(this.showStorageIdsInTestTabKey, value ? 'true' : 'false');
+    this.showStorageIdsInTestTabSubject.next(value);
+  }
+
+  public toggleShowStorageIdsInTestTab(): void {
+    console.log(`ClientSettingsService.toggleShowStorageIdsInTestTab()`);
+    this.setShowStorageIdsInTestTab(!this.isShowStorageIdsInTestTab());
+  }
+
   public backToFactory(): void {
     this.setAmountOfRecordsInTable(10);
     this.setShowMultipleReportsatATime(false);
     this.setTableSpacing(1);
     this.setTransformationEnabled(true);
-    // forMultipleOmitIfXmlEmpty is not part of the factory reset
-    // because this setting is not managed via the debug tab settings
-    // dialog.
+    // forMultipleOmitIfXmlEmpty and showStorageIdsInTestTab are not part of the factory reset
+    // because these setting are not managed via the debug tab settings dialog.
   }
 }

@@ -1,7 +1,6 @@
 import { Component, inject, NgZone, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { HttpService } from '../shared/services/http.service';
 import { CloneModalComponent } from './clone-modal/clone-modal.component';
-import { TestSettingsModalComponent } from './test-settings-modal/test-settings-modal.component';
 import { TestResult } from '../shared/interfaces/test-result';
 import { ReranReport } from '../shared/interfaces/reran-report';
 import { catchError, Observable, of, Subscription } from 'rxjs';
@@ -25,6 +24,7 @@ import { CompareData } from '../compare/compare-data';
 import { CompareReport } from '../shared/interfaces/compare-reports';
 import { TestRefreshService } from './test-refresh.service';
 import { SettingsService } from '../shared/services/settings.service';
+import { ClientSettingsService } from '../shared/services/client.settings.service';
 
 export const updatePathActionConst = ['move', 'copy'] as const;
 export type UpdatePathAction = (typeof updatePathActionConst)[number];
@@ -38,7 +38,6 @@ export type UpdatePathAction = (typeof updatePathActionConst)[number];
     TestFolderTreeComponent,
     ReactiveFormsModule,
     FormsModule,
-    TestSettingsModalComponent,
     CloneModalComponent,
     BooleanToStringPipe,
     DeleteModalComponent,
@@ -50,8 +49,6 @@ export class TestComponent implements OnInit, OnDestroy {
   static readonly ROUTER_PATH: string = 'test';
 
   @ViewChild(CloneModalComponent) protected cloneModal!: CloneModalComponent;
-  @ViewChild(TestSettingsModalComponent)
-  protected testSettingsModal!: TestSettingsModalComponent;
   @ViewChild(DeleteModalComponent) protected deleteModal!: DeleteModalComponent;
   @ViewChild(TestFolderTreeComponent)
   protected testFileTreeComponent?: TestFolderTreeComponent;
@@ -64,12 +61,12 @@ export class TestComponent implements OnInit, OnDestroy {
   protected filteredReports: TestListItem[] = [];
   protected currentFilter = '';
   protected loading = true;
-  protected showStorageIds?: boolean;
   protected childrenLoaded = false;
 
   protected testReportsService = inject(TestReportsService);
   protected appVariablesService = inject(AppVariablesService);
   protected settingsService = inject(SettingsService);
+  protected clientSettingsService = inject(ClientSettingsService);
   protected currentUploadFile = '';
 
   private updatePathAction: UpdatePathAction = 'move';
@@ -85,7 +82,6 @@ export class TestComponent implements OnInit, OnDestroy {
 
   constructor() {
     this.settingsService.init();
-    this.getStorageIdsFromLocalStorage();
   }
 
   ngOnInit(): void {
@@ -98,14 +94,6 @@ export class TestComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.testReportServiceSubscription?.unsubscribe();
     this.testRefreshServiceSubscription?.unsubscribe();
-  }
-
-  getStorageIdsFromLocalStorage(): void {
-    this.showStorageIds = localStorage.getItem('showReportStorageIds') === 'true';
-  }
-
-  updateShowStorageIds(show: boolean): void {
-    this.showStorageIds = show;
   }
 
   loadData(path?: string): void {

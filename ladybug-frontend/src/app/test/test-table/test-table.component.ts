@@ -6,11 +6,13 @@ import {
   inject,
   Input,
   OnChanges,
+  OnDestroy,
+  OnInit,
   Output,
   SimpleChanges,
 } from '@angular/core';
 import { TestListItem } from '../../shared/interfaces/test-list-item';
-import { catchError } from 'rxjs';
+import { catchError, Subscription } from 'rxjs';
 import { HttpService } from '../../shared/services/http.service';
 import { ErrorHandling } from '../../shared/classes/error-handling.service';
 import { TabService } from '../../shared/services/tab.service';
@@ -33,6 +35,7 @@ import {
   MatTable,
 } from '@angular/material/table';
 import { NgClass, NgIf } from '@angular/common';
+import { ClientSettingsService } from 'src/app/shared/services/client.settings.service';
 
 @Component({
   selector: 'app-test-table',
@@ -56,26 +59,40 @@ import { NgClass, NgIf } from '@angular/common';
   styleUrl: './test-table.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class TestTableComponent implements OnChanges, AfterContentChecked {
+export class TestTableComponent implements OnInit, OnDestroy, OnChanges, AfterContentChecked {
   @Input({ required: true }) reports!: TestListItem[];
   @Input() currentFilter = '';
-  @Input() showStorageIds?: boolean;
   @Output() runEvent: EventEmitter<TestListItem> = new EventEmitter<TestListItem>();
   @Output() fullyLoaded: EventEmitter<void> = new EventEmitter<void>();
   @Output() changePath: EventEmitter<TestListItem> = new EventEmitter<TestListItem>();
+  showStorageIds = true;
   amountOfSelectedReports = 0;
   protected displayedColumns: string[] = [];
 
   private httpService = inject(HttpService);
+  private clientSettingsService = inject(ClientSettingsService);
   private errorHandler = inject(ErrorHandling);
   private tabService = inject(TabService);
   private testReportsService = inject(TestReportsService);
   private toastService = inject(ToastService);
+  private subscriptions = new Subscription();
+
+  ngOnInit(): void {
+    console.log('TestTableComponent.ngOnInit()');
+    this.subscriptions.add(
+      this.clientSettingsService.showStorageIdsInTestTabObservable.subscribe((value) => {
+        console.log(`Received update of showStorageIdsInTestTab: ${value}`);
+        this.showStorageIds = value;
+        this.updateDisplayColumn();
+      }),
+    );
+  }
+
+  ngOnDestroy(): void {
+    this.subscriptions.unsubscribe();
+  }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['showStorageIds']) {
-      this.updateDisplayColumn();
-    }
     if (changes['currentFilter'] || changes['reports']) {
       this.amountOfSelectedReports = 0;
       for (const report of this.reports) {
