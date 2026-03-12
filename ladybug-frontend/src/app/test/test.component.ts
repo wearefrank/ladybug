@@ -13,7 +13,6 @@ import { TestFolderTreeComponent } from './test-folder-tree/test-folder-tree.com
 import { FormsModule, NgModel, ReactiveFormsModule } from '@angular/forms';
 import { TestListItem } from '../shared/interfaces/test-list-item';
 import { ErrorHandling } from '../shared/classes/error-handling.service';
-import { BooleanToStringPipe } from '../shared/pipes/boolean-to-string.pipe';
 import { HttpErrorResponse } from '@angular/common/http';
 import { TestReportsService } from './test-reports.service';
 import { TestTableComponent } from './test-table/test-table.component';
@@ -39,7 +38,6 @@ export type UpdatePathAction = (typeof updatePathActionConst)[number];
     ReactiveFormsModule,
     FormsModule,
     CloneModalComponent,
-    BooleanToStringPipe,
     DeleteModalComponent,
     TestTableComponent,
     LoadingSpinnerComponent,
