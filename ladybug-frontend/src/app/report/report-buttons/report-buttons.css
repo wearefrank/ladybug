@@ -5,7 +5,17 @@
   gap: 0.25rem;
   width: fit-content;
   align-items: center;
-  padding-top: 0.75rem;
+  padding-top: 0rem;
+}
+
+.vertical-layout {
+  display: flex;
+  flex-direction: column;
+}
+
+.horizontal-layout {
+  display: flex;
+  flex-direction: row;
 }
 
 .button-width {
@@ -15,6 +25,8 @@
 
 button {
   height: fit-content;
+  margin-left: 0.15rem;
+  margin-right: 0.15rem;
 }
 
 .button-section {
@@ -22,10 +34,10 @@ button {
 }
 
 .button-section-title {
-  position: absolute;
   top: 0;
+  bottom: 0;
+  margin: 0;
   color: grey;
-  width: 100%;
   max-lines: 1;
   font-size: 0.6rem;
   text-align: center;
