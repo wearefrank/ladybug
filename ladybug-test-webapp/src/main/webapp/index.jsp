@@ -152,6 +152,16 @@
 		messageContext.put("messageContextKey", "messageContextValue");
 		testTool.endpoint(correlationId, null, reportName, "Goodbye World!", messageContext);
 	}
+	reportNames.add(reportName = "Add report with checkpoints having only LF 0x0A");
+	if (reportName.equals(createReportAction)) {
+		testTool.startpoint(correlationId, null, reportName, "Start\n");
+		testTool.endpoint(correlationId, null, reportName, "\n");
+	}
+	reportNames.add(reportName = "Add report with checkpoints having only CR 0x0D");
+	if (reportName.equals(createReportAction)) {
+		testTool.startpoint(correlationId, null, reportName, "Start\r");
+		testTool.endpoint(correlationId, null, reportName, "\r");
+	}
 	// Other actions
 	if ("true".equals(request.getParameter("clearDebugStorage"))) {
 		LogStorage debugStorage = (LogStorage)webApplicationContext.getBean("debugStorage");
