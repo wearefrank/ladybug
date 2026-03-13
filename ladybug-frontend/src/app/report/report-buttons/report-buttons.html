@@ -23,20 +23,28 @@
             title="Make checkpoint value null"
             class="btn btn-info"
             (click)="makeNull()"
-          >Make null</button>
+          >null</button>
           <button
             data-cy-open-metadata-table
             class="btn btn-info h-fit"
-            title="Open metadata table"
+            title="Open or close metadata table"
             (click)="toggleMetadataTable()">
-            {{ metadataTableVisible|booleanToString:'Hide' :'Show' }} metadata
+            @if (metadataTableVisible) {
+              <s>metadata</s>
+            } @else {
+              metadata
+            }
           </button>
           <button
             data-cy-open-messagecontext-table
             class="btn btn-info h-fit"
-            title="Open message context table"
+            title="Open or closemessage context table"
             (click)="toggleMessageContextTable()">
-            {{ messageContextTableVisible|booleanToString:'Hide' :'Show' }} messagecontext
+            @if (messageContextTableVisible) {
+              <s>messagecontext</s>
+            } @else {
+              messagecontext
+            }
           </button>
           <div class="w-fit mx-1 my-0">
             <select data-cy-checkpoint-stub-strategy #checkpointStubStrategy id="checkpointStubStrategy" class="form-control" [(ngModel)]="currentCheckpointStubStrategyStr"
