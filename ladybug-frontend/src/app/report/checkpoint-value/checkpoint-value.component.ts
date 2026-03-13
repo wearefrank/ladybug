@@ -260,7 +260,14 @@ export class CheckpointValueComponent implements OnInit, OnDestroy {
     this.messageContextTableVisible = false;
     this.originalCheckpoint = originalCheckpoint;
     this.emptyIsNull = this.originalCheckpoint.message === null;
-    const requestedEditorContents = originalCheckpoint.message === null ? '' : originalCheckpoint.message;
+    const rawContents = originalCheckpoint.message === null ? '' : originalCheckpoint.message;
+    // Normalise CR and CRLF to LF to match what Monaco will emit after its own
+    // line-ending normalisation. Without this the guard in onActualEditorContentsChanged
+    // fails on first load, causing a false-positive isEdited() result.
+    //
+    // The Monaco editor does not provide control over the line endings you use anyway.
+    // After editing, line endings are always LF.
+    const requestedEditorContents = rawContents.replaceAll('\r\n', '\n').replaceAll('\r', '\n');
     // Do not trust the Monaco editor sends an event for the first text.
     this.actualEditorContents = requestedEditorContents;
     this.actualCheckpointStubStrategy = originalCheckpoint.stub;
