@@ -550,6 +550,8 @@ public class ReportApiImpl {
 	}
 
 	public Map<String, String> processCustomReportAction(String storageName, List<Integer> reportIds) throws HttpNotFoundException, HttpBadRequestException, HttpInternalServerErrorException {
+		log.debug("Enter ReportApiImpl.processCustomReportAction() for storage name [{}] and report ids [{}]",
+				storageName, reportIds.stream().map(i -> i.toString()).collect(Collectors.joining(", ")));
 		Storage storage = testTool.getStorage(storageName);
 		List<Report> reports = new ArrayList<>();
 		for (int storageId : reportIds) {
@@ -559,11 +561,13 @@ public class ReportApiImpl {
 					throw new HttpNotFoundException("Could not find report with storage id [" + storageId + "]");
 				reports.add(report);
 			} catch (StorageException e) {
+				log.error("Caught storage exception: {}, {}", e.getMessage(), e.getStackTrace());
 				e.printStackTrace();
 				throw new HttpInternalServerErrorException(e);
 			}
 		}
 		if (customReportAction == null) {
+			log.error("No handler available for custom report action. Throwing exception");
 			Map<String, String> errorResponse = new HashMap<>();
 			errorResponse.put("error", "No custom report action defined.");
 			throw new HttpBadRequestException(errorResponse.toString());
@@ -572,6 +576,7 @@ public class ReportApiImpl {
 		Map<String, String> response = new HashMap<>();
 		response.put("success", customReportActionResult.getSuccessMessage());
 		response.put("error", customReportActionResult.getErrorMessage());
+		log.debug("Leave ReportApiImpl.processCustomReportAction()");
 		return response;
 	}
 
