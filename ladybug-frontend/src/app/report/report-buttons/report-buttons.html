@@ -97,9 +97,13 @@
           <button
             data-cy-open-metadata-table
             class="btn btn-info h-fit"
-            title="Open metadata table"
+            title="Open or closemetadata table"
             (click)="toggleMetadataTable()">
-            {{ metadataTableVisible|booleanToString:'Hide' :'Show' }} metadata
+            @if (metadataTableVisible) {
+              <s>metadata</s>
+            } @else {
+              metadata
+            }
           </button>
         }
         @if (appVariablesService.getVariable('customReportActionButtonText') !== null) {
