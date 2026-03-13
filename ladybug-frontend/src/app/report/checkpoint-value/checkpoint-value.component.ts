@@ -260,7 +260,11 @@ export class CheckpointValueComponent implements OnInit, OnDestroy {
     this.messageContextTableVisible = false;
     this.originalCheckpoint = originalCheckpoint;
     this.emptyIsNull = this.originalCheckpoint.message === null;
-    const requestedEditorContents = originalCheckpoint.message === null ? '' : originalCheckpoint.message;
+    const rawContents = originalCheckpoint.message === null ? '' : originalCheckpoint.message;
+    // Normalise CR and CRLF to LF to match what Monaco will emit after its own
+    // line-ending normalisation. Without this the guard in onActualEditorContentsChanged
+    // fails on first load, causing a false-positive isEdited() result.
+    const requestedEditorContents = rawContents.replaceAll('\r\n', '\n').replaceAll('\r', '\n');
     // Do not trust the Monaco editor sends an event for the first text.
     this.actualEditorContents = requestedEditorContents;
     this.actualCheckpointStubStrategy = originalCheckpoint.stub;
@@ -332,7 +336,9 @@ export class CheckpointValueComponent implements OnInit, OnDestroy {
 
   private isEdited(): boolean {
     const editedCheckpointValue = this.getEditedRealCheckpointValue();
-    const isCheckpointEdited = editedCheckpointValue !== this.originalCheckpoint!.message;
+    const normalizedOriginalMessage =
+      this.originalCheckpoint!.message?.replaceAll('\r\n', '\n').replaceAll('\r', '\n') ?? null;
+    const isCheckpointEdited = editedCheckpointValue !== normalizedOriginalMessage;
     const isCheckpointStubStrategyEdited = this.actualCheckpointStubStrategy !== this.originalCheckpoint!.stub;
     const isReportStubStrategyEdited =
       this.actualReportStubStrategy !== this.originalCheckpoint!.parentReport.stubStrategy;
