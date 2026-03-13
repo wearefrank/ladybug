@@ -9,6 +9,13 @@
     <button class="btn btn-info" title="Collapse All" (click)="tree.collapseAll()">
       <i class="fa fa-compress"></i>
     </button>
+    <button class="btn btn-info" (click)="toggleCheckpointAndStorageIdShown()" title="Show or hide storage id and checkpoint id">
+      <i class="fa fa-key" [class]="checkpointAndStorageIdShown ? 'negated' : 'not-negated'"></i>
+    </button>
+    <button class="btn btn-info" (click)="toggleCheckpointExecutionTimeShown()" title="Show or hide checkpoint execution time">
+      <i class="fa fa-hourglass" [class]="checkpointExecutionTimeShown ? 'negated' : 'not-negated'"></i>
+    </button>
+
     <input type="text" name="search" placeholder="&#xF002;" (keyup)="changeSearchTerm($event)"/>
   </div>
 }
