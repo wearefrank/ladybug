@@ -244,6 +244,7 @@ export class ReportComponent implements OnInit, AfterViewInit, OnDestroy {
       this.currentView.storageName,
       downloadOptions.downloadReport,
       downloadOptions.downloadXmlSummary,
+      false,
     );
     // TODO: Issue https://github.com/wearefrank/ladybug-frontend/issues/1128.
     this.toastService.showSuccess('Report Downloaded!');

@@ -8,7 +8,13 @@ import { ClientSettingsService } from './client.settings.service';
 export class HelperService {
   private clientSettingsService = inject(ClientSettingsService);
 
-  download(queryString: string, storage: string, exportBinary: boolean, exportXML: boolean): void {
+  download(
+    queryString: string,
+    storage: string,
+    exportBinary: boolean,
+    exportXML: boolean,
+    forMultipleOmitIfXmlEmpty: boolean,
+  ): void {
     let xmlChoice: string;
     if (exportXML) {
       xmlChoice = this.clientSettingsService.isTransformationEnabled() ? 'with_default_xslt' : 'no_default_xslt';
@@ -16,7 +22,7 @@ export class HelperService {
       xmlChoice = this.clientSettingsService.isTransformationEnabled() ? 'omit' : 'omit_no_default_xslt';
     }
     window.open(
-      `api/report/download/${storage}/${exportBinary}/${xmlChoice}/${this.clientSettingsService.isForMultipleOmitIfXmlEmpty()}?${queryString.slice(0, -1)}`,
+      `api/report/download/${storage}/${exportBinary}/${xmlChoice}/${forMultipleOmitIfXmlEmpty}?${queryString.slice(0, -1)}`,
     );
   }
 

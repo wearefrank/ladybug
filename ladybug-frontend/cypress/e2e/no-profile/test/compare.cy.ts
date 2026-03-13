@@ -31,9 +31,11 @@ describe('Tests for compare button in test tab', () => {
   });
 
   it('should open the correct reports in compare tab', () => {
-    cy.get('[data-cy-test="settings"]').click();
-    cy.get('[data-cy-test-settings="showStorageIds"]').check();
-    cy.get('[data-cy-test-settings="save"]').click();
+    // Default is that storag ids are not shown.
+    cy.get('[data-cy-test="showHideStorageIds"]').as('showHideStorageIds').contains('Show storage ids');
+    cy.get('[data-cy-test-table="storageId"]').should('not.exist');
+    cy.get('@showHideStorageIds').click();
+    cy.get('@showHideStorageIds').contains('Hide storage ids');
     cy.get('[data-cy-test-table="storageId"]').eq(0).invoke('text').then((firstStorageId) => {
       cy.get('[data-cy-test-table="storageId"]').eq(1).invoke('text').then((secondStorageId) => {
         selectFirstTwoReportsInTestTab(true)

@@ -14,10 +14,15 @@ describe('Test the Test tab', () => {
   afterEach(() => cy.resetApp());
 
   it('should show storage ids in table when setting is enabled', () => {
-    cy.get('[data-cy-test="settings"]').click();
-    cy.get('[data-cy-test-settings="showStorageIds"]').check();
-    cy.get('[data-cy-test-settings="save"]').click();
+    // Default is that storag ids are not shown.
+    cy.get('[data-cy-test="showHideStorageIds"]').as('showHideStorageIds').contains('Show storage ids');
+    cy.get('[data-cy-test-table="storageId"]').should('not.exist');
+    cy.get('@showHideStorageIds').click();
+    cy.get('@showHideStorageIds').contains('Hide storage ids');
     cy.get('[data-cy-test-table="storageId"]').should('be.visible');
+    cy.get('@showHideStorageIds').click();
+    cy.get('@showHideStorageIds').contains('Show storage ids');
+    cy.get('[data-cy-test-table="storageId"]').should('not.exist');
   });
 
   it('Should delete one report at a time with deleteSelected button', () => {
