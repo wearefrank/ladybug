@@ -7,9 +7,14 @@ describe('Tests for report transformation', () => {
 
   beforeEach(() => {
     cy.visit('');
+    cy.navigateToDebugTabAndAwaitLoadingSpinner();
+    cy.wait(200);
     cy.get('[data-cy-debug="openSettings"]').click();
+    cy.wait(200);
     cy.get('[data-cy-settings="nav-server"]').as('serverTab').click();
+    cy.wait(200);
     cy.get('[data-cy-settings-transformation]').type('{selectAll}{del}');
+    cy.wait(200);
     cy.get('[data-cy-settings-transformation]').within((textArea) => {
       cy.fixture('ignoreName.xslt').then((newText) => cy.wrap(textArea).type(newText));
     })
@@ -29,6 +34,7 @@ describe('Tests for report transformation', () => {
   it('Should see updated metadata when updating transformation field', () => {
     cy.visit('');
     cy.navigateToDebugTabAndAwaitLoadingSpinner();
+    cy.wait(200);
     openTheReport();
     cy.get('[data-cy-element-name="reportXmlEditor"]').contains('Name="IGNORED"');
     // Only the XML in the Monaco editor should be affected, not the other fields

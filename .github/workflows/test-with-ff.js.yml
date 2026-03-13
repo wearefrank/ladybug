@@ -133,12 +133,21 @@ jobs:
       - name: Calculate path to Frank application (1)
         if: ${{ steps.decideAboutBuildCode.outputs.buildCode == 'false' && matrix.test-app == 'false' }}
         run: echo "FRANK_APP=$(realpath frank-runner/examples/Frank2Example1)" >> $GITHUB_ENV
+      - name: Calculate path to original files (1)
+        if: ${{ steps.decideAboutBuildCode.outputs.buildCode == 'false' && matrix.test-app == 'false' }}
+        run: echo "FRANK_PROJECT_DIR=$(realpath frank-runner/examples/Frank2Example1)" >> $GITHUB_ENV
       - name: Calculate path to Frank application (2)
         if: ${{ matrix.test-app == 'true' }}
         run: echo "FRANK_APP=$(realpath ladybug/ladybug-ff-test-webapp)" >> $GITHUB_ENV
+      - name: Calculate path to original files (2)
+        if: ${{ matrix.test-app == 'true' }}
+        run: echo "FRANK_PROJECT_DIR=$(realpath ladybug/ladybug-ff-test-webapp)" >> $GITHUB_ENV
       - name: Calculate path to Frank application (3)
         if: ${{ steps.decideAboutBuildCode.outputs.buildCode == 'true' && matrix.test-app == 'false' }}
         run: echo "FRANK_APP=$(realpath frankframework/webapp)" >> $GITHUB_ENV
+      - name: Calculate path to original files (3)
+        if: ${{ steps.decideAboutBuildCode.outputs.buildCode == 'true' && matrix.test-app == 'false' }}
+        run: echo "FRANK_PROJECT_DIR=$(realpath frank-runner/examples/Frank2Example1)" >> $GITHUB_ENV
       - name: Get relative path of ladybug-ff-cypress-test
         id: relative-path-to-ladybug
         run: echo "RELATIVE_PATH_TO_LADYBUG_FF_TEST_WEBAPP=$(realpath --relative-to=$FRANK_APP ladybug/ladybug-ff-cypress-test)" >> $GITHUB_OUTPUT
@@ -266,7 +275,7 @@ jobs:
         run: curl -v -i http://localhost:8090
       - name: Run the tests
         working-directory: ladybug/ladybug-ff-cypress-test
-        run: yarn cypress run --spec "${{ matrix.specs }}" --env "debugStorageName=${{ matrix.debugStorageName }},frankProjectResourcesDir=${{ env.RESOURCES_DIR }}"
+        run: yarn cypress run --spec "${{ matrix.specs }}" --env "debugStorageName=${{ matrix.debugStorageName }},frankProjectResourcesDir=${{ env.RESOURCES_DIR }},frankProjectOriginalFiles=${{ env.FRANK_PROJECT_DIR }}"
       - name: Show files
         if: failure()
         run: tree -L 5 .

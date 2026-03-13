@@ -1,7 +1,6 @@
 import { Component, inject, NgZone, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { HttpService } from '../shared/services/http.service';
 import { CloneModalComponent } from './clone-modal/clone-modal.component';
-import { TestSettingsModalComponent } from './test-settings-modal/test-settings-modal.component';
 import { TestResult } from '../shared/interfaces/test-result';
 import { ReranReport } from '../shared/interfaces/reran-report';
 import { catchError, Observable, of, Subscription } from 'rxjs';
@@ -13,9 +12,7 @@ import { UpdatePathSettings } from '../shared/interfaces/update-path-settings';
 import { TestFolderTreeComponent } from './test-folder-tree/test-folder-tree.component';
 import { FormsModule, NgModel, ReactiveFormsModule } from '@angular/forms';
 import { TestListItem } from '../shared/interfaces/test-list-item';
-import { OptionsSettings } from '../shared/interfaces/options-settings';
 import { ErrorHandling } from '../shared/classes/error-handling.service';
-import { BooleanToStringPipe } from '../shared/pipes/boolean-to-string.pipe';
 import { HttpErrorResponse } from '@angular/common/http';
 import { TestReportsService } from './test-reports.service';
 import { TestTableComponent } from './test-table/test-table.component';
@@ -25,6 +22,8 @@ import { TabService } from '../shared/services/tab.service';
 import { CompareData } from '../compare/compare-data';
 import { CompareReport } from '../shared/interfaces/compare-reports';
 import { TestRefreshService } from './test-refresh.service';
+import { SettingsService } from '../shared/services/settings.service';
+import { ClientSettingsService } from '../shared/services/client.settings.service';
 
 export const updatePathActionConst = ['move', 'copy'] as const;
 export type UpdatePathAction = (typeof updatePathActionConst)[number];
@@ -38,9 +37,7 @@ export type UpdatePathAction = (typeof updatePathActionConst)[number];
     TestFolderTreeComponent,
     ReactiveFormsModule,
     FormsModule,
-    TestSettingsModalComponent,
     CloneModalComponent,
-    BooleanToStringPipe,
     DeleteModalComponent,
     TestTableComponent,
     LoadingSpinnerComponent,
@@ -50,8 +47,6 @@ export class TestComponent implements OnInit, OnDestroy {
   static readonly ROUTER_PATH: string = 'test';
 
   @ViewChild(CloneModalComponent) protected cloneModal!: CloneModalComponent;
-  @ViewChild(TestSettingsModalComponent)
-  protected testSettingsModal!: TestSettingsModalComponent;
   @ViewChild(DeleteModalComponent) protected deleteModal!: DeleteModalComponent;
   @ViewChild(TestFolderTreeComponent)
   protected testFileTreeComponent?: TestFolderTreeComponent;
@@ -62,14 +57,14 @@ export class TestComponent implements OnInit, OnDestroy {
 
   protected reports: TestListItem[] = [];
   protected filteredReports: TestListItem[] = [];
-  protected generatorEnabled = false;
   protected currentFilter = '';
   protected loading = true;
-  protected showStorageIds?: boolean;
   protected childrenLoaded = false;
 
   protected testReportsService = inject(TestReportsService);
   protected appVariablesService = inject(AppVariablesService);
+  protected settingsService = inject(SettingsService);
+  protected clientSettingsService = inject(ClientSettingsService);
   protected currentUploadFile = '';
 
   private updatePathAction: UpdatePathAction = 'move';
@@ -84,13 +79,11 @@ export class TestComponent implements OnInit, OnDestroy {
   private ngZone = inject(NgZone);
 
   constructor() {
-    this.getStorageIdsFromLocalStorage();
-    this.setGeneratorStatusFromLocalStorage();
+    this.settingsService.init();
   }
 
   ngOnInit(): void {
     this.loadData();
-    localStorage.removeItem('generatorEnabled');
     this.testRefreshServiceSubscription = this.testRefreshService.refreshAll$.subscribe(() => {
       this.ngZone.run(() => this.loadData());
     });
@@ -99,31 +92,6 @@ export class TestComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.testReportServiceSubscription?.unsubscribe();
     this.testRefreshServiceSubscription?.unsubscribe();
-  }
-
-  getStorageIdsFromLocalStorage(): void {
-    this.showStorageIds = localStorage.getItem('showReportStorageIds') === 'true';
-  }
-
-  updateShowStorageIds(show: boolean): void {
-    this.showStorageIds = show;
-  }
-
-  setGeneratorStatusFromLocalStorage(): void {
-    const generatorStatus: string | null = localStorage.getItem('generatorEnabled');
-    if (generatorStatus && generatorStatus.length <= 5) {
-      this.generatorEnabled = generatorStatus === 'true';
-    } else {
-      this.httpService
-        .getSettings()
-        .pipe(catchError(this.errorHandler.handleError()))
-        .subscribe({
-          next: (response: OptionsSettings) => {
-            this.generatorEnabled = response.generatorEnabled;
-            localStorage.setItem('generatorEnabled', String(this.generatorEnabled));
-          },
-        });
-    }
   }
 
   loadData(path?: string): void {
@@ -161,7 +129,7 @@ export class TestComponent implements OnInit, OnDestroy {
   }
 
   run(report: TestListItem): void {
-    if (this.generatorEnabled) {
+    if (this.settingsService.isGeneratorEnabled()) {
       this.httpService
         .runReport(this.testReportsService.storageName, report.storageId)
         .pipe(
@@ -245,7 +213,7 @@ export class TestComponent implements OnInit, OnDestroy {
       for (let report of selectedReports) {
         queryString += `id=${report.storageId}&`;
       }
-      this.helperService.download(queryString, this.testReportsService.storageName, true, false);
+      this.helperService.download(queryString, this.testReportsService.storageName, true, false, false);
     } else {
       this.toastService.showWarning('No Report Selected!');
     }
