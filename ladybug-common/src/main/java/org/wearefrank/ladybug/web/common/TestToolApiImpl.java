@@ -43,19 +43,28 @@ public class TestToolApiImpl {
 	private @Setter @Inject @Autowired MetadataExtractor metadataExtractor;
 	private @Setter @Inject @Autowired ReportXmlTransformer reportXmlTransformer;
 	private @Setter @Inject @Autowired Views views;
+	private int callCount = 0;
 
-
-	public Map<String, Object> getTestToolInfo() {
+	public Map<String, Object> getTestToolInfo() throws HttpInternalServerErrorException {
+		if (callCount == 5) {
+			callCount = 0;
+			throw new HttpInternalServerErrorException("Fake error");
+		}
+		++callCount;
 		Map<String, Object> map = new HashMap<>(4);
 		map.put("generatorEnabled", testTool.isReportGeneratorEnabled());
 		map.put("estMemory", testTool.getReportsInProgressEstimatedMemoryUsage());
 		map.put("regexFilter", testTool.getRegexFilter());
 		map.put("reportsInProgress", testTool.getNumberOfReportsInProgress());
 		map.put("stubStrategies", testTool.getStubStrategies());
+		String transformation = reportXmlTransformer.getXslt();
+		if (!StringUtils.isEmpty(transformation)) {
+			map.put("transformation", transformation);
+		}
 		return map;
 	}
 
-	public Map<String, Object> resetInfo() {
+	public Map<String, Object> resetInfo() throws HttpInternalServerErrorException {
 		testTool.reset();
 		testTool.sendReportGeneratorStatusUpdate();
 		return getTestToolInfo();
@@ -122,16 +131,6 @@ public class TestToolApiImpl {
 
 	public void restoreDefaultXsltTransformation() {
 		reportXmlTransformer.restoreDefaultXslt();
-	}
-
-	public Map<String, String> getReportTransformation() {
-		String transformation = reportXmlTransformer.getXslt();
-		if (StringUtils.isEmpty(transformation))
-			return null;
-
-		Map<String, String> map = new HashMap<>(1);
-		map.put("transformation", transformation);
-		return map;
 	}
 
 	public Map<String, Map<String, Object>> getViewsResponse() {

@@ -12,9 +12,9 @@ import { UpdatePathSettings } from '../interfaces/update-path-settings';
 import { TestResult } from '../interfaces/test-result';
 import { UpdateReport } from '../interfaces/update-report';
 import { UpdateReportResponse } from '../interfaces/update-report-response';
-import { Transformation } from '../interfaces/transformation';
 import { TableSettings } from '../interfaces/table-settings';
 import { ClientSettingsService } from './client.settings.service';
+import { Transformation } from '../interfaces/transformation';
 
 @Injectable({
   providedIn: 'root',

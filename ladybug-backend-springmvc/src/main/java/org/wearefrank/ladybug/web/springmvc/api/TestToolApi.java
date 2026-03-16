@@ -51,8 +51,12 @@ public class TestToolApi {
 	@GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	public ResponseEntity<?> getInfo() {
-		Map<String, Object> info = delegate.getTestToolInfo();
-		return ResponseEntity.ok(info);
+		try {
+			Map<String, Object> info = delegate.getTestToolInfo();
+			return ResponseEntity.ok(info);
+		} catch(HttpInternalServerErrorException e) {
+			return ResponseEntity.internalServerError().body("Fake exception");
+		}
 	}
 
 	// IbisObserver is permitted to revert the generatorEnabled state and the regex filter to factory
@@ -62,8 +66,12 @@ public class TestToolApi {
 	@GetMapping(value = "/reset", produces = MediaType.APPLICATION_JSON_VALUE)
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	public ResponseEntity<?> resetInfo() {
-		Map<String, Object> info = delegate.resetInfo();
-		return ResponseEntity.ok(info);
+		try {
+			Map<String, Object> info = delegate.resetInfo();
+			return ResponseEntity.ok(info);
+		} catch(HttpInternalServerErrorException e) {
+			return ResponseEntity.internalServerError().body("Fake exception");
+		}
 	}
 
 	/**
@@ -152,20 +160,6 @@ public class TestToolApi {
 	public ResponseEntity<?> restoreDefaultXsltTransformation() {
 		delegate.restoreDefaultXsltTransformation();
 		return ResponseEntity.ok().build();
-	}
-
-	/**
-	 * @return Response containing the current default transformation of the test tool.
-	 */
-	@GetMapping(value = "/transformation", produces = MediaType.APPLICATION_JSON_VALUE)
-	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
-	public ResponseEntity<?> getReportTransformation() {
-		Map<String, String> result = delegate.getReportTransformation();
-		if (result == null) {
-			return ResponseEntity.noContent().build();
-		} else {
-			return ResponseEntity.ok(result);
-		}
 	}
 
 	/**

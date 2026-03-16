@@ -4,4 +4,5 @@ export interface OptionsSettings extends UploadParameters {
   estMemory: string;
   reportsInProgress: number;
   stubStrategies: string[];
+  transformation?: string;
 }

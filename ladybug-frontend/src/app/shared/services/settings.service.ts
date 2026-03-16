@@ -2,9 +2,10 @@ import { inject, Injectable } from '@angular/core';
 import { catchError, firstValueFrom } from 'rxjs';
 import { HttpService } from './http.service';
 import { OptionsSettings } from '../interfaces/options-settings';
-import { Transformation } from '../interfaces/transformation';
 import { ErrorHandling } from '../classes/error-handling.service';
 import { UploadParameters } from '../interfaces/upload-params';
+import { ToastService } from './toast.service';
+import { HttpErrorResponse } from '@angular/common/http';
 
 export interface ServerSettings {
   isGeneratorEnabled: boolean;
@@ -18,6 +19,7 @@ export interface ServerSettings {
 export class SettingsService {
   private httpService = inject(HttpService);
   private errorHandler = inject(ErrorHandling);
+  private toastService = inject(ToastService);
   private static INITIALIZATION_IDLE = 0;
   private static INITIALIZATION_BUSY = 1;
   public static INITIALIZATION_SUCCESS = 2;
@@ -65,18 +67,21 @@ export class SettingsService {
   }
 
   public async refresh(): Promise<void> {
-    const settingsPromise: Promise<OptionsSettings> = firstValueFrom(
-      this.httpService.getSettings().pipe(catchError(this.errorHandler.handleError())),
-    );
-    const transformationPromise: Promise<Transformation> = firstValueFrom(
-      this.httpService.getTransformation().pipe(catchError(this.errorHandler.handleError())),
-    );
-    await Promise.all([settingsPromise, transformationPromise]);
-    const optionsSettings: OptionsSettings = await settingsPromise;
-    const transformation: Transformation = await transformationPromise;
-    this._isGeneratorEnabled = optionsSettings.generatorEnabled;
-    this._regexFilter = optionsSettings.regexFilter;
-    this._transformation = transformation.transformation;
+    try {
+      const optionsSettings: OptionsSettings = await firstValueFrom(this.httpService.getSettings());
+      this._isGeneratorEnabled = optionsSettings.generatorEnabled;
+      this._regexFilter = optionsSettings.regexFilter;
+      this._transformation = null;
+      if (optionsSettings.transformation !== undefined) {
+        this._transformation = optionsSettings.transformation;
+      }
+    } catch (error: unknown) {
+      if (error instanceof HttpErrorResponse) {
+        this.toastService.showDanger(`Failed to load settings: ${error.message}`);
+      } else {
+        this.toastService.showDanger(`Failed to load settings - unexpected error kind`);
+      }
+    }
   }
 
   // IbisObserver is not allowed to change enable/disable the report generator or to change the regex.
