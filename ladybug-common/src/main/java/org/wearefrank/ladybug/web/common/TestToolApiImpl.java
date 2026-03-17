@@ -37,6 +37,11 @@ import java.util.Map;
 
 @Component
 public class TestToolApiImpl {
+	// Improving error handling is done in multiple pull requests.
+	// These are needed as long as improving error handling is in progress.
+	private static final boolean WITH_FAKE_BACKEND_ERRORS = false;
+	private static final int FAKE_ERROR_AT_CALL_COUNT = 5;
+
 	private @Setter
 	@Inject
 	@Autowired TestTool testTool;
@@ -46,7 +51,7 @@ public class TestToolApiImpl {
 	private int callCount = 0;
 
 	public Map<String, Object> getTestToolInfo() throws HttpInternalServerErrorException {
-		if (callCount == 5) {
+		if (WITH_FAKE_BACKEND_ERRORS && callCount == FAKE_ERROR_AT_CALL_COUNT) {
 			callCount = 0;
 			throw new HttpInternalServerErrorException("Fake error");
 		}
