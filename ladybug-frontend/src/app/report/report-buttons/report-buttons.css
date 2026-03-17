@@ -25,6 +25,12 @@
   align-items: center;
 }
 
+.separate {
+  display: flex;
+  flex-direction: row;
+  column-gap: 0.5rem;
+}
+
 .button-divider {
   font-size: 2rem;
 }

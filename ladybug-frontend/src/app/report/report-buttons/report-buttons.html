@@ -1,4 +1,4 @@
-<div data-cy-debug-editor="buttons" class="mb-2 mx-1 buttons">
+<div data-cy-debug-editor="buttons" class="buttons">
   @if (state.isCheckpoint) {
     <div class="button-section">
       <div class="button-section-title">Checkpoint</div>
@@ -23,15 +23,15 @@
           class="btn btn-info"
           (click)="makeNull()"
         >Make null</button>
-        <div class="checkbox">
-          <input data-cy-open-metadata-table id="metadata" type="checkbox" [value]="metadataTableVisible" (click)="toggleMetadataTable()"/>
-          <label for="metadata">metadata</label>
-        </div>
-        <div class="checkbox">
-          <input data-cy-open-messagecontext-table id="messagecontext" type="checkbox" [value]="messageContextTableVisible" (click)="toggleMessageContextTable()"/>
-          <label for="messagecontext">messagecontext</label>
-        </div>
-        <div class="w-fit mx-1 my-0">
+        <div class="separate">
+          <div class="checkbox">
+            <input data-cy-open-metadata-table id="metadata" type="checkbox" [value]="metadataTableVisible" (click)="toggleMetadataTable()"/>
+            <label for="metadata">metadata</label>
+          </div>
+          <div class="checkbox">
+            <input data-cy-open-messagecontext-table id="messagecontext" type="checkbox" [value]="messageContextTableVisible" (click)="toggleMessageContextTable()"/>
+            <label for="messagecontext">messagecontext</label>
+          </div>
           <select data-cy-checkpoint-stub-strategy #checkpointStubStrategy id="checkpointStubStrategy" class="form-control" [(ngModel)]="currentCheckpointStubStrategyStr"
                   (ngModelChange)="onCheckpointStubStrategyChange($event)">
             @for (stubOptionStr of StubStrategy.checkpoints; track stubOptionStr) {
@@ -61,8 +61,7 @@
         (click)="copyReport()"
       ><i class="fa fa-copy"></i></button>
       <div ngbDropdown title="Download">
-        <button ngbDropdownToggle class="btn btn-info button-download"><i class="fa fa-download px-2"></i><span
-          class="caret"></span></button>
+        <button ngbDropdownToggle class="btn btn-info button-download"><i class="fa fa-download px-2"></i></button>
         <div ngbDropdownMenu>
           <button ngbDropdownItem (click)="onDownload({ downloadReport: true, downloadXmlSummary: true})">Report & XML summary</button>
           <button ngbDropdownItem (click)="onDownload({ downloadReport: false, downloadXmlSummary: true})">XML summary only</button>
@@ -88,7 +87,7 @@
           {{ appVariablesService.getVariable("customReportActionButtonText") }}
       </button>
       }
-      <div class="w-fit mx-1 my-0">
+      <div>
         <select data-cy-report-stub-strategy #reportStubStrategy class="form-control"
           [(ngModel)]="currentReportStubStrategy"
           (ngModelChange)="onReportStubStrategyChange($event)">
