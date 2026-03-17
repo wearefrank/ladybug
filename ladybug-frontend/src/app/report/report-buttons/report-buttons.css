@@ -2,51 +2,55 @@
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
-  gap: 0.25rem;
-  width: fit-content;
   align-items: center;
-  padding-top: 0rem;
 }
 
-.vertical-layout {
+.button-section {
   display: flex;
   flex-direction: column;
 }
 
-.horizontal-layout {
-  display: flex;
-  flex-direction: row;
-}
-
-.button-width {
-  width: 2.2rem;
-  height: 2rem;
-}
-
-button {
-  height: fit-content;
-  margin-left: 0.15rem;
-  margin-right: 0.15rem;
-}
-
-.button-section {
-  position: relative;
-}
-
 .button-section-title {
-  top: 0;
-  bottom: 0;
-  margin: 0;
   color: grey;
   max-lines: 1;
   font-size: 0.6rem;
   text-align: center;
 }
 
-/* Border color and padding were copied from elsewhere using F12 and inspect */
+/* Height comes from class form-control */
+.button-section-buttons {
+  display: flex;
+  flex-direction: row;
+  column-gap: 0.3rem;
+  align-items: center;
+}
+
+.button-divider {
+  font-size: 2rem;
+}
+
+.button-download {
+  height: 100%;
+}
+
+.checkbox {
+  display: flex;
+  flex-direction: row;
+  column-gap: 0.3rem;
+  align-items: center;
+}
+
+label {
+  margin-bottom: 0;
+}
+
+/* height and border come from class form-control */
 .rerun-result {
-  padding: .375rem .75rem;
+  display: flex;
+  flex-direction: column;
+  margin-left: 0.4rem;
+  padding-left: 0.3rem;
+  padding-right: 0.3rem;
   font-size: 10pt;
-  width: fit-content;
-  border: 1pt solid #ced4da;
+  justify-content: center;
 }
