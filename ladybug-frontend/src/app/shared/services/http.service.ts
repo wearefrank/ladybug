@@ -128,11 +128,11 @@ export class HttpService {
     return this.http.post<void>(`api/report/upload/${storage}`, formData);
   }
 
-  postSettings(settings: UploadParameters): Observable<void> {
+  postSettingsAsDataAdmin(settings: UploadParameters): Observable<void> {
     return this.http.post<void>('api/testtool', settings);
   }
 
-  postTransformation(transformation: string): Observable<void> {
+  postTransformationAsObserver(transformation: string): Observable<void> {
     return this.http.post<void>('api/testtool/transformation', {
       transformation: transformation,
     });

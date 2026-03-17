@@ -27,6 +27,7 @@ export class SettingsService {
   private static INITIALIZATION_POLL_INTERVAL_MS = 100;
 
   private initializationState = SettingsService.INITIALIZATION_IDLE;
+  private _role = 'unknown';
   private _isGeneratorEnabled = false;
   private _regexFilter: string | null = null;
   private _transformation: string | null = null;
@@ -54,6 +55,14 @@ export class SettingsService {
     }
   }
 
+  public getRole(): string {
+    return this._role;
+  }
+
+  public isDataAdmin(): boolean {
+    return this._role === 'dataAdmin' || this._role === 'tester';
+  }
+
   public isGeneratorEnabled(): boolean {
     return this._isGeneratorEnabled;
   }
@@ -69,8 +78,9 @@ export class SettingsService {
   public async refresh(): Promise<void> {
     try {
       const optionsSettings: OptionsSettings = await firstValueFrom(this.httpService.getSettings());
-      this._isGeneratorEnabled = optionsSettings.generatorEnabled;
-      this._regexFilter = optionsSettings.regexFilter;
+      this._role = optionsSettings.role;
+      this._isGeneratorEnabled = optionsSettings.generatorEnabled!;
+      this._regexFilter = optionsSettings.regexFilter!;
       this._transformation = null;
       if (optionsSettings.transformation !== undefined) {
         this._transformation = optionsSettings.transformation;
@@ -84,41 +94,38 @@ export class SettingsService {
     }
   }
 
-  // IbisObserver is not allowed to change enable/disable the report generator or to change the regex.
-  // IbisObserver is allowed to change the report transformation.
-  // So we send only the transformation update request when possible.
-  public async save(settings: ServerSettings): Promise<void> {
+  public async saveAsDataAdmin(settings: ServerSettings): Promise<void> {
     const isSettingsChanged =
       settings.isGeneratorEnabled !== this._isGeneratorEnabled || settings.regexFilter !== this._regexFilter;
     const isTransformationChanged = settings.transformation !== this._transformation;
-    const requests: Promise<void>[] = [];
+    if (!(isSettingsChanged || isTransformationChanged)) {
+      return;
+    }
+    const uploadParameters: UploadParameters = {};
     if (isSettingsChanged) {
-      const uploadParameters: UploadParameters = {
-        generatorEnabled: settings.isGeneratorEnabled,
-        regexFilter: settings.regexFilter === null ? '' : settings.regexFilter,
-      };
-      requests.push(
-        firstValueFrom(
-          this.httpService.postSettings(uploadParameters).pipe(catchError(this.errorHandler.handleError())),
-        ),
-      );
+      uploadParameters.generatorEnabled = settings.isGeneratorEnabled;
+      uploadParameters.regexFilter = settings.regexFilter === null ? '' : settings.regexFilter;
     }
     if (isTransformationChanged) {
-      requests.push(
-        firstValueFrom(
-          this.httpService
-            .postTransformation(settings.transformation === null ? '' : settings.transformation)
-            .pipe(catchError(this.errorHandler.handleError())),
-        ),
-      );
+      uploadParameters.transformation = settings.transformation === null ? '' : settings.transformation;
     }
     try {
-      await Promise.all(requests);
+      await firstValueFrom(
+        this.httpService.postSettingsAsDataAdmin(uploadParameters).pipe(catchError(this.errorHandler.handleError())),
+      );
       this._isGeneratorEnabled = settings.isGeneratorEnabled;
       this._regexFilter = settings.regexFilter;
       this._transformation = settings.transformation;
     } catch {
-      throw new Error('Failed to save debug tab settings toserver');
+      throw new Error('Failed to save debug tab settings to server');
+    }
+  }
+
+  public async saveAsObserver(transformation: string): Promise<void> {
+    try {
+      await firstValueFrom(this.httpService.postTransformationAsObserver(transformation));
+    } catch {
+      throw new Error('Failed to save default report transformation');
     }
   }
 

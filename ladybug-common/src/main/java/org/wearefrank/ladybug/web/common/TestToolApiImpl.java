@@ -42,6 +42,7 @@ public class TestToolApiImpl {
 	private static final boolean WITH_FAKE_BACKEND_ERRORS = false;
 	private static final int FAKE_ERROR_AT_CALL_COUNT = 5;
 
+	private static final String KEY_TRANSFORMATION = "transformation";
 	private @Setter
 	@Inject
 	@Autowired TestTool testTool;
@@ -64,7 +65,7 @@ public class TestToolApiImpl {
 		map.put("stubStrategies", testTool.getStubStrategies());
 		String transformation = reportXmlTransformer.getXslt();
 		if (!StringUtils.isEmpty(transformation)) {
-			map.put("transformation", transformation);
+			map.put(KEY_TRANSFORMATION, transformation);
 		}
 		return map;
 	}
@@ -75,24 +76,28 @@ public class TestToolApiImpl {
 		return getTestToolInfo();
 	}
 
-	public void updateInfo(Map<String, String> map) throws HttpBadRequestException {
+	public void updateInfo(Map<String, String> map) throws HttpBadRequestException, HttpInternalServerErrorException {
 		if (map.isEmpty()) {
 			throw new HttpBadRequestException("No settings have been provided - detailed error message - The settings that have been provided are " + map.toString());
 		}
 
-		if (map.size() > 2) {
+		if (map.size() > 3) {
 			throw new HttpBadRequestException("Too many settings have been provided - detailed error message - The settings that have been provided are " + map.toString());
 		}
-		// TODO: Check user roles.
 		String generatorEnabled = map.remove("generatorEnabled");
 		String regexFilter = map.remove("regexFilter");
+		String transformation = map.remove(KEY_TRANSFORMATION);
 
 		if (StringUtils.isNotEmpty(generatorEnabled)) {
 			testTool.setReportGeneratorEnabled("1".equalsIgnoreCase(generatorEnabled) || "true".equalsIgnoreCase(generatorEnabled));
 			testTool.sendReportGeneratorStatusUpdate();
 		}
-		if (StringUtils.isNotEmpty(regexFilter))
+		if (StringUtils.isNotEmpty(regexFilter)) {
 			testTool.setRegexFilter(regexFilter);
+		}
+		if (transformation != null) {
+			this.updateReportTransformation(transformation);
+		}
 	}
 
 	public Report getReportsInProgress(int index) throws HttpBadRequestException {
@@ -122,7 +127,11 @@ public class TestToolApiImpl {
 	}
 
 	public void updateReportTransformation(Map<String, String> map) throws HttpBadRequestException, HttpInternalServerErrorException {
-		String transformation = map.get("transformation");
+		String transformation = map.get(KEY_TRANSFORMATION);
+		updateReportTransformation(transformation);
+	}
+
+	private void updateReportTransformation(String transformation) throws HttpBadRequestException, HttpInternalServerErrorException {
 		if (StringUtils.isEmpty(transformation)) {
 			throw new HttpBadRequestException("No transformation has been provided");
 		}

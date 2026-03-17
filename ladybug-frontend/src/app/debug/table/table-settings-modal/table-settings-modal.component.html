@@ -19,7 +19,10 @@
           </li>
         </ul>
         @if (activeTab === GLOBAL) {
-          <div class="form-group">
+          @if (!serverSettingsService.isDataAdmin()) {
+            Not authorized to enable/disable report generator or change regex
+          }
+          <div class="form-group" [hidden]="!serverSettingsService.isDataAdmin()">
             <label>Report generator</label>
             <select class="form-control custom-select mr-sm-2" data-cy-settings="generatorEnabled"
               [formControlName]="generatorEnabledKey">
@@ -27,7 +30,7 @@
               <option [ngValue]="true">Enabled</option>
             </select>
           </div>
-          <div class="form-group">
+          <div class="form-group" [hidden]="!serverSettingsService.isDataAdmin()">
             <label>Report filter (regex)</label>
             <div class="input-group">
               <input data-cy-settings="regexFilter" type="search" [formControlName]="regexFilterKey" title="Example 1 (only store report when name is Hello World):

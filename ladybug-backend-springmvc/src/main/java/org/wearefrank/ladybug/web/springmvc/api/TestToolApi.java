@@ -87,6 +87,8 @@ public class TestToolApi {
 			return ResponseEntity.ok().build();
 		} catch(HttpBadRequestException e) {
 			return ResponseEntity.badRequest().body(e.getMessage());
+		} catch(HttpInternalServerErrorException e) {
+			return ResponseEntity.internalServerError().body(e.getMessage());
 		}
 	}
 

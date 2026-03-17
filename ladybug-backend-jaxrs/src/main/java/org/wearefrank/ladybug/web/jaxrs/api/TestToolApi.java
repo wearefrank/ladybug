@@ -15,8 +15,14 @@
 */
 package org.wearefrank.ladybug.web.jaxrs.api;
 
+import java.lang.invoke.MethodHandles;
+import java.util.List;
 import java.util.Map;
 
+import jakarta.annotation.Resource;
+import jakarta.inject.Inject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import jakarta.ws.rs.Consumes;
@@ -41,6 +47,17 @@ import org.wearefrank.ladybug.web.common.TestToolApiImpl;
 
 @Path("/" + Constants.LADYBUG_API_PATH + "/testtool")
 public class TestToolApi extends ApiBase {
+	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+
+	private @Inject
+	@Resource(name="observerRoles") List<String> observerRoles;
+
+	private @Inject
+	@Resource(name="dataAdminRoles") List<String> dataAdminRoles;
+
+	private @Inject
+	@Resource(name="testerRoles") List<String> testerRoles;
+
 	@Autowired
 	private @Setter TestToolApiImpl delegate;
 
@@ -52,10 +69,29 @@ public class TestToolApi extends ApiBase {
 	public Response getInfo() {
 		try {
 			Map<String, Object> info = delegate.getTestToolInfo();
+			info.put("role", getRole());
 			return Response.ok(info).build();
 		} catch (HttpInternalServerErrorException e) {
 			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Fake error").build();
 		}
+	}
+
+	// TODO: Implement for Spring MVC
+	private String getRole() {
+		String result = null;
+		// When authorization is disabled, isUserInRole() always returns true.
+		// Therefore we have to check for the most powerful rule first.
+		if (isUserInRoles(testerRoles)) {
+			result = "tester";
+		} else if (isUserInRoles(dataAdminRoles)) {
+			result = "dataAdmin";
+		} else if(isUserInRoles(observerRoles)) {
+			result = "observer";
+		} else {
+			result = "no-authorization";
+		}
+		log.info("Tell frontend that user is in role [{}]", result);
+		return result;
 	}
 
 	@GET
@@ -85,6 +121,8 @@ public class TestToolApi extends ApiBase {
 			return Response.ok().build();
 		} catch(HttpBadRequestException e) {
 			return Response.status(Response.Status.BAD_REQUEST).entity(e.getMessage()).build();
+		} catch(HttpInternalServerErrorException e) {
+			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e.getMessage()).build();
 		}
 	}
 
