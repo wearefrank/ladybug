@@ -118,12 +118,11 @@ export class TableSettingsModalComponent implements OnInit {
       };
       try {
         await this.serverSettingsService.saveAsDataAdmin(body);
+        this.toastService.showSuccess('Server settings saved!');
       } catch {
         this.toastService.showDanger('Failed to save settings');
       }
-      this.toastService.showSuccess('Server settings saved!');
     }
-    await this.loadSettings();
   }
 
   private async saveSettingsAsObserver(): Promise<void> {
@@ -131,10 +130,10 @@ export class TableSettingsModalComponent implements OnInit {
       try {
         const transformation = this.settingsForm.value[this.transformationKey];
         await this.serverSettingsService.saveAsObserver(transformation);
+        this.toastService.showSuccess('Server settings saved!');
       } catch {
         this.toastService.showDanger('Failed to save report transformation with role observer');
       }
-      this.toastService.showSuccess('Server settings saved!');
     }
   }
 
