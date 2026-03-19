@@ -42,6 +42,11 @@ public class TestToolApiImpl {
 	private static final boolean WITH_FAKE_BACKEND_ERRORS = false;
 	private static final int FAKE_ERROR_AT_CALL_COUNT = 5;
 
+	public static final String TESTER = "tester";
+	public static final String DATA_ADMIN = "dataAdmin";
+	public static final String OBSERVER = "observer";
+	public static final String NO_AUTHORIZATION = "no-authorization";
+
 	private static final String KEY_TRANSFORMATION = "transformation";
 	private @Setter
 	@Inject

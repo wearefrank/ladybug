@@ -76,19 +76,18 @@ public class TestToolApi extends ApiBase {
 		}
 	}
 
-	// TODO: Implement for Spring MVC
 	private String getRole() {
 		String result = null;
 		// When authorization is disabled, isUserInRole() always returns true.
 		// Therefore we have to check for the most powerful rule first.
 		if (isUserInRoles(testerRoles)) {
-			result = "tester";
+			result = TestToolApiImpl.TESTER;
 		} else if (isUserInRoles(dataAdminRoles)) {
-			result = "dataAdmin";
+			result = TestToolApiImpl.DATA_ADMIN;
 		} else if(isUserInRoles(observerRoles)) {
-			result = "observer";
+			result = TestToolApiImpl.OBSERVER;
 		} else {
-			result = "no-authorization";
+			result = TestToolApiImpl.NO_AUTHORIZATION;
 		}
 		log.info("Tell frontend that user is in role [{}]", result);
 		return result;
