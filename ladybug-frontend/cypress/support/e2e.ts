@@ -21,6 +21,9 @@ Cypress.on('uncaught:exception', (err, runnable) => {
   if (err.message.indexOf('WorkerGlobalScope') >= 0) {
     return false;
   }
+  if (err.name === 'ResizeObserver') {
+    return false;
+  }
   return;
 })
 
