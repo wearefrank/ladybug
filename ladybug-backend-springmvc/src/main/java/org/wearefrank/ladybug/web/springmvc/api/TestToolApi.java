@@ -83,13 +83,16 @@ public class TestToolApi {
 
 	private String getRole() {
 		List<String> authoritiesList = SecurityContextHolder.getContext().getAuthentication().getAuthorities()
-				.stream().map((a) -> a.getAuthority()).filter((s) -> s.startsWith("ROLE")).collect(Collectors.toList());
+				.stream().map((a) -> a.getAuthority()).filter((s) -> s.startsWith("ROLE_")).collect(Collectors.toList());
 		log.debug("TestToolApi.getRole() sees authorities [{}]", authoritiesList.stream().collect(Collectors.joining(", ")));
 		if (authoritiesList.size() != 1) {
 			log.error("Expected only one role in [{}]", authoritiesList.stream().collect(Collectors.joining(", ")));
 			return TestToolApiImpl.NO_AUTHORIZATION;
 		}
 		String role = authoritiesToRoles(authoritiesList).iterator().next();
+		// Remove "ROLE_"
+		role = role.substring(5);
+		log.debug("User has role [{}]", role);
 		// The injected role sets observerRoles, dataAdminRoles and testerRoles are assumed cumulative.
 		if (observerRoles.contains(role)) {
 			return TestToolApiImpl.OBSERVER;
