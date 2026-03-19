@@ -1,5 +1,5 @@
 import { Component, inject, OnInit, TemplateRef, ViewChild } from '@angular/core';
-import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { AbstractControl, FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { NgbActiveModal, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ServerSettings, SettingsService } from '../../../shared/services/settings.service';
 import { ToastService } from '../../../shared/services/toast.service';
@@ -84,7 +84,9 @@ export class TableSettingsModalComponent implements OnInit {
     this.settingsForm
       .get(this.transformationEnabledKey)
       ?.setValue(this.clientSettingsService.isTransformationEnabled());
+    this.disableForObserver(this.settingsForm.get(this.generatorEnabledKey)!);
     this.settingsForm.get(this.generatorEnabledKey)?.setValue(this.serverSettingsService.isGeneratorEnabled());
+    this.disableForObserver(this.settingsForm.get(this.regexFilterKey)!);
     this.settingsForm.get(this.regexFilterKey)?.setValue(this.serverSettingsService.getRegexFilter());
     this.settingsForm.get(this.transformationKey)?.setValue(this.serverSettingsService.getTransformation());
     this.unsavedChanges = false;
@@ -201,5 +203,17 @@ export class TableSettingsModalComponent implements OnInit {
 
   selectNav(tab: string): void {
     this.activeTab = tab;
+  }
+
+  private disableForObserver(f: AbstractControl): void {
+    if (this.serverSettingsService.isDataAdmin()) {
+      f.enable();
+    } else {
+      f.disable();
+    }
+  }
+
+  protected optionalNotAuthorized(): string {
+    return this.serverSettingsService.isDataAdmin() ? '' : ' (not authorized to edit)';
   }
 }
