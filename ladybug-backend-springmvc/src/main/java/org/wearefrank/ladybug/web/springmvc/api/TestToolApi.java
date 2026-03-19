@@ -90,8 +90,6 @@ public class TestToolApi {
 			return TestToolApiImpl.NO_AUTHORIZATION;
 		}
 		String role = authoritiesToRoles(authoritiesList).iterator().next();
-		// Remove "ROLE_"
-		role = role.substring(5);
 		log.debug("User has role [{}]", role);
 		// The injected role sets observerRoles, dataAdminRoles and testerRoles are assumed cumulative.
 		if (observerRoles.contains(role)) {
