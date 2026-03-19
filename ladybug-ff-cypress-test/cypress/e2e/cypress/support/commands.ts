@@ -404,6 +404,6 @@ Cypress.Commands.add('enableReportGenerator', { prevSubject: false }, () => {
   cy.inIframeBody('[data-cy-debug="openSettings"]').should('be.visible').click()
   cy.inIframeBody('[role=dialog]').should('be.visible')
   cy.inIframeBody('[data-cy-settings="generatorEnabled"]').select('Enabled');
-  cy.inIframeBody('[data-cy-settings="generatorEnabled"]').invoke('val').should('match', /true|Enabled/);
+  cy.inIframeBody('[data-cy-settings="generatorEnabled"]').find(':selected').invoke('text').should('equal', 'Enabled');
   cy.inIframeBody('[data-cy-settings="saveChanges"]').click()
 })
