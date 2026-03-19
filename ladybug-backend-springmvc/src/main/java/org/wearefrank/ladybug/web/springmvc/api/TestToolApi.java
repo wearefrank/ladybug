@@ -83,7 +83,7 @@ public class TestToolApi {
 
 	private String getRole() {
 		List<String> authoritiesList = SecurityContextHolder.getContext().getAuthentication().getAuthorities()
-				.stream().map((a) -> a.getAuthority()).collect(Collectors.toList());
+				.stream().map((a) -> a.getAuthority()).filter((s) -> s.startsWith("ROLE")).collect(Collectors.toList());
 		log.debug("TestToolApi.getRole() sees authorities [{}]", authoritiesList.stream().collect(Collectors.joining(", ")));
 		if (authoritiesList.size() != 1) {
 			log.error("Expected only one role in [{}]", authoritiesList.stream().collect(Collectors.joining(", ")));
