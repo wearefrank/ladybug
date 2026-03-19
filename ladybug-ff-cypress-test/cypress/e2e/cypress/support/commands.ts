@@ -403,6 +403,7 @@ Cypress.Commands.add('visitAs', { prevSubject: false }, (username, password) => 
 Cypress.Commands.add('enableReportGenerator', { prevSubject: false }, () => {
   cy.inIframeBody('[data-cy-debug="openSettings"]').should('be.visible').click()
   cy.inIframeBody('[role=dialog]').should('be.visible')
-  cy.inIframeBody('[data-cy-settings="generatorEnabled"]').select('Enabled').should('have.text', 'Enabled')
+  cy.inIframeBody('[data-cy-settings="generatorEnabled"]').select('Enabled');
+  cy.inIframeBody('[data-cy-settings="generatorEnabled"]').invoke('val').should('equal', 'true')
   cy.inIframeBody('[data-cy-settings="saveChanges"]').click()
 })
