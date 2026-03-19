@@ -58,13 +58,13 @@ public class TestToolApi implements InitializingBean {
 	@Autowired
 	private @Setter TestToolApiImpl delegate;
 
-	private @Autowired @Qualifier("observerRoles")
+	private @Qualifier("observerRoles")
 	@Resource List<String> observerRoles;
 
-	private @Autowired @Qualifier("dataAdminRoles")
+	private @Qualifier("dataAdminRoles")
 	@Resource List<String> dataAdminRoles;
 
-	private @Autowired @Qualifier("testerRoles")
+	private @Qualifier("testerRoles")
 	@Resource List<String> testerRoles;
 
 	@Override
