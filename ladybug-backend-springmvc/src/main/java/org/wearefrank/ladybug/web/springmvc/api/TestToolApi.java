@@ -15,24 +15,6 @@
 */
 package org.wearefrank.ladybug.web.springmvc.api;
 
-import jakarta.annotation.Resource;
-import jakarta.annotation.security.RolesAllowed;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
 import java.lang.invoke.MethodHandles;
 import java.util.HashSet;
 import java.util.List;
@@ -40,31 +22,57 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import lombok.Setter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import org.wearefrank.ladybug.Report;
 import org.wearefrank.ladybug.filter.View;
 import org.wearefrank.ladybug.web.common.HttpBadRequestException;
 import org.wearefrank.ladybug.web.common.HttpInternalServerErrorException;
 import org.wearefrank.ladybug.web.common.TestToolApiImpl;
 
-import org.wearefrank.ladybug.Report;
+import jakarta.annotation.Resource;
+import jakarta.annotation.security.RolesAllowed;
+import lombok.Setter;
 
 @RestController
 @RequestMapping("/testtool")
 @RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
-public class TestToolApi {
+public class TestToolApi implements InitializingBean {
 	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
 	@Autowired
 	private @Setter TestToolApiImpl delegate;
 
-	private @Autowired
-	@Resource(name="observerRoles") List<String> observerRoles;
+	private @Autowired @Qualifier("observerRoles")
+	@Resource List<String> observerRoles;
 
-	private @Autowired
-	@Resource(name="dataAdminRoles") List<String> dataAdminRoles;
+	private @Autowired @Qualifier("dataAdminRoles")
+	@Resource List<String> dataAdminRoles;
 
-	private @Autowired
-	@Resource(name="testerRoles") List<String> testerRoles;
+	private @Autowired @Qualifier("testerRoles")
+	@Resource List<String> testerRoles;
+
+	@Override
+	public void afterPropertiesSet() {
+		log.info("observerRoles are: [{}]", observerRoles.stream().collect(Collectors.joining(", ")));
+		log.info("dataAdminRoles are: [{}]", dataAdminRoles.stream().collect(Collectors.joining(", ")));
+		log.info("testerRoles are: [{}]", testerRoles.stream().collect(Collectors.joining(", ")));
+	}
 
 	/**
 	 * @return Response containing test tool data.
@@ -91,13 +99,14 @@ public class TestToolApi {
 		}
 		String role = authoritiesToRoles(authoritiesList).iterator().next();
 		log.debug("User has role [{}]", role);
-		// The injected role sets observerRoles, dataAdminRoles and testerRoles are assumed cumulative.
-		if (observerRoles.contains(role)) {
-			return TestToolApiImpl.OBSERVER;
+		// The injected role sets observerRoles, dataAdminRoles and testerRoles are assumed inverse cumulative.
+		// An observer for example is also data admin and also tester.
+		if (testerRoles.contains(role)) {
+			return TestToolApiImpl.TESTER;
 		} else if (dataAdminRoles.contains(role)) {
 			return TestToolApiImpl.DATA_ADMIN;
-		} else if (testerRoles.contains(role)) {
-			return TestToolApiImpl.TESTER;
+		} else if (observerRoles.contains(role)) {
+			return TestToolApiImpl.OBSERVER;
 		} else {
 			return TestToolApiImpl.NO_AUTHORIZATION;
 		}
