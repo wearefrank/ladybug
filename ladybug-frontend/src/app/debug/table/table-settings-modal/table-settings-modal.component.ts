@@ -99,7 +99,6 @@ export class TableSettingsModalComponent implements OnInit {
 
   async save(): Promise<void> {
     this.saveClientSettings();
-    this.toastService.showSuccess('Client settings saved!');
     if (this.formServerSettingsChanged()) {
       // eslint-disable-next-line unicorn/prefer-ternary
       if (this.serverSettingsService.isUiAsDataAdmin()) {
@@ -123,7 +122,6 @@ export class TableSettingsModalComponent implements OnInit {
     };
     try {
       await this.serverSettingsService.saveAsDataAdmin(body);
-      this.toastService.showSuccess('Server settings saved!');
     } catch {
       this.toastService.showDanger('Failed to save settings!');
     }
@@ -133,7 +131,6 @@ export class TableSettingsModalComponent implements OnInit {
     try {
       const transformation = this.settingsForm.value[this.transformationKey];
       await this.serverSettingsService.saveAsObserver(transformation);
-      this.toastService.showSuccess('Server settings saved!');
     } catch {
       this.toastService.showDanger('Failed to save report transformation with role observer!');
     }
