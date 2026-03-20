@@ -6,4 +6,5 @@ export interface OptionsSettings extends UploadParameters {
   reportsInProgress: number;
   stubStrategies: string[];
   transformation?: string;
+  uiTestMode: string;
 }

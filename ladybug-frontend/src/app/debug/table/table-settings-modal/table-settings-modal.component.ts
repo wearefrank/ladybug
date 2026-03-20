@@ -102,14 +102,14 @@ export class TableSettingsModalComponent implements OnInit {
     this.toastService.showSuccess('Client settings saved!');
     if (this.formServerSettingsChanged()) {
       // eslint-disable-next-line unicorn/prefer-ternary
-      if (this.serverSettingsService.isDataAdmin()) {
+      if (this.serverSettingsService.isUiAsDataAdmin()) {
         await this.saveSettingsAsDataAdmin();
       } else {
         await this.saveSettingsAsObserver();
       }
     }
     try {
-      this.loadSettings();
+      await this.loadSettings();
     } catch {
       this.toastService.showDanger('Failer to reload settings after saving change');
     }
@@ -207,7 +207,7 @@ export class TableSettingsModalComponent implements OnInit {
   }
 
   private disableForObserver(f: AbstractControl): void {
-    if (this.serverSettingsService.isDataAdmin()) {
+    if (this.serverSettingsService.isUiAsDataAdmin()) {
       f.enable();
     } else {
       f.disable();
@@ -215,6 +215,6 @@ export class TableSettingsModalComponent implements OnInit {
   }
 
   protected optionalNotAuthorized(): string {
-    return this.serverSettingsService.isDataAdmin() ? '' : ' (not authorized to edit)';
+    return this.serverSettingsService.isUiAsDataAdmin() ? '' : ' (not authorized to edit)';
   }
 }

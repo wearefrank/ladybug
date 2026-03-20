@@ -35,6 +35,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import static org.wearefrank.ladybug.web.common.TestPropertiesConfiguration.TestProperties;
+
 @Component
 public class TestToolApiImpl {
 	// Improving error handling is done in multiple pull requests.
@@ -54,6 +56,10 @@ public class TestToolApiImpl {
 	private @Setter @Inject @Autowired MetadataExtractor metadataExtractor;
 	private @Setter @Inject @Autowired ReportXmlTransformer reportXmlTransformer;
 	private @Setter @Inject @Autowired Views views;
+
+	@Autowired
+	private TestProperties testProperties;
+
 	private int callCount = 0;
 
 	public Map<String, Object> getTestToolInfo() throws HttpInternalServerErrorException {
@@ -72,6 +78,7 @@ public class TestToolApiImpl {
 		if (!StringUtils.isEmpty(transformation)) {
 			map.put(KEY_TRANSFORMATION, transformation);
 		}
+		map.put("uiTestMode", testProperties.getUiTestMode().toString().toLowerCase());
 		return map;
 	}
 

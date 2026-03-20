@@ -29,6 +29,7 @@ export class SettingsService {
   private _isGeneratorEnabled = false;
   private _regexFilter: string | null = null;
   private _transformation: string | null = null;
+  private _uiAsIbisTester = false;
 
   // Life cycle hooks like ngOnInit are not available for services.
   // Therefore this method is introduced. It should be run by every
@@ -57,8 +58,9 @@ export class SettingsService {
     return this._role;
   }
 
-  public isDataAdmin(): boolean {
-    return this._role === 'dataAdmin' || this._role === 'tester';
+  public isUiAsDataAdmin(): boolean {
+    const isDataAdmin = this._role === 'dataAdmin' || this._role === 'tester';
+    return isDataAdmin || this.isUiAsTester();
   }
 
   public isGeneratorEnabled(): boolean {
@@ -73,6 +75,10 @@ export class SettingsService {
     return this._transformation;
   }
 
+  public isUiAsTester(): boolean {
+    return this._uiAsIbisTester;
+  }
+
   public async refresh(): Promise<void> {
     try {
       const optionsSettings: OptionsSettings = await firstValueFrom(this.httpService.getSettings());
@@ -83,6 +89,11 @@ export class SettingsService {
       if (optionsSettings.transformation !== undefined) {
         this._transformation = optionsSettings.transformation;
       }
+      console.log(`Received from backend: uiTestMode=${optionsSettings.uiTestMode}`);
+      if (optionsSettings.uiTestMode.toLowerCase() === 'dont_block_backend') {
+        this._uiAsIbisTester = true;
+      }
+      console.log(`SettingsService.isUiAsTester() will return ${this.isUiAsTester()}`);
     } catch (error: unknown) {
       if (error instanceof HttpErrorResponse) {
         this.toastService.showDanger(`Failed to load settings: ${error.message}`);
