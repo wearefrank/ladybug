@@ -14,7 +14,6 @@ import { UpdateReport } from '../interfaces/update-report';
 import { UpdateReportResponse } from '../interfaces/update-report-response';
 import { TableSettings } from '../interfaces/table-settings';
 import { ClientSettingsService } from './client.settings.service';
-import { Transformation } from '../interfaces/transformation';
 
 @Injectable({
   providedIn: 'root',
@@ -136,10 +135,6 @@ export class HttpService {
     return this.http.post<void>('api/testtool/transformation', {
       transformation: transformation,
     });
-  }
-
-  getTransformation(): Observable<Transformation> {
-    return this.http.get<Transformation>(`api/testtool/transformation`);
   }
 
   getSettings(): Observable<OptionsSettings> {

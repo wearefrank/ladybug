@@ -2,7 +2,6 @@ import { inject, Injectable } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { HttpService } from './http.service';
 import { OptionsSettings } from '../interfaces/options-settings';
-import { ErrorHandling } from '../classes/error-handling.service';
 import { UploadParameters } from '../interfaces/upload-params';
 import { ToastService } from './toast.service';
 import { HttpErrorResponse } from '@angular/common/http';
@@ -18,7 +17,6 @@ export interface ServerSettings {
 })
 export class SettingsService {
   private httpService = inject(HttpService);
-  private errorHandler = inject(ErrorHandling);
   private toastService = inject(ToastService);
   private static INITIALIZATION_IDLE = 0;
   private static INITIALIZATION_BUSY = 1;
