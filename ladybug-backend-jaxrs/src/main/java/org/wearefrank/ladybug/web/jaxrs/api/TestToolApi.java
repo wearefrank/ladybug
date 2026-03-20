@@ -192,13 +192,6 @@ public class TestToolApi extends ApiBase {
 		}
 	}
 
-	@POST
-	@Path("/transformation/reset")
-	public Response restoreDefaultXsltTransformation() {
-		delegate.restoreDefaultXsltTransformation();
-		return Response.ok().build();
-	}
-
 	/**
 	 * @return The configured views
 	 */

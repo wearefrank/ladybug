@@ -138,10 +138,6 @@ export class HttpService {
     });
   }
 
-  restoreFactoryTransformation(): Observable<void> {
-    return this.http.post<void>('api/testtool/transformation/reset', '');
-  }
-
   getTransformation(): Observable<Transformation> {
     return this.http.get<Transformation>(`api/testtool/transformation`);
   }

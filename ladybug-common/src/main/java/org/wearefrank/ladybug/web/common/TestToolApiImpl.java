@@ -78,6 +78,7 @@ public class TestToolApiImpl {
 	public Map<String, Object> resetInfo() throws HttpInternalServerErrorException {
 		testTool.reset();
 		testTool.sendReportGeneratorStatusUpdate();
+		reportXmlTransformer.restoreDefaultXslt();
 		return getTestToolInfo();
 	}
 

@@ -214,13 +214,6 @@ public class TestToolApi implements InitializingBean {
 		}
 	}
 
-	@PostMapping(value = "/transformation/reset")
-	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
-	public ResponseEntity<?> restoreDefaultXsltTransformation() {
-		delegate.restoreDefaultXsltTransformation();
-		return ResponseEntity.ok().build();
-	}
-
 	/**
 	 * @return The configured views
 	 */

@@ -1,5 +1,5 @@
 import { inject, Injectable } from '@angular/core';
-import { catchError, firstValueFrom } from 'rxjs';
+import { firstValueFrom } from 'rxjs';
 import { HttpService } from './http.service';
 import { OptionsSettings } from '../interfaces/options-settings';
 import { ErrorHandling } from '../classes/error-handling.service';
@@ -128,15 +128,8 @@ export class SettingsService {
   }
 
   public async backToFactory(): Promise<void> {
-    // All roles have permission to do this. No need to check for changes before doint the HTTP calls.
-    const settingsPromise = firstValueFrom(
-      this.httpService.resetSettings().pipe(catchError(this.errorHandler.handleError())),
-    );
-    const transformationBackToFactoryPromise: Promise<void> = firstValueFrom(
-      this.httpService.restoreFactoryTransformation().pipe(catchError(this.errorHandler.handleError())),
-    );
     try {
-      await Promise.all([settingsPromise, transformationBackToFactoryPromise]);
+      await firstValueFrom(this.httpService.resetSettings());
       this.refresh();
     } catch {
       throw new Error('Failed to restore factory settings');
