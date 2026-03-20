@@ -85,19 +85,23 @@ public class TestToolApi implements InitializingBean {
 			info.put("role", getRole());
 			return ResponseEntity.ok(info);
 		} catch(HttpInternalServerErrorException e) {
-			return ResponseEntity.internalServerError().body("Fake exception");
+			return ResponseEntity.internalServerError().body(e.getMessage());
 		}
 	}
 
 	private String getRole() {
-		List<String> authoritiesList = SecurityContextHolder.getContext().getAuthentication().getAuthorities()
-				.stream().map((a) -> a.getAuthority()).filter((s) -> s.startsWith("ROLE_")).collect(Collectors.toList());
-		log.debug("TestToolApi.getRole() sees authorities [{}]", authoritiesList.stream().collect(Collectors.joining(", ")));
-		if (authoritiesList.size() != 1) {
-			log.error("Expected only one role in [{}]", authoritiesList.stream().collect(Collectors.joining(", ")));
+		List<String> roles = SecurityContextHolder.getContext().getAuthentication().getAuthorities()
+				.stream()
+				.map((a) -> a.getAuthority())
+				.filter((s) -> s.startsWith("ROLE_"))
+				.map((s) -> s.substring(5))
+				.collect(Collectors.toList());
+		log.debug("TestToolApi.getRole() sees roles [{}]", roles.stream().collect(Collectors.joining(", ")));
+		if (roles.size() != 1) {
+			log.error("Expected only one role in [{}]", roles.stream().collect(Collectors.joining(", ")));
 			return TestToolApiImpl.NO_AUTHORIZATION;
 		}
-		String role = authoritiesToRoles(authoritiesList).iterator().next();
+		String role = roles.get(0);
 		log.debug("User has role [{}]", role);
 		// The injected role sets observerRoles, dataAdminRoles and testerRoles are assumed inverse cumulative.
 		// An observer for example is also data admin and also tester.
@@ -112,21 +116,6 @@ public class TestToolApi implements InitializingBean {
 		}
 	}
 
-	private Set<String> authoritiesToRoles(List<String> authorities) {
-		Set<String> result = new HashSet<>();
-		for (String authority: authorities) {
-			String role = authority;
-			if (role.toUpperCase().startsWith("ROLE")) {
-				role = role.substring(4);
-			}
-			if (role.startsWith("_")) {
-				role = role.substring(1);
-			}
-			result.add(role);
-		}
-		return result;
-	}
-
 	// IbisObserver is permitted to revert the generatorEnabled state and the regex filter to factory
 	// defaults. These factory defaults are considered secure. But IbisObserver is not permitted to change
 	// the generatorEnabled state or the regex filter arbitrarily. The IbisDataAdmin controls which data is
@@ -138,7 +127,7 @@ public class TestToolApi implements InitializingBean {
 			Map<String, Object> info = delegate.resetInfo();
 			return ResponseEntity.ok(info);
 		} catch(HttpInternalServerErrorException e) {
-			return ResponseEntity.internalServerError().body("Fake exception");
+			return ResponseEntity.internalServerError().body(e.getMessage());
 		}
 	}
 

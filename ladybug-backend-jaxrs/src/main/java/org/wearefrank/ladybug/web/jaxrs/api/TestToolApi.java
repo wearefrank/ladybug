@@ -72,7 +72,7 @@ public class TestToolApi extends ApiBase {
 			info.put("role", getRole());
 			return Response.ok(info).build();
 		} catch (HttpInternalServerErrorException e) {
-			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Fake error").build();
+			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e.getMessage()).build();
 		}
 	}
 
@@ -101,7 +101,7 @@ public class TestToolApi extends ApiBase {
 			Map<String, Object> info = delegate.resetInfo();
 			return Response.ok(info).build();
 		} catch (HttpInternalServerErrorException e) {
-			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Fake error").build();
+			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e.getMessage()).build();
 		}
 	}
 

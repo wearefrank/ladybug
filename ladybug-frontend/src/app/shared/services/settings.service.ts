@@ -110,9 +110,7 @@ export class SettingsService {
       uploadParameters.transformation = settings.transformation === null ? '' : settings.transformation;
     }
     try {
-      await firstValueFrom(
-        this.httpService.postSettingsAsDataAdmin(uploadParameters).pipe(catchError(this.errorHandler.handleError())),
-      );
+      await firstValueFrom(this.httpService.postSettingsAsDataAdmin(uploadParameters));
       this._isGeneratorEnabled = settings.isGeneratorEnabled;
       this._regexFilter = settings.regexFilter;
       this._transformation = settings.transformation;

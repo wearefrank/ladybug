@@ -93,47 +93,49 @@ export class TableSettingsModalComponent implements OnInit {
   }
 
   async onClickSave(): Promise<void> {
+    await this.save();
+    this.closeSettingsModal();
+  }
+
+  async save(): Promise<void> {
     this.saveClientSettings();
-    this.toastService.showSuccess('Client settings saved');
-    // eslint-disable-next-line unicorn/prefer-ternary
-    if (this.serverSettingsService.isDataAdmin()) {
-      await this.saveSettingsAsDataAdmin();
-    } else {
-      await this.saveSettingsAsObserver();
+    this.toastService.showSuccess('Client settings saved!');
+    if (this.formServerSettingsChanged()) {
+      // eslint-disable-next-line unicorn/prefer-ternary
+      if (this.serverSettingsService.isDataAdmin()) {
+        await this.saveSettingsAsDataAdmin();
+      } else {
+        await this.saveSettingsAsObserver();
+      }
     }
     try {
       this.loadSettings();
     } catch {
       this.toastService.showDanger('Failer to reload settings after saving change');
     }
-    this.closeSettingsModal();
   }
 
   async saveSettingsAsDataAdmin(): Promise<void> {
-    if (this.formServerSettingsChanged()) {
-      const body: ServerSettings = {
-        isGeneratorEnabled: this.getFormGeneratorEnabled(),
-        regexFilter: this.settingsForm.value[this.regexFilterKey],
-        transformation: this.settingsForm.value[this.transformationKey],
-      };
-      try {
-        await this.serverSettingsService.saveAsDataAdmin(body);
-        this.toastService.showSuccess('Server settings saved!');
-      } catch {
-        this.toastService.showDanger('Failed to save settings');
-      }
+    const body: ServerSettings = {
+      isGeneratorEnabled: this.getFormGeneratorEnabled(),
+      regexFilter: this.settingsForm.value[this.regexFilterKey],
+      transformation: this.settingsForm.value[this.transformationKey],
+    };
+    try {
+      await this.serverSettingsService.saveAsDataAdmin(body);
+      this.toastService.showSuccess('Server settings saved!');
+    } catch {
+      this.toastService.showDanger('Failed to save settings!');
     }
   }
 
   private async saveSettingsAsObserver(): Promise<void> {
-    if (this.formServerSettingsChanged()) {
-      try {
-        const transformation = this.settingsForm.value[this.transformationKey];
-        await this.serverSettingsService.saveAsObserver(transformation);
-        this.toastService.showSuccess('Server settings saved!');
-      } catch {
-        this.toastService.showDanger('Failed to save report transformation with role observer');
-      }
+    try {
+      const transformation = this.settingsForm.value[this.transformationKey];
+      await this.serverSettingsService.saveAsObserver(transformation);
+      this.toastService.showSuccess('Server settings saved!');
+    } catch {
+      this.toastService.showDanger('Failed to save report transformation with role observer!');
     }
   }
 
@@ -181,7 +183,7 @@ export class TableSettingsModalComponent implements OnInit {
   }
 
   protected async saveAndClose(): Promise<void> {
-    await this.saveSettingsAsDataAdmin();
+    await this.save();
     this.activeUnsavedChangesModal?.close();
     this.closeSettingsModal();
   }

@@ -46,8 +46,8 @@ public class TestToolApiImpl {
 	public static final String DATA_ADMIN = "dataAdmin";
 	public static final String OBSERVER = "observer";
 	public static final String NO_AUTHORIZATION = "no-authorization";
-
 	private static final String KEY_TRANSFORMATION = "transformation";
+
 	private @Setter
 	@Inject
 	@Autowired TestTool testTool;
