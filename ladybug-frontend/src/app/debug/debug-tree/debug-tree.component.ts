@@ -39,6 +39,9 @@ export class DebugTreeComponent implements OnDestroy {
     determineIconClass: SimpleFileTreeUtility.conditionalCssClass,
   };
 
+  protected checkpointAndStorageIdShown = false;
+  protected checkpointExecutionTimeShown = false;
+
   private _currentView!: View;
   private lastReport?: Report | null;
 
@@ -204,6 +207,14 @@ export class DebugTreeComponent implements OnDestroy {
     );
     const transformedReport: Report = new ReportHierarchyTransformer().transform(response);
     return this.tree.createItemToFileItem(transformedReport);
+  }
+
+  toggleCheckpointAndStorageIdShown(): void {
+    this.checkpointAndStorageIdShown = !this.checkpointAndStorageIdShown;
+  }
+
+  toggleCheckpointExecutionTimeShown(): void {
+    this.checkpointExecutionTimeShown = !this.checkpointExecutionTimeShown;
   }
 
   private selectFirstCheckpoint(rootNodePath: string): void {
