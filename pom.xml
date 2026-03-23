@@ -65,7 +65,7 @@
     <cxf.version>4.0.6</cxf.version>
     <jackson.version>2.17.1</jackson.version>
     <jackson.databind.version>2.20.1</jackson.databind.version>
-    <logback.version>1.5.25</logback.version>
+    <logback.version>1.5.32</logback.version>
   </properties>
 
   <dependencyManagement>
