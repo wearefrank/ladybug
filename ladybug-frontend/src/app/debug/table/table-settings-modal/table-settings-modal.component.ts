@@ -93,8 +93,10 @@ export class TableSettingsModalComponent implements OnInit {
   }
 
   async onClickSave(): Promise<void> {
-    await this.save();
-    this.closeSettingsModal();
+    if (this.checkTransformationNotCleared()) {
+      await this.save();
+      this.closeSettingsModal();
+    }
   }
 
   async save(): Promise<void> {
@@ -120,6 +122,11 @@ export class TableSettingsModalComponent implements OnInit {
       regexFilter: this.settingsForm.value[this.regexFilterKey],
       transformation: this.settingsForm.value[this.transformationKey],
     };
+    if (body.transformation?.trim().length === 0) {
+      throw new Error(
+        'Cannot happen in TableSettingsModelComponent.saveSettingsAsDataAdmin() because TableSettingsModelComponent.checkTransformationWasCleared() was called',
+      );
+    }
     try {
       await this.serverSettingsService.saveAsDataAdmin(body);
     } catch {
@@ -130,6 +137,11 @@ export class TableSettingsModalComponent implements OnInit {
   private async saveSettingsAsObserver(): Promise<void> {
     try {
       const transformation = this.settingsForm.value[this.transformationKey];
+      if (transformation?.trim().length === 0) {
+        throw new Error(
+          'Cannot happen in TableSettingsModelComponent.saveSettingsAsObserver() because TableSettingsModelComponent.checkTransformationWasCleared() was called',
+        );
+      }
       await this.serverSettingsService.saveAsObserver(transformation);
     } catch {
       this.toastService.showDanger('Failed to save report transformation with role observer!');
@@ -141,6 +153,18 @@ export class TableSettingsModalComponent implements OnInit {
     this.clientSettingsService.setAmountOfRecordsInTable(this.settingsForm.value[this.amountOfRecordsShownKey]);
     this.clientSettingsService.setTableSpacing(this.settingsForm.value[this.tableSpacingKey]);
     this.clientSettingsService.setTransformationEnabled(this.settingsForm.value[this.transformationEnabledKey]);
+  }
+
+  private checkTransformationNotCleared(): boolean {
+    const transformation: string = this.settingsForm.value[this.transformationKey];
+    if (transformation.trim().length === 0) {
+      this.toastService.showWarning('Clearing the global report transformation is not supported');
+      this.settingsForm.get(this.transformationKey)?.setValue(this.serverSettingsService.getTransformation());
+      this.formHasChanged();
+      return false;
+    } else {
+      return true;
+    }
   }
 
   async factoryReset(): Promise<void> {
@@ -164,12 +188,17 @@ export class TableSettingsModalComponent implements OnInit {
   }
 
   protected formServerSettingsChanged(): boolean {
-    const formRegexFilter: string | null = this.settingsForm.value[this.regexFilterKey];
     const formTransformation: string | null = this.settingsForm.value[this.transformationKey];
-    const result: boolean =
-      this.getFormGeneratorEnabled() !== this.serverSettingsService.isGeneratorEnabled() ||
-      formRegexFilter !== this.serverSettingsService.getRegexFilter() ||
-      formTransformation !== this.serverSettingsService.getTransformation();
+    let result: boolean;
+    if (this.serverSettingsService.isUiAsDataAdmin()) {
+      const formRegexFilter: string | null = this.settingsForm.value[this.regexFilterKey];
+      result =
+        this.getFormGeneratorEnabled() !== this.serverSettingsService.isGeneratorEnabled() ||
+        formRegexFilter !== this.serverSettingsService.getRegexFilter() ||
+        formTransformation !== this.serverSettingsService.getTransformation();
+    } else {
+      result = formTransformation !== this.serverSettingsService.getTransformation();
+    }
     return result;
   }
 
@@ -180,9 +209,13 @@ export class TableSettingsModalComponent implements OnInit {
   }
 
   protected async saveAndClose(): Promise<void> {
-    await this.save();
-    this.activeUnsavedChangesModal?.close();
-    this.closeSettingsModal();
+    if (this.checkTransformationNotCleared()) {
+      await this.save();
+      this.activeUnsavedChangesModal?.close();
+      this.closeSettingsModal();
+    } else {
+      this.activeUnsavedChangesModal?.close();
+    }
   }
 
   protected async closeWithoutSaving(): Promise<void> {
