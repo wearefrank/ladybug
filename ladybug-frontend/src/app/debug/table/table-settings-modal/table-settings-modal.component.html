@@ -20,7 +20,7 @@
         </ul>
         @if (activeTab === GLOBAL) {
           <div class="form-group">
-            <label>Report generator</label>
+            <label>Report generator{{ optionalNotAuthorized() }}</label>
             <select class="form-control custom-select mr-sm-2" data-cy-settings="generatorEnabled"
               [formControlName]="generatorEnabledKey">
               <option [ngValue]="false">Disabled</option>
@@ -28,7 +28,7 @@
             </select>
           </div>
           <div class="form-group">
-            <label>Report filter (regex)</label>
+            <label>Report filter (regex){{ optionalNotAuthorized() }}</label>
             <div class="input-group">
               <input data-cy-settings="regexFilter" type="search" [formControlName]="regexFilterKey" title="Example 1 (only store report when name is Hello World):
     Hello World

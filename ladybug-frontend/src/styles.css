@@ -174,3 +174,10 @@ body {
   color: darkgrey;
   user-select: none;
 }
+
+.authorization-warning {
+  font-size: 1.2rem;
+  overflow-wrap: break-word;
+  margin-top: 0.5rem;
+  margin-bottom: 0.7rem;
+}

@@ -12,7 +12,6 @@ import { UpdatePathSettings } from '../interfaces/update-path-settings';
 import { TestResult } from '../interfaces/test-result';
 import { UpdateReport } from '../interfaces/update-report';
 import { UpdateReportResponse } from '../interfaces/update-report-response';
-import { Transformation } from '../interfaces/transformation';
 import { TableSettings } from '../interfaces/table-settings';
 import { ClientSettingsService } from './client.settings.service';
 
@@ -128,22 +127,14 @@ export class HttpService {
     return this.http.post<void>(`api/report/upload/${storage}`, formData);
   }
 
-  postSettings(settings: UploadParameters): Observable<void> {
+  postSettingsAsDataAdmin(settings: UploadParameters): Observable<void> {
     return this.http.post<void>('api/testtool', settings);
   }
 
-  postTransformation(transformation: string): Observable<void> {
+  postTransformationAsObserver(transformation: string): Observable<void> {
     return this.http.post<void>('api/testtool/transformation', {
       transformation: transformation,
     });
-  }
-
-  restoreFactoryTransformation(): Observable<void> {
-    return this.http.post<void>('api/testtool/transformation/reset', '');
-  }
-
-  getTransformation(): Observable<Transformation> {
-    return this.http.get<Transformation>(`api/testtool/transformation`);
   }
 
   getSettings(): Observable<OptionsSettings> {

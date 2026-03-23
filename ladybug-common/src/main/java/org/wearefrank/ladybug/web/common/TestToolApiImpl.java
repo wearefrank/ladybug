@@ -35,8 +35,21 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import static org.wearefrank.ladybug.web.common.TestPropertiesConfiguration.TestProperties;
+
 @Component
 public class TestToolApiImpl {
+	// Improving error handling is done in multiple pull requests.
+	// These are needed as long as improving error handling is in progress.
+	private static final boolean WITH_FAKE_BACKEND_ERRORS = false;
+	private static final int FAKE_ERROR_AT_CALL_COUNT = 5;
+
+	public static final String TESTER = "tester";
+	public static final String DATA_ADMIN = "dataAdmin";
+	public static final String OBSERVER = "observer";
+	public static final String NO_AUTHORIZATION = "no-authorization";
+	private static final String KEY_TRANSFORMATION = "transformation";
+
 	private @Setter
 	@Inject
 	@Autowired TestTool testTool;
@@ -44,41 +57,60 @@ public class TestToolApiImpl {
 	private @Setter @Inject @Autowired ReportXmlTransformer reportXmlTransformer;
 	private @Setter @Inject @Autowired Views views;
 
+	@Autowired
+	private TestProperties testProperties;
 
-	public Map<String, Object> getTestToolInfo() {
+	private int callCount = 0;
+
+	public Map<String, Object> getTestToolInfo() throws HttpInternalServerErrorException {
+		if (WITH_FAKE_BACKEND_ERRORS && callCount == FAKE_ERROR_AT_CALL_COUNT) {
+			callCount = 0;
+			throw new HttpInternalServerErrorException("Fake error");
+		}
+		++callCount;
 		Map<String, Object> map = new HashMap<>(4);
 		map.put("generatorEnabled", testTool.isReportGeneratorEnabled());
 		map.put("estMemory", testTool.getReportsInProgressEstimatedMemoryUsage());
 		map.put("regexFilter", testTool.getRegexFilter());
 		map.put("reportsInProgress", testTool.getNumberOfReportsInProgress());
 		map.put("stubStrategies", testTool.getStubStrategies());
+		String transformation = reportXmlTransformer.getXslt();
+		if (!StringUtils.isEmpty(transformation)) {
+			map.put(KEY_TRANSFORMATION, transformation);
+		}
+		map.put("uiTestMode", testProperties.getUiTestMode().toString().toLowerCase());
 		return map;
 	}
 
-	public Map<String, Object> resetInfo() {
+	public Map<String, Object> resetInfo() throws HttpInternalServerErrorException {
 		testTool.reset();
 		testTool.sendReportGeneratorStatusUpdate();
+		reportXmlTransformer.restoreDefaultXslt();
 		return getTestToolInfo();
 	}
 
-	public void updateInfo(Map<String, String> map) throws HttpBadRequestException {
+	public void updateInfo(Map<String, String> map) throws HttpBadRequestException, HttpInternalServerErrorException {
 		if (map.isEmpty()) {
 			throw new HttpBadRequestException("No settings have been provided - detailed error message - The settings that have been provided are " + map.toString());
 		}
 
-		if (map.size() > 2) {
+		if (map.size() > 3) {
 			throw new HttpBadRequestException("Too many settings have been provided - detailed error message - The settings that have been provided are " + map.toString());
 		}
-		// TODO: Check user roles.
 		String generatorEnabled = map.remove("generatorEnabled");
 		String regexFilter = map.remove("regexFilter");
+		String transformation = map.remove(KEY_TRANSFORMATION);
 
 		if (StringUtils.isNotEmpty(generatorEnabled)) {
 			testTool.setReportGeneratorEnabled("1".equalsIgnoreCase(generatorEnabled) || "true".equalsIgnoreCase(generatorEnabled));
 			testTool.sendReportGeneratorStatusUpdate();
 		}
-		if (StringUtils.isNotEmpty(regexFilter))
+		if (StringUtils.isNotEmpty(regexFilter)) {
 			testTool.setRegexFilter(regexFilter);
+		}
+		if (transformation != null) {
+			this.updateReportTransformation(transformation);
+		}
 	}
 
 	public Report getReportsInProgress(int index) throws HttpBadRequestException {
@@ -108,7 +140,11 @@ public class TestToolApiImpl {
 	}
 
 	public void updateReportTransformation(Map<String, String> map) throws HttpBadRequestException, HttpInternalServerErrorException {
-		String transformation = map.get("transformation");
+		String transformation = map.get(KEY_TRANSFORMATION);
+		updateReportTransformation(transformation);
+	}
+
+	private void updateReportTransformation(String transformation) throws HttpBadRequestException, HttpInternalServerErrorException {
 		if (StringUtils.isEmpty(transformation)) {
 			throw new HttpBadRequestException("No transformation has been provided");
 		}
@@ -118,20 +154,6 @@ public class TestToolApiImpl {
 			// Without "- detailed error message -" the message is not shown in the toaster
 			throw new HttpInternalServerErrorException(errorMessage + " - detailed error message - No detailed error message available");
 		}
-	}
-
-	public void restoreDefaultXsltTransformation() {
-		reportXmlTransformer.restoreDefaultXslt();
-	}
-
-	public Map<String, String> getReportTransformation() {
-		String transformation = reportXmlTransformer.getXslt();
-		if (StringUtils.isEmpty(transformation))
-			return null;
-
-		Map<String, String> map = new HashMap<>(1);
-		map.put("transformation", transformation);
-		return map;
 	}
 
 	public Map<String, Map<String, Object>> getViewsResponse() {

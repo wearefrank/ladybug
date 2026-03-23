@@ -15,35 +15,64 @@
 */
 package org.wearefrank.ladybug.web.springmvc.api;
 
-import jakarta.annotation.security.RolesAllowed;
+import java.lang.invoke.MethodHandles;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.Map;
-import lombok.Setter;
+import org.wearefrank.ladybug.Report;
 import org.wearefrank.ladybug.filter.View;
 import org.wearefrank.ladybug.web.common.HttpBadRequestException;
 import org.wearefrank.ladybug.web.common.HttpInternalServerErrorException;
 import org.wearefrank.ladybug.web.common.TestToolApiImpl;
 
-import org.wearefrank.ladybug.Report;
+import jakarta.annotation.Resource;
+import jakarta.annotation.security.RolesAllowed;
+import lombok.Setter;
 
 @RestController
 @RequestMapping("/testtool")
 @RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
-public class TestToolApi {
+public class TestToolApi implements InitializingBean {
+	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+
 	@Autowired
 	private @Setter TestToolApiImpl delegate;
+
+	private @Qualifier("observerRoles")
+	@Resource List<String> observerRoles;
+
+	private @Qualifier("dataAdminRoles")
+	@Resource List<String> dataAdminRoles;
+
+	private @Qualifier("testerRoles")
+	@Resource List<String> testerRoles;
+
+	@Override
+	public void afterPropertiesSet() {
+		log.info("observerRoles are: [{}]", observerRoles.stream().collect(Collectors.joining(", ")));
+		log.info("dataAdminRoles are: [{}]", dataAdminRoles.stream().collect(Collectors.joining(", ")));
+		log.info("testerRoles are: [{}]", testerRoles.stream().collect(Collectors.joining(", ")));
+	}
 
 	/**
 	 * @return Response containing test tool data.
@@ -51,8 +80,40 @@ public class TestToolApi {
 	@GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	public ResponseEntity<?> getInfo() {
-		Map<String, Object> info = delegate.getTestToolInfo();
-		return ResponseEntity.ok(info);
+		try {
+			Map<String, Object> info = delegate.getTestToolInfo();
+			info.put("role", getRole());
+			return ResponseEntity.ok(info);
+		} catch(HttpInternalServerErrorException e) {
+			return ResponseEntity.internalServerError().body(e.getMessage());
+		}
+	}
+
+	private String getRole() {
+		List<String> roles = SecurityContextHolder.getContext().getAuthentication().getAuthorities()
+				.stream()
+				.map((a) -> a.getAuthority())
+				.filter((s) -> s.startsWith("ROLE_"))
+				.map((s) -> s.substring(5))
+				.collect(Collectors.toList());
+		log.debug("TestToolApi.getRole() sees roles [{}]", roles.stream().collect(Collectors.joining(", ")));
+		if (roles.size() != 1) {
+			log.error("Expected only one role in [{}]", roles.stream().collect(Collectors.joining(", ")));
+			return TestToolApiImpl.NO_AUTHORIZATION;
+		}
+		String role = roles.get(0);
+		log.debug("User has role [{}]", role);
+		// The injected role sets observerRoles, dataAdminRoles and testerRoles are assumed inverse cumulative.
+		// An observer for example is also data admin and also tester.
+		if (testerRoles.contains(role)) {
+			return TestToolApiImpl.TESTER;
+		} else if (dataAdminRoles.contains(role)) {
+			return TestToolApiImpl.DATA_ADMIN;
+		} else if (observerRoles.contains(role)) {
+			return TestToolApiImpl.OBSERVER;
+		} else {
+			return TestToolApiImpl.NO_AUTHORIZATION;
+		}
 	}
 
 	// IbisObserver is permitted to revert the generatorEnabled state and the regex filter to factory
@@ -62,8 +123,12 @@ public class TestToolApi {
 	@GetMapping(value = "/reset", produces = MediaType.APPLICATION_JSON_VALUE)
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	public ResponseEntity<?> resetInfo() {
-		Map<String, Object> info = delegate.resetInfo();
-		return ResponseEntity.ok(info);
+		try {
+			Map<String, Object> info = delegate.resetInfo();
+			return ResponseEntity.ok(info);
+		} catch(HttpInternalServerErrorException e) {
+			return ResponseEntity.internalServerError().body(e.getMessage());
+		}
 	}
 
 	/**
@@ -79,6 +144,8 @@ public class TestToolApi {
 			return ResponseEntity.ok().build();
 		} catch(HttpBadRequestException e) {
 			return ResponseEntity.badRequest().body(e.getMessage());
+		} catch(HttpInternalServerErrorException e) {
+			return ResponseEntity.internalServerError().body(e.getMessage());
 		}
 	}
 
@@ -144,27 +211,6 @@ public class TestToolApi {
 			return ResponseEntity.badRequest().body(e.getMessage());
 		} catch(HttpInternalServerErrorException e) {
 			return ResponseEntity.internalServerError().body(e.getMessage());
-		}
-	}
-
-	@PostMapping(value = "/transformation/reset")
-	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
-	public ResponseEntity<?> restoreDefaultXsltTransformation() {
-		delegate.restoreDefaultXsltTransformation();
-		return ResponseEntity.ok().build();
-	}
-
-	/**
-	 * @return Response containing the current default transformation of the test tool.
-	 */
-	@GetMapping(value = "/transformation", produces = MediaType.APPLICATION_JSON_VALUE)
-	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
-	public ResponseEntity<?> getReportTransformation() {
-		Map<String, String> result = delegate.getReportTransformation();
-		if (result == null) {
-			return ResponseEntity.noContent().build();
-		} else {
-			return ResponseEntity.ok(result);
 		}
 	}
 

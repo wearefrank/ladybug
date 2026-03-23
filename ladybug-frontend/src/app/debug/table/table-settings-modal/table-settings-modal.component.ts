@@ -1,8 +1,7 @@
-import { Component, inject, OnDestroy, OnInit, TemplateRef, ViewChild } from '@angular/core';
-import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { Component, inject, OnInit, TemplateRef, ViewChild } from '@angular/core';
+import { AbstractControl, FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { NgbActiveModal, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ServerSettings, SettingsService } from '../../../shared/services/settings.service';
-import { Subscription } from 'rxjs';
 import { ToastService } from '../../../shared/services/toast.service';
 import { ClientSettingsService } from 'src/app/shared/services/client.settings.service';
 
@@ -13,7 +12,7 @@ import { ClientSettingsService } from 'src/app/shared/services/client.settings.s
   standalone: true,
   imports: [ReactiveFormsModule],
 })
-export class TableSettingsModalComponent implements OnInit, OnDestroy {
+export class TableSettingsModalComponent implements OnInit {
   @ViewChild('modal') protected settingsModalElement!: TemplateRef<HTMLElement>;
   @ViewChild('unsavedChangesModal')
   protected unsavedChangesModalElement!: TemplateRef<HTMLElement>;
@@ -51,7 +50,6 @@ export class TableSettingsModalComponent implements OnInit, OnDestroy {
     [this.transformationKey]: new FormControl(''),
   });
 
-  private subscriptions: Subscription = new Subscription();
   private activeSettingsModal?: NgbActiveModal;
   private activeUnsavedChangesModal?: NgbActiveModal;
 
@@ -59,10 +57,6 @@ export class TableSettingsModalComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.serverSettingsService.init().then(() => this.loadSettings());
-  }
-
-  ngOnDestroy(): void {
-    this.subscriptions.unsubscribe();
   }
 
   async open(): Promise<void> {
@@ -90,44 +84,68 @@ export class TableSettingsModalComponent implements OnInit, OnDestroy {
     this.settingsForm
       .get(this.transformationEnabledKey)
       ?.setValue(this.clientSettingsService.isTransformationEnabled());
+    this.disableForObserver(this.settingsForm.get(this.generatorEnabledKey)!);
     this.settingsForm.get(this.generatorEnabledKey)?.setValue(this.serverSettingsService.isGeneratorEnabled());
+    this.disableForObserver(this.settingsForm.get(this.regexFilterKey)!);
     this.settingsForm.get(this.regexFilterKey)?.setValue(this.serverSettingsService.getRegexFilter());
     this.settingsForm.get(this.transformationKey)?.setValue(this.serverSettingsService.getTransformation());
     this.unsavedChanges = false;
   }
 
-  onClickSave(): void {
-    this.saveSettings().then(() => this.closeSettingsModal());
+  async onClickSave(): Promise<void> {
+    if (this.checkTransformationNotCleared()) {
+      await this.save();
+      this.closeSettingsModal();
+    }
   }
 
-  // TODO: Issue https://github.com/wearefrank/ladybug/issues/628
-  saveSettings(): Promise<void> {
-    return new Promise((resolve, reject) => {
-      if (this.formServerSettingsChanged()) {
-        const body: ServerSettings = {
-          isGeneratorEnabled: this.getFormGeneratorEnabled(),
-          regexFilter: this.settingsForm.value[this.regexFilterKey],
-          transformation: this.settingsForm.value[this.transformationKey],
-        };
-        this.serverSettingsService
-          .save(body)
-          .catch(() => {
-            this.toastService.showDanger('Failed to save settings');
-            reject();
-          })
-          .then(() => this.saveClientSettings())
-          .then(() => this.toastService.showSuccess('Settings saved!'))
-          .then(() => this.loadSettings())
-          .catch(() => {
-            this.toastService.showDanger('Failer to reload settings after saving change');
-            reject();
-          })
-          .then(() => resolve());
+  async save(): Promise<void> {
+    this.saveClientSettings();
+    if (this.formServerSettingsChanged()) {
+      // eslint-disable-next-line unicorn/prefer-ternary
+      if (this.serverSettingsService.isUiAsDataAdmin()) {
+        await this.saveSettingsAsDataAdmin();
       } else {
-        this.saveClientSettings();
-        this.loadSettings().then(() => resolve());
+        await this.saveSettingsAsObserver();
       }
-    });
+    }
+    try {
+      await this.loadSettings();
+    } catch {
+      this.toastService.showDanger('Failer to reload settings after saving change');
+    }
+  }
+
+  async saveSettingsAsDataAdmin(): Promise<void> {
+    const body: ServerSettings = {
+      isGeneratorEnabled: this.getFormGeneratorEnabled(),
+      regexFilter: this.settingsForm.value[this.regexFilterKey],
+      transformation: this.settingsForm.value[this.transformationKey],
+    };
+    if (body.transformation?.trim().length === 0) {
+      throw new Error(
+        'Cannot happen in TableSettingsModelComponent.saveSettingsAsDataAdmin() because TableSettingsModelComponent.checkTransformationWasCleared() was called',
+      );
+    }
+    try {
+      await this.serverSettingsService.saveAsDataAdmin(body);
+    } catch {
+      this.toastService.showDanger('Failed to save settings!');
+    }
+  }
+
+  private async saveSettingsAsObserver(): Promise<void> {
+    try {
+      const transformation = this.settingsForm.value[this.transformationKey];
+      if (transformation?.trim().length === 0) {
+        throw new Error(
+          'Cannot happen in TableSettingsModelComponent.saveSettingsAsObserver() because TableSettingsModelComponent.checkTransformationWasCleared() was called',
+        );
+      }
+      await this.serverSettingsService.saveAsObserver(transformation);
+    } catch {
+      this.toastService.showDanger('Failed to save report transformation with role observer!');
+    }
   }
 
   private saveClientSettings(): void {
@@ -135,6 +153,18 @@ export class TableSettingsModalComponent implements OnInit, OnDestroy {
     this.clientSettingsService.setAmountOfRecordsInTable(this.settingsForm.value[this.amountOfRecordsShownKey]);
     this.clientSettingsService.setTableSpacing(this.settingsForm.value[this.tableSpacingKey]);
     this.clientSettingsService.setTransformationEnabled(this.settingsForm.value[this.transformationEnabledKey]);
+  }
+
+  private checkTransformationNotCleared(): boolean {
+    const transformation: string = this.settingsForm.value[this.transformationKey];
+    if (transformation.trim().length === 0) {
+      this.toastService.showWarning('Clearing the global report transformation is not supported');
+      this.settingsForm.get(this.transformationKey)?.setValue(this.serverSettingsService.getTransformation());
+      this.formHasChanged();
+      return false;
+    } else {
+      return true;
+    }
   }
 
   async factoryReset(): Promise<void> {
@@ -158,12 +188,17 @@ export class TableSettingsModalComponent implements OnInit, OnDestroy {
   }
 
   protected formServerSettingsChanged(): boolean {
-    const formRegexFilter: string | null = this.settingsForm.value[this.regexFilterKey];
     const formTransformation: string | null = this.settingsForm.value[this.transformationKey];
-    const result: boolean =
-      this.getFormGeneratorEnabled() !== this.serverSettingsService.isGeneratorEnabled() ||
-      formRegexFilter !== this.serverSettingsService.getRegexFilter() ||
-      formTransformation !== this.serverSettingsService.getTransformation();
+    let result: boolean;
+    if (this.serverSettingsService.isUiAsDataAdmin()) {
+      const formRegexFilter: string | null = this.settingsForm.value[this.regexFilterKey];
+      result =
+        this.getFormGeneratorEnabled() !== this.serverSettingsService.isGeneratorEnabled() ||
+        formRegexFilter !== this.serverSettingsService.getRegexFilter() ||
+        formTransformation !== this.serverSettingsService.getTransformation();
+    } else {
+      result = formTransformation !== this.serverSettingsService.getTransformation();
+    }
     return result;
   }
 
@@ -174,9 +209,13 @@ export class TableSettingsModalComponent implements OnInit, OnDestroy {
   }
 
   protected async saveAndClose(): Promise<void> {
-    await this.saveSettings();
-    this.activeUnsavedChangesModal?.close();
-    this.closeSettingsModal();
+    if (this.checkTransformationNotCleared()) {
+      await this.save();
+      this.activeUnsavedChangesModal?.close();
+      this.closeSettingsModal();
+    } else {
+      this.activeUnsavedChangesModal?.close();
+    }
   }
 
   protected async closeWithoutSaving(): Promise<void> {
@@ -195,5 +234,17 @@ export class TableSettingsModalComponent implements OnInit, OnDestroy {
 
   selectNav(tab: string): void {
     this.activeTab = tab;
+  }
+
+  private disableForObserver(f: AbstractControl): void {
+    if (this.serverSettingsService.isUiAsDataAdmin()) {
+      f.enable();
+    } else {
+      f.disable();
+    }
+  }
+
+  protected optionalNotAuthorized(): string {
+    return this.serverSettingsService.isUiAsDataAdmin() ? '' : ' (not authorized to edit)';
   }
 }

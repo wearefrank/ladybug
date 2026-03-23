@@ -15,8 +15,14 @@
 */
 package org.wearefrank.ladybug.web.jaxrs.api;
 
+import java.lang.invoke.MethodHandles;
+import java.util.List;
 import java.util.Map;
 
+import jakarta.annotation.Resource;
+import jakarta.inject.Inject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import jakarta.ws.rs.Consumes;
@@ -41,6 +47,17 @@ import org.wearefrank.ladybug.web.common.TestToolApiImpl;
 
 @Path("/" + Constants.LADYBUG_API_PATH + "/testtool")
 public class TestToolApi extends ApiBase {
+	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+
+	private @Inject
+	@Resource(name="observerRoles") List<String> observerRoles;
+
+	private @Inject
+	@Resource(name="dataAdminRoles") List<String> dataAdminRoles;
+
+	private @Inject
+	@Resource(name="testerRoles") List<String> testerRoles;
+
 	@Autowired
 	private @Setter TestToolApiImpl delegate;
 
@@ -50,16 +67,42 @@ public class TestToolApi extends ApiBase {
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getInfo() {
-		Map<String, Object> info = delegate.getTestToolInfo();
-		return Response.ok(info).build();
+		try {
+			Map<String, Object> info = delegate.getTestToolInfo();
+			info.put("role", getRole());
+			return Response.ok(info).build();
+		} catch (HttpInternalServerErrorException e) {
+			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e.getMessage()).build();
+		}
+	}
+
+	private String getRole() {
+		String result = null;
+		// When authorization is disabled, isUserInRole() always returns true.
+		// Therefore we have to check for the most powerful rule first.
+		if (isUserInRoles(testerRoles)) {
+			result = TestToolApiImpl.TESTER;
+		} else if (isUserInRoles(dataAdminRoles)) {
+			result = TestToolApiImpl.DATA_ADMIN;
+		} else if(isUserInRoles(observerRoles)) {
+			result = TestToolApiImpl.OBSERVER;
+		} else {
+			result = TestToolApiImpl.NO_AUTHORIZATION;
+		}
+		log.info("Tell frontend that user is in role [{}]", result);
+		return result;
 	}
 
 	@GET
 	@Path("/reset")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response resetInfo() {
-		Map<String, Object> info = delegate.resetInfo();
-		return Response.ok(info).build();
+		try {
+			Map<String, Object> info = delegate.resetInfo();
+			return Response.ok(info).build();
+		} catch (HttpInternalServerErrorException e) {
+			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e.getMessage()).build();
+		}
 	}
 
 
@@ -77,6 +120,8 @@ public class TestToolApi extends ApiBase {
 			return Response.ok().build();
 		} catch(HttpBadRequestException e) {
 			return Response.status(Response.Status.BAD_REQUEST).entity(e.getMessage()).build();
+		} catch(HttpInternalServerErrorException e) {
+			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e.getMessage()).build();
 		}
 	}
 
@@ -144,28 +189,6 @@ public class TestToolApi extends ApiBase {
 			return Response.status(Response.Status.BAD_REQUEST).entity(e.getMessage()).build();
 		} catch(HttpInternalServerErrorException e) {
 			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e.getMessage()).build();
-		}
-	}
-
-	@POST
-	@Path("/transformation/reset")
-	public Response restoreDefaultXsltTransformation() {
-		delegate.restoreDefaultXsltTransformation();
-		return Response.ok().build();
-	}
-
-	/**
-	 * @return Response containing the current default transformation of the test tool.
-	 */
-	@GET
-	@Path("/transformation")
-	@Produces(MediaType.APPLICATION_JSON)
-	public Response getReportTransformation() {
-		Map<String, String> result = delegate.getReportTransformation();
-		if (result == null) {
-			return Response.noContent().build();
-		} else {
-			return Response.ok(result).build();
 		}
 	}
 
