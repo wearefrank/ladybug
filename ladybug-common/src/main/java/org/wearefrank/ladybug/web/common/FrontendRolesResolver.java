@@ -15,12 +15,17 @@
 */
 package org.wearefrank.ladybug.web.common;
 
+import java.lang.invoke.MethodHandles;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import jakarta.annotation.Resource;
 import jakarta.inject.Inject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.stereotype.Component;
 
 /*
@@ -43,12 +48,21 @@ import org.springframework.stereotype.Component;
  * feature.
  */
 @Component
-public class FrontendRolesResolver {
+public class FrontendRolesResolver implements InitializingBean {
+	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+
 	@Inject @Resource(name="observerRoles") List<String> observerRoles;
 
 	@Inject @Resource(name="dataAdminRoles") List<String> dataAdminRoles;
 
 	@Inject @Resource(name="testerRoles") List<String> testerRoles;
+
+	@Override
+	public void afterPropertiesSet() {
+		log.info("Frontend role 'observer' when backend role one of [{}]", observerRoles.stream().collect(Collectors.joining(", ")));
+		log.info("Frontend role 'admin' when backend role one of [{}]", dataAdminRoles.stream().collect(Collectors.joining(", ")));
+		log.info("Frontend role 'tester' when backend role one of [{}]", testerRoles.stream().collect(Collectors.joining(", ")));
+	}
 
 	List<String> getFrontendRoles(String userRole) {
 		return getFrontendRoles(backendRolesList -> backendRolesList.contains(userRole));
@@ -65,6 +79,7 @@ public class FrontendRolesResolver {
 		if (userInRolePredicate.test(testerRoles)) {
 			result.add("tester");
 		}
+		log.debug("Have the following frontend roles: [{}]", result.stream().collect(Collectors.joining(", ")));
 		return result;
 	}
 }
