@@ -245,6 +245,6 @@ export class TableSettingsModalComponent implements OnInit {
   }
 
   protected optionalNotAuthorized(): string {
-    return this.serverSettingsService.isUiAsDataAdmin() ? '' : ' (not authorized to edit)';
+    return this.serverSettingsService.isUiAsDataAdmin() ? '' : 'Not authorized to edit';
   }
 }
