@@ -64,11 +64,11 @@ public class FrontendRolesResolver implements InitializingBean {
 		log.info("Frontend role 'tester' when backend role one of [{}]", testerRoles.stream().collect(Collectors.joining(", ")));
 	}
 
-	List<String> getFrontendRoles(String userRole) {
+	public List<String> getFrontendRoles(String userRole) {
 		return getFrontendRoles(backendRolesList -> backendRolesList.contains(userRole));
 	}
 
-	List<String> getFrontendRoles(Predicate<List<String>> userInRolePredicate) {
+	public List<String> getFrontendRoles(Predicate<List<String>> userInRolePredicate) {
 		List<String> result = new ArrayList<>();
 		if (userInRolePredicate.test(observerRoles)) {
 			result.add("observer");

@@ -1,7 +1,7 @@
 import { UploadParameters } from './upload-params';
 
 export interface OptionsSettings extends UploadParameters {
-  role: string;
+  roles: string[];
   estMemory: string;
   reportsInProgress: number;
   stubStrategies: string[];

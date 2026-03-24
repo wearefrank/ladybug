@@ -25,7 +25,7 @@ export class SettingsService {
   private static INITIALIZATION_POLL_INTERVAL_MS = 100;
 
   private initializationState = SettingsService.INITIALIZATION_IDLE;
-  private _role = 'unknown';
+  private _roles: string[] = ['unknown'];
   private _isGeneratorEnabled = false;
   private _regexFilter: string | null = null;
   private _transformation: string | null = null;
@@ -54,12 +54,8 @@ export class SettingsService {
     }
   }
 
-  public getRole(): string {
-    return this._role;
-  }
-
   public isUiAsDataAdmin(): boolean {
-    const isDataAdmin = this._role === 'dataAdmin' || this._role === 'tester';
+    const isDataAdmin = this._roles.includes('admin') || this._roles.includes('tester');
     return isDataAdmin || this.isUiAsTester();
   }
 
@@ -82,7 +78,7 @@ export class SettingsService {
   public async refresh(): Promise<void> {
     try {
       const optionsSettings: OptionsSettings = await firstValueFrom(this.httpService.getSettings());
-      this._role = optionsSettings.role;
+      this._roles = optionsSettings.roles;
       this._isGeneratorEnabled = optionsSettings.generatorEnabled!;
       this._regexFilter = optionsSettings.regexFilter!;
       this._transformation = null;

@@ -41,6 +41,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.wearefrank.ladybug.Report;
 import org.wearefrank.ladybug.filter.View;
+import org.wearefrank.ladybug.web.common.FrontendRolesResolver;
 import org.wearefrank.ladybug.web.common.HttpBadRequestException;
 import org.wearefrank.ladybug.web.common.HttpInternalServerErrorException;
 import org.wearefrank.ladybug.web.common.TestToolApiImpl;
@@ -48,31 +49,19 @@ import org.wearefrank.ladybug.web.common.TestToolApiImpl;
 import jakarta.annotation.Resource;
 import jakarta.annotation.security.RolesAllowed;
 import lombok.Setter;
+import org.wearefrank.ladybug.web.common.TestToolInfoResponse;
 
 @RestController
 @RequestMapping("/testtool")
 @RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
-public class TestToolApi implements InitializingBean {
+public class TestToolApi {
 	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
 	@Autowired
 	private @Setter TestToolApiImpl delegate;
 
-	private @Qualifier("observerRoles")
-	@Resource List<String> observerRoles;
-
-	private @Qualifier("dataAdminRoles")
-	@Resource List<String> dataAdminRoles;
-
-	private @Qualifier("testerRoles")
-	@Resource List<String> testerRoles;
-
-	@Override
-	public void afterPropertiesSet() {
-		log.info("observerRoles are: [{}]", observerRoles.stream().collect(Collectors.joining(", ")));
-		log.info("dataAdminRoles are: [{}]", dataAdminRoles.stream().collect(Collectors.joining(", ")));
-		log.info("testerRoles are: [{}]", testerRoles.stream().collect(Collectors.joining(", ")));
-	}
+	@Autowired
+	private @Setter FrontendRolesResolver frontendRolesResolver;
 
 	/**
 	 * @return Response containing test tool data.
@@ -81,10 +70,15 @@ public class TestToolApi implements InitializingBean {
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	public ResponseEntity<?> getInfo() {
 		try {
-			Map<String, Object> info = delegate.getTestToolInfo();
-			info.put("role", getRole());
-			return ResponseEntity.ok(info);
+			TestToolInfoResponse result = delegate.getTestToolInfo();
+			result.setRoles(frontendRolesResolver.getFrontendRoles(this.getRole()));
+			return ResponseEntity.ok(result);
 		} catch(HttpInternalServerErrorException e) {
+			// TODO: We throw HttpInternalServerErrorException only for testing purposes.
+			// In a later PR we want to test exception handling.
+			// When we have exception handlers instead of try ... catch and
+			// when we have properly tested exception handling, then this
+			// will be cleaned up.
 			return ResponseEntity.internalServerError().body(e.getMessage());
 		}
 	}
@@ -103,17 +97,7 @@ public class TestToolApi implements InitializingBean {
 		}
 		String role = roles.get(0);
 		log.debug("User has role [{}]", role);
-		// The injected role sets observerRoles, dataAdminRoles and testerRoles are assumed inverse cumulative.
-		// An observer for example is also data admin and also tester.
-		if (testerRoles.contains(role)) {
-			return TestToolApiImpl.TESTER;
-		} else if (dataAdminRoles.contains(role)) {
-			return TestToolApiImpl.DATA_ADMIN;
-		} else if (observerRoles.contains(role)) {
-			return TestToolApiImpl.OBSERVER;
-		} else {
-			return TestToolApiImpl.NO_AUTHORIZATION;
-		}
+		return role;
 	}
 
 	// IbisObserver is permitted to revert the generatorEnabled state and the regex filter to factory
@@ -124,9 +108,15 @@ public class TestToolApi implements InitializingBean {
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	public ResponseEntity<?> resetInfo() {
 		try {
-			Map<String, Object> info = delegate.resetInfo();
-			return ResponseEntity.ok(info);
+			TestToolInfoResponse result = delegate.resetInfo();
+			result.setRoles(frontendRolesResolver.getFrontendRoles(getRole()));
+			return ResponseEntity.ok(result);
 		} catch(HttpInternalServerErrorException e) {
+			// TOODO: Exception is thrown because TestToolApiImpl.resetInfo() uses
+			// TestToolApiImpl.getTestToolInfo(). That method contains test logic
+			// that throws a fake exception. That code is present to
+			// test exception handling in a later PR. This strange logic will
+			// be removed in a later PR.
 			return ResponseEntity.internalServerError().body(e.getMessage());
 		}
 	}

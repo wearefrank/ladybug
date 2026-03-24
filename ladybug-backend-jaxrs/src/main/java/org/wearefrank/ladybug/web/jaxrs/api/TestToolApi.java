@@ -41,22 +41,18 @@ import org.wearefrank.ladybug.Report;
 import org.wearefrank.ladybug.filter.View;
 
 import org.wearefrank.ladybug.web.common.Constants;
+import org.wearefrank.ladybug.web.common.FrontendRolesResolver;
 import org.wearefrank.ladybug.web.common.HttpBadRequestException;
 import org.wearefrank.ladybug.web.common.HttpInternalServerErrorException;
 import org.wearefrank.ladybug.web.common.TestToolApiImpl;
+import org.wearefrank.ladybug.web.common.TestToolInfoResponse;
 
 @Path("/" + Constants.LADYBUG_API_PATH + "/testtool")
 public class TestToolApi extends ApiBase {
 	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-	private @Inject
-	@Resource(name="observerRoles") List<String> observerRoles;
-
-	private @Inject
-	@Resource(name="dataAdminRoles") List<String> dataAdminRoles;
-
-	private @Inject
-	@Resource(name="testerRoles") List<String> testerRoles;
+	@Autowired
+	private @Setter FrontendRolesResolver frontendRolesResolver;
 
 	@Autowired
 	private @Setter TestToolApiImpl delegate;
@@ -68,29 +64,17 @@ public class TestToolApi extends ApiBase {
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getInfo() {
 		try {
-			Map<String, Object> info = delegate.getTestToolInfo();
-			info.put("role", getRole());
-			return Response.ok(info).build();
+			TestToolInfoResponse result = delegate.getTestToolInfo();
+			result.setRoles(frontendRolesResolver.getFrontendRoles(super::isUserInRoles));
+			return Response.ok(result).build();
 		} catch (HttpInternalServerErrorException e) {
+			// TODO: We throw HttpInternalServerErrorException only for testing purposes.
+			// In a later PR we want to test exception handling.
+			// When we have exception handlers instead of try ... catch and
+			// when we have properly tested exception handling, then this
+			// will be cleaned up.
 			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e.getMessage()).build();
 		}
-	}
-
-	private String getRole() {
-		String result = null;
-		// When authorization is disabled, isUserInRole() always returns true.
-		// Therefore we have to check for the most powerful rule first.
-		if (isUserInRoles(testerRoles)) {
-			result = TestToolApiImpl.TESTER;
-		} else if (isUserInRoles(dataAdminRoles)) {
-			result = TestToolApiImpl.DATA_ADMIN;
-		} else if(isUserInRoles(observerRoles)) {
-			result = TestToolApiImpl.OBSERVER;
-		} else {
-			result = TestToolApiImpl.NO_AUTHORIZATION;
-		}
-		log.info("Tell frontend that user is in role [{}]", result);
-		return result;
 	}
 
 	@GET
@@ -98,9 +82,15 @@ public class TestToolApi extends ApiBase {
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response resetInfo() {
 		try {
-			Map<String, Object> info = delegate.resetInfo();
-			return Response.ok(info).build();
+			TestToolInfoResponse result = delegate.resetInfo();
+			result.setRoles(frontendRolesResolver.getFrontendRoles(super::isUserInRoles));
+			return Response.ok(result).build();
 		} catch (HttpInternalServerErrorException e) {
+			// TOODO: Exception is thrown because TestToolApiImpl.resetInfo() uses
+			// TestToolApiImpl.getTestToolInfo(). That method contains test logic
+			// that throws a fake exception. That code is present to
+			// test exception handling in a later PR. This strange logic will
+			// be removed in a later PR.
 			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e.getMessage()).build();
 		}
 	}

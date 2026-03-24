@@ -19,6 +19,8 @@ import jakarta.annotation.PostConstruct;
 import jakarta.inject.Inject;
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.wearefrank.ladybug.MetadataExtractor;
@@ -29,6 +31,7 @@ import org.wearefrank.ladybug.filter.Views;
 import org.wearefrank.ladybug.storage.CrudStorage;
 import org.wearefrank.ladybug.transform.ReportXmlTransformer;
 
+import java.lang.invoke.MethodHandles;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -39,6 +42,8 @@ import static org.wearefrank.ladybug.web.common.TestPropertiesConfiguration.Test
 
 @Component
 public class TestToolApiImpl {
+	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+
 	// Improving error handling is done in multiple pull requests.
 	// These are needed as long as improving error handling is in progress.
 	private static final boolean WITH_FAKE_BACKEND_ERRORS = false;
@@ -62,30 +67,34 @@ public class TestToolApiImpl {
 
 	private int callCount = 0;
 
-	public Map<String, Object> getTestToolInfo() throws HttpInternalServerErrorException {
+	public TestToolInfoResponse getTestToolInfo() throws HttpInternalServerErrorException {
 		if (WITH_FAKE_BACKEND_ERRORS && callCount == FAKE_ERROR_AT_CALL_COUNT) {
 			callCount = 0;
 			throw new HttpInternalServerErrorException("Fake error");
 		}
 		++callCount;
-		Map<String, Object> map = new HashMap<>(4);
-		map.put("generatorEnabled", testTool.isReportGeneratorEnabled());
-		map.put("estMemory", testTool.getReportsInProgressEstimatedMemoryUsage());
-		map.put("regexFilter", testTool.getRegexFilter());
-		map.put("reportsInProgress", testTool.getNumberOfReportsInProgress());
-		map.put("stubStrategies", testTool.getStubStrategies());
+		TestToolInfoResponse result = new TestToolInfoResponse();
+		result.setGeneratorEnabled(testTool.isReportGeneratorEnabled());
+		result.setEstMemory(testTool.getReportsInProgressEstimatedMemoryUsage());
+		result.setRegexFilter(testTool.getRegexFilter());
+		result.setReportsInProgress(testTool.getNumberOfReportsInProgress());
+		result.setStubStrategies(testTool.getStubStrategies());
+		result.setTransformation("");
 		String transformation = reportXmlTransformer.getXslt();
-		if (!StringUtils.isEmpty(transformation)) {
-			map.put(KEY_TRANSFORMATION, transformation);
+		if (StringUtils.isEmpty(transformation)) {
+			log.error("reportXmlTransformer.getXslt() should hold non-empty XSLT transformation");
+		} else {
+			result.setTransformation(transformation);
 		}
-		map.put("uiTestMode", testProperties.getUiTestMode().toString().toLowerCase());
-		return map;
+		result.setUiTestMode(testProperties.getUiTestMode());
+		return result;
 	}
 
-	public Map<String, Object> resetInfo() throws HttpInternalServerErrorException {
+	public TestToolInfoResponse resetInfo() throws HttpInternalServerErrorException {
 		testTool.reset();
 		testTool.sendReportGeneratorStatusUpdate();
 		reportXmlTransformer.restoreDefaultXslt();
+		// TODO: Is it OK that the roles are omitted this way?
 		return getTestToolInfo();
 	}
 
