@@ -44,11 +44,6 @@ import static org.wearefrank.ladybug.web.common.TestPropertiesConfiguration.Test
 public class TestToolApiImpl {
 	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-	// Improving error handling is done in multiple pull requests.
-	// These are needed as long as improving error handling is in progress.
-	private static final boolean WITH_FAKE_BACKEND_ERRORS = false;
-	private static final int FAKE_ERROR_AT_CALL_COUNT = 5;
-
 	public static final String TESTER = "tester";
 	public static final String DATA_ADMIN = "dataAdmin";
 	public static final String OBSERVER = "observer";
@@ -68,7 +63,7 @@ public class TestToolApiImpl {
 	private int callCount = 0;
 
 	public TestToolInfoResponse getTestToolInfo() throws HttpInternalServerErrorException {
-		if (WITH_FAKE_BACKEND_ERRORS && callCount == FAKE_ERROR_AT_CALL_COUNT) {
+		if (testProperties.isLadybugBackendThrowsFakeExceptions() && callCount == testProperties.getLadybugBackendFakeExceptionCallCount()) {
 			callCount = 0;
 			throw new HttpInternalServerErrorException("Fake error");
 		}
@@ -94,7 +89,8 @@ public class TestToolApiImpl {
 		testTool.reset();
 		testTool.sendReportGeneratorStatusUpdate();
 		reportXmlTransformer.restoreDefaultXslt();
-		// TODO: Is it OK that the roles are omitted this way?
+		// Roles are added by the callers because retrieving them is specific to
+		// JAX-RS or Spring MVC authorization.
 		return getTestToolInfo();
 	}
 

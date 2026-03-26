@@ -75,10 +75,11 @@ public class TestToolApi {
 			return ResponseEntity.ok(result);
 		} catch(HttpInternalServerErrorException e) {
 			// TODO: We throw HttpInternalServerErrorException only for testing purposes.
-			// In a later PR we want to test exception handling.
-			// When we have exception handlers instead of try ... catch and
-			// when we have properly tested exception handling, then this
-			// will be cleaned up.
+			// In the future we want to test exception handling and the way
+			// exceptions are handled by the frontend.
+			//
+			// When we have exception handlers we will remove the try ... catch
+			// here to make the code more clear.
 			return ResponseEntity.internalServerError().body(e.getMessage());
 		}
 	}
@@ -115,8 +116,10 @@ public class TestToolApi {
 			// TOODO: Exception is thrown because TestToolApiImpl.resetInfo() uses
 			// TestToolApiImpl.getTestToolInfo(). That method contains test logic
 			// that throws a fake exception. That code is present to
-			// test exception handling in a later PR. This strange logic will
-			// be removed in a later PR.
+			// test exception handling in the future.
+			//
+			// In a later PR we will replace try ... catch blocks in the REST
+			// controllers by centralized exception handler classes.
 			return ResponseEntity.internalServerError().body(e.getMessage());
 		}
 	}
