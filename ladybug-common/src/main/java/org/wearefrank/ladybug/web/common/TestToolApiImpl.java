@@ -146,8 +146,8 @@ public class TestToolApiImpl {
 	}
 
 	private void updateReportTransformation(String transformation) throws HttpBadRequestException, HttpInternalServerErrorException {
-		if (StringUtils.isEmpty(transformation)) {
-			throw new HttpBadRequestException("No transformation has been provided");
+		if (StringUtils.isBlank(transformation)) {
+			throw new HttpBadRequestException("It is not allowed to clear the report transformation");
 		}
 		transformation = transformation.replace("\r\n", "\n");
 		String errorMessage = reportXmlTransformer.updateXslt(transformation);
