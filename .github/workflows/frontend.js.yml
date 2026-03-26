@@ -50,10 +50,6 @@ jobs:
           cache: 'pnpm'
           cache-dependency-path: 'ladybug/ladybug-frontend/pnpm-lock.yaml'
 
-      - name: Install Cypress
-        run: npx cypress install
-        working-directory: ladybug/ladybug-frontend
-
       - uses: actions/cache@v4
         name: Cache Cypress
         with:
@@ -61,6 +57,10 @@ jobs:
           key: ${{ runner.os }}-cypress-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-cypress-
+
+      - name: Install Cypress
+        run: npx cypress install
+        working-directory: ladybug/ladybug-frontend
 
       - name: Set Cypress environment variables
         run: cp .github/workflows/cypress.env.json.cicd ladybug-frontend/cypress.env.json
