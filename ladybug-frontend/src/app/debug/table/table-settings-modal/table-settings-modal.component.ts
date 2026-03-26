@@ -144,7 +144,7 @@ export class TableSettingsModalComponent implements OnInit {
       }
       await this.serverSettingsService.saveAsObserver(transformation);
     } catch {
-      this.toastService.showDanger('Failed to save report transformation with role observer!');
+      this.toastService.showDanger('Failed to save report transformation!');
     }
   }
 
