@@ -44,10 +44,6 @@ import static org.wearefrank.ladybug.web.common.TestPropertiesConfiguration.Test
 public class TestToolApiImpl {
 	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-	public static final String TESTER = "tester";
-	public static final String DATA_ADMIN = "dataAdmin";
-	public static final String OBSERVER = "observer";
-	public static final String NO_AUTHORIZATION = "no-authorization";
 	private static final String KEY_TRANSFORMATION = "transformation";
 
 	private @Setter

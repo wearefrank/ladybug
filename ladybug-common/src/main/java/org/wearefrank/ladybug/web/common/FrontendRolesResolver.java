@@ -51,6 +51,10 @@ import org.springframework.stereotype.Component;
 public class FrontendRolesResolver implements InitializingBean {
 	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
+	public static final String TESTER = "tester";
+	public static final String ADMIN = "admin";
+	public static final String OBSERVER = "observer";
+
 	@Inject @Resource(name="observerRoles") List<String> observerRoles;
 
 	@Inject @Resource(name="dataAdminRoles") List<String> dataAdminRoles;
@@ -59,9 +63,9 @@ public class FrontendRolesResolver implements InitializingBean {
 
 	@Override
 	public void afterPropertiesSet() {
-		log.info("Frontend role 'observer' when backend role one of [{}]", observerRoles.stream().collect(Collectors.joining(", ")));
-		log.info("Frontend role 'admin' when backend role one of [{}]", dataAdminRoles.stream().collect(Collectors.joining(", ")));
-		log.info("Frontend role 'tester' when backend role one of [{}]", testerRoles.stream().collect(Collectors.joining(", ")));
+		log.info("Frontend role [{}] when backend role one of [{}]", OBSERVER, observerRoles.stream().collect(Collectors.joining(", ")));
+		log.info("Frontend role [{}] when backend role one of [{}]", ADMIN, dataAdminRoles.stream().collect(Collectors.joining(", ")));
+		log.info("Frontend role [{}] when backend role one of [{}]", TESTER, testerRoles.stream().collect(Collectors.joining(", ")));
 	}
 
 	public List<String> getFrontendRoles(String userRole) {
@@ -69,15 +73,21 @@ public class FrontendRolesResolver implements InitializingBean {
 	}
 
 	public List<String> getFrontendRoles(Predicate<List<String>> userInRolePredicate) {
+		// For JAX-RS authorization, which is applied with ladybug-test-webapp,
+		// the userInRolePredicate accesses ApiBase.isUserInRoles(). That method
+		// grants every role when there is no user principal. For this reason,
+		// the frontend of ladybug-test-webapp will work as if all roles are
+		// granted when authorization is not tested (default web.xmo for which
+		// the security stuff is commented out).
 		List<String> result = new ArrayList<>();
 		if (userInRolePredicate.test(observerRoles)) {
-			result.add("observer");
+			result.add(OBSERVER);
 		}
 		if (userInRolePredicate.test(dataAdminRoles)) {
-			result.add("admin");
+			result.add(ADMIN);
 		}
 		if (userInRolePredicate.test(testerRoles)) {
-			result.add("tester");
+			result.add(TESTER);
 		}
 		log.debug("Have the following frontend roles: [{}]", result.stream().collect(Collectors.joining(", ")));
 		return result;

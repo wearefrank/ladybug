@@ -78,6 +78,8 @@ export class SettingsService {
   public async refresh(): Promise<void> {
     try {
       const optionsSettings: OptionsSettings = await firstValueFrom(this.httpService.getSettings());
+      const rolesString: string = optionsSettings.roles.join(', ');
+      console.log(`Received from backend: roles=${rolesString}`);
       this._roles = optionsSettings.roles;
       this._isGeneratorEnabled = optionsSettings.generatorEnabled!;
       this._regexFilter = optionsSettings.regexFilter!;

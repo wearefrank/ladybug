@@ -94,7 +94,9 @@ public class TestToolApi {
 		log.debug("TestToolApi.getRole() sees roles [{}]", roles.stream().collect(Collectors.joining(", ")));
 		if (roles.size() != 1) {
 			log.error("Expected only one role in [{}]", roles.stream().collect(Collectors.joining(", ")));
-			return TestToolApiImpl.NO_AUTHORIZATION;
+			// Do not fill in some string. If ever a role is introduced that has that name, then
+			// a security breach might be introduced.
+			return null;
 		}
 		String role = roles.get(0);
 		log.debug("User has role [{}]", role);
