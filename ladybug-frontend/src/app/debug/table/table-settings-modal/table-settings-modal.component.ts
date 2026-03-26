@@ -130,7 +130,7 @@ export class TableSettingsModalComponent implements OnInit {
     try {
       await this.serverSettingsService.saveAsDataAdmin(body);
     } catch {
-      this.toastService.showDanger('Failed to save settings!');
+      this.toastService.showDanger('Error while saving settings!');
     }
   }
 
@@ -144,7 +144,7 @@ export class TableSettingsModalComponent implements OnInit {
       }
       await this.serverSettingsService.saveAsObserver(transformation);
     } catch {
-      this.toastService.showDanger('Failed to save report transformation!');
+      this.toastService.showDanger('Error while saving report transformation!');
     }
   }
 
