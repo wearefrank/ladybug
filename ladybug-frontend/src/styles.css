@@ -81,7 +81,7 @@ body {
 
 .btn-info:focus {
   outline: none !important;
-  box-shadow: none !important;
+  box-shadow: null !important;
   background-color: #23c6c8 !important;
 }
 
