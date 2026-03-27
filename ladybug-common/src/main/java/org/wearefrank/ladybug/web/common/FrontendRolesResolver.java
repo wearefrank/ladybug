@@ -16,6 +16,7 @@
 package org.wearefrank.ladybug.web.common;
 
 import java.lang.invoke.MethodHandles;
+import java.util.Arrays;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.function.Predicate;
@@ -69,6 +70,10 @@ public class FrontendRolesResolver implements InitializingBean {
 	}
 
 	public List<String> getFrontendRoles(String userRole) {
+		if (userRole == null) {
+			log.warn("FrontendRolesResolver.getFrontendRoles(String) gets null role. Frontend will work as if every role granted");
+			return Arrays.asList(OBSERVER, ADMIN, TESTER);
+		}
 		return getFrontendRoles(backendRolesList -> backendRolesList.contains(userRole));
 	}
 
