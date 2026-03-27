@@ -16,17 +16,14 @@
 package org.wearefrank.ladybug.web.springmvc.api;
 
 import java.lang.invoke.MethodHandles;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -46,7 +43,6 @@ import org.wearefrank.ladybug.web.common.HttpBadRequestException;
 import org.wearefrank.ladybug.web.common.HttpInternalServerErrorException;
 import org.wearefrank.ladybug.web.common.TestToolApiImpl;
 
-import jakarta.annotation.Resource;
 import jakarta.annotation.security.RolesAllowed;
 import lombok.Setter;
 import org.wearefrank.ladybug.web.common.TestToolInfoResponse;
@@ -54,9 +50,8 @@ import org.wearefrank.ladybug.web.common.TestToolInfoResponse;
 @RestController
 @RequestMapping("/testtool")
 @RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
+@Slf4j
 public class TestToolApi {
-	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-
 	@Autowired
 	private @Setter TestToolApiImpl delegate;
 

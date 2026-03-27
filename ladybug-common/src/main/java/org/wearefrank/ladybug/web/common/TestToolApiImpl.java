@@ -15,13 +15,14 @@
 */
 package org.wearefrank.ladybug.web.common;
 
-import jakarta.annotation.PostConstruct;
 import jakarta.inject.Inject;
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.wearefrank.ladybug.MetadataExtractor;
 import org.wearefrank.ladybug.Report;
@@ -38,10 +39,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.wearefrank.ladybug.web.common.TestPropertiesConfiguration.TestProperties;
-
 @Component
-public class TestToolApiImpl {
+public class TestToolApiImpl implements InitializingBean {
 	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
 	private static final String KEY_TRANSFORMATION = "transformation";
@@ -53,13 +52,30 @@ public class TestToolApiImpl {
 	private @Setter @Inject @Autowired ReportXmlTransformer reportXmlTransformer;
 	private @Setter @Inject @Autowired Views views;
 
-	@Autowired
-	private TestProperties testProperties;
+	@Value("ladybug.ui.test.mode:DEFAULT")
+	private TestToolInfoResponse.UI_TEST_MODE uiTestMode;
+
+	@Value("ladybug.backend.throws.fake.exceptions:false")
+	private boolean ladybugBackendThrowsFakeExceptions;
+
+	@Value("ladybug.backend.fake.exception.call.count:5")
+	int ladybugBackendFakeExceptionCallCount;
 
 	private int callCount = 0;
 
+	@Override
+	public void afterPropertiesSet() {
+		logTestPropertiesItem("ladybug.ui.test.mode", uiTestMode);
+		logTestPropertiesItem("ladybug.backend.throws.fake.exceptions", ladybugBackendThrowsFakeExceptions);
+		logTestPropertiesItem("ladybug.backend.fake.exception.call.count", ladybugBackendFakeExceptionCallCount);
+	}
+
+	private void logTestPropertiesItem(String propertyName, Object value) {
+		log.info("Using from test.properties or default value: [{}]=[{}]", propertyName, value);
+	}
+
 	public TestToolInfoResponse getTestToolInfo() throws HttpInternalServerErrorException {
-		if (testProperties.isLadybugBackendThrowsFakeExceptions() && callCount == testProperties.getLadybugBackendFakeExceptionCallCount()) {
+		if (ladybugBackendThrowsFakeExceptions && callCount == ladybugBackendFakeExceptionCallCount) {
 			callCount = 0;
 			throw new HttpInternalServerErrorException("Fake error");
 		}
@@ -77,7 +93,7 @@ public class TestToolApiImpl {
 		} else {
 			result.setTransformation(transformation);
 		}
-		result.setUiTestMode(testProperties.getUiTestMode());
+		result.setUiTestMode(uiTestMode);
 		return result;
 	}
 
