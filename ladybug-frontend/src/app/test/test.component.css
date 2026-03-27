@@ -1,3 +1,7 @@
+* {
+  --bs-gutter-x: 15px;
+}
+
 :host {
   height: 100%;
   --border-color: #dee2e6;
