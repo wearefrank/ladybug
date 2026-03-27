@@ -16,6 +16,11 @@ body {
   margin: 0;
 }
 
+label {
+  display: inline-block;
+  margin-bottom: .5rem;
+}
+
 #ladybug-tabs {
   display: flex;
   flex-grow: 0;
