@@ -87,7 +87,7 @@ public class TestToolApi {
 	private String getRole() {
 		List<String> roles = SecurityContextHolder.getContext().getAuthentication().getAuthorities()
 				.stream()
-				.map((a) -> a.getAuthority())
+				.map(GrantedAuthority::getAuthority)
 				.filter((s) -> s.startsWith("ROLE_"))
 				.map((s) -> s.substring(5))
 				.collect(Collectors.toList());
