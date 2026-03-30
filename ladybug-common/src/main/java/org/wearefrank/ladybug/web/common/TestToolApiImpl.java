@@ -18,8 +18,6 @@ package org.wearefrank.ladybug.web.common;
 import jakarta.inject.Inject;
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -32,17 +30,17 @@ import org.wearefrank.ladybug.filter.Views;
 import org.wearefrank.ladybug.storage.CrudStorage;
 import org.wearefrank.ladybug.transform.ReportXmlTransformer;
 
-import java.lang.invoke.MethodHandles;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-@Component
-public class TestToolApiImpl implements InitializingBean {
-	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+import lombok.extern.slf4j.Slf4j;
 
+@Component
+@Slf4j
+public class TestToolApiImpl implements InitializingBean {
 	private static final String KEY_TRANSFORMATION = "transformation";
 
 	private @Setter

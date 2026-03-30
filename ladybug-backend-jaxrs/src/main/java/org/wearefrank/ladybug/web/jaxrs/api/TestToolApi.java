@@ -15,11 +15,8 @@
 */
 package org.wearefrank.ladybug.web.jaxrs.api;
 
-import java.lang.invoke.MethodHandles;
 import java.util.Map;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import jakarta.ws.rs.Consumes;
@@ -33,6 +30,7 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import lombok.extern.slf4j.Slf4j;
 import lombok.Setter;
 import org.wearefrank.ladybug.Report;
 import org.wearefrank.ladybug.filter.View;
@@ -45,9 +43,8 @@ import org.wearefrank.ladybug.web.common.TestToolApiImpl;
 import org.wearefrank.ladybug.web.common.TestToolInfoResponse;
 
 @Path("/" + Constants.LADYBUG_API_PATH + "/testtool")
+@Slf4j
 public class TestToolApi extends ApiBase {
-	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-
 	@Autowired
 	private @Setter FrontendRolesResolver frontendRolesResolver;
 
