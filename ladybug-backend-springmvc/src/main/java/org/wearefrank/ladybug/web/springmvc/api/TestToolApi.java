@@ -15,14 +15,11 @@
 */
 package org.wearefrank.ladybug.web.springmvc.api;
 
-import java.lang.invoke.MethodHandles;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -46,6 +43,8 @@ import org.wearefrank.ladybug.web.common.TestToolApiImpl;
 import jakarta.annotation.security.RolesAllowed;
 import lombok.Setter;
 import org.wearefrank.ladybug.web.common.TestToolInfoResponse;
+
+import org.springframework.security.core.GrantedAuthority;
 
 @RestController
 @RequestMapping("/testtool")

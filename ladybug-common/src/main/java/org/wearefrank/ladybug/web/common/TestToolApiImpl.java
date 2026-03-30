@@ -65,13 +65,25 @@ public class TestToolApiImpl implements InitializingBean {
 
 	@Override
 	public void afterPropertiesSet() {
-		logTestPropertiesItem("ladybug.ui.test.mode", uiTestMode);
-		logTestPropertiesItem("ladybug.backend.throws.fake.exceptions", ladybugBackendThrowsFakeExceptions);
-		logTestPropertiesItem("ladybug.backend.fake.exception.call.count", ladybugBackendFakeExceptionCallCount);
+		if (uiTestMode == TestToolInfoResponse.UI_TEST_MODE.DEFAULT) {
+			logTestPropertiesItemDefault("ladybug.ui.test.mode", uiTestMode);
+		} else {
+			logTestPropertiesItemModified("ladybug.ui.test.mode", uiTestMode);
+		}
+		if (ladybugBackendThrowsFakeExceptions) {
+			logTestPropertiesItemModified("ladybug.backend.throws.fake.exceptions", ladybugBackendThrowsFakeExceptions);
+			log.info("Also from test.properties: ladybug.backend.fake.exception.call.count={}", ladybugBackendFakeExceptionCallCount);
+		} else {
+			logTestPropertiesItemDefault("ladybug.backend.throws.fake.exceptions", ladybugBackendThrowsFakeExceptions);
+		}
 	}
 
-	private void logTestPropertiesItem(String propertyName, Object value) {
-		log.info("Using from test.properties or default value: [{}]=[{}]", propertyName, value);
+	private void logTestPropertiesItemDefault(String propertyName, Object value) {
+		log.info("Using default value of test.properties item: {}={}", propertyName, value);
+	}
+
+	private void logTestPropertiesItemModified(String propertyName, Object value) {
+		log.error("Behavior of ladybug modified by test.properties - not for production!: {}={}", propertyName, value);
 	}
 
 	public TestToolInfoResponse getTestToolInfo() throws HttpInternalServerErrorException {
