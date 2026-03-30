@@ -16,7 +16,7 @@
 
 	<!-- Make ${ladybug.dir:ladybug} read system property ladybug.dir with default value ladybug -->
 	<!-- Read optional properties file test.properties. -->
-	<context:property-placeholder location="test.properties"/>
+	<context:property-placeholder location="classpath:test.properties"/>
 
 	<context:component-scan base-package="org.wearefrank.ladybug"/>
 
