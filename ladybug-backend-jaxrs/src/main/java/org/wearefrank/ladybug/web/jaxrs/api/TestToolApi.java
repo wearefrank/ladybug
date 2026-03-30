@@ -16,11 +16,8 @@
 package org.wearefrank.ladybug.web.jaxrs.api;
 
 import java.lang.invoke.MethodHandles;
-import java.util.List;
 import java.util.Map;
 
-import jakarta.annotation.Resource;
-import jakarta.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -15,17 +15,14 @@
 */
 package org.wearefrank.ladybug.web.common;
 
-import java.lang.invoke.MethodHandles;
 import java.util.Arrays;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 import jakarta.annotation.Resource;
 import jakarta.inject.Inject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.stereotype.Component;
 
@@ -49,9 +46,8 @@ import org.springframework.stereotype.Component;
  * feature.
  */
 @Component
+@Slf4j
 public class FrontendRolesResolver implements InitializingBean {
-	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-
 	public static final String TESTER = "tester";
 	public static final String ADMIN = "admin";
 	public static final String OBSERVER = "observer";
@@ -64,9 +60,9 @@ public class FrontendRolesResolver implements InitializingBean {
 
 	@Override
 	public void afterPropertiesSet() {
-		log.info("Frontend role [{}] when backend role one of [{}]", OBSERVER, observerRoles.stream().collect(Collectors.joining(", ")));
-		log.info("Frontend role [{}] when backend role one of [{}]", ADMIN, dataAdminRoles.stream().collect(Collectors.joining(", ")));
-		log.info("Frontend role [{}] when backend role one of [{}]", TESTER, testerRoles.stream().collect(Collectors.joining(", ")));
+		log.info("Frontend role {} when backend role one of {}", OBSERVER, observerRoles);
+		log.info("Frontend role {} when backend role one of {}", ADMIN, dataAdminRoles);
+		log.info("Frontend role {} when backend role one of {}", TESTER, testerRoles);
 	}
 
 	public List<String> getFrontendRoles(String userRole) {
@@ -94,7 +90,7 @@ public class FrontendRolesResolver implements InitializingBean {
 		if (userInRolePredicate.test(testerRoles)) {
 			result.add(TESTER);
 		}
-		log.debug("Have the following frontend roles: [{}]", result.stream().collect(Collectors.joining(", ")));
+		log.debug("Have the following frontend roles: {}", result);
 		return result;
 	}
 }

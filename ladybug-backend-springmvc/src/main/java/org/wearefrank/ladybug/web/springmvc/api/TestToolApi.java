@@ -85,15 +85,15 @@ public class TestToolApi {
 				.filter((s) -> s.startsWith("ROLE_"))
 				.map((s) -> s.substring(5))
 				.collect(Collectors.toList());
-		log.debug("TestToolApi.getRole() sees roles [{}]", roles.stream().collect(Collectors.joining(", ")));
+		log.debug("TestToolApi.getRole() sees roles {}", roles);
 		if (roles.size() != 1) {
-			log.error("Expected only one role in [{}]", roles.stream().collect(Collectors.joining(", ")));
+			log.error("Expected only one role in {}", roles);
 			// Do not fill in some string. If ever a role is introduced that has that name, then
 			// a security breach might be introduced.
 			return null;
 		}
 		String role = roles.get(0);
-		log.debug("User has role [{}]", role);
+		log.debug("User has role {}", role);
 		return role;
 	}
 
