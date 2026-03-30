@@ -1,6 +1,11 @@
 @import 'node_modules/bootstrap/dist/css/bootstrap.min.css';
 @import 'node_modules/bootstrap-icons/font/bootstrap-icons.css';
 
+* {
+  --bs-table-bg: rgb(195, 230, 203);
+  --bs-gutter-x: 0;
+}
+
 body {
   font-family:
     'open sans', 'Helvetica Neue', Helvetica, Arial, sans-serif !important;
@@ -14,6 +19,11 @@ html,
 body {
   height: 100%;
   margin: 0;
+}
+
+label {
+  display: inline-block;
+  margin-bottom: .5rem;
 }
 
 #ladybug-tabs {
@@ -39,6 +49,10 @@ body {
 
 .form-control {
   font-size: 0.7rem !important;
+}
+
+.form-group {
+  margin-bottom: 1rem;
 }
 
 .input-group-text {
@@ -77,11 +91,12 @@ body {
   border: 1px;
   background-color: #1ab394 !important;
   border-color: #1ab394 !important;
+  --bs-btn-color: #fff;
 }
 
 .btn-info:focus {
   outline: none !important;
-  box-shadow: none !important;
+  box-shadow: null !important;
   background-color: #23c6c8 !important;
 }
 
