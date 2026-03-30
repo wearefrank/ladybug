@@ -32,6 +32,10 @@
       <version>4.34.0</version>
     </dependency>
     <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-dbcp2</artifactId>
+    </dependency>
+    <dependency>
       <groupId>org.wearefrank</groupId>
       <artifactId>ladybug-frontend-servlet</artifactId>
       <version>${project.version}</version>
@@ -64,6 +68,11 @@
     <dependency>
       <groupId>org.projectlombok</groupId>
       <artifactId>lombok</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.github.ben-manes.caffeine</groupId>
+      <artifactId>caffeine</artifactId>
+      <version>3.2.3</version>
     </dependency>
   </dependencies>
 </project>

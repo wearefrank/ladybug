@@ -28,7 +28,6 @@ import org.wearefrank.ladybug.TestTool;
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 
 @Component
 public class CollectorApiImpl {
@@ -38,7 +37,6 @@ public class CollectorApiImpl {
 	private @Setter TestTool testTool;
 
 	public void processSpans(ArrayList<Span> trace) {
-		System.out.println("CALLED PROCESS SPANS");
 		ArrayList<String> parentIds = new ArrayList<>();
 		for (Span span: trace) {
 			String parentId = byteStringToHex(span.getParentSpanId());
@@ -49,7 +47,7 @@ public class CollectorApiImpl {
 
 		ArrayList<String> endpoints = new ArrayList<>();
 		for (Span span: trace) {
-			System.out.println(byteStringToHex(span.getTraceId()));
+
 			String parentId = byteStringToHex(span.getParentSpanId());
 
 			if (parentId.isEmpty()) {
@@ -58,6 +56,7 @@ public class CollectorApiImpl {
 			} else {
 				if (parentIds.contains(parentId)) {
 					testTool.startpoint(byteStringToHex(span.getTraceId()), null, span.getName(), toHashMap(span).toString());
+					testTool.infopoint(byteStringToHex(span.getTraceId()), null, span.getName(), span.getKind());
 					endpoints.add(span.getName());
 				} else {
 					testTool.infopoint(byteStringToHex(span.getTraceId()), null, span.getName(), toHashMap(span).toString());
