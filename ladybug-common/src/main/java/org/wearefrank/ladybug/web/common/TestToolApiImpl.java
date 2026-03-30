@@ -50,13 +50,13 @@ public class TestToolApiImpl implements InitializingBean {
 	private @Setter @Inject @Autowired ReportXmlTransformer reportXmlTransformer;
 	private @Setter @Inject @Autowired Views views;
 
-	@Value("ladybug.ui.test.mode:DEFAULT")
+	@Value("${ladybug.ui.test.mode:DEFAULT}")
 	private TestToolInfoResponse.UI_TEST_MODE uiTestMode;
 
-	@Value("ladybug.backend.throws.fake.exceptions:false")
+	@Value("${ladybug.backend.throws.fake.exceptions:false}")
 	private boolean ladybugBackendThrowsFakeExceptions;
 
-	@Value("ladybug.backend.fake.exception.call.count:5")
+	@Value("${ladybug.backend.fake.exception.call.count:5}")
 	int ladybugBackendFakeExceptionCallCount;
 
 	private int callCount = 0;
