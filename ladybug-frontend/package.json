@@ -64,7 +64,7 @@
     "@types/jasmine": "6.0.0",
     "@types/node": "25.5.0",
     "@typescript-eslint/eslint-plugin": "^8.44.1",
-    "@typescript-eslint/parser": "^8.54.0",
+    "@typescript-eslint/parser": "^8.57.1",
     "chai-match": "^1.1.1",
     "cypress": "15.12.0",
     "cypress-file-upload": "^5.0.8",
@@ -72,7 +72,7 @@
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.4",
     "eslint-plugin-unicorn": "^63.0.0",
-    "jasmine-core": "5.12.1",
+    "jasmine-core": "6.1.0",
     "karma": "6.4.4",
     "karma-chrome-launcher": "3.2.0",
     "karma-coverage": "2.2.1",
@@ -80,8 +80,8 @@
     "karma-jasmine-html-reporter": "2.2.0",
     "prettier": "^3.7.3",
     "prettier-plugin-autocorrect": "^0.4.3",
-    "start-server-and-test": "^2.1.2",
-    "typescript": "5.9.3"
+    "typescript": "5.9.3",
+    "start-server-and-test": "^2.1.5"
   },
   "publishConfig": {
     "access": "public"
