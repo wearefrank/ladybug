@@ -157,6 +157,7 @@ export class MonacoEditorComponent implements OnInit, AfterViewInit, OnDestroy {
       minimap: { enabled: false },
       ...this.options,
     });
+    this.editor.getModel()?.setEOL(monaco.editor.EndOfLineSequence.LF);
     this.editorSubject.next(this.editor);
   }
 

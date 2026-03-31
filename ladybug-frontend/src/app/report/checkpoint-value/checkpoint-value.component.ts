@@ -96,7 +96,7 @@ export class CheckpointValueComponent implements OnInit, OnDestroy {
 
   onActualEditorContentsChanged(value: string): void {
     // We set the actualEditorContents already when we request new editor contents.
-    // When the new value is converted, we do not have to react.
+    // When the new value is confirmed, we do not have to react.
     if (this.actualEditorContents === value) {
       return;
     }
@@ -260,7 +260,8 @@ export class CheckpointValueComponent implements OnInit, OnDestroy {
     this.messageContextTableVisible = false;
     this.originalCheckpoint = originalCheckpoint;
     this.emptyIsNull = this.originalCheckpoint.message === null;
-    const requestedEditorContents = originalCheckpoint.message === null ? '' : originalCheckpoint.message;
+    const requestedEditorContents: string =
+      originalCheckpoint.message === null ? '' : this.normalizeLineEndings(originalCheckpoint.message)!;
     // Do not trust the Monaco editor sends an event for the first text.
     this.actualEditorContents = requestedEditorContents;
     this.actualCheckpointStubStrategy = originalCheckpoint.stub;
@@ -297,6 +298,11 @@ export class CheckpointValueComponent implements OnInit, OnDestroy {
         'CheckpointValueComponent.handleLabelsAndNodeValueState(): Expected that actualReportStubStrategy !== undefined because a checkpoint was read',
       );
     }
+    // There is a case that the value represented by the editor differs from the original value while
+    // still isEdited() returns false. This has to do with line endings. When the original value has
+    // carriage return (CR), the Monaco editor represents it as line feed (LF). This difference does
+    // not mean that the user intended to edit. When the user does edit and save the checkpoints,
+    // the line endings are converted to LF.
     const isEdited = this.isEdited();
     const editedCheckpointValue = this.getEditedRealCheckpointValue();
     const isReadOnly = this.originalCheckpoint === undefined ? true : !this.originalCheckpoint.parentReport.crudStorage;
@@ -332,11 +338,25 @@ export class CheckpointValueComponent implements OnInit, OnDestroy {
 
   private isEdited(): boolean {
     const editedCheckpointValue = this.getEditedRealCheckpointValue();
-    const isCheckpointEdited = editedCheckpointValue !== this.originalCheckpoint!.message;
+    const isCheckpointEdited =
+      this.normalizeLineEndings(editedCheckpointValue) !== this.normalizeLineEndings(this.originalCheckpoint!.message);
     const isCheckpointStubStrategyEdited = this.actualCheckpointStubStrategy !== this.originalCheckpoint!.stub;
     const isReportStubStrategyEdited =
       this.actualReportStubStrategy !== this.originalCheckpoint!.parentReport.stubStrategy;
     return isCheckpointEdited || isCheckpointStubStrategyEdited || isReportStubStrategyEdited;
+  }
+
+  private normalizeLineEndings(value: string | null): string | null {
+    // Normalise CR and CRLF to LF to match what Monaco will emit after its own
+    // line-ending normalisation. Without this the guard in onActualEditorContentsChanged
+    // fails on first load, causing a false-positive isEdited() result.
+    //
+    // The Monaco editor does not provide control over the line endings you use anyway.
+    // After editing, line endings are always LF.
+    if (value === null) {
+      return null;
+    }
+    return value.replaceAll('\r\n', '\n').replaceAll('\r', '\n');
   }
 
   private static getEncoding(e: string | null | undefined): string | undefined {

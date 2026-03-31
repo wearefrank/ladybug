@@ -14,7 +14,7 @@ input[type='text'] {
 }
 
 input[type='text']:focus {
-  width: 30%;
+  width: 100%;
 }
 
 .button-row {

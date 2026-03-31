@@ -52,6 +52,10 @@ declare global {
 
       createReportWithMessageContext(): Chainable;
 
+      createReportOnlyLF(): Chainable;
+
+      createReportOnlyCR(): Chainable;
+
       clearDebugStore(): Chainable;
 
       clearReportsInProgress(): Chainable;
@@ -252,6 +256,24 @@ Cypress.Commands.add('createReportWithMessageContext' as keyof Chainable, (): vo
   // No cy.visit because then the API call can happen multiple times.
   cy.request(
     `${Cypress.env('backendServer')}/index.jsp?createReport=Report%20with%20message%20context`,
+  ).then((resp: Cypress.Response<ApiResponse>) => {
+    expect(resp.status).equal(200);
+  });
+});
+
+Cypress.Commands.add('createReportOnlyLF' as keyof Chainable, (): void => {
+  // No cy.visit because then the API call can happen multiple times.
+  cy.request(
+    `${Cypress.env('backendServer')}/index.jsp?createReport=Add%20report%20with%20checkpoints%20having%20only%20LF%200x0A`,
+  ).then((resp: Cypress.Response<ApiResponse>) => {
+    expect(resp.status).equal(200);
+  });
+});
+
+Cypress.Commands.add('createReportOnlyCR' as keyof Chainable, (): void => {
+  // No cy.visit because then the API call can happen multiple times.
+  cy.request(
+    `${Cypress.env('backendServer')}/index.jsp?createReport=Add%20report%20with%20checkpoints%20having%20only%20CR%200x0D`,
   ).then((resp: Cypress.Response<ApiResponse>) => {
     expect(resp.status).equal(200);
   });

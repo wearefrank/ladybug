@@ -71,6 +71,34 @@ describe('Test labels', () => {
     cy.get(':contains(Read only)').should('be.visible');
   });
 
+  it('When report uses LF as newline then initial value not silently modified', () => {
+    cy.createReportOnlyLF();
+    cy.initializeApp();
+    cy.get('[data-cy-debug="selectAll"]').click();
+    cy.get('[data-cy-debug="openSelected"]').click();
+    // Cypress does not give us the newline character. We check the value to see whether we
+    // have the right checkpoint.
+    cy.get('[data-cy-element-name="checkpointEditor"]').invoke('text').should('contain', 'Start');
+    cy.get(':contains(Edited)').should('not.exist');
+    // End checkpoint value is only \n.
+    cy.clickEndCheckpointOfThreeNodeReport();
+    cy.get('[data-cy-element-name="checkpointEditor"]').invoke('text').should('not.contain', 'Start');
+    cy.get(':contains(Edited)').should('not.exist');
+  })
+
+  it('When report uses CR as newline then initial value not silently modified', () => {
+    cy.createReportOnlyCR();
+    cy.initializeApp();
+    cy.get('[data-cy-debug="selectAll"]').click();
+    cy.get('[data-cy-debug="openSelected"]').click();
+    cy.get('[data-cy-element-name="checkpointEditor"]').invoke('text').should('contain', 'Start');
+    cy.get(':contains(Edited)').should('not.exist');
+    // End checkpoint value is only \r.
+    cy.clickEndCheckpointOfThreeNodeReport();
+    cy.get('[data-cy-element-name="checkpointEditor"]').invoke('text').should('not.contain', 'Start');
+    cy.get(':contains(Edited)').should('not.exist');
+  })
+
   describe('With test tab', () => {
     afterEach(() => {
       cy.navigateToTestTabAndAwaitLoadingSpinner();
