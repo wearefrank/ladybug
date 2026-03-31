@@ -345,7 +345,7 @@
       <plugins>
         <plugin>
           <artifactId>maven-compiler-plugin</artifactId>
-          <version>3.13.0</version>
+          <version>3.15.0</version>
           <configuration>
             <source>${maven.compiler.source}</source>
             <target>${maven.compiler.target}</target>
@@ -540,7 +540,7 @@
     <repository>
       <id>frankframework</id>
       <name>Frank!Framework</name>
-      <url>https://nexus.frankframework.org/content/groups/public</url>
+      <url>https://nexus.frankframework.org/repository/thirdparty</url>
     </repository>
   </repositories>
   <profiles>
