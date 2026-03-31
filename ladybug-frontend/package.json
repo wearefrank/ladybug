@@ -71,7 +71,7 @@
     "eslint": "^9.36.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.4",
-    "eslint-plugin-unicorn": "^62.0.0",
+    "eslint-plugin-unicorn": "^63.0.0",
     "jasmine-core": "6.1.0",
     "karma": "6.4.4",
     "karma-chrome-launcher": "3.2.0",
@@ -80,8 +80,8 @@
     "karma-jasmine-html-reporter": "2.2.0",
     "prettier": "^3.7.3",
     "prettier-plugin-autocorrect": "^0.4.3",
-    "start-server-and-test": "^2.1.5",
-    "typescript": "5.8.3"
+    "typescript": "5.9.3",
+    "start-server-and-test": "^2.1.5"
   },
   "publishConfig": {
     "access": "public"
