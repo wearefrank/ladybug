@@ -540,7 +540,7 @@
     <repository>
       <id>frankframework</id>
       <name>Frank!Framework</name>
-      <url>https://nexus.frankframework.org/content/groups/public</url>
+      <url>https://nexus.frankframework.org/repository/thirdparty</url>
     </repository>
   </repositories>
   <profiles>
