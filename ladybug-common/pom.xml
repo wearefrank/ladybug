@@ -19,7 +19,7 @@
       <artifactId>jakarta.servlet-api</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.ibissource</groupId>
+      <groupId>org.wearefrank</groupId>
       <artifactId>ibis-echo2</artifactId>
     </dependency>
     <dependency>

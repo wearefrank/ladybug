@@ -102,9 +102,9 @@
         <scope>provided</scope>
       </dependency>
       <dependency>
-        <groupId>org.ibissource</groupId>
+        <groupId>org.wearefrank</groupId>
         <artifactId>ibis-echo2</artifactId>
-        <version>2.0.5-20250211.112303</version>
+        <version>2.0.5-20260331.094104</version>
       </dependency>
       <dependency>
         <groupId>org.slf4j</groupId>
