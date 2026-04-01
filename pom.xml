@@ -249,7 +249,7 @@
       <dependency>
         <groupId>io.opentelemetry</groupId>
         <artifactId>opentelemetry-api</artifactId>
-        <version>1.39.0</version>
+        <version>1.60.1</version>
       </dependency>
       <!-- Scope provided for now for OpenTelemetry dependencies other then opentelemetry-api (keep transitive dependencies caused by Ladybug to a minimum) -->
       <dependency>
