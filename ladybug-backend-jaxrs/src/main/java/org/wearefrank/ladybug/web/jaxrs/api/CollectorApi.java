@@ -29,7 +29,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.wearefrank.ladybug.SpanBuffer;
 import org.wearefrank.ladybug.web.common.CollectorApiImpl;
 import org.wearefrank.ladybug.web.common.Constants;
-import java.util.*;
 
 @Path("/" + Constants.LADYBUG_API_PATH + "/collector")
 public class CollectorApi extends ApiBase {
@@ -63,72 +62,14 @@ public class CollectorApi extends ApiBase {
                     .build();
         }
 
-        ArrayList<Span> unorderedSpans = new ArrayList<>();
-
         for (ResourceSpans resourceSpans : request.getResourceSpansList()) {
             for (ScopeSpans scopeSpans : resourceSpans.getScopeSpansList()) {
                 for (Span span : scopeSpans.getSpansList()) {
-                    unorderedSpans.add(span);
+                    spanBuffer.addSpan(span);
                 }
             }
         }
 
-        orderInTraces(unorderedSpans);
-
         return Response.ok().build();
-    }
-
-    public void orderInTraces(ArrayList<Span> unorderedSpans) {
-        List<Span> roots = new ArrayList<>();
-
-        for (Span span : unorderedSpans) {
-            if (isRoot(span, unorderedSpans)) {
-                roots.add(span);
-            }
-        }
-
-        roots.sort(Comparator.comparingLong(Span::getStartTimeUnixNano));
-
-        for (Span root : roots) {
-            ArrayList<Span> trace = new ArrayList<>();
-            traverse(root, unorderedSpans, trace);
-            spanBuffer.addTrace(trace);
-        }
-    }
-
-    private void traverse(Span parent, ArrayList<Span> unorderedSpans, ArrayList<Span> trace) {
-        trace.add(parent);
-
-        String parentId = delegate.byteStringToHex(parent.getSpanId());
-
-        List<Span> children = new ArrayList<>();
-        for (Span span : unorderedSpans) {
-            String childParentId = delegate.byteStringToHex(span.getParentSpanId());
-            if (childParentId.equals(parentId)) {
-                children.add(span);
-            }
-        }
-
-        children.sort(Comparator.comparingLong(Span::getStartTimeUnixNano));
-
-        for (Span child : children) {
-            traverse(child, unorderedSpans, trace);
-        }
-    }
-
-    private boolean isRoot(Span span, List<Span> unordered) {
-        String parentId = delegate.byteStringToHex(span.getParentSpanId());
-
-        if (parentId.isEmpty()) {
-            return true;
-        }
-
-        for (Span s : unordered) {
-            if (delegate.byteStringToHex(s.getSpanId()).equals(parentId)) {
-                return false;
-            }
-        }
-
-        return true;
     }
 }

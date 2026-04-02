@@ -34,24 +34,25 @@ public class SpanBuffer {
     public SpanBuffer(CollectorApiImpl delegate) {
         this.delegate = delegate;
         this.cache = Caffeine.newBuilder()
-                .expireAfterWrite(30, TimeUnit.SECONDS)
-                .removalListener((String traceId, ArrayList<Span> trace, RemovalCause cause) -> {
-                    if (trace != null && cause == RemovalCause.EXPIRED) {
-                        delegate.processSpans(new ArrayList<>(trace));
+                .expireAfterWrite(1, TimeUnit.SECONDS)
+                .removalListener((String traceId, ArrayList<Span> spans, RemovalCause cause) -> {
+                    if (spans != null && cause == RemovalCause.EXPIRED) {
+                        ArrayList<Span> spansCopy = new ArrayList<>(spans);
+                        delegate.processSpans(spansCopy);
                     }
                 })
                 .build();
     }
 
-    public void addTrace(ArrayList<Span> trace) {
-        String traceId = this.delegate.byteStringToHex(trace.get(0).getTraceId());
+    public void addSpan(Span span) {
+        String traceId = this.delegate.byteStringToHex(span.getTraceId());
 
         cache.asMap().compute(traceId, (key, existing) -> {
-            if (existing == null) {
-                existing = new ArrayList<>();
-            }
-            existing.addAll(trace);
-            return existing;
+            ArrayList<Span> updated =
+                    existing == null ? new ArrayList<>() : new ArrayList<>(existing);
+
+            updated.add(span);
+            return updated;
         });
     }
 }
