@@ -23,11 +23,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import io.opentelemetry.proto.trace.v1.Span;
+import org.wearefrank.ladybug.SpanGraph;
 import org.wearefrank.ladybug.TestTool;
 
 import java.lang.invoke.MethodHandles;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.*;
 
 @Component
 public class CollectorApiImpl {
@@ -36,53 +36,44 @@ public class CollectorApiImpl {
 	@Autowired
 	private @Setter TestTool testTool;
 
-	public void processSpans(ArrayList<Span> trace) {
-		ArrayList<String> parentIds = new ArrayList<>();
-		for (Span span: trace) {
-			String parentId = byteStringToHex(span.getParentSpanId());
-			if (!parentId.isEmpty() && !parentIds.contains(parentId)) {
-				parentIds.add(parentId);
+	public void processSpans(ArrayList<Span> spans) {
+		SpanGraph spanGraph = new SpanGraph(testTool);
+
+		Span rootSpan = findRoot(spans);
+
+		if (rootSpan != null) {
+			for (Span span: spans) {
+				spanGraph.addEdge(byteStringToHex(span.getParentSpanId()), span);
 			}
+			spanGraph.dfs(rootSpan);
 		}
-
-		ArrayList<String> endpoints = new ArrayList<>();
-		for (Span span: trace) {
-
-			String parentId = byteStringToHex(span.getParentSpanId());
-
-			if (parentId.isEmpty()) {
-				testTool.startpoint(byteStringToHex(span.getTraceId()), null, span.getName(), toHashMap(span).toString());
-				endpoints.add(span.getName());
-			} else {
-				if (parentIds.contains(parentId)) {
-					testTool.startpoint(byteStringToHex(span.getTraceId()), null, span.getName(), toHashMap(span).toString());
-					testTool.infopoint(byteStringToHex(span.getTraceId()), null, span.getName(), span.getKind());
-					endpoints.add(span.getName());
-				} else {
-					testTool.infopoint(byteStringToHex(span.getTraceId()), null, span.getName(), toHashMap(span).toString());
-				}
-			}
-		}
-		for (int i = endpoints.size() - 1; i >= 0; i--) {
-			testTool.endpoint(byteStringToHex(trace.get(0).getTraceId()), null, endpoints.get(i), "Endpoint");
-		}
-	}
-
-	public HashMap<String, String> toHashMap(Span span) {
-		HashMap<String, String> map = new HashMap<>();
-
-		span.getAllFields().forEach((descriptor, value) -> {
-			if (value instanceof ByteString) {
-				map.put(descriptor.getName(), byteStringToHex((ByteString) value));
-			} else {
-				map.put(descriptor.getName(), value.toString());
-			}
-		});
-
-		return map;
 	}
 
 	public String byteStringToHex(ByteString byteString) {
 		return Hex.encodeHexString(byteString.toByteArray());
+	}
+
+	private Span findRoot(ArrayList<Span> unorderedTrace) {
+		ArrayList<String> spanIds = new ArrayList<>();
+
+		for (Span span : unorderedTrace) {
+			spanIds.add(byteStringToHex(span.getSpanId()));
+		}
+
+		for (Span span : unorderedTrace) {
+			String parentId = byteStringToHex(span.getParentSpanId());
+			if (parentId.isEmpty()) {
+				return span;
+			}
+		}
+
+		for (Span span : unorderedTrace) {
+			String parentId = byteStringToHex(span.getParentSpanId());
+			if (!spanIds.contains(parentId)) {
+				return span;
+			}
+		}
+
+		return null;
 	}
 }

@@ -15,40 +15,61 @@
 */
 package org.wearefrank.ladybug;
 
+import com.google.protobuf.ByteString;
+import io.opentelemetry.proto.trace.v1.Span;
+import org.apache.commons.codec.binary.Hex;
+
 import java.util.*;
 
-class SpanGraph {
-    private Map<String, List<String>> adjList;
+public class SpanGraph {
+    private Map<String, List<Span>> spans;
+    TestTool testTool;
 
-    public SpanGraph(String root) {
-        adjList = new HashMap<>();
-        adjList.put(root, new ArrayList<>());
+    public SpanGraph(TestTool testTool) {
+        spans = new HashMap<>();
+        this.testTool = testTool;
     }
 
-    public void addEdge(String parent, String child) {
-        adjList.putIfAbsent(parent, new ArrayList<>());
-        adjList.putIfAbsent(parent, new ArrayList<>());
-        adjList.get(parent).add(child);
-        adjList.get(parent).add(child);
+    public void addEdge(String parent, Span child) {
+        spans.putIfAbsent(parent, new ArrayList<>());
+        spans.get(parent).add(child);
     }
 
-    public void dfs(String root) {
-        Set<String> visited = new HashSet<>();
+    public void dfs(Span root) {
+        Set<Span> visited = new HashSet<>();
         dfsRecursive(root, visited);
     }
 
-    private void dfsRecursive(String node, Set<String> visited) {
-        System.out.println("startpoint for: " + node);
+    private void dfsRecursive(Span node, Set<Span> visited) {
+        testTool.startpoint(byteStringToHex(node.getTraceId()), null, node.getName(), toHashMap(node).toString());
         visited.add(node);
 
-        if (adjList.containsKey(node)) {
-            for (String neighbor : adjList.get(node)) {
+        if (spans.containsKey(byteStringToHex(node.getSpanId()))) {
+            for (Span neighbor : spans.get(byteStringToHex(node.getSpanId()))) {
                 if (!visited.contains(neighbor)) {
                     dfsRecursive(neighbor, visited);
                 }
             }
         }
 
-        System.out.println("3 endpoint for: " + node);
+        testTool.endpoint(byteStringToHex(node.getTraceId()), null, node.getName(), "Endpoint");
+    }
+
+    public String byteStringToHex(ByteString byteString) {
+        return Hex.encodeHexString(byteString.toByteArray());
+    }
+
+    public HashMap<String, String> toHashMap(Span span) {
+        HashMap<String, String> map = new HashMap<>();
+
+        span.getAllFields().forEach((descriptor, value) -> {
+            if (value instanceof ByteString) {
+                map.put(descriptor.getName(), byteStringToHex((ByteString) value));
+            } else {
+                map.put(descriptor.getName(), value.toString());
+            }
+        });
+
+        return map;
     }
 }
