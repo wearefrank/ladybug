@@ -249,7 +249,7 @@
       <dependency>
         <groupId>io.opentelemetry</groupId>
         <artifactId>opentelemetry-api</artifactId>
-        <version>1.39.0</version>
+        <version>1.60.1</version>
       </dependency>
       <!-- Scope provided for now for OpenTelemetry dependencies other then opentelemetry-api (keep transitive dependencies caused by Ladybug to a minimum) -->
       <dependency>
@@ -261,13 +261,13 @@
       <dependency>
         <groupId>io.opentelemetry</groupId>
         <artifactId>opentelemetry-exporter-zipkin</artifactId>
-        <version>1.39.0</version>
+        <version>1.60.1</version>
         <scope>provided</scope>
       </dependency>
       <dependency>
         <groupId>io.opentelemetry</groupId>
         <artifactId>opentelemetry-exporter-otlp</artifactId>
-        <version>1.39.0</version>
+        <version>1.60.1</version>
         <scope>provided</scope>
       </dependency>
     </dependencies>
