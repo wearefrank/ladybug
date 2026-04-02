@@ -55,9 +55,9 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <!-- property [ladybug.rootdir] is available to get the root of the project, because of the
     [directory-maven-plugin] -->
-    <maven.compiler.release>21</maven.compiler.release>
-    <maven.compiler.target>21</maven.compiler.target>
-    <maven.compiler.source>21</maven.compiler.source>
+    <maven.compiler.release>17</maven.compiler.release>
+    <maven.compiler.target>17</maven.compiler.target>
+    <maven.compiler.source>17</maven.compiler.source>
     <lombok.version>1.18.42</lombok.version>
 
     <spring.version>6.2.15</spring.version>
