@@ -57,7 +57,7 @@
 		<url-pattern>/ladybug/api/*</url-pattern>
 	</filter-mapping>
 
-	<!--
+	<!--CICD_AUTH
 	Enable security elements below to test security
 	See also ApiAuthorizationFilter.java and *Roles beans in springTestToolTestWebapp.xml
 	<login-config>
@@ -77,6 +77,6 @@
 			<role-name>IbisWebService</role-name>
 		</auth-constraint>
 	</security-constraint>
-	-->
+	CICD_AUTH-->
 
 </web-app>

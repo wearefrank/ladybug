@@ -53,26 +53,12 @@ public class TestToolApiImpl implements InitializingBean {
 	@Value("${ladybug.ui.test.mode:DEFAULT}")
 	private TestToolInfoResponse.UI_TEST_MODE uiTestMode;
 
-	@Value("${ladybug.backend.throws.fake.exceptions:false}")
-	private boolean ladybugBackendThrowsFakeExceptions;
-
-	@Value("${ladybug.backend.fake.exception.call.count:5}")
-	int ladybugBackendFakeExceptionCallCount;
-
-	private int callCount = 0;
-
 	@Override
 	public void afterPropertiesSet() {
 		if (uiTestMode == TestToolInfoResponse.UI_TEST_MODE.DEFAULT) {
 			logTestPropertiesItemDefault("ladybug.ui.test.mode", uiTestMode);
 		} else {
 			logTestPropertiesItemModified("ladybug.ui.test.mode", uiTestMode);
-		}
-		if (ladybugBackendThrowsFakeExceptions) {
-			logTestPropertiesItemModified("ladybug.backend.throws.fake.exceptions", ladybugBackendThrowsFakeExceptions);
-			log.info("Also from test.properties: ladybug.backend.fake.exception.call.count={}", ladybugBackendFakeExceptionCallCount);
-		} else {
-			logTestPropertiesItemDefault("ladybug.backend.throws.fake.exceptions", ladybugBackendThrowsFakeExceptions);
 		}
 	}
 
@@ -85,11 +71,6 @@ public class TestToolApiImpl implements InitializingBean {
 	}
 
 	public TestToolInfoResponse getTestToolInfo() throws HttpInternalServerErrorException {
-		if (ladybugBackendThrowsFakeExceptions && callCount == ladybugBackendFakeExceptionCallCount) {
-			callCount = 0;
-			throw new HttpInternalServerErrorException("Fake error");
-		}
-		++callCount;
 		TestToolInfoResponse result = new TestToolInfoResponse();
 		result.setGeneratorEnabled(testTool.isReportGeneratorEnabled());
 		result.setEstMemory(testTool.getReportsInProgressEstimatedMemoryUsage());
