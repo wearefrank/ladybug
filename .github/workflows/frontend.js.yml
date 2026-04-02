@@ -11,8 +11,16 @@ jobs:
         include:
           - spring-profile: none
             selected-specs: cypress/e2e/no-profile/**
+            authenticationTest: no-authentication
           - spring-profile: storage.xml
             selected-specs: cypress/e2e/storage-xml/**
+            authenticationTest: no-authentication
+          - spring-profile: none
+            selected-specs: cypress/e2e/production-auth/**
+            authenticationTest: production
+          - spring-profile: none
+            selected-specs: cypress/e2e/backend-auth/**
+            authenticationTest: only-backend
     name: Cypress tests
     runs-on: ubuntu-latest
 
