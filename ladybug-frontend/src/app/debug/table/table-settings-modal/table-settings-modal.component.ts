@@ -4,7 +4,6 @@ import { NgbActiveModal, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ServerSettings, SettingsService } from '../../../shared/services/settings.service';
 import { ToastService } from '../../../shared/services/toast.service';
 import { ClientSettingsService } from 'src/app/shared/services/client.settings.service';
-import { HttpErrorResponse } from '@angular/common/http';
 import { ErrorHandling } from 'src/app/shared/classes/error-handling.service';
 
 @Component({
@@ -133,11 +132,7 @@ export class TableSettingsModalComponent implements OnInit {
     try {
       await this.serverSettingsService.saveAsDataAdmin(body);
     } catch (error: unknown) {
-      if (error instanceof HttpErrorResponse) {
-        this.errorHandler.handleHttpError(error);
-      } else {
-        this.toastService.showDanger('Error while saving settings!');
-      }
+      this.errorHandler.handleUnknownError(error);
     }
   }
 
@@ -150,8 +145,8 @@ export class TableSettingsModalComponent implements OnInit {
         );
       }
       await this.serverSettingsService.saveAsObserver(transformation);
-    } catch {
-      this.toastService.showDanger('Error while saving report transformation!');
+    } catch (error: unknown) {
+      this.errorHandler.handleUnknownError(error);
     }
   }
 
