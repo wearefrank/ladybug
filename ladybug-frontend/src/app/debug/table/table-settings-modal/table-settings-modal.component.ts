@@ -111,11 +111,8 @@ export class TableSettingsModalComponent implements OnInit {
         await this.saveSettingsAsObserver();
       }
     }
-    try {
-      await this.loadSettings();
-    } catch {
-      this.toastService.showDanger('Failer to reload settings after saving change');
-    }
+    // The settings service shows the error when this fails.
+    await this.loadSettings();
   }
 
   private async saveSettingsAsDataAdmin(): Promise<void> {
