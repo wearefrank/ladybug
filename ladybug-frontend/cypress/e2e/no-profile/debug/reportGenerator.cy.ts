@@ -1,5 +1,8 @@
 describe('Report generator', () => {
-  before(() => cy.resetApp());
+  before(() => {
+    cy.resetApp();
+    cy.initializeApp();
+  });
 
   beforeEach(() => {
     cy.initializeApp();
@@ -9,7 +12,10 @@ describe('Report generator', () => {
     cy.get('[data-cy-settings="saveChanges"]').click();
   });
 
-  afterEach(() => cy.resetApp());
+  afterEach(() => {
+    cy.resetApp();
+    cy.initializeApp();
+  });
 
   it('disable and enable', () => {
     cy.assertDebugTableLength(0);

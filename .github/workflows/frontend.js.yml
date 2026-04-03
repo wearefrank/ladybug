@@ -21,7 +21,7 @@ jobs:
           - spring-profile: none
             selected-specs: cypress/e2e/backend-auth/**
             authenticationTest: only-backend
-    name: Cypress tests
+    name: Test ladybug without FF!, spring-profile = ${{ matrix.spring-profile }}, authenticationTest = ${{ matrix.authenticationTest }}
     runs-on: ubuntu-latest
 
     steps:
@@ -73,6 +73,19 @@ jobs:
       - name: Set Cypress environment variables
         run: cp .github/workflows/cypress.env.json.cicd ladybug-frontend/cypress.env.json
         working-directory: ladybug
+
+      - name: Enable ladybug.ui.test.mode
+        if: ${{ matrix.authenticationTest == 'only-backend' }}
+        working-directory: ladybug
+        run: cp .github/workflows/test-auth-only-backend.properties ladybug-test-webapp/src/main/resources/test.properties
+      - name: Enable authentication - produce temp web.xml
+        if: ${{ matrix.authenticationTest != 'none' }}
+        working-directory: ladybug/ladybug-test-webapp/src/main/webapp/WEB-INF
+        run: grep -v "CICD_AUTH" web.xml > web.xml.out
+      - name: Enable authentication - copy temp web.xml back
+        if: ${{ matrix.authenticationTest != 'none' }}
+        working-directory: ladybug/ladybug-test-webapp/src/main/webapp/WEB-INF
+        run: cp web.xml.out > web.xml
 
       - name: Checkout frank-runner
         uses: actions/checkout@v2

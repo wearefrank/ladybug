@@ -1,5 +1,8 @@
 describe('Tests for Debug tab table', () => {
-  before(() => cy.resetApp());
+  before(() => {
+    cy.resetApp();
+    cy.initializeApp();
+  });
 
   beforeEach(() => {
     cy.createReport();
@@ -7,7 +10,10 @@ describe('Tests for Debug tab table', () => {
     cy.initializeApp();
   });
 
-  afterEach(() => cy.resetApp());
+  afterEach(() => {
+    cy.resetApp();
+    cy.initializeApp();
+  });
 
   it('Should sort by column naming when clicking on table column header', () => {
     cy.getDebugTableRows().first().contains("Simple report");

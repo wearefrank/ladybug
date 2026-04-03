@@ -4,6 +4,7 @@ import { NgbActiveModal, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ServerSettings, SettingsService } from '../../../shared/services/settings.service';
 import { ToastService } from '../../../shared/services/toast.service';
 import { ClientSettingsService } from 'src/app/shared/services/client.settings.service';
+import { HttpErrorResponse } from '@angular/common/http';
 
 @Component({
   selector: 'app-table-settings-modal',
@@ -129,8 +130,12 @@ export class TableSettingsModalComponent implements OnInit {
     }
     try {
       await this.serverSettingsService.saveAsDataAdmin(body);
-    } catch {
-      this.toastService.showDanger('Error while saving settings!');
+    } catch (error: unknown) {
+      if (error instanceof HttpErrorResponse) {
+        this.handleHttpError(error);
+      } else {
+        this.toastService.showDanger('Error while saving settings!');
+      }
     }
   }
 
@@ -246,5 +251,18 @@ export class TableSettingsModalComponent implements OnInit {
 
   protected optionalNotAuthorized(): string {
     return this.serverSettingsService.isUiAsDataAdmin() ? '' : 'Not authorized to edit';
+  }
+
+  // TODO: Make this common
+  private handleHttpError(error: HttpErrorResponse): void {
+    const message = error.error;
+    if (error.status > 399 && error.status < 500) {
+      this.toastService.showWarning(message);
+    } else if (message && typeof message === 'string' && message.includes('- detailed error message -')) {
+      const errorMessageParts = message.split('- detailed error message -');
+      this.toastService.showDanger(errorMessageParts[0], errorMessageParts[1]);
+    } else {
+      this.toastService.showDanger(error.message, '');
+    }
   }
 }

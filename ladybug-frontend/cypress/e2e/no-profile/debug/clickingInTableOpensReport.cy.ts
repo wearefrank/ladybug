@@ -1,6 +1,7 @@
 describe('Clicking a report', () => {
   before(() => {
     cy.resetApp();
+    cy.initializeApp();
   });
 
   beforeEach(() => {
@@ -9,7 +10,10 @@ describe('Clicking a report', () => {
     cy.initializeApp();
   });
 
-  afterEach(() => cy.resetApp());
+  afterEach(() => {
+    cy.resetApp();
+    cy.initializeApp();
+  });
 
   it('Selecting report should show a tree', () => {
     cy.get('[data-cy-debug-tree="buttons"]').should('not.exist');

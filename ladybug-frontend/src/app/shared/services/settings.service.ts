@@ -116,14 +116,10 @@ export class SettingsService {
     if (isTransformationChanged) {
       uploadParameters.transformation = settings.transformation === null ? '' : settings.transformation;
     }
-    try {
-      await firstValueFrom(this.httpService.postSettingsAsDataAdmin(uploadParameters));
-      this._isGeneratorEnabled = settings.isGeneratorEnabled;
-      this._regexFilter = settings.regexFilter;
-      this._transformation = settings.transformation;
-    } catch {
-      throw new Error('Failed to save debug tab settings to server');
-    }
+    await firstValueFrom(this.httpService.postSettingsAsDataAdmin(uploadParameters));
+    this._isGeneratorEnabled = settings.isGeneratorEnabled;
+    this._regexFilter = settings.regexFilter;
+    this._transformation = settings.transformation;
   }
 
   public async saveAsObserver(transformation: string): Promise<void> {
