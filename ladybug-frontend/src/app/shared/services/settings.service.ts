@@ -83,7 +83,6 @@ export class SettingsService {
       if (optionsSettings.transformation !== undefined) {
         this._transformation = optionsSettings.transformation;
       }
-      console.log(`Received from backend: uiTestMode=${optionsSettings.uiTestMode}`);
       if (optionsSettings.uiTestMode.toLowerCase() === 'dont_block_backend') {
         this.testModeEnabled = true;
       }
