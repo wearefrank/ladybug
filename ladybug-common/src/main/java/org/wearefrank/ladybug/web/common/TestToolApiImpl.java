@@ -56,18 +56,10 @@ public class TestToolApiImpl implements InitializingBean {
 	@Override
 	public void afterPropertiesSet() {
 		if (uiTestMode == TestToolInfoResponse.UI_TEST_MODE.DEFAULT) {
-			logTestPropertiesItemDefault("ladybug.ui.test.mode", uiTestMode);
+			log.info("Using default value of test.properties item: ladybug.ui.test.mode={}", uiTestMode);
 		} else {
-			logTestPropertiesItemModified("ladybug.ui.test.mode", uiTestMode);
+			log.error("Behavior of ladybug modified by test.properties - not for production!: ladybug.ui.test.mode={}", uiTestMode);
 		}
-	}
-
-	private void logTestPropertiesItemDefault(String propertyName, Object value) {
-		log.info("Using default value of test.properties item: {}={}", propertyName, value);
-	}
-
-	private void logTestPropertiesItemModified(String propertyName, Object value) {
-		log.error("Behavior of ladybug modified by test.properties - not for production!: {}={}", propertyName, value);
 	}
 
 	public TestToolInfoResponse getTestToolInfo() {
