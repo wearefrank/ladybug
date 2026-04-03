@@ -5,6 +5,7 @@ import { ServerSettings, SettingsService } from '../../../shared/services/settin
 import { ToastService } from '../../../shared/services/toast.service';
 import { ClientSettingsService } from 'src/app/shared/services/client.settings.service';
 import { HttpErrorResponse } from '@angular/common/http';
+import { ErrorHandling } from 'src/app/shared/classes/error-handling.service';
 
 @Component({
   selector: 'app-table-settings-modal',
@@ -20,6 +21,7 @@ export class TableSettingsModalComponent implements OnInit {
 
   // Cannot be defined after protected members because they
   // are used to initialize the protected members.
+  private errorHandler = inject(ErrorHandling);
   private modalService = inject(NgbModal);
   public clientSettingsService = inject(ClientSettingsService);
   public serverSettingsService = inject(SettingsService);
@@ -132,7 +134,7 @@ export class TableSettingsModalComponent implements OnInit {
       await this.serverSettingsService.saveAsDataAdmin(body);
     } catch (error: unknown) {
       if (error instanceof HttpErrorResponse) {
-        this.handleHttpError(error);
+        this.errorHandler.handleHttpError(error);
       } else {
         this.toastService.showDanger('Error while saving settings!');
       }
@@ -251,18 +253,5 @@ export class TableSettingsModalComponent implements OnInit {
 
   protected optionalNotAuthorized(): string {
     return this.serverSettingsService.isUiAsDataAdmin() ? '' : 'Not authorized to edit';
-  }
-
-  // TODO: Make this common
-  private handleHttpError(error: HttpErrorResponse): void {
-    const message = error.error;
-    if (error.status > 399 && error.status < 500) {
-      this.toastService.showWarning(message);
-    } else if (message && typeof message === 'string' && message.includes('- detailed error message -')) {
-      const errorMessageParts = message.split('- detailed error message -');
-      this.toastService.showDanger(errorMessageParts[0], errorMessageParts[1]);
-    } else {
-      this.toastService.showDanger(error.message, '');
-    }
   }
 }
