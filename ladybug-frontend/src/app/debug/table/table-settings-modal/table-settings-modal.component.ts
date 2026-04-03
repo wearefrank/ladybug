@@ -129,25 +129,17 @@ export class TableSettingsModalComponent implements OnInit {
         'Cannot happen in TableSettingsModelComponent.saveSettingsAsDataAdmin() because TableSettingsModelComponent.checkTransformationWasCleared() was called',
       );
     }
-    try {
-      await this.serverSettingsService.saveAsDataAdmin(body);
-    } catch (error: unknown) {
-      this.errorHandler.handleUnknownError(error);
-    }
+    await this.serverSettingsService.saveAsDataAdmin(body);
   }
 
   private async saveSettingsAsObserver(): Promise<void> {
-    try {
-      const transformation = this.settingsForm.value[this.transformationKey];
-      if (transformation?.trim().length === 0) {
-        throw new Error(
-          'Cannot happen in TableSettingsModelComponent.saveSettingsAsObserver() because TableSettingsModelComponent.checkTransformationWasCleared() was called',
-        );
-      }
-      await this.serverSettingsService.saveAsObserver(transformation);
-    } catch (error: unknown) {
-      this.errorHandler.handleUnknownError(error);
+    const transformation = this.settingsForm.value[this.transformationKey];
+    if (transformation?.trim().length === 0) {
+      throw new Error(
+        'Cannot happen in TableSettingsModelComponent.saveSettingsAsObserver() because TableSettingsModelComponent.checkTransformationWasCleared() was called',
+      );
     }
+    await this.serverSettingsService.saveAsObserver(transformation);
   }
 
   private saveClientSettings(): void {

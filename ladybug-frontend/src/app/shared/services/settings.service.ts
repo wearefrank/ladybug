@@ -4,7 +4,7 @@ import { HttpService } from './http.service';
 import { OptionsSettings } from '../interfaces/options-settings';
 import { UploadParameters } from '../interfaces/upload-params';
 import { ToastService } from './toast.service';
-import { HttpErrorResponse } from '@angular/common/http';
+import { ErrorHandling } from '../classes/error-handling.service';
 
 export interface ServerSettings {
   isGeneratorEnabled: boolean;
@@ -18,6 +18,7 @@ export interface ServerSettings {
 export class SettingsService {
   private httpService = inject(HttpService);
   private toastService = inject(ToastService);
+  private errorHandler = inject(ErrorHandling);
   private static INITIALIZATION_IDLE = 0;
   private static INITIALIZATION_BUSY = 1;
   public static INITIALIZATION_SUCCESS = 2;
@@ -92,40 +93,40 @@ export class SettingsService {
         console.log('SettingsService: testMode disabled');
       }
     } catch (error: unknown) {
-      if (error instanceof HttpErrorResponse) {
-        this.toastService.showDanger(`Failed to load settings: ${error.message}`);
-      } else {
-        this.toastService.showDanger(`Failed to load settings - unexpected error kind`);
-      }
+      this.errorHandler.handleUnknownError(error);
     }
   }
 
   public async saveAsDataAdmin(settings: ServerSettings): Promise<void> {
-    const isSettingsChanged =
-      settings.isGeneratorEnabled !== this._isGeneratorEnabled || settings.regexFilter !== this._regexFilter;
-    const isTransformationChanged = settings.transformation !== this._transformation;
-    if (!(isSettingsChanged || isTransformationChanged)) {
-      return;
+    try {
+      const isSettingsChanged =
+        settings.isGeneratorEnabled !== this._isGeneratorEnabled || settings.regexFilter !== this._regexFilter;
+      const isTransformationChanged = settings.transformation !== this._transformation;
+      if (!(isSettingsChanged || isTransformationChanged)) {
+        return;
+      }
+      const uploadParameters: UploadParameters = {};
+      if (isSettingsChanged) {
+        uploadParameters.generatorEnabled = settings.isGeneratorEnabled;
+        uploadParameters.regexFilter = settings.regexFilter === null ? '' : settings.regexFilter;
+      }
+      if (isTransformationChanged) {
+        uploadParameters.transformation = settings.transformation === null ? '' : settings.transformation;
+      }
+      await firstValueFrom(this.httpService.postSettingsAsDataAdmin(uploadParameters));
+      this._isGeneratorEnabled = settings.isGeneratorEnabled;
+      this._regexFilter = settings.regexFilter;
+      this._transformation = settings.transformation;
+    } catch (error: unknown) {
+      this.errorHandler.handleUnknownError(error);
     }
-    const uploadParameters: UploadParameters = {};
-    if (isSettingsChanged) {
-      uploadParameters.generatorEnabled = settings.isGeneratorEnabled;
-      uploadParameters.regexFilter = settings.regexFilter === null ? '' : settings.regexFilter;
-    }
-    if (isTransformationChanged) {
-      uploadParameters.transformation = settings.transformation === null ? '' : settings.transformation;
-    }
-    await firstValueFrom(this.httpService.postSettingsAsDataAdmin(uploadParameters));
-    this._isGeneratorEnabled = settings.isGeneratorEnabled;
-    this._regexFilter = settings.regexFilter;
-    this._transformation = settings.transformation;
   }
 
   public async saveAsObserver(transformation: string): Promise<void> {
     try {
       await firstValueFrom(this.httpService.postTransformationAsObserver(transformation));
-    } catch {
-      throw new Error('Failed to save default report transformation');
+    } catch (error: unknown) {
+      this.errorHandler.handleUnknownError(error);
     }
   }
 
@@ -133,8 +134,8 @@ export class SettingsService {
     try {
       await firstValueFrom(this.httpService.resetSettings());
       this.refresh();
-    } catch {
-      throw new Error('Failed to restore factory settings');
+    } catch (error: unknown) {
+      this.errorHandler.handleUnknownError(error);
     }
   }
 }

@@ -6,6 +6,12 @@
   --bs-gutter-x: 0;
 }
 
+.modal-header {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
 body {
   font-family:
     'open sans', 'Helvetica Neue', Helvetica, Arial, sans-serif !important;
