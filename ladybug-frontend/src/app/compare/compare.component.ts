@@ -222,6 +222,8 @@ export class CompareComponent implements AfterViewInit, OnInit {
   private getStrategyFromLocalStorage(): void {
     if (this.compareData) {
       const strategy: string | null = localStorage.getItem(`${this.compareData.viewName}.NodeLinkStrategy`);
+      // Eslint rule does not take into account that we also do a typecast.
+      // eslint-disable-next-line unicorn/prefer-logical-operator-over-ternary
       this.nodeLinkStrategy = strategy ? (strategy as NodeLinkStrategy) : 'NONE';
     }
   }
