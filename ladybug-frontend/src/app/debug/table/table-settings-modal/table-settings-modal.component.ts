@@ -118,7 +118,7 @@ export class TableSettingsModalComponent implements OnInit {
     }
   }
 
-  async saveSettingsAsDataAdmin(): Promise<void> {
+  private async saveSettingsAsDataAdmin(): Promise<void> {
     const body: ServerSettings = {
       isGeneratorEnabled: this.getFormGeneratorEnabled(),
       regexFilter: this.settingsForm.value[this.regexFilterKey],
