@@ -140,20 +140,16 @@ jobs:
         run: ./env.sh > installFrankRunnerEnv.log
         working-directory: frank-runner
 
-      - name: Start server using Frank!Runner in background
+      - name: Start server using Frank!Runner
         run: ./restart.sh
         working-directory: frank-runner/specials/ladybug
-
+      - name: Wait for server to be available
+        working-directory: ladybug/.github/workflows
+        run: ./waitForUrl.sh http://localhost:8090 300
       - name: Run cypress with chrome browser
         uses: cypress-io/github-action@v6.6.0
         with:
           working-directory: ladybug/ladybug-frontend
-          # Without this line, this GitHub Action tries to
-          # install dependencies without the --legacy-peer-deps option
-          install-command: pnpm install --frozen-lockfile
-          # This should work when URL requires authentication
-          wait-on: 'ping http://localhost:8090'
-          wait-on-timeout: 300
           spec: ${{ matrix.selected-specs }}
           config: baseUrl=http://localhost:8090/ladybug
           browser: chrome
