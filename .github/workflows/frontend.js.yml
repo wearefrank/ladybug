@@ -151,8 +151,9 @@ jobs:
           # Without this line, this GitHub Action tries to
           # install dependencies without the --legacy-peer-deps option
           install-command: pnpm install --frozen-lockfile
-          # This should work even when URL requires authentication
-          wait-on: 'npx wait-on --timeout 300000 http://localhost:8090'
+          # This should work when URL requires authentication
+          wait-on: 'ping http://localhost:8090'
+          wait-on-timeout: 300
           spec: ${{ matrix.selected-specs }}
           config: baseUrl=http://localhost:8090/ladybug
           browser: chrome
