@@ -63,19 +63,9 @@ public class TestToolApi {
 	@GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	public ResponseEntity<?> getInfo() {
-		try {
-			TestToolInfoResponse result = delegate.getTestToolInfo();
-			result.setRoles(frontendRolesResolver.getFrontendRoles(this.getRole()));
-			return ResponseEntity.ok(result);
-		} catch(HttpInternalServerErrorException e) {
-			// TODO: We throw HttpInternalServerErrorException only for testing purposes.
-			// In the future we want to test exception handling and the way
-			// exceptions are handled by the frontend.
-			//
-			// When we have exception handlers we will remove the try ... catch
-			// here to make the code more clear.
-			return ResponseEntity.internalServerError().body(e.getMessage());
-		}
+		TestToolInfoResponse result = delegate.getTestToolInfo();
+		result.setRoles(frontendRolesResolver.getFrontendRoles(this.getRole()));
+		return ResponseEntity.ok(result);
 	}
 
 	private String getRole() {
@@ -104,20 +94,9 @@ public class TestToolApi {
 	@GetMapping(value = "/reset", produces = MediaType.APPLICATION_JSON_VALUE)
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	public ResponseEntity<?> resetInfo() {
-		try {
-			TestToolInfoResponse result = delegate.resetInfo();
-			result.setRoles(frontendRolesResolver.getFrontendRoles(getRole()));
-			return ResponseEntity.ok(result);
-		} catch(HttpInternalServerErrorException e) {
-			// TOODO: Exception is thrown because TestToolApiImpl.resetInfo() uses
-			// TestToolApiImpl.getTestToolInfo(). That method contains test logic
-			// that throws a fake exception. That code is present to
-			// test exception handling in the future.
-			//
-			// In a later PR we will replace try ... catch blocks in the REST
-			// controllers by centralized exception handler classes.
-			return ResponseEntity.internalServerError().body(e.getMessage());
-		}
+		TestToolInfoResponse result = delegate.resetInfo();
+		result.setRoles(frontendRolesResolver.getFrontendRoles(getRole()));
+		return ResponseEntity.ok(result);
 	}
 
 	/**

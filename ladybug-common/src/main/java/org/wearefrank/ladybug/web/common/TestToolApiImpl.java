@@ -70,7 +70,7 @@ public class TestToolApiImpl implements InitializingBean {
 		log.error("Behavior of ladybug modified by test.properties - not for production!: {}={}", propertyName, value);
 	}
 
-	public TestToolInfoResponse getTestToolInfo() throws HttpInternalServerErrorException {
+	public TestToolInfoResponse getTestToolInfo() {
 		TestToolInfoResponse result = new TestToolInfoResponse();
 		result.setGeneratorEnabled(testTool.isReportGeneratorEnabled());
 		result.setEstMemory(testTool.getReportsInProgressEstimatedMemoryUsage());
@@ -88,7 +88,7 @@ public class TestToolApiImpl implements InitializingBean {
 		return result;
 	}
 
-	public TestToolInfoResponse resetInfo() throws HttpInternalServerErrorException {
+	public TestToolInfoResponse resetInfo() {
 		testTool.reset();
 		testTool.sendReportGeneratorStatusUpdate();
 		reportXmlTransformer.restoreDefaultXslt();

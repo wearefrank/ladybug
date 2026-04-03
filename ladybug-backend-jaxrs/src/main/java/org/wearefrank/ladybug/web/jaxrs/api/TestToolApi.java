@@ -57,39 +57,18 @@ public class TestToolApi extends ApiBase {
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getInfo() {
-		try {
-			TestToolInfoResponse result = delegate.getTestToolInfo();
-			result.setRoles(frontendRolesResolver.getFrontendRoles(super::isUserInRoles));
-			return Response.ok(result).build();
-		} catch (HttpInternalServerErrorException e) {
-			// TODO: We throw HttpInternalServerErrorException only for testing purposes.
-			// In the future we want to test exception handling and the way
-			// exceptions are handled by the frontend.
-			//
-			// When we have exception handlers we will remove the try ... catch
-			// here to make the code more clear.
-			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e.getMessage()).build();
-		}
+		TestToolInfoResponse result = delegate.getTestToolInfo();
+		result.setRoles(frontendRolesResolver.getFrontendRoles(super::isUserInRoles));
+		return Response.ok(result).build();
 	}
 
 	@GET
 	@Path("/reset")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response resetInfo() {
-		try {
-			TestToolInfoResponse result = delegate.resetInfo();
-			result.setRoles(frontendRolesResolver.getFrontendRoles(super::isUserInRoles));
-			return Response.ok(result).build();
-		} catch (HttpInternalServerErrorException e) {
-			// TOODO: Exception is thrown because TestToolApiImpl.resetInfo() uses
-			// TestToolApiImpl.getTestToolInfo(). That method contains test logic
-			// that throws a fake exception. That code is present to
-			// test exception handling in the future.
-			//
-			// In a later PR we will replace try ... catch blocks in the REST
-			// controllers by centralized exception handler classes.
-			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e.getMessage()).build();
-		}
+		TestToolInfoResponse result = delegate.resetInfo();
+		result.setRoles(frontendRolesResolver.getFrontendRoles(super::isUserInRoles));
+		return Response.ok(result).build();
 	}
 
 
