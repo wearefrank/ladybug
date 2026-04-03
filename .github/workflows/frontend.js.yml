@@ -83,7 +83,7 @@ jobs:
         working-directory: ladybug/ladybug-test-webapp/src/main/webapp/WEB-INF
         run: grep -v "CICD_AUTH" web.xml > web.xml.out
       - name: Enable authentication - copy temp web.xml back
-        if: ${{ matrix.authenticationTest != 'none' }}
+        if: ${{ matrix.authenticationTest != 'no-authentication' }}
         working-directory: ladybug/ladybug-test-webapp/src/main/webapp/WEB-INF
         run: cp web.xml.out web.xml
 
