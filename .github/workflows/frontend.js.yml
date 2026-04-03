@@ -85,7 +85,7 @@ jobs:
       - name: Enable authentication - copy temp web.xml back
         if: ${{ matrix.authenticationTest != 'none' }}
         working-directory: ladybug/ladybug-test-webapp/src/main/webapp/WEB-INF
-        run: cp web.xml.out > web.xml
+        run: cp web.xml.out web.xml
 
       - name: Checkout frank-runner
         uses: actions/checkout@v2
