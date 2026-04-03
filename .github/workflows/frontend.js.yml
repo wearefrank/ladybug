@@ -79,7 +79,7 @@ jobs:
         working-directory: ladybug
         run: cp .github/workflows/test-auth-only-backend.properties ladybug-test-webapp/src/main/resources/test.properties
       - name: Enable authentication - produce temp web.xml
-        if: ${{ matrix.authenticationTest != 'none' }}
+        if: ${{ matrix.authenticationTest != 'no-authentication' }}
         working-directory: ladybug/ladybug-test-webapp/src/main/webapp/WEB-INF
         run: grep -v "CICD_AUTH" web.xml > web.xml.out
       - name: Enable authentication - copy temp web.xml back
