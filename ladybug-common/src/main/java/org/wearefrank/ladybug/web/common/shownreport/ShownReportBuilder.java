@@ -18,14 +18,36 @@ package org.wearefrank.ladybug.web.common.shownreport;
 import org.wearefrank.ladybug.Checkpoint;
 import org.wearefrank.ladybug.Report;
 import org.wearefrank.ladybug.filter.View;
-import org.wearefrank.ladybug.web.common.HttpInternalServerErrorException;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.Iterator;
 
+/*
+ * Classes Report and Checkpoint have more fields than the fields needed by the
+ * frontend. Therefore we have classes ShownReport and ShownCheckpoint. This
+ * class can copy a Report with Checkpoint-s to a ShownReport with
+ * ShownCheckpoint-s.
+ *
+ * An important difference between Report and ShownReport is that the
+ * checkpoints in a Report are a flat list while they are a
+ * hierarchy in ShownReport. This class makes the translation based
+ * on property "level". This way we do not duplicate the logic that
+ * uses enum CheckpointType to organize the checkpoints.
+ *
+ * In addition to building the hierarchy, this class filters checkpoints
+ * based on the View. The algorithm that builds the hierarchy works as follows.
+ * It iterates over all checkpoints of the report. During the iteration, it
+ * maintains a stack that represents the branch of the current checkpoint.
+ * This branch refers to the tree of checkpoints as it would appear in the
+ * white box view. That tree is not stored. Instead each checkpoint is
+ * fed to the View instance to determine whether it is shown, which means
+ * it is passed to the frontend. When a checkpoint is shown it is added to
+ * the first ancestor of its branch that is shown.
+ */
 public class ShownReportBuilder {
 
+	// A node of the current checkpoint branch.
 	private static abstract class Ancestor {
 		final TreeNode contents;
 
@@ -35,12 +57,12 @@ public class ShownReportBuilder {
 
 		// Returns true if the white box view would show the argument checkpoint
 		// inside the wrapped checkpoint or report. The end node corresponding to a start
-		// node is shown inside that start node.
+		// node is shown inside that start node (one level deeper!).
 		//
 		// This method expects to see all checkpoints of a report. When it returns
-		// false then this Ancestor should be removed from the stack maintained
-		// by inner class Session.
-		abstract boolean acceptChild(ShownCheckpoint checkpoint) throws HttpInternalServerErrorException;
+		// false then inner class Session should remove this Ancestor from the
+		// current branch.
+		abstract boolean acceptChild(ShownCheckpoint checkpoint);
 
 		abstract boolean isShown();
 	}
@@ -78,47 +100,52 @@ public class ShownReportBuilder {
 		}
 
 		@Override
-		boolean acceptChild(ShownCheckpoint checkpoint) throws HttpInternalServerErrorException {
+		boolean acceptChild(ShownCheckpoint checkpoint) {
 			if (checkpoint.getLevel() > level) {
 				open = true;
 				return true;
-			} else if (checkpoint.getLevel() == level) {
-				if (open) {
-					open = false;
-					return true;
-				} else {
-					return false;
-				}
+			} else if (isEndNodeOfComposite(checkpoint)) {
+				open = false;
+				return true;
 			} else {
-				throw new HttpInternalServerErrorException("Expected that ancestor was removed");
+				return false;
 			}
+		}
+
+		boolean isEndNodeOfComposite(ShownCheckpoint checkpoint) {
+			return checkpoint.getLevel() == level && open;
 		}
 	}
 
 
 	private static final class Session {
-		private Deque<Ancestor> ancestors = new ArrayDeque<>();
+		private Deque<Ancestor> currentBranch = new ArrayDeque<>();
 		ShownReport result;
 
 		Session(ShownReport report) {
 			result = report;
-			ancestors.addLast(new ReportAncestor(report));
+			currentBranch.addLast(new ReportAncestor(report));
 		}
 
-		void handleCheckpoint(ShownCheckpoint checkpoint, boolean shown) throws HttpInternalServerErrorException {
-			Ancestor ancestor = ancestors.getLast();
-			while (!ancestor.acceptChild(checkpoint)) {
-				ancestors.removeLast();
-				ancestor = ancestors.getLast();
-			}
+		void handleCheckpoint(ShownCheckpoint checkpoint, boolean shown) {
+			updateCurrentBranch(checkpoint);
 			if (shown) {
 				showChild(checkpoint);
 			}
-			ancestors.addLast(new CheckpointAncestor(checkpoint, shown));
+			currentBranch.addLast(new CheckpointAncestor(checkpoint, shown));
+		}
+
+		void updateCurrentBranch(ShownCheckpoint checkpoint) {
+			Ancestor parent = currentBranch.getLast();
+			while (!parent.acceptChild(checkpoint)) {
+				currentBranch.removeLast();
+				parent = currentBranch.getLast();
+			}
 		}
 
 		void showChild(ShownCheckpoint checkpoint) {
-			Iterator<Ancestor> it = ancestors.descendingIterator();
+			// Head of currentBranch is parent of checkpoint.
+			Iterator<Ancestor> it = currentBranch.descendingIterator();
 			while (it.hasNext()) {
 				Ancestor shownParent = it.next();
 				if (shownParent.isShown()) {
@@ -129,7 +156,7 @@ public class ShownReportBuilder {
 		}
 	}
 
-	public ShownReport transform(Report report, View view) throws HttpInternalServerErrorException {
+	public ShownReport transform(Report report, View view) {
 		ShownReport shownReport = new ShownReport();
 		copyReport(report, shownReport);
 		Session session = new Session(shownReport);
