@@ -129,6 +129,7 @@ public class ShownReportBuilder {
 
 		void handleCheckpoint(ShownCheckpoint checkpoint, boolean shown) {
 			updateCurrentBranch(checkpoint);
+			System.out.println(String.format("Checkpoint [%s] has parent [%s]", checkpoint.getName(), currentBranch.getLast().contents.getName()));
 			if (shown) {
 				showChild(checkpoint);
 			}

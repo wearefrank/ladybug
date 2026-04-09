@@ -19,7 +19,6 @@ import lombok.Getter;
 import lombok.Setter;
 
 public class ShownReport extends TreeNode {
-	private @Setter @Getter String name;
 	private @Setter @Getter String description;
 	private @Setter @Getter String path;
 	private @Setter @Getter String stubStrategy;

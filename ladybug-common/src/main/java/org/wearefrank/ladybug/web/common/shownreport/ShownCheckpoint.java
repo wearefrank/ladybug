@@ -22,7 +22,6 @@ import org.wearefrank.ladybug.StubType;
 import java.util.Map;
 
 public class ShownCheckpoint extends TreeNode {
-	private @Getter @Setter String name;
 	private @Getter @Setter String message;
 	private @Getter @Setter String encoding;
 	private @Getter @Setter Map<String, Object> messageContext;

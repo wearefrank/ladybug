@@ -17,11 +17,13 @@ package org.wearefrank.ladybug.web.common.shownreport;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
+import lombok.Setter;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class TreeNode {
+	private @Getter @Setter String name;
 	private @Getter List<ShownCheckpoint> children = null;
 
 	@JsonIgnore
