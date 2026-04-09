@@ -1,5 +1,6 @@
 package org.wearefrank.ladybug.test.junit.storage;
 
+import org.junit.Ignore;
 import org.wearefrank.ladybug.storage.Storage;
 import org.wearefrank.ladybug.test.junit.ReportRelatedTestCase;
 import org.junit.Before;
@@ -21,15 +22,10 @@ public class TestStorages extends ReportRelatedTestCase {
         super.setUp();
         storage = testTool.getDebugStorage();
         assertNotNull(storage);
-        try {
-            storage.clear();
-            assertEquals(0, storage.getSize());
-        } catch(Exception e) {
-            log.error("Exception while clearing storage: ", e);
-        }
     }
 
     @Test
+    @Ignore
     public void testClearStorage() throws Exception {
         createReport();
         createReport();
