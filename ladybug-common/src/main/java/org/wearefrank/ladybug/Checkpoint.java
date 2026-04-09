@@ -88,10 +88,13 @@ public class Checkpoint implements Serializable, Cloneable {
 
 	// The level is used by org.wearefrank.ladybug.web.common.shownreport.ShownReportBuilder
 	// to organize the checkpoints in a tree instead of a list. The contract is as follows:
-	// - When the checkpoints of a report are iterated, the level can only change with +1 or -1.
-	// - When a start checkpoint and an end checkpoint correspond to each other, then they have
-	//   the same level.
-	// - Each start checkpoint has a matching end checkpoint.
+	// - The checkpoints of a report appear in the same order as the order to be
+	//   shown by the frontend.
+	// - All checkpoints that should be shown as children of a parent have a higher
+	//   leven than the parent's level.
+	// - The first checkpoint that has a level equal to or lower than the level of some
+	//   reference closes that reference. The mentioned checkpoint and its successors
+	//   are not children of the reference.
 	public Checkpoint(Report report, String threadName, String sourceClassName,	String name, int type, int level) {
 		this.report = report;
 		this.threadName = threadName;

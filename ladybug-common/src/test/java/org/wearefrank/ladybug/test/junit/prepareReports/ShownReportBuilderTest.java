@@ -94,6 +94,7 @@ public class ShownReportBuilderTest {
 		startpoint("start");
 		endpoint("end");
 		ShownReport actual = getShownReport();
+		show(actual);
 		Assert.assertEquals("start", actual.getName());
 		Assert.assertEquals(correlationId, actual.getCorrelationId());
 		Assert.assertEquals(1, actual.getChildren().size());

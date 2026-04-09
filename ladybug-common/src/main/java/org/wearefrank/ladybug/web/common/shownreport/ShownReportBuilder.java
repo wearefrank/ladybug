@@ -57,7 +57,9 @@ public class ShownReportBuilder {
 
 		// Returns true if the white box view would show the argument checkpoint
 		// inside the wrapped checkpoint or report. The end node corresponding to a start
-		// node is shown inside that start node (one level deeper!).
+		// node is shown inside that start node (one level deeper!). This is respected
+		// by property "level" - the level of the endpoint is one higher than the level
+		// of the corresponding startpoint.
 		//
 		// This method expects to see all checkpoints of a report. When it returns
 		// false then inner class Session should remove this Ancestor from the
@@ -84,7 +86,6 @@ public class ShownReportBuilder {
 	}
 
 	private static final class CheckpointAncestor extends Ancestor {
-		private boolean open = false;
 		private final int level;
 		private boolean shown;
 
@@ -102,18 +103,10 @@ public class ShownReportBuilder {
 		@Override
 		boolean acceptChild(ShownCheckpoint checkpoint) {
 			if (checkpoint.getLevel() > level) {
-				open = true;
-				return true;
-			} else if (isEndNodeOfComposite(checkpoint)) {
-				open = false;
 				return true;
 			} else {
 				return false;
 			}
-		}
-
-		boolean isEndNodeOfComposite(ShownCheckpoint checkpoint) {
-			return checkpoint.getLevel() == level && open;
 		}
 	}
 
