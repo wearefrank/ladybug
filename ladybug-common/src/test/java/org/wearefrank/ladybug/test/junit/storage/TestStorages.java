@@ -1,6 +1,5 @@
 package org.wearefrank.ladybug.test.junit.storage;
 
-import org.junit.Ignore;
 import org.wearefrank.ladybug.storage.Storage;
 import org.wearefrank.ladybug.test.junit.ReportRelatedTestCase;
 import org.junit.Before;
@@ -11,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import java.lang.invoke.MethodHandles;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 
 public class TestStorages extends ReportRelatedTestCase {
@@ -25,13 +25,19 @@ public class TestStorages extends ReportRelatedTestCase {
     }
 
     @Test
-    @Ignore
     public void testClearStorage() throws Exception {
-        createReport();
-        createReport();
-        assertEquals(2, storage.getSize());
-        storage.clear();
-        assertEquals(0, storage.getSize());
+        // Workaround because annotation org.junit.jupiter.api.condition.DisabledIfSystemProperty
+        // did not work.
+        if (System.getProperty("keep.all.ladybug.reports.from.unit.tests") == null) {
+            System.out.println("Test not skipped: testClearStorage()");
+            createReport();
+            createReport();
+            assertNotEquals(0, storage.getSize());
+            storage.clear();
+            assertEquals(0, storage.getSize());
+        } else {
+            System.out.println("Test skipped: testClearStorage()");
+        }
     }
 
     private void createReport() {
