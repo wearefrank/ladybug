@@ -65,7 +65,6 @@ public class ReportApi {
 	 *
 	 * @param storageName Name of the storage.
 	 * @param storageId Storage id of the report.
-	 * @param xml True if Xml of the report needs to be returned.
 	 * @param globalTransformer True if reportXmlTransformer should be set for the report.
 	 * @return A response containing serialized Report object.
 	 */
@@ -73,10 +72,9 @@ public class ReportApi {
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	public ResponseEntity<?> getReport(@PathVariable("storage") String storageName,
 									   @PathVariable("storageId") int storageId,
-									   @RequestParam(name = "xml", defaultValue = "false") boolean xml,
 									   @RequestParam(name = "globalTransformer", defaultValue = "false") boolean globalTransformer) {
 		try {
-			Map<String, Object> result = delegate.getReport(storageName, storageId, xml, globalTransformer);
+			Map<String, Object> result = delegate.getReport(storageName, storageId, globalTransformer);
 			return ResponseEntity.ok(result);
 		} catch (HttpNotFoundException e) {
 			return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
@@ -115,7 +113,6 @@ public class ReportApi {
 	 *
 	 * @param storageName Name of the storage.
 	 * @param storageIds Storage id of the report.
-	 * @param xml True if Xml of the report needs to be returned.
 	 * @param globalTransformer True if reportXmlTransformer should be set for the report.
 	 * @return A response containing serialized Report object.
 	 */
@@ -123,16 +120,28 @@ public class ReportApi {
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	public ResponseEntity<?> getReports(@PathVariable("storage") String storageName,
 										@RequestParam(name = "storageIds") List<Integer> storageIds,
-										@RequestParam(name = "xml", defaultValue = "false") boolean xml,
 										@RequestParam(name = "globalTransformer", defaultValue = "false") boolean globalTransformer) {
 		try {
-			Map<Integer, Map<String, Object>> result = delegate.getReports(storageName, storageIds, xml, globalTransformer);
+			Map<Integer, Map<String, Object>> result = delegate.getReports(storageName, storageIds, globalTransformer);
 			return ResponseEntity.ok(result);
 		} catch(HttpNotFoundException e) {
 			return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
 		}
 	}
 
+	@GetMapping(value = "/shownReports/{storage}", produces = MediaType.APPLICATION_JSON_VALUE)
+	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	public ResponseEntity<?> getReportsForView(@PathVariable("storage") String storageName,
+											   @RequestParam(name = "view") String viewName,
+											   @RequestParam(name = "storageIds") List<Integer> storageIds,
+											   @RequestParam(name = "globalTransformer", defaultValue = "false") boolean globalTransformer) {
+		try {
+			Map<Integer, Map<String, Object>> result = delegate.getReportsForView(storageName, viewName, storageIds, globalTransformer);
+			return ResponseEntity.ok(result);
+		} catch(HttpNotFoundException e) {
+			return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+		}
+	}
 	@DeleteMapping(value = "/{storage}")
 	public ResponseEntity<?> deleteReport(@PathVariable("storage") String storageName, @RequestParam(name = "storageIds") List<Integer> storageIds) {
 		try {

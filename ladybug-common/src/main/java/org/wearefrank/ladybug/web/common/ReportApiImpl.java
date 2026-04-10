@@ -27,7 +27,6 @@ import org.wearefrank.ladybug.Checkpoint;
 import org.wearefrank.ladybug.MetadataExtractor;
 import org.wearefrank.ladybug.Report;
 import org.wearefrank.ladybug.TestTool;
-import org.wearefrank.ladybug.echo2.test.TestComponent;
 import org.wearefrank.ladybug.echo2.util.Upload;
 import org.wearefrank.ladybug.extensions.CustomReportAction;
 import org.wearefrank.ladybug.extensions.CustomReportActionResult;
@@ -42,6 +41,8 @@ import org.wearefrank.ladybug.transform.ReportXmlTransformer;
 import org.wearefrank.ladybug.util.Export;
 import org.wearefrank.ladybug.util.ExportResult;
 import org.wearefrank.ladybug.util.ReportSummaryChoice;
+import org.wearefrank.ladybug.web.common.shownreport.ShownReport;
+import org.wearefrank.ladybug.web.common.shownreport.ShownReportBuilder;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -57,6 +58,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Scanner;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -95,14 +97,24 @@ public class ReportApiImpl {
 	private @Setter
 	@Inject
 	@Autowired Views views;
+
+	private @Getter @Setter @Inject @Autowired ShownReportBuilder shownReportBuilder;
+
 	private @Setter
 	@Inject
 	@Autowired Optional<CustomReportAction> customReportAction;
 
 	public Map<String, Object> getReport(String storageName,
 										 int storageId,
-										 boolean xml,
 										 boolean globalTransformer) throws HttpNotFoundException {
+		return getReportImpl(storageName, storageId, globalTransformer, (report) -> report);
+	}
+
+	private <T> Map<String, Object> getReportImpl(
+			String storageName,
+			int storageId,
+			boolean globalTransformation,
+			Function<Report, T> reportPreparation) throws HttpNotFoundException {
 		Storage storage = testTool.getStorage(storageName);
 		Report report = null;
 		try {
@@ -113,15 +125,14 @@ public class ReportApiImpl {
 		if (report == null)
 			throw new HttpNotFoundException("Could not find report with id [" + storageId + "]");
 
-		if (globalTransformer) {
+		if (globalTransformation) {
 			if (reportXmlTransformer != null)
 				report.setGlobalReportXmlTransformer(reportXmlTransformer);
 		}
 
 		HashMap<String, Object> map = new HashMap<>(1);
-		map.put("report", report);
+		map.put("report", reportPreparation.apply(report));
 		map.put("xml", report.toXml());
-
 		return map;
 	}
 
@@ -172,31 +183,33 @@ public class ReportApiImpl {
 
 	public Map<Integer, Map<String, Object>> getReports(String storageName,
 														List<Integer> storageIds,
-														boolean xml,
 														boolean globalTransformer) throws HttpNotFoundException {
 		try {
 			Storage storage = testTool.getStorage(storageName);
 			Map<Integer, Map<String, Object>> map = new HashMap<>();
 
 			for (int storageId : storageIds) {
-				Report report = getReport(storage, storageId);
-				if (report == null)
-					throw new HttpNotFoundException("Could not find report with id [" + storageId + "]");
-
-				if (globalTransformer) {
-					if (reportXmlTransformer != null)
-						report.setGlobalReportXmlTransformer(reportXmlTransformer);
-				}
-
-				Map<String, Object> reportMap = new HashMap<>(1);
-				reportMap.put("report", report);
-				reportMap.put("xml", report.toXml());
-
-				map.put(storageId, reportMap);
+				Map<String, Object> reportEntry = getReportImpl(storageName, storageId, globalTransformer, (aReport) -> aReport);
+				map.put(storageId, reportEntry);
 			}
-
 			return map;
+		} catch (Exception e) {
+			throw new HttpNotFoundException("Exception while getting report [" + storageIds + "] from storage [" + storageName + "] - detailed error message - " + e + Arrays.toString(e.getStackTrace()), e);
+		}
+	}
 
+	public Map<Integer, Map<String, Object>> getReportsForView(
+			String storageName, String viewName, List<Integer> storageIds, boolean globalTransformer) throws HttpNotFoundException {
+		try {
+			View view = views.getViewByName(viewName);
+			Map<Integer, Map<String, Object>> map = new HashMap<>();
+
+			for (int storageId : storageIds) {
+				Map<String, Object> shownReportEntry = getReportImpl(
+						storageName, storageId, globalTransformer, (aReport) -> shownReportBuilder.transform(aReport, view));
+				map.put(storageId, shownReportEntry);
+			}
+			return map;
 		} catch (Exception e) {
 			throw new HttpNotFoundException("Exception while getting report [" + storageIds + "] from storage [" + storageName + "] - detailed error message - " + e + Arrays.toString(e.getStackTrace()), e);
 		}

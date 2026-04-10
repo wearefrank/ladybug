@@ -72,7 +72,6 @@ public class ReportApi extends ApiBase {
 	 *
 	 * @param storageName Name of the storage.
 	 * @param storageId Storage id of the report.
-	 * @param xml True if Xml of the report needs to be returned.
 	 * @param globalTransformer True if reportXmlTransformer should be set for the report.
 	 * @return A response containing serialized Report object.
 	 */
@@ -81,10 +80,9 @@ public class ReportApi extends ApiBase {
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getReport(@PathParam("storage") String storageName,
 							  @PathParam("storageId") int storageId,
-							  @QueryParam("xml") @DefaultValue("false") boolean xml,
 							  @QueryParam("globalTransformer") @DefaultValue("false") boolean globalTransformer) {
 		try {
-			Map<String, Object> result = delegate.getReport(storageName, storageId, xml, globalTransformer);
+			Map<String, Object> result = delegate.getReport(storageName, storageId, globalTransformer);
 			return Response.ok(result).build();
 		} catch(HttpNotFoundException e) {
 			return Response.status(Response.Status.NOT_FOUND).entity(e.getMessage()).build();
@@ -125,7 +123,6 @@ public class ReportApi extends ApiBase {
 	 *
 	 * @param storageName Name of the storage.
 	 * @param storageIds Storage id of the report.
-	 * @param xml True if Xml of the report needs to be returned.
 	 * @param globalTransformer True if reportXmlTransformer should be set for the report.
 	 * @return A response containing serialized Report object.
 	 */
@@ -134,10 +131,32 @@ public class ReportApi extends ApiBase {
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getReports(@PathParam("storage") String storageName,
 							   @QueryParam("storageIds") List<Integer> storageIds,
-							   @QueryParam("xml") @DefaultValue("false") boolean xml,
 							   @QueryParam("globalTransformer") @DefaultValue("false") boolean globalTransformer) {
 		try {
-			Map<Integer, Map<String, Object>> result = delegate.getReports(storageName, storageIds, xml, globalTransformer);
+			Map<Integer, Map<String, Object>> result = delegate.getReports(storageName, storageIds, globalTransformer);
+			return Response.ok(result).build();
+		} catch(HttpNotFoundException e) {
+			return Response.status(Response.Status.NOT_FOUND).entity(e.getMessage()).build();
+		}
+	}
+
+	/**
+	 * Returns the reports for the given storage and ids.
+	 *
+	 * @param storageName Name of the storage.
+	 * @param viewName Name of view that determines what checkpoints to include.
+	 * @param storageIds Storage ids of the reports to retrieve.
+	 * @param globalTransformer True if reportXmlTransformer should be set for the reports.
+	 * @return A response containing serialized Report objects.
+	 */
+	@GET
+	@Path("/shownReports/{storage}")
+	public Response getReportsForView(@PathParam("storage") String storageName,
+									  @QueryParam("view") String viewName,
+									  @QueryParam("storageIds") List<Integer> storageIds,
+									  @QueryParam("globalTransformer") @DefaultValue("false") boolean globalTransformer) {
+		try {
+			Map<Integer, Map<String, Object>> result = delegate.getReportsForView(storageName, viewName, storageIds, globalTransformer);
 			return Response.ok(result).build();
 		} catch(HttpNotFoundException e) {
 			return Response.status(Response.Status.NOT_FOUND).entity(e.getMessage()).build();
