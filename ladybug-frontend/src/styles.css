@@ -6,6 +6,12 @@
   --bs-gutter-x: 0;
 }
 
+.modal-header {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
 body {
   font-family:
     'open sans', 'Helvetica Neue', Helvetica, Arial, sans-serif !important;
@@ -188,4 +194,11 @@ label {
   margin: 0 0.5rem;
   color: darkgrey;
   user-select: none;
+}
+
+.authorization-warning {
+  font-size: 1.2rem;
+  overflow-wrap: break-word;
+  margin-top: 0.5rem;
+  margin-bottom: 0.7rem;
 }

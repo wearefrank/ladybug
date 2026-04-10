@@ -11,9 +11,17 @@ jobs:
         include:
           - spring-profile: none
             selected-specs: cypress/e2e/no-profile/**
+            authenticationTest: no-authentication
           - spring-profile: storage.xml
             selected-specs: cypress/e2e/storage-xml/**
-    name: Cypress tests
+            authenticationTest: no-authentication
+          - spring-profile: none
+            selected-specs: cypress/e2e/production-auth/**
+            authenticationTest: production
+          - spring-profile: none
+            selected-specs: cypress/e2e/backend-auth/**
+            authenticationTest: only-backend
+    name: Test ladybug without FF!, spring-profile = ${{ matrix.spring-profile }}, authenticationTest = ${{ matrix.authenticationTest }}
     runs-on: ubuntu-latest
 
     steps:
@@ -50,10 +58,6 @@ jobs:
           cache: 'pnpm'
           cache-dependency-path: 'ladybug/ladybug-frontend/pnpm-lock.yaml'
 
-      - name: Install Cypress
-        run: npx cypress install
-        working-directory: ladybug/ladybug-frontend
-
       - uses: actions/cache@v4
         name: Cache Cypress
         with:
@@ -62,9 +66,26 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-cypress-
 
+      - name: Install Cypress
+        run: npx cypress install
+        working-directory: ladybug/ladybug-frontend
+
       - name: Set Cypress environment variables
         run: cp .github/workflows/cypress.env.json.cicd ladybug-frontend/cypress.env.json
         working-directory: ladybug
+
+      - name: Enable ladybug.ui.test.mode
+        if: ${{ matrix.authenticationTest == 'only-backend' }}
+        working-directory: ladybug
+        run: cp .github/workflows/test-auth-only-backend.properties ladybug-test-webapp/src/main/resources/test.properties
+      - name: Enable authentication - produce temp web.xml
+        if: ${{ matrix.authenticationTest != 'no-authentication' }}
+        working-directory: ladybug/ladybug-test-webapp/src/main/webapp/WEB-INF
+        run: grep -v "CICD_AUTH" web.xml > web.xml.out
+      - name: Enable authentication - copy temp web.xml back
+        if: ${{ matrix.authenticationTest != 'no-authentication' }}
+        working-directory: ladybug/ladybug-test-webapp/src/main/webapp/WEB-INF
+        run: cp web.xml.out web.xml
 
       - name: Checkout frank-runner
         uses: actions/checkout@v2
@@ -119,19 +140,16 @@ jobs:
         run: ./env.sh > installFrankRunnerEnv.log
         working-directory: frank-runner
 
-      - name: Start server using Frank!Runner in background
+      - name: Start server using Frank!Runner
         run: ./restart.sh
         working-directory: frank-runner/specials/ladybug
-
+      - name: Wait for server to be available
+        working-directory: ladybug/.github/workflows
+        run: ./waitForUrl.sh http://localhost:8090 300
       - name: Run cypress with chrome browser
         uses: cypress-io/github-action@v6.6.0
         with:
           working-directory: ladybug/ladybug-frontend
-          # Without this line, this GitHub Action tries to
-          # install dependencies without the --legacy-peer-deps option
-          install-command: pnpm install --frozen-lockfile
-          wait-on: "http://localhost:8090"
-          wait-on-timeout: 1000
           spec: ${{ matrix.selected-specs }}
           config: baseUrl=http://localhost:8090/ladybug
           browser: chrome

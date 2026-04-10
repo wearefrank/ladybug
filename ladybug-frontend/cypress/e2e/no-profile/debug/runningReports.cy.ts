@@ -1,7 +1,13 @@
 describe('Test running reports', () => {
-  before(() => cy.resetApp());
+  before(() => {
+    cy.resetApp();
+    cy.initializeApp();
+  });
 
-  afterEach(() => cy.resetApp());
+  afterEach(() => {
+    cy.resetApp();
+    cy.initializeApp();
+  });
 
   it('If no running reports then number of running reports is zero', () => {
     cy.initializeApp();
@@ -12,6 +18,7 @@ describe('Test running reports', () => {
 describe('With running reports', () => {
   before(() => {
     cy.resetApp();
+    cy.initializeApp();
     cy.createRunningReport();
     cy.createRunningReport();
     cy.initializeApp();
@@ -19,6 +26,7 @@ describe('With running reports', () => {
 
   afterEach(() => {
     cy.resetApp();
+    cy.initializeApp();
     cy.createRunningReport();
     cy.createRunningReport();
     cy.initializeApp();
@@ -26,6 +34,7 @@ describe('With running reports', () => {
 
   after(() => {
     cy.resetApp();
+    cy.initializeApp();
   })
 
   it('Open running reports', () => {
@@ -55,6 +64,7 @@ describe('Test Reports in progress warning', () => {
       expect(resp.status).equal(200);
     });
     cy.resetApp();
+    cy.initializeApp();
   });
 
   it('If threshold time has been met then show warning', () => {

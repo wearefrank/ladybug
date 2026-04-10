@@ -1,6 +1,7 @@
 describe('Tests for report transformation', () => {
   before(() => {
     cy.resetApp();
+    cy.initializeApp();
     cy.createOtherReport();
     cy.debugTabBackToFactorySettings();
   });
