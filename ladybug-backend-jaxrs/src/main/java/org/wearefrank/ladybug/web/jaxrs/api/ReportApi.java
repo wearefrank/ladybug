@@ -151,6 +151,7 @@ public class ReportApi extends ApiBase {
 	 */
 	@GET
 	@Path("/shownReports/{storage}")
+	@Produces(MediaType.APPLICATION_JSON)
 	public Response getReportsForView(@PathParam("storage") String storageName,
 									  @QueryParam("view") String viewName,
 									  @QueryParam("storageIds") List<Integer> storageIds,

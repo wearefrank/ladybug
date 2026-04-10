@@ -18,7 +18,11 @@ package org.wearefrank.ladybug.web.common.shownreport;
 import lombok.Getter;
 import lombok.Setter;
 
-public class ShownReport extends TreeNode {
+import java.io.Serializable;
+
+public class ShownReport extends TreeNode implements Serializable {
+	private static final long serialVersionUID = 103;
+
 	private @Setter @Getter String description;
 	private @Setter @Getter String path;
 	private @Setter @Getter String stubStrategy;

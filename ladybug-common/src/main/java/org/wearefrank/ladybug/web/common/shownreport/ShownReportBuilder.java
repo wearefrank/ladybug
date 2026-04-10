@@ -15,6 +15,7 @@
 */
 package org.wearefrank.ladybug.web.common.shownreport;
 
+import org.springframework.stereotype.Component;
 import org.wearefrank.ladybug.Checkpoint;
 import org.wearefrank.ladybug.Report;
 import org.wearefrank.ladybug.filter.View;
@@ -45,6 +46,7 @@ import java.util.Iterator;
  * it is passed to the frontend. When a checkpoint is shown it is added to
  * the first ancestor of its branch that is shown.
  */
+@Component
 public class ShownReportBuilder {
 
 	// A node of the current checkpoint branch.

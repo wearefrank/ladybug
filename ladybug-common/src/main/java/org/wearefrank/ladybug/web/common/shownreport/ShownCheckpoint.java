@@ -19,9 +19,11 @@ import lombok.Getter;
 import lombok.Setter;
 import org.wearefrank.ladybug.StubType;
 
+import java.io.Serializable;
 import java.util.Map;
 
-public class ShownCheckpoint extends TreeNode {
+public class ShownCheckpoint extends TreeNode implements Serializable {
+	private static final long serialVersionUID = 104;
 	private @Getter @Setter String message;
 	private @Getter @Setter String encoding;
 	private @Getter @Setter Map<String, Object> messageContext;
