@@ -66,6 +66,10 @@ public class ShownReportBuilderTest extends ReportRelatedTestCase {
 			steps.add(() -> testTool.threadCreatepoint(correlationId, this.getName()));
 		}
 
+		void addThreadStartpoint(String name) {
+			steps.add(() -> testTool.threadStartpoint(correlationId, "DummySourceClass", name, "DummyMessage"));
+		}
+
 		void addThreadEndpoint(String name) {
 			steps.add(() -> testTool.threadEndpoint(correlationId, "DummySourceClass", name, "DummyMessage"));
 		}
@@ -126,7 +130,7 @@ public class ShownReportBuilderTest extends ReportRelatedTestCase {
 	@Test
 	public void whenCheckpointsComeFromMultipleTrheadsThenSortedUnderThreadpoints() throws Exception {
 		secondThread.addDelay(100);
-		secondThread.addStartpoint("secondStart");
+		secondThread.addThreadStartpoint("secondStart");
 		secondThread.addDelay(200);
 		secondThread.addThreadEndpoint("secondEnd");
 		startpoint("firstStart");
@@ -139,25 +143,20 @@ public class ShownReportBuilderTest extends ReportRelatedTestCase {
 		secondThread.join();
 		ShownReport actual = getShownReport();
 		show(actual);
-		/*
 		Assert.assertEquals("firstStart", actual.getName());
 		Assert.assertEquals(1, actual.getChildren().size());
 		ShownCheckpoint child_0 = actual.getChildren().get(0);
 		Assert.assertEquals("firstStart", child_0.getName());
 		Assert.assertEquals(2, child_0.getChildren().size());
 		ShownCheckpoint child_00 = child_0.getChildren().get(0);
-		Assert.assertEquals(secondThread.getName(), child_00.getName());
+		Assert.assertEquals("secondStart", child_00.getName());
 		Assert.assertEquals(1, child_00.getChildren().size());
 		ShownCheckpoint child_000 = child_00.getChildren().get(0);
-		Assert.assertEquals("secondStart", child_000.getName());
-		Assert.assertEquals(1, child_000.getChildren().size());
-		ShownCheckpoint child_0000 = child_000.getChildren().get(0);
-		Assert.assertEquals("secondEnd", child_0000.getName());
-		Assert.assertNull(child_0000.getChildren());
+		Assert.assertEquals("secondEnd", child_000.getName());
+		Assert.assertNull(child_000.getChildren());
 		ShownCheckpoint child_01 = child_0.getChildren().get(1);
-		Assert.assertEquals("secondEnd", child_01.getName());
+		Assert.assertEquals("firstEnd", child_01.getName());
 		Assert.assertNull(child_01.getChildren());
-		 */
 	}
 
 	private ShownReport getShownReport() throws Exception {
