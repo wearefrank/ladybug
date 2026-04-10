@@ -4,10 +4,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.Assert;
 
-import org.springframework.context.ApplicationContext;
 import org.wearefrank.ladybug.Checkpoint;
 import org.wearefrank.ladybug.filter.CheckpointMatcher;
-import org.wearefrank.ladybug.test.junit.Common;
 import org.wearefrank.ladybug.Report;
 import org.wearefrank.ladybug.TestTool;
 import org.wearefrank.ladybug.test.junit.ReportRelatedTestCase;
@@ -164,7 +162,7 @@ public class ShownReportBuilderTest extends ReportRelatedTestCase {
 
 	@Test
 	public void whenViewHidesParentThenChildPutUnderGrandParent_root() throws Exception {
-		addCheckpointMatcherToReport();
+		addCheckpointMatcherToView();
 		startpoint("start");
 		inputpoint("shownInput");
 		endpoint("end");
@@ -178,7 +176,7 @@ public class ShownReportBuilderTest extends ReportRelatedTestCase {
 
 	@Test
 	public void whenViewHidesParentThenChildPutUnderGrandparent_nonroot() throws Exception {
-		addCheckpointMatcherToReport();
+		addCheckpointMatcherToView();
 		startpoint("shownStart");
 		startpoint("hiddenStart");
 		inputpoint("shownInput");
@@ -199,7 +197,7 @@ public class ShownReportBuilderTest extends ReportRelatedTestCase {
 		Assert.assertNull(child_01.getChildren());
 	}
 
-	private void addCheckpointMatcherToReport() {
+	private void addCheckpointMatcherToView() {
 		CheckpointMatcher checkpointMatcher = new CheckpointMatcher() {
 			@Override
 			public boolean match(Report report, Checkpoint checkpoint) {
