@@ -5,6 +5,8 @@ import org.junit.Test;
 import org.junit.Assert;
 
 import org.springframework.context.ApplicationContext;
+import org.wearefrank.ladybug.Checkpoint;
+import org.wearefrank.ladybug.filter.CheckpointMatcher;
 import org.wearefrank.ladybug.test.junit.Common;
 import org.wearefrank.ladybug.Report;
 import org.wearefrank.ladybug.TestTool;
@@ -14,6 +16,7 @@ import org.wearefrank.ladybug.web.common.shownreport.ShownReport;
 import org.wearefrank.ladybug.web.common.shownreport.ShownReportBuilder;
 import org.wearefrank.ladybug.filter.View;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.ArrayList;
 
@@ -157,6 +160,53 @@ public class ShownReportBuilderTest extends ReportRelatedTestCase {
 		ShownCheckpoint child_01 = child_0.getChildren().get(1);
 		Assert.assertEquals("firstEnd", child_01.getName());
 		Assert.assertNull(child_01.getChildren());
+	}
+
+	@Test
+	public void whenViewHidesParentThenChildPutUnderGrandParent_root() throws Exception {
+		addCheckpointMatcherToReport();
+		startpoint("start");
+		inputpoint("shownInput");
+		endpoint("end");
+		ShownReport actual = getShownReport();
+		Assert.assertEquals("start", actual.getName());
+		Assert.assertEquals(1, actual.getChildren().size());
+		ShownCheckpoint child = actual.getChildren().get(0);
+		Assert.assertEquals("shownInput", child.getName());
+		Assert.assertNull(child.getChildren());
+	}
+
+	@Test
+	public void whenViewHidesParentThenChildPutUnderGrandparent_nonroot() throws Exception {
+		addCheckpointMatcherToReport();
+		startpoint("shownStart");
+		startpoint("hiddenStart");
+		inputpoint("shownInput");
+		endpoint("hiddenEnd");
+		endpoint("shownEnd");
+		ShownReport actual = getShownReport();
+		show(actual);
+		Assert.assertEquals("shownStart", actual.getName());
+		Assert.assertEquals(1, actual.getChildren().size());
+		ShownCheckpoint child_0 = actual.getChildren().get(0);
+		Assert.assertEquals("shownStart", child_0.getName());
+		Assert.assertEquals(2, child_0.getChildren().size());
+		ShownCheckpoint child_00 = child_0.getChildren().get(0);
+		Assert.assertEquals("shownInput", child_00.getName());
+		Assert.assertNull(child_00.getChildren());
+		ShownCheckpoint child_01 = child_0.getChildren().get(1);
+		Assert.assertEquals("shownEnd", child_01.getName());
+		Assert.assertNull(child_01.getChildren());
+	}
+
+	private void addCheckpointMatcherToReport() {
+		CheckpointMatcher checkpointMatcher = new CheckpointMatcher() {
+			@Override
+			public boolean match(Report report, Checkpoint checkpoint) {
+				return checkpoint.getName().toUpperCase().contains("SHOWN");
+			}
+		};
+		testView.setCheckpointMatchers(Arrays.asList(checkpointMatcher));
 	}
 
 	private ShownReport getShownReport() throws Exception {
