@@ -16,16 +16,17 @@
 package org.wearefrank.ladybug;
 
 import com.google.protobuf.ByteString;
+import io.opentelemetry.proto.common.v1.KeyValue;
 import io.opentelemetry.proto.trace.v1.Span;
 import org.apache.commons.codec.binary.Hex;
 
 import java.util.*;
 
-public class SpanGraph {
-    private Map<String, List<Span>> spans;
+public class TraceTree {
+    private HashMap<String, ArrayList<Span>> spans;
     TestTool testTool;
 
-    public SpanGraph(TestTool testTool) {
+    public TraceTree(TestTool testTool) {
         spans = new HashMap<>();
         this.testTool = testTool;
     }
@@ -36,23 +37,28 @@ public class SpanGraph {
     }
 
     public void dfs(Span root) {
-        Set<Span> visited = new HashSet<>();
+        HashSet<Span> visited = new HashSet<>();
         dfsRecursive(root, visited);
     }
 
-    private void dfsRecursive(Span node, Set<Span> visited) {
-        testTool.startpoint(byteStringToHex(node.getTraceId()), null, node.getName(), toHashMap(node).toString());
-        visited.add(node);
+    private void dfsRecursive(Span span, HashSet<Span> visited) {
+        testTool.startpoint(byteStringToHex(span.getTraceId()), null, span.getName(), toHashMap(span));
 
-        if (spans.containsKey(byteStringToHex(node.getSpanId()))) {
-            for (Span neighbor : spans.get(byteStringToHex(node.getSpanId()))) {
-                if (!visited.contains(neighbor)) {
-                    dfsRecursive(neighbor, visited);
+        for (KeyValue keyValue : span.getAttributesList()) {
+            testTool.infopoint(byteStringToHex(span.getTraceId()), null, keyValue.getKey(), keyValue.getValue());
+        }
+
+        visited.add(span);
+
+        if (spans.containsKey(byteStringToHex(span.getSpanId()))) {
+            for (Span sibling : spans.get(byteStringToHex(span.getSpanId()))) {
+                if (!visited.contains(sibling)) {
+                    dfsRecursive(sibling, visited);
                 }
             }
         }
 
-        testTool.endpoint(byteStringToHex(node.getTraceId()), null, node.getName(), "Endpoint");
+        testTool.endpoint(byteStringToHex(span.getTraceId()), null, span.getName(), "Endpoint");
     }
 
     public String byteStringToHex(ByteString byteString) {

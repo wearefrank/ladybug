@@ -34,7 +34,7 @@ public class SpanBuffer {
     public SpanBuffer(CollectorApiImpl delegate) {
         this.delegate = delegate;
         this.cache = Caffeine.newBuilder()
-                .expireAfterWrite(1, TimeUnit.SECONDS)
+                .expireAfterWrite(30, TimeUnit.SECONDS)
                 .removalListener((String traceId, ArrayList<Span> spans, RemovalCause cause) -> {
                     if (spans != null && cause == RemovalCause.EXPIRED) {
                         ArrayList<Span> spansCopy = new ArrayList<>(spans);

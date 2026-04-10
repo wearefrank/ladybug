@@ -23,7 +23,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import io.opentelemetry.proto.trace.v1.Span;
-import org.wearefrank.ladybug.SpanGraph;
+import org.wearefrank.ladybug.TraceTree;
 import org.wearefrank.ladybug.TestTool;
 
 import java.lang.invoke.MethodHandles;
@@ -37,15 +37,35 @@ public class CollectorApiImpl {
 	private @Setter TestTool testTool;
 
 	public void processSpans(ArrayList<Span> spans) {
-		SpanGraph spanGraph = new SpanGraph(testTool);
+		TraceTree traceTree = new TraceTree(testTool);
+		ArrayList<String> spanIds = new ArrayList<>();
+
+		for (Span span : spans) {
+			spanIds.add(byteStringToHex(span.getSpanId()));
+		}
 
 		Span rootSpan = findRoot(spans);
 
 		if (rootSpan != null) {
 			for (Span span: spans) {
-				spanGraph.addEdge(byteStringToHex(span.getParentSpanId()), span);
+				String parentId = byteStringToHex(span.getParentSpanId());
+
+				if (!parentId.isEmpty() && spanIds.contains(parentId)) {
+					traceTree.addEdge(parentId, span);
+				} else {
+					ArrayList<Span> timeSortedSpans = new ArrayList<>(spans);
+					timeSortedSpans.sort(Comparator.comparingLong(Span::getStartTimeUnixNano));
+
+					for (int i = 0; i < timeSortedSpans.size(); i++) {
+						if (byteStringToHex(span.getSpanId()).equals(byteStringToHex(timeSortedSpans.get(i).getSpanId()))) {
+							if (i > 0) {
+								traceTree.addEdge(byteStringToHex(timeSortedSpans.get(i - 1).getSpanId()), span);
+							}
+						}
+					}
+				}
 			}
-			spanGraph.dfs(rootSpan);
+			traceTree.dfs(rootSpan);
 		}
 	}
 
