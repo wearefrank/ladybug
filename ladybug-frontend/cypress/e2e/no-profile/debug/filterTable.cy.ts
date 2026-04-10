@@ -1,5 +1,8 @@
 describe('Tests for table filter', () => {
-  before(() => cy.resetApp());
+  before(() => {
+    cy.resetApp();
+    cy.initializeApp();
+  });
 
   beforeEach(() => {
     cy.createReport();
@@ -7,7 +10,10 @@ describe('Tests for table filter', () => {
     cy.initializeApp();
   });
 
-  afterEach(() => cy.resetApp());
+  afterEach(() => {
+    cy.resetApp();
+    cy.initializeApp();
+  });
 
   it('Should change table size when changing display amount', () => {
     // We only assume here that the default is two or more.

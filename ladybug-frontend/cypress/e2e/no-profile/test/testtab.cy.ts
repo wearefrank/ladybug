@@ -1,6 +1,7 @@
 describe('Test the Test tab', () => {
   before(() => {
     cy.resetApp();
+    cy.initializeApp();
   });
 
   beforeEach(() => {
@@ -11,7 +12,10 @@ describe('Test the Test tab', () => {
     cy.navigateToTestTabAndAwaitLoadingSpinner();
   });
 
-  afterEach(() => cy.resetApp());
+  afterEach(() => {
+    cy.resetApp();
+    cy.initializeApp();
+  });
 
   it('should show storage ids in table when setting is enabled', () => {
     // Default is that storag ids are not shown.

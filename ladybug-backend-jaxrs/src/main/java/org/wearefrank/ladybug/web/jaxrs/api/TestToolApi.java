@@ -30,17 +30,24 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import lombok.extern.slf4j.Slf4j;
 import lombok.Setter;
 import org.wearefrank.ladybug.Report;
 import org.wearefrank.ladybug.filter.View;
 
 import org.wearefrank.ladybug.web.common.Constants;
+import org.wearefrank.ladybug.web.common.FrontendRolesResolver;
 import org.wearefrank.ladybug.web.common.HttpBadRequestException;
 import org.wearefrank.ladybug.web.common.HttpInternalServerErrorException;
 import org.wearefrank.ladybug.web.common.TestToolApiImpl;
+import org.wearefrank.ladybug.web.common.TestToolInfoResponse;
 
 @Path("/" + Constants.LADYBUG_API_PATH + "/testtool")
+@Slf4j
 public class TestToolApi extends ApiBase {
+	@Autowired
+	private @Setter FrontendRolesResolver frontendRolesResolver;
+
 	@Autowired
 	private @Setter TestToolApiImpl delegate;
 
@@ -50,16 +57,18 @@ public class TestToolApi extends ApiBase {
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getInfo() {
-		Map<String, Object> info = delegate.getTestToolInfo();
-		return Response.ok(info).build();
+		TestToolInfoResponse result = delegate.getTestToolInfo();
+		result.setRoles(frontendRolesResolver.getFrontendRoles(super::isUserInRoles));
+		return Response.ok(result).build();
 	}
 
 	@GET
 	@Path("/reset")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response resetInfo() {
-		Map<String, Object> info = delegate.resetInfo();
-		return Response.ok(info).build();
+		TestToolInfoResponse result = delegate.resetInfo();
+		result.setRoles(frontendRolesResolver.getFrontendRoles(super::isUserInRoles));
+		return Response.ok(result).build();
 	}
 
 
@@ -77,6 +86,8 @@ public class TestToolApi extends ApiBase {
 			return Response.ok().build();
 		} catch(HttpBadRequestException e) {
 			return Response.status(Response.Status.BAD_REQUEST).entity(e.getMessage()).build();
+		} catch(HttpInternalServerErrorException e) {
+			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e.getMessage()).build();
 		}
 	}
 
@@ -144,28 +155,6 @@ public class TestToolApi extends ApiBase {
 			return Response.status(Response.Status.BAD_REQUEST).entity(e.getMessage()).build();
 		} catch(HttpInternalServerErrorException e) {
 			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e.getMessage()).build();
-		}
-	}
-
-	@POST
-	@Path("/transformation/reset")
-	public Response restoreDefaultXsltTransformation() {
-		delegate.restoreDefaultXsltTransformation();
-		return Response.ok().build();
-	}
-
-	/**
-	 * @return Response containing the current default transformation of the test tool.
-	 */
-	@GET
-	@Path("/transformation")
-	@Produces(MediaType.APPLICATION_JSON)
-	public Response getReportTransformation() {
-		Map<String, String> result = delegate.getReportTransformation();
-		if (result == null) {
-			return Response.noContent().build();
-		} else {
-			return Response.ok(result).build();
 		}
 	}
 

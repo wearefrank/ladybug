@@ -265,7 +265,7 @@ jobs:
         working-directory: ladybug/ladybug-ff-test-webapp
         run: ./restart.sh > serverStartLog.log &
       - name: Wait for server to be available
-        working-directory: ladybug/.github/workflows/with-ff
+        working-directory: ladybug/.github/workflows
         run: ./waitForUrl.sh http://localhost:8090 1800
       - name: Be sure there are no old videos
         run: rm -rf ladybug/ladybug-ff-cypress-test/cypress/videos

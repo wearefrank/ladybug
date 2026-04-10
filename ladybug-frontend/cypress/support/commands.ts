@@ -13,10 +13,19 @@ import Chainable = Cypress.Chainable;
 import JQueryWithSelector = Cypress.JQueryWithSelector;
 import { Interception } from 'cypress/types/net-stubbing';
 
+const OBSERVER_USER = 'IbisObserver';
+const OBSERVER_PWD = 'IbisObserver';
+const TESTER_USER = 'IbisTester';
+const TESTER_PWD = 'IbisTester';
+
 declare global {
   namespace Cypress {
     interface Chainable {
       initializeApp(): Chainable;
+
+      initializeAppAsObserver(): Chainable;
+
+      initializeAppAsTester(): Chainable;
 
       resetApp(): Chainable;
 
@@ -99,6 +108,8 @@ declare global {
       editCheckpointValue(value: string): Chainable;
 
       debugTabBackToFactorySettings(): Chainable;
+
+      enterSettingsDialogAndExpectReportGenerator(text: string): Chainable;
     }
   }
 }
@@ -109,12 +120,31 @@ Cypress.Commands.add('initializeApp' as keyof Chainable, (): void => {
   awaitLoadingSpinner();
 });
 
+Cypress.Commands.add('initializeAppAsObserver' as keyof Chainable, (): void => {
+  cy.visit('', {
+    auth: {
+      username: OBSERVER_USER,
+      password: OBSERVER_PWD,
+    }
+  });
+  awaitLoadingSpinner();
+})
+
+Cypress.Commands.add('initializeAppAsTester' as keyof Chainable, (): void => {
+  cy.visit('', {
+    auth: {
+      username: TESTER_USER,
+      password: TESTER_PWD,
+    }
+  });
+  awaitLoadingSpinner();
+})
+
 Cypress.Commands.add('resetApp' as keyof Chainable, (): void => {
   cy.clearDebugStore();
   cy.clearTestReports();
   cy.clearReportsInProgress();
   cy.clearDatabaseStorage();
-  cy.initializeApp();
 });
 
 Cypress.Commands.add('clearTestReports' as keyof Chainable, (): void => {
@@ -453,6 +483,12 @@ Cypress.Commands.add('editCheckpointValue' as keyof Chainable, (value: string): 
       text: value
     }]);
   });
+});
+
+Cypress.Commands.add('enterSettingsDialogAndExpectReportGenerator' as keyof Chainable, (text: string): Chainable => {
+  cy.get('[data-cy-debug="openSettings"]').as('openSettingsModal').click();
+  cy.get('[data-cy-settings="nav-server"]').click();
+  cy.get('[data-cy-settings="generatorEnabled"] option:selected').should('have.text', text);
 });
 
 Cypress.Commands.add('debugTabBackToFactorySettings' as keyof Chainable, (): Chainable => {
