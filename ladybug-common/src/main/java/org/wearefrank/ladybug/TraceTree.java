@@ -16,16 +16,12 @@
 package org.wearefrank.ladybug;
 
 import com.google.protobuf.ByteString;
-import com.google.protobuf.Parser;
-import com.google.protobuf.TextFormat;
 import io.opentelemetry.proto.common.v1.AnyValue;
 import io.opentelemetry.proto.common.v1.KeyValue;
 import io.opentelemetry.proto.trace.v1.Span;
 import org.apache.commons.codec.binary.Hex;
 
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class TraceTree {
     private HashMap<String, ArrayList<Span>> spans;
