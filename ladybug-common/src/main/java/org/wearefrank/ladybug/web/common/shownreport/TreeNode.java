@@ -22,8 +22,10 @@ import lombok.Setter;
 import java.util.ArrayList;
 import java.util.List;
 
+import jakarta.validation.constraints.NotNull;
+
 public class TreeNode {
-	private @Getter @Setter String name;
+	private @Getter @Setter @NotNull String name;
 	private @Getter List<ShownCheckpoint> children = null;
 
 	@JsonIgnore

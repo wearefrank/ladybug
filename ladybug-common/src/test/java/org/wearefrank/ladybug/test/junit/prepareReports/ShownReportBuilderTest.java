@@ -1,5 +1,6 @@
 package org.wearefrank.ladybug.test.junit.prepareReports;
 
+import jakarta.validation.ValidationException;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.Assert;
@@ -8,6 +9,7 @@ import org.wearefrank.ladybug.Checkpoint;
 import org.wearefrank.ladybug.filter.CheckpointMatcher;
 import org.wearefrank.ladybug.Report;
 import org.wearefrank.ladybug.TestTool;
+import org.wearefrank.ladybug.storage.Storage;
 import org.wearefrank.ladybug.test.junit.ReportRelatedTestCase;
 import org.wearefrank.ladybug.web.common.shownreport.ShownCheckpoint;
 import org.wearefrank.ladybug.web.common.shownreport.ShownReport;
@@ -78,17 +80,78 @@ public class ShownReportBuilderTest extends ReportRelatedTestCase {
 
 	private TestToolThread secondThread;
 
-	public ShownReportBuilderTest() {
-		// Is stateless, no need to construct / destruct for every test
-		instance = new ShownReportBuilder();
-	}
-
 	@Before
 	public void setUp() {
 		super.setUp();
+		// The application context is now initialized.
+		instance = context.getBean(ShownReportBuilder.class);
 		testView = new View();
 		correlationId = ReportRelatedTestCase.getCorrelationId();
 		secondThread = new TestToolThread(testTool, correlationId);
+	}
+
+	@Test
+	public void whenReportNameIsNullThenConversionToShownReportFails() {
+		boolean caught = false;
+		try {
+			Report report = getReportThatShouldByTransformable();
+			report.setName(null);
+			instance.transform(report, testView);
+		} catch(IllegalArgumentException e) {
+			System.out.println(e);
+			caught = true;
+			// From superclass TreeNode.
+			Assert.assertTrue(e.getMessage().contains("propertyPath=name"));
+		}
+		Assert.assertTrue(caught);
+	}
+
+	@Test
+	public void whenReportLinkMethodIsNullThenConversionToShownReportFails() {
+		boolean caught = false;
+		try {
+			Report report = getReportThatShouldByTransformable();
+			report.setLinkMethod(null);
+			instance.transform(report, testView);
+		} catch(IllegalArgumentException e) {
+			System.out.println(e);
+			caught = true;
+			// From ShownReport.
+			Assert.assertTrue(e.getMessage().contains("propertyPath=linkMethod"));
+		}
+		Assert.assertTrue(caught);
+	}
+
+	@Test
+	public void whenCheckpointThreadNameIsNullThenConversionToShownReportFails() {
+		boolean caught = false;
+		try {
+			Report report = getReportThatShouldByTransformable();
+			report.getCheckpoints().get(0).setThreadName(null);
+			instance.transform(report, testView);
+		} catch(IllegalArgumentException e) {
+			System.out.println(e);
+			caught = true;
+			// From ShownReport.
+			Assert.assertTrue(e.getMessage().contains("propertyPath=threadName"));
+		}
+		Assert.assertTrue(caught);
+	}
+
+	private Report getReportThatShouldByTransformable() {
+		Report report = new Report();
+		report.setName("Some name");
+		report.setStorage(testTool.getDebugStorage());
+		report.setStorageId(0);
+		report.setStubStrategy("Some stub strategy");
+		report.setLinkMethod("Some link method");
+		report.setCorrelationId("My correlation id");
+		Checkpoint checkpoint = new Checkpoint();
+		checkpoint.setName("Some checkpoint name");
+		checkpoint.setType(1);
+		checkpoint.setReport(report);
+		report.getCheckpoints().add(checkpoint);
+		return report;
 	}
 
 	@Test

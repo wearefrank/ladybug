@@ -32,6 +32,7 @@
 	</bean>
 
 	<bean name="debugStorage" class="org.wearefrank.ladybug.storage.memory.MemoryLogStorage" autowire="byName">
+		<property name="name" value="debugStorage"/>
 		<property name="initialStorageId">
 			<value>2514</value>
 		</property>

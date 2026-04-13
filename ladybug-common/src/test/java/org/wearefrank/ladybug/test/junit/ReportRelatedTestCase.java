@@ -33,6 +33,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
+import lombok.extern.slf4j.Slf4j;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -62,9 +63,8 @@ import org.wearefrank.ladybug.transform.ReportXmlTransformer;
  * @author Jaco de Groot
  */
 @RunWith(Parameterized.class)
+@Slf4j
 public class ReportRelatedTestCase {
-	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-
 	@Parameters(name = "{0}")
 	public static Collection<Object[]> data() {
 		return Arrays.asList(new Object[][] {

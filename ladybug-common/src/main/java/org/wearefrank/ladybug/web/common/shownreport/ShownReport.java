@@ -15,6 +15,7 @@
 */
 package org.wearefrank.ladybug.web.common.shownreport;
 
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -25,11 +26,11 @@ public class ShownReport extends TreeNode implements Serializable {
 
 	private @Setter @Getter String description;
 	private @Setter @Getter String path;
-	private @Setter @Getter String stubStrategy;
-	private @Setter @Getter String linkMethod;
+	private @Setter @Getter @NotNull String stubStrategy;
+	private @Setter @Getter @NotNull String linkMethod;
 	private @Setter @Getter String transformation;
-	private @Setter @Getter int storageId;
-	private @Setter @Getter String storageName;
-	private @Setter @Getter long estimatedMemoryUsage;
-	private @Setter @Getter String correlationId;
+	private @Setter @Getter @NotNull int storageId;
+	private @Setter @Getter @NotNull String storageName;
+	private @Setter @Getter @NotNull long estimatedMemoryUsage;
+	private @Setter @Getter @NotNull String correlationId;
 }

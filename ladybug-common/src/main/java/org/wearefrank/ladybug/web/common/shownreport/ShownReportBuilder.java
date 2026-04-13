@@ -15,14 +15,21 @@
 */
 package org.wearefrank.ladybug.web.common.shownreport;
 
+import jakarta.inject.Inject;
 import org.springframework.stereotype.Component;
 import org.wearefrank.ladybug.Checkpoint;
 import org.wearefrank.ladybug.Report;
 import org.wearefrank.ladybug.filter.View;
+import org.wearefrank.ladybug.web.common.LadybugValidator;
+
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.Iterator;
+import lombok.extern.slf4j.Slf4j;
+
+import lombok.Setter;
 
 /*
  * Classes Report and Checkpoint have more fields than the fields needed by the
@@ -47,7 +54,10 @@ import java.util.Iterator;
  * the first ancestor of its branch that is shown.
  */
 @Component
+@Slf4j
 public class ShownReportBuilder {
+	@Autowired
+	private @Setter LadybugValidator validator;
 
 	// A node of the current checkpoint branch.
 	private static abstract class Ancestor {
@@ -176,6 +186,7 @@ public class ShownReportBuilder {
 		dest.setStorageName(source.getStorage().getName());
 		dest.setEstimatedMemoryUsage(source.getEstimatedMemoryUsage());
 		dest.setCorrelationId(source.getCorrelationId());
+		validator.validateObject(dest);
 	}
 
 	private void copyCheckpoint(Checkpoint source, ShownCheckpoint dest) {
@@ -194,5 +205,6 @@ public class ShownReportBuilder {
 		dest.setSourceClassName(source.getSourceClassName());
 		dest.setMessageClassName(source.getMessageClassName());
 		dest.setUid(source.getUid());
+		validator.validateObject(dest);
 	}
 }
