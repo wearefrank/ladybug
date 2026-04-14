@@ -4,7 +4,6 @@ export interface TreeItem {
 }
 
 export interface HierarchicalReport extends TreeItem {
-  name: string;
   description: string | null;
   path: string | null;
   stubStrategy: string;
