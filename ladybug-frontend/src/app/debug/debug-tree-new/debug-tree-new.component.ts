@@ -1,4 +1,4 @@
-import { Component, EventEmitter, inject, Input, OnDestroy, Output, ViewChild } from '@angular/core';
+import { Component, EventEmitter, inject, Input, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
 import { HttpService } from '../../shared/services/http.service';
 import { CreateTreeItem, FileTreeOptions, NgSimpleFileTree } from 'ng-simple-file-tree';
 import { SimpleFileTreeUtil as SimpleFileTreeUtility } from '../../shared/util/simple-file-tree-util';
@@ -22,7 +22,7 @@ interface FrankTreeNode {
   standalone: true,
   imports: [NgSimpleFileTree],
 })
-export class DebugTreeNewComponent implements OnDestroy {
+export class DebugTreeNewComponent implements OnInit, OnDestroy {
   @ViewChild('tree') tree!: NgSimpleFileTree;
   @Input() report$!: Observable<HierarchicalReport | null>;
   @Output() selectReportEvent = new EventEmitter<HierarchicalReport | HierarchicalCheckpoint>();
@@ -49,7 +49,7 @@ export class DebugTreeNewComponent implements OnDestroy {
 
   private readonly THROWABLE_ENCODER: string = 'printStackTrace()';
 
-  constructor() {
+  ngOnInit(): void {
     this.subscribeToSubscriptions();
   }
 
