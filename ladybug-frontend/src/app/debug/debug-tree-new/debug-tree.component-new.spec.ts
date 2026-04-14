@@ -1,23 +1,23 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { DebugTreeComponent } from './debug-tree-new.component';
+import { DebugTreeNewComponent } from './debug-tree-new.component';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { NgSimpleFileTree } from 'ng-simple-file-tree';
 import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 
-describe('DebugTreeComponent', () => {
-  let component: DebugTreeComponent;
-  let fixture: ComponentFixture<DebugTreeComponent>;
+describe('DebugTreeNewComponent', () => {
+  let component: DebugTreeNewComponent;
+  let fixture: ComponentFixture<DebugTreeNewComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [NgSimpleFileTree, DebugTreeComponent],
+      imports: [NgSimpleFileTree, DebugTreeNewComponent],
       providers: [provideHttpClient(withInterceptorsFromDi()), provideHttpClientTesting()],
     }).compileComponents();
   });
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(DebugTreeComponent);
+    fixture = TestBed.createComponent(DebugTreeNewComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

@@ -97,6 +97,11 @@
         <version>${jackson.databind.version}</version>
       </dependency>
       <dependency>
+        <groupId>jakarta.validation</groupId>
+        <artifactId>jakarta.validation-api</artifactId>
+        <version>3.1.1</version>
+      </dependency>
+      <dependency>
         <groupId>jakarta.servlet</groupId>
         <artifactId>jakarta.servlet-api</artifactId>
         <version>6.1.0</version>
@@ -269,6 +274,11 @@
         <artifactId>opentelemetry-exporter-otlp</artifactId>
         <version>1.60.1</version>
         <scope>provided</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.hibernate.validator</groupId>
+        <artifactId>hibernate-validator</artifactId>
+        <version>9.1.0.Final</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
