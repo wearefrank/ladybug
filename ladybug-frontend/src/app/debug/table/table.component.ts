@@ -11,7 +11,7 @@ import { ToastService } from '../../shared/services/toast.service';
 import { TabService } from '../../shared/services/tab.service';
 import { AppVariablesService } from '../../shared/services/app.variables.service';
 import { FilterService } from '../filter-side-drawer/filter.service';
-import { ReportData } from '../../shared/interfaces/report-data';
+import { HierarchicalReportData } from '../../shared/interfaces/report-data';
 import { TableCellShortenerPipe } from '../../shared/pipes/table-cell-shortener.pipe';
 import { MatSort, MatSortModule } from '@angular/material/sort';
 import { ActiveFiltersComponent } from '../active-filters/active-filters.component';
@@ -37,6 +37,7 @@ import { RefreshCondition } from '../../shared/interfaces/refresh-condition';
 import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner/loading-spinner.component';
 import { ShortenedTableHeaderPipe } from '../../shared/pipes/shortened-table-header.pipe';
 import { ClientSettingsService } from 'src/app/shared/services/client.settings.service';
+import { HierarchicalReport } from '../../shared/interfaces/hierarchical-report';
 
 @Component({
   selector: 'app-table',
@@ -76,7 +77,7 @@ export class TableComponent implements OnInit, OnDestroy {
   @Input({ required: true }) views!: View[];
   @Input({ required: true }) currentView!: View;
   @Output() viewChange: EventEmitter<View> = new EventEmitter<View>();
-  @Output() openReportEvent: EventEmitter<Report> = new EventEmitter<Report>();
+  @Output() openReportEvent: EventEmitter<HierarchicalReport> = new EventEmitter<HierarchicalReport>();
 
   @ViewChild(TableSettingsModalComponent)
   protected tableSettingsModal!: TableSettingsModalComponent;
@@ -370,12 +371,12 @@ export class TableComponent implements OnInit, OnDestroy {
       return;
     }
     this.httpService
-      .getReport(reportTab.storageId, this.currentView.storageName)
+      .getHierarchicalReports([reportTab.storageId], this.currentView.storageName, this.currentView.name)
       .pipe(catchError(this.errorHandler.handleError()))
       .subscribe({
-        next: (report: Report): void => {
-          const reportData: ReportData = {
-            report: report,
+        next: (report: HierarchicalReport[]): void => {
+          const reportData: HierarchicalReportData = {
+            report: report[0],
             currentView: this.currentView!,
           };
           this.tabService.openNewTab(reportData);
@@ -391,12 +392,12 @@ export class TableComponent implements OnInit, OnDestroy {
       return;
     }
     this.httpService
-      .getReports(this.selectedReportIds, this.currentView.storageName)
+      .getHierarchicalReports(this.selectedReportIds, this.currentView.storageName, this.currentView.name)
       .pipe(catchError(this.errorHandler.handleError()))
       .subscribe({
-        next: (data: Record<string, CompareReport>) => {
+        next: (data: Record<string, HierarchicalReport>) => {
           for (const storageId of this.selectedReportIds) {
-            this.openReportEvent.next(data[storageId].report);
+            this.openReportEvent.next(data[storageId]);
           }
         },
       });
@@ -476,12 +477,11 @@ export class TableComponent implements OnInit, OnDestroy {
   openReport(storageId: number): void {
     this.debugTab.setAnyReportsOpen(true);
     this.httpService
-      .getReport(storageId, this.currentView.storageName)
+      .getHierarchicalReports([storageId], this.currentView.storageName, this.currentView.name)
       .pipe(catchError(this.errorHandler.handleError()))
       .subscribe({
-        next: (data: Report): void => {
-          data.storageName = this.currentView.storageName;
-          this.openReportEvent.next(data);
+        next: (data: HierarchicalReport[]): void => {
+          this.openReportEvent.next(data[0]);
         },
       });
   }
@@ -496,7 +496,7 @@ export class TableComponent implements OnInit, OnDestroy {
       .getReportInProgress(index)
       .pipe(catchError(this.errorHandler.handleError()))
       .subscribe({
-        next: (report: Report) => {
+        next: (report: HierarchicalReport) => {
           this.openReportEvent.next(report);
           this.toastService.showSuccess(`Opened report in progress with index [${index}]`);
         },
@@ -605,9 +605,9 @@ export class TableComponent implements OnInit, OnDestroy {
       .uploadReport(formData)
       .pipe(catchError(this.errorHandler.handleError()))
       .subscribe({
-        next: (data: Report[]) => {
+        next: (data: HierarchicalReport[]) => {
           for (let report of data) {
-            const reportData: ReportData = {
+            const reportData: HierarchicalReportData = {
               report: report,
               currentView: this.currentView,
             };

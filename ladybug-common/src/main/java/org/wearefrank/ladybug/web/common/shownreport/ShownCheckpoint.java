@@ -38,5 +38,6 @@ public class ShownCheckpoint extends TreeNode implements Serializable {
 	private @Getter @Setter @NotNull String threadName;
 	private @Getter @Setter String sourceClassName;
 	private @Getter @Setter String messageClassName;
+	private @Getter @Setter int id;
 	private @Getter @Setter @NotNull String uid;
 }

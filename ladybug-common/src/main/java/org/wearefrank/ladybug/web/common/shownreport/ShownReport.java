@@ -20,6 +20,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.io.Serializable;
+import java.util.Map;
 
 public class ShownReport extends TreeNode implements Serializable {
 	private static final long serialVersionUID = 103;
@@ -31,6 +32,8 @@ public class ShownReport extends TreeNode implements Serializable {
 	private @Setter @Getter String transformation;
 	private @Setter @Getter @NotNull int storageId;
 	private @Setter @Getter @NotNull String storageName;
+	private @Setter @Getter @NotNull boolean crudStorage;
 	private @Setter @Getter @NotNull long estimatedMemoryUsage;
 	private @Setter @Getter @NotNull String correlationId;
+	private @Setter @Getter Map<String, String> variables;
 }

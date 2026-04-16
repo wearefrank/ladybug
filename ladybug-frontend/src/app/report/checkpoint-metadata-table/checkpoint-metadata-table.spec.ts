@@ -1,9 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { CheckpointMetadataTable } from './checkpoint-metadata-table';
-import { PartialReport } from '../report.component';
-import { PartialCheckpoint } from '../checkpoint-value/checkpoint-value.component';
 import { StubStrategy } from '../../shared/enums/stub-strategy';
+import { HierarchicalReport, HierarchicalCheckpoint } from '../../shared/interfaces/hierarchical-report';
 
 describe('CheckpointMetadataTable', () => {
   let component: CheckpointMetadataTable;
@@ -16,7 +15,7 @@ describe('CheckpointMetadataTable', () => {
 
     fixture = TestBed.createComponent(CheckpointMetadataTable);
     component = fixture.componentInstance;
-    component.checkpoint = getPartialCheckpoint();
+    component.checkpoint = getHierarchicalCheckpoint();
     fixture.detectChanges();
   });
 
@@ -25,35 +24,43 @@ describe('CheckpointMetadataTable', () => {
   });
 });
 
-function getPartialCheckpoint(): PartialCheckpoint {
-  const parentSeed = {
+function getHierarchicalCheckpoint(): HierarchicalCheckpoint {
+  const report: HierarchicalReport = {
     name: 'My name',
+    children: [],
     description: null,
     path: null,
-    transformation: null,
-    variables: 'not applicable, have to fix type mismatch',
-    xml: 'dummy xml',
-    crudStorage: true,
-    // Does not have to be a stub strategy known by the FF!.
     stubStrategy: 'Some stub strategy',
-    correlationId: '1',
-    estimatedMemoryUsage: 5,
+    linkMethod: 'Some link method',
+    transformation: null,
+    storageId: 0,
     storageName: 'My storage',
+    crudStorage: true,
+    estimatedMemoryUsage: 5,
+    correlationId: '1',
+    variables: {},
+    xml: 'dummy xml',
   };
-  const parent: PartialReport = { ...parentSeed };
-  const result = {
-    index: 0,
-    uid: '0#0',
-    message: 'Some message',
-    stubbed: false,
-    preTruncatedMessageLength: 5,
-    // Use report level stub strategy
-    stub: StubStrategy.checkpointIndex2Stub(0),
-    parentReport: parent,
+  report.children?.push({
     name: 'Some name',
-    threadName: 'Some thread name',
-    typeAsString: 'string',
+    children: null,
+    message: 'Some message',
+    encoding: '',
+    messageContext: null,
+    type: 1,
     level: 1,
-  };
-  return { ...result };
+    stub: StubStrategy.checkpointIndex2Stub(0),
+    stubbed: false,
+    stubNotFound: null,
+    preTruncatedMessageLength: 5,
+    typeAsString: 'string',
+    threadName: 'Some thread name',
+    sourceClassName: '',
+    messageClassName: '',
+    id: 0,
+    uid: '0#0',
+    // Use report level stub strategy
+    report,
+  });
+  return report.children![0];
 }

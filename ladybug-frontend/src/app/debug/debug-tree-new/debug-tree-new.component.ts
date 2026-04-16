@@ -1,9 +1,7 @@
 import { Component, EventEmitter, inject, Input, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
-import { HttpService } from '../../shared/services/http.service';
 import { CreateTreeItem, FileTreeOptions, NgSimpleFileTree } from 'ng-simple-file-tree';
 import { SimpleFileTreeUtil as SimpleFileTreeUtility } from '../../shared/util/simple-file-tree-util';
 import { DebugTabService } from '../debug-tab.service';
-import { ErrorHandling } from '../../shared/classes/error-handling.service';
 import { HierarchicalReport, HierarchicalCheckpoint } from '../../shared/interfaces/hierarchical-report';
 import { CHECKPOINT_TYPE_STRINGS, CheckpointType } from '../../shared/enums/checkpoint-type';
 import { Observable, Subscription } from 'rxjs';
@@ -42,10 +40,7 @@ export class DebugTreeNewComponent implements OnInit, OnDestroy {
   protected checkpointAndStorageIdShown = false;
 
   private lastReport: HierarchicalReport | null = null;
-
-  private httpService = inject(HttpService);
   private debugTab = inject(DebugTabService);
-  private errorHandler = inject(ErrorHandling);
 
   private readonly THROWABLE_ENCODER: string = 'printStackTrace()';
 
@@ -112,16 +107,7 @@ export class DebugTreeNewComponent implements OnInit, OnDestroy {
   }
 
   private getCheckpointName(checkpoint: HierarchicalCheckpoint): string {
-    if (this.checkpointAndStorageIdShown) {
-      const idComponents: string[] = checkpoint.uid.split('#');
-      if (idComponents.length !== 2) {
-        throw new Error(`Invalid checkpoint uid: [${checkpoint.uid}]`);
-      }
-      const id = idComponents[1];
-      return `${checkpoint.name} (${id})`;
-    } else {
-      return checkpoint.name;
-    }
+    return this.checkpointAndStorageIdShown ? `${checkpoint.name} (${checkpoint.id})` : checkpoint.name;
   }
 
   private getImage(type: CheckpointType, encoding: string, level: number): string {

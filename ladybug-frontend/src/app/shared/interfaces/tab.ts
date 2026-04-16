@@ -1,9 +1,9 @@
 import { CompareData } from '../../compare/compare-data';
-import { ReportData } from './report-data';
+import { HierarchicalReportData } from './report-data';
 
 export interface Tab {
   key: string;
   id: string;
-  data?: ReportData | CompareData;
+  data?: HierarchicalReportData | CompareData;
   path: string;
 }

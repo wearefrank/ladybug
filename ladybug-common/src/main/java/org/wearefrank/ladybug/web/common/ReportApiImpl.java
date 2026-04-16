@@ -201,13 +201,20 @@ public class ReportApiImpl {
 	public Map<Integer, Map<String, Object>> getReportsForView(
 			String storageName, String viewName, List<Integer> storageIds, boolean globalTransformer) throws HttpNotFoundException {
 		try {
-			View view = views.getViewByName(viewName);
 			Map<Integer, Map<String, Object>> map = new HashMap<>();
-
-			for (int storageId : storageIds) {
-				Map<String, Object> shownReportEntry = getReportImpl(
-						storageName, storageId, globalTransformer, (aReport) -> shownReportBuilder.transform(aReport, view));
-				map.put(storageId, shownReportEntry);
+			if (viewName == null) {
+				for (int storageId : storageIds) {
+					Map<String, Object> shownReportEntry = getReportImpl(
+							storageName, storageId, globalTransformer, (aReport) -> shownReportBuilder.transform(aReport));
+					map.put(storageId, shownReportEntry);
+				}
+			} else {
+				View view = views.getViewByName(viewName);
+				for (int storageId : storageIds) {
+					Map<String, Object> shownReportEntry = getReportImpl(
+							storageName, storageId, globalTransformer, (aReport) -> shownReportBuilder.transform(aReport, view));
+					map.put(storageId, shownReportEntry);
+				}
 			}
 			return map;
 		} catch (Exception e) {
@@ -388,7 +395,7 @@ public class ReportApiImpl {
 		}
 	}
 
-	public List<Report> getFileReport(Supplier<AttachmentBeingRead> supplier) throws HttpBadRequestException, HttpInternalServerErrorException {
+	public List<ShownReport> getFileReport(Supplier<AttachmentBeingRead> supplier) throws HttpBadRequestException, HttpInternalServerErrorException {
 		CrudStorage storage = new MemoryCrudStorage();
 		AttachmentBeingRead attachmentBeingRead = supplier.get();
 		String errorMessage = Upload.upload(attachmentBeingRead.filename, attachmentBeingRead.in, storage, log);
@@ -396,10 +403,11 @@ public class ReportApiImpl {
 			throw new HttpBadRequestException(errorMessage);
 		try {
 			Iterator<Integer> storageIdsIterator = storage.getStorageIds().iterator();
-			List<Report> reports = new ArrayList<>(storage.getStorageIds().size());
+			List<ShownReport> reports = new ArrayList<>(storage.getStorageIds().size());
 			while (storageIdsIterator.hasNext()) {
 				Report report = getReport(storage, ((Integer) storageIdsIterator.next()));
-				reports.add(report);
+				ShownReport shownReport = shownReportBuilder.transform(report);
+				reports.add(shownReport);
 			}
 			return reports;
 		} catch (StorageException e) {

@@ -13,16 +13,13 @@ import {
 import { ActivatedRoute, Router } from '@angular/router';
 import { AngularSplitModule, SplitComponent } from 'angular-split';
 import { BehaviorSubject, catchError, debounceTime, fromEventPattern, Observable, Subject, Subscription } from 'rxjs';
-import { DebugTreeComponent } from '../debug/debug-tree/debug-tree.component';
 import { DebugComponent } from '../debug/debug.component';
-import { ReportData } from '../shared/interfaces/report-data';
-import { Report } from '../shared/interfaces/report';
-import { Checkpoint } from '../shared/interfaces/checkpoint';
+import { HierarchicalReportData } from '../shared/interfaces/report-data';
 import { View } from '../shared/interfaces/view';
 import { TabService } from '../shared/services/tab.service';
 import { NodeEventHandler } from 'rxjs/internal/observable/fromEvent';
 import { ReportValueComponent } from './report-value/report-value.component';
-import { CheckpointValueComponent, PartialCheckpoint } from './checkpoint-value/checkpoint-value.component';
+import { CheckpointValueComponent } from './checkpoint-value/checkpoint-value.component';
 import { ReportUtil as ReportUtility } from '../shared/util/report-util';
 import { ButtonCommand, DownloadOptions } from './report-buttons/report-buttons';
 import { ErrorHandling } from '../shared/classes/error-handling.service';
@@ -35,29 +32,13 @@ import { DebugTabService } from '../debug/debug-tab.service';
 import { UpdateReport } from '../shared/interfaces/update-report';
 import { HelperService } from '../shared/services/helper.service';
 import { TestRefreshService } from '../test/test-refresh.service';
+import { HierarchicalCheckpoint, HierarchicalReport } from '../shared/interfaces/hierarchical-report';
+import { DebugTreeNewComponent } from '../debug/debug-tree-new/debug-tree-new.component';
 
 type ReportValueState = 'report' | 'checkpoint' | 'none';
 
 const MIN_HEIGHT = 20;
 const MARGIN_IF_NOT_NEW_TAB = 50;
-
-export interface PartialReport {
-  name: string;
-  description: string | null;
-  path: string | null;
-  // TODO: Issue https://github.com/wearefrank/ladybug-frontend/issues/1127
-  transformation: string | null;
-  // TODO: Issue https://github.com/wearefrank/ladybug-frontend/issues/1127
-  variables: string;
-  xml: string;
-  crudStorage: boolean;
-  // undefined is allowed to support testing
-  storageId?: number;
-  stubStrategy: string;
-  correlationId: string;
-  estimatedMemoryUsage: number;
-  storageName: string;
-}
 
 export interface NodeValueState {
   isEdited: boolean;
@@ -74,7 +55,7 @@ const INDENT_TWO_SPACES = '  ';
 
 @Component({
   selector: 'app-report',
-  imports: [AngularSplitModule, DebugTreeComponent, ReportValueComponent, CheckpointValueComponent],
+  imports: [AngularSplitModule, DebugTreeNewComponent, ReportValueComponent, CheckpointValueComponent],
   templateUrl: './report.component.html',
   styleUrl: './report.component.css',
 })
@@ -83,17 +64,17 @@ export class ReportComponent implements OnInit, AfterViewInit, OnDestroy {
   @Input() newTab = true;
   @Input({ required: true }) currentView!: View;
   @ViewChild(SplitComponent) splitter!: SplitComponent;
-  @ViewChild(DebugTreeComponent) debugTreeComponent!: DebugTreeComponent;
+  @ViewChild(DebugTreeNewComponent) debugTreeComponent!: DebugTreeNewComponent;
 
-  protected treeWidth: Subject<void> = new Subject<void>();
+  protected reportSubject = new Subject<HierarchicalReport>();
   protected monacoEditorHeight!: number;
   protected reportValueState: ReportValueState = 'none';
   // Not ordinary subjects, because the report or checkpoint value may
   // be posted before the receiving component is ready.
   // Also not ReplaySubject, because we do not want old report or checkpont
   // values to be reposted.
-  protected reportSubject = new BehaviorSubject<PartialReport | undefined>(undefined);
-  protected checkpointValueSubject = new BehaviorSubject<PartialCheckpoint | undefined>(undefined);
+  protected reportNodeSubject = new BehaviorSubject<HierarchicalReport | undefined>(undefined);
+  protected checkpointValueSubject = new BehaviorSubject<HierarchicalCheckpoint | undefined>(undefined);
   protected saveDoneSubject = new Subject<void>();
   protected rerunResultSubject = new BehaviorSubject<TestResult | undefined>(undefined);
   private storageId?: number;
@@ -112,7 +93,7 @@ export class ReportComponent implements OnInit, AfterViewInit, OnDestroy {
   private testRefreshService = inject(TestRefreshService);
   private ngZone = inject(NgZone);
   private subscriptions: Subscription = new Subscription();
-  private newTabReportData?: ReportData;
+  private newTabReportData?: HierarchicalReportData;
 
   ngOnInit(): void {
     this.newTabReportData = this.tabService.activeReportTabs.get(this.getIdFromPath());
@@ -123,11 +104,6 @@ export class ReportComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngAfterViewInit(): void {
-    if (this.splitter.dragProgress$) {
-      this.splitter.dragProgress$.subscribe(() => {
-        this.treeWidth.next();
-      });
-    }
     setTimeout(() => {
       if (this.newTabReportData) {
         this.currentView = this.newTabReportData.currentView;
@@ -141,7 +117,7 @@ export class ReportComponent implements OnInit, AfterViewInit, OnDestroy {
     this.subscriptions.unsubscribe();
   }
 
-  addReportToTree(report: Report): void {
+  addReportToTree(report: HierarchicalReport): void {
     this.debugTreeComponent.addReportToTree(report);
   }
 
@@ -152,15 +128,15 @@ export class ReportComponent implements OnInit, AfterViewInit, OnDestroy {
     this.changeReportValueState('none');
   }
 
-  selectReport(node: Report | Checkpoint): void {
+  selectReport(node: HierarchicalReport | HierarchicalCheckpoint): void {
     // eslint-disable-next-line unicorn/no-useless-undefined
     this.rerunResultSubject.next(undefined);
     if (ReportUtility.isReport(node)) {
       this.changeReportValueState('report');
-      this.reportSubject.next(node as Report);
+      this.reportNodeSubject.next(node as HierarchicalReport);
     } else if (ReportUtility.isCheckPoint(node)) {
       this.changeReportValueState('checkpoint');
-      const checkpointNode = node as Checkpoint;
+      const checkpointNode = node as HierarchicalCheckpoint;
       this.checkpointValueSubject.next(checkpointNode);
     } else {
       throw new Error('State.newNode(): Node is neither a Report nor a Checkpoint');
@@ -368,7 +344,7 @@ export class ReportComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
-  private getReportFromServer(): Promise<Report> {
+  private getReportFromServer(): Promise<HierarchicalReport> {
     return new Promise((resolve, reject) => {
       if (this.storageId === undefined) {
         console.log('ReportComponent.getReportFromServer(): Expected that there was a storageId');
@@ -378,10 +354,10 @@ export class ReportComponent implements OnInit, AfterViewInit, OnDestroy {
         reject();
       }
       this.httpService
-        .getReport(this.storageId!, this.currentView.storageName)
+        .getHierarchicalReports([this.storageId!], this.currentView.storageName, this.currentView.name)
         .pipe(catchError(this.handleErrorWithRethrowMessage('Failed to fetch report from the server')))
         .subscribe({
-          next: (report: Report): void => resolve(report),
+          next: (reports: HierarchicalReport[]): void => resolve(reports[0]),
           error: () => {
             this.toastService.showDanger(
               'Failed to get updated report from the server, please see browser console (F12) and refresh your browser',
@@ -393,7 +369,7 @@ export class ReportComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  private selectUpdatedReportOrCheckpoint(updatedReport: Report, checkpointUid: string | undefined): void {
+  private selectUpdatedReportOrCheckpoint(updatedReport: HierarchicalReport, checkpointUid: string | undefined): void {
     // TODO: Issue https://github.com/wearefrank/ladybug-frontend/issues/1129.
     this.selectReport(updatedReport);
   }
@@ -431,7 +407,7 @@ export class ReportComponent implements OnInit, AfterViewInit, OnDestroy {
     this.reportValueState = state;
     // Make sure no old report or old checkpoint is processed when related components are recreated.
     /* eslint-disable-next-line unicorn/no-useless-undefined */
-    this.reportSubject.next(undefined);
+    this.reportNodeSubject.next(undefined);
     /* eslint-disable-next-line unicorn/no-useless-undefined */
     this.checkpointValueSubject.next(undefined);
   }

@@ -16,8 +16,7 @@ import { catchError, Subscription } from 'rxjs';
 import { HttpService } from '../../shared/services/http.service';
 import { ErrorHandling } from '../../shared/classes/error-handling.service';
 import { TabService } from '../../shared/services/tab.service';
-import { Report } from '../../shared/interfaces/report';
-import { ReportData } from '../../shared/interfaces/report-data';
+import { HierarchicalReportData } from '../../shared/interfaces/report-data';
 import { View } from '../../shared/interfaces/view';
 import { TestReportsService } from '../test-reports.service';
 import { ToastService } from '../../shared/services/toast.service';
@@ -36,6 +35,7 @@ import {
 } from '@angular/material/table';
 import { NgClass, NgIf } from '@angular/common';
 import { ClientSettingsService } from 'src/app/shared/services/client.settings.service';
+import { HierarchicalReport } from 'src/app/shared/interfaces/hierarchical-report';
 
 @Component({
   selector: 'app-test-table',
@@ -116,12 +116,12 @@ export class TestTableComponent implements OnInit, OnDestroy, OnChanges, AfterCo
 
   openReport(storageId: number): void {
     this.httpService
-      .getReport(storageId, this.testReportsService.storageName)
+      .getHierarchicalReports([storageId], this.testReportsService.storageName, null)
       .pipe(catchError(this.errorHandler.handleError()))
       .subscribe({
-        next: (report: Report): void => {
-          const reportData: ReportData = {
-            report: report,
+        next: (reports: HierarchicalReport[]): void => {
+          const reportData: HierarchicalReportData = {
+            report: reports[0],
             currentView: {
               storageName: this.testReportsService.storageName,
               metadataNames: this.testReportsService.metadataNames,

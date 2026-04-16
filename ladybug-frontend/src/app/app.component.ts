@@ -10,7 +10,7 @@ import { catchError, Subscription } from 'rxjs';
 import { DebugComponent } from './debug/debug.component';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { Tab } from './shared/interfaces/tab';
-import { ReportData } from './shared/interfaces/report-data';
+import { HierarchicalReportData } from './shared/interfaces/report-data';
 import { ToastComponent } from './shared/components/toast/toast.component';
 import { CloseTab } from './shared/interfaces/close-tab';
 import { HttpService } from './shared/services/http.service';
@@ -64,7 +64,7 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   subscribeToServices(): void {
-    this.newTabSubscription = this.tabService.openReportInTab$.subscribe((value: ReportData) => {
+    this.newTabSubscription = this.tabService.openReportInTab$.subscribe((value: HierarchicalReportData) => {
       this.openReportInSeparateTab(value);
     });
     this.newCompareTabSubscription = this.tabService.openInCompare$.subscribe((value: CompareData) => {
@@ -90,7 +90,7 @@ export class AppComponent implements OnInit, OnDestroy {
     }
   }
 
-  openReportInSeparateTab(data: ReportData): void {
+  openReportInSeparateTab(data: HierarchicalReportData): void {
     const tabIndex: number = this.tabs.findIndex((tab: Tab): boolean => tab.id === String(data.report.storageId));
     if (tabIndex == -1) {
       this.tabs.push({

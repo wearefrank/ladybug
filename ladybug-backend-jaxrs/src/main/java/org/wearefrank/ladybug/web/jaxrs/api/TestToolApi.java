@@ -41,6 +41,7 @@ import org.wearefrank.ladybug.web.common.HttpBadRequestException;
 import org.wearefrank.ladybug.web.common.HttpInternalServerErrorException;
 import org.wearefrank.ladybug.web.common.TestToolApiImpl;
 import org.wearefrank.ladybug.web.common.TestToolInfoResponse;
+import org.wearefrank.ladybug.web.common.shownreport.ShownReport;
 
 @Path("/" + Constants.LADYBUG_API_PATH + "/testtool")
 @Slf4j
@@ -102,7 +103,7 @@ public class TestToolApi extends ApiBase {
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getReportsInProgress(@PathParam("index") int index) {
 		try {
-			Report result = delegate.getReportsInProgress(index);
+			ShownReport result = delegate.getReportsInProgress(index);
 			return Response.ok(result).build();
 		} catch(HttpBadRequestException e) {
 			return Response.status(Response.Status.BAD_REQUEST).entity(e.getMessage()).build();

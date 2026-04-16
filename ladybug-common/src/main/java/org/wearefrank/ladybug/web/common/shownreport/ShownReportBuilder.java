@@ -26,7 +26,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
+import java.util.function.Function;
+
 import lombok.extern.slf4j.Slf4j;
 
 import lombok.Setter;
@@ -163,11 +167,19 @@ public class ShownReportBuilder {
 	}
 
 	public ShownReport transform(Report report, View view) {
+		return transform(report, (checkpoint) -> view.showCheckpoint(report, checkpoint));
+	}
+
+	public ShownReport transform(Report report) {
+		return transform(report, (checkpoint) -> true);
+	}
+
+	private ShownReport transform(Report report, Function<Checkpoint, Boolean> isShownFunction) {
 		ShownReport shownReport = new ShownReport();
 		copyReport(report, shownReport);
 		Session session = new Session(shownReport);
 		for (Checkpoint checkpoint: report.getCheckpoints()) {
-			boolean shown = view.showCheckpoint(report, checkpoint);
+			boolean shown = isShownFunction.apply(checkpoint);
 			ShownCheckpoint shownCheckpoint = new ShownCheckpoint();
 			copyCheckpoint(checkpoint, shownCheckpoint);
 			session.handleCheckpoint(shownCheckpoint, shown);
@@ -184,8 +196,16 @@ public class ShownReportBuilder {
 		dest.setTransformation(source.getTransformation());
 		dest.setStorageId(source.getStorageId());
 		dest.setStorageName(source.getStorage().getName());
+		dest.setCrudStorage(source.isCrudStorage());
 		dest.setEstimatedMemoryUsage(source.getEstimatedMemoryUsage());
 		dest.setCorrelationId(source.getCorrelationId());
+		if (source.getVariables() != null) {
+			Map<String, String> destVariables = new HashMap<>();
+			for (String key: source.getVariables().keySet()) {
+				destVariables.put(key, source.getVariables().get(key));
+			}
+			dest.setVariables(destVariables);
+		}
 		validator.validateObject(dest);
 	}
 
@@ -204,6 +224,7 @@ public class ShownReportBuilder {
 		dest.setThreadName(source.getThreadName());
 		dest.setSourceClassName(source.getSourceClassName());
 		dest.setMessageClassName(source.getMessageClassName());
+		dest.setId(source.getId());
 		dest.setUid(source.getUid());
 		validator.validateObject(dest);
 	}

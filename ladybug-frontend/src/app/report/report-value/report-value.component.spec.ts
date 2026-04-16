@@ -5,14 +5,14 @@ import { HttpService } from '../../shared/services/http.service';
 import { ErrorHandling } from '../../shared/classes/error-handling.service';
 import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { Observable, Subject, Subscription } from 'rxjs';
-import { PartialReport } from '../report.component';
 import { ReportButtonsState } from '../report-buttons/report-buttons';
 import { TestResult } from '../../shared/interfaces/test-result';
+import { HierarchicalReport } from '../../shared/interfaces/hierarchical-report';
 
 describe('ReportValue', () => {
   let component: ReportValueComponent;
   let fixture: ComponentFixture<ReportValueComponent>;
-  let reportSubject: Subject<PartialReport> | undefined;
+  let reportSubject: Subject<HierarchicalReport> | undefined;
   let saveDoneSubject: Subject<void> | undefined;
   let nodeValueStateSpy: jasmine.Spy | undefined;
   let buttonState: ReportButtonsState | undefined;
@@ -28,7 +28,7 @@ describe('ReportValue', () => {
     fixture = TestBed.createComponent(ReportValueComponent);
     component = fixture.componentInstance;
     nodeValueStateSpy = spyOn(component.nodeValueState, 'emit');
-    reportSubject = new Subject<PartialReport>();
+    reportSubject = new Subject<HierarchicalReport>();
     saveDoneSubject = new Subject<void>();
     component.report$ = reportSubject;
     component.saveDone$ = saveDoneSubject;
@@ -64,7 +64,7 @@ describe('ReportValue', () => {
   });
 
   it('When report.variables is empty then it is parsed as the empty list', () => {
-    const input: string | null = null;
+    const input: Record<string, string> = {};
     const parsedVariables: Variable[] = ReportValueComponent.initVariables(input);
     expect(parsedVariables.length).toEqual(0);
   });
@@ -87,7 +87,7 @@ describe('ReportValue', () => {
   });
 
   it('When a report has duplicate variables then they are detected', () => {
-    reportSubject!.next(getAPartialReport());
+    reportSubject!.next(getAHierarchicalReport());
     expectNotEdited();
     component.setVariables([
       { name: 'duplicate', value: 'one' },
@@ -100,7 +100,7 @@ describe('ReportValue', () => {
   });
 
   it('When a report has no duplicate variables then they are not detected', () => {
-    reportSubject!.next(getAPartialReport());
+    reportSubject!.next(getAHierarchicalReport());
     expectNotEdited();
     component.setVariables([
       { name: 'duplicate', value: 'one' },
@@ -111,7 +111,7 @@ describe('ReportValue', () => {
   });
 
   it('When removing a variable is requested, the right variable goes away', () => {
-    reportSubject!.next(getAPartialReport());
+    reportSubject!.next(getAHierarchicalReport());
     expectNotEdited();
     component.setVariables([
       { name: 'first variable', value: 'one' },
@@ -132,7 +132,7 @@ describe('ReportValue', () => {
   });
 
   it('When the new variable edit field has gotten a name then a new empty variable row is added', () => {
-    reportSubject!.next(getAPartialReport());
+    reportSubject!.next(getAHierarchicalReport());
     expectNotEdited();
     component.setVariables([]);
     expect(component.editedVariables.length).toEqual(1);
@@ -145,7 +145,7 @@ describe('ReportValue', () => {
   });
 
   it('When name is changed then consistently show this change', () => {
-    reportSubject!.next(getAPartialReport());
+    reportSubject!.next(getAHierarchicalReport());
     expect(component.nodeValueState.emit).toHaveBeenCalledTimes(1);
     expectNotEdited();
     component.setVariables([]);
@@ -162,7 +162,7 @@ describe('ReportValue', () => {
   });
 
   it('When description is changed then consistently show this change', () => {
-    reportSubject!.next(getAPartialReport());
+    reportSubject!.next(getAHierarchicalReport());
     expect(component.nodeValueState.emit).toHaveBeenCalledTimes(1);
     expectNotEdited();
     component.setVariables([]);
@@ -179,7 +179,7 @@ describe('ReportValue', () => {
   });
 
   it('When original description is null then the user can clear it after editing', () => {
-    reportSubject!.next(getEmptyPartialReport());
+    reportSubject!.next(getEmptyHierarchicalReport());
     expectNotEdited();
     component.setVariables([]);
     component.editedDescription = 'Changed description';
@@ -199,7 +199,7 @@ describe('ReportValue', () => {
   });
 
   it('When path is changed then consistently show this change', () => {
-    reportSubject!.next(getAPartialReport());
+    reportSubject!.next(getAHierarchicalReport());
     expect(component.nodeValueState.emit).toHaveBeenCalledTimes(1);
     expectNotEdited();
     component.setVariables([]);
@@ -216,7 +216,7 @@ describe('ReportValue', () => {
   });
 
   it('When original path null then the user can clear it after editing', () => {
-    reportSubject!.next(getEmptyPartialReport());
+    reportSubject!.next(getEmptyHierarchicalReport());
     expect(component.nodeValueState.emit).toHaveBeenCalledTimes(1);
     expectNotEdited();
     component.setVariables([]);
@@ -237,7 +237,7 @@ describe('ReportValue', () => {
   });
 
   it('When transformation is changed then consistently show this change', () => {
-    reportSubject!.next(getAPartialReport());
+    reportSubject!.next(getAHierarchicalReport());
     expect(component.nodeValueState.emit).toHaveBeenCalledTimes(1);
     expectNotEdited();
     component.setVariables([]);
@@ -254,7 +254,7 @@ describe('ReportValue', () => {
   });
 
   it('When original transformation is null then the user can clear it after editing', () => {
-    reportSubject!.next(getEmptyPartialReport());
+    reportSubject!.next(getEmptyHierarchicalReport());
     expect(component.nodeValueState.emit).toHaveBeenCalledTimes(1);
     expectNotEdited();
     component.setVariables([]);
@@ -275,7 +275,7 @@ describe('ReportValue', () => {
   });
 
   it('When report level stub strategy is changed then consistently show this change', () => {
-    reportSubject!.next(getAPartialReport());
+    reportSubject!.next(getAHierarchicalReport());
     expect(component.nodeValueState.emit).toHaveBeenCalledTimes(1);
     expectNotEdited();
     component.setVariables([]);
@@ -292,7 +292,7 @@ describe('ReportValue', () => {
   });
 
   it('When variable name is changed then consistently show this change', () => {
-    reportSubject!.next(getAPartialReport());
+    reportSubject!.next(getAHierarchicalReport());
     expect(component.nodeValueState.emit).toHaveBeenCalledTimes(1);
     expectNotEdited();
     component.setVariables([{ name: 'variable', value: 'value' }]);
@@ -310,7 +310,7 @@ describe('ReportValue', () => {
   });
 
   it('When variable value is changed then consistently show this change', () => {
-    reportSubject!.next(getAPartialReport());
+    reportSubject!.next(getAHierarchicalReport());
     component.setVariables([{ name: 'variable', value: 'value' }]);
     expect(component.nodeValueState.emit).toHaveBeenCalledTimes(1);
     expectNotEdited();
@@ -328,7 +328,7 @@ describe('ReportValue', () => {
   });
 
   it('When variable is added then consistently show this change', () => {
-    reportSubject!.next(getAPartialReport());
+    reportSubject!.next(getAHierarchicalReport());
     expect(component.nodeValueState.emit).toHaveBeenCalledTimes(1);
     expectNotEdited();
     component.setVariables([{ name: 'variable', value: 'value' }]);
@@ -348,7 +348,7 @@ describe('ReportValue', () => {
   });
 
   it('When a variable is removed then consistently show this change', () => {
-    reportSubject!.next(getAPartialReport());
+    reportSubject!.next(getAHierarchicalReport());
     expect(component.nodeValueState.emit).toHaveBeenCalledTimes(1);
     component.setVariables([{ name: 'var1', value: 'val1' }]);
     expectNotEdited();
@@ -361,7 +361,7 @@ describe('ReportValue', () => {
   });
 
   it('When a new edit row for variables appears, there is no change when the variable name is blank', () => {
-    reportSubject!.next(getAPartialReport());
+    reportSubject!.next(getAHierarchicalReport());
     expect(component.nodeValueState.emit).toHaveBeenCalledTimes(1);
     expectNotEdited();
     component.setVariables([{ name: 'variable', value: 'value' }]);
@@ -371,7 +371,7 @@ describe('ReportValue', () => {
   });
 
   it('When a variable is renamed then the differences compare the variable names', () => {
-    reportSubject!.next(getAPartialReport());
+    reportSubject!.next(getAHierarchicalReport());
     component.setVariables([{ name: 'variableName', value: 'value' }]);
     expectNotEdited();
     component.editedVariables[0].name = 'otherVariableName';
@@ -384,7 +384,7 @@ describe('ReportValue', () => {
   });
 
   it('When the values of variables are changed, a difference is created for each', () => {
-    reportSubject!.next(getAPartialReport());
+    reportSubject!.next(getAHierarchicalReport());
     component.setVariables([
       { name: 'first', value: 'value 1' },
       { name: 'second', value: 'value 2' },
@@ -401,7 +401,7 @@ describe('ReportValue', () => {
   });
 
   it('When the report is in a CRUD storage then emitted events indicate not read-only', () => {
-    let report = getAPartialReport();
+    let report = getAHierarchicalReport();
     report.crudStorage = true;
     reportSubject!.next(report);
     component.setVariables([]);
@@ -414,7 +414,7 @@ describe('ReportValue', () => {
   });
 
   it('When the report is not in a CRUD storage then emitted events indicate read-only', () => {
-    let report = getAPartialReport();
+    let report = getAHierarchicalReport();
     report.crudStorage = false;
     reportSubject!.next(report);
     component.setVariables([]);
@@ -441,38 +441,41 @@ describe('ReportValue', () => {
   }
 });
 
-function getAPartialReport(): PartialReport {
+function getAHierarchicalReport(): HierarchicalReport {
   const result = {
     name: 'My name',
+    children: null,
     description: 'My description',
     path: 'my/path',
-    transformation: 'dummy transformation',
-    variables: 'not applicable, have to fix type mismatch',
-    xml: 'dummy xml',
-    crudStorage: true,
-    // Does not have to be a stub strategy known by the FF!.
     stubStrategy: 'Some stub strategy',
-    correlationId: '1',
-    estimatedMemoryUsage: 5,
+    linkMethod: 'Some link method',
+    transformation: 'dummy transformation',
+    storageId: 0,
     storageName: 'My storage',
+    crudStorage: true,
+    estimatedMemoryUsage: 5,
+    correlationId: '1',
+    variables: {},
+    xml: 'dummy xml',
   };
   return { ...result };
 }
 
-function getEmptyPartialReport(): PartialReport {
-  const result = {
+function getEmptyHierarchicalReport(): HierarchicalReport {
+  return {
     name: 'My name',
+    children: null,
     description: null,
     path: null,
-    transformation: null,
-    variables: 'not applicable, have to fix type mismatch',
-    xml: 'dummy xml',
-    crudStorage: true,
-    // Does not have to be a stub strategy known by the FF!.
     stubStrategy: 'Some stub strategy',
-    correlationId: '1',
-    estimatedMemoryUsage: 5,
+    linkMethod: 'Some link method',
+    transformation: null,
+    storageId: 0,
     storageName: 'My storage',
+    crudStorage: true,
+    estimatedMemoryUsage: 5,
+    correlationId: '1',
+    variables: {},
+    xml: 'dummy xml',
   };
-  return { ...result };
 }

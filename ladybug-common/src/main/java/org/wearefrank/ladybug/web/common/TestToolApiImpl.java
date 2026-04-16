@@ -37,6 +37,8 @@ import java.util.List;
 import java.util.Map;
 
 import lombok.extern.slf4j.Slf4j;
+import org.wearefrank.ladybug.web.common.shownreport.ShownReport;
+import org.wearefrank.ladybug.web.common.shownreport.ShownReportBuilder;
 
 @Component
 @Slf4j
@@ -48,6 +50,7 @@ public class TestToolApiImpl implements InitializingBean {
 	@Autowired TestTool testTool;
 	private @Setter @Inject @Autowired MetadataExtractor metadataExtractor;
 	private @Setter @Inject @Autowired ReportXmlTransformer reportXmlTransformer;
+	private @Setter @Inject @Autowired ShownReportBuilder shownReportBuilder;
 	private @Setter @Inject @Autowired Views views;
 
 	@Value("${ladybug.ui.test.mode:DEFAULT}")
@@ -113,12 +116,13 @@ public class TestToolApiImpl implements InitializingBean {
 		}
 	}
 
-	public Report getReportsInProgress(int index) throws HttpBadRequestException {
+	public ShownReport getReportsInProgress(int index) throws HttpBadRequestException {
 		if (index == 0)
 			throw new HttpBadRequestException("No progresses have been queried [" + index + "] and/or are available [" + testTool.getNumberOfReportsInProgress() + "]");
 
 		try {
-			return testTool.getReportInProgress(index - 1);
+			Report base = testTool.getReportInProgress(index - 1);
+			return shownReportBuilder.transform(base);
 		} catch (Exception e) {
 			throw new HttpBadRequestException(e);
 		}

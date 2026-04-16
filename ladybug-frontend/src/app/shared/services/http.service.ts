@@ -4,7 +4,7 @@ import { map, Observable } from 'rxjs';
 import { View } from '../interfaces/view';
 import { OptionsSettings } from '../interfaces/options-settings';
 import { Report } from '../interfaces/report';
-import { CompareReport } from '../interfaces/compare-reports';
+import { CompareHierarchicalReport, CompareReport } from '../interfaces/compare-reports';
 import { TestListItem } from '../interfaces/test-list-item';
 import { CloneReport } from '../interfaces/clone-report';
 import { UploadParameters } from '../interfaces/upload-params';
@@ -14,6 +14,7 @@ import { UpdateReport } from '../interfaces/update-report';
 import { UpdateReportResponse } from '../interfaces/update-report-response';
 import { TableSettings } from '../interfaces/table-settings';
 import { ClientSettingsService } from './client.settings.service';
+import { HierarchicalReport } from '../interfaces/hierarchical-report';
 
 @Injectable({
   providedIn: 'root',
@@ -54,8 +55,8 @@ export class HttpService {
     return this.http.get<Report[]>(`api/report/latest/${storage}/${amount}`);
   }
 
-  getReportInProgress(index: number): Observable<Report> {
-    return this.http.get<Report>(`api/testtool/in-progress/${index}`);
+  getReportInProgress(index: number): Observable<HierarchicalReport> {
+    return this.http.get<HierarchicalReport>(`api/testtool/in-progress/${index}`);
   }
 
   deleteReportInProgress(index: number): Observable<Report> {
@@ -105,6 +106,35 @@ export class HttpService {
       );
   }
 
+  getHierarchicalReports(
+    reportIds: number[],
+    storage: string,
+    viewName: string | null,
+  ): Observable<HierarchicalReport[]> {
+    const transformationEnabled: string = this.clientSettingsService.isTransformationEnabled() ? 'true' : 'false';
+    const viewQuery = viewName === null ? '' : `&view=${viewName}`;
+    return this.http
+      .get<
+        Record<string, CompareHierarchicalReport>
+      >(`api/report/shownReports/${storage}?globalTransformer=${transformationEnabled}${viewQuery}`, { params: { storageIds: reportIds } })
+      .pipe(
+        map((data) => {
+          const result: HierarchicalReport[] = [];
+          for (const reportId of reportIds) {
+            const report: HierarchicalReport = data[reportId].report;
+            report.xml = data[reportId].xml;
+            result.push(report);
+            if (report.children !== null) {
+              for (const child of report.children) {
+                child.report = report;
+              }
+            }
+          }
+          return result;
+        }),
+      );
+  }
+
   updateReport(reportId: string, body: UpdateReport, storage: string): Observable<UpdateReportResponse> {
     return this.http.post<UpdateReportResponse>(`api/report/${storage}/${reportId}`, body);
   }
@@ -119,8 +149,8 @@ export class HttpService {
     });
   }
 
-  uploadReport(formData: FormData): Observable<Report[]> {
-    return this.http.post<Report[]>('api/report/upload', formData);
+  uploadReport(formData: FormData): Observable<HierarchicalReport[]> {
+    return this.http.post<HierarchicalReport[]>('api/report/upload', formData);
   }
 
   uploadReportToStorage(formData: FormData, storage: string): Observable<void> {

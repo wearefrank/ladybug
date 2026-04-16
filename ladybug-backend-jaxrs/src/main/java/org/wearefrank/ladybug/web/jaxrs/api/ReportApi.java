@@ -55,6 +55,7 @@ import org.wearefrank.ladybug.web.common.HttpNotFoundException;
 import org.wearefrank.ladybug.web.common.HttpNotImplementedException;
 import org.wearefrank.ladybug.web.common.ReportApiImpl;
 import org.wearefrank.ladybug.web.common.ReportUpdateRequest;
+import org.wearefrank.ladybug.web.common.shownreport.ShownReport;
 
 @Path("/" + Constants.LADYBUG_API_PATH + "/report")
 public class ReportApi extends ApiBase {
@@ -319,7 +320,7 @@ public class ReportApi extends ApiBase {
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
 	public Response getFileReport(@Multipart("file") Attachment attachment) {
 		try {
-			List<Report> result = delegate.getFileReport(() -> {
+			List<ShownReport> result = delegate.getFileReport(() -> {
 				String filename = attachment.getContentDisposition().getParameter("filename");
 				InputStream in = attachment.getObject(InputStream.class);
 				return new ReportApiImpl.AttachmentBeingRead(filename, in);

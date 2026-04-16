@@ -44,6 +44,7 @@ import org.wearefrank.ladybug.web.common.HttpNotFoundException;
 import org.wearefrank.ladybug.web.common.HttpNotImplementedException;
 import org.wearefrank.ladybug.web.common.ReportApiImpl;
 import org.wearefrank.ladybug.web.common.ReportUpdateRequest;
+import org.wearefrank.ladybug.web.common.shownreport.ShownReport;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -265,7 +266,7 @@ public class ReportApi {
 	@PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> getFileReport(@RequestPart("file") MultipartFile attachment) {
 		try {
-			List<Report> result = delegate.getFileReport(() -> {
+			List<ShownReport> result = delegate.getFileReport(() -> {
 				String filename = attachment.getOriginalFilename();
 				try {
 					InputStream in = attachment.getInputStream();

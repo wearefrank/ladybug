@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Observable, ReplaySubject, Subject } from 'rxjs';
-import { ReportData } from '../interfaces/report-data';
+import { HierarchicalReportData } from '../interfaces/report-data';
 import { CompareData } from '../../compare/compare-data';
 import { CloseTab } from '../interfaces/close-tab';
 import { Report } from '../interfaces/report';
@@ -9,20 +9,20 @@ import { Report } from '../interfaces/report';
   providedIn: 'root',
 })
 export class TabService {
-  activeReportTabs = new Map<string, ReportData>();
+  activeReportTabs = new Map<string, HierarchicalReportData>();
   activeCompareTabs = new Map<string, CompareData>();
 
-  private openReportInTabSubject: Subject<ReportData> = new ReplaySubject();
+  private openReportInTabSubject: Subject<HierarchicalReportData> = new ReplaySubject();
   private openInCompareSubject: Subject<CompareData> = new ReplaySubject();
   private closeTabSubject: Subject<CloseTab> = new ReplaySubject();
 
-  openReportInTab$: Observable<ReportData> = this.openReportInTabSubject.asObservable();
+  openReportInTab$: Observable<HierarchicalReportData> = this.openReportInTabSubject.asObservable();
 
   openInCompare$: Observable<CompareData> = this.openInCompareSubject.asObservable();
 
   closeTab$: Observable<CloseTab> = this.closeTabSubject.asObservable();
 
-  openNewTab(value: ReportData): void {
+  openNewTab(value: HierarchicalReportData): void {
     this.activeReportTabs.set(value.report.storageId.toString(), value);
     this.openReportInTabSubject.next(value);
   }
@@ -36,7 +36,7 @@ export class TabService {
     return `${originalReport.storageId}-${runResultReport.storageId}`;
   }
 
-  closeTab(value: CompareData | ReportData): void {
+  closeTab(value: CompareData | HierarchicalReportData): void {
     let closeTab: CloseTab;
     if (this.isCompareData(value)) {
       this.activeCompareTabs.delete(value.id);
@@ -48,7 +48,7 @@ export class TabService {
     this.closeTabSubject.next(closeTab);
   }
 
-  isCompareData(value: CompareData | ReportData): value is CompareData {
+  isCompareData(value: CompareData | HierarchicalReportData): value is CompareData {
     return !!value && !!(value as CompareData).originalReport;
   }
 }

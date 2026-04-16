@@ -11,8 +11,12 @@ export interface HierarchicalReport extends TreeItem {
   transformation: string | null;
   storageId: number;
   storageName: string;
+  crudStorage: boolean;
   estimatedMemoryUsage: number;
   correlationId: string;
+  variables: Record<string, string>;
+  // The fields below do not come from the backend but are computed
+  xml: string;
 }
 
 export interface HierarchicalCheckpoint extends TreeItem {
@@ -29,5 +33,8 @@ export interface HierarchicalCheckpoint extends TreeItem {
   threadName: string;
   sourceClassName: string | null;
   messageClassName: string | null;
+  id: number;
   uid: string;
+  // The fields below are computed
+  report: HierarchicalReport;
 }

@@ -9,7 +9,7 @@ import { ErrorHandling } from '../../shared/classes/error-handling.service';
 import { Transformation } from '../../shared/interfaces/transformation';
 import { DifferenceModalComponent } from '../difference-modal/difference-modal.component';
 import { DifferencesBuilder } from '../../shared/util/differences-builder';
-import { NodeValueState, PartialReport, UpdateNode } from '../report.component';
+import { NodeValueState, UpdateNode } from '../report.component';
 import {
   NodeValueLabels,
   ReportAlertMessage2Component,
@@ -20,6 +20,7 @@ import { UpdateReport } from '../../shared/interfaces/update-report';
 import { ReportMetadataTable } from '../report-metadata-table/report-metadata-table';
 import { OverwriteTransformationComponent } from '../overwrite-transformation-modal/overwrite-transformation-modal.component';
 import { MatDialog } from '@angular/material/dialog';
+import { HierarchicalReport } from '../../shared/interfaces/hierarchical-report';
 
 export interface Variable {
   name: string;
@@ -49,7 +50,7 @@ export class ReportValueComponent implements OnInit, OnDestroy {
   button = output<ButtonCommand>();
   save = output<UpdateNode>();
   downloadRequest = output<DownloadOptions>();
-  @Input({ required: true }) report$!: Observable<PartialReport | undefined>;
+  @Input({ required: true }) report$!: Observable<HierarchicalReport | undefined>;
   @Input({ required: true }) saveDone$!: Observable<void>;
   @Input({ required: true }) rerunResult$!: Observable<TestResult | undefined>;
   @ViewChild(DifferenceModalComponent) saveModal!: DifferenceModalComponent;
@@ -67,7 +68,7 @@ export class ReportValueComponent implements OnInit, OnDestroy {
   editedReportStubStrategy?: string;
 
   // It would have been nice to make this protected, but we need to edit this during Karma tests.
-  report?: PartialReport;
+  report?: HierarchicalReport;
 
   labels: NodeValueLabels = {
     isEdited: false,
@@ -313,7 +314,7 @@ export class ReportValueComponent implements OnInit, OnDestroy {
     this.downloadRequest.emit(downloadOptions);
   }
 
-  private newReport(report: PartialReport): void {
+  private newReport(report: HierarchicalReport): void {
     // When a report is edited, the update report is received from a
     // subscription. Reacting on a subscription is not automatically
     // in the Angular zone, so we have to run in the Angular zone
@@ -420,9 +421,7 @@ export class ReportValueComponent implements OnInit, OnDestroy {
     };
   }
 
-  // TODO: Fix issue with types. Issue https://github.com/wearefrank/ladybug-frontend/issues/1127.
-  // Report.variables is declared to be a string, but it is really an object.
-  static initVariables(variables: string | null): Variable[] {
+  static initVariables(variables: Record<string, string>): Variable[] {
     if (!variables) return [];
     return Object.entries(variables).map(([name, value]) => ({ name, value }));
   }
