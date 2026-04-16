@@ -1,7 +1,6 @@
 <as-split direction="horizontal">
   <as-split-area class="split-size" [size]="25">
     <app-debug-tree-new
-      [report$]="reportSubject"
       (selectReportEvent)="selectReport($event)"
     />
   </as-split-area>
@@ -9,7 +8,7 @@
     @if (reportValueState === 'report') {
       <app-report-value
         [height]="monacoEditorHeight"
-        [report$]="reportSubject"
+        [report$]="reportValueSubject"
         [saveDone$]="saveDoneSubject"
         [rerunResult$]="rerunResultSubject"
         (nodeValueState)="onNodeValueState($event)"

@@ -14,7 +14,7 @@ import { UpdateReport } from '../interfaces/update-report';
 import { UpdateReportResponse } from '../interfaces/update-report-response';
 import { TableSettings } from '../interfaces/table-settings';
 import { ClientSettingsService } from './client.settings.service';
-import { HierarchicalReport } from '../interfaces/hierarchical-report';
+import { HierarchicalCheckpoint, HierarchicalReport } from '../interfaces/hierarchical-report';
 
 @Injectable({
   providedIn: 'root',
@@ -122,17 +122,28 @@ export class HttpService {
           const result: HierarchicalReport[] = [];
           for (const reportId of reportIds) {
             const report: HierarchicalReport = data[reportId].report;
+            console.log(`http.service: received HierarchicalReport with ${report.name}, ${report.correlationId}`);
             report.xml = data[reportId].xml;
             result.push(report);
             if (report.children !== null) {
               for (const child of report.children) {
-                child.report = report;
+                this.forChildSetReport(child, report);
               }
             }
           }
+          console.log(`http.service: first result ${result[0].name}, ${result[0].correlationId}`);
           return result;
         }),
       );
+  }
+
+  private forChildSetReport(child: HierarchicalCheckpoint, report: HierarchicalReport): void {
+    child.report = report;
+    if (child.children !== null) {
+      for (const grandChild of child.children!) {
+        this.forChildSetReport(grandChild, report);
+      }
+    }
   }
 
   updateReport(reportId: string, body: UpdateReport, storage: string): Observable<UpdateReportResponse> {

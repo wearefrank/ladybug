@@ -30,7 +30,7 @@ export class DebugComponent implements OnInit {
   }
 
   protected addReportToTree(report: HierarchicalReport): void {
-    this.customReportComponent.addReportToTree(report);
+    this.customReportComponent.addReport(report);
   }
 
   protected onViewChange(view: View): void {

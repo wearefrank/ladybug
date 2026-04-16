@@ -1,10 +1,10 @@
-import { Component, EventEmitter, inject, Input, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
-import { CreateTreeItem, FileTreeOptions, NgSimpleFileTree } from 'ng-simple-file-tree';
+import { Component, EventEmitter, inject, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
+import { CreateTreeItem, FileTreeItem, FileTreeOptions, NgSimpleFileTree } from 'ng-simple-file-tree';
 import { SimpleFileTreeUtil as SimpleFileTreeUtility } from '../../shared/util/simple-file-tree-util';
 import { DebugTabService } from '../debug-tab.service';
 import { HierarchicalReport, HierarchicalCheckpoint } from '../../shared/interfaces/hierarchical-report';
 import { CHECKPOINT_TYPE_STRINGS, CheckpointType } from '../../shared/enums/checkpoint-type';
-import { Observable, Subscription } from 'rxjs';
+import { Subscription } from 'rxjs';
 
 interface FrankTreeNode {
   name: string;
@@ -22,7 +22,6 @@ interface FrankTreeNode {
 })
 export class DebugTreeNewComponent implements OnInit, OnDestroy {
   @ViewChild('tree') tree!: NgSimpleFileTree;
-  @Input() report$!: Observable<HierarchicalReport | null>;
   @Output() selectReportEvent = new EventEmitter<HierarchicalReport | HierarchicalCheckpoint>();
 
   subscriptions: Subscription = new Subscription();
@@ -34,7 +33,7 @@ export class DebugTreeNewComponent implements OnInit, OnDestroy {
     folderBehaviourOnClick: 'select',
     doubleClickToOpenFolders: false,
     autoOpenCondition: this.conditionalOpenFunction,
-    determineIconClass: SimpleFileTreeUtility.conditionalCssClass,
+    determineIconClass: SimpleFileTreeUtility.conditionalCssClassNew,
   };
 
   protected checkpointAndStorageIdShown = false;
@@ -53,27 +52,28 @@ export class DebugTreeNewComponent implements OnInit, OnDestroy {
   }
 
   subscribeToSubscriptions(): void {
-    const newReport: Subscription = this.report$.subscribe((report: HierarchicalReport | null) => {
-      this.lastReport = report;
-      this.refreshReports();
-    });
-    this.subscriptions.add(newReport);
     const refreshAll: Subscription = this.debugTab.refreshAll$.subscribe(() => this.refreshReports());
     this.subscriptions.add(refreshAll);
     const refreshTree: Subscription = this.debugTab.refreshTree$.subscribe(() => this.refreshReports());
     this.subscriptions.add(refreshTree);
   }
 
-  async refreshReports(): Promise<void> {
+  addReportToTree(report: HierarchicalReport): void {
+    this.lastReport = report;
+    this.refreshReports();
+  }
+
+  refreshReports(): void {
     if (this.lastReport === null) {
       this.closeEntireTree();
     } else {
-      this.closeEntireTree();
-      this.addReportToTree(this.lastReport);
+      this.tree.clearItems();
+      this.addReportToTreeImpl(this.lastReport);
+      console.log(`Tree visible should be: ${this.tree && this.tree.items.length > 0}`);
     }
   }
 
-  addReportToTree(report: HierarchicalReport): void {
+  addReportToTreeImpl(report: HierarchicalReport): void {
     const preparedReport: FrankTreeNode = this.prepareReportForTree(report);
     const rootNodePath: string = this.tree.addItem(preparedReport);
     this.selectFirstCheckpoint(rootNodePath);
@@ -130,8 +130,14 @@ export class DebugTreeNewComponent implements OnInit, OnDestroy {
   }
 
   toggleCheckpointAndStorageIdShown(): void {
+    console.log('toggleCheckpointAndStorageIdShown');
     this.checkpointAndStorageIdShown = !this.checkpointAndStorageIdShown;
     this.refreshReports();
+  }
+
+  emitNodeSelected(item: FileTreeItem): void {
+    const createItem: FrankTreeNode = item.originalValue;
+    this.selectReportEvent.emit(createItem.originalValue);
   }
 
   private selectFirstCheckpoint(rootNodePath: string): void {

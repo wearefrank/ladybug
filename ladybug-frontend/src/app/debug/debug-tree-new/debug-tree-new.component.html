@@ -17,9 +17,9 @@
   <ng-simple-tree
     #tree
     data-cy-debug-tree="root"
-    childrenKey="checkpoints"
+    childrenKey="children"
     [pathAttribute]="['name', 'storageId', 'uid']"
     [options]="treeOptions"
-    (itemSelected)="selectReportEvent.emit($event.originalValue)"
+    (itemSelected)="emitNodeSelected($event)"
   />
 </div>

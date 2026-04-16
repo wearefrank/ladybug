@@ -73,7 +73,7 @@ export class ReportComponent implements OnInit, AfterViewInit, OnDestroy {
   // be posted before the receiving component is ready.
   // Also not ReplaySubject, because we do not want old report or checkpont
   // values to be reposted.
-  protected reportNodeSubject = new BehaviorSubject<HierarchicalReport | undefined>(undefined);
+  protected reportValueSubject = new BehaviorSubject<HierarchicalReport | undefined>(undefined);
   protected checkpointValueSubject = new BehaviorSubject<HierarchicalCheckpoint | undefined>(undefined);
   protected saveDoneSubject = new Subject<void>();
   protected rerunResultSubject = new BehaviorSubject<TestResult | undefined>(undefined);
@@ -108,7 +108,7 @@ export class ReportComponent implements OnInit, AfterViewInit, OnDestroy {
       if (this.newTabReportData) {
         this.currentView = this.newTabReportData.currentView;
         // TODO: Take care here when working on issue https://github.com/wearefrank/ladybug-frontend/issues/1125.
-        this.addReportToTree(this.newTabReportData.report);
+        this.addReport(this.newTabReportData.report);
       }
     });
   }
@@ -117,7 +117,7 @@ export class ReportComponent implements OnInit, AfterViewInit, OnDestroy {
     this.subscriptions.unsubscribe();
   }
 
-  addReportToTree(report: HierarchicalReport): void {
+  addReport(report: HierarchicalReport): void {
     this.debugTreeComponent.addReportToTree(report);
   }
 
@@ -133,7 +133,7 @@ export class ReportComponent implements OnInit, AfterViewInit, OnDestroy {
     this.rerunResultSubject.next(undefined);
     if (ReportUtility.isReport(node)) {
       this.changeReportValueState('report');
-      this.reportNodeSubject.next(node as HierarchicalReport);
+      this.reportValueSubject.next(node as HierarchicalReport);
     } else if (ReportUtility.isCheckPoint(node)) {
       this.changeReportValueState('checkpoint');
       const checkpointNode = node as HierarchicalCheckpoint;
@@ -331,7 +331,7 @@ export class ReportComponent implements OnInit, AfterViewInit, OnDestroy {
     this.getReportFromServer().then((updatedReport) => {
       this.ngZone.run(() => {
         if (this.newTab) {
-          this.addReportToTree(updatedReport);
+          this.addReport(updatedReport);
           this.selectUpdatedReportOrCheckpoint(updatedReport, checkpointUidToRestore);
           this.testRefreshService.refreshAll();
         } else {
@@ -347,7 +347,6 @@ export class ReportComponent implements OnInit, AfterViewInit, OnDestroy {
   private getReportFromServer(): Promise<HierarchicalReport> {
     return new Promise((resolve, reject) => {
       if (this.storageId === undefined) {
-        console.log('ReportComponent.getReportFromServer(): Expected that there was a storageId');
         this.toastService.showDanger(
           'Programming error detected, please view console log (F12) and refresh your browser',
         );
@@ -407,7 +406,7 @@ export class ReportComponent implements OnInit, AfterViewInit, OnDestroy {
     this.reportValueState = state;
     // Make sure no old report or old checkpoint is processed when related components are recreated.
     /* eslint-disable-next-line unicorn/no-useless-undefined */
-    this.reportNodeSubject.next(undefined);
+    this.reportValueSubject.next(undefined);
     /* eslint-disable-next-line unicorn/no-useless-undefined */
     this.checkpointValueSubject.next(undefined);
   }

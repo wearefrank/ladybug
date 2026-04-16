@@ -11,7 +11,6 @@ import { View } from '../../shared/interfaces/view';
 import { DebugTabService } from '../debug-tab.service';
 import { ErrorHandling } from '../../shared/classes/error-handling.service';
 import { RefreshCondition } from '../../shared/interfaces/refresh-condition';
-import { ClientSettingsService } from 'src/app/shared/services/client.settings.service';
 
 @Component({
   selector: 'app-debug-tree',
@@ -42,10 +41,8 @@ export class DebugTreeComponent implements OnDestroy {
   protected checkpointExecutionTimeShown = false;
 
   private _currentView!: View;
-  private lastReport?: Report | null;
 
   private httpService = inject(HttpService);
-  private clientSettingsService = inject(ClientSettingsService);
   private debugTab = inject(DebugTabService);
   private errorHandler = inject(ErrorHandling);
 
@@ -107,10 +104,6 @@ export class DebugTreeComponent implements OnDestroy {
   }
 
   addReportToTree(report: Report): void {
-    if (this.selectAndReplaceReportIfPresent(report)) {
-      return;
-    }
-    this.lastReport = report;
     this.tree.clearItems();
     const newReport: CreateTreeItem = new ReportHierarchyTransformer().transform(report);
     const rootNodePath: string = this.tree.addItem(newReport);
@@ -124,7 +117,6 @@ export class DebugTreeComponent implements OnDestroy {
     this.debugTab.setAnyReportsOpen(false);
     this.closeEntireTreeEvent.emit();
     this.tree.clearItems();
-    this.lastReport = null;
   }
 
   changeSearchTerm(event: KeyboardEvent): void {

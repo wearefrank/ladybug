@@ -8,6 +8,13 @@ export const SimpleFileTreeUtil = {
     return item.iconClass;
   },
 
+  conditionalCssClassNew(item: CreateTreeItem): string {
+    if (!item.originalValue.uid || !item.iconClass) {
+      return 'bi bi-folder icon-size';
+    }
+    return item.iconClass;
+  },
+
   hideOrShowCheckpoints(unmatched: string[], items: TreeItemComponent[]): void {
     for (let item of items) {
       if (unmatched.length === 0 || !unmatched) {
