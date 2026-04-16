@@ -26,7 +26,6 @@ export class DebugTreeComponent implements OnDestroy {
   @Output() selectReportEvent = new EventEmitter<Report>();
   @Output() closeEntireTreeEvent = new EventEmitter<any>();
 
-  showMultipleAtATime!: boolean;
   subscriptions: Subscription = new Subscription();
   treeOptions: FileTreeOptions = {
     hierarchyLines: {
@@ -67,15 +66,6 @@ export class DebugTreeComponent implements OnDestroy {
   }
 
   subscribeToSubscriptions(): void {
-    const showMultipleSubscription: Subscription = this.clientSettingsService.showMultipleAtATimeObservable.subscribe({
-      next: (value: boolean) => {
-        this.showMultipleAtATime = value;
-        if (!this.showMultipleAtATime) {
-          this.removeAllReportsButOne();
-        }
-      },
-    });
-    this.subscriptions.add(showMultipleSubscription);
     const refreshAll: Subscription = this.debugTab.refreshAll$.subscribe((condition?: RefreshCondition) =>
       this.refreshReports(condition),
     );
@@ -116,23 +106,12 @@ export class DebugTreeComponent implements OnDestroy {
     return reports;
   }
 
-  removeAllReportsButOne(): void {
-    if (this.tree) {
-      this.tree.clearItems();
-    }
-    if (this.lastReport) {
-      this.addReportToTree(this.lastReport);
-    }
-  }
-
   addReportToTree(report: Report): void {
     if (this.selectAndReplaceReportIfPresent(report)) {
       return;
     }
     this.lastReport = report;
-    if (!this.showMultipleAtATime) {
-      this.tree.clearItems();
-    }
+    this.tree.clearItems();
     const newReport: CreateTreeItem = new ReportHierarchyTransformer().transform(report);
     const rootNodePath: string = this.tree.addItem(newReport);
     this.selectFirstCheckpoint(rootNodePath);

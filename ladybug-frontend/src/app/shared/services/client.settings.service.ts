@@ -6,32 +6,20 @@ import { BehaviorSubject, Observable } from 'rxjs';
 })
 export class ClientSettingsService {
   private readonly tableSpacingKey = 'tableSpacing';
-  private readonly showMultipleRecordsAtATimeKey = 'showMultipleFilesAtATime';
   private readonly defaultAmountOfRecordsInTable: number = 10;
   private readonly amountOfRecordsInTableKey = 'amountOfRecordsInTable';
   private readonly transformationEnabledKey = 'transformationEnabled';
   private readonly forMultipleOmitIfXmlEmptyKey = 'forMultipleOmitIfXmlEmpty';
   private readonly showStorageIdsInTestTabKey = 'showReportStorageIds';
 
-  private showMultipleAtATimeSubject = new BehaviorSubject<boolean>(this.isShowMultipleReportsAtATime());
   private tableSpacingSubject = new BehaviorSubject<number>(this.getTableSpacing());
   private amountOfRecordsInTableSubject = new BehaviorSubject<number>(this.getAmountOfRecordsInTable());
   private showStorageIdsInTestTabSubject = new BehaviorSubject<boolean>(this.isShowStorageIdsInTestTab());
 
   // Cannot put public properties first because properties cannot be used before their initialization.
-  public showMultipleAtATimeObservable = this.showMultipleAtATimeSubject as Observable<boolean>;
   public tableSpacingObservable = this.tableSpacingSubject as Observable<number>;
   public amountOfRecordsInTableObservable = this.amountOfRecordsInTableSubject as Observable<number>;
   public showStorageIdsInTestTabObservable = this.showStorageIdsInTestTabSubject as Observable<boolean>;
-
-  public isShowMultipleReportsAtATime(): boolean {
-    return localStorage.getItem(this.showMultipleRecordsAtATimeKey) === 'true';
-  }
-
-  public setShowMultipleReportsatATime(value: boolean): void {
-    localStorage.setItem(this.showMultipleRecordsAtATimeKey, String(value));
-    this.showMultipleAtATimeSubject.next(value);
-  }
 
   public getTableSpacing(): number {
     const MAX_ALLOWED_DROPDOWN_VALUE = 8;
@@ -94,7 +82,6 @@ export class ClientSettingsService {
 
   public backToFactory(): void {
     this.setAmountOfRecordsInTable(10);
-    this.setShowMultipleReportsatATime(false);
     this.setTableSpacing(1);
     this.setTransformationEnabled(true);
     // forMultipleOmitIfXmlEmpty and showStorageIdsInTestTab are not part of the factory reset

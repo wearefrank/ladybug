@@ -123,7 +123,6 @@ export class TableComponent implements OnInit, OnDestroy {
     return this.selectedReports.map((report: Report): number => report.storageId);
   }
 
-  private showMultipleFiles?: boolean;
   private tableDataSort?: MatSort;
 
   private httpService = inject(HttpService);
@@ -156,11 +155,6 @@ export class TableComponent implements OnInit, OnDestroy {
       error: () => catchError(this.errorHandler.handleError()),
     });
     this.subscriptions.add(tableSpacingSubscription);
-    const showMultipleSubscription: Subscription = this.clientSettingsService.showMultipleAtATimeObservable.subscribe({
-      next: (value: boolean) => (this.showMultipleFiles = value),
-      error: () => catchError(this.errorHandler.handleError()),
-    });
-    this.subscriptions.add(showMultipleSubscription);
     const showFilterSubscription: Subscription = this.filterService.showFilter$.subscribe({
       next: (show: boolean) => (this.tableSettings.showFilter = show),
       error: () => catchError(this.errorHandler.handleError()),
@@ -385,12 +379,6 @@ export class TableComponent implements OnInit, OnDestroy {
   }
 
   openSelected(): void {
-    if (this.selectedReports.length > 1 && !this.showMultipleFiles) {
-      this.toastService.showWarning(
-        'Please enable show multiple files in settings to open multiple files in the debug tree',
-      );
-      return;
-    }
     this.httpService
       .getHierarchicalReports(this.selectedReportIds, this.currentView.storageName, this.currentView.name)
       .pipe(catchError(this.errorHandler.handleError()))
