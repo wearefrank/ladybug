@@ -66,7 +66,6 @@ export class ReportComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild(SplitComponent) splitter!: SplitComponent;
   @ViewChild(DebugTreeNewComponent) debugTreeComponent!: DebugTreeNewComponent;
 
-  protected reportSubject = new Subject<HierarchicalReport>();
   protected monacoEditorHeight!: number;
   protected reportValueState: ReportValueState = 'none';
   // Not ordinary subjects, because the report or checkpoint value may
@@ -145,6 +144,10 @@ export class ReportComponent implements OnInit, AfterViewInit, OnDestroy {
 
   onButton(command: ButtonCommand): void {
     switch (command) {
+      case 'close': {
+        this.closeEntireTree();
+        break;
+      }
       case 'makeNull': {
         throw new Error(
           'ReportComponent.onButton() with command makeNull cannot happen - should be handled by CheckpointValue',

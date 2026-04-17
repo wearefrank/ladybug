@@ -157,6 +157,10 @@ export class ReportValueComponent implements OnInit, OnDestroy {
 
   onButton(command: ButtonCommand): void {
     switch (command) {
+      case 'close': {
+        this.button.emit('close');
+        break;
+      }
       case 'makeNull': {
         throw new Error('Button makeNull should not be accessible when no checkpoint is shown');
       }

@@ -98,6 +98,10 @@ export class CheckpointValueComponent implements OnInit, OnDestroy {
 
   onButton(command: ButtonCommand): void {
     switch (command) {
+      case 'close': {
+        this.button.emit('close');
+        break;
+      }
       case 'makeNull': {
         this.editToNull();
         break;
