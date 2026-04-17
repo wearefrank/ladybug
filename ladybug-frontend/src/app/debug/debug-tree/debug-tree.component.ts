@@ -67,10 +67,6 @@ export class DebugTreeComponent implements OnDestroy {
       this.refreshReports(condition),
     );
     this.subscriptions.add(refreshAll);
-    const refreshTree: Subscription = this.debugTab.refreshTree$.subscribe((condition?: RefreshCondition) =>
-      this.refreshReports(condition),
-    );
-    this.subscriptions.add(refreshTree);
   }
 
   hideOrShowCheckpointsBasedOnView(currentView: View): void {
@@ -114,7 +110,6 @@ export class DebugTreeComponent implements OnDestroy {
   }
 
   closeEntireTree(): void {
-    this.debugTab.setAnyReportsOpen(false);
     this.closeEntireTreeEvent.emit();
     this.tree.clearItems();
   }

@@ -54,8 +54,6 @@ export class DebugTreeNewComponent implements OnInit, OnDestroy {
   subscribeToSubscriptions(): void {
     const refreshAll: Subscription = this.debugTab.refreshAll$.subscribe(() => this.refreshReports());
     this.subscriptions.add(refreshAll);
-    const refreshTree: Subscription = this.debugTab.refreshTree$.subscribe(() => this.refreshReports());
-    this.subscriptions.add(refreshTree);
   }
 
   addReportToTree(report: HierarchicalReport): void {
@@ -63,25 +61,24 @@ export class DebugTreeNewComponent implements OnInit, OnDestroy {
     this.refreshReports();
   }
 
-  refreshReports(): void {
+  closeEntireTree(): void {
+    this.lastReport = null;
+    this.tree.clearItems();
+  }
+
+  private refreshReports(): void {
     if (this.lastReport === null) {
       this.closeEntireTree();
     } else {
       this.tree.clearItems();
       this.addReportToTreeImpl(this.lastReport);
-      console.log(`Tree visible should be: ${this.tree && this.tree.items.length > 0}`);
     }
   }
 
-  addReportToTreeImpl(report: HierarchicalReport): void {
+  private addReportToTreeImpl(report: HierarchicalReport): void {
     const preparedReport: FrankTreeNode = this.prepareReportForTree(report);
     const rootNodePath: string = this.tree.addItem(preparedReport);
     this.selectFirstCheckpoint(rootNodePath);
-  }
-
-  closeEntireTree(): void {
-    this.debugTab.setAnyReportsOpen(false);
-    this.tree.clearItems();
   }
 
   private prepareReportForTree(report: HierarchicalReport): FrankTreeNode {
@@ -119,27 +116,6 @@ export class DebugTreeNewComponent implements OnInit, OnDestroy {
     return iconClass;
   }
 
-  changeSearchTerm(event: KeyboardEvent): void {
-    const term: string = (event.target as HTMLInputElement).value;
-    this.tree.searchTree(term);
-  }
-
-  conditionalOpenFunction(item: CreateTreeItem): boolean {
-    const type = item['type'];
-    return type === undefined || type === CheckpointType.Startpoint || type === CheckpointType.Endpoint;
-  }
-
-  toggleCheckpointAndStorageIdShown(): void {
-    console.log('toggleCheckpointAndStorageIdShown');
-    this.checkpointAndStorageIdShown = !this.checkpointAndStorageIdShown;
-    this.refreshReports();
-  }
-
-  emitNodeSelected(item: FileTreeItem): void {
-    const createItem: FrankTreeNode = item.originalValue;
-    this.selectReportEvent.emit(createItem.originalValue);
-  }
-
   private selectFirstCheckpoint(rootNodePath: string): void {
     const last = this.tree.items.length - 1;
     const lastAdded = this.tree.items[last];
@@ -149,5 +125,26 @@ export class DebugTreeNewComponent implements OnInit, OnDestroy {
     } else {
       this.tree.selectItem(rootNodePath);
     }
+  }
+
+  protected changeSearchTerm(event: KeyboardEvent): void {
+    const term: string = (event.target as HTMLInputElement).value;
+    this.tree.searchTree(term);
+  }
+
+  private conditionalOpenFunction(item: CreateTreeItem): boolean {
+    const type = item['type'];
+    return type === undefined || type === CheckpointType.Startpoint || type === CheckpointType.Endpoint;
+  }
+
+  protected toggleCheckpointAndStorageIdShown(): void {
+    console.log('toggleCheckpointAndStorageIdShown');
+    this.checkpointAndStorageIdShown = !this.checkpointAndStorageIdShown;
+    this.refreshReports();
+  }
+
+  protected emitNodeSelected(item: FileTreeItem): void {
+    const createItem: FrankTreeNode = item.originalValue;
+    this.selectReportEvent.emit(createItem.originalValue);
   }
 }

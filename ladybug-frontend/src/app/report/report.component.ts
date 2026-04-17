@@ -116,11 +116,16 @@ export class ReportComponent implements OnInit, AfterViewInit, OnDestroy {
     this.subscriptions.unsubscribe();
   }
 
+  // Entry point when report is opened from debug table.
+  // Also called when this component lives in a dedicated
+  // tab after the HierarchicalReport has been fetched
+  // via the URL.
   addReport(report: HierarchicalReport): void {
     this.debugTreeComponent.addReportToTree(report);
   }
 
   closeEntireTree(): void {
+    this.debugTreeComponent.closeEntireTree();
     if (this.newTab && this.newTabReportData) {
       this.tabService.closeTab(this.newTabReportData);
     }

@@ -4,8 +4,6 @@ import { DebugTreeNewComponent } from './debug-tree-new.component';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { NgSimpleFileTree } from 'ng-simple-file-tree';
 import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
-import { Observable, Subject } from 'rxjs';
-import { HierarchicalReport } from 'src/app/shared/interfaces/hierarchical-report';
 
 describe('DebugTreeNewComponent', () => {
   let component: DebugTreeNewComponent;
@@ -20,9 +18,7 @@ describe('DebugTreeNewComponent', () => {
 
   beforeEach(() => {
     fixture = TestBed.createComponent(DebugTreeNewComponent);
-    const reportSubject = new Subject<HierarchicalReport | null>();
     component = fixture.componentInstance;
-    component.report$ = reportSubject as Observable<HierarchicalReport>;
     fixture.detectChanges();
   });
 

@@ -463,7 +463,6 @@ export class TableComponent implements OnInit, OnDestroy {
   }
 
   openReport(storageId: number): void {
-    this.debugTab.setAnyReportsOpen(true);
     this.httpService
       .getHierarchicalReports([storageId], this.currentView.storageName, this.currentView.name)
       .pipe(catchError(this.errorHandler.handleError()))
