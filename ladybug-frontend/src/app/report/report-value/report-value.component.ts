@@ -145,7 +145,13 @@ export class ReportValueComponent implements OnInit, OnDestroy {
     const isEdited = this.isEdited();
     this.labels.isEdited = isEdited;
     this.labels.isReadOnly = isReadOnly;
-    const state: NodeValueState = { isReadOnly, isEdited, storageId: this.report?.storageId };
+    const state: NodeValueState = {
+      isReadOnly,
+      isEdited,
+      storageId: this.report?.storageId,
+      storageName: this.report?.storageName,
+      checkpointsFromView: this.report?.checkpointsFromView,
+    };
     this.buttonStateSubject.next(ReportValueComponent.getButtonState(state));
     this.nodeValueState.emit(state);
   }

@@ -40,6 +40,7 @@ function getHierarchicalCheckpoint(): HierarchicalCheckpoint {
     correlationId: '1',
     variables: {},
     xml: 'dummy xml',
+    checkpointsFromView: null,
   };
   report.children?.push({
     name: 'Some name',

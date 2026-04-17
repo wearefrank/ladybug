@@ -15,7 +15,6 @@ import { AngularSplitModule, SplitComponent } from 'angular-split';
 import { BehaviorSubject, catchError, debounceTime, fromEventPattern, Observable, Subject, Subscription } from 'rxjs';
 import { DebugComponent } from '../debug/debug.component';
 import { HierarchicalReportData } from '../shared/interfaces/report-data';
-import { View } from '../shared/interfaces/view';
 import { TabService } from '../shared/services/tab.service';
 import { NodeEventHandler } from 'rxjs/internal/observable/fromEvent';
 import { ReportValueComponent } from './report-value/report-value.component';
@@ -44,6 +43,8 @@ export interface NodeValueState {
   isEdited: boolean;
   isReadOnly: boolean;
   storageId?: number;
+  storageName?: string;
+  checkpointsFromView?: string | null;
 }
 
 export interface UpdateNode {
@@ -62,7 +63,6 @@ const INDENT_TWO_SPACES = '  ';
 export class ReportComponent implements OnInit, AfterViewInit, OnDestroy {
   static readonly ROUTER_PATH: string = 'report';
   @Input() newTab = true;
-  @Input({ required: true }) currentView!: View;
   @ViewChild(SplitComponent) splitter!: SplitComponent;
   @ViewChild(DebugTreeNewComponent) debugTreeComponent!: DebugTreeNewComponent;
 
@@ -77,6 +77,8 @@ export class ReportComponent implements OnInit, AfterViewInit, OnDestroy {
   protected saveDoneSubject = new Subject<void>();
   protected rerunResultSubject = new BehaviorSubject<TestResult | undefined>(undefined);
   private storageId?: number;
+  private storageName?: string;
+  private checkpointsFromView?: string | null;
   private nodeValueState?: NodeValueState;
   private host = inject(ElementRef);
   private tabService = inject(TabService);
@@ -105,7 +107,6 @@ export class ReportComponent implements OnInit, AfterViewInit, OnDestroy {
   ngAfterViewInit(): void {
     setTimeout(() => {
       if (this.newTabReportData) {
-        this.currentView = this.newTabReportData.currentView;
         // TODO: Take care here when working on issue https://github.com/wearefrank/ladybug-frontend/issues/1125.
         this.addReport(this.newTabReportData.report);
       }
@@ -197,6 +198,8 @@ export class ReportComponent implements OnInit, AfterViewInit, OnDestroy {
 
   onNodeValueState(nodeValueState: NodeValueState): void {
     this.storageId = nodeValueState.storageId;
+    this.storageName = nodeValueState.storageName;
+    this.checkpointsFromView = nodeValueState.checkpointsFromView;
     this.showToastForCopyToTestTabIfApplicable(nodeValueState);
     this.nodeValueState = nodeValueState;
     // Suppress errors ExpressionChangedAfterItHasBeenCheckedError about button existence changes.
@@ -208,7 +211,7 @@ export class ReportComponent implements OnInit, AfterViewInit, OnDestroy {
 
   protected save(update: UpdateNode): void {
     this.httpService
-      .updateReport(`${this.storageId!}`, update.updateReport, this.currentView.storageName)
+      .updateReport(`${this.storageId!}`, update.updateReport, this.storageName!)
       .pipe(catchError(this.handleErrorWithRethrowMessage('Caught error when trying to update report')))
       .subscribe({
         next: () => {
@@ -225,7 +228,7 @@ export class ReportComponent implements OnInit, AfterViewInit, OnDestroy {
     const queryString = `id=${this.storageId}`;
     this.helperService.download(
       `${queryString}&`,
-      this.currentView.storageName,
+      this.storageName!,
       downloadOptions.downloadReport,
       downloadOptions.downloadXmlSummary,
       false,
@@ -239,7 +242,7 @@ export class ReportComponent implements OnInit, AfterViewInit, OnDestroy {
       throw new Error('Cannot copy report because ReportComponent does not have the storageId');
     }
     const data: Record<string, number[]> = {
-      [this.currentView.storageName]: [this.storageId],
+      [this.storageName!]: [this.storageId],
     };
     this.httpService
       .copyReport(data, 'Test')
@@ -275,7 +278,7 @@ export class ReportComponent implements OnInit, AfterViewInit, OnDestroy {
       }
     }
     this.httpService
-      .runReport(this.currentView.storageName, this.storageId)
+      .runReport(this.storageName!, this.storageId)
       .pipe(catchError(this.handleErrorWithRethrowMessage('Rerunning report failed')))
       .subscribe({
         next: (response: TestResult): void => {
@@ -291,7 +294,7 @@ export class ReportComponent implements OnInit, AfterViewInit, OnDestroy {
       this.toastService.showDanger('Could not find report to apply custom action');
     } else {
       this.httpService
-        .processCustomReportAction(this.currentView.storageName, [this.storageId])
+        .processCustomReportAction(this.storageName!, [this.storageId])
         .pipe(catchError(this.handleErrorWithRethrowMessage('Could not start custom report action')))
         .subscribe({
           next: (data: Record<string, string>) => {
@@ -353,6 +356,10 @@ export class ReportComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private getReportFromServer(): Promise<HierarchicalReport> {
+    if (this.checkpointsFromView === undefined) {
+      throw new Error('Cannot get report from server because it is not clear what checkpoints to ask');
+    }
+    const checkpointsFromView: string | null = this.checkpointsFromView;
     return new Promise((resolve, reject) => {
       if (this.storageId === undefined) {
         this.toastService.showDanger(
@@ -361,7 +368,7 @@ export class ReportComponent implements OnInit, AfterViewInit, OnDestroy {
         reject();
       }
       this.httpService
-        .getHierarchicalReports([this.storageId!], this.currentView.storageName, this.currentView.name)
+        .getHierarchicalReports([this.storageId!], this.storageName!, checkpointsFromView)
         .pipe(catchError(this.handleErrorWithRethrowMessage('Failed to fetch report from the server')))
         .subscribe({
           next: (reports: HierarchicalReport[]): void => resolve(reports[0]),

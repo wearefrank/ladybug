@@ -442,7 +442,7 @@ describe('ReportValue', () => {
 });
 
 function getAHierarchicalReport(): HierarchicalReport {
-  const result = {
+  return {
     name: 'My name',
     children: null,
     description: 'My description',
@@ -457,8 +457,8 @@ function getAHierarchicalReport(): HierarchicalReport {
     correlationId: '1',
     variables: {},
     xml: 'dummy xml',
+    checkpointsFromView: null,
   };
-  return { ...result };
 }
 
 function getEmptyHierarchicalReport(): HierarchicalReport {
@@ -477,5 +477,6 @@ function getEmptyHierarchicalReport(): HierarchicalReport {
     correlationId: '1',
     variables: {},
     xml: 'dummy xml',
+    checkpointsFromView: null,
   };
 }

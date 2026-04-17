@@ -305,6 +305,8 @@ export class CheckpointValueComponent implements OnInit, OnDestroy {
       isReadOnly,
       isEdited,
       storageId: this.originalCheckpoint?.report.storageId,
+      storageName: this.originalCheckpoint?.report.storageName,
+      checkpointsFromView: this.originalCheckpoint?.report.checkpointsFromView,
     });
     const saveAllowed = !isReadOnly && isEdited;
     this.buttonStateSubject.next({

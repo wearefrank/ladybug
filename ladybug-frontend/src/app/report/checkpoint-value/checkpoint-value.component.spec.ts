@@ -231,6 +231,7 @@ function getPartialCheckpoint(message: string | null): HierarchicalCheckpoint {
     correlationId: '1',
     variables: {},
     xml: 'dummy xml',
+    checkpointsFromView: null,
   };
   report.children!.push({
     name: 'Some name',

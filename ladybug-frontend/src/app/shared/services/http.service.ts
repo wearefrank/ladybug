@@ -122,8 +122,8 @@ export class HttpService {
           const result: HierarchicalReport[] = [];
           for (const reportId of reportIds) {
             const report: HierarchicalReport = data[reportId].report;
-            console.log(`http.service: received HierarchicalReport with ${report.name}, ${report.correlationId}`);
             report.xml = data[reportId].xml;
+            report.checkpointsFromView = viewName;
             result.push(report);
             if (report.children !== null) {
               for (const child of report.children) {

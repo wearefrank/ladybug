@@ -39,5 +39,6 @@ function getAPartialReport(): HierarchicalReport {
     correlationId: '1',
     variables: {},
     xml: 'dummy xml',
+    checkpointsFromView: null,
   };
 }

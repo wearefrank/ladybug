@@ -17,6 +17,8 @@ export interface HierarchicalReport extends TreeItem {
   variables: Record<string, string>;
   // The fields below do not come from the backend but are computed
   xml: string;
+  // null means - no view so all checkpoints included
+  checkpointsFromView: string | null;
 }
 
 export interface HierarchicalCheckpoint extends TreeItem {
