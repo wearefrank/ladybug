@@ -76,9 +76,6 @@ export class ReportComponent implements OnInit, AfterViewInit, OnDestroy {
   protected checkpointValueSubject = new BehaviorSubject<HierarchicalCheckpoint | undefined>(undefined);
   protected saveDoneSubject = new Subject<void>();
   protected rerunResultSubject = new BehaviorSubject<TestResult | undefined>(undefined);
-  private storageId?: number;
-  private storageName?: string;
-  private checkpointsFromView?: string | null;
   private nodeValueState?: NodeValueState;
   private host = inject(ElementRef);
   private tabService = inject(TabService);
@@ -197,9 +194,6 @@ export class ReportComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   onNodeValueState(nodeValueState: NodeValueState): void {
-    this.storageId = nodeValueState.storageId;
-    this.storageName = nodeValueState.storageName;
-    this.checkpointsFromView = nodeValueState.checkpointsFromView;
     this.showToastForCopyToTestTabIfApplicable(nodeValueState);
     this.nodeValueState = nodeValueState;
     // Suppress errors ExpressionChangedAfterItHasBeenCheckedError about button existence changes.
@@ -211,7 +205,7 @@ export class ReportComponent implements OnInit, AfterViewInit, OnDestroy {
 
   protected save(update: UpdateNode): void {
     this.httpService
-      .updateReport(`${this.storageId!}`, update.updateReport, this.storageName!)
+      .updateReport(`${this.nodeValueState!.storageId!}`, update.updateReport, this.nodeValueState!.storageName!)
       .pipe(catchError(this.handleErrorWithRethrowMessage('Caught error when trying to update report')))
       .subscribe({
         next: () => {
@@ -222,13 +216,13 @@ export class ReportComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   protected onDownload(downloadOptions: DownloadOptions): void {
-    if (this.storageId === undefined) {
+    if (this.nodeValueState?.storageId === undefined) {
       throw new Error('ReportComponent.onDownload(): Expected that storageId was filled');
     }
-    const queryString = `id=${this.storageId}`;
+    const queryString = `id=${this.nodeValueState!.storageId}`;
     this.helperService.download(
       `${queryString}&`,
-      this.storageName!,
+      this.nodeValueState!.storageName!,
       downloadOptions.downloadReport,
       downloadOptions.downloadXmlSummary,
       false,
@@ -238,11 +232,11 @@ export class ReportComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private copyReport(): void {
-    if (this.storageId === undefined) {
+    if (this.nodeValueState?.storageId === undefined) {
       throw new Error('Cannot copy report because ReportComponent does not have the storageId');
     }
     const data: Record<string, number[]> = {
-      [this.storageName!]: [this.storageId],
+      [this.nodeValueState!.storageName!]: [this.nodeValueState!.storageId],
     };
     this.httpService
       .copyReport(data, 'Test')
@@ -259,7 +253,7 @@ export class ReportComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private rerunReport(): void {
-    if (this.storageId === undefined) {
+    if (this.nodeValueState?.storageId === undefined) {
       throw new Error('Cannot rerun report because ReportComponent does not have the storageId');
     }
     if (this.nodeValueState !== undefined && this.nodeValueState.isEdited === true) {
@@ -278,7 +272,7 @@ export class ReportComponent implements OnInit, AfterViewInit, OnDestroy {
       }
     }
     this.httpService
-      .runReport(this.storageName!, this.storageId)
+      .runReport(this.nodeValueState!.storageName!, this.nodeValueState!.storageId)
       .pipe(catchError(this.handleErrorWithRethrowMessage('Rerunning report failed')))
       .subscribe({
         next: (response: TestResult): void => {
@@ -290,11 +284,11 @@ export class ReportComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private processCustomReportAction(): void {
-    if (this.storageId === undefined) {
+    if (this.nodeValueState?.storageId === undefined) {
       this.toastService.showDanger('Could not find report to apply custom action');
     } else {
       this.httpService
-        .processCustomReportAction(this.storageName!, [this.storageId])
+        .processCustomReportAction(this.nodeValueState!.storageName!, [this.nodeValueState!.storageId])
         .pipe(catchError(this.handleErrorWithRethrowMessage('Could not start custom report action')))
         .subscribe({
           next: (data: Record<string, string>) => {
@@ -347,7 +341,7 @@ export class ReportComponent implements OnInit, AfterViewInit, OnDestroy {
           this.testRefreshService.refreshAll();
         } else {
           this.debugTab.refreshAll({
-            reportIds: [this.storageId!],
+            reportIds: [this.nodeValueState!.storageId!],
             displayToast: false,
           });
         }
@@ -356,19 +350,23 @@ export class ReportComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private getReportFromServer(): Promise<HierarchicalReport> {
-    if (this.checkpointsFromView === undefined) {
+    if (this.nodeValueState?.checkpointsFromView === undefined) {
       throw new Error('Cannot get report from server because it is not clear what checkpoints to ask');
     }
-    const checkpointsFromView: string | null = this.checkpointsFromView;
+    const checkpointsFromView: string | null = this.nodeValueState!.checkpointsFromView;
     return new Promise((resolve, reject) => {
-      if (this.storageId === undefined) {
+      if (this.nodeValueState?.storageId === undefined) {
         this.toastService.showDanger(
           'Programming error detected, please view console log (F12) and refresh your browser',
         );
         reject();
       }
       this.httpService
-        .getHierarchicalReports([this.storageId!], this.storageName!, checkpointsFromView)
+        .getHierarchicalReports(
+          [this.nodeValueState!.storageId!],
+          this.nodeValueState!.storageName!,
+          checkpointsFromView,
+        )
         .pipe(catchError(this.handleErrorWithRethrowMessage('Failed to fetch report from the server')))
         .subscribe({
           next: (reports: HierarchicalReport[]): void => resolve(reports[0]),
