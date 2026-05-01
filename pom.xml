@@ -61,7 +61,7 @@
     <lombok.version>1.18.42</lombok.version>
 
     <spring.version>6.2.15</spring.version>
-    <spring.security.version>6.5.9</spring.security.version>
+    <spring.security.version>7.0.5</spring.security.version>
     <cxf.version>4.2.0</cxf.version>
     <jackson.version.stripped>2.21</jackson.version.stripped>
     <jackson.version>2.21.2</jackson.version>
