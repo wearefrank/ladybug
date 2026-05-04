@@ -18,7 +18,10 @@ describe('About opened reports', () => {
   it('When multiple reports are selected and open selected pressed then only warning', () => {
     cy.getDebugTableRows().should('have.length', 2);
     cy.clickRowInTable(0);
+    cy.checkFileTreeLength(1);
     cy.clickRowInTable(1);
+    cy.checkFileTreeLength(1);
+    cy.get('[data-cy-debug-tree="close"]').click();
     cy.get('[data-cy-debug="selectAll"]').click();
     cy.get('[data-cy-debug="openSelected"]').click();
     cy.contains('You can open only one report at a time!');

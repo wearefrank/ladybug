@@ -14,6 +14,7 @@ export interface HierarchicalReport extends TreeItem {
   crudStorage: boolean;
   estimatedMemoryUsage: number;
   correlationId: string;
+  startTime: number;
   variables: Record<string, string>;
   // The fields below do not come from the backend but are computed
   xml: string;

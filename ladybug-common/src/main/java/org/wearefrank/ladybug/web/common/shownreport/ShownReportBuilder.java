@@ -206,6 +206,7 @@ public class ShownReportBuilder {
 			}
 			dest.setVariables(destVariables);
 		}
+		dest.setStartTime(source.getStartTime());
 		validator.validateObject(dest);
 	}
 

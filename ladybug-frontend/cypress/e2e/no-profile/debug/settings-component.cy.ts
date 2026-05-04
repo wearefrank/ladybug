@@ -337,7 +337,6 @@ describe('Tests for settings component', () => {
 function checkSavedModification() {
   cy.get('@client').click();
   cy.get('@numberOfReports').invoke('val').should('equal', '8');
-  cy.get('@showMultiple').should('be.checked');
   cy.get('[data-cy-settings="spacingDropdown"] option:selected').should('have.text', '5x');
   cy.get('@transformationEnabled').should('not.be.checked');
   cy.get('@server').click();

@@ -286,7 +286,7 @@ export class TableComponent implements OnInit, OnDestroy {
         .getReportInProgress(index)
         .pipe(catchError(this.errorHandler.handleError()))
         .subscribe({
-          next: (report: Report) => {
+          next: (report: HierarchicalReport) => {
             this.reportsInProgress[report.correlationId] ??= report.startTime;
             if (this.reportsInProgressMetThreshold(report)) {
               this.hasTimedOut = true;
