@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -104,6 +105,8 @@ public class TestTool {
 	boolean devMode = false; // See testConcurrentLastEndpointAndFirstStartpointForSameCorrelationId()
 	private @Qualifier("openTelemetryEndpoint") String openTelemetryEndpoint;
 	private Tracer tracer;
+
+	private AtomicInteger inProgressStorageNameSeq = new AtomicInteger(0);
 
 	@PostConstruct
 	public void init() {
@@ -1191,6 +1194,8 @@ public class TestTool {
 			// open a report, download a report or to copy a report to the Test tab). 
 			// LogStorage instead of CrudStorage will make the frontend disable the possibility to edit the report.
 			LogStorage storage = new MemoryLogStorage();
+			String storageName = String.format("InProgress_%d", inProgressStorageNameSeq.addAndGet(1));
+			storage.setName(storageName);
 			synchronized(reportsInProgress) {
 				for (Report report : reportsInProgress) {
 					try {

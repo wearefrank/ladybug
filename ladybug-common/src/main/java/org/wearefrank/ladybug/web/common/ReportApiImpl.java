@@ -411,6 +411,10 @@ public class ReportApiImpl {
 			List<ShownReport> reports = new ArrayList<>(storage.getStorageIds().size());
 			while (storageIdsIterator.hasNext()) {
 				Report report = getReport(storage, ((Integer) storageIdsIterator.next()));
+				if (report.getLinkMethod() == null) {
+					// Old reports being uploaded have link method null.
+					report.setLinkMethod(testTool.getDefaultLinkMethod());
+				}
 				ShownReport shownReport = shownReportBuilder.transform(report);
 				reports.add(shownReport);
 			}

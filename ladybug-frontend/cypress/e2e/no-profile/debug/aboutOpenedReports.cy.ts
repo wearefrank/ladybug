@@ -20,6 +20,7 @@ describe('About opened reports', () => {
     cy.clickRowInTable(0);
     cy.clickRowInTable(1);
     cy.get('[data-cy-debug="selectAll"]').click();
+    cy.get('[data-cy-debug="openSelected"]').click();
     cy.contains('You can open only one report at a time!');
     cy.checkFileTreeLength(0);
   })
