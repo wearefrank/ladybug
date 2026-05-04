@@ -458,6 +458,7 @@ function getAHierarchicalReport(): HierarchicalReport {
     variables: {},
     xml: 'dummy xml',
     checkpointsFromView: null,
+    startTime: 0,
   };
 }
 
@@ -478,5 +479,6 @@ function getEmptyHierarchicalReport(): HierarchicalReport {
     variables: {},
     xml: 'dummy xml',
     checkpointsFromView: null,
+    startTime: 0,
   };
 }

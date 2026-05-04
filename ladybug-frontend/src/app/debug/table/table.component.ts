@@ -300,7 +300,7 @@ export class TableComponent implements OnInit, OnDestroy {
     }
   }
 
-  reportsInProgressMetThreshold(report: Report): boolean {
+  reportsInProgressMetThreshold(report: HierarchicalReport): boolean {
     return (
       Date.now() - new Date(this.reportsInProgress[report.correlationId]).getTime() >
       (this.reportsInProgressThreshold ?? 0)

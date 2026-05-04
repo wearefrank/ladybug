@@ -40,5 +40,6 @@ function getAPartialReport(): HierarchicalReport {
     variables: {},
     xml: 'dummy xml',
     checkpointsFromView: null,
+    startTime: 0,
   };
 }
