@@ -68,6 +68,9 @@ public class ReportApi extends ApiBase {
 	private @Setter @Inject @Autowired Views views;
 	private @Setter @Inject @Autowired Optional<CustomReportAction> customReportAction;
 
+	// TODO issue https://github.com/wearefrank/frank-runner/pull/167.
+	// Method should not be needed for Angular UI. Method
+	// getReportsForView() accepts null for the view.
 	/**
 	 * Returns the report details for the given storage and id.
 	 *
@@ -119,6 +122,9 @@ public class ReportApi extends ApiBase {
 		}
 	}
 
+	// TODO issue https://github.com/wearefrank/frank-runner/pull/167.
+	// Method should not be needed for Angular UI. Method
+	// getReportsForView() accepts null for the view.
 	/**
 	 * Returns the reports for the given storage and ids.
 	 *

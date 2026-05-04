@@ -51,6 +51,8 @@ export class HttpService {
     return this.http.get<number>(`api/metadata/${storage}/count`);
   }
 
+  // TODO issue https://github.com/wearefrank/ladybug/issues/743.
+  // Should return HierarchicalReport instead of Report.
   getLatestReports(amount: number, storage: string): Observable<Report[]> {
     return this.http.get<Report[]>(`api/report/latest/${storage}/${amount}`);
   }
@@ -73,6 +75,8 @@ export class HttpService {
     });
   }
 
+  // TODO issue https://github.com/wearefrank/ladybug/issues/743.
+  // Remove this and use getHierarchicalReports() instead.
   getReport(reportId: number, storage: string): Observable<Report> {
     const transformationEnabled: string = this.clientSettingsService.isTransformationEnabled() ? 'true' : 'false';
     return this.http
@@ -89,6 +93,8 @@ export class HttpService {
       );
   }
 
+  // TODO issue https://github.com/wearefrank/ladybug/issues/743.
+  // Remove this and use getHierarchicalReports() instead.
   getReports(reportIds: number[], storage: string): Observable<Record<string, CompareReport>> {
     const transformationEnabled = this.clientSettingsService.isTransformationEnabled() ? 'true' : 'false';
     return this.http
@@ -214,13 +220,8 @@ export class HttpService {
     return this.http.delete<void>(`api/report/all/${storage}`);
   }
 
-  //This endpoint never existed in the backend, so this needs to be refactored
-  // replaceReport(reportId: number, storage: string): Observable<void> {
-  //   return this.http.put<void>(`api/runner/replace/${storage}/${reportId}`, {
-  //     headers: this.headers,
-  //   });
-  // }
-
+  // TODO issue https://github.com/wearefrank/ladybug/issues/743.
+  // This method should not be needed anymore.
   getUnmatchedCheckpoints(storageName: string, storageId: number, viewName: string): Observable<string[]> {
     return this.http.get<string[]>(`api/report/${storageName}/${storageId}/checkpoints/uids`, {
       params: { view: viewName, invert: true },

@@ -12,6 +12,8 @@ import { DebugTabService } from '../debug-tab.service';
 import { ErrorHandling } from '../../shared/classes/error-handling.service';
 import { RefreshCondition } from '../../shared/interfaces/refresh-condition';
 
+// TODO issue https://github.com/wearefrank/ladybug/issues/743. This component should
+// be removed. DebugTreeNewComponent should be used instead.
 @Component({
   selector: 'app-debug-tree',
   templateUrl: './debug-tree.component.html',

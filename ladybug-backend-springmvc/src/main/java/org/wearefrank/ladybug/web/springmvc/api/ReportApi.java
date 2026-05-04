@@ -61,6 +61,9 @@ public class ReportApi {
 	@Autowired
 	private @Setter ReportApiImpl delegate;
 
+	// TODO issue https://github.com/wearefrank/frank-runner/pull/167.
+	// Method should not be needed for Angular UI. Method
+	// getReportsForView() accepts null for the view.
 	/**
 	 * Returns the report details for the given storage and id.
 	 *
@@ -109,6 +112,9 @@ public class ReportApi {
 		}
 	}
 
+	// TODO issue https://github.com/wearefrank/frank-runner/pull/167.
+	// Method should not be needed for Angular UI. Method
+	// getReportsForView() accepts null for the view.
 	/**
 	 * Returns the reports for the given storage and ids.
 	 *

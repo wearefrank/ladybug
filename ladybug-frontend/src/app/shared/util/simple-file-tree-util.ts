@@ -1,6 +1,8 @@
 import { CreateTreeItem, TreeItemComponent } from 'ng-simple-file-tree';
 
 export const SimpleFileTreeUtil = {
+  // TODO issue https://github.com/wearefrank/frank-runner/pull/167.
+  // Replace by conditionalCssClassNew.
   conditionalCssClass(item: CreateTreeItem): string {
     if (!item.uid || !item.iconClass) {
       return 'bi bi-folder icon-size';
@@ -15,6 +17,8 @@ export const SimpleFileTreeUtil = {
     return item.iconClass;
   },
 
+  // TODO issue https://github.com/wearefrank/frank-runner/pull/167.
+  // This function should not be needed anymore.
   hideOrShowCheckpoints(unmatched: string[], items: TreeItemComponent[]): void {
     for (let item of items) {
       if (unmatched.length === 0 || !unmatched) {
