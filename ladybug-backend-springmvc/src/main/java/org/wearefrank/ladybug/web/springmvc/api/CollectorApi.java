@@ -1,5 +1,5 @@
 /*
-   Copyright 2025 WeAreFrank!
+   Copyright 2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -36,13 +36,13 @@ public class CollectorApi {
 
 	@PostMapping
 	public ResponseEntity<Void> collectSpans(Span[] trace) {
-		delegate.processSpans(trace);
+		//delegate.processSpans(trace);
 		return ResponseEntity.ok().build();
 	}
 
 	@PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<Void> collectSpansJson(Span[] trace) {
-		delegate.processSpans(trace);
+		//delegate.processSpans(trace);
 		return ResponseEntity.ok().build();
 	}
 
