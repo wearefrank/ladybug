@@ -379,6 +379,10 @@ export class TableComponent implements OnInit, OnDestroy {
   }
 
   openSelected(): void {
+    if (this.selectedReportIds.length !== 1) {
+      this.toastService.showWarning('You can open only one report at a time!');
+      return;
+    }
     this.httpService
       .getHierarchicalReports(this.selectedReportIds, this.currentView.storageName, this.currentView.name)
       .pipe(catchError(this.errorHandler.handleError()))

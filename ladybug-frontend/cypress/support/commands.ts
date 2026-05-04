@@ -71,8 +71,6 @@ declare global {
 
       selectIfNotSelected(): Chainable;
 
-      enableShowMultipleInDebugTree(): Chainable;
-
       checkTestTableNumRows(length: number): Chainable;
 
       checkTestTableReportsAre(reportNames: string[]): Chainable;
@@ -332,16 +330,6 @@ Cypress.Commands.add(
     if (!node[0].classList.contains('selected')) {
       cy.wrap(node).click();
     }
-  },
-);
-
-Cypress.Commands.add(
-  'enableShowMultipleInDebugTree' as keyof Chainable,
-  (): void => {
-    cy.get('[data-cy-debug="openSettings"]').click();
-    cy.get('[data-cy-settings="nav-client"]').click();
-    cy.get('[data-cy-settings="showAmount"]').check();
-    cy.get('[data-cy-settings="saveChanges"]').click();
   },
 );
 

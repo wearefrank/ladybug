@@ -57,6 +57,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Scanner;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -103,6 +104,8 @@ public class ReportApiImpl {
 	private @Setter
 	@Inject
 	@Autowired Optional<CustomReportAction> customReportAction;
+
+	private AtomicInteger uploadReportMemoryStorageSequence = new AtomicInteger(0);
 
 	public Map<String, Object> getReport(String storageName,
 										 int storageId,
@@ -397,6 +400,8 @@ public class ReportApiImpl {
 
 	public List<ShownReport> getFileReport(Supplier<AttachmentBeingRead> supplier) throws HttpBadRequestException, HttpInternalServerErrorException {
 		CrudStorage storage = new MemoryCrudStorage();
+		String storageName = String.format("MemoryStorage_%d", uploadReportMemoryStorageSequence.addAndGet(1));
+		storage.setName(storageName);
 		AttachmentBeingRead attachmentBeingRead = supplier.get();
 		String errorMessage = Upload.upload(attachmentBeingRead.filename, attachmentBeingRead.in, storage, log);
 		if (StringUtils.isNotEmpty(errorMessage))
