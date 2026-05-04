@@ -6,7 +6,7 @@
     <button class="btn btn-info" title="Collapse All" (click)="tree.collapseAll()">
       <i class="fa fa-compress"></i>
     </button>
-    <button class="btn btn-info" (click)="toggleCheckpointAndStorageIdShown()" title="Show or hide storage id and checkpoint id">
+    <button data-cy-debug-tree="toggleShowCheckpointId" class="btn btn-info" (click)="toggleCheckpointAndStorageIdShown()" title="Show or hide storage id and checkpoint id">
       <i class="fa fa-key"></i>
     </button>
 

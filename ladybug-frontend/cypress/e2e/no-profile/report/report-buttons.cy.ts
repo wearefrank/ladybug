@@ -51,4 +51,30 @@ describe('Report buttons', () => {
     cy.get('[data-cy-element-name="checkpointEditor"]').invoke('text').should('equal', '1');
     cy.get('[data-cy-report="alert-messages"] :contains(null)').should('be.visible');
   });
+
+  it('When key button above tree is pressed then storage id and checkpoint id shown', () => {
+    cy.visit('');
+    cy.createReport();
+    cy.get('[data-cy-debug="refresh"]').click();
+    cy.assertDebugTableLength(1).click();
+    checkNoCheckpointIds();
+    cy.get('[data-cy-debug-tree="toggleShowCheckpointId"]').click();
+    for(const nodeIndex of [0, 1, 2]) {
+      cy.get('[data-cy-debug-tree="root"]')
+        .find(`.item-name:eq(${nodeIndex})`)
+        .contains(/Simple report \(\d+\)/);
+    }
+    cy.get('[data-cy-debug-tree="toggleShowCheckpointId"]').click();
+    checkNoCheckpointIds();
+  })
 });
+
+function checkNoCheckpointIds() {
+  for(const nodeIndex of [0, 1, 2]) {
+    cy.get('[data-cy-debug-tree="root"]')
+      .find(`.item-name:eq(${nodeIndex})`)
+      .invoke('text')
+      .should('contain', 'Simple report')
+      .should('not.contain', '(');
+  }
+}
