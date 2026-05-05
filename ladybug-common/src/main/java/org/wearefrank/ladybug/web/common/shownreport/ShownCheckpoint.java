@@ -15,7 +15,6 @@
 */
 package org.wearefrank.ladybug.web.common.shownreport;
 
-import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 import org.wearefrank.ladybug.StubType;
@@ -23,21 +22,37 @@ import org.wearefrank.ladybug.StubType;
 import java.io.Serializable;
 import java.util.Map;
 
+// When editing, please compare with frontend interface HierarchicalCheckpoint.
 public class ShownCheckpoint extends TreeNode implements Serializable {
 	private static final long serialVersionUID = 104;
 	private @Getter @Setter String message;
 	private @Getter @Setter String encoding;
 	private @Getter @Setter Map<String, Object> messageContext;
-	private @Getter @Setter @NotNull int type;
-	private @Getter @Setter @NotNull int level = 0;
-	private @Getter @Setter @NotNull int stub = StubType.FOLLOW_REPORT_STRATEGY.toInt();
-	private @Getter @Setter @NotNull boolean stubbed = false;
+	// Primitive type, cannot be null.
+	private @Getter @Setter int type;
+	private @Getter @Setter int level = 0;
+	private @Getter @Setter int stub = StubType.FOLLOW_REPORT_STRATEGY.toInt();
+	private @Getter @Setter boolean stubbed = false;
 	private @Getter @Setter String stubNotFound;
-	private @Getter @Setter @NotNull int preTruncatedMessageLength = -1;
-	private @Getter @Setter @NotNull String typeAsString;
-	private @Getter @Setter @NotNull String threadName;
+	private @Getter @Setter int preTruncatedMessageLength = -1;
+	private @Getter @Setter String typeAsString;
+	private @Getter @Setter String threadName;
 	private @Getter @Setter String sourceClassName;
 	private @Getter @Setter String messageClassName;
 	private @Getter @Setter int id;
-	private @Getter @Setter @NotNull String uid;
+	private @Getter @Setter String uid;
+
+	public void validate() {
+		checkNotNull(getName(), "name");
+		checkNotNull(typeAsString, "typeAsString");
+		checkNotNull(threadName, "threadName");
+		checkNotNull(uid, "uid");
+	}
+
+	private void checkNotNull(String value, String name) {
+		if (value == null) {
+			String message = String.format("ShownCheckpoint.%s should not be null", name);
+			throw new IllegalArgumentException(message);
+		}
+	}
 }

@@ -98,10 +98,9 @@ public class ShownReportBuilderTest extends ReportRelatedTestCase {
 			report.setName(null);
 			instance.transform(report, testView);
 		} catch(IllegalArgumentException e) {
-			System.out.println(e);
 			caught = true;
 			// From superclass TreeNode.
-			Assert.assertTrue(e.getMessage().contains("propertyPath=name"));
+			Assert.assertTrue("Message was: " + e.getMessage(), e.getMessage().contains("name"));
 		}
 		Assert.assertTrue(caught);
 	}
@@ -117,7 +116,7 @@ public class ShownReportBuilderTest extends ReportRelatedTestCase {
 			System.out.println(e);
 			caught = true;
 			// From ShownReport.
-			Assert.assertTrue(e.getMessage().contains("propertyPath=linkMethod"));
+			Assert.assertTrue(e.getMessage().contains("linkMethod"));
 		}
 		Assert.assertTrue(caught);
 	}
@@ -133,7 +132,7 @@ public class ShownReportBuilderTest extends ReportRelatedTestCase {
 			System.out.println(e);
 			caught = true;
 			// From ShownReport.
-			Assert.assertTrue(e.getMessage().contains("propertyPath=threadName"));
+			Assert.assertTrue(e.getMessage().contains("threadName"));
 		}
 		Assert.assertTrue(caught);
 	}

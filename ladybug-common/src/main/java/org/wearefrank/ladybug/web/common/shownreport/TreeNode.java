@@ -15,20 +15,17 @@
 */
 package org.wearefrank.ladybug.web.common.shownreport;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import jakarta.validation.constraints.NotNull;
-
 public class TreeNode {
-	private @Getter @Setter @NotNull String name;
+	// name cannot be null, is tested in ShownReport.validate() and ShownCheckpoint.validate().
+	private @Getter @Setter String name;
 	private @Getter List<ShownCheckpoint> children = null;
 
-	@JsonIgnore
 	public void addChild(ShownCheckpoint child) {
 		if (children == null) {
 			children = new ArrayList<>();

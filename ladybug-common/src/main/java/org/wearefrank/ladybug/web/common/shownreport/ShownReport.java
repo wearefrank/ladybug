@@ -15,26 +15,45 @@
 */
 package org.wearefrank.ladybug.web.common.shownreport;
 
-import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.io.Serializable;
 import java.util.Map;
 
+// When editing, please compare with frontend interface definition HierarchicalReport.
 public class ShownReport extends TreeNode implements Serializable {
 	private static final long serialVersionUID = 103;
 
 	private @Setter @Getter String description;
 	private @Setter @Getter String path;
-	private @Setter @Getter @NotNull String stubStrategy;
-	private @Setter @Getter @NotNull String linkMethod;
+	private @Setter @Getter String stubStrategy;
+	private @Setter @Getter String linkMethod;
 	private @Setter @Getter String transformation;
-	private @Setter @Getter @NotNull int storageId;
-	private @Setter @Getter @NotNull String storageName;
-	private @Setter @Getter @NotNull boolean crudStorage;
-	private @Setter @Getter @NotNull long estimatedMemoryUsage;
-	private @Setter @Getter @NotNull String correlationId;
+	// Primitive type, cannot be null.
+	private @Setter @Getter int storageId;
+	private @Setter @Getter String storageName;
+	private @Setter @Getter boolean crudStorage;
+	private @Setter @Getter long estimatedMemoryUsage;
+	private @Setter @Getter String correlationId;
 	private @Setter @Getter Map<String, String> variables;
-	private @Setter @Getter @NotNull long startTime;
+	private @Setter @Getter long startTime;
+
+	public void validate() {
+		checkNotNull(getName(), "name");
+		checkNotNull(stubStrategy, "stubStrategy");
+		checkNotNull(linkMethod, "linkMethod");
+		checkNotNull(storageName, "storageName");
+		checkNotNull(correlationId, "correlationId");
+		if (getChildren() != null) {
+			getChildren().forEach(ShownCheckpoint::validate);
+		}
+	}
+
+	private void checkNotNull(String value, String name) {
+		if (value == null) {
+			String message = String.format("ShownReport.%s should not be null", name);
+			throw new IllegalArgumentException(message);
+		}
+	}
 }
