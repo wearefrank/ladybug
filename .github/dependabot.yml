@@ -12,26 +12,14 @@ updates:
     ignore:
       - dependency-name: "monaco-editor" # Upgrading monaco editor results in failing tests, ignored upgrades for now
   - package-ecosystem: "maven"
-    directory: "/ladybug-common"
+    directories:
+      - "/ladybug-common"
+      - "/ladybug-backend-jaxrs"
+      - "/ladybug-backend-springmvc"
+      - "/ladybug-ff-test-webapp"
+      - "/ladybug-frontend-servlet"
+      - "/ladybug-test-webapp"
     schedule:
       interval: "monthly"
-  - package-ecosystem: "maven"
-    directory: "/ladybug-backend-jaxrs"
-    schedule:
-      interval: "monthly"
-  - package-ecosystem: "maven"
-    directory: "/ladybug-backend-springmvc"
-    schedule:
-      interval: "monthly"
-  - package-ecosystem: "maven"
-    directory: "/ladybug-ff-test-webapp"
-    schedule:
-      interval: "monthly"
-  - package-ecosystem: "maven"
-    directory: "/ladybug-frontend-servlet"
-    schedule:
-      interval: "monthly"
-  - package-ecosystem: "maven"
-    directory: "/ladybug-test-webapp"
-    schedule:
-      interval: "monthly"
+    ignore:
+      - dependency-name: *spring*
