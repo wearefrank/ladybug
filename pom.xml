@@ -135,7 +135,8 @@
       <dependency>
         <groupId>net.sf.saxon</groupId>
         <artifactId>Saxon-HE</artifactId>
-        <version>12.9</version>
+        <!-- 12.9 does not work-->
+        <version>11.7</version>
       </dependency>
       <dependency>
         <groupId>org.ibissource</groupId>
