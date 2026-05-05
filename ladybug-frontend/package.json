@@ -81,7 +81,7 @@
     "prettier": "^3.7.3",
     "prettier-plugin-autocorrect": "^0.4.3",
     "typescript": "5.9.3",
-    "start-server-and-test": "^2.1.5"
+    "start-server-and-test": "^3.0.2"
   },
   "publishConfig": {
     "access": "public"
