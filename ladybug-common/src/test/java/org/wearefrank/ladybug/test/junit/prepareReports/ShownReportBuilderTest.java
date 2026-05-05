@@ -1,6 +1,5 @@
 package org.wearefrank.ladybug.test.junit.prepareReports;
 
-import jakarta.validation.ValidationException;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.Assert;
@@ -9,7 +8,6 @@ import org.wearefrank.ladybug.Checkpoint;
 import org.wearefrank.ladybug.filter.CheckpointMatcher;
 import org.wearefrank.ladybug.Report;
 import org.wearefrank.ladybug.TestTool;
-import org.wearefrank.ladybug.storage.Storage;
 import org.wearefrank.ladybug.test.junit.ReportRelatedTestCase;
 import org.wearefrank.ladybug.web.common.shownreport.ShownCheckpoint;
 import org.wearefrank.ladybug.web.common.shownreport.ShownReport;
