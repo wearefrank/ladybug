@@ -221,7 +221,7 @@
       <dependency>
         <groupId>io.quarkus.arc</groupId>
         <artifactId>arc</artifactId>
-        <version>3.34.2</version><!-- 2.7.0.Final doesn't compile with Java 8 -->
+        <version>3.35.1</version><!-- 2.7.0.Final doesn't compile with Java 8 -->
         <scope>provided</scope>
         <exclusions>
           <!-- Exclude quarkus-core to prevent following warning when running JUnit: SLF4J: Class path contains multiple SLF4J bindings. -->
