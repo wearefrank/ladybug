@@ -22,5 +22,7 @@ updates:
     schedule:
       interval: "monthly"
     ignore:
-      - dependency-name: *spring*
-      - dependency-name: com.h2database:h2
+      - dependency-name: "*spring*"
+      - dependency-name: "com.h2database:h2"
+      - dependency-name: "net.sf.saxon:Saxon-HE"
+
