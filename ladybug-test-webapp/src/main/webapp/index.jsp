@@ -2,7 +2,6 @@
 <%@ page import="org.wearefrank.ladybug.TestTool"%>
 <%@ page import="org.wearefrank.ladybug.MessageEncoderImpl"%>
 <%@ page import="org.wearefrank.ladybug.storage.CrudStorage"%>
-<%@ page import="org.wearefrank.ladybug.storage.LogStorage"%>
 <%@ page import="org.wearefrank.ladybug.storage.Storage"%>
 <%@ page import="org.wearefrank.ladybug.test.webapp.test.webapp.ComplexReports"%>
 <%@ page import="org.springframework.web.context.WebApplicationContext"%>
@@ -164,7 +163,7 @@
 	}
 	// Other actions
 	if ("true".equals(request.getParameter("clearDebugStorage"))) {
-		LogStorage debugStorage = (LogStorage)webApplicationContext.getBean("debugStorage");
+		Storage debugStorage = (Storage)webApplicationContext.getBean("debugStorage");
 		debugStorage.clear();
 	}
 	if ("true".equals(request.getParameter("clearDatabaseStorage"))) {
@@ -172,10 +171,10 @@
 		databaseStorage.clear();
 	}
 	if (request.getParameter("changeDebugStorage") != null) {
-		testTool.setDebugStorage((LogStorage)testTool.getStorage(request.getParameter("changeDebugStorage")));
+		testTool.setDebugStorage((Storage)testTool.getStorage(request.getParameter("changeDebugStorage")));
 	}
 	if (request.getParameter("resetDebugStorage") != null) {
-		testTool.setDebugStorage((LogStorage) webApplicationContext.getBean("debugStorage"));
+		testTool.setDebugStorage((Storage) webApplicationContext.getBean("debugStorage"));
 	}
 	if (request.getParameter("removeReportsInProgress") != null) {
 		while (testTool.getNumberOfReportsInProgress() > 0) {

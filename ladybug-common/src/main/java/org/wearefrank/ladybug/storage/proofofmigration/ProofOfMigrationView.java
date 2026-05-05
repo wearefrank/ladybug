@@ -22,7 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import jakarta.inject.Inject;
 import lombok.Setter;
 import org.wearefrank.ladybug.filter.View;
-import org.wearefrank.ladybug.storage.LogStorage;
+import org.wearefrank.ladybug.storage.Storage;
 
 // @Dependent disabled for Quarkus for now because of the use of JdbcTemplate
 public class ProofOfMigrationView extends View {
@@ -38,7 +38,7 @@ public class ProofOfMigrationView extends View {
 	}
 
 	@Override
-	public LogStorage getDebugStorage() {
+	public Storage getDebugStorage() {
 		return proofOfMigrationStorage;
 	}
 

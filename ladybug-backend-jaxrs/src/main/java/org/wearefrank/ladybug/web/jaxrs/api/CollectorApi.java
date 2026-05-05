@@ -22,13 +22,21 @@ import io.opentelemetry.proto.trace.v1.ResourceSpans;
 import io.opentelemetry.proto.trace.v1.ScopeSpans;
 import io.opentelemetry.proto.trace.v1.Span;
 import jakarta.annotation.PostConstruct;
+import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
+import jakarta.ws.rs.Path;
 import jakarta.ws.rs.core.Response;
 import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.wearefrank.ladybug.SpanBuffer;
+import org.wearefrank.ladybug.*;
+import org.wearefrank.ladybug.storage.CrudStorage;
+import org.wearefrank.ladybug.storage.StorageException;
 import org.wearefrank.ladybug.web.common.CollectorApiImpl;
 import org.wearefrank.ladybug.web.common.Constants;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 
 @Path("/" + Constants.LADYBUG_API_PATH + "/collector")
 public class CollectorApi extends ApiBase {
@@ -37,6 +45,9 @@ public class CollectorApi extends ApiBase {
     @Autowired
     private @Setter CollectorApiImpl delegate;
 
+    private @Setter @Inject
+    @Autowired TestTool testTool;
+
     @PostConstruct
     public void init() {
         spanBuffer = new SpanBuffer(delegate);
@@ -44,9 +55,7 @@ public class CollectorApi extends ApiBase {
 
     @POST
     @Consumes({"application/x-protobuf", "application/json"})
-    public Response receiveTrace(@HeaderParam("Content-Type") String contentType, byte[] data)
-            throws InvalidProtocolBufferException {
-
+    public Response receiveTrace(@HeaderParam("Content-Type") String contentType, byte[] data) throws InvalidProtocolBufferException, StorageException {
         ExportTraceServiceRequest request;
 
         if (contentType.startsWith("application/x-protobuf")) {
@@ -66,6 +75,34 @@ public class CollectorApi extends ApiBase {
             for (ScopeSpans scopeSpans : resourceSpans.getScopeSpansList()) {
                 for (Span span : scopeSpans.getSpansList()) {
                     spanBuffer.addSpan(span);
+
+                    CrudStorage storage = (CrudStorage) testTool.getDebugStorage();
+
+                    for (Integer storageId : storage.getStorageIds()) {
+                        if (storage.getReport(storageId).getCorrelationId().equals(delegate.byteStringToHex(span.getTraceId()))) {
+                            Report report = storage.getReport(storageId);
+                            List<Checkpoint> checkpoints = report.getCheckpoints();
+
+                            List<Checkpoint> newList = new ArrayList<>();
+
+                            for (int i = 0; i < checkpoints.size(); i++) {
+                                Checkpoint checkpoint = checkpoints.get(i);
+                                newList.add(checkpoint);
+
+                                if (Objects.equals(checkpoint.getMessage(), delegate.byteStringToHex(span.getParentSpanId()))) {
+                                    Checkpoint start = new Checkpoint(report, checkpoints.get(i).getThreadName(), null, span.getName(), CheckpointType.STARTPOINT.toInt(), checkpoints.get(i).getLevel() + 1);
+                                    Checkpoint end = new Checkpoint(report, checkpoints.get(i).getThreadName(), null, span.getName(), CheckpointType.ENDPOINT.toInt(), checkpoints.get(i).getLevel() + 1);
+
+                                    newList.add(start);
+                                    newList.add(end);
+                                }
+                            }
+
+                            report.setCheckpoints(newList);
+
+                            storage.update(report);
+                        }
+                    }
                 }
             }
         }

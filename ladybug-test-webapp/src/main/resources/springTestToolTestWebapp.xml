@@ -276,7 +276,7 @@
 		<!-- White box view and TestTool (creating and storing reports) are using debugStorage -->
 		<bean
 			name="debugStorage"
-			class="org.wearefrank.ladybug.storage.database.DatabaseLogStorage"
+			class="org.wearefrank.ladybug.storage.database.DatabaseCrudStorage"
 			depends-on="ladybugDatabaseChangelog"
 			>
 			<property name="name" value="Debug"/>

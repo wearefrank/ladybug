@@ -64,6 +64,8 @@ public interface Storage {
 
 	public void close();
 
+	public void store(Report report) throws StorageException;
+
 	public int getFilterType(String column);
 
 	public List getFilterValues(String column) throws StorageException;

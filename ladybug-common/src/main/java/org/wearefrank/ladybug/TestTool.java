@@ -70,7 +70,7 @@ public class TestTool {
 	private Map<String, Report> reportsInProgressByCorrelationId = new HashMap<String, Report>();
 	private long numberOfReportsInProgress = 0;
 	private Map<String, Report> originalReports = new HashMap<String, Report>();
-	private @Setter @Getter @Inject @Autowired LogStorage debugStorage;
+	private @Setter @Getter @Inject @Autowired Storage debugStorage;
 	private @Setter @Getter @Inject @Autowired CrudStorage testStorage;
 	private MessageEncoder messageEncoder = new MessageEncoderImpl();
 	private MessageCapturer messageCapturer = new MessageCapturerImpl();
@@ -335,7 +335,7 @@ public class TestTool {
 		return tracer;
 	}
 
-	private <T> T checkpoint(String correlationId, String childThreadId, String sourceClassName, String name,
+	public <T> T checkpoint(String correlationId, String childThreadId, String sourceClassName, String name,
 			T message, StubableCode stubableCode, StubableCodeThrowsException stubableCodeThrowsException,
 			Set<String> matchingStubStrategies, int checkpointType, int levelChangeNextCheckpoint) {
 		return checkpoint(correlationId, childThreadId, sourceClassName, name,
@@ -476,7 +476,12 @@ public class TestTool {
 							numberOfReportsInProgress--;
 						}
 						if (report.isReportFilterMatching()) {
-							debugStorage.storeWithoutException(report);
+							try {
+								debugStorage.store(report);
+							} catch (StorageException e) {
+
+							}
+
 						}
 					}
 				}
