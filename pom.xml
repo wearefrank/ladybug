@@ -135,7 +135,9 @@
       <dependency>
         <groupId>net.sf.saxon</groupId>
         <artifactId>Saxon-HE</artifactId>
-        <version>10.8</version>
+        <!-- 12.9 does not work-->
+        <!-- 11.7 does not work-->
+        <version>10.9</version>
       </dependency>
       <dependency>
         <groupId>org.ibissource</groupId>
@@ -209,7 +211,7 @@
       <dependency>
         <groupId>org.apache.commons</groupId>
         <artifactId>commons-dbcp2</artifactId>
-        <version>2.11.0</version>
+        <version>2.14.0</version>
         <scope>test</scope>
       </dependency>
       <dependency>
