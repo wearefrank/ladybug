@@ -58,7 +58,7 @@
     <maven.compiler.release>17</maven.compiler.release>
     <maven.compiler.target>17</maven.compiler.target>
     <maven.compiler.source>17</maven.compiler.source>
-    <lombok.version>1.18.42</lombok.version>
+    <lombok.version>1.18.46</lombok.version>
 
     <spring.version>6.2.15</spring.version>
     <spring.security.version>6.5.9</spring.security.version>
@@ -226,7 +226,7 @@
       <dependency>
         <groupId>io.quarkus.arc</groupId>
         <artifactId>arc</artifactId>
-        <version>3.34.2</version><!-- 2.7.0.Final doesn't compile with Java 8 -->
+        <version>3.35.1</version><!-- 2.7.0.Final doesn't compile with Java 8 -->
         <scope>provided</scope>
         <exclusions>
           <!-- Exclude quarkus-core to prevent following warning when running JUnit: SLF4J: Class path contains multiple SLF4J bindings. -->
@@ -266,7 +266,7 @@
       <dependency>
         <groupId>io.opentelemetry</groupId>
         <artifactId>opentelemetry-exporter-zipkin</artifactId>
-        <version>1.60.1</version>
+        <version>1.61.0</version>
         <scope>provided</scope>
       </dependency>
       <dependency>
@@ -283,7 +283,7 @@
       <plugin>
         <groupId>com.github.hazendaz.maven</groupId>
         <artifactId>directory-maven-plugin</artifactId>
-        <version>1.2.1</version>
+        <version>1.2.2</version>
         <executions>
           <execution>
             <id>find-project-root-directory</id>
@@ -464,7 +464,7 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-release-plugin</artifactId>
-          <version>3.0.1</version>
+          <version>3.3.1</version>
           <configuration>
             <tagNameFormat>v@{project.version}</tagNameFormat>
             <autoVersionSubmodules>true</autoVersionSubmodules>
