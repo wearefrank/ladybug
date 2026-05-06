@@ -1,0 +1,21 @@
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.26.xsd"
+>
+
+    <changeSet id="LadybugTracing:1" author="Jaco de Groot" failOnError="false">
+        <comment>Add table LADYBUGTRACING</comment>
+        <createTable tableName="LADYBUGTRACING">
+            <column name="STORAGEID" type="INTEGER" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" primaryKeyName="PK_LADYBUGTRACING"/>
+            </column>
+            <column name="TRACEID" type="VARCHAR(256)"/>
+            <column name="SPANID" type="VARCHAR(256)"/>
+            <column name="PARENTSPANID" type="VARCHAR(256)"/>
+            <column name="SPANJSON" type="CLOB"/>
+        </createTable>
+        <createSequence sequenceName="SEQ_LADYBUGTRACING"/><!-- To auto increment STORAGEID on Oracle -->
+    </changeSet>
+
+</databaseChangeLog>

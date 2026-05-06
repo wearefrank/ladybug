@@ -19,12 +19,15 @@ import com.google.protobuf.ByteString;
 import io.opentelemetry.proto.common.v1.AnyValue;
 import io.opentelemetry.proto.common.v1.KeyValue;
 import io.opentelemetry.proto.trace.v1.Span;
+import lombok.Getter;
 import org.apache.commons.codec.binary.Hex;
 
 import java.util.*;
 
 public class TraceTree {
+    @Getter
     private HashMap<String, ArrayList<Span>> spans;
+
     TestTool testTool;
 
     public TraceTree(TestTool testTool) {

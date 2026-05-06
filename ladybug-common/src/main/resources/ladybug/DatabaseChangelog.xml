@@ -12,6 +12,7 @@
 	-->
 	<include file="ladybug/DatabaseChangelog_Debug.xml"/>
 	<include file="ladybug/DatabaseChangelog_Test.xml"/>
+	<include file="ladybug/DatabaseChangelog_Tracing.xml"/>
 
 	<include file="ladybug/DatabaseChangelog_Custom.xml" errorIfMissing="false"/>
 </databaseChangeLog>

@@ -15,37 +15,41 @@
 */
 package org.wearefrank.ladybug.web.jaxrs.api;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.util.JsonFormat;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
+import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceResponse;
+import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceResponseOrBuilder;
 import io.opentelemetry.proto.trace.v1.ResourceSpans;
 import io.opentelemetry.proto.trace.v1.ScopeSpans;
 import io.opentelemetry.proto.trace.v1.Span;
-import jakarta.annotation.PostConstruct;
 import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.wearefrank.ladybug.SpanBuffer;
+import org.wearefrank.ladybug.TraceTree;
 import org.wearefrank.ladybug.web.common.CollectorApiImpl;
 import org.wearefrank.ladybug.web.common.Constants;
 
-@Path("/" + Constants.LADYBUG_API_PATH + "/collector")
-public class CollectorApi extends ApiBase {
-    private SpanBuffer spanBuffer;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+@Path("/" + Constants.LADYBUG_API_PATH + "/v1/traces")
+public class TracingApi extends ApiBase {
 
     @Autowired
     private @Setter CollectorApiImpl delegate;
 
-    @PostConstruct
-    public void init() {
-        spanBuffer = new SpanBuffer(delegate);
-    }
-
     @POST
     @Consumes({"application/x-protobuf", "application/json"})
-    public Response receiveTrace(@HeaderParam("Content-Type") String contentType, byte[] data)
-            throws InvalidProtocolBufferException {
+    public Response receiveSpans(@HeaderParam("Content-Type") String contentType, byte[] data)
+            throws InvalidProtocolBufferException, SQLException {
 
         ExportTraceServiceRequest request;
 
@@ -57,19 +61,46 @@ public class CollectorApi extends ApiBase {
             JsonFormat.parser().merge(json, builder);
             request = builder.build();
         } else {
-            return Response.status(Response.Status.UNSUPPORTED_MEDIA_TYPE)
-                    .entity("Unsupported Content-Type: " + contentType)
-                    .build();
+            return Response.status(Response.Status.UNSUPPORTED_MEDIA_TYPE).build();
         }
 
         for (ResourceSpans resourceSpans : request.getResourceSpansList()) {
             for (ScopeSpans scopeSpans : resourceSpans.getScopeSpansList()) {
                 for (Span span : scopeSpans.getSpansList()) {
-                    spanBuffer.addSpan(span);
+                    delegate.storeSpan(span);
                 }
             }
         }
 
-        return Response.ok().build();
+        ExportTraceServiceResponse response = ExportTraceServiceResponse.newBuilder().build();
+
+        return Response.ok(response.toByteArray()).build();
+    }
+
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getAllTraces() throws SQLException {
+
+        HashMap<String, ArrayList<Span>> traces = delegate.getAllTraces();
+
+        Map<String, List<String>> result = new HashMap<>();
+
+        for (Map.Entry<String, ArrayList<Span>> entry : traces.entrySet()) {
+
+            List<String> jsonSpans = new ArrayList<>();
+
+            for (Span span : entry.getValue()) {
+                try {
+                    String json = JsonFormat.printer().print(span);
+                    jsonSpans.add(json);
+                } catch (Exception e) {
+                    jsonSpans.add("{\"error\":\"failed to serialize span\"}");
+                }
+            }
+
+            result.put(entry.getKey(), jsonSpans);
+        }
+
+        return Response.ok(result).build();
     }
 }
