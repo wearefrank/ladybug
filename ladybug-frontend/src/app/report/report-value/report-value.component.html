@@ -33,6 +33,7 @@
           <div class="form-group row">
             <div class="col-sm-5">
               <input
+                data-cy-element-name="variableName"
                 [(ngModel)]="variable.name"
                 [ngClass]="{'is-invalid': duplicateVariables.has(index)}"
                 class="form-control" placeholder="Name"
@@ -40,7 +41,13 @@
                 (blur)="addEmptyVariableWhenNeeded()">
             </div>
             <div class="col-sm-5">
-              <input [(ngModel)]="variable.value" [ngClass]="{'is-invalid': duplicateVariables.has(index)}" class="form-control" placeholder="Value" (input)="onInputChange()">
+              <input
+                data-cy-element-name="variableValue"
+                [(ngModel)]="variable.value"
+                [ngClass]="{'is-invalid': duplicateVariables.has(index)}"
+                class="form-control"
+                placeholder="Value"
+                (input)="onInputChange()">
             </div>
             @if (index < editedVariables.length - 1) {
               <div class="col-sm-2">
