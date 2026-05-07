@@ -228,7 +228,7 @@
       <dependency>
         <groupId>io.quarkus.arc</groupId>
         <artifactId>arc</artifactId>
-        <version>3.35.1</version><!-- 2.7.0.Final doesn't compile with Java 8 -->
+        <version>3.35.2</version><!-- 2.7.0.Final doesn't compile with Java 8 -->
         <scope>provided</scope>
         <exclusions>
           <!-- Exclude quarkus-core to prevent following warning when running JUnit: SLF4J: Class path contains multiple SLF4J bindings. -->
@@ -262,7 +262,7 @@
       <dependency>
         <groupId>io.opentelemetry.semconv</groupId>
         <artifactId>opentelemetry-semconv</artifactId>
-        <version>1.25.0-alpha</version>
+        <version>1.41.0</version>
         <scope>provided</scope>
       </dependency>
       <dependency>
@@ -274,7 +274,7 @@
       <dependency>
         <groupId>io.opentelemetry</groupId>
         <artifactId>opentelemetry-exporter-otlp</artifactId>
-        <version>1.60.1</version>
+        <version>1.61.0</version>
         <scope>provided</scope>
       </dependency>
     </dependencies>
@@ -614,7 +614,7 @@
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-gpg-plugin</artifactId>
-            <version>1.6</version>
+            <version>3.2.8</version>
             <configuration>
               <passphrase>${gpg.passphrase}</passphrase>
               <gpgArguments>
