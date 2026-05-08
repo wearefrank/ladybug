@@ -3,6 +3,9 @@ export interface TreeItem {
   children: HierarchicalCheckpoint[] | null;
 }
 
+// When editing, please compare with backend class ShownReport.
+// Fields that are non-null here should be checked in the backend
+// not to be null.
 export interface HierarchicalReport extends TreeItem {
   description: string | null;
   path: string | null;
@@ -22,6 +25,9 @@ export interface HierarchicalReport extends TreeItem {
   checkpointsFromView: string | null;
 }
 
+// When editing, please compare with backend class ShownCheckpoint.
+// Fields that are non-null here should be checked in the backend
+// not to be null.
 export interface HierarchicalCheckpoint extends TreeItem {
   message: string | null;
   encoding: string | null;
