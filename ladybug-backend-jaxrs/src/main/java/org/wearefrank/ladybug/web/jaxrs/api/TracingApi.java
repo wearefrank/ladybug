@@ -15,13 +15,10 @@
 */
 package org.wearefrank.ladybug.web.jaxrs.api;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.util.JsonFormat;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceResponse;
-import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceResponseOrBuilder;
 import io.opentelemetry.proto.trace.v1.ResourceSpans;
 import io.opentelemetry.proto.trace.v1.ScopeSpans;
 import io.opentelemetry.proto.trace.v1.Span;
@@ -30,21 +27,18 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.wearefrank.ladybug.TraceTree;
-import org.wearefrank.ladybug.web.common.CollectorApiImpl;
+import org.wearefrank.ladybug.Report;
+import org.wearefrank.ladybug.web.common.TracingApiImpl;
 import org.wearefrank.ladybug.web.common.Constants;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 @Path("/" + Constants.LADYBUG_API_PATH + "/v1/traces")
 public class TracingApi extends ApiBase {
 
     @Autowired
-    private @Setter CollectorApiImpl delegate;
+    private @Setter TracingApiImpl delegate;
 
     @POST
     @Consumes({"application/x-protobuf", "application/json"})
@@ -79,28 +73,10 @@ public class TracingApi extends ApiBase {
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getAllTraces() throws SQLException {
+    public Response getTraceReports() throws SQLException {
 
-        HashMap<String, ArrayList<Span>> traces = delegate.getAllTraces();
+        ArrayList<Report> traceReports = delegate.getTraceReports();
 
-        Map<String, List<String>> result = new HashMap<>();
-
-        for (Map.Entry<String, ArrayList<Span>> entry : traces.entrySet()) {
-
-            List<String> jsonSpans = new ArrayList<>();
-
-            for (Span span : entry.getValue()) {
-                try {
-                    String json = JsonFormat.printer().print(span);
-                    jsonSpans.add(json);
-                } catch (Exception e) {
-                    jsonSpans.add("{\"error\":\"failed to serialize span\"}");
-                }
-            }
-
-            result.put(entry.getKey(), jsonSpans);
-        }
-
-        return Response.ok(result).build();
+        return Response.ok(traceReports).build();
     }
 }

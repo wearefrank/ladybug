@@ -134,6 +134,15 @@ public class Report implements Serializable {
 	private transient boolean logMaxMemoryUsage = true;
 	private transient Map<Object, Set<Checkpoint>> streamingMessageListeners = new HashMap<>();
 	private transient Map<Object, StreamingMessageResult> streamingMessageResults = new HashMap<>();
+	private transient boolean store = true;
+
+	@Transient
+	@JsonIgnore
+	public void setStore(boolean store) { this.store = store; }
+
+	@Transient
+	@JsonIgnore
+	public boolean isStore() { return store; }
 
 	@Transient
 	@JsonIgnore
@@ -179,7 +188,7 @@ public class Report implements Serializable {
 	 * @return true when underlying storage is a {@link CrudStorage}, false otherwise
 	 */
 	public boolean isCrudStorage() {
-		return storage.isCrudStorage();
+		return storage != null && storage.isCrudStorage();
 	}
 
 	public void setStorageId(Integer storageId) {

@@ -23,6 +23,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import io.opentelemetry.proto.trace.v1.Span;
+import org.wearefrank.ladybug.Report;
 import org.wearefrank.ladybug.TraceTree;
 import org.wearefrank.ladybug.TestTool;
 import org.wearefrank.ladybug.storage.database.DatabaseTracingStorage;
@@ -32,7 +33,7 @@ import java.sql.SQLException;
 import java.util.*;
 
 @Component
-public class CollectorApiImpl {
+public class TracingApiImpl {
 	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
 	@Autowired
@@ -45,12 +46,18 @@ public class CollectorApiImpl {
 		databaseTracingStorage.store(span);
 	}
 
-	public HashMap<String, ArrayList<Span>> getAllTraces() throws SQLException {
+	public ArrayList<Report> getTraceReports() throws SQLException {
 		List<Span> spans =  databaseTracingStorage.getAllSpans();
 
-		HashMap<String, ArrayList<Span>> traces = sortInTraces(spans);
+		HashMap<String, ArrayList<Span>> unorderedTraces = sortInTraces(spans);
 
-		return traces;
+		ArrayList<TraceTree> traces = new ArrayList<>();
+
+		for (ArrayList<Span> unorderedTrace : unorderedTraces.values()) {
+			traces.add(processSpans(unorderedTrace));
+		}
+
+		return testTool.getTraceReports(traces);
 	}
 
 	public HashMap<String, ArrayList<Span>> sortInTraces(List<Span> spans) {
@@ -70,16 +77,16 @@ public class CollectorApiImpl {
 	}
 
 	public TraceTree processSpans(ArrayList<Span> spans) {
-		TraceTree traceTree = new TraceTree(testTool);
+		Span root = findRoot(spans);
+
+		TraceTree traceTree = new TraceTree(root, testTool);
 		ArrayList<String> spanIds = new ArrayList<>();
 
 		for (Span span : spans) {
 			spanIds.add(byteStringToHex(span.getSpanId()));
 		}
 
-		Span rootSpan = findRoot(spans);
-
-		if (rootSpan != null) {
+		if (root != null) {
 			for (Span span: spans) {
 				String parentId = byteStringToHex(span.getParentSpanId());
 

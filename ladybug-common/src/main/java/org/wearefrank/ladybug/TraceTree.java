@@ -28,10 +28,13 @@ public class TraceTree {
     @Getter
     private HashMap<String, ArrayList<Span>> spans;
 
+    private Span root;
+
     TestTool testTool;
 
-    public TraceTree(TestTool testTool) {
-        spans = new HashMap<>();
+    public TraceTree(Span root, TestTool testTool) {
+        this.spans = new HashMap<>();
+        this.root = root;
         this.testTool = testTool;
     }
 
@@ -40,13 +43,13 @@ public class TraceTree {
         spans.get(parent).add(child);
     }
 
-    public void dfs(Span root) {
+    public void dfs() {
         HashSet<Span> visited = new HashSet<>();
-        dfsRecursive(root, visited);
+        dfsRecursive(this.root, visited);
     }
 
     private void dfsRecursive(Span span, HashSet<Span> visited) {
-        testTool.startpoint(byteStringToHex(span.getTraceId()), null, span.getName(), String.valueOf(toHashMap(span)));
+        testTool.startpoint(byteStringToHex(span.getTraceId()), null, span.getName(), String.valueOf(toHashMap(span)), false);
 
         for (KeyValue keyValue : span.getAttributesList()) {
             AnyValue anyValue = keyValue.getValue();

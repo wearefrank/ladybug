@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.wearefrank.ladybug.Span;
-import org.wearefrank.ladybug.web.common.CollectorApiImpl;
+import org.wearefrank.ladybug.web.common.TracingApiImpl;
 
 import lombok.Setter;
 
@@ -32,7 +32,7 @@ import lombok.Setter;
 @RolesAllowed("IbisWebService")
 public class CollectorApi {
 	@Autowired
-	private @Setter CollectorApiImpl delegate;
+	private @Setter TracingApiImpl delegate;
 
 	@PostMapping
 	public ResponseEntity<Void> collectSpans(Span[] trace) {

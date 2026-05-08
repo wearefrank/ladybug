@@ -20,7 +20,7 @@ import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.RemovalCause;
 import io.opentelemetry.proto.trace.v1.Span;
 import org.springframework.stereotype.Component;
-import org.wearefrank.ladybug.web.common.CollectorApiImpl;
+import org.wearefrank.ladybug.web.common.TracingApiImpl;
 
 import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
@@ -29,9 +29,9 @@ import java.util.concurrent.TimeUnit;
 public class SpanBuffer {
     private final Cache<String, ArrayList<Span>> cache;
 
-    private CollectorApiImpl delegate;
+    private TracingApiImpl delegate;
 
-    public SpanBuffer(CollectorApiImpl delegate) {
+    public SpanBuffer(TracingApiImpl delegate) {
         this.delegate = delegate;
         this.cache = Caffeine.newBuilder()
                 .expireAfterWrite(30, TimeUnit.SECONDS)
