@@ -1,6 +1,6 @@
 @if (tree && tree.items.length > 0) {
   <div data-cy-debug-tree="buttons" class="button-row">
-    <button class="btn btn-info" title="Expand All" (click)="tree.expandAll()">
+    <button data-cy-debug-tree="expandAll" class="btn btn-info" title="Expand All" (click)="tree.expandAll()">
       <i class="fa fa-expand"></i>
     </button>
     <button class="btn btn-info" title="Collapse All" (click)="tree.collapseAll()">
