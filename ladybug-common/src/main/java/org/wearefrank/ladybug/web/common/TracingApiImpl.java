@@ -46,7 +46,7 @@ public class TracingApiImpl {
 		databaseTracingStorage.store(span);
 	}
 
-	public ArrayList<Report> getTraceReports() throws SQLException {
+	public ArrayList<Report> getTraceReports() {
 		List<Span> spans =  databaseTracingStorage.getAllSpans();
 
 		HashMap<String, ArrayList<Span>> unorderedTraces = sortInTraces(spans);
@@ -62,8 +62,16 @@ public class TracingApiImpl {
 		return testTool.getTraceReports(traces);
 	}
 
-	public int getTraceCount() throws SQLException {
+	public int getTraceCount() {
 		return databaseTracingStorage.getAllUniqueTraceIDs();
+	}
+
+	public void deleteTrace(List<String> traceIds) {
+		databaseTracingStorage.dropSpansByTraceId(traceIds);
+	}
+
+	public void deleteAllTraces() {
+		databaseTracingStorage.dropAllSpans();
 	}
 
 	public HashMap<String, ArrayList<Span>> sortInTraces(List<Span> spans) {

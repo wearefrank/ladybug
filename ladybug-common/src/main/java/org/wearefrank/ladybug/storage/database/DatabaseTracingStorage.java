@@ -37,7 +37,7 @@ public class DatabaseTracingStorage {
         }
     }
 
-    public List<Span> getAllSpans() throws SQLException {
+    public List<Span> getAllSpans() {
         String query = "SELECT SPANJSON FROM LADYBUGTRACING";
 
         return ladybugJdbcTemplate.query(query, (rs, rowNum) -> {
@@ -54,9 +54,22 @@ public class DatabaseTracingStorage {
         });
     }
 
-    public int getAllUniqueTraceIDs() throws SQLException {
+    public int getAllUniqueTraceIDs() {
         String query = "SELECT COUNT(DISTINCT TRACEID) FROM LADYBUGTRACING";
         return ladybugJdbcTemplate.queryForObject(query, Integer.class);
+    }
+
+    public void dropSpansByTraceId(List<String> traceIds) {
+        String sql = "DELETE FROM LADYBUGTRACING WHERE TRACEID = ?";
+
+        for (String traceId : traceIds) {
+            ladybugJdbcTemplate.update(sql, traceId);
+        }
+    }
+
+    public void dropAllSpans() {
+        String sql = "TRUNCATE TABLE LADYBUGTRACING";
+        ladybugJdbcTemplate.execute(sql);
     }
 
     public String byteStringToHex(ByteString byteString) {

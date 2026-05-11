@@ -202,8 +202,13 @@ export class TracingTableComponent implements OnInit, OnDestroy {
     }
 
     const selectedIds = new Set(this.selectedReports.map((report) => report.correlationId));
-    this.reports = this.reports.filter((report) => !selectedIds.has(report.correlationId));
-    this.tableDataSource.data = this.reports;
+
+    this.httpService
+      .deleteTraces(Array.from(selectedIds))
+      .pipe(catchError(this.errorHandler.handleError()))
+      .subscribe({
+        next: () => this.loadData(),
+      });
 
     this.selectedReports = [];
 
@@ -211,9 +216,14 @@ export class TracingTableComponent implements OnInit, OnDestroy {
   }
 
   deleteAll(): void {
-    this.reports = [];
+    this.httpService
+      .deleteAllTraces()
+      .pipe(catchError(this.errorHandler.handleError()))
+      .subscribe({
+        next: () => this.loadData(),
+      });
+
     this.selectedReports = [];
-    this.tableDataSource.data = this.reports;
 
     this.toastService.showSuccess('All reports removed');
   }

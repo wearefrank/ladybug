@@ -33,6 +33,7 @@ import org.wearefrank.ladybug.web.common.Constants;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.List;
 
 @Path("/" + Constants.LADYBUG_API_PATH + "/v1/traces")
 public class TracingApi extends ApiBase {
@@ -90,5 +91,22 @@ public class TracingApi extends ApiBase {
         int count = delegate.getTraceCount();
 
         return Response.ok(count).build();
+    }
+
+    @DELETE
+    @Path("/delete")
+    public Response deleteAllTraces() {
+        delegate.deleteAllTraces();
+
+        return Response.ok().build();
+    }
+
+    @DELETE
+    @Path("/delete-batch")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response deleteTraces(List<String> traceIds) {
+        delegate.deleteTrace(traceIds);
+
+        return Response.ok().build();
     }
 }
