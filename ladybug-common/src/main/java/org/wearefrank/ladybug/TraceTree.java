@@ -31,11 +31,15 @@ public class TraceTree {
     @Getter
     private Span root;
 
+    @Getter
+    private String traceId;
+
     TestTool testTool;
 
     public TraceTree(Span root, TestTool testTool) {
         this.spans = new HashMap<>();
         this.root = root;
+        this.traceId = byteStringToHex(root.getTraceId());
         this.testTool = testTool;
     }
 

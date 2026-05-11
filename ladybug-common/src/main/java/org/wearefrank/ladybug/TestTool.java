@@ -17,12 +17,7 @@ package org.wearefrank.ladybug;
 
 import java.lang.invoke.MethodHandles;
 import java.rmi.server.UID;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 
 import org.apache.commons.lang3.StringUtils;
@@ -1278,6 +1273,15 @@ public class TestTool {
 
 		for (TraceTree trace : traces) {
 			trace.dfs();
+		}
+
+		for (Report report : transientReports) {
+			for (TraceTree tree : traces) {
+				if (Objects.equals(report.getCorrelationId(), tree.getTraceId())) {
+					report.setStartTime(tree.getRoot().getStartTimeUnixNano());
+					report.setEndTime(tree.getRoot().getEndTimeUnixNano());
+				}
+			}
 		}
 
 		return transientReports;

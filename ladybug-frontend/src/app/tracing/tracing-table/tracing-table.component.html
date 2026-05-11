@@ -54,7 +54,7 @@
 
       <ng-container matColumnDef="duration">
         <th mat-header-cell class="table-id-cell header-cell header-padding" title="Duration" *matHeaderCellDef>Duration</th>
-        <td data-cy-test-table="duration" mat-cell class="table-cell" [style.padding]="tableSpacing" title="Duration" *matCellDef="let report" (click)="selectReport(report);">{{ report.endTime - report.startTime }}</td>
+        <td data-cy-test-table="duration" mat-cell class="table-cell" [style.padding]="tableSpacing" title="Duration" *matCellDef="let report" (click)="selectReport(report);">{{ (report.endTime - report.startTime)/1000000000 }}</td>
       </ng-container>
 
       <ng-container matColumnDef="name">
