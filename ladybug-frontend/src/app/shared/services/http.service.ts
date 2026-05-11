@@ -118,7 +118,8 @@ export class HttpService {
     viewName: string | null,
   ): Observable<HierarchicalReport[]> {
     const transformationEnabled: string = this.clientSettingsService.isTransformationEnabled() ? 'true' : 'false';
-    const viewQuery = viewName === null ? '' : `&view=${viewName}`;
+    const viewNameString: string = viewName === null ? '' : viewName;
+    const viewQuery = `&view=${viewNameString}`;
     return this.http
       .get<
         Record<string, CompareHierarchicalReport>
