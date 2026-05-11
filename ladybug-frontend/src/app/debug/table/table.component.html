@@ -53,7 +53,7 @@
       </button>
 
       <div class="input-group w-auto">
-        <input data-cy-debug="displayAmount" type="number" class="form-control input-field"
+        <input data-cy-debug="displayAmount" type="number" min="0" class="form-control input-field"
                [ngModel]="tableSettings.displayAmount" (keydown.enter)="changeTableLimit($event)"
                (blur)="changeTableLimit($event)">
         <div data-cy-debug="amountShown" class="input-group-append">
