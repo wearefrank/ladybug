@@ -205,7 +205,7 @@ public class ReportApiImpl {
 			String storageName, String viewName, List<Integer> storageIds, boolean globalTransformer) throws HttpNotFoundException {
 		try {
 			Map<Integer, Map<String, Object>> map = new HashMap<>();
-			if (viewName == null) {
+			if (viewName == null || StringUtils.isBlank(viewName)) {
 				for (int storageId : storageIds) {
 					Map<String, Object> shownReportEntry = getReportImpl(
 							storageName, storageId, globalTransformer, (aReport) -> shownReportBuilder.transform(aReport));
