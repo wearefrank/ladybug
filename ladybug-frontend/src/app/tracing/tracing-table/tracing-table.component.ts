@@ -1,6 +1,5 @@
 import { Component, EventEmitter, inject, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
 import { HttpService } from '../../shared/services/http.service';
-import { TableSettingsModalComponent } from './table-settings-modal/table-settings-modal.component';
 import { catchError, Subscription } from 'rxjs';
 import { Report } from '../../shared/interfaces/report';
 import { ToastService } from '../../shared/services/toast.service';
@@ -22,6 +21,7 @@ import { DeleteModalComponent } from '../../shared/components/delete-modal/delet
 import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner/loading-spinner.component';
 import { ShortenedTableHeaderPipe } from '../../shared/pipes/shortened-table-header.pipe';
 import { ClientSettingsService } from 'src/app/shared/services/client.settings.service';
+import {TableSettingsModalComponent} from "../../debug/table/table-settings-modal/table-settings-modal.component";
 
 @Component({
   selector: 'app-tracing-table',
@@ -59,8 +59,7 @@ export class TracingTableComponent implements OnInit, OnDestroy {
 
   @Output() openReportEvent: EventEmitter<Report> = new EventEmitter<Report>();
 
-  @ViewChild(TableSettingsModalComponent)
-  protected tableSettingsModal!: TableSettingsModalComponent;
+  @ViewChild(TableSettingsModalComponent) protected tableSettingsModal!: TableSettingsModalComponent;
   @ViewChild(DeleteModalComponent) protected deleteModal!: DeleteModalComponent;
 
   @ViewChild(MatSort)

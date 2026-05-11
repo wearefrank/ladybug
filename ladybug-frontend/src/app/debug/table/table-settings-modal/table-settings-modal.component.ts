@@ -1,4 +1,4 @@
-import { Component, inject, OnDestroy, OnInit, TemplateRef, ViewChild } from '@angular/core';
+import {Component, inject, Input, OnDestroy, OnInit, TemplateRef, ViewChild} from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { NgbActiveModal, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ServerSettings, SettingsService } from '../../../shared/services/settings.service';
@@ -14,6 +14,8 @@ import { ClientSettingsService } from 'src/app/shared/services/client.settings.s
   imports: [ReactiveFormsModule],
 })
 export class TableSettingsModalComponent implements OnInit, OnDestroy {
+  @Input() enableGlobalTab = true;
+
   @ViewChild('modal') protected settingsModalElement!: TemplateRef<HTMLElement>;
   @ViewChild('unsavedChangesModal')
   protected unsavedChangesModalElement!: TemplateRef<HTMLElement>;
@@ -55,9 +57,13 @@ export class TableSettingsModalComponent implements OnInit, OnDestroy {
   private activeSettingsModal?: NgbActiveModal;
   private activeUnsavedChangesModal?: NgbActiveModal;
 
-  protected activeTab: string = this.GLOBAL;
+  protected activeTab = '';
 
   ngOnInit(): void {
+    this.activeTab = this.enableGlobalTab
+      ? this.GLOBAL
+      : this.CLIENT;
+
     this.serverSettingsService.init().then(() => this.loadSettings());
   }
 
@@ -79,7 +85,9 @@ export class TableSettingsModalComponent implements OnInit, OnDestroy {
   }
 
   async loadSettings(): Promise<void> {
-    await this.serverSettingsService.refresh();
+    if (this.enableGlobalTab) {
+      await this.serverSettingsService.refresh();
+    }
     this.settingsForm
       .get(this.showMultipleFilesKey)
       ?.setValue(this.clientSettingsService.isShowMultipleReportsAtATime());
@@ -90,9 +98,11 @@ export class TableSettingsModalComponent implements OnInit, OnDestroy {
     this.settingsForm
       .get(this.transformationEnabledKey)
       ?.setValue(this.clientSettingsService.isTransformationEnabled());
-    this.settingsForm.get(this.generatorEnabledKey)?.setValue(this.serverSettingsService.isGeneratorEnabled());
-    this.settingsForm.get(this.regexFilterKey)?.setValue(this.serverSettingsService.getRegexFilter());
-    this.settingsForm.get(this.transformationKey)?.setValue(this.serverSettingsService.getTransformation());
+    if (this.enableGlobalTab) {
+      this.settingsForm.get(this.generatorEnabledKey)?.setValue(this.serverSettingsService.isGeneratorEnabled());
+      this.settingsForm.get(this.regexFilterKey)?.setValue(this.serverSettingsService.getRegexFilter());
+      this.settingsForm.get(this.transformationKey)?.setValue(this.serverSettingsService.getTransformation());
+    }
     this.unsavedChanges = false;
   }
 
@@ -103,6 +113,25 @@ export class TableSettingsModalComponent implements OnInit, OnDestroy {
   // TODO: Issue https://github.com/wearefrank/ladybug/issues/628
   saveSettings(): Promise<void> {
     return new Promise((resolve, reject) => {
+      if (!this.enableGlobalTab) {
+        this.saveClientSettings();
+
+        this.loadSettings()
+          .then(() => {
+            this.toastService.showSuccess('Settings saved!');
+            resolve();
+          })
+          .catch(() => {
+            this.toastService.showDanger(
+              'Failed to reload settings after saving change',
+            );
+
+            reject();
+          });
+
+        return;
+      }
+
       if (this.formServerSettingsChanged()) {
         const body: ServerSettings = {
           isGeneratorEnabled: this.getFormGeneratorEnabled(),
@@ -119,7 +148,7 @@ export class TableSettingsModalComponent implements OnInit, OnDestroy {
           .then(() => this.toastService.showSuccess('Settings saved!'))
           .then(() => this.loadSettings())
           .catch(() => {
-            this.toastService.showDanger('Failer to reload settings after saving change');
+            this.toastService.showDanger('Failed to reload settings after saving change');
             reject();
           })
           .then(() => resolve());
