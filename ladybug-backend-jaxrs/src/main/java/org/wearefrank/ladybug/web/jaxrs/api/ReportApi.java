@@ -326,7 +326,7 @@ public class ReportApi extends ApiBase {
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
 	public Response getFileReport(@Multipart("file") Attachment attachment) {
 		try {
-			List<ShownReport> result = delegate.getFileReport(() -> {
+			List<Map<String, Object>> result = delegate.getFileReport(() -> {
 				String filename = attachment.getContentDisposition().getParameter("filename");
 				InputStream in = attachment.getObject(InputStream.class);
 				return new ReportApiImpl.AttachmentBeingRead(filename, in);

@@ -272,7 +272,7 @@ public class ReportApi {
 	@PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> getFileReport(@RequestPart("file") MultipartFile attachment) {
 		try {
-			List<ShownReport> result = delegate.getFileReport(() -> {
+			List<Map<String, Object>> result = delegate.getFileReport(() -> {
 				String filename = attachment.getOriginalFilename();
 				try {
 					InputStream in = attachment.getInputStream();

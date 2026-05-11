@@ -398,7 +398,7 @@ public class ReportApiImpl {
 		}
 	}
 
-	public List<ShownReport> getFileReport(Supplier<AttachmentBeingRead> supplier) throws HttpBadRequestException, HttpInternalServerErrorException {
+	public List<Map<String, Object>> getFileReport(Supplier<AttachmentBeingRead> supplier) throws HttpBadRequestException, HttpInternalServerErrorException {
 		CrudStorage storage = new MemoryCrudStorage();
 		String storageName = String.format("MemoryStorage_%d", uploadReportMemoryStorageSequence.addAndGet(1));
 		storage.setName(storageName);
@@ -408,17 +408,25 @@ public class ReportApiImpl {
 			throw new HttpBadRequestException(errorMessage);
 		try {
 			Iterator<Integer> storageIdsIterator = storage.getStorageIds().iterator();
-			List<ShownReport> reports = new ArrayList<>(storage.getStorageIds().size());
+			List<Map<String, Object>> result = new ArrayList<>();
 			while (storageIdsIterator.hasNext()) {
-				Report report = getReport(storage, ((Integer) storageIdsIterator.next()));
+				int storageId = ((Integer) storageIdsIterator.next());
+				Report report = getReport(storage, storageId);
+				if (report == null)
+					throw new HttpBadRequestException("Could not find report with id [" + storageId + "]");
 				if (report.getLinkMethod() == null) {
 					// Old reports being uploaded have link method null.
 					report.setLinkMethod(testTool.getDefaultLinkMethod());
 				}
+				if (reportXmlTransformer != null)
+					report.setGlobalReportXmlTransformer(reportXmlTransformer);
 				ShownReport shownReport = shownReportBuilder.transform(report);
-				reports.add(shownReport);
+				HashMap<String, Object> map = new HashMap<>(1);
+				map.put("report", shownReport);
+				map.put("xml", report.toXml());
+				result.add(map);
 			}
-			return reports;
+			return result;
 		} catch (StorageException e) {
 			throw new HttpInternalServerErrorException("Could not retrieve parsed reports from in-memory storage - detailed error message - " + e + Arrays.toString(e.getStackTrace()), e);
 		}

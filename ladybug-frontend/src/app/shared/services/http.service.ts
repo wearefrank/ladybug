@@ -138,7 +138,6 @@ export class HttpService {
               }
             }
           }
-          console.log(`http.service: first result ${result[0].name}, ${result[0].correlationId}`);
           return result;
         }),
       );
@@ -168,7 +167,23 @@ export class HttpService {
   }
 
   uploadReport(formData: FormData): Observable<HierarchicalReport[]> {
-    return this.http.post<HierarchicalReport[]>('api/report/upload', formData);
+    return this.http.post<CompareHierarchicalReport[]>('api/report/upload', formData).pipe(
+      map((data) => {
+        const result: HierarchicalReport[] = [];
+        for (const item of data) {
+          const report: HierarchicalReport = item.report;
+          report.xml = item.xml;
+          report.checkpointsFromView = null;
+          result.push(report);
+          if (report.children !== null) {
+            for (const child of report.children) {
+              this.forChildSetReport(child, report);
+            }
+          }
+        }
+        return result;
+      }),
+    );
   }
 
   uploadReportToStorage(formData: FormData, storage: string): Observable<void> {
