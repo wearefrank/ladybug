@@ -8,6 +8,7 @@ import { Subscription } from 'rxjs';
 
 interface FrankTreeNode {
   name: string;
+  uid?: string;
   iconClass?: string;
   children?: FrankTreeNode[];
   originalValue: HierarchicalReport | HierarchicalCheckpoint;
@@ -92,6 +93,7 @@ export class DebugTreeNewComponent implements OnInit, OnDestroy {
   private prepareCheckpointForTree(checkpoint: HierarchicalCheckpoint): FrankTreeNode {
     return {
       name: this.getCheckpointName(checkpoint),
+      uid: checkpoint.uid,
       iconClass: this.getImage(checkpoint.type, checkpoint.encoding ?? '', checkpoint.level),
       originalValue: checkpoint,
       children:
