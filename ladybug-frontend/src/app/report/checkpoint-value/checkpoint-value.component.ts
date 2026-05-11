@@ -60,6 +60,7 @@ export class CheckpointValueComponent implements OnInit, OnDestroy {
   @Input({ required: true }) originalCheckpoint$!: Observable<PartialCheckpoint | undefined>;
   @Input({ required: true }) saveDone$!: Observable<void>;
   @Input({ required: true }) rerunResult$!: Observable<TestResult | undefined>;
+  @Input({ required: true }) showButtons!: boolean;
   @ViewChild(DifferenceModalComponent) saveModal!: DifferenceModalComponent;
   labels: NodeValueLabels | undefined;
   buttonStateSubject = new BehaviorSubject<ReportButtonsState>(CheckpointValueComponent.getDefaultButtonState());

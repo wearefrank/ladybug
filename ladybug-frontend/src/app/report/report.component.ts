@@ -82,6 +82,7 @@ export class ReportComponent implements OnInit, AfterViewInit, OnDestroy {
   static readonly ROUTER_PATH: string = 'report';
   @Input() newTab = true;
   @Input({ required: false }) currentView!: View;
+  @Input() showCheckpointValueButtons = true;
   @ViewChild(SplitComponent) splitter!: SplitComponent;
   @ViewChild(DebugTreeComponent) debugTreeComponent!: DebugTreeComponent;
 
