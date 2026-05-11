@@ -18,6 +18,7 @@ import { StubStrategy } from './shared/enums/stub-strategy';
 import { ErrorHandling } from './shared/classes/error-handling.service';
 import { VersionService } from './shared/services/version.service';
 import { ReportComponent } from './report/report.component';
+import { TracingComponent } from './tracing/tracing.component';
 
 @Component({
   selector: 'app-root',
@@ -37,6 +38,7 @@ export class AppComponent implements OnInit, OnDestroy {
   closeTabSubscription!: Subscription;
   protected readonly debugComponentPath: string = `/${DebugComponent.ROUTER_PATH}`;
   protected readonly testComponentPath: string = `/${TestComponent.ROUTER_PATH}`;
+  protected readonly tracingComponentPath: string = `/${TracingComponent.ROUTER_PATH}`;
 
   private titleService = inject(Title);
   private tabService = inject(TabService);

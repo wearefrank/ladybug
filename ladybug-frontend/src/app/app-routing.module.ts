@@ -5,6 +5,7 @@ import { TestComponent } from './test/test.component';
 import { CompareComponent } from './compare/compare.component';
 import { TabService } from './shared/services/tab.service';
 import { ReportComponent } from './report/report.component';
+import { TracingComponent } from './tracing/tracing.component';
 
 export const routes: Routes = [
   {
@@ -15,6 +16,11 @@ export const routes: Routes = [
   {
     component: TestComponent,
     path: TestComponent.ROUTER_PATH,
+  },
+  {
+    component: TracingComponent,
+    path: TracingComponent.ROUTER_PATH,
+    pathMatch: 'full',
   },
   {
     component: ReportComponent,

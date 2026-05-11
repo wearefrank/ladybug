@@ -217,4 +217,8 @@ export class HttpService {
   processCustomReportAction(storage: string, reportIds: number[]): Observable<void> {
     return this.http.post<void>(`api/report/customreportaction?storage=${storage}`, reportIds);
   }
+
+  getTraceReports(): Observable<Report[]> {
+    return this.http.get<Report[]>('api/v1/traces/');
+  }
 }

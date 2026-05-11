@@ -1,0 +1,84 @@
+<div data-cy-debug="root" class="table-wrapper">
+  <div class="button-row">
+    <button data-cy-debug="refresh" class="btn btn-info btn-table" title="Refresh" (click)="refresh()">
+      <i class="fa fa-refresh"></i>
+    </button>
+    <button data-cy-debug="openSettings" class="btn btn-info btn-table" title="Settings"
+            (click)="tableSettingsModal.open()">
+      <i class="fa fa-cog"></i>
+    </button>
+    <button data-cy-debug="openSelected" class="btn btn-info btn-table" title="Open Selected Reports" (click)="openSelected()">
+      Open Selected
+    </button>
+    <button data-cy-debug="deleteSelected" class="btn btn-danger btn-table" title="Delete selected reports" (click)="deleteSelected()">
+      <i class="fa fa-trash"></i>
+    </button>
+    <button data-cy-debug="deleteAll" class="btn btn-danger btn-table" title="Delete all reports" (click)="openDeleteModal()">
+      Delete all
+    </button>
+  </div>
+
+  <div data-cy-debug="table" class="table-responsive table-container">
+    <table mat-table class="table mb-0" [style.font-size]="fontSize" matSort [dataSource]="tableDataSource">
+      <!--Header and row container for checkboxes-->
+      <ng-container matColumnDef="select">
+        <th mat-header-cell class="table-row-checkbox header-padding" *matHeaderCellDef>
+          <input
+            data-cy-debug="selectAll"
+            type="checkbox"
+            class="vertical-middle"
+            title="Select all rows"
+            [checked]="selectedReports.length === reports.length && selectedReports.length > 0"
+            [style.width]="checkboxSize"
+            [style.height]="checkboxSize"
+            (click)="toggleSelectAll()">
+        </th>
+        <td mat-cell class="table-row-checkbox" *matCellDef="let row" [style.padding]="tableSpacing">
+          <input type="checkbox" data-cy-debug="selectOne" [checked]="row.checked" [style.width]="checkboxSize" [style.height]="checkboxSize" (click)="toggleCheck(row, $event)">
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="traceId">
+        <th mat-header-cell class="table-id-cell header-cell header-padding" title="Trace Id" *matHeaderCellDef>Trace Id</th>
+        <td data-cy-test-table="traceId" mat-cell class="table-cell" [style.padding]="tableSpacing" title="Trace Id" *matCellDef="let report" (click)="selectReport(report);">{{ report.correlationId }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="duration">
+        <th mat-header-cell class="table-id-cell header-cell header-padding" title="Duration" *matHeaderCellDef>Duration</th>
+        <td data-cy-test-table="duration" mat-cell class="table-cell" [style.padding]="tableSpacing" title="Duration" *matCellDef="let report" (click)="selectReport(report);">{{ report.endTime - report.startTime }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="name">
+        <th mat-header-cell class="table-id-cell header-cell header-padding" title="Name" *matHeaderCellDef>Name</th>
+        <td data-cy-test-table="name" mat-cell class="table-cell" [style.padding]="tableSpacing" title="Name" *matCellDef="let report" (click)="selectReport(report);">{{ report.name }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="spans">
+        <th mat-header-cell class="table-id-cell header-cell header-padding" title="Spans" *matHeaderCellDef>Spans</th>
+        <td data-cy-test-table="spans" mat-cell class="table-cell" [style.padding]="tableSpacing" title="Spans" *matCellDef="let report" (click)="selectReport(report);">{{ report.numberOfCheckpoints }}</td>
+      </ng-container>
+
+      <tr
+        mat-header-row
+        *matHeaderRowDef="displayedColumns; sticky: true"
+        [style.font-size]="fontSize">
+      </tr>
+      <tr
+        data-cy-test="tableRow"
+        mat-row
+        class="table-row"
+        *matRowDef="let report; let rowIndex = index; columns: displayedColumns;"
+        [ngClass]="{
+          'highlight': report.correlationId === selectedReportCorrelationId
+        }"
+        [style.font-size]="fontSize"
+        [style.background-color]="getStatusColor()"
+        [attr.data-cy-record-table-index]="rowIndex">
+      </tr>
+
+    </table>
+  </div>
+</div>
+
+<app-table-settings-modal/>
+<app-delete-modal (confirmDeleteEvent)="deleteAll()"></app-delete-modal>

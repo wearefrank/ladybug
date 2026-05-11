@@ -51,7 +51,7 @@ export class DebugTreeComponent implements OnDestroy {
     this.subscribeToSubscriptions();
   }
 
-  @Input({ required: true }) set currentView(value: View) {
+  @Input({ required: false }) set currentView(value: View) {
     if (this._currentView !== value) {
       // TODO: Issue https://github.com/wearefrank/ladybug-frontend/issues/1125.
       this.hideOrShowCheckpointsBasedOnView(value);

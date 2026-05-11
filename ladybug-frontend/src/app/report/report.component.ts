@@ -81,7 +81,7 @@ const INDENT_TWO_SPACES = '  ';
 export class ReportComponent implements OnInit, AfterViewInit, OnDestroy {
   static readonly ROUTER_PATH: string = 'report';
   @Input() newTab = true;
-  @Input({ required: true }) currentView!: View;
+  @Input({ required: false }) currentView!: View;
   @ViewChild(SplitComponent) splitter!: SplitComponent;
   @ViewChild(DebugTreeComponent) debugTreeComponent!: DebugTreeComponent;
 

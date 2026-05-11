@@ -6,6 +6,9 @@
     <li data-cy-nav-tab="testTab" class="nav-item">
       <a class="nav-link" routerLinkActive="active" [routerLink]="testComponentPath">Test</a>
     </li>
+    <li data-cy-nav-tab="testTab" class="nav-item">
+      <a class="nav-link" routerLinkActive="active" [routerLink]="tracingComponentPath">Tracing</a>
+    </li>
 
     @for (tab of tabs; track tab) {
       <li class="nav-item" [attr.data-cy-nav-tab]="tab.key">
