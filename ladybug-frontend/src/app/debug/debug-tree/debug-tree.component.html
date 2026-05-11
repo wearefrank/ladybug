@@ -18,7 +18,7 @@
     #tree
     data-cy-debug-tree="root"
     childrenKey="checkpoints"
-    [pathAttribute]="['name', 'uid']"
+    [pathAttribute]="['name', 'storageId', 'uid']"
     [options]="treeOptions"
     (itemSelected)="selectReportEvent.emit($event.originalValue)"
   />
