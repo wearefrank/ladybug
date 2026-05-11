@@ -73,10 +73,22 @@ public class TracingApi extends ApiBase {
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getTraceReports() throws SQLException {
+    public Response getTraceReports(@QueryParam("amount") Integer amount) throws SQLException {
 
         ArrayList<Report> traceReports = delegate.getTraceReports();
 
+        if (amount != null && traceReports.size() > amount) {
+            return Response.ok(traceReports.subList(0, amount)).build();
+        }
+
         return Response.ok(traceReports).build();
+    }
+
+    @GET
+    @Path("/count")
+    public Response getTraceCount() throws SQLException {
+        int count = delegate.getTraceCount();
+
+        return Response.ok(count).build();
     }
 }

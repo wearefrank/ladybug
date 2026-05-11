@@ -54,9 +54,15 @@ public class DatabaseTracingStorage {
         });
     }
 
+    public int getAllUniqueTraceIDs() throws SQLException {
+        String query = "SELECT COUNT(DISTINCT TRACEID) FROM LADYBUGTRACING";
+        return ladybugJdbcTemplate.queryForObject(query, Integer.class);
+    }
+
     public String byteStringToHex(ByteString byteString) {
         return Hex.encodeHexString(byteString.toByteArray());
     }
+
     public ByteString hexToByteString(String hex) {
         try {
             return ByteString.copyFrom(Hex.decodeHex(hex));

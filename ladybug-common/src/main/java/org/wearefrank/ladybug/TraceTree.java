@@ -28,6 +28,7 @@ public class TraceTree {
     @Getter
     private HashMap<String, ArrayList<Span>> spans;
 
+    @Getter
     private Span root;
 
     TestTool testTool;

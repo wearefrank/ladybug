@@ -62,19 +62,19 @@ export class TracingTableComponent implements OnInit, OnDestroy {
   @ViewChild(TableSettingsModalComponent) protected tableSettingsModal!: TableSettingsModalComponent;
   @ViewChild(DeleteModalComponent) protected deleteModal!: DeleteModalComponent;
 
+  protected tableDataSource: MatTableDataSource<Report> = new MatTableDataSource<Report>();
+  private tableDataSort?: MatSort;
   @ViewChild(MatSort)
   protected set matSort(sort: MatSort) {
     this.tableDataSort = sort;
     this.tableDataSource.sort = this.tableDataSort;
   }
 
-  protected tableDataSource: MatTableDataSource<Report> = new MatTableDataSource<Report>();
-
+  protected displayAmount = 10;
+  protected traceReportCount: number = 0;
   protected tableSpacing?: string;
   protected fontSize?: string;
   protected checkboxSize?: string;
-
-  private tableDataSort?: MatSort;
 
   private httpService = inject(HttpService);
   private clientSettingsService = inject(ClientSettingsService);
@@ -100,6 +100,17 @@ export class TracingTableComponent implements OnInit, OnDestroy {
       error: () => catchError(this.errorHandler.handleError()),
     });
     this.subscriptions.add(tableSpacingSubscription);
+    const amountOfRecordsInTableSubscription = this.clientSettingsService.amountOfRecordsInTableObservable.subscribe(
+      (value) => {
+        this.displayAmount = value;
+        this.loadData();
+      },
+    );
+    this.subscriptions.add(amountOfRecordsInTableSubscription);
+  }
+
+  changeDisplayAmount(event: any): void {
+    this.clientSettingsService.setAmountOfRecordsInTable(Number(event.target.value));
   }
 
   setTableSpacing(value: number): void {
@@ -119,12 +130,21 @@ export class TracingTableComponent implements OnInit, OnDestroy {
 
   loadData(): void {
     this.httpService
-      .getTraceReports()
+      .getTraceReports(this.displayAmount)
       .pipe(catchError(this.errorHandler.handleError()))
       .subscribe({
         next: (traces: Report[]) => {
           this.reports = traces;
           this.tableDataSource.data = traces;
+        },
+      });
+
+    this.httpService
+      .getTraceReportCount()
+      .pipe(catchError(this.errorHandler.handleError()))
+      .subscribe({
+        next: (count: number) => {
+          this.traceReportCount = count;
         },
       });
   }

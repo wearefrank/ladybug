@@ -57,7 +57,13 @@ public class TracingApiImpl {
 			traces.add(processSpans(unorderedTrace));
 		}
 
+		traces.sort(Comparator.comparing((TraceTree tree) -> tree.getRoot().getStartTimeUnixNano()).reversed());
+
 		return testTool.getTraceReports(traces);
+	}
+
+	public int getTraceCount() throws SQLException {
+		return databaseTracingStorage.getAllUniqueTraceIDs();
 	}
 
 	public HashMap<String, ArrayList<Span>> sortInTraces(List<Span> spans) {

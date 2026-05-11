@@ -16,6 +16,15 @@
     <button data-cy-debug="deleteAll" class="btn btn-danger btn-table" title="Delete all reports" (click)="openDeleteModal()">
       Delete all
     </button>
+
+    <div class="input-group w-auto">
+      <input data-cy-debug="displayAmount" type="number" class="form-control input-field"
+             [ngModel]="displayAmount" (keydown.enter)="changeDisplayAmount($event)"
+             (blur)="changeDisplayAmount($event)">
+      <div data-cy-debug="amountShown" class="input-group-append">
+        <div class="input-group-text">/{{ traceReportCount }}</div>
+      </div>
+    </div>
   </div>
 
   <div data-cy-debug="table" class="table-responsive table-container">
