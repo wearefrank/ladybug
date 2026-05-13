@@ -1186,7 +1186,9 @@ public class TestTool {
 		}
 		// TODO: Introduce views for test tab also and replace getViews() in TestToolApi with getTabs() (for now the
 		// frontend is using hardcoded storage name Test for test tab)
-		if (name.equals(getTestStorage().getName())) {
+		// When frontend saves checkpoint from open report it gives
+		// the real name of the storage.
+		if (name.equals("Test") || name.equals(getTestStorage().getName())) {
 			return getTestStorage();
 		}
 		if (name.equals("InProgress")) {
