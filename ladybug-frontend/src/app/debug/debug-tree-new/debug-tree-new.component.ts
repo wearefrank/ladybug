@@ -59,6 +59,9 @@ export class DebugTreeNewComponent implements OnInit, OnDestroy {
 
   addReportToTree(report: HierarchicalReport): void {
     this.lastReport = report;
+    console.log(
+      `DebugTreeComponent.addReportToTree() set lastReport to report with name [${this.lastReport.name}], going to call refreshReports()`,
+    );
     this.refreshReports();
   }
 
