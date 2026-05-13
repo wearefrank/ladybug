@@ -19,6 +19,12 @@ export const routes: Routes = [
   {
     component: ReportComponent,
     path: `${ReportComponent.ROUTER_PATH}/:id`,
+    providers: [
+      {
+        provide: ':id',
+        useClass: ReportComponent,
+      },
+    ],
   },
   {
     component: CompareComponent,
