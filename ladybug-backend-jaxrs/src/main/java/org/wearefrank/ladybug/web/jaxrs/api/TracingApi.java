@@ -74,15 +74,20 @@ public class TracingApi extends ApiBase {
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getTraceReports(@QueryParam("amount") Integer amount) throws SQLException {
+    public Response getTraceReports(@QueryParam("amount") Integer amount) {
 
         ArrayList<Report> traceReports = delegate.getTraceReports();
 
-        if (amount != null && traceReports.size() > amount) {
-            return Response.ok(traceReports.subList(0, amount)).build();
+        if (amount != null) {
+            if (amount > traceReports.size()) {
+                amount = traceReports.size();
+                return Response.ok(traceReports.subList(0, amount)).build();
+            } else {
+                return Response.ok(traceReports.subList(0, amount)).build();
+            }
+        } else {
+            return Response.ok(traceReports).build();
         }
-
-        return Response.ok(traceReports).build();
     }
 
     @GET
@@ -94,7 +99,6 @@ public class TracingApi extends ApiBase {
     }
 
     @DELETE
-    @Path("/delete")
     public Response deleteAllTraces() {
         delegate.deleteAllTraces();
 
