@@ -90,7 +90,7 @@ export class AppComponent implements OnInit, OnDestroy {
     }
   }
 
-  async openReportInSeparateTab(data: HierarchicalReportData): Promise<void> {
+  openReportInSeparateTab(data: HierarchicalReportData): void {
     const tabIndex: number = this.tabs.findIndex((tab: Tab): boolean => tab.id === String(data.report.storageId));
     console.log(
       `AppComponent.openReportInSeparateTab() report.xml=${data.report.xml}, storageId=${data.report.storageId} tabIndex=${tabIndex}`,
@@ -104,7 +104,7 @@ export class AppComponent implements OnInit, OnDestroy {
       } as Tab);
     }
 
-    await this.router.navigate([ReportComponent.ROUTER_PATH, data.report.storageId]);
+    this.router.navigate([ReportComponent.ROUTER_PATH, data.report.storageId]);
   }
 
   openNewCompareTab(data: CompareData): void {
