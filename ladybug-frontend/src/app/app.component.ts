@@ -92,9 +92,6 @@ export class AppComponent implements OnInit, OnDestroy {
 
   openReportInSeparateTab(data: HierarchicalReportData): void {
     const tabIndex: number = this.tabs.findIndex((tab: Tab): boolean => tab.id === String(data.report.storageId));
-    console.log(
-      `AppComponent.openReportInSeparateTab() report.xml=${data.report.xml}, storageId=${data.report.storageId} tabIndex=${tabIndex}`,
-    );
     if (tabIndex == -1) {
       this.tabs.push({
         key: data.report.name,
