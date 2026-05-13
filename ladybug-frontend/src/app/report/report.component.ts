@@ -98,9 +98,6 @@ export class ReportComponent implements OnInit, AfterViewInit, OnDestroy {
     if (!this.newTabReportData) {
       this.router.navigate([DebugComponent.ROUTER_PATH]);
     }
-    console.log(
-      `Initializing ReportComponent for storage id ${this.getIdFromPath()} and xml ${this.newTabReportData?.report.xml}`,
-    );
     this.listenToHeight();
   }
 
