@@ -602,7 +602,6 @@ export class TableComponent implements OnInit, OnDestroy {
               report: report,
               currentView: this.currentView,
             };
-            console.log(`Calling TabService.openNewTab() for report with XML: ${report.xml}`);
             this.tabService.openNewTab(reportData);
           }
           this.toastService.showSuccess('Report uploaded!');
