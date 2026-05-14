@@ -388,6 +388,8 @@ export class TableComponent implements OnInit, OnDestroy {
       .pipe(catchError(this.errorHandler.handleError()))
       .subscribe({
         next: (data: Record<string, HierarchicalReport>) => {
+          console.log(`TableComponent.openSelected(), selected storage ids are: ${this.selectedReportIds}`);
+          console.log(`TableComponent.openSelected() fetched reports with storage ids: ${Object.keys(data)}`);
           for (const storageId of this.selectedReportIds) {
             console.log(
               `TableComponent.openSelected() fetched report for storageId ${storageId} with name ${data[storageId].name}`,
