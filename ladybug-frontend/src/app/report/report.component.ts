@@ -134,6 +134,7 @@ export class ReportComponent implements OnInit, AfterViewInit, OnDestroy {
     // eslint-disable-next-line unicorn/no-useless-undefined
     this.rerunResultSubject.next(undefined);
     if (ReportUtility.isReport(node)) {
+      console.log(`ReportComponent.selectReport(), report with storage id ${node.storageId}`);
       this.changeReportValueState('report');
       this.reportValueSubject.next(node as HierarchicalReport);
     } else if (ReportUtility.isCheckPoint(node)) {
@@ -332,10 +333,13 @@ export class ReportComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private updateUIAfterSave(checkpointUidToRestore: string | undefined): void {
+    console.log('ReportComponent.updateUIAfterSave()');
     this.saveDoneSubject.next();
     this.getReportFromServer().then((updatedReport) => {
+      console.log('Got updated report from server');
       this.ngZone.run(() => {
         if (this.newTab) {
+          console.log(`Restoring report with storage id [${updatedReport.storageId}]`);
           this.addReport(updatedReport);
           this.selectUpdatedReportOrCheckpoint(updatedReport, checkpointUidToRestore);
           this.testRefreshService.refreshAll();
