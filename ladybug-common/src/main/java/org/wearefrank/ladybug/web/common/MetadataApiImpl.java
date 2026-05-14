@@ -54,6 +54,7 @@ public class MetadataApiImpl {
 				searchValues.add(null);
 			}
 		}
+		// Get storage, search for metadata, and return the results.
 		Storage storage = testTool.getStorage(storageName);
 		List<List<Object>> records = null;
 		try {
