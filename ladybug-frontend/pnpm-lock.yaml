@@ -118,7 +118,7 @@ importers:
         specifier: 20.3.18
         version: 20.3.18(@angular/compiler@20.3.18)(typescript@5.9.3)
       '@eslint/js':
-        specifier: ^9.36.0
+        specifier: ^9.39.4
         version: 9.39.4
       '@prettier/plugin-xml':
         specifier: ^3.4.2
@@ -136,10 +136,10 @@ importers:
         specifier: 25.5.0
         version: 25.5.0
       '@typescript-eslint/eslint-plugin':
-        specifier: ^8.44.1
+        specifier: ^8.57.2
         version: 8.57.2(@typescript-eslint/parser@8.57.2(eslint@9.39.4(jiti@1.21.7))(typescript@5.9.3))(eslint@9.39.4(jiti@1.21.7))(typescript@5.9.3)
       '@typescript-eslint/parser':
-        specifier: ^8.57.1
+        specifier: ^8.57.2
         version: 8.57.2(eslint@9.39.4(jiti@1.21.7))(typescript@5.9.3)
       chai-match:
         specifier: ^1.1.1
@@ -151,13 +151,13 @@ importers:
         specifier: ^5.0.8
         version: 5.0.8(cypress@15.12.0)
       eslint:
-        specifier: ^9.36.0
+        specifier: ^9.39.4
         version: 9.39.4(jiti@1.21.7)
       eslint-config-prettier:
         specifier: ^10.1.8
         version: 10.1.8(eslint@9.39.4(jiti@1.21.7))
       eslint-plugin-prettier:
-        specifier: ^5.5.4
+        specifier: ^5.5.5
         version: 5.5.5(@types/eslint@9.6.1)(eslint-config-prettier@10.1.8(eslint@9.39.4(jiti@1.21.7)))(eslint@9.39.4(jiti@1.21.7))(prettier@3.8.1)
       eslint-plugin-unicorn:
         specifier: ^64.0.0
@@ -181,7 +181,7 @@ importers:
         specifier: 2.2.0
         version: 2.2.0(jasmine-core@6.2.0)(karma-jasmine@5.1.0(karma@6.4.4))(karma@6.4.4)
       prettier:
-        specifier: ^3.7.3
+        specifier: ^3.8.1
         version: 3.8.1
       prettier-plugin-autocorrect:
         specifier: ^0.4.3
@@ -5349,8 +5349,8 @@ packages:
     resolution: {integrity: sha512-Bh7QjT8/SuKUIfObSXNHNSK6WHo6J1tHCqJsuaFDP7gP0fkzSfTxI8y85JrppZ0h8l0maIgc2tfuZQ6/t3GtnQ==}
     engines: {node: ^14.18.0 || >=16.0.0}
 
-  systeminformation@5.31.5:
-    resolution: {integrity: sha512-5SyLdip4/3alxD4Kh+63bUQTJmu7YMfYQTC+koZy7X73HgNqZSD2P4wOZQWtUncvPvcEmnfIjCoygN4MRoEejQ==}
+  systeminformation@5.31.6:
+    resolution: {integrity: sha512-Uv2b2uGGM6ns+26czgW2cYRabYdnswM0ddSOOlryHOaelzsmDSet1iM/NT7VOYxW8x/BW+HkY+b1Ve2pLTSGSA==}
     engines: {node: '>=8.0.0'}
     os: [darwin, linux, win32, freebsd, openbsd, netbsd, sunos, android]
     hasBin: true
@@ -5563,6 +5563,7 @@ packages:
 
   uuid@8.3.2:
     resolution: {integrity: sha512-+NYs2QeMWy+GWFOEm9xnn6HCDp0l7QBD7ml8zLUmJ+93Q5NF0NocErnwkTkXVFNiX3/fpC6afS8Dhb/gz7R7eg==}
+    deprecated: uuid@10 and below is no longer supported.  For ESM codebases, update to uuid@latest.  For CommonJS codebases, use uuid@11 (but be aware this version will likely be deprecated in 2028).
     hasBin: true
 
   validate-npm-package-license@3.0.4:
@@ -9011,7 +9012,7 @@ snapshots:
       proxy-from-env: 1.0.0
       request-progress: 3.0.0
       supports-color: 8.1.1
-      systeminformation: 5.31.5
+      systeminformation: 5.31.6
       tmp: 0.2.5
       tree-kill: 1.2.2
       tslib: 1.14.1
@@ -11553,7 +11554,7 @@ snapshots:
     dependencies:
       '@pkgr/core': 0.2.9
 
-  systeminformation@5.31.5: {}
+  systeminformation@5.31.6: {}
 
   tapable@2.3.2: {}
 
