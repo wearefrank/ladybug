@@ -211,7 +211,7 @@ export class ReportComponent implements OnInit, AfterViewInit, OnDestroy {
       .subscribe({
         next: () => {
           this.toastService.showSuccessLong('Report updated!');
-          this.updateUIAfterSave(update.checkpointUidToRestore);
+          this.updateUIAfterSave();
         },
       });
   }
@@ -332,7 +332,7 @@ export class ReportComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
-  private updateUIAfterSave(checkpointUidToRestore: string | undefined): void {
+  private updateUIAfterSave(): void {
     console.log('ReportComponent.updateUIAfterSave()');
     this.saveDoneSubject.next();
     this.getReportFromServer().then((updatedReport) => {
@@ -341,7 +341,10 @@ export class ReportComponent implements OnInit, AfterViewInit, OnDestroy {
         if (this.newTab) {
           console.log(`Restoring report with storage id [${updatedReport.storageId}]`);
           this.addReport(updatedReport);
-          this.selectUpdatedReportOrCheckpoint(updatedReport, checkpointUidToRestore);
+          // TODO: Issue https://github.com/wearefrank/ladybug-frontend/issues/1129.
+          // Add logic to restore the checkpoint that was selected before. Take
+          // care not to create an infinite loop - logic reacting to selected node
+          // event coming from tree trying to manipulate the debug tree again.
           this.testRefreshService.refreshAll();
         } else {
           this.debugTab.refreshAll({
@@ -382,12 +385,6 @@ export class ReportComponent implements OnInit, AfterViewInit, OnDestroy {
           },
         });
     });
-  }
-
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  private selectUpdatedReportOrCheckpoint(updatedReport: HierarchicalReport, checkpointUid: string | undefined): void {
-    // TODO: Issue https://github.com/wearefrank/ladybug-frontend/issues/1129.
-    this.selectReport(updatedReport);
   }
 
   private getIdFromPath(): string {
