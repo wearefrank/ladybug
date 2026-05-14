@@ -13,7 +13,6 @@ import { HierarchicalReport } from '../shared/interfaces/hierarchical-report';
   templateUrl: './debug.component.html',
   styleUrls: ['./debug.component.css'],
   standalone: true,
-  imports: [TableComponent, ReportComponent],
   providers: [TableComponent, ReportComponent],
 })
 export class DebugComponent implements OnInit {

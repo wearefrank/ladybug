@@ -11,6 +11,7 @@ import {
   NgbDropdownMenu,
   NgbDropdownToggle,
 } from '@ng-bootstrap/ng-bootstrap';
+import { BooleanToStringPipe } from '../../shared/pipes/boolean-to-string.pipe';
 
 export interface ReportButtonsState {
   isReport: boolean;
@@ -38,7 +39,15 @@ export interface DownloadOptions {
 
 @Component({
   selector: 'app-report-buttons',
-  imports: [FormsModule, NgbDropdown, NgbDropdownButtonItem, NgbDropdownItem, NgbDropdownMenu, NgbDropdownToggle],
+  imports: [
+    FormsModule,
+    NgbDropdown,
+    NgbDropdownButtonItem,
+    NgbDropdownItem,
+    NgbDropdownMenu,
+    NgbDropdownToggle,
+    BooleanToStringPipe,
+  ],
   templateUrl: './report-buttons.html',
   styleUrl: './report-buttons.css',
 })

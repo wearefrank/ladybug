@@ -19,14 +19,7 @@ import { HierarchicalCheckpoint } from '../../shared/interfaces/hierarchical-rep
 
 @Component({
   selector: 'app-checkpoint-value',
-  imports: [
-    MonacoEditorComponent,
-    DifferenceModalComponent,
-    ReportAlertMessage2Component,
-    ReportButtons,
-    CheckpointMetadataTable,
-    MessagecontextTableComponent,
-  ],
+  imports: [MonacoEditorComponent, DifferenceModalComponent],
   providers: [ReportAlertMessage2Component, ReportButtons, CheckpointMetadataTable, MessagecontextTableComponent],
   templateUrl: './checkpoint-value.component.html',
   styleUrl: './checkpoint-value.component.css',
