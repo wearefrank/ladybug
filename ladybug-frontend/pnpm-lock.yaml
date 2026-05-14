@@ -118,7 +118,7 @@ importers:
         specifier: 20.3.18
         version: 20.3.18(@angular/compiler@20.3.18)(typescript@5.9.3)
       '@eslint/js':
-        specifier: ^9.36.0
+        specifier: ^9.39.4
         version: 9.39.4
       '@prettier/plugin-xml':
         specifier: ^3.4.2
@@ -136,10 +136,10 @@ importers:
         specifier: 25.5.0
         version: 25.5.0
       '@typescript-eslint/eslint-plugin':
-        specifier: ^8.44.1
+        specifier: ^8.57.2
         version: 8.57.2(@typescript-eslint/parser@8.57.2(eslint@9.39.4(jiti@1.21.7))(typescript@5.9.3))(eslint@9.39.4(jiti@1.21.7))(typescript@5.9.3)
       '@typescript-eslint/parser':
-        specifier: ^8.57.1
+        specifier: ^8.57.2
         version: 8.57.2(eslint@9.39.4(jiti@1.21.7))(typescript@5.9.3)
       chai-match:
         specifier: ^1.1.1
@@ -151,13 +151,13 @@ importers:
         specifier: ^5.0.8
         version: 5.0.8(cypress@15.12.0)
       eslint:
-        specifier: ^9.36.0
+        specifier: ^9.39.4
         version: 9.39.4(jiti@1.21.7)
       eslint-config-prettier:
         specifier: ^10.1.8
         version: 10.1.8(eslint@9.39.4(jiti@1.21.7))
       eslint-plugin-prettier:
-        specifier: ^5.5.4
+        specifier: ^5.5.5
         version: 5.5.5(@types/eslint@9.6.1)(eslint-config-prettier@10.1.8(eslint@9.39.4(jiti@1.21.7)))(eslint@9.39.4(jiti@1.21.7))(prettier@3.8.1)
       eslint-plugin-unicorn:
         specifier: ^64.0.0
@@ -181,7 +181,7 @@ importers:
         specifier: 2.2.0
         version: 2.2.0(jasmine-core@6.2.0)(karma-jasmine@5.1.0(karma@6.4.4))(karma@6.4.4)
       prettier:
-        specifier: ^3.7.3
+        specifier: ^3.8.1
         version: 3.8.1
       prettier-plugin-autocorrect:
         specifier: ^0.4.3
@@ -893,8 +893,8 @@ packages:
     peerDependencies:
       '@babel/core': ^7.0.0-0
 
-  '@babel/plugin-transform-modules-systemjs@7.29.0':
-    resolution: {integrity: sha512-PrujnVFbOdUpw4UHiVwKvKRLMMic8+eC0CuNlxjsyZUiBjhFdPsewdXCkveh2KqBA9/waD0W1b4hXSOBQJezpQ==}
+  '@babel/plugin-transform-modules-systemjs@7.29.4':
+    resolution: {integrity: sha512-N7QmZ0xRZfjHOfZeQLJjwgX2zS9pdGHSVl/cjSGlo4dXMqvurfxXDMKY4RqEKzPozV78VMcd0lxyG13mlbKc4w==}
     engines: {node: '>=6.9.0'}
     peerDependencies:
       '@babel/core': ^7.0.0-0
@@ -5563,6 +5563,7 @@ packages:
 
   uuid@8.3.2:
     resolution: {integrity: sha512-+NYs2QeMWy+GWFOEm9xnn6HCDp0l7QBD7ml8zLUmJ+93Q5NF0NocErnwkTkXVFNiX3/fpC6afS8Dhb/gz7R7eg==}
+    deprecated: uuid@10 and below is no longer supported.  For ESM codebases, update to uuid@latest.  For CommonJS codebases, use uuid@11 (but be aware this version will likely be deprecated in 2028).
     hasBin: true
 
   validate-npm-package-license@3.0.4:
@@ -6757,7 +6758,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@babel/plugin-transform-modules-systemjs@7.29.0(@babel/core@7.28.3)':
+  '@babel/plugin-transform-modules-systemjs@7.29.4(@babel/core@7.28.3)':
     dependencies:
       '@babel/core': 7.28.3
       '@babel/helper-module-transforms': 7.28.6(@babel/core@7.28.3)
@@ -6975,7 +6976,7 @@ snapshots:
       '@babel/plugin-transform-member-expression-literals': 7.27.1(@babel/core@7.28.3)
       '@babel/plugin-transform-modules-amd': 7.27.1(@babel/core@7.28.3)
       '@babel/plugin-transform-modules-commonjs': 7.28.6(@babel/core@7.28.3)
-      '@babel/plugin-transform-modules-systemjs': 7.29.0(@babel/core@7.28.3)
+      '@babel/plugin-transform-modules-systemjs': 7.29.4(@babel/core@7.28.3)
       '@babel/plugin-transform-modules-umd': 7.27.1(@babel/core@7.28.3)
       '@babel/plugin-transform-named-capturing-groups-regex': 7.29.0(@babel/core@7.28.3)
       '@babel/plugin-transform-new-target': 7.27.1(@babel/core@7.28.3)
