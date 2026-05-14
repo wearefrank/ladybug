@@ -49,7 +49,7 @@ public interface Storage {
 	/**
 	 * Get a list of metadata records. A metadata record is also a list and
 	 * contains the metadata for a specific report.
-	 * 
+	 *
 	 * @param maxNumberOfRecords  the maximum number of records to return (-1 for no limit)
 	 * @param metadataNames ...
 	 * @param searchValues see {@link SearchUtil}
@@ -59,6 +59,29 @@ public interface Storage {
 	 */
 	public List<List<Object>> getMetadata(int maxNumberOfRecords, List<String> metadataNames,
 			List<String> searchValues, int metadataValueType) throws StorageException;
+
+	/**
+	 * Get a paged list of metadata records, skipping the first {@code offset} matching records.
+	 * Implementations that do not override this method fall back to fetching
+	 * {@code maxNumberOfRecords + offset} records and slicing client-side.
+	 *
+	 * @param maxNumberOfRecords  the maximum number of records to return (-1 for no limit)
+	 * @param offset              number of leading records to skip (0 = no skip)
+	 * @param metadataNames ...
+	 * @param searchValues see {@link SearchUtil}
+	 * @param metadataValueType ...
+	 * @throws StorageException ...
+	 * @return ...
+	 */
+	default List<List<Object>> getMetadata(int maxNumberOfRecords, int offset, List<String> metadataNames,
+			List<String> searchValues, int metadataValueType) throws StorageException {
+		if (offset <= 0) {
+			return getMetadata(maxNumberOfRecords, metadataNames, searchValues, metadataValueType);
+		}
+		int fetchCount = maxNumberOfRecords < 0 ? -1 : maxNumberOfRecords + offset;
+		List<List<Object>> all = getMetadata(fetchCount, metadataNames, searchValues, metadataValueType);
+		return offset < all.size() ? all.subList(offset, all.size()) : new java.util.ArrayList<>();
+	}
 
 	public void clear() throws StorageException;
 

@@ -59,10 +59,11 @@ public class MetadataApi extends ApiBase {
 	public Response getMetadataList(@PathParam("storage") String storageName,
 									@QueryParam("metadataNames") List<String> metadataNames,
 									@DefaultValue("-1") @QueryParam("limit") int limit,
+									@DefaultValue("0") @QueryParam("offset") int offset,
 									@QueryParam("filterHeader") List<String> filterHeaders,
 									@QueryParam("filter") List<String> filterParams) {
 		try {
-			List<LinkedHashMap<String, String>> metadata = delegate.getMetadataList(storageName, metadataNames, limit, filterHeaders, filterParams);
+			List<LinkedHashMap<String, String>> metadata = delegate.getMetadataList(storageName, metadataNames, limit, offset, filterHeaders, filterParams);
 			return Response.ok().entity(metadata).build();
 		} catch (HttpInternalServerErrorException e) {
 			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Could not find metadata with limit " + limit + " and filter [" + filterParams + "] - detailed error message - " + e + Arrays.toString(e.getStackTrace())).build();

@@ -77,6 +77,49 @@ public class MetadataApiImpl {
 		return metadata;
 	}
 
+
+	public List<LinkedHashMap<String, String>> getMetadataList(String storageName,
+															   List<String> metadataNames,
+															   int limit,
+															   int offset,
+															   List<String> filterHeaders,
+															   List<String> filterParams) throws HttpInternalServerErrorException {
+		List<String> searchValues = new ArrayList<>();
+		for (String field : metadataNames) {
+			boolean changed = false;
+			for (int filterHeaderIndex = 0; filterHeaderIndex < filterHeaders.size(); filterHeaderIndex++) {
+				if (filterHeaders.get(filterHeaderIndex).equals(field)) {
+					searchValues.add(filterParams.get(filterHeaderIndex));
+					changed = true;
+				}
+			}
+			if (!changed) {
+				searchValues.add(null);
+			}
+		}
+		Storage storage = testTool.getStorage(storageName);
+		List<List<Object>> records = null;
+		try {
+			records = storage.getMetadata(limit, offset, metadataNames, searchValues, MetadataExtractor.VALUE_TYPE_GUI);
+		} catch(Exception e) {
+			throw new HttpInternalServerErrorException(e);
+		}
+		List<LinkedHashMap<String, String>> metadata = new ArrayList<>();
+		for (List<Object> record : records) {
+			LinkedHashMap<String, String> metadataItem = new LinkedHashMap<>();
+			metadataItem.put("storageId", record.get(0).toString());
+			for (int i = 1; i < metadataNames.size(); i++) {
+				String metadataValue = null;
+				if (record.get(i) != null) {
+					metadataValue = record.get(i).toString();
+				}
+				metadataItem.put(metadataNames.get(i), metadataValue);
+			}
+			metadata.add(metadataItem);
+		}
+		return metadata;
+	}
+
 	public Map<String, String> getUserHelp(String storageName, List<String> metadataNames) {
 		Map<String, String> userHelp = new LinkedHashMap<>();
 		Storage storage = testTool.getStorage(storageName);
