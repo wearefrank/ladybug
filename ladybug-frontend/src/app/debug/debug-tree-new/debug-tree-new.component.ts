@@ -20,7 +20,6 @@ interface FrankTreeNode {
   styleUrls: ['./debug-tree-new.component.css'],
   standalone: true,
   imports: [NgSimpleFileTree],
-  providers: [NgSimpleFileTree],
 })
 export class DebugTreeNewComponent implements OnInit, OnDestroy {
   @ViewChild('tree') tree!: NgSimpleFileTree;

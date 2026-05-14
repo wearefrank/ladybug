@@ -56,8 +56,7 @@ const INDENT_TWO_SPACES = '  ';
 
 @Component({
   selector: 'app-report',
-  imports: [AngularSplitModule],
-  providers: [DebugTreeNewComponent, ReportValueComponent, CheckpointValueComponent],
+  imports: [AngularSplitModule, DebugTreeNewComponent, ReportValueComponent, CheckpointValueComponent],
   templateUrl: './report.component.html',
   styleUrl: './report.component.css',
 })

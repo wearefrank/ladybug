@@ -32,8 +32,16 @@ const MIN_MONACO_EDITOR_HEIGHT = 100;
 
 @Component({
   selector: 'app-report-value',
-  imports: [MonacoEditorComponent, CommonModule, FormsModule, AngularSplitModule, DifferenceModalComponent],
-  providers: [ReportAlertMessage2Component, ReportButtons, ReportMetadataTable],
+  imports: [
+    MonacoEditorComponent,
+    CommonModule,
+    FormsModule,
+    AngularSplitModule,
+    DifferenceModalComponent,
+    ReportAlertMessage2Component,
+    ReportButtons,
+    ReportMetadataTable,
+  ],
   templateUrl: './report-value.component.html',
   styleUrl: './report-value.component.css',
 })

@@ -20,7 +20,6 @@ import { RefreshCondition } from '../../shared/interfaces/refresh-condition';
   styleUrls: ['./debug-tree.component.css'],
   standalone: true,
   imports: [NgSimpleFileTree],
-  providers: [NgSimpleFileTree],
 })
 export class DebugTreeComponent implements OnDestroy {
   @ViewChild('tree') tree!: NgSimpleFileTree;
