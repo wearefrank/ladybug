@@ -9,6 +9,9 @@ import { Report } from '../interfaces/report';
   providedIn: 'root',
 })
 export class TabService {
+  // TODO issue https://github.com/wearefrank/ladybug/issues/816. The key to identify a tab
+  // should include the storage name as well. Reports can be opened from multiple storages
+  // and hence different reports can have the same storageId.
   activeReportTabs = new Map<string, HierarchicalReportData>();
   activeCompareTabs = new Map<string, CompareData>();
 
