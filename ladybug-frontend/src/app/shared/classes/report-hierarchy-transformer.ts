@@ -2,7 +2,7 @@ import { Report } from '../interfaces/report';
 import { Checkpoint } from '../interfaces/checkpoint';
 import { CHECKPOINT_TYPE_STRINGS, CheckpointType } from '../enums/checkpoint-type';
 
-// TODO issue https://github.com/wearefrank/frank-runner/pull/167.
+// TODO issue https://github.com/wearefrank/ladybug/issues/743.
 // This class should not be necessary anymore because
 // we want to fetch HierarchicalReport instances from the server.
 export class ReportHierarchyTransformer {

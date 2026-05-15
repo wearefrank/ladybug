@@ -19,7 +19,7 @@ import { SimpleFileTreeUtil as SimpleFileTreeUtility } from '../../shared/util/s
 export const treeSideConst = ['left', 'right'] as const;
 export type TreeSide = (typeof treeSideConst)[number];
 
-// TODO issue https://github.com/wearefrank/frank-runner/pull/167.
+// TODO issue https://github.com/wearefrank/ladybug/issues/743.
 // This component should be based on HierarchicalReport and
 // DebugTreeNewComponent.
 @Component({
