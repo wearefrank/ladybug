@@ -210,7 +210,7 @@
       <dependency>
         <groupId>org.liquibase</groupId>
         <artifactId>liquibase-core</artifactId>
-        <version>4.26.0</version>
+        <version>5.0.2</version>
         <scope>test</scope>
       </dependency>
       <dependency>
