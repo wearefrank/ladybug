@@ -14,6 +14,7 @@ interface FrankTreeNode {
   originalValue: HierarchicalReport | HierarchicalCheckpoint;
 }
 
+// TODO: Rename to DebugTreeComponent some time. Can be done because old DebugTreeComponent is gone.
 @Component({
   selector: 'app-debug-tree-new',
   templateUrl: './debug-tree-new.component.html',
