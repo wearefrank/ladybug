@@ -94,20 +94,16 @@ export class ReportComponent implements OnInit, AfterViewInit, OnDestroy {
   private newTabReportData?: HierarchicalReportData;
 
   ngOnInit(): void {
-    this.newTabReportData = this.tabService.activeReportTabs.get(this.getIdFromPath());
-    if (!this.newTabReportData) {
-      this.router.navigate([DebugComponent.ROUTER_PATH]);
+    if (this.newTab) {
+      this.route.url.subscribe(() => this.handleUrlChange());
     }
     this.listenToHeight();
   }
 
   ngAfterViewInit(): void {
-    setTimeout(() => {
-      if (this.newTabReportData) {
-        // TODO: Take care here when working on issue https://github.com/wearefrank/ladybug-frontend/issues/1125.
-        this.addReport(this.newTabReportData.report);
-      }
-    });
+    if (this.newTab) {
+      setTimeout(() => this.handleUrlChange());
+    }
   }
 
   ngOnDestroy(): void {
@@ -229,6 +225,15 @@ export class ReportComponent implements OnInit, AfterViewInit, OnDestroy {
     );
     // TODO: Issue https://github.com/wearefrank/ladybug-frontend/issues/1128.
     this.toastService.showSuccess('Report Downloaded!');
+  }
+
+  private handleUrlChange(): void {
+    // TODO: Take care here when working on issue https://github.com/wearefrank/ladybug-frontend/issues/1125
+    this.newTabReportData = this.tabService.activeReportTabs.get(this.getIdFromPath());
+    if (!this.newTabReportData) {
+      this.router.navigate([DebugComponent.ROUTER_PATH]);
+    }
+    this.addReport(this.newTabReportData!.report);
   }
 
   private copyReport(): void {
