@@ -62,8 +62,8 @@ public interface Storage {
 
 	/**
 	 * Get a paged list of metadata records, skipping the first {@code offset} matching records.
-	 * Implementations that do not override this method fall back to fetching
-	 * {@code maxNumberOfRecords + offset} records and slicing client-side.
+	 * This default implementation fetches {@code maxNumberOfRecords + offset} records and discards
+	 * the first {@code offset}. Override for storage-level offset support (e.g. SQL OFFSET).
 	 *
 	 * @param maxNumberOfRecords  the maximum number of records to return (-1 for no limit)
 	 * @param offset              number of leading records to skip (0 = no skip)
