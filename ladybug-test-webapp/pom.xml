@@ -1,9 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
-
-  <groupId>org.wearefrank</groupId>
-  <artifactId>ladybug-test-webapp</artifactId>
-  <version>${revision}</version>
 
   <parent>
     <groupId>org.wearefrank</groupId>
@@ -11,27 +8,29 @@
     <version>${revision}</version>
   </parent>
 
-  <properties>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-  </properties>
+  <artifactId>ladybug-test-webapp</artifactId>
+  <packaging>war</packaging>
 
   <name>Ladybug Test Tool Test Webapp</name>
   <description>Simple vanilla webapp to test Ladybug</description>
-  <packaging>war</packaging>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  </properties>
 
   <dependencies>
     <dependency>
       <groupId>org.wearefrank</groupId>
       <artifactId>ladybug-backend-jaxrs</artifactId>
-      <version>${revision}</version>
     </dependency>
     <!-- Reuse transformReport.xslt from ibis-ladybug test resources. See also https://maven.apache.org/plugins/maven-jar-plugin/examples/create-test-jar.html -->
+    <!-- Bad practice, but accepted for now. This artifact will automatically become available after running 'mvn install' once which makes it availabe in your local repository. -->
     <dependency>
       <groupId>org.wearefrank</groupId>
       <artifactId>ladybug-common</artifactId>
+      <version>${project.version}</version>
       <classifier>tests</classifier>
       <type>test-jar</type>
-      <version>${revision}</version>
     </dependency>
     <!--
     Without this dependency system out will show:
@@ -50,11 +49,6 @@
       <artifactId>spring-web</artifactId>
     </dependency>
     <dependency>
-      <groupId>jakarta.enterprise</groupId>
-      <artifactId>jakarta.enterprise.cdi-api</artifactId>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
       <groupId>jakarta.transaction</groupId>
       <artifactId>jakarta.transaction-api</artifactId>
       <scope>compile</scope>
@@ -68,16 +62,6 @@
       <groupId>org.liquibase</groupId>
       <artifactId>liquibase-core</artifactId>
       <scope>compile</scope>
-    </dependency>
-    <dependency>
-      <groupId>jakarta.servlet</groupId>
-      <artifactId>jakarta.servlet-api</artifactId>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.projectlombok</groupId>
-      <artifactId>lombok</artifactId>
-      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>io.opentelemetry.semconv</groupId>
@@ -94,24 +78,20 @@
       <artifactId>opentelemetry-exporter-otlp</artifactId>
       <scope>compile</scope>
     </dependency>
-  </dependencies>
 
-  <build>
-    <plugins>
-      <plugin>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.15.0</version>
-        <configuration>
-          <source>1.8</source>
-          <target>1.8</target>
-        </configuration>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-war-plugin</artifactId>
-        <version>3.3.1</version>
-      </plugin>
-    </plugins>
-  </build>
+    <!-- provided scoped dependencies -->
+    <dependency>
+      <groupId>jakarta.enterprise</groupId>
+      <artifactId>jakarta.enterprise.cdi-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>jakarta.servlet</groupId>
+      <artifactId>jakarta.servlet-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.projectlombok</groupId>
+      <artifactId>lombok</artifactId>
+    </dependency>
+  </dependencies>
 
 </project>
