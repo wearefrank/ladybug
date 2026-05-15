@@ -230,10 +230,11 @@ export class ReportComponent implements OnInit, AfterViewInit, OnDestroy {
   private handleUrlChange(): void {
     // TODO: Take care here when working on issue https://github.com/wearefrank/ladybug-frontend/issues/1125
     this.newTabReportData = this.tabService.activeReportTabs.get(this.getIdFromPath());
-    if (!this.newTabReportData) {
+    if (this.newTabReportData) {
+      this.addReport(this.newTabReportData!.report);
+    } else {
       this.router.navigate([DebugComponent.ROUTER_PATH]);
     }
-    this.addReport(this.newTabReportData!.report);
   }
 
   private copyReport(): void {
