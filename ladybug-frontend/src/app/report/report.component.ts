@@ -134,7 +134,6 @@ export class ReportComponent implements OnInit, AfterViewInit, OnDestroy {
     // eslint-disable-next-line unicorn/no-useless-undefined
     this.rerunResultSubject.next(undefined);
     if (ReportUtility.isReport(node)) {
-      console.log(`ReportComponent.selectReport(), report with storage id ${node.storageId}`);
       this.changeReportValueState('report');
       this.reportValueSubject.next(node as HierarchicalReport);
     } else if (ReportUtility.isCheckPoint(node)) {
@@ -333,13 +332,10 @@ export class ReportComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private updateUIAfterSave(): void {
-    console.log('ReportComponent.updateUIAfterSave()');
     this.saveDoneSubject.next();
     this.getReportFromServer().then((updatedReport) => {
-      console.log('Got updated report from server');
       this.ngZone.run(() => {
         if (this.newTab) {
-          console.log(`Restoring report with storage id [${updatedReport.storageId}]`);
           this.addReport(updatedReport);
           // TODO: Issue https://github.com/wearefrank/ladybug-frontend/issues/1129.
           // Add logic to restore the checkpoint that was selected before. Take

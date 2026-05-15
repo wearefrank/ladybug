@@ -330,7 +330,6 @@ export class ReportValueComponent implements OnInit, OnDestroy {
     // in the Angular zone, so we have to run in the Angular zone
     // explicitly.
     this.ngZone.run(() => {
-      console.log(`ReportValueComponent.newReport(), report has storage id [${report.storageId}]`);
       this.metadataTableVisible = false;
       this.report = report;
       this.editedName = this.report.name;
