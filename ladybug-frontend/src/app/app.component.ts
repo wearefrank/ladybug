@@ -156,10 +156,7 @@ export class AppComponent implements OnInit, OnDestroy {
       if (event.data?.action === 'openReport') {
         const reportData: ReportData = {
           report: event.data.report as Report,
-          currentView: {
-            storageName: 'Test',
-            metadataNames: ['storageId', 'name', 'path', 'description', 'variables'],
-          } as View,
+          currentView: event.data.currentView as View,
         };
         this.tabService.openNewTab(reportData);
       }
