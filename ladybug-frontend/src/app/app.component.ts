@@ -18,6 +18,8 @@ import { StubStrategy } from './shared/enums/stub-strategy';
 import { ErrorHandling } from './shared/classes/error-handling.service';
 import { VersionService } from './shared/services/version.service';
 import { ReportComponent } from './report/report.component';
+import { Report } from './shared/interfaces/report';
+import { View } from './shared/interfaces/view';
 
 @Component({
   selector: 'app-root',
@@ -52,6 +54,7 @@ export class AppComponent implements OnInit, OnDestroy {
     this.subscribeToServices();
     this.getStubStrategies();
     this.appVariablesService.fetchCustomReportActionButtonText();
+    this.setupPostMessageBridge();
   }
 
   ngOnDestroy(): void {
@@ -134,6 +137,33 @@ export class AppComponent implements OnInit, OnDestroy {
     event.stopPropagation();
     event.preventDefault();
     this.closeTab(tab);
+  }
+
+  private setupPostMessageBridge(): void {
+    // Signal opener that Angular is ready
+    if (window.opener) {
+      window.opener.postMessage({ action: 'ladybug-ready' }, location.origin);
+    }
+
+    window.addEventListener('message', (event: MessageEvent) => {
+      if (event.origin !== location.origin) return;
+
+      if (event.data?.action === 'ping') {
+        (event.source as Window)?.postMessage({ action: 'ladybug-ready' }, location.origin);
+        return;
+      }
+
+      if (event.data?.action === 'openReport') {
+        const reportData: ReportData = {
+          report: event.data.report as Report,
+          currentView: {
+            storageName: 'Test',
+            metadataNames: ['storageId', 'name', 'path', 'description', 'variables'],
+          } as View,
+        };
+        this.tabService.openNewTab(reportData);
+      }
+    });
   }
 
   getStubStrategies(): void {
