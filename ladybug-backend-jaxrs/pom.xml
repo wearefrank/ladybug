@@ -23,11 +23,6 @@
     </dependency>
     <dependency>
       <groupId>com.google.protobuf</groupId>
-      <artifactId>protobuf-java-util</artifactId>
-      <version>4.34.0</version>
-    </dependency>
-    <dependency>
-      <groupId>com.google.protobuf</groupId>
       <artifactId>protobuf-java</artifactId>
       <version>4.34.0</version>
     </dependency>
@@ -70,9 +65,10 @@
       <artifactId>lombok</artifactId>
     </dependency>
     <dependency>
-      <groupId>com.github.ben-manes.caffeine</groupId>
-      <artifactId>caffeine</artifactId>
-      <version>3.2.3</version>
+      <groupId>com.google.protobuf</groupId>
+      <artifactId>protobuf-java-util</artifactId>
+      <version>4.34.0</version>
+      <scope>compile</scope>
     </dependency>
   </dependencies>
 </project>
