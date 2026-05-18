@@ -101,10 +101,9 @@ function sendReport(report) {
 // ── Fetch ─────────────────────────────────────────────────────────────────
 async function load(reset) {
   save();
-  const limit  = parseInt(limitEl.value)  || 50;
-  const offset = parseInt(offsetEl.value) || 0;
-  if (reset) { allRows = []; total = null; offsetEl.value = 0; }
-  const currentOffset = reset ? 0 : offset;
+  const limit         = parseInt(limitEl.value)  || 50;
+  const currentOffset = parseInt(offsetEl.value) || 0;            // read once, always respected
+  if (reset) { allRows = []; total = null; }
   const storage = storageEl.value.trim();
   setStatus('Loading…');
   try {
