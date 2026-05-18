@@ -40,7 +40,7 @@ public class MetadataApiImpl {
 																   int limit,
 																   int offset,
 																   List<String> filterHeaders,
-																   List<String> filterParams) throws HttpInternalServerErrorException {
+																   List<String> filterParams) throws HttpNotFoundException, HttpInternalServerErrorException {
 		List<String> searchValues = new ArrayList<>();
 		for (String field : metadataNames) {
 			boolean changed = false;
@@ -56,14 +56,23 @@ public class MetadataApiImpl {
 		}
 		// Get storage, search for metadata, and return the results.
 		Storage storage = testTool.getStorage(storageName);
+		if (storage == null) {
+			throw new HttpNotFoundException(String.format("Storage [%s] not found", storageName));
+		}
 		List<List<Object>> records = null;
 		try {
 			records = storage.getMetadata(limit, offset, metadataNames, searchValues, MetadataExtractor.VALUE_TYPE_GUI);
+			if (records == null) {
+				throw new HttpInternalServerErrorException(String.format("Got null pointer from asking records from storage [%s]", storageName));
+			}
 		} catch(Exception e) {
 			throw new HttpInternalServerErrorException(e);
 		}
 		List<LinkedHashMap<String, String>> metadata = new ArrayList<>();
 		for (List<Object> record : records) {
+			if (record.size() <= 0) {
+				throw new HttpInternalServerErrorException(String.format("Got record without fields from storage [%s]", storageName));
+			}
 			LinkedHashMap<String, String> metadataItem = new LinkedHashMap<>();
 			metadataItem.put("storageId", record.get(0).toString());
 			for (int i = 1; i < metadataNames.size(); i++) {
@@ -78,18 +87,24 @@ public class MetadataApiImpl {
 		return metadata;
 	}
 
-	public Map<String, String> getUserHelp(String storageName, List<String> metadataNames) {
-		Map<String, String> userHelp = new LinkedHashMap<>();
+	public Map<String, String> getUserHelp(String storageName, List<String> metadataNames) throws HttpNotFoundException {
 		Storage storage = testTool.getStorage(storageName);
+		if (storage == null) {
+			throw new HttpNotFoundException(String.format("Storage [%s] not found", storageName));
+		}
+		Map<String, String> userHelp = new LinkedHashMap<>();
 		for (String field : metadataNames) {
 			userHelp.put(field, storage.getUserHelp(field));
 		}
 		return userHelp;
 	}
 
-	public int getMetadataCount(String storageName) throws HttpInternalServerErrorException {
+	public int getMetadataCount(String storageName) throws HttpNotFoundException, HttpInternalServerErrorException {
+		Storage storage = testTool.getStorage(storageName);
+		if (storage == null) {
+			throw new HttpNotFoundException(String.format("Storage [%s] not found", storageName));
+		}
 		try {
-			Storage storage = testTool.getStorage(storageName);
 			return storage.getSize();
 		} catch(StorageException e) {
 			throw new HttpInternalServerErrorException(e);

@@ -1,15 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
-
-  <groupId>org.wearefrank</groupId>
-  <artifactId>ladybug-common</artifactId>
-  <version>${revision}</version>
 
   <parent>
     <groupId>org.wearefrank</groupId>
     <artifactId>ladybug-parent</artifactId>
     <version>${revision}</version>
   </parent>
+
+  <artifactId>ladybug-common</artifactId>
 
   <name>Ladybug common</name>
 
@@ -144,10 +143,17 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jar-plugin</artifactId>
+        <executions>
+          <!-- Create a test jar for ibis-ladybug-test-webapp to depend on. See also https://maven.apache.org/plugins/maven-jar-plugin/examples/create-test-jar.html -->
+          <execution>
+            <goals>
+              <goal>test-jar</goal>
+            </goals>
+          </execution>
+        </executions>
       </plugin>
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
-        <version>3.5.5</version>
       </plugin>
       <plugin>
         <artifactId>maven-clean-plugin</artifactId>
