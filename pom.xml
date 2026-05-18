@@ -53,6 +53,7 @@
     <module>ladybug-common</module>
     <module>ladybug-frontend</module>
     <module>ladybug-test-webapp</module>
+    <module>ladybug-spring-boot-test-webapp</module>
   </modules>
   <scm>
     <connection>scm:git:https://github.com/wearefrank/ladybug.git</connection>
@@ -74,10 +75,12 @@
     <spring.version>6.2.15</spring.version>
     <spring.security.version>6.5.9</spring.security.version>
     <cxf.version>4.2.0</cxf.version>
+    <spring.boot.version>3.5.4</spring.boot.version>
     <jackson.version.stripped>2.21</jackson.version.stripped>
     <jackson.version>2.21.2</jackson.version>
     <jackson.databind.version>2.21.2</jackson.databind.version>
     <logback.version>1.5.32</logback.version>
+    <tomcat.embed.version>10.1.44</tomcat.embed.version>
   </properties>
 
   <dependencyManagement>
@@ -175,6 +178,21 @@
         <version>${spring.version}</version>
       </dependency>
       <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-web</artifactId>
+        <version>${spring.boot.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.springframework.security</groupId>
+        <artifactId>spring-security-web</artifactId>
+        <version>${spring.security.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.springframework.security</groupId>
+        <artifactId>spring-security-config</artifactId>
+        <version>${spring.security.version}</version>
+      </dependency>
+      <dependency>
         <groupId>net.sf.saxon</groupId>
         <artifactId>Saxon-HE</artifactId>
         <!-- 12.9 does not work-->
@@ -201,6 +219,16 @@
         <groupId>io.opentelemetry</groupId>
         <artifactId>opentelemetry-api</artifactId>
         <version>1.60.1</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.tomcat.embed</groupId>
+        <artifactId>tomcat-embed-core</artifactId>
+        <version>${tomcat.embed.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.glassfish.web</groupId>
+        <artifactId>jakarta.servlet.jsp.jstl</artifactId>
+        <version>3.0.1</version>
       </dependency>
       <dependency>
         <groupId>jakarta.servlet</groupId>
@@ -271,6 +299,18 @@
         <artifactId>opentelemetry-exporter-otlp</artifactId>
         <version>1.61.0</version>
         <scope>provided</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.tomcat.embed</groupId>
+        <artifactId>tomcat-embed-jasper</artifactId>
+        <version>${tomcat.embed.version}</version>
+        <scope>runtime</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-test</artifactId>
+        <version>${spring.boot.version}</version>
+        <scope>test</scope>
       </dependency>
       <dependency>
         <groupId>org.junit.jupiter</groupId>
@@ -589,6 +629,11 @@
               </pluginExecutions>
             </lifecycleMappingMetadata>
           </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.springframework.boot</groupId>
+          <artifactId>spring-boot-maven-plugin</artifactId>
+          <version>${spring.boot.version}</version>
         </plugin>
       </plugins>
     </pluginManagement>
