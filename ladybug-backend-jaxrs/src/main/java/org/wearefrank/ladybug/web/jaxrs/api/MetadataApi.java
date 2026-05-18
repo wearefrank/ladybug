@@ -16,13 +16,6 @@
 package org.wearefrank.ladybug.web.jaxrs.api;
 
 
-import java.util.Arrays;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.springframework.beans.factory.annotation.Autowired;
-
 import jakarta.ws.rs.DefaultValue;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
@@ -31,8 +24,12 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import java.util.Arrays;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import lombok.Setter;
-
+import org.springframework.beans.factory.annotation.Autowired;
 import org.wearefrank.ladybug.web.common.Constants;
 import org.wearefrank.ladybug.web.common.HttpInternalServerErrorException;
 import org.wearefrank.ladybug.web.common.HttpNotFoundException;
@@ -85,8 +82,6 @@ public class MetadataApi extends ApiBase {
 		try {
 			Map<String, String> userHelp = delegate.getUserHelp(storageName, metadataNames);
 			return Response.ok().entity(userHelp).build();
-		} catch (HttpNotFoundException e) {
-			return Response.status(Response.Status.NOT_FOUND).entity(e.getMessage()).build();
 		} catch (Exception e) {
 			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Could not find user help - detailed error message - " + e + Arrays.toString(e.getStackTrace())).build();
 		}
