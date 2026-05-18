@@ -147,13 +147,14 @@ export class AppComponent implements OnInit, OnDestroy {
 
     window.addEventListener('message', (event: MessageEvent) => {
       if (event.origin !== location.origin) return;
+      if (typeof event.data?.action !== 'string' || !event.data.action.startsWith('ladybug-')) return;
 
-      if (event.data?.action === 'ping') {
+      if (event.data?.action === 'ladybug-ping') {
         (event.source as Window)?.postMessage({ action: 'ladybug-ready' }, location.origin);
         return;
       }
 
-      if (event.data?.action === 'openReport') {
+      if (event.data?.action === 'ladybug-openReport') {
         const reportData: ReportData = {
           report: event.data.report as Report,
           currentView: event.data.currentView as View,
