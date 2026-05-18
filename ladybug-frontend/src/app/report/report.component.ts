@@ -115,11 +115,34 @@ export class ReportComponent implements OnInit, AfterViewInit, OnDestroy {
   private newTabReportData?: ReportData;
 
   ngOnInit(): void {
-    this.newTabReportData = this.tabService.activeReportTabs.get(this.getIdFromPath());
-    if (!this.newTabReportData) {
-      this.router.navigate([DebugComponent.ROUTER_PATH]);
+    const storageParam = this.route.snapshot.queryParamMap.get('storage');
+    if (storageParam) {
+      this.bootstrapFromUrl(Number(this.getIdFromPath()), storageParam);
+    } else {
+      this.newTabReportData = this.tabService.activeReportTabs.get(this.getIdFromPath());
+      if (!this.newTabReportData) {
+        this.router.navigate([DebugComponent.ROUTER_PATH]);
+      }
     }
     this.listenToHeight();
+  }
+
+  private bootstrapFromUrl(storageId: number, storageName: string): void {
+    this.httpService
+      .getReport(storageId, storageName)
+      .pipe(catchError(this.errorHandler.handleError()))
+      .subscribe((report: Report) => {
+        const reportData: ReportData = {
+          report,
+          currentView: { storageName } as View,
+        };
+        // Register with tab service so AppComponent adds the nav tab
+        this.tabService.openNewTab(reportData);
+        // ngAfterViewInit already ran; bootstrap this component instance directly
+        this.newTabReportData = reportData;
+        this.currentView = reportData.currentView;
+        this.addReportToTree(report);
+      });
   }
 
   ngAfterViewInit(): void {
