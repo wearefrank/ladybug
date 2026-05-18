@@ -86,9 +86,12 @@ public class MetadataApiImpl {
 		return metadata;
 	}
 
-	public Map<String, String> getUserHelp(String storageName, List<String> metadataNames) {
-		Map<String, String> userHelp = new LinkedHashMap<>();
+	public Map<String, String> getUserHelp(String storageName, List<String> metadataNames) throws HttpNotFoundException {
 		Storage storage = testTool.getStorage(storageName);
+		if (storage == null) {
+			throw new HttpNotFoundException(String.format("Storage [%s] not found", storageName));
+		}
+		Map<String, String> userHelp = new LinkedHashMap<>();
 		for (String field : metadataNames) {
 			userHelp.put(field, storage.getUserHelp(field));
 		}

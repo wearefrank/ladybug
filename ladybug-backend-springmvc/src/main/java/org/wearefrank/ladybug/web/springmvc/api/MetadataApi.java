@@ -72,6 +72,8 @@ public class MetadataApi {
 		try {
 			Map<String, String> userHelp = delegate.getUserHelp(storageName, metadataNames);
 			return ResponseEntity.ok(userHelp);
+		} catch (HttpNotFoundException e) {
+			return ResponseEntity.status(404).body(e.getMessage());
 		} catch (Exception e) {
 			return ResponseEntity.internalServerError().body("Could not find user help - detailed error message - " + e + Arrays.toString(e.getStackTrace()));
 		}
