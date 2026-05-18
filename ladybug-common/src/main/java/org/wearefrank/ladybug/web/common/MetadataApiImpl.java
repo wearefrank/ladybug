@@ -55,14 +55,23 @@ public class MetadataApiImpl {
 		}
 		// Get storage, search for metadata, and return the results.
 		Storage storage = testTool.getStorage(storageName);
+		if (storage == null) {
+			throw new HttpInternalServerErrorException(String.format("Cannot find storage with name [%s]", storageName));
+		}
 		List<List<Object>> records = null;
 		try {
 			records = storage.getMetadata(limit, metadataNames, searchValues, MetadataExtractor.VALUE_TYPE_GUI);
+			if (records == null) {
+				throw new HttpInternalServerErrorException(String.format("Got null pointer from asking records from storage [%s]", storageName));
+			}
 		} catch(Exception e) {
 			throw new HttpInternalServerErrorException(e);
 		}
 		List<LinkedHashMap<String, String>> metadata = new ArrayList<>();
 		for (List<Object> record : records) {
+			if (record.size() <= 0) {
+				throw new HttpInternalServerErrorException(String.format("Got record without fields from storage [%s]", storageName));
+			}
 			LinkedHashMap<String, String> metadataItem = new LinkedHashMap<>();
 			metadataItem.put("storageId", record.get(0).toString());
 			for (int i = 1; i < metadataNames.size(); i++) {
