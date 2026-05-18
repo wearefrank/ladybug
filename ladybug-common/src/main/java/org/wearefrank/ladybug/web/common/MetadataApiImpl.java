@@ -39,7 +39,7 @@ public class MetadataApiImpl {
 															   List<String> metadataNames,
 															   int limit,
 															   List<String> filterHeaders,
-															   List<String> filterParams) throws HttpInternalServerErrorException {
+															   List<String> filterParams) throws HttpNotFoundException, HttpInternalServerErrorException {
 		List<String> searchValues = new ArrayList<>();
 		for (String field : metadataNames) {
 			boolean changed = false;
@@ -56,7 +56,7 @@ public class MetadataApiImpl {
 		// Get storage, search for metadata, and return the results.
 		Storage storage = testTool.getStorage(storageName);
 		if (storage == null) {
-			throw new HttpInternalServerErrorException(String.format("Cannot find storage with name [%s]", storageName));
+			throw new HttpNotFoundException(String.format("Storage [%s] not found", storageName));
 		}
 		List<List<Object>> records = null;
 		try {
@@ -95,9 +95,12 @@ public class MetadataApiImpl {
 		return userHelp;
 	}
 
-	public int getMetadataCount(String storageName) throws HttpInternalServerErrorException {
+	public int getMetadataCount(String storageName) throws HttpNotFoundException, HttpInternalServerErrorException {
+		Storage storage = testTool.getStorage(storageName);
+		if (storage == null) {
+			throw new HttpNotFoundException(String.format("Storage [%s] not found", storageName));
+		}
 		try {
-			Storage storage = testTool.getStorage(storageName);
 			return storage.getSize();
 		} catch(StorageException e) {
 			throw new HttpInternalServerErrorException(e);
