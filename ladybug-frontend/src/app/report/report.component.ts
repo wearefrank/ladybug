@@ -115,12 +115,12 @@ export class ReportComponent implements OnInit, AfterViewInit, OnDestroy {
   private newTabReportData?: ReportData;
 
   ngOnInit(): void {
-    this.newTabReportData = this.tabService.activeReportTabs.get(this.getIdFromPath());
-    if (!this.newTabReportData) {
-      const storageParam = this.route.snapshot.queryParamMap.get('storage');
-      if (storageParam) {
-        this.bootstrapFromUrl(Number(this.getIdFromPath()), storageParam);
-      } else {
+    const storageParam = this.route.snapshot.queryParamMap.get('storage');
+    if (storageParam) {
+      this.bootstrapFromUrl(Number(this.getIdFromPath()), storageParam);
+    } else {
+      this.newTabReportData = this.tabService.activeReportTabs.get(this.getIdFromPath());
+      if (!this.newTabReportData) {
         this.router.navigate([DebugComponent.ROUTER_PATH]);
       }
     }
