@@ -1,16 +1,14 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
-
-  <groupId>org.wearefrank</groupId>
-  <artifactId>ladybug-frontend</artifactId>
-  <version>${revision}</version>
 
   <parent>
     <groupId>org.wearefrank</groupId>
     <artifactId>ladybug-parent</artifactId>
     <version>${revision}</version>
   </parent>
+
+  <artifactId>ladybug-frontend</artifactId>
 
   <name>Angular Frontend of Ladybug</name>
 
@@ -84,10 +82,10 @@
         <version>1.0.0</version>
         <executions>
           <execution>
-            <phase>process-resources</phase>
             <goals>
               <goal>write-project-properties</goal>
             </goals>
+            <phase>process-resources</phase>
             <configuration>
               <outputFile>${meta-inf.maven.output}/pom.properties</outputFile>
             </configuration>
@@ -100,10 +98,10 @@
         <executions>
           <execution>
             <id>copy pnpm dist to Maven build folder</id>
-            <phase>process-resources</phase>
             <goals>
               <goal>copy-resources</goal>
             </goals>
+            <phase>process-resources</phase>
             <configuration>
               <outputDirectory>${meta-inf.frontend.output}</outputDirectory>
               <resources>
@@ -119,10 +117,10 @@
           </execution>
           <execution>
             <id>copy package.json to assets</id>
-            <phase>process-resources</phase>
             <goals>
               <goal>copy-resources</goal>
             </goals>
+            <phase>process-resources</phase>
             <configuration>
               <outputDirectory>${meta-inf.frontend.output}/assets/</outputDirectory>
               <resources>
@@ -138,10 +136,10 @@
           </execution>
           <execution>
             <id>copy pom.xml</id>
-            <phase>process-resources</phase>
             <goals>
               <goal>copy-resources</goal>
             </goals>
+            <phase>process-resources</phase>
             <configuration>
               <outputDirectory>${meta-inf.maven.output}</outputDirectory>
               <resources>
