@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2025 WeAreFrank!, 2018 Nationale-Nederlanden
+   Copyright 2019-2026 WeAreFrank!, 2018 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -34,6 +34,8 @@ import java.util.regex.Pattern;
 import javax.json.bind.annotation.JsonbTransient;
 import javax.xml.xpath.XPathExpressionException;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -81,6 +83,8 @@ public class Checkpoint implements Serializable, Cloneable {
 	private transient ByteArrayOutputStream messageCapturerOutputStream;
 	private transient Map<String, Pattern> variablesPatternMap;
 	private transient Span span = null;
+	private @Setter @Getter String parentId;
+	private @Setter @Getter String id;
 
 	public Checkpoint() {
 		// Only for Java XML encoding/decoding! Use other constructor instead.

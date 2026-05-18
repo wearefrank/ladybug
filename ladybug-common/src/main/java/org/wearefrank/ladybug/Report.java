@@ -273,9 +273,62 @@ public class Report implements Serializable {
 		threadsActiveCount++;
 	}
 
+	public void restoreRuntimeState() {
+		if (threads == null) {
+			threads = new ArrayList<>();
+		}
+		if (threadsWithThreadCreatepoint == null) {
+			threadsWithThreadCreatepoint = new ArrayList<>();
+		}
+		if (threadCheckpointIndex == null) {
+			threadCheckpointIndex = new HashMap<>();
+		}
+		if (threadFirstLevel == null) {
+			threadFirstLevel = new HashMap<>();
+		}
+		if (threadLevel == null) {
+			threadLevel = new HashMap<>();
+		}
+		if (threadParent == null) {
+			threadParent = new HashMap<>();
+		}
+		if (truncatedMessageMap == null) {
+			truncatedMessageMap = new RefCompareMap<>();
+		}
+		if (streamingMessageListeners == null) {
+			streamingMessageListeners = new HashMap<>();
+		}
+		if (streamingMessageResults == null) {
+			streamingMessageResults = new HashMap<>();
+		}
+
+		mainThread = Thread.currentThread().getName();
+
+		if (!threads.contains(mainThread)) {
+			threads.add(mainThread);
+		}
+
+		int level = 0;
+
+		if (!checkpoints.isEmpty()) {
+			level = checkpoints.get(checkpoints.size() - 1).getLevel();
+		}
+
+		threadCheckpointIndex.put(mainThread, checkpoints.size());
+		threadFirstLevel.put(mainThread, level);
+		threadLevel.put(mainThread, level);
+
+		threadsActiveCount = 1;
+
+		reportFilterMatching = true;
+		logReportFilterMatching = true;
+		logMaxCheckpoints = true;
+		logMaxMemoryUsage = true;
+	}
+
 	protected <T> T checkpoint(String childThreadId, String sourceClassName, String name, T message, Map<String, Object> messageContext,
 			StubableCode stubableCode, StubableCodeThrowsException stubableCodeThrowsException,
-			Set<String> matchingStubStrategies, int checkpointType, int levelChangeNextCheckpoint) {
+			Set<String> matchingStubStrategies, int checkpointType, int levelChangeNextCheckpoint, String id, String parentId, boolean findParent) {
 		if (checkpointType == CheckpointType.THREAD_CREATEPOINT.toInt()) {
 			String parentThreadName = Thread.currentThread().getName();
 			if (!threads.contains(parentThreadName)) {
@@ -318,7 +371,7 @@ public class Report implements Serializable {
 			}
 		}
 		message = addCheckpoint(childThreadId, sourceClassName, name, message, messageContext, stubableCode, stubableCodeThrowsException,
-				matchingStubStrategies, checkpointType, levelChangeNextCheckpoint);
+				matchingStubStrategies, checkpointType, levelChangeNextCheckpoint, id, parentId, findParent);
 		return message;
 	}
 
@@ -375,7 +428,7 @@ public class Report implements Serializable {
 
 	private  <T> T addCheckpoint(String childThreadId, String sourceClassName, String name, T message, Map<String, Object> messageContext,
 			StubableCode stubableCode, StubableCodeThrowsException stubableCodeThrowsException,
-			Set<String> matchingStubStrategies, int checkpointType, int levelChangeNextCheckpoint) {
+			Set<String> matchingStubStrategies, int checkpointType, int levelChangeNextCheckpoint, String id, String parentId, boolean findParent) {
 		String threadName = Thread.currentThread().getName();
 		Integer index = threadCheckpointIndex.get(threadName);
 		Integer level = threadLevel.get(threadName);
@@ -441,7 +494,7 @@ public class Report implements Serializable {
 				}
 			} else {
 				message = addCheckpoint(threadName, sourceClassName, name, message, messageContext, stubableCode,
-						stubableCodeThrowsException, matchingStubStrategies, checkpointType, index, level);
+						stubableCodeThrowsException, matchingStubStrategies, checkpointType, index, level, id, parentId, findParent);
 			}
 			Integer newLevel = level + levelChangeNextCheckpoint;
 			threadLevel.put(threadName, newLevel);
@@ -457,9 +510,54 @@ public class Report implements Serializable {
 	@SneakyThrows
 	private  <T> T addCheckpoint(String threadName, String sourceClassName, String name, T message, Map<String, Object> messageContext,
 			StubableCode stubableCode, StubableCodeThrowsException stubableCodeThrowsException,
-			Set<String> matchingStubStrategies, int checkpointType, Integer index, Integer level) {
+			Set<String> matchingStubStrategies, int checkpointType, Integer index, Integer level, String parentId, String id, boolean findParent) {
+
+		if (findParent && parentId != null) {
+			Checkpoint parentCheckpoint = null;
+
+			for (Checkpoint checkpoint : checkpoints) {
+				if (Objects.equals(checkpoint.getId(), parentId)) {
+					parentCheckpoint = checkpoint;
+					break;
+				}
+			}
+
+			if (parentCheckpoint != null) {
+				level = parentCheckpoint.getLevel() + 1;
+
+				if (checkpointType == CheckpointType.STARTPOINT.toInt()) {
+					index = parentCheckpoint.getIndex() + 1;
+				} else if (checkpointType == CheckpointType.ENDPOINT.toInt()) {
+					Checkpoint matchingStartpoint = null;
+
+					for (Checkpoint checkpoint : checkpoints) {
+						if (Objects.equals(checkpoint.getId(), id) && checkpoint.getType() == CheckpointType.STARTPOINT.toInt()) {
+							matchingStartpoint = checkpoint;
+							break;
+						}
+					}
+
+					if (matchingStartpoint != null) {
+						level = matchingStartpoint.getLevel();
+						index = matchingStartpoint.getIndex() + 1;
+
+						while (index < checkpoints.size() && checkpoints.get(index).getLevel() > matchingStartpoint.getLevel()) {
+							index++;
+						}
+					}
+				}
+			}
+		}
+
 		Checkpoint checkpoint = new Checkpoint(this, threadName, sourceClassName, name, checkpointType, level);
+
+		if (checkpointType == CheckpointType.STARTPOINT.toInt()){
+			checkpoint.setId(id);
+			checkpoint.setParentId(parentId);
+		}
+
 		checkpoint.setMessageContext(messageContext);
+
 		if (testTool.getOpenTelemetryTracer() != null) {
 			SpanBuilder checkpointSpanBuilder = testTool.getOpenTelemetryTracer().spanBuilder("checkpoint - " + name);
 			for (Checkpoint checkpointInList: checkpoints) {

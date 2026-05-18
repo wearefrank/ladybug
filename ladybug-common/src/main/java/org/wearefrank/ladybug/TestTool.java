@@ -44,6 +44,7 @@ import org.wearefrank.ladybug.storage.CrudStorage;
 import org.wearefrank.ladybug.storage.LogStorage;
 import org.wearefrank.ladybug.storage.Storage;
 import org.wearefrank.ladybug.storage.StorageException;
+import org.wearefrank.ladybug.storage.database.DatabaseCrudStorage;
 import org.wearefrank.ladybug.storage.memory.MemoryLogStorage;
 import org.wearefrank.ladybug.transform.MessageTransformer;
 import org.wearefrank.ladybug.util.OpenTelemetryUtil;
@@ -336,24 +337,64 @@ public class TestTool {
 	}
 
 	public <T> T checkpoint(String correlationId, String childThreadId, String sourceClassName, String name,
-			T message, StubableCode stubableCode, StubableCodeThrowsException stubableCodeThrowsException,
-			Set<String> matchingStubStrategies, int checkpointType, int levelChangeNextCheckpoint) {
+							T message, StubableCode stubableCode, StubableCodeThrowsException stubableCodeThrowsException,
+							Set<String> matchingStubStrategies, int checkpointType, int levelChangeNextCheckpoint) {
 		return checkpoint(correlationId, childThreadId, sourceClassName, name,
 				message, null, stubableCode, stubableCodeThrowsException,
-				matchingStubStrategies, checkpointType, levelChangeNextCheckpoint);
+				matchingStubStrategies, checkpointType, levelChangeNextCheckpoint, null, null);
+	}
+
+	public <T> T checkpoint(String correlationId, String childThreadId, String sourceClassName, String name,
+							T message, Map<String, Object> messageContext, StubableCode stubableCode, StubableCodeThrowsException stubableCodeThrowsException,
+							Set<String> matchingStubStrategies, int checkpointType, int levelChangeNextCheckpoint) {
+		return checkpoint(correlationId, childThreadId, sourceClassName, name,
+				message, messageContext, stubableCode, stubableCodeThrowsException,
+				matchingStubStrategies, checkpointType, levelChangeNextCheckpoint, null, null);
+	}
+
+	public <T> T checkpoint(String correlationId, String childThreadId, String sourceClassName, String name,
+			T message, StubableCode stubableCode, StubableCodeThrowsException stubableCodeThrowsException,
+			Set<String> matchingStubStrategies, int checkpointType, int levelChangeNextCheckpoint, String id, String parentId) {
+		return checkpoint(correlationId, childThreadId, sourceClassName, name,
+				message, null, stubableCode, stubableCodeThrowsException,
+				matchingStubStrategies, checkpointType, levelChangeNextCheckpoint, id, parentId);
 	}
 
 	private <T> T checkpoint(String correlationId, String childThreadId, String sourceClassName, String name,
 			T message, Map<String, Object> messageContext, StubableCode stubableCode, StubableCodeThrowsException stubableCodeThrowsException,
-			Set<String> matchingStubStrategies, int checkpointType, int levelChangeNextCheckpoint) {
+			Set<String> matchingStubStrategies, int checkpointType, int levelChangeNextCheckpoint, String id, String parentId) {
 		boolean executeStubableCode = true;
+
 		if (reportGeneratorEnabled) {
 			Report report;
 			// Blocking for all threads for all reports
 			synchronized(reportsInProgress) {
 				report = getReportInProgress(correlationId);
 				if (report == null) {
-					report = createReport(correlationId, name, checkpointType);
+					try {
+						for (Integer storageId : debugStorage.getStorageIds()) {
+							if (debugStorage.getReport(storageId).getCorrelationId().equals(correlationId)) {
+								report = debugStorage.getReport(storageId);
+								report.restoreRuntimeState();
+								report.setClosed(false);
+								report.setTestTool(this);
+
+								reportsInProgress.add(0, report);
+								reportsInProgressByCorrelationId.put(correlationId, report);
+								numberOfReportsInProgress++;
+
+								updatingFromStorage = true;
+
+								break;
+							}
+						}
+					} catch (StorageException e) {
+						log.error("Failed to find report in storage", e);
+					}
+
+					if (report == null) {
+						report = createReport(correlationId, name, checkpointType);
+					}
 				}
 			}
 			if (devMode) randomSleep();
@@ -382,7 +423,7 @@ public class TestTool {
 					executeStubableCode = false;
 					message = report.checkpoint(childThreadId, sourceClassName, name, message, messageContext, stubableCode,
 							stubableCodeThrowsException, matchingStubStrategies, checkpointType,
-							levelChangeNextCheckpoint);
+							levelChangeNextCheckpoint, id, parentId, updatingFromStorage);
 					closeReportIfFinished(report);
 				}
 				report = null;
@@ -476,12 +517,21 @@ public class TestTool {
 							numberOfReportsInProgress--;
 						}
 						if (report.isReportFilterMatching()) {
-							try {
-								debugStorage.store(report);
-							} catch (StorageException e) {
+							if (updatingFromStorage) {
+								try {
+									((DatabaseCrudStorage) debugStorage).update(report);
+									updatingFromStorage = false;
+								} catch (StorageException e) {
+									log.error("Failed to store report", e);
+								}
 
+							} else {
+								try {
+									debugStorage.store(report);
+								} catch (StorageException e) {
+
+								}
 							}
-
 						}
 					}
 				}
@@ -555,6 +605,11 @@ public class TestTool {
 				CheckpointType.STARTPOINT.toInt(), 1);
 	}
 
+	public <T> T startpoint(String correlationId, String sourceClassName, String name, T message, String parentId, String id) {
+		return checkpoint(correlationId, null, sourceClassName, name, message, null, null, null,
+				CheckpointType.STARTPOINT.toInt(), 1, id, parentId);
+	}
+
 	/**
 	 * Parameter throwsException determines the type of exception thrown. E.g. when set to (IOException)null the
 	 * compiler will report this method to throw an IOException which needs to be handled. When set to null the compiler
@@ -580,6 +635,11 @@ public class TestTool {
 	public <T> T endpoint(String correlationId, String sourceClassName, String name, T message) {
 		return checkpoint(correlationId, null, sourceClassName, name, message, null, null, null,
 				CheckpointType.ENDPOINT.toInt(), -1);
+	}
+
+	public <T> T endpoint(String correlationId, String sourceClassName, String name, T message, String parentId, String id) {
+		return checkpoint(correlationId, null, sourceClassName, name, message, null, null, null,
+				CheckpointType.ENDPOINT.toInt(), -1, id, parentId);
 	}
 	
 	public <T> T endpoint(String correlationId, String sourceClassName, String name, T message, Map<String, Object> messageContext) {
@@ -1119,7 +1179,9 @@ public class TestTool {
 				} else {
 					errorMessage = debugger.rerun(correlationId, report, securityContext, reportRunner);
 				}
-			} finally {
+			} catch (StorageException e) {
+                throw new RuntimeException(e);
+            } finally {
 				if (reportGeneratorEnabled) {
 					// Verify that originalReport has been removed from originalReports by checkpoint()
 					Report originalReport;
