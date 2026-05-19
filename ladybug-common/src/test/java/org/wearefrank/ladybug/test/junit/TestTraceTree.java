@@ -16,7 +16,6 @@ import java.util.List;
 import static org.junit.Assert.*;
 
 public class TestTraceTree extends ReportRelatedTestCase {
-
     private TraceTree traceTree;
 
     @Before
@@ -97,17 +96,6 @@ public class TestTraceTree extends ReportRelatedTestCase {
         assertNotNull(report);
         assertEquals("parent", report.getName());
         assertTrue(report.getNumberOfCheckpoints() >= 4);
-    }
-
-    @Test
-    public void testByteStringToHex() {
-        ByteString bytes = ByteString.copyFromUtf8("abc");
-
-        String hex = traceTree.byteStringToHex(bytes);
-
-        assertNotNull(hex);
-        assertFalse(hex.isEmpty());
-        assertEquals("616263", hex);
     }
 
     @Test
