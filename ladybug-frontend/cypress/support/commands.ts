@@ -498,7 +498,7 @@ function navigateToTabAndAwaitLoadingSpinner(tab: TabType): void {
 }
 
 function navigateToTab(tab: TabType): void {
-  cy.get(`[data-cy-nav-tab="${tab}Tab"]`).click();
+  cy.get(`[data-cy-nav-tab="${tab}"]`).click();
 }
 
 interface ApiResponse {
