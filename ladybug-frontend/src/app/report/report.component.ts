@@ -8,7 +8,7 @@ import {
   AfterViewInit,
   OnDestroy,
 } from '@angular/core';
-import { ActivatedRouteSnapshot, Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { AngularSplitModule, SplitComponent } from 'angular-split';
 import { TabService } from '../shared/services/tab.service';
 import { ReportValueComponent } from './report-value/report-value.component';
@@ -38,7 +38,7 @@ export class ReportComponent implements ReportComponentCallback, OnInit, AfterVi
   protected monacoEditorHeight!: number;
   protected sharedStrategy = inject(ReportSharedStrategy);
   private tabService = inject(TabService);
-  private route = inject(ActivatedRouteSnapshot);
+  private route = inject(ActivatedRoute);
   private router = inject(Router);
   private httpService = inject(HttpService);
   private cdr = inject(ChangeDetectorRef);
@@ -100,8 +100,8 @@ export class ReportComponent implements ReportComponentCallback, OnInit, AfterVi
 
   private handleUrlChange(): void {
     // TODO: Take care here when working on issue https://github.com/wearefrank/ladybug-frontend/issues/1125
-    const storageName: string = this.tabService.getPathParam(this.route, 'storageName');
-    const storageIdStr: string = this.tabService.getPathParam(this.route, 'storageId');
+    const storageName: string = this.tabService.getPathParam(this.route.snapshot, 'storageName');
+    const storageIdStr: string = this.tabService.getPathParam(this.route.snapshot, 'storageId');
     if (!isNumber(storageIdStr)) {
       throw new Error(`Cannot open ReportComponent because storage id not a number: ${storageIdStr}`);
     }
@@ -109,6 +109,7 @@ export class ReportComponent implements ReportComponentCallback, OnInit, AfterVi
     firstValueFrom(this.httpService.getHierarchicalReports([storageId], storageName, null)).then(
       (report: HierarchicalReport[]) => {
         this.tabKey = this.tabService.getReportTabKey(storageName, storageId);
+        this.tabService.setTitle(this.tabKey, report[0].name);
         this.addReport(report[0]);
       },
     );

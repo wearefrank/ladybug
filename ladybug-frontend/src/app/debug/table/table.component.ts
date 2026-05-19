@@ -37,6 +37,7 @@ import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner
 import { ShortenedTableHeaderPipe } from '../../shared/pipes/shortened-table-header.pipe';
 import { ClientSettingsService } from 'src/app/shared/services/client.settings.service';
 import { HierarchicalReport } from '../../shared/interfaces/hierarchical-report';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-table',
@@ -124,6 +125,7 @@ export class TableComponent implements OnInit, OnDestroy {
 
   private tableDataSort?: MatSort;
 
+  private router = inject(Router);
   private httpService = inject(HttpService);
   private clientSettingsService = inject(ClientSettingsService);
   private toastService = inject(ToastService);
@@ -363,8 +365,8 @@ export class TableComponent implements OnInit, OnDestroy {
       this.toastService.showDanger('Could not find report that was selected.');
       return;
     }
-    // TODO: Fix report name
-    this.tabService.openReportTab(this.currentView.storageName, reportTab.storageId, 'To be changed');
+    const key: string = this.tabService.openReportTab(this.currentView.storageName, reportTab.storageId, 'Loading...');
+    this.router.navigate(key.split('/'));
   }
 
   openSelected(): void {
@@ -413,13 +415,14 @@ export class TableComponent implements OnInit, OnDestroy {
 
   compareTwoReports(): void {
     // TODO: Fix title.
-    this.tabService.openCompareTab(
+    const key: string = this.tabService.openCompareTab(
       this.currentView.storageName,
       this.selectedReportIds[0],
       this.currentView.storageName,
       this.selectedReportIds[1],
       'Comparison',
     );
+    this.router.navigate(key.split('/'));
   }
 
   transformCompareToReport(compareReport: CompareReport): Report {
@@ -576,7 +579,12 @@ export class TableComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (data: HierarchicalReport[]) => {
           for (let report of data) {
-            this.tabService.openReportTab(this.currentView.storageName, report.storageId, report.name);
+            const key: string = this.tabService.openReportTab(
+              this.currentView.storageName,
+              report.storageId,
+              report.name,
+            );
+            this.router.navigate(key.split('/'));
           }
           this.toastService.showSuccess('Report uploaded!');
         },

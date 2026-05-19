@@ -1,7 +1,7 @@
-import { inject, Injectable } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { Observable, ReplaySubject, Subject } from 'rxjs';
 import { KEY_COMPARE, KEY_DEBUG, KEY_REPORT, KEY_TEST, routeKind, Tab } from '../interfaces/tab';
-import { ActivatedRouteSnapshot, DetachedRouteHandle, Router } from '@angular/router';
+import { ActivatedRouteSnapshot, DetachedRouteHandle } from '@angular/router';
 import { isNumber } from '../../shared/util/util';
 
 @Injectable({
@@ -17,13 +17,12 @@ export class TabService {
     {
       kind: KEY_TEST,
       key: KEY_TEST,
-      title: 'test',
+      title: 'Test',
     },
   ];
 
   private refreshSubject: Subject<void> = new ReplaySubject();
   refresh$ = this.refreshSubject as Observable<void>;
-  private router = inject(Router);
 
   getTabs(): Tab[] {
     return [...this.activeTabsList];
@@ -34,13 +33,13 @@ export class TabService {
     this.refreshSubject.next();
   }
 
-  openReportTab(storageName: string, storageId: number, name: string): void {
+  openReportTab(storageName: string, storageId: number, name: string): string {
     const key: string = this.getReportTabKey(storageName, storageId);
     if (this.findTab(key) === undefined) {
       this.addTab(KEY_REPORT, key, name);
     }
-    this.router.navigate(key.split('/'));
     this.refreshSubject.next();
+    return key;
   }
 
   openCompareTab(
@@ -49,13 +48,13 @@ export class TabService {
     rightStorageName: string,
     rightStorageId: number,
     name: string,
-  ): void {
+  ): string {
     const key: string = this.getCompareTabKey(leftStorageName, leftStorageId, rightStorageName, rightStorageId);
     if (this.findTab(key) === undefined) {
       this.addTab(KEY_COMPARE, key, name);
     }
-    this.router.navigate(key.split('/'));
     this.refreshSubject.next();
+    return key;
   }
 
   storeHandle(route: ActivatedRouteSnapshot, handle: DetachedRouteHandle): void {
@@ -85,6 +84,9 @@ export class TabService {
 
   getKey(route: ActivatedRouteSnapshot): string {
     const routePath: string = route.routeConfig?.path || '';
+    if (routePath.length === 0) {
+      return '';
+    }
     const kind = routePath.split('/')[0];
     switch (kind) {
       case KEY_DEBUG:
@@ -119,6 +121,14 @@ export class TabService {
         throw new Error(`Unknown route kind ${kind}`);
       }
     }
+  }
+
+  setTitle(key: string, title: string): void {
+    const tab: Tab | undefined = this.findTab(key);
+    if (tab === undefined) {
+      throw new Error(`Cannot set title of tab because no tab for key ${key}`);
+    }
+    tab.title = title;
   }
 
   getPathParam(route: ActivatedRouteSnapshot, parameter: string): string {

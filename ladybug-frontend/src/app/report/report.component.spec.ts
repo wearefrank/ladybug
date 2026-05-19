@@ -5,7 +5,7 @@ import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { routes } from '../app-routing.module';
 import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
-import { ActivatedRouteSnapshot } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 
 describe('ReportComponent', () => {
   let component: ReportComponent;
@@ -18,17 +18,19 @@ describe('ReportComponent', () => {
         provideHttpClient(withInterceptorsFromDi()),
         provideHttpClientTesting(),
         {
-          provide: ActivatedRouteSnapshot,
+          provide: ActivatedRoute,
           useValue: {
-            paramMap: {
-              get: (key: string): string | null => {
-                if (key === 'storageId') {
-                  return '0';
-                } else if (key === 'storageName') {
-                  return 'dummy';
-                } else {
-                  return null;
-                }
+            snapshot: {
+              paramMap: {
+                get: (key: string): string | null => {
+                  if (key === 'storageId') {
+                    return '0';
+                  } else if (key === 'storageName') {
+                    return 'dummy';
+                  } else {
+                    return null;
+                  }
+                },
               },
             },
           },

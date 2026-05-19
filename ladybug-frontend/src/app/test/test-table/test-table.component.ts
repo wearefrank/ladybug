@@ -34,6 +34,7 @@ import {
 import { NgClass, NgIf } from '@angular/common';
 import { ClientSettingsService } from 'src/app/shared/services/client.settings.service';
 import { HierarchicalReport } from 'src/app/shared/interfaces/hierarchical-report';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-test-table',
@@ -67,6 +68,7 @@ export class TestTableComponent implements OnInit, OnDestroy, OnChanges, AfterCo
   amountOfSelectedReports = 0;
   protected displayedColumns: string[] = [];
 
+  private router = inject(Router);
   private httpService = inject(HttpService);
   private clientSettingsService = inject(ClientSettingsService);
   private errorHandler = inject(ErrorHandling);
@@ -118,7 +120,12 @@ export class TestTableComponent implements OnInit, OnDestroy, OnChanges, AfterCo
       .pipe(catchError(this.errorHandler.handleError()))
       .subscribe({
         next: (reports: HierarchicalReport[]): void => {
-          this.tabService.openReportTab(this.testReportsService.storageName, reports[0].storageId, reports[0].name);
+          const key: string = this.tabService.openReportTab(
+            this.testReportsService.storageName,
+            reports[0].storageId,
+            reports[0].name,
+          );
+          this.router.navigate(key.split('/'));
         },
       });
   }
@@ -145,13 +152,14 @@ export class TestTableComponent implements OnInit, OnDestroy, OnChanges, AfterCo
   compareReports(report: TestListItem): void {
     if (report.reranReport) {
       // TODO: Change title.
-      this.tabService.openCompareTab(
+      const key: string = this.tabService.openCompareTab(
         this.testReportsService.storageName,
         report.reranReport.originalReport.storageId,
         this.testReportsService.storageName,
         report.reranReport.runResultReport.storageId,
         'Change title',
       );
+      this.router.navigate(key.split('/'));
     }
   }
 

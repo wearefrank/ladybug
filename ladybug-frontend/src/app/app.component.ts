@@ -6,7 +6,7 @@ import { TestComponent } from './test/test.component';
 import { TabService } from './shared/services/tab.service';
 import { AppVariablesService } from './shared/services/app.variables.service';
 import { catchError, Subscription } from 'rxjs';
-import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { KEY_COMPARE, KEY_REPORT, Tab } from './shared/interfaces/tab';
 import { ToastComponent } from './shared/components/toast/toast.component';
 import { HttpService } from './shared/services/http.service';
@@ -34,6 +34,7 @@ export class AppComponent implements OnInit, OnDestroy {
   subscriptions: Subscription = new Subscription();
 
   protected tabService = inject(TabService);
+  private router = inject(Router);
   private titleService = inject(Title);
   private httpService = inject(HttpService);
   private errorHandler = inject(ErrorHandling);
@@ -92,7 +93,8 @@ export class AppComponent implements OnInit, OnDestroy {
       if (event.data?.action === 'ladybug-openReport') {
         const eventData = event.data as OpenReportEventData;
         // TODO: Fix title.
-        this.tabService.openReportTab(eventData.storageName, eventData.storageId, 'Some title');
+        const key: string = this.tabService.openReportTab(eventData.storageName, eventData.storageId, 'Some title');
+        this.router.navigate(key.split('/'));
       }
     });
   }

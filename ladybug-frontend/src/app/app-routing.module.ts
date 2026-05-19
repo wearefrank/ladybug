@@ -43,8 +43,8 @@ export class AppRoutingModule {}
 export class AppRouteReuseStrategy implements RouteReuseStrategy {
   private tabService = inject(TabService);
 
-  shouldDetach(_: ActivatedRouteSnapshot): boolean {
-    return true;
+  shouldDetach(route: ActivatedRouteSnapshot): boolean {
+    return this.tabService.getKey(route).length > 0;
   }
 
   store(route: ActivatedRouteSnapshot, handle: DetachedRouteHandle | null): void {
