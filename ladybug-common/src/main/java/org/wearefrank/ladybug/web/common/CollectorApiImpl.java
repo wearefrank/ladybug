@@ -25,10 +25,8 @@ import org.springframework.stereotype.Component;
 import io.opentelemetry.proto.trace.v1.Span;
 import org.wearefrank.ladybug.TraceTree;
 import org.wearefrank.ladybug.TestTool;
-import org.wearefrank.ladybug.storage.database.DatabaseTracingStorage;
 
 import java.lang.invoke.MethodHandles;
-import java.sql.SQLException;
 import java.util.*;
 
 @Component
@@ -38,38 +36,7 @@ public class CollectorApiImpl {
 	@Autowired
 	private @Setter TestTool testTool;
 
-	@Autowired
-	private @Setter DatabaseTracingStorage databaseTracingStorage;
-
-	public void storeSpan(Span span) throws SQLException {
-		databaseTracingStorage.store(span);
-	}
-
-	public HashMap<String, ArrayList<Span>> getAllTraces() throws SQLException {
-		List<Span> spans =  databaseTracingStorage.getAllSpans();
-
-		HashMap<String, ArrayList<Span>> traces = sortInTraces(spans);
-
-		return traces;
-	}
-
-	public HashMap<String, ArrayList<Span>> sortInTraces(List<Span> spans) {
-		HashMap<String, ArrayList<Span>> unorderedTraces = new HashMap<>();
-
-		for (Span span : spans) {
-			unorderedTraces.compute(byteStringToHex(span.getTraceId()), (key, existing) -> {
-				ArrayList<Span> updated =
-						existing == null ? new ArrayList<>() : new ArrayList<>(existing);
-
-				updated.add(span);
-				return updated;
-			});
-		}
-
-		return unorderedTraces;
-	}
-
-	public TraceTree processSpans(ArrayList<Span> spans) {
+	public void processSpans(ArrayList<Span> spans) {
 		TraceTree traceTree = new TraceTree(testTool);
 		ArrayList<String> spanIds = new ArrayList<>();
 
@@ -98,9 +65,8 @@ public class CollectorApiImpl {
 					}
 				}
 			}
+			traceTree.dfs(rootSpan);
 		}
-
-		return traceTree;
 	}
 
 	public String byteStringToHex(ByteString byteString) {
