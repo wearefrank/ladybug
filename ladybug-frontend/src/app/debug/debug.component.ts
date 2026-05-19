@@ -5,7 +5,7 @@ import { HttpService } from '../shared/services/http.service';
 import { View } from '../shared/interfaces/view';
 import { catchError } from 'rxjs';
 import { ErrorHandling } from '../shared/classes/error-handling.service';
-import { ReportComponent } from '../report/report.component';
+import { DebugReportComponent } from '../report/debug-report.component/debug-report.component';
 import { HierarchicalReport } from '../shared/interfaces/hierarchical-report';
 
 @Component({
@@ -13,11 +13,11 @@ import { HierarchicalReport } from '../shared/interfaces/hierarchical-report';
   templateUrl: './debug.component.html',
   styleUrls: ['./debug.component.css'],
   standalone: true,
-  imports: [TableComponent, ReportComponent],
+  imports: [TableComponent, DebugReportComponent],
 })
 export class DebugComponent implements OnInit {
   static readonly ROUTER_PATH: string = 'debug';
-  @ViewChild('reportComponent') customReportComponent!: ReportComponent;
+  @ViewChild('reportComponent') customReportComponent!: DebugReportComponent;
   currentView?: View;
   views?: View[];
 

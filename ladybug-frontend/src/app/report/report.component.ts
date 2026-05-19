@@ -11,11 +11,8 @@ import {
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AngularSplitModule, SplitComponent } from 'angular-split';
-import { debounceTime, fromEventPattern, Subscription } from 'rxjs';
-import { DebugComponent } from '../debug/debug.component';
 import { HierarchicalReportData } from '../shared/interfaces/report-data';
 import { TabService } from '../shared/services/tab.service';
-import { NodeEventHandler } from 'rxjs/internal/observable/fromEvent';
 import { ReportValueComponent } from './report-value/report-value.component';
 import { CheckpointValueComponent } from './checkpoint-value/checkpoint-value.component';
 import { DebugTabService } from '../debug/debug-tab.service';
@@ -49,15 +46,12 @@ export class ReportComponent implements ReportComponentCallback, OnInit, AfterVi
   private cdr = inject(ChangeDetectorRef);
   private debugTab = inject(DebugTabService);
   private testRefreshService = inject(TestRefreshService);
-  private subscriptions: Subscription = new Subscription();
   private newTabReportData?: HierarchicalReportData;
 
   ngOnInit(): void {
     this.sharedStrategy.setCallback(this);
-    if (this.newTab) {
-      this.route.url.subscribe(() => this.handleUrlChange());
-    }
-    this.listenToHeight();
+    this.route.url.subscribe(() => this.handleUrlChange());
+    this.sharedStrategy.listenToHeight();
   }
 
   ngAfterViewInit(): void {
@@ -67,7 +61,7 @@ export class ReportComponent implements ReportComponentCallback, OnInit, AfterVi
   }
 
   ngOnDestroy(): void {
-    this.subscriptions.unsubscribe();
+    this.sharedStrategy.unsubscribe();
   }
 
   // Entry point when report is opened from debug table.
@@ -106,37 +100,7 @@ export class ReportComponent implements ReportComponentCallback, OnInit, AfterVi
     }
   }
 
-  private handleUrlChange(): void {
-    // TODO: Take care here when working on issue https://github.com/wearefrank/ladybug-frontend/issues/1125
-    // TODO issue https://github.com/wearefrank/ladybug/issues/816. The storage id is not enough to find
-    // the right report. We need to have the storage name in the URL as well.
-    this.newTabReportData = this.tabService.activeReportTabs.get(this.getIdFromPath());
-    if (this.newTabReportData) {
-      this.addReport(this.newTabReportData!.report);
-    } else {
-      this.router.navigate([DebugComponent.ROUTER_PATH]);
-    }
-  }
-
-  private getIdFromPath(): string {
-    return this.route.snapshot.paramMap.get('id') as string;
-  }
-
-  private listenToHeight(): void {
-    const resizeObserver$ = fromEventPattern<ResizeObserverEntry[]>((handler: NodeEventHandler) => {
-      const resizeObserver = new ResizeObserver(handler);
-      resizeObserver.observe(this.host.nativeElement);
-      return (): void => resizeObserver.disconnect();
-    });
-
-    const resizeSubscription = resizeObserver$.pipe(debounceTime(50)).subscribe((entries: ResizeObserverEntry[]) => {
-      const entry = (entries[0] as unknown as ResizeObserverEntry[])[0];
-      this.handleHeightChanges(entry.target.clientHeight);
-    });
-    this.subscriptions.add(resizeSubscription);
-  }
-
-  private handleHeightChanges(clientHeight: number): void {
+  handleHeightChanges(clientHeight: number): void {
     this.monacoEditorHeight = clientHeight;
     if (!this.newTab) {
       this.monacoEditorHeight = this.monacoEditorHeight - MARGIN_IF_NOT_NEW_TAB;

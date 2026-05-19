@@ -1,0 +1,31 @@
+<as-split direction="horizontal">
+  <as-split-area class="split-size" [size]="25">
+    <app-debug-tree-new
+      (selectReportEvent)="sharedStrategy.selectReport($event)"
+    />
+  </as-split-area>
+  <as-split-area class="right-side" [size]="75">
+    @if (sharedStrategy.reportValueState === 'report') {
+      <app-report-value
+        [height]="monacoEditorHeight"
+        [report$]="sharedStrategy.reportValueSubject"
+        [saveDone$]="sharedStrategy.saveDoneSubject"
+        [rerunResult$]="sharedStrategy.rerunResultSubject"
+        (nodeValueState)="sharedStrategy.onNodeValueState($event)"
+        (button)="sharedStrategy.onButton($event)"
+        (save)="sharedStrategy.save($event)"
+        (downloadRequest)="sharedStrategy.onDownload($event)"></app-report-value>
+    }
+    @if (sharedStrategy.reportValueState === 'checkpoint') {
+      <app-checkpoint-value
+        [height]="monacoEditorHeight"
+        [originalCheckpoint$]="sharedStrategy.checkpointValueSubject"
+        [saveDone$]="sharedStrategy.saveDoneSubject"
+        [rerunResult$]="sharedStrategy.rerunResultSubject"
+        (nodeValueState)="sharedStrategy.onNodeValueState($event)"
+        (button)="sharedStrategy.onButton($event)"
+        (save)="sharedStrategy.save($event)"
+        (downloadRequest)="sharedStrategy.onDownload($event)"></app-checkpoint-value>
+    }
+  </as-split-area>
+</as-split>

@@ -1,8 +1,8 @@
-import { BehaviorSubject, catchError, Observable, Subject } from 'rxjs';
+import { BehaviorSubject, catchError, debounceTime, fromEventPattern, Observable, Subject, Subscription } from 'rxjs';
 import { HierarchicalCheckpoint, HierarchicalReport } from '../interfaces/hierarchical-report';
 import { ReportUtil } from '../util/report-util';
 import { HttpService } from '../services/http.service';
-import { ChangeDetectorRef, inject, NgZone } from '@angular/core';
+import { ChangeDetectorRef, ElementRef, inject, NgZone } from '@angular/core';
 import { TestResult } from '../interfaces/test-result';
 import { UpdateReport } from '../interfaces/update-report';
 import { ButtonCommand, DownloadOptions } from '../../report/report-buttons/report-buttons';
@@ -12,6 +12,7 @@ import { TestReportsService } from '../../test/test-reports.service';
 import { DebugTabService } from '../../debug/debug-tab.service';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ErrorHandling } from './error-handling.service';
+import { NodeEventHandler } from 'rxjs/internal/observable/fromEvent';
 
 type ReportValueState = 'report' | 'checkpoint' | 'none';
 
@@ -34,6 +35,7 @@ export interface ReportComponentCallback {
   closeEntireTree(): void;
   navigateToTestTab(): void;
   onRefreshReport(report: HierarchicalReport): void;
+  handleHeightChanges(clientHeight: number): void;
 }
 
 export class ReportSharedStrategy {
@@ -57,10 +59,16 @@ export class ReportSharedStrategy {
   private testReportsService = inject(TestReportsService);
   private ngZone = inject(NgZone);
   private errorHandler = inject(ErrorHandling);
+  private host = inject(ElementRef);
   private cdr = inject(ChangeDetectorRef);
+  private subscriptions: Subscription = new Subscription();
 
   setCallback(callback: ReportComponentCallback): void {
     this.callback = callback;
+  }
+
+  unsubscribe(): void {
+    this.subscriptions.unsubscribe();
   }
 
   selectReport(node: HierarchicalReport | HierarchicalCheckpoint): void {
@@ -307,6 +315,20 @@ export class ReportSharedStrategy {
           },
         });
     });
+  }
+
+  listenToHeight(): void {
+    const resizeObserver$ = fromEventPattern<ResizeObserverEntry[]>((handler: NodeEventHandler) => {
+      const resizeObserver = new ResizeObserver(handler);
+      resizeObserver.observe(this.host.nativeElement);
+      return (): void => resizeObserver.disconnect();
+    });
+
+    const resizeSubscription = resizeObserver$.pipe(debounceTime(50)).subscribe((entries: ResizeObserverEntry[]) => {
+      const entry = (entries[0] as unknown as ResizeObserverEntry[])[0];
+      this.callback.handleHeightChanges(entry.target.clientHeight);
+    });
+    this.subscriptions.add(resizeSubscription);
   }
 }
 
