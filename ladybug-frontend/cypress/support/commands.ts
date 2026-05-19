@@ -176,10 +176,10 @@ Cypress.Commands.add(
 );
 
 Cypress.Commands.add('navigateToTestTab' as keyof Chainable, () => {
-  navigateToTab('test');
+  navigateToTab('Test');
 });
 Cypress.Commands.add('navigateToDebugTab' as keyof Chainable, () => {
-  navigateToTab('debug');
+  navigateToTab('Debug');
 });
 
 Cypress.Commands.add('createReport' as keyof Chainable, (): void => {
@@ -495,7 +495,7 @@ function navigateToTabAndAwaitLoadingSpinner(tab: 'debug' | 'test'): void {
   awaitLoadingSpinner();
 }
 
-function navigateToTab(tab: 'debug' | 'test'): void {
+function navigateToTab(tab: 'Debug' | 'Test'): void {
   cy.get(`[data-cy-nav-tab="${tab}Tab"]`).click();
 }
 

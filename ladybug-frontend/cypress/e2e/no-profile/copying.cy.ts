@@ -12,7 +12,7 @@ describe('Tests about copying', () => {
   });
 
   it('Copy report to test tab', () => {
-    cy.get('[data-cy-nav-tab="testTab"]').click();
+    cy.get('[data-cy-nav-tab="Test"]').click();
     cy.checkTestTableNumRows(0);
     cy.get('[data-cy-nav-tab="debugTab"]').click();
     cy.assertDebugTableLength(0);
@@ -22,20 +22,20 @@ describe('Tests about copying', () => {
     cy.get('[data-cy-debug="selectAll"]').click();
     cy.get('[data-cy-debug="openSelected"]').click();
     cy.debugTreeGuardedCopyReport('Simple report', 3, '');
-    cy.get('[data-cy-nav-tab="testTab"]').click();
+    cy.get('[data-cy-nav-tab="Test"]').click();
     // We test that the user does not have to refresh here.
     cy.checkTestTableReportsAre(['Simple report']);
     cy.get('[data-cy-nav-tab="debugTab"]').click();
     cy.assertDebugTableLength(1);
     cy.clickRowInTable(0);
     cy.checkFileTreeLength(1);
-    cy.get('[data-cy-nav-tab="testTab"]').click();
+    cy.get('[data-cy-nav-tab="Test"]').click();
     // Do not refresh. The test tab should have saved its state.
     cy.checkTestTableReportsAre(['Simple report']);
   });
 
   it('When we edit a checkpoint then we can use toasts to copy to test tab and enter test tab', () => {
-    cy.get('[data-cy-nav-tab="testTab"]').click();
+    cy.get('[data-cy-nav-tab="Test"]').click();
     cy.checkTestTableNumRows(0);
     cy.get('[data-cy-nav-tab="debugTab"]').click();
     cy.assertDebugTableLength(0);
@@ -54,7 +54,7 @@ describe('Tests about copying', () => {
   });
 
   it('When we rerun an edited checkpoint then we can use toasts to copy to test tab and enter test tab', () => {
-    cy.get('[data-cy-nav-tab="testTab"]').click();
+    cy.get('[data-cy-nav-tab="Test"]').click();
     cy.checkTestTableNumRows(0);
     cy.get('[data-cy-nav-tab="debugTab"]').click();
     cy.assertDebugTableLength(0);
@@ -81,7 +81,7 @@ describe('Tests about copying', () => {
   });
 
   it('When we rerun a pristine checkpoint then no toast is shown', () => {
-    cy.get('[data-cy-nav-tab="testTab"]').click();
+    cy.get('[data-cy-nav-tab="Test"]').click();
     cy.checkTestTableNumRows(0);
     cy.get('[data-cy-nav-tab="debugTab"]').click();
     cy.assertDebugTableLength(0);
