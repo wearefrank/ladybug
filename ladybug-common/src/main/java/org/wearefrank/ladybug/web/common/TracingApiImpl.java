@@ -30,7 +30,7 @@ import java.lang.invoke.MethodHandles;
 import java.util.*;
 
 @Component
-public class CollectorApiImpl {
+public class TracingApiImpl {
 	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
 	@Autowired

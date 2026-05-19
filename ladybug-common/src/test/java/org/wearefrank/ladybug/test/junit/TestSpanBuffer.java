@@ -19,7 +19,7 @@ import com.google.protobuf.ByteString;
 import io.opentelemetry.proto.trace.v1.Span;
 import org.junit.Test;
 import org.wearefrank.ladybug.SpanBuffer;
-import org.wearefrank.ladybug.web.common.CollectorApiImpl;
+import org.wearefrank.ladybug.web.common.TracingApiImpl;
 
 import java.util.ArrayList;
 
@@ -29,7 +29,7 @@ public class TestSpanBuffer {
 
     @Test
     public void testAddSingleSpan() {
-        CollectorApiImpl delegate = mock(CollectorApiImpl.class);
+        TracingApiImpl delegate = mock(TracingApiImpl.class);
 
         when(delegate.byteStringToHex(any()))
                 .thenReturn("trace1");
@@ -50,7 +50,7 @@ public class TestSpanBuffer {
 
     @Test
     public void testAddMultipleSpansSameTrace() {
-        CollectorApiImpl delegate = mock(CollectorApiImpl.class);
+        TracingApiImpl delegate = mock(TracingApiImpl.class);
 
         when(delegate.byteStringToHex(any()))
                 .thenReturn("trace1");
@@ -79,7 +79,7 @@ public class TestSpanBuffer {
     @Test
     @SuppressWarnings("unchecked")
     public void testExpirationProcessesSpans() throws Exception {
-        CollectorApiImpl delegate = mock(CollectorApiImpl.class);
+        TracingApiImpl delegate = mock(TracingApiImpl.class);
 
         when(delegate.byteStringToHex(any()))
                 .thenReturn("trace1");

@@ -54,5 +54,11 @@
       <groupId>org.projectlombok</groupId>
       <artifactId>lombok</artifactId>
     </dependency>
+      <dependency>
+          <groupId>com.google.protobuf</groupId>
+          <artifactId>protobuf-java-util</artifactId>
+          <version>4.34.0</version>
+          <scope>compile</scope>
+      </dependency>
   </dependencies>
 </project>

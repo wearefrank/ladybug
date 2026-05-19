@@ -27,15 +27,15 @@ import jakarta.ws.rs.core.Response;
 import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.wearefrank.ladybug.SpanBuffer;
-import org.wearefrank.ladybug.web.common.CollectorApiImpl;
+import org.wearefrank.ladybug.web.common.TracingApiImpl;
 import org.wearefrank.ladybug.web.common.Constants;
 
-@Path("/" + Constants.LADYBUG_API_PATH + "/collector")
-public class CollectorApi extends ApiBase {
+@Path("/" + Constants.LADYBUG_API_PATH + "/traces")
+public class TracingApi extends ApiBase {
     private SpanBuffer spanBuffer;
 
     @Autowired
-    private @Setter CollectorApiImpl delegate;
+    private @Setter TracingApiImpl delegate;
 
     @PostConstruct
     public void init() {
@@ -44,9 +44,7 @@ public class CollectorApi extends ApiBase {
 
     @POST
     @Consumes({"application/x-protobuf", "application/json"})
-    public Response receiveTrace(@HeaderParam("Content-Type") String contentType, byte[] data)
-            throws InvalidProtocolBufferException {
-
+    public Response receiveTrace(@HeaderParam("Content-Type") String contentType, byte[] data) throws InvalidProtocolBufferException {
         ExportTraceServiceRequest request;
 
         if (contentType.startsWith("application/x-protobuf")) {
