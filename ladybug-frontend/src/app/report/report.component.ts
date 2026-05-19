@@ -74,7 +74,8 @@ export class ReportComponent implements ReportComponentCallback, OnInit, AfterVi
   closeEntireTree(): void {
     this.debugTreeComponent.closeEntireTree();
     if (this.newTab && this.newTabReportData) {
-      this.tabService.closeTab(this.newTabReportData);
+      // TODO: Fix
+      this.tabService.removeTab(this.newTabReportData);
     }
     this.sharedStrategy.changeReportValueState('none');
   }

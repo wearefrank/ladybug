@@ -311,12 +311,14 @@ export class TestComponent implements OnInit, OnDestroy {
         .getReports(checkedReportIds, this.testReportsService.storageName)
         .subscribe((resp: Record<string, CompareReport>) => {
           const reports: Report[] = Object.values(resp).map((r) => r.report);
-          const compareData: CompareData = {
-            id: this.tabService.createCompareTabId(reports[0], reports[1]),
-            originalReport: reports[0],
-            runResultReport: reports[1],
-          };
-          this.tabService.openNewCompareTab(compareData);
+          // TODO: Change title
+          this.tabService.openCompareTab(
+            reports[0].storageName,
+            reports[0].storageId,
+            reports[1].storageName,
+            reports[1].storageId,
+            'Some title',
+          );
         });
     }
   }

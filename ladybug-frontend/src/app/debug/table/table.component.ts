@@ -364,18 +364,8 @@ export class TableComponent implements OnInit, OnDestroy {
       this.toastService.showDanger('Could not find report that was selected.');
       return;
     }
-    this.httpService
-      .getHierarchicalReports([reportTab.storageId], this.currentView.storageName, this.currentView.name)
-      .pipe(catchError(this.errorHandler.handleError()))
-      .subscribe({
-        next: (report: HierarchicalReport[]): void => {
-          const reportData: HierarchicalReportData = {
-            report: report[0],
-            currentView: this.currentView!,
-          };
-          this.tabService.openNewTab(reportData);
-        },
-      });
+    // TODO: Fix report name
+    this.tabService.openReportTab(this.currentView.storageName, reportTab.storageId, 'To be changed');
   }
 
   openSelected(): void {
@@ -423,23 +413,14 @@ export class TableComponent implements OnInit, OnDestroy {
   }
 
   compareTwoReports(): void {
-    this.httpService
-      .getReports(this.selectedReportIds, this.currentView.storageName)
-      .pipe(catchError(this.errorHandler.handleError()))
-      .subscribe({
-        next: (data: Record<string, CompareReport>) => {
-          const originalReport = this.transformCompareToReport(data[this.selectedReportIds[0]]);
-          const runResultReport = this.transformCompareToReport(data[this.selectedReportIds[1]]);
-
-          const id: string = this.tabService.createCompareTabId(originalReport, runResultReport);
-          this.tabService.openNewCompareTab({
-            id: id,
-            originalReport: originalReport,
-            runResultReport: runResultReport,
-            viewName: this.currentView.name,
-          });
-        },
-      });
+    // TODO: Fix title.
+    this.tabService.openCompareTab(
+      this.currentView.storageName,
+      this.selectedReportIds[0],
+      this.currentView.storageName,
+      this.selectedReportIds[1],
+      'Comparison',
+    );
   }
 
   transformCompareToReport(compareReport: CompareReport): Report {
@@ -596,11 +577,7 @@ export class TableComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (data: HierarchicalReport[]) => {
           for (let report of data) {
-            const reportData: HierarchicalReportData = {
-              report: report,
-              currentView: this.currentView,
-            };
-            this.tabService.openNewTab(reportData);
+            this.tabService.openReportTab(this.currentView.storageName, report.storageId, report.name);
           }
           this.toastService.showSuccess('Report uploaded!');
         },

@@ -120,14 +120,7 @@ export class TestTableComponent implements OnInit, OnDestroy, OnChanges, AfterCo
       .pipe(catchError(this.errorHandler.handleError()))
       .subscribe({
         next: (reports: HierarchicalReport[]): void => {
-          const reportData: HierarchicalReportData = {
-            report: reports[0],
-            currentView: {
-              storageName: this.testReportsService.storageName,
-              metadataNames: this.testReportsService.metadataNames,
-            } as View,
-          };
-          this.tabService.openNewTab(reportData);
+          this.tabService.openReportTab(this.testReportsService.storageName, reports[0].storageId, reports[0].name);
         },
       });
   }
@@ -153,22 +146,14 @@ export class TestTableComponent implements OnInit, OnDestroy, OnChanges, AfterCo
 
   compareReports(report: TestListItem): void {
     if (report.reranReport) {
-      const tabId: string = this.tabService.createCompareTabId(
-        report.reranReport.originalReport,
-        report.reranReport.runResultReport,
+      // TODO: Change title.
+      this.tabService.openCompareTab(
+        this.testReportsService.storageName,
+        report.reranReport.originalReport.storageId,
+        this.testReportsService.storageName,
+        report.reranReport.runResultReport.storageId,
+        'Change title',
       );
-      this.tabService.openNewCompareTab({
-        id: tabId,
-        originalReport: {
-          ...report.reranReport.originalReport,
-          storageName: this.testReportsService.storageName,
-        },
-        // Temporary fix until https://github.com/wearefrank/ladybug/issues/283 is fixed
-        runResultReport: {
-          ...report.reranReport.runResultReport,
-          storageName: 'Debug',
-        },
-      });
     }
   }
 
