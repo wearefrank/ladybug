@@ -18,6 +18,7 @@ package org.wearefrank.ladybug;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.RemovalCause;
+import com.github.benmanes.caffeine.cache.Scheduler;
 import io.opentelemetry.proto.trace.v1.Span;
 import org.springframework.stereotype.Component;
 import org.wearefrank.ladybug.web.common.CollectorApiImpl;
@@ -35,6 +36,7 @@ public class SpanBuffer {
         this.delegate = delegate;
         this.cache = Caffeine.newBuilder()
                 .expireAfterWrite(30, TimeUnit.SECONDS)
+                .scheduler(Scheduler.systemScheduler())
                 .removalListener((String traceId, ArrayList<Span> spans, RemovalCause cause) -> {
                     if (spans != null && cause == RemovalCause.EXPIRED) {
                         ArrayList<Span> spansCopy = new ArrayList<>(spans);
