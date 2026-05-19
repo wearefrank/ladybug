@@ -7,6 +7,7 @@ on:
 jobs:
   frontend:
     strategy:
+      fail-fast: false
       matrix:
         include:
           - spring-profile: none
