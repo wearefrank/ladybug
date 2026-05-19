@@ -110,4 +110,16 @@ export class ReportComponent implements ReportComponentCallback, OnInit, AfterVi
     }
     this.cdr.detectChanges();
   }
+
+  private handleUrlChange(): void {
+    // TODO: Take care here when working on issue https://github.com/wearefrank/ladybug-frontend/issues/1125
+    // TODO issue https://github.com/wearefrank/ladybug/issues/816. The storage id is not enough to find
+    // the right report. We need to have the storage name in the URL as well.
+    this.newTabReportData = this.tabService.activeReportTabs.get(this.getIdFromPath());
+    if (this.newTabReportData) {
+      this.addReport(this.newTabReportData!.report);
+    } else {
+      this.router.navigate([DebugComponent.ROUTER_PATH]);
+    }
+  }
 }
