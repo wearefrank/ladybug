@@ -20,6 +20,7 @@ import { TestRefreshService } from '../test/test-refresh.service';
 import { HierarchicalReport } from '../shared/interfaces/hierarchical-report';
 import { DebugTreeNewComponent } from '../debug/debug-tree-new/debug-tree-new.component';
 import { ReportComponentCallback, ReportSharedStrategy } from '../shared/classes/report-shared-strategy';
+import { DebugComponent } from '../debug/debug.component';
 
 const MIN_HEIGHT = 20;
 const MARGIN_IF_NOT_NEW_TAB = 50;
@@ -121,5 +122,9 @@ export class ReportComponent implements ReportComponentCallback, OnInit, AfterVi
     } else {
       this.router.navigate([DebugComponent.ROUTER_PATH]);
     }
+  }
+
+  private getIdFromPath(): string {
+    return this.route.snapshot.paramMap.get('id') as string;
   }
 }
