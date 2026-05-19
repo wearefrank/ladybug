@@ -1179,9 +1179,7 @@ public class TestTool {
 				} else {
 					errorMessage = debugger.rerun(correlationId, report, securityContext, reportRunner);
 				}
-			} catch (StorageException e) {
-                throw new RuntimeException(e);
-            } finally {
+			} finally {
 				if (reportGeneratorEnabled) {
 					// Verify that originalReport has been removed from originalReports by checkpoint()
 					Report originalReport;
