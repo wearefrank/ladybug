@@ -1,7 +1,6 @@
 import {
   ChangeDetectorRef,
   Component,
-  ElementRef,
   inject,
   Input,
   ViewChild,
@@ -40,7 +39,6 @@ export class ReportComponent implements ReportComponentCallback, OnInit, AfterVi
 
   protected monacoEditorHeight!: number;
   protected sharedStrategy = inject(ReportSharedStrategy);
-  private host = inject(ElementRef);
   private tabService = inject(TabService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
@@ -51,7 +49,7 @@ export class ReportComponent implements ReportComponentCallback, OnInit, AfterVi
 
   ngOnInit(): void {
     this.sharedStrategy.setCallback(this);
-    this.route.url.subscribe(() => this.handleUrlChange());
+    // this.route.url.subscribe(() => this.handleUrlChange());
     this.sharedStrategy.listenToHeight();
   }
 

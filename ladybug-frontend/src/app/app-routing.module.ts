@@ -59,39 +59,43 @@ export class AppRouteReuseStrategy implements RouteReuseStrategy {
 
   store(route: ActivatedRouteSnapshot, handle: DetachedRouteHandle | null): void {
     if (route.routeConfig && handle) {
-      const path = route.routeConfig.path || '';
-      const id = this.getRouteId(route);
-
-      if (path.startsWith('report') || path.startsWith('compare')) {
-        if (
-          (path.startsWith('report') && this.tabService.activeReportTabs.has(id)) ||
-          (path.startsWith('compare') && this.tabService.activeCompareTabs.has(id))
-        ) {
-          this.storedRoutes[path] = handle;
-        } else {
-          delete this.storedRoutes[path];
-        }
-      } else {
-        this.storedRoutes[path] = handle;
-      }
+      const key = this.pathOf(route);
+      this.storedRoutes[key] = handle;
     }
   }
 
   shouldAttach(route: ActivatedRouteSnapshot): boolean {
-    const path = route.routeConfig?.path || '';
-    return !!this.storedRoutes[path];
+    const key: string = this.pathOf(route);
+    return this.storedRoutes[key] !== undefined;
   }
 
   retrieve(route: ActivatedRouteSnapshot): DetachedRouteHandle | null {
-    const path = route.routeConfig?.path || '';
-    return this.storedRoutes[path] || null;
+    const key: string = this.pathOf(route);
+    return this.storedRoutes[key];
   }
 
   shouldReuseRoute(future: ActivatedRouteSnapshot, current: ActivatedRouteSnapshot): boolean {
-    return future.routeConfig === current.routeConfig;
+    return future.routeConfig === current.routeConfig && future.params['id'] === current.params['id'];
+  }
+
+  private pathOf(route: ActivatedRouteSnapshot): string {
+    let result: string;
+    const path = route.routeConfig?.path || '';
+    if (this.isReportOrCompare(path)) {
+      const firstComponent = path.split('/')[0];
+      result = `${firstComponent}/${this.getRouteId(route)}`;
+    } else {
+      result = path;
+    }
+    return result;
+  }
+
+  private isReportOrCompare(path: string): boolean {
+    return path.startsWith('report') || path.startsWith('compare');
   }
 
   private getRouteId(route: ActivatedRouteSnapshot): string {
-    return route.params['id'] || '';
+    const id: string = route.params['id'] || '';
+    return id;
   }
 }
