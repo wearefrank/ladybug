@@ -383,7 +383,7 @@ public class TestTool {
 								reportsInProgressByCorrelationId.put(correlationId, report);
 								numberOfReportsInProgress++;
 
-								updatingFromStorage = true;
+								report.setBeingUpdated(true);
 
 								break;
 							}
@@ -423,7 +423,7 @@ public class TestTool {
 					executeStubableCode = false;
 					message = report.checkpoint(childThreadId, sourceClassName, name, message, messageContext, stubableCode,
 							stubableCodeThrowsException, matchingStubStrategies, checkpointType,
-							levelChangeNextCheckpoint, id, parentId, updatingFromStorage);
+							levelChangeNextCheckpoint, id, parentId, report.isBeingUpdated());
 					closeReportIfFinished(report);
 				}
 				report = null;
@@ -517,7 +517,7 @@ public class TestTool {
 							numberOfReportsInProgress--;
 						}
 						if (report.isReportFilterMatching()) {
-							if (updatingFromStorage) {
+							if (report.isBeingUpdated()) {
 								if (debugStorage.isCrudStorage()) {
 									try {
 										((CrudStorage) debugStorage).update(report);
@@ -525,7 +525,6 @@ public class TestTool {
 										log.error("Failed to store report", e);
 									}
 								}
-								updatingFromStorage = false;
 							} else {
 								try {
 									debugStorage.store(report);

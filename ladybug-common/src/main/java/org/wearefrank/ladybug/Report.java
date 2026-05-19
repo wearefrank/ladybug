@@ -134,6 +134,15 @@ public class Report implements Serializable {
 	private transient boolean logMaxMemoryUsage = true;
 	private transient Map<Object, Set<Checkpoint>> streamingMessageListeners = new HashMap<>();
 	private transient Map<Object, StreamingMessageResult> streamingMessageResults = new HashMap<>();
+	private boolean beingUpdated;
+
+	@Transient
+	//@JsonIgnore
+	public boolean isBeingUpdated() { return beingUpdated; }
+
+	@Transient
+	//@JsonIgnore
+	public void setBeingUpdated(boolean beingUpdated) { this.beingUpdated = beingUpdated; }
 
 	@Transient
 	@JsonIgnore

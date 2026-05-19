@@ -83,8 +83,8 @@ public class Checkpoint implements Serializable, Cloneable {
 	private transient ByteArrayOutputStream messageCapturerOutputStream;
 	private transient Map<String, Pattern> variablesPatternMap;
 	private transient Span span = null;
-	private @Setter @Getter String parentId;
-	private @Setter @Getter String id;
+	private String parentId;
+	private String id;
 
 	public Checkpoint() {
 		// Only for Java XML encoding/decoding! Use other constructor instead.
@@ -98,6 +98,18 @@ public class Checkpoint implements Serializable, Cloneable {
 		this.type = type;
 		this.level = level;
 	}
+
+	@Transient
+	public String getId() { return this.id; }
+
+	@Transient
+	public void setId(String id) { this.id = id; }
+
+	@Transient
+	public String getParentId() { return this.parentId; }
+
+	@Transient
+	public void setParentId(String parentId) { this.parentId = parentId; }
 
 	// JsonIgnore is used so that Jackson will not get into an infinite loop trying to reference report,
 	// which already contains checkpoint.
