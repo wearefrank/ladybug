@@ -1,5 +1,5 @@
 /*
-   Copyright 2025 WeAreFrank!
+   Copyright 2025-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.wearefrank.ladybug.web.common.HttpInternalServerErrorException;
+import org.wearefrank.ladybug.web.common.HttpNotFoundException;
 import org.wearefrank.ladybug.web.common.MetadataApiImpl;
 
 import java.util.Arrays;
@@ -51,6 +52,8 @@ public class MetadataApi {
 		try {
 			List<LinkedHashMap<String, String>> metadata = delegate.getMetadataList(storageName, metadataNames, limit, filterHeaders, filterParams);
 			return ResponseEntity.ok(metadata);
+		} catch(HttpNotFoundException e) {
+			return ResponseEntity.status(404).body(e.getMessage());
 		} catch(HttpInternalServerErrorException e) {
 			return ResponseEntity.internalServerError().body("Could not find metadata with limit " + limit + " and filter [" + filterParams + "] - detailed error message - " + e + Arrays.toString(e.getStackTrace()));
 		}
@@ -69,6 +72,8 @@ public class MetadataApi {
 		try {
 			Map<String, String> userHelp = delegate.getUserHelp(storageName, metadataNames);
 			return ResponseEntity.ok(userHelp);
+		} catch (HttpNotFoundException e) {
+			return ResponseEntity.status(404).body(e.getMessage());
 		} catch (Exception e) {
 			return ResponseEntity.internalServerError().body("Could not find user help - detailed error message - " + e + Arrays.toString(e.getStackTrace()));
 		}
@@ -80,6 +85,8 @@ public class MetadataApi {
 		try {
 			int count = delegate.getMetadataCount(storageName);
 			return ResponseEntity.ok(count);
+		} catch (HttpNotFoundException e) {
+			return ResponseEntity.status(404).body(e.getMessage());
 		} catch (HttpInternalServerErrorException e) {
 			return ResponseEntity.internalServerError().body("Could not find metadata count - detailed error message - " + e + Arrays.toString(e.getStackTrace()));
 		}

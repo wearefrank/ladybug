@@ -13,6 +13,8 @@ import { HttpService } from './shared/services/http.service';
 import { StubStrategy } from './shared/enums/stub-strategy';
 import { ErrorHandling } from './shared/classes/error-handling.service';
 import { VersionService } from './shared/services/version.service';
+import { Report } from './shared/interfaces/report';
+import { View } from './shared/interfaces/view';
 
 @Component({
   selector: 'app-root',
@@ -43,6 +45,7 @@ export class AppComponent implements OnInit, OnDestroy {
     this.subscribeToServices();
     this.getStubStrategies();
     this.appVariablesService.fetchCustomReportActionButtonText();
+    this.setupPostMessageBridge();
   }
 
   ngOnDestroy(): void {
@@ -67,6 +70,32 @@ export class AppComponent implements OnInit, OnDestroy {
     event.stopPropagation();
     event.preventDefault();
     this.tabService.removeTab(tab);
+  }
+
+  private setupPostMessageBridge(): void {
+    // Signal opener that Angular is ready
+    if (window.opener) {
+      window.opener.postMessage({ action: 'ladybug-ready' }, location.origin);
+    }
+
+    // TODO: This needs updating
+    window.addEventListener('message', (event: MessageEvent) => {
+      if (event.origin !== location.origin) return;
+      if (typeof event.data?.action !== 'string' || !event.data.action.startsWith('ladybug-')) return;
+
+      if (event.data?.action === 'ladybug-ping') {
+        (event.source as Window)?.postMessage({ action: 'ladybug-ready' }, location.origin);
+        return;
+      }
+
+      if (event.data?.action === 'ladybug-openReport') {
+        const reportData: ReportData = {
+          report: event.data.report as Report,
+          currentView: event.data.currentView as View,
+        };
+        this.tabService.openNewTab(reportData);
+      }
+    });
   }
 
   getStubStrategies(): void {
