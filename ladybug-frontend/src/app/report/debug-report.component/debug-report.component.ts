@@ -19,7 +19,6 @@ const MARGIN = 50;
   providers: [ReportSharedStrategy],
 })
 export class DebugReportComponent implements ReportComponentCallback, OnInit, OnDestroy {
-  static readonly ROUTER_PATH: string = 'report';
   @ViewChild(SplitComponent) splitter!: SplitComponent;
   @ViewChild(DebugTreeNewComponent) debugTreeComponent!: DebugTreeNewComponent;
 

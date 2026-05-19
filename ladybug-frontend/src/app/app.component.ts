@@ -70,7 +70,7 @@ export class AppComponent implements OnInit, OnDestroy {
   closeTabEvent(tab: Tab, event: MouseEvent): void {
     event.stopPropagation();
     event.preventDefault();
-    this.tabService.removeTab(tab);
+    this.tabService.removeTab(tab.key);
   }
 
   private setupPostMessageBridge(): void {

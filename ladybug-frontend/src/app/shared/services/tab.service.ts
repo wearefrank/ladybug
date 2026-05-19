@@ -2,7 +2,7 @@ import { inject, Injectable } from '@angular/core';
 import { Observable, ReplaySubject, Subject } from 'rxjs';
 import { KEY_COMPARE, KEY_DEBUG, KEY_REPORT, KEY_TEST, routeKind, Tab } from '../interfaces/tab';
 import { ActivatedRouteSnapshot, DetachedRouteHandle, Router } from '@angular/router';
-import { isNumber } from 'node_modules/cypress/types/lodash';
+import { isNumber } from '../../shared/util/util';
 
 @Injectable({
   providedIn: 'root',
@@ -29,8 +29,8 @@ export class TabService {
     return [...this.activeTabsList];
   }
 
-  removeTab(tab: Tab): void {
-    this.activeTabsList = this.activeTabsList.filter((t) => t.key !== tab.key);
+  removeTab(key: string): void {
+    this.activeTabsList = this.activeTabsList.filter((t) => t.key !== key);
     this.refreshSubject.next();
   }
 
@@ -68,6 +68,19 @@ export class TabService {
     const key = this.getKey(route);
     const tab: Tab | undefined = this.findTab(key);
     return tab === undefined ? undefined : tab.handle;
+  }
+
+  getReportTabKey(storageName: string, storageId: number): string {
+    return [KEY_REPORT, storageName, `${storageId}`].join('/');
+  }
+
+  getCompareTabKey(
+    leftStorageName: string,
+    leftStorageId: number,
+    rightStorageName: string,
+    rightStorageId: number,
+  ): string {
+    return [KEY_COMPARE, leftStorageName, `${leftStorageId}`, rightStorageName, `${rightStorageId}`].join('/');
   }
 
   getKey(route: ActivatedRouteSnapshot): string {
@@ -108,6 +121,10 @@ export class TabService {
     }
   }
 
+  getPathParam(route: ActivatedRouteSnapshot, parameter: string): string {
+    return route.paramMap.get(parameter) as string;
+  }
+
   private addTab(kind: routeKind, key: string, title?: string): Tab {
     const tab: Tab = {
       kind,
@@ -116,19 +133,6 @@ export class TabService {
     };
     this.activeTabsList.push(tab);
     return tab;
-  }
-
-  private getReportTabKey(storageName: string, storageId: number): string {
-    return [KEY_REPORT, storageName, `${storageId}`].join('/');
-  }
-
-  private getCompareTabKey(
-    leftStorageName: string,
-    leftStorageId: number,
-    rightStorageName: string,
-    rightStorageId: number,
-  ): string {
-    return [KEY_COMPARE, leftStorageName, `${leftStorageId}`, rightStorageName, `${rightStorageId}`].join('/');
   }
 
   private findTab(key: string): Tab | undefined {

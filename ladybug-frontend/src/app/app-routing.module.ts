@@ -5,24 +5,24 @@ import { TestComponent } from './test/test.component';
 import { CompareComponent } from './compare/compare.component';
 import { TabService } from './shared/services/tab.service';
 import { ReportComponent } from './report/report.component';
-
+import { KEY_COMPARE, KEY_DEBUG, KEY_REPORT, KEY_TEST } from './shared/interfaces/tab';
 export const routes: Routes = [
   {
     component: DebugComponent,
-    path: DebugComponent.ROUTER_PATH,
+    path: KEY_DEBUG,
     pathMatch: 'full',
   },
   {
     component: TestComponent,
-    path: TestComponent.ROUTER_PATH,
+    path: KEY_TEST,
   },
   {
     component: ReportComponent,
-    path: `${ReportComponent.ROUTER_PATH}/:id`,
+    path: `${KEY_REPORT}/:storageName/:storageId`,
   },
   {
     component: CompareComponent,
-    path: `${CompareComponent.ROUTER_PATH}/:id`,
+    path: `${KEY_COMPARE}/:leftStorageName/:leftStorageId/:rightStorageName/:rightStorageId`,
   },
   {
     path: '',

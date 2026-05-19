@@ -16,12 +16,12 @@ import { ViewDropdownComponent } from '../shared/components/view-dropdown/view-d
 import { View } from '../shared/interfaces/view';
 import { HttpService } from '../shared/services/http.service';
 import { ErrorHandling } from '../shared/classes/error-handling.service';
-import { catchError, Subject } from 'rxjs';
+import { catchError, firstValueFrom, Subject } from 'rxjs';
 import { SimpleFileTreeUtil as SimpleFileTreeUtility } from '../shared/util/simple-file-tree-util';
-import { DebugComponent } from '../debug/debug.component';
 import { TreeItemComponent } from 'ng-simple-file-tree';
 import { ReportAlertMessageComponent } from '../report/report-alert-message/report-alert-message.component';
 import { DiffEditorModel, MonacoDiffEditor } from '../monaco-diff-editor/monaco-diff-editor.component';
+import { isNumber } from '../shared/util/util';
 
 @Component({
   selector: 'app-compare',
@@ -42,7 +42,6 @@ import { DiffEditorModel, MonacoDiffEditor } from '../monaco-diff-editor/monaco-
   ],
 })
 export class CompareComponent implements AfterViewInit, OnInit {
-  static readonly ROUTER_PATH: string = 'compare';
   @ViewChild(CompareTreeComponent) compareTreeComponent!: CompareTreeComponent;
 
   public tabService = inject(TabService);
@@ -76,18 +75,45 @@ export class CompareComponent implements AfterViewInit, OnInit {
   private errorHandler = inject(ErrorHandling);
 
   ngOnInit(): void {
-    this.compareData = this.getData(this.getIdsFromPath());
     this.getStrategyFromLocalStorage();
     this.getViews();
   }
 
   ngAfterViewInit(): void {
-    if (this.compareData) {
-      this.renderDiffs(this.compareData.originalReport.xml, this.compareData.runResultReport.xml);
-      this.showReports();
-    } else {
-      this.router.navigate([DebugComponent.ROUTER_PATH]);
+    const leftStorageName = this.tabService.getPathParam(this.route.snapshot, 'leftStorageName');
+    const leftStorageIdStr = this.tabService.getPathParam(this.route.snapshot, 'leftStorageId');
+    const rightStorageName = this.tabService.getPathParam(this.route.snapshot, 'rightStorageName');
+    const rightStorageIdStr = this.tabService.getPathParam(this.route.snapshot, 'rightStorageId');
+    if (!isNumber(leftStorageIdStr)) {
+      throw new Error(`Cannot open compare tab with leftStorageId [${leftStorageIdStr}]`);
     }
+    if (!isNumber(rightStorageIdStr)) {
+      throw new Error(`Cannot open compare tab with rightStorageId [${rightStorageIdStr}]`);
+    }
+    const leftStorageId: number = +leftStorageIdStr;
+    const rightStorageId: number = +rightStorageIdStr;
+    const leftReportPromise: Promise<Report> = firstValueFrom(
+      this.httpService.getReport(leftStorageId, leftStorageName),
+    );
+    const rightReportPromise: Promise<Report> = firstValueFrom(
+      this.httpService.getReport(rightStorageId, rightStorageName),
+    );
+    Promise.all([leftReportPromise, rightReportPromise]).then(() => {
+      let leftReport: Report | undefined;
+      leftReportPromise.then((report) => (leftReport = report));
+      let rightReport: Report | undefined;
+      rightReportPromise.then((report) => (rightReport = report));
+      if (leftReport !== undefined && rightReport !== undefined) {
+        this.compareData = {
+          originalReport: leftReport,
+          runResultReport: rightReport,
+        };
+        this.renderDiffs(this.compareData.originalReport.xml, this.compareData.runResultReport.xml);
+        this.showReports();
+      }
+      // TODO: Error handling?
+      // this.router.navigate([KEY_DEBUG]);
+    });
   }
 
   protected syncLeftAndRight(): void {
@@ -203,14 +229,6 @@ export class CompareComponent implements AfterViewInit, OnInit {
       }
     }
     return true;
-  }
-
-  private getData(id: string): CompareData | undefined {
-    return this.tabService.activeCompareTabs.get(id);
-  }
-
-  private getIdsFromPath(): string {
-    return this.route.snapshot.paramMap.get('id') as string;
   }
 
   private renderDiffs(leftSide: string, rightSide: string): void {

@@ -11,7 +11,6 @@ import { ToastService } from '../../shared/services/toast.service';
 import { TabService } from '../../shared/services/tab.service';
 import { AppVariablesService } from '../../shared/services/app.variables.service';
 import { FilterService } from '../filter-side-drawer/filter.service';
-import { HierarchicalReportData } from '../../shared/interfaces/report-data';
 import { TableCellShortenerPipe } from '../../shared/pipes/table-cell-shortener.pipe';
 import { MatSort, MatSortModule } from '@angular/material/sort';
 import { ActiveFiltersComponent } from '../active-filters/active-filters.component';

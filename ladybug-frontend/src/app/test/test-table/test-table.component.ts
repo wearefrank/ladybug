@@ -16,8 +16,6 @@ import { catchError, Subscription } from 'rxjs';
 import { HttpService } from '../../shared/services/http.service';
 import { ErrorHandling } from '../../shared/classes/error-handling.service';
 import { TabService } from '../../shared/services/tab.service';
-import { HierarchicalReportData } from '../../shared/interfaces/report-data';
-import { View } from '../../shared/interfaces/view';
 import { TestReportsService } from '../test-reports.service';
 import { ToastService } from '../../shared/services/toast.service';
 import { FormsModule } from '@angular/forms';

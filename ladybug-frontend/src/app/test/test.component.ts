@@ -19,7 +19,6 @@ import { TestTableComponent } from './test-table/test-table.component';
 import { DeleteModalComponent } from '../shared/components/delete-modal/delete-modal.component';
 import { LoadingSpinnerComponent } from '../shared/components/loading-spinner/loading-spinner.component';
 import { TabService } from '../shared/services/tab.service';
-import { CompareData } from '../compare/compare-data';
 import { CompareReport } from '../shared/interfaces/compare-reports';
 import { TestRefreshService } from './test-refresh.service';
 import { SettingsService } from '../shared/services/settings.service';
@@ -44,8 +43,6 @@ export type UpdatePathAction = (typeof updatePathActionConst)[number];
   ],
 })
 export class TestComponent implements OnInit, OnDestroy {
-  static readonly ROUTER_PATH: string = 'test';
-
   @ViewChild(CloneModalComponent) protected cloneModal!: CloneModalComponent;
   @ViewChild(DeleteModalComponent) protected deleteModal!: DeleteModalComponent;
   @ViewChild(TestFolderTreeComponent)

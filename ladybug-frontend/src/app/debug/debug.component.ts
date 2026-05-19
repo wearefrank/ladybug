@@ -16,7 +16,6 @@ import { HierarchicalReport } from '../shared/interfaces/hierarchical-report';
   imports: [TableComponent, DebugReportComponent],
 })
 export class DebugComponent implements OnInit {
-  static readonly ROUTER_PATH: string = 'debug';
   @ViewChild('reportComponent') customReportComponent!: DebugReportComponent;
   currentView?: View;
   views?: View[];
