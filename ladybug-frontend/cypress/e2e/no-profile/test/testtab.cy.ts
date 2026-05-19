@@ -76,7 +76,7 @@ describe('Test the Test tab', () => {
     cy.get('[data-cy-test="runReport"]').eq(0).click();
     cy.get('[data-cy-test="runResult"]').should('be.visible');
     cy.get('[data-cy-test="compareReport"]').eq(0).click();
-    cy.get('[data-cy-nav-tab="Test"]').click();
+    cy.get('[data-cy-nav-tab="test"]').click();
     cy.get('[data-cy-test="runResult"]').should('be.visible');
   });
 });

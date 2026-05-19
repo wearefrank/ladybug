@@ -18,7 +18,7 @@ const OBSERVER_PWD = 'IbisObserver';
 const TESTER_USER = 'IbisTester';
 const TESTER_PWD = 'IbisTester';
 
-type TabType = 'Debug' | 'Test';
+type TabType = 'debug' | 'test';
 
 declare global {
   namespace Cypress {
@@ -166,22 +166,22 @@ Cypress.Commands.add('clearDatabaseStorage' as keyof Chainable, (): void => {
 Cypress.Commands.add(
   'navigateToTestTabAndAwaitLoadingSpinner' as keyof Chainable,
   (): void => {
-    navigateToTabAndAwaitLoadingSpinner('Test');
+    navigateToTabAndAwaitLoadingSpinner('test');
   },
 );
 
 Cypress.Commands.add(
   'navigateToDebugTabAndAwaitLoadingSpinner' as keyof Chainable,
   (): void => {
-    navigateToTabAndAwaitLoadingSpinner('Debug');
+    navigateToTabAndAwaitLoadingSpinner('debug');
   },
 );
 
 Cypress.Commands.add('navigateToTestTab' as keyof Chainable, () => {
-  navigateToTab('Test');
+  navigateToTab('test');
 });
 Cypress.Commands.add('navigateToDebugTab' as keyof Chainable, () => {
-  navigateToTab('Debug');
+  navigateToTab('debug');
 });
 
 Cypress.Commands.add('createReport' as keyof Chainable, (): void => {
