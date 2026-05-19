@@ -510,7 +510,7 @@ public class Report implements Serializable {
 	@SneakyThrows
 	private  <T> T addCheckpoint(String threadName, String sourceClassName, String name, T message, Map<String, Object> messageContext,
 			StubableCode stubableCode, StubableCodeThrowsException stubableCodeThrowsException,
-			Set<String> matchingStubStrategies, int checkpointType, Integer index, Integer level, String parentId, String id, boolean findParent) {
+			Set<String> matchingStubStrategies, int checkpointType, Integer index, Integer level, String id, String parentId, boolean findParent) {
 
 		if (findParent && parentId != null) {
 			Checkpoint parentCheckpoint = null;
@@ -523,6 +523,7 @@ public class Report implements Serializable {
 			}
 
 			if (parentCheckpoint != null) {
+				System.out.println("PARENTCHECKPOINT IS NOT NULL");
 				level = parentCheckpoint.getLevel() + 1;
 
 				if (checkpointType == CheckpointType.STARTPOINT.toInt()) {

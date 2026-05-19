@@ -518,13 +518,14 @@ public class TestTool {
 						}
 						if (report.isReportFilterMatching()) {
 							if (updatingFromStorage) {
-								try {
-									((DatabaseCrudStorage) debugStorage).update(report);
-									updatingFromStorage = false;
-								} catch (StorageException e) {
-									log.error("Failed to store report", e);
+								if (debugStorage.isCrudStorage()) {
+									try {
+										((CrudStorage) debugStorage).update(report);
+									} catch (StorageException e) {
+										log.error("Failed to store report", e);
+									}
 								}
-
+								updatingFromStorage = false;
 							} else {
 								try {
 									debugStorage.store(report);
