@@ -18,6 +18,8 @@ const OBSERVER_PWD = 'IbisObserver';
 const TESTER_USER = 'IbisTester';
 const TESTER_PWD = 'IbisTester';
 
+type TabType = 'Debug' | 'Test';
+
 declare global {
   namespace Cypress {
     interface Chainable {
@@ -164,14 +166,14 @@ Cypress.Commands.add('clearDatabaseStorage' as keyof Chainable, (): void => {
 Cypress.Commands.add(
   'navigateToTestTabAndAwaitLoadingSpinner' as keyof Chainable,
   (): void => {
-    navigateToTabAndAwaitLoadingSpinner('test');
+    navigateToTabAndAwaitLoadingSpinner('Test');
   },
 );
 
 Cypress.Commands.add(
   'navigateToDebugTabAndAwaitLoadingSpinner' as keyof Chainable,
   (): void => {
-    navigateToTabAndAwaitLoadingSpinner('debug');
+    navigateToTabAndAwaitLoadingSpinner('Debug');
   },
 );
 
@@ -489,13 +491,13 @@ function awaitLoadingSpinner(): void {
 }
 
 //More string values can be added for each tab that can be opened
-function navigateToTabAndAwaitLoadingSpinner(tab: 'debug' | 'test'): void {
+function navigateToTabAndAwaitLoadingSpinner(tab: TabType): void {
   cy.visit('');
-  cy.get(`[data-cy-nav-tab="${tab}Tab"]`).click();
+  cy.get(`[data-cy-nav-tab="${tab}"]`).click();
   awaitLoadingSpinner();
 }
 
-function navigateToTab(tab: 'Debug' | 'Test'): void {
+function navigateToTab(tab: TabType): void {
   cy.get(`[data-cy-nav-tab="${tab}Tab"]`).click();
 }
 
