@@ -1,20 +1,23 @@
 import { ChangeDetectorRef, Component, inject, OnDestroy, OnInit, ViewChild } from '@angular/core';
-import { Location, NgOptimizedImage } from '@angular/common';
+import { NgOptimizedImage } from '@angular/common';
 import { Title } from '@angular/platform-browser';
 import { CompareComponent } from './compare/compare.component';
 import { TestComponent } from './test/test.component';
 import { TabService } from './shared/services/tab.service';
 import { AppVariablesService } from './shared/services/app.variables.service';
 import { catchError, Subscription } from 'rxjs';
-import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { KEY_COMPARE, KEY_REPORT, Tab } from './shared/interfaces/tab';
 import { ToastComponent } from './shared/components/toast/toast.component';
 import { HttpService } from './shared/services/http.service';
 import { StubStrategy } from './shared/enums/stub-strategy';
 import { ErrorHandling } from './shared/classes/error-handling.service';
 import { VersionService } from './shared/services/version.service';
-import { Report } from './shared/interfaces/report';
-import { View } from './shared/interfaces/view';
+
+interface OpenReportEventData {
+  storageName: string;
+  storageId: number;
+}
 
 @Component({
   selector: 'app-root',
@@ -32,8 +35,6 @@ export class AppComponent implements OnInit, OnDestroy {
 
   protected tabService = inject(TabService);
   private titleService = inject(Title);
-  private router = inject(Router);
-  private location = inject(Location);
   private httpService = inject(HttpService);
   private errorHandler = inject(ErrorHandling);
   private versionService = inject(VersionService);
@@ -89,11 +90,9 @@ export class AppComponent implements OnInit, OnDestroy {
       }
 
       if (event.data?.action === 'ladybug-openReport') {
-        const reportData: ReportData = {
-          report: event.data.report as Report,
-          currentView: event.data.currentView as View,
-        };
-        this.tabService.openNewTab(reportData);
+        const eventData = event.data as OpenReportEventData;
+        // TODO: Fix title.
+        this.tabService.openReportTab(eventData.storageName, eventData.storageId, 'Some title');
       }
     });
   }
