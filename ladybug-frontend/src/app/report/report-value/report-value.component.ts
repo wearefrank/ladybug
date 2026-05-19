@@ -9,7 +9,7 @@ import { ErrorHandling } from '../../shared/classes/error-handling.service';
 import { Transformation } from '../../shared/interfaces/transformation';
 import { DifferenceModalComponent } from '../difference-modal/difference-modal.component';
 import { DifferencesBuilder } from '../../shared/util/differences-builder';
-import { NodeValueState, UpdateNode } from '../report.component';
+import { NodeValueState, UpdateNode } from '../../shared/classes/report-shared-strategy';
 import {
   NodeValueLabels,
   ReportAlertMessage2Component,

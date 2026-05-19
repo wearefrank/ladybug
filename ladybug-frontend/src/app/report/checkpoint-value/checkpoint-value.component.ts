@@ -7,13 +7,12 @@ import {
   NodeValueLabels,
   ReportAlertMessage2Component,
 } from '../report-alert-message2/report-alert-message2.component';
-import { NodeValueState, UpdateNode } from '../report.component';
 import { ButtonCommand, DownloadOptions, ReportButtons, ReportButtonsState } from '../report-buttons/report-buttons';
 import { StubStrategy } from '../../shared/enums/stub-strategy';
 import { TestResult } from '../../shared/interfaces/test-result';
 import { CheckpointMetadataTable } from '../checkpoint-metadata-table/checkpoint-metadata-table';
 import { MessagecontextTableComponent } from '../../shared/components/messagecontext-table/messagecontext-table.component';
-import { prettify } from '../report.component';
+import { NodeValueState, UpdateNode, prettify } from '../../shared/classes/report-shared-strategy';
 import { UpdateCheckpoint, UpdateReport } from 'src/app/shared/interfaces/update-report';
 import { HierarchicalCheckpoint } from '../../shared/interfaces/hierarchical-report';
 
