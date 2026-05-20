@@ -35,6 +35,7 @@ import { NgClass, NgIf } from '@angular/common';
 import { ClientSettingsService } from 'src/app/shared/services/client.settings.service';
 import { HierarchicalReport } from 'src/app/shared/interfaces/hierarchical-report';
 import { Router } from '@angular/router';
+import { CompareData } from '../../compare/compare-data';
 
 @Component({
   selector: 'app-test-table',
@@ -151,13 +152,23 @@ export class TestTableComponent implements OnInit, OnDestroy, OnChanges, AfterCo
 
   compareReports(report: TestListItem): void {
     if (report.reranReport) {
-      // TODO: Change title.
+      const compareData: CompareData = {
+        originalReport: {
+          ...report.reranReport.originalReport,
+          storageName: this.testReportsService.storageName,
+        },
+        // Temporary fix until https://github.com/wearefrank/ladybug/issues/283 is fixed
+        runResultReport: {
+          ...report.reranReport.runResultReport,
+          storageName: 'Debug',
+        },
+      };
       const key: string = this.tabService.openCompareTab(
         this.testReportsService.storageName,
         report.reranReport.originalReport.storageId,
         this.testReportsService.storageName,
         report.reranReport.runResultReport.storageId,
-        'Change title',
+        compareData,
       );
       this.router.navigate(key.split('/'));
     }

@@ -3,6 +3,7 @@ import { Observable, ReplaySubject, Subject } from 'rxjs';
 import { KEY_COMPARE, KEY_DEBUG, KEY_REPORT, KEY_TEST, routeKind, Tab } from '../interfaces/tab';
 import { ActivatedRouteSnapshot, DetachedRouteHandle } from '@angular/router';
 import { isNumber } from '../../shared/util/util';
+import { CompareData } from '../../compare/compare-data';
 
 @Injectable({
   providedIn: 'root',
@@ -23,6 +24,7 @@ export class TabService {
 
   private refreshSubject: Subject<void> = new ReplaySubject();
   refresh$ = this.refreshSubject as Observable<void>;
+  private compareCache: Map<string, CompareData> = new Map<string, CompareData>();
 
   getTabs(): Tab[] {
     return [...this.activeTabsList];
@@ -31,6 +33,9 @@ export class TabService {
   removeTab(key: string): void {
     this.activeTabsList = this.activeTabsList.filter((t) => t.key !== key);
     this.refreshSubject.next();
+    if (this.compareCache.has(key)) {
+      this.compareCache.delete(key);
+    }
   }
 
   openReportTab(storageName: string, storageId: number, name: string): string {
@@ -47,14 +52,19 @@ export class TabService {
     leftStorageId: number,
     rightStorageName: string,
     rightStorageId: number,
-    name: string,
+    data: CompareData,
   ): string {
     const key: string = this.getCompareTabKey(leftStorageName, leftStorageId, rightStorageName, rightStorageId);
     if (this.findTab(key) === undefined) {
-      this.addTab(KEY_COMPARE, key, name);
+      this.addTab(KEY_COMPARE, key, 'Compare');
+      this.compareCache.set(key, data);
     }
     this.refreshSubject.next();
     return key;
+  }
+
+  getCompareData(key: string): CompareData | undefined {
+    return this.compareCache.get(key);
   }
 
   storeHandle(route: ActivatedRouteSnapshot, handle: DetachedRouteHandle): void {

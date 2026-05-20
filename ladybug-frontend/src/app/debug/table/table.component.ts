@@ -38,6 +38,7 @@ import { ShortenedTableHeaderPipe } from '../../shared/pipes/shortened-table-hea
 import { ClientSettingsService } from 'src/app/shared/services/client.settings.service';
 import { HierarchicalReport } from '../../shared/interfaces/hierarchical-report';
 import { Router } from '@angular/router';
+import { CompareData } from '../../compare/compare-data';
 
 @Component({
   selector: 'app-table',
@@ -414,15 +415,28 @@ export class TableComponent implements OnInit, OnDestroy {
   }
 
   compareTwoReports(): void {
-    // TODO: Fix title.
-    const key: string = this.tabService.openCompareTab(
-      this.currentView.storageName,
-      this.selectedReportIds[0],
-      this.currentView.storageName,
-      this.selectedReportIds[1],
-      'Comparison',
-    );
-    this.router.navigate(key.split('/'));
+    this.httpService
+      .getReports(this.selectedReportIds, this.currentView.storageName)
+      .pipe(catchError(this.errorHandler.handleError()))
+      .subscribe({
+        next: (data: Record<string, CompareReport>) => {
+          const originalReport = this.transformCompareToReport(data[this.selectedReportIds[0]]);
+          const runResultReport = this.transformCompareToReport(data[this.selectedReportIds[1]]);
+          const compareData: CompareData = {
+            originalReport: originalReport,
+            runResultReport: runResultReport,
+            viewName: this.currentView.name,
+          };
+          const key: string = this.tabService.openCompareTab(
+            this.currentView.storageName,
+            this.selectedReportIds[0],
+            this.currentView.storageName,
+            this.selectedReportIds[1],
+            compareData,
+          );
+          this.router.navigate(key.split('/'));
+        },
+      });
   }
 
   transformCompareToReport(compareReport: CompareReport): Report {

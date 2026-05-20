@@ -24,6 +24,7 @@ import { TestRefreshService } from './test-refresh.service';
 import { SettingsService } from '../shared/services/settings.service';
 import { ClientSettingsService } from '../shared/services/client.settings.service';
 import { Router } from '@angular/router';
+import { CompareData } from '../compare/compare-data';
 
 export const updatePathActionConst = ['move', 'copy'] as const;
 export type UpdatePathAction = (typeof updatePathActionConst)[number];
@@ -310,13 +311,16 @@ export class TestComponent implements OnInit, OnDestroy {
         .getReports(checkedReportIds, this.testReportsService.storageName)
         .subscribe((resp: Record<string, CompareReport>) => {
           const reports: Report[] = Object.values(resp).map((r) => r.report);
-          // TODO: Change title
+          const compareData: CompareData = {
+            originalReport: reports[0],
+            runResultReport: reports[1],
+          };
           const key: string = this.tabService.openCompareTab(
             reports[0].storageName,
             reports[0].storageId,
             reports[1].storageName,
             reports[1].storageId,
-            'Some title',
+            compareData,
           );
           this.router.navigate(key.split('/'));
         });
