@@ -646,6 +646,12 @@ public class Report implements Serializable {
 		// Add checkpoint to the list after stubable code has been executed. Otherwise when a report in progress is
 		// opened it might give the impression that the stubable code is already executed
 		checkpoints.add(index, checkpoint);
+
+		if (checkpointType == CheckpointType.STARTPOINT.toInt()
+				&& checkpoint.getId() != null) {
+			moveChildrenBelowParent(checkpoint);
+		}
+
 		for (int i = threads.indexOf(threadName); i < threads.size(); i++) {
 			String key = threads.get(i);
 			Integer value = threadCheckpointIndex.get(key);
@@ -669,6 +675,37 @@ public class Report implements Serializable {
 		}
 
 		return message;
+	}
+
+	private void moveChildrenBelowParent(Checkpoint parentCheckpoint) {
+		int parentIndex = checkpoints.indexOf(parentCheckpoint);
+		int insertIndex = parentIndex + 1;
+
+		List<Checkpoint> children = new ArrayList<>();
+
+		for (Checkpoint cp : new ArrayList<>(checkpoints)) {
+			if (Objects.equals(cp.getParentId(), parentCheckpoint.getId())) {
+				children.add(cp);
+			}
+		}
+
+		for (Checkpoint child : children) {
+			checkpoints.remove(child);
+
+			child.setLevel(parentCheckpoint.getLevel() + 1);
+
+			checkpoints.add(insertIndex, child);
+			insertIndex++;
+
+			moveChildrenBelowParent(child);
+
+			insertIndex = checkpoints.indexOf(child) + 1;
+
+			while (insertIndex < checkpoints.size()
+					&& checkpoints.get(insertIndex).getLevel() > child.getLevel()) {
+				insertIndex++;
+			}
+		}
 	}
 
 	public String getThreadInfo() {
