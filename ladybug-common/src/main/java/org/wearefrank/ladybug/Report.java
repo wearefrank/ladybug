@@ -137,11 +137,11 @@ public class Report implements Serializable {
 	private boolean beingUpdated;
 
 	@Transient
-	//@JsonIgnore
+	@JsonIgnore
 	public boolean isBeingUpdated() { return beingUpdated; }
 
 	@Transient
-	//@JsonIgnore
+	@JsonIgnore
 	public void setBeingUpdated(boolean beingUpdated) { this.beingUpdated = beingUpdated; }
 
 	@Transient
@@ -532,7 +532,6 @@ public class Report implements Serializable {
 			}
 
 			if (parentCheckpoint != null) {
-				System.out.println("PARENTCHECKPOINT IS NOT NULL");
 				level = parentCheckpoint.getLevel() + 1;
 
 				if (checkpointType == CheckpointType.STARTPOINT.toInt()) {

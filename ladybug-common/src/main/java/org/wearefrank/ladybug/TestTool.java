@@ -104,7 +104,7 @@ public class TestTool {
 	boolean devMode = false; // See testConcurrentLastEndpointAndFirstStartpointForSameCorrelationId()
 	private String openTelemetryEndpoint;
 	private Tracer tracer;
-	boolean updatingFromStorage = false;
+	private @Setter boolean updateFromStorage = false;
 
 	@PostConstruct
 	public void init() {
@@ -371,25 +371,28 @@ public class TestTool {
 			synchronized(reportsInProgress) {
 				report = getReportInProgress(correlationId);
 				if (report == null) {
-					try {
-						for (Integer storageId : debugStorage.getStorageIds()) {
-							if (debugStorage.getReport(storageId).getCorrelationId().equals(correlationId)) {
-								report = debugStorage.getReport(storageId);
-								report.restoreRuntimeState();
-								report.setClosed(false);
-								report.setTestTool(this);
+					if (updateFromStorage && debugStorage.isCrudStorage()) {
+						try {
+							for (Integer storageId : debugStorage.getStorageIds()) {
+								if (debugStorage.getReport(storageId).getCorrelationId().equals(correlationId)) {
+									report = debugStorage.getReport(storageId);
+									synchronized (report) {
+										report.restoreRuntimeState();
+										report.setClosed(false);
+										report.setTestTool(this);
 
-								reportsInProgress.add(0, report);
-								reportsInProgressByCorrelationId.put(correlationId, report);
-								numberOfReportsInProgress++;
+										reportsInProgress.add(0, report);
+										reportsInProgressByCorrelationId.put(correlationId, report);
+										numberOfReportsInProgress++;
 
-								report.setBeingUpdated(true);
-
-								break;
+										report.setBeingUpdated(true);
+									}
+									break;
+								}
 							}
+						} catch (StorageException e) {
+							log.error("Failed to find report in storage", e);
 						}
-					} catch (StorageException e) {
-						log.error("Failed to find report in storage", e);
 					}
 
 					if (report == null) {

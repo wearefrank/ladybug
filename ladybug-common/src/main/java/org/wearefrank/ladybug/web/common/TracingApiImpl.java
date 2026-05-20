@@ -37,6 +37,8 @@ public class TracingApiImpl {
 	private @Setter TestTool testTool;
 
 	public void processSpans(List<Span> spans) throws StorageException {
+		testTool.setUpdateFromStorage(true);
+
 		for (Span span : spans) {
 			testTool.startpoint(byteStringToHex(span.getTraceId()), null, span.getName(), "test", byteStringToHex(span.getParentSpanId()), byteStringToHex(span.getSpanId()));
 			testTool.endpoint(byteStringToHex(span.getTraceId()), null, span.getName(), "Endpoint", byteStringToHex(span.getParentSpanId()), byteStringToHex(span.getSpanId()));

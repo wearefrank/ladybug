@@ -159,7 +159,7 @@
 
 	<!-- Use memory storage by default as Cypress tests depend on memory storage / starting with empty storages -->
 
-	<bean name="debugStorage" class="org.wearefrank.ladybug.storage.memory.MemoryLogStorage">
+	<bean name="debugStorage" class="org.wearefrank.ladybug.storage.memory.MemoryCrudStorage">
 		<property name="name" value="Debug"/>
 	</bean>
 
@@ -175,7 +175,7 @@
 		<constructor-arg value="../${ladybug.dir:ladybug}/data/file-storage/ladybug.ttm"/>
 	</bean>
 
-	<bean name="fileStorage" class="org.wearefrank.ladybug.storage.file.Storage">
+	<bean name="fileStorage" class="org.wearefrank.ladybug.storage.file.TestStorage">
 		<property name="name" value="fileStorage"/>
 		<property name="reportsFilename" value="#{reportsFilename}"/>
 		<property name="metadataFilename" value="#{metadataFilename}"/>
@@ -251,7 +251,7 @@
 
 	<beans profile="storage.file">
 		<!-- White box view and TestTool (creating and storing reports) are using debugStorage -->
-		<bean name="debugStorage" class="org.wearefrank.ladybug.storage.file.Storage">
+		<bean name="debugStorage" class="org.wearefrank.ladybug.storage.file.TestStorage">
 			<property name="name" value="Debug"/>
 			<property name="reportsFilename" value="../${ladybug.dir:ladybug}/data/file-storage/ladybug.tts"/>
 			<property name="metadataFilename" value="../${ladybug.dir:ladybug}/data/file-storage/ladybug.ttm"/>
