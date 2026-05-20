@@ -44,7 +44,8 @@ export class AppRouteReuseStrategy implements RouteReuseStrategy {
   private tabService = inject(TabService);
 
   shouldDetach(route: ActivatedRouteSnapshot): boolean {
-    return this.tabService.getKey(route).length > 0;
+    const key = this.tabService.getKey(route);
+    return key !== '' && this.tabService.findTab(key) !== undefined;
   }
 
   store(route: ActivatedRouteSnapshot, handle: DetachedRouteHandle | null): void {

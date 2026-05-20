@@ -10,7 +10,7 @@ import { HierarchicalReport } from '../interfaces/hierarchical-report';
   providedIn: 'root',
 })
 export class TabService {
-  private activeTabsList: Tab[] = [
+  private tabs: Tab[] = [
     {
       kind: KEY_DEBUG,
       key: KEY_DEBUG,
@@ -31,13 +31,13 @@ export class TabService {
   private reportCache: Map<string, HierarchicalReport> = new Map<string, HierarchicalReport>();
 
   getTabs(): Tab[] {
-    return [...this.activeTabsList];
+    return [...this.tabs];
   }
 
   removeTab(key: string): void {
     const optionalRemovedTab: Tab | undefined = this.findTab(key);
     const navigation: debugOrTest | null = optionalRemovedTab === undefined ? null : optionalRemovedTab.returnToKey;
-    this.activeTabsList = this.activeTabsList.filter((t) => t.key !== key);
+    this.tabs = this.tabs.filter((t) => t.key !== key);
     if (this.compareCache.has(key)) {
       this.compareCache.delete(key);
     }
@@ -93,7 +93,10 @@ export class TabService {
 
   storeHandle(route: ActivatedRouteSnapshot, handle: DetachedRouteHandle): void {
     const key = this.getKey(route);
-    const tab: Tab = this.getOrMakeTabFromKey(key);
+    const tab: Tab | undefined = this.findTab(key);
+    if (tab === undefined) {
+      throw new Error(`TabService.storaHandle() finds no tab with key ${key}`);
+    }
     tab.handle = handle;
   }
 
@@ -169,19 +172,8 @@ export class TabService {
     return route.paramMap.get(parameter) as string;
   }
 
-  private addTab(kind: routeKind, key: string, title?: string, returnToKey?: debugOrTest): Tab {
-    const tab: Tab = {
-      kind,
-      key,
-      title: title === undefined ? key : title,
-      returnToKey: returnToKey === undefined ? 'debug' : returnToKey,
-    };
-    this.activeTabsList.push(tab);
-    return tab;
-  }
-
-  private findTab(key: string): Tab | undefined {
-    const result: Tab[] = this.activeTabsList.filter((t) => t.key === key);
+  findTab(key: string): Tab | undefined {
+    const result: Tab[] = this.tabs.filter((t) => t.key === key);
     if (result.length === 0) {
       return undefined;
     } else if (result.length === 1) {
@@ -191,15 +183,18 @@ export class TabService {
     }
   }
 
-  private routeParam(route: ActivatedRouteSnapshot, parameter: string): string {
-    return route.params[parameter] || '';
+  private addTab(kind: routeKind, key: string, title?: string, returnToKey?: debugOrTest): Tab {
+    const tab: Tab = {
+      kind,
+      key,
+      title: title === undefined ? key : title,
+      returnToKey: returnToKey === undefined ? 'debug' : returnToKey,
+    };
+    this.tabs.push(tab);
+    return tab;
   }
 
-  private getOrMakeTabFromKey(key: string): Tab {
-    let tab: Tab | undefined = this.findTab(key);
-    if (tab === undefined) {
-      tab = this.addTab(KEY_REPORT, key);
-    }
-    return tab;
+  private routeParam(route: ActivatedRouteSnapshot, parameter: string): string {
+    return route.params[parameter] || '';
   }
 }

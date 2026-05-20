@@ -57,7 +57,6 @@ export class ReportComponent implements ReportComponentCallback, OnInit, AfterVi
   // tab after the HierarchicalReport has been fetched
   // via the URL.
   addReport(report: HierarchicalReport): void {
-    this.tabService.setTitle(this.tabKey, report.name);
     this.debugTreeComponent.addReportToTree(report);
   }
 
@@ -106,11 +105,20 @@ export class ReportComponent implements ReportComponentCallback, OnInit, AfterVi
     if (optionalCachedReport === undefined) {
       firstValueFrom(this.httpService.getHierarchicalReports([this.storageId], this.storageName, null)).then(
         (report: HierarchicalReport[]) => {
-          this.addReport(report[0]);
+          this.handleEntry(report[0]);
         },
       );
     } else {
-      this.addReport(optionalCachedReport);
+      this.handleEntry(optionalCachedReport);
     }
+  }
+
+  private handleEntry(report: HierarchicalReport): void {
+    // This report can have been opened from outside Ladybug. We need to have a Tab.
+    if (this.tabService.findTab(this.tabKey) === undefined) {
+      this.tabService.openReportTab(this.storageName, this.storageId, report.name, report);
+    }
+    this.tabService.setTitle(this.tabKey, report.name);
+    this.addReport(report);
   }
 }

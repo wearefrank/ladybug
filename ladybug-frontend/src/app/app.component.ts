@@ -34,6 +34,8 @@ export class AppComponent implements OnInit, OnDestroy {
   subscriptions: Subscription = new Subscription();
 
   protected tabService = inject(TabService);
+  // Having this local copy lets us control when to refresh
+  protected tabs: Tab[] = [];
   private router = inject(Router);
   private titleService = inject(Title);
   private httpService = inject(HttpService);
@@ -48,6 +50,7 @@ export class AppComponent implements OnInit, OnDestroy {
     this.getStubStrategies();
     this.appVariablesService.fetchCustomReportActionButtonText();
     this.setupPostMessageBridge();
+    this.tabs = this.tabService.getTabs();
   }
 
   ngOnDestroy(): void {
@@ -61,6 +64,7 @@ export class AppComponent implements OnInit, OnDestroy {
 
   subscribeToServices(): void {
     const refreshSubscription: Subscription = this.tabService.refresh$.subscribe((navigation: string | null) => {
+      this.tabs = this.tabService.getTabs();
       if (navigation !== null) {
         this.router.navigate(navigation.split('/'));
       }
@@ -77,6 +81,7 @@ export class AppComponent implements OnInit, OnDestroy {
     event.stopPropagation();
     event.preventDefault();
     this.tabService.removeTab(tab.key);
+    this.cdr.detectChanges();
   }
 
   private setupPostMessageBridge(): void {

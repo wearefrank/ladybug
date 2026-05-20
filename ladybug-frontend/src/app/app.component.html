@@ -1,6 +1,6 @@
 <div class="px-1 pt-1" id="ladybug-tabs">
   <ul class="nav nav-tabs">
-    @for (tab of tabService.getTabs(); track tab) {
+    @for (tab of tabs; track tab) {
       <li class="nav-item" [attr.data-cy-nav-tab]="tab.key">
         <a class="nav-link" routerLinkActive="active" [routerLink]="tab.key">
           <span>{{ tab.title }}</span>
