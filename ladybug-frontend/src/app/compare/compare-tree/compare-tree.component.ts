@@ -21,7 +21,7 @@ export type TreeSide = (typeof treeSideConst)[number];
 
 // TODO issue https://github.com/wearefrank/ladybug/issues/743.
 // This component should be based on HierarchicalReport and
-// DebugTreeNewComponent.
+// DebugTreeComponent.
 @Component({
   selector: 'app-compare-tree',
   templateUrl: './compare-tree.component.html',

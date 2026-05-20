@@ -15,7 +15,7 @@ import { ReportValueComponent } from './report-value/report-value.component';
 import { CheckpointValueComponent } from './checkpoint-value/checkpoint-value.component';
 import { TestRefreshService } from '../test/test-refresh.service';
 import { HierarchicalReport } from '../shared/interfaces/hierarchical-report';
-import { DebugTreeNewComponent } from '../debug/debug-tree-new/debug-tree-new.component';
+import { DebugTreeComponent } from '../debug/debug-tree/debug-tree.component';
 import { ReportComponentCallback, ReportSharedStrategy } from '../shared/classes/report-shared-strategy';
 import { isNumber } from '../shared/util/util';
 import { HttpService } from '../shared/services/http.service';
@@ -25,7 +25,7 @@ const MIN_HEIGHT = 20;
 
 @Component({
   selector: 'app-report',
-  imports: [AngularSplitModule, DebugTreeNewComponent, ReportValueComponent, CheckpointValueComponent],
+  imports: [AngularSplitModule, DebugTreeComponent, ReportValueComponent, CheckpointValueComponent],
   templateUrl: './report.component.html',
   styleUrl: './report.component.css',
   providers: [ReportSharedStrategy],
@@ -33,7 +33,7 @@ const MIN_HEIGHT = 20;
 export class ReportComponent implements ReportComponentCallback, OnInit, AfterViewInit, OnDestroy {
   @Input() newTab = true;
   @ViewChild(SplitComponent) splitter!: SplitComponent;
-  @ViewChild(DebugTreeNewComponent) debugTreeComponent!: DebugTreeNewComponent;
+  @ViewChild(DebugTreeComponent) debugTreeComponent!: DebugTreeComponent;
 
   protected monacoEditorHeight!: number;
   protected sharedStrategy = inject(ReportSharedStrategy);

@@ -5,7 +5,7 @@ import { ReportValueComponent } from '../report-value/report-value.component';
 import { CheckpointValueComponent } from '../checkpoint-value/checkpoint-value.component';
 import { DebugTabService } from '../../debug/debug-tab.service';
 import { HierarchicalReport } from '../../shared/interfaces/hierarchical-report';
-import { DebugTreeNewComponent } from '../../debug/debug-tree-new/debug-tree-new.component';
+import { DebugTreeComponent } from '../../debug/debug-tree/debug-tree.component';
 import { ReportComponentCallback, ReportSharedStrategy } from '../../shared/classes/report-shared-strategy';
 
 const MIN_HEIGHT = 20;
@@ -13,14 +13,14 @@ const MARGIN = 50;
 
 @Component({
   selector: 'app-debug-report',
-  imports: [AngularSplitModule, DebugTreeNewComponent, ReportValueComponent, CheckpointValueComponent],
+  imports: [AngularSplitModule, DebugTreeComponent, ReportValueComponent, CheckpointValueComponent],
   templateUrl: './debug-report.component.html',
   styleUrl: './debug-report.component.css',
   providers: [ReportSharedStrategy],
 })
 export class DebugReportComponent implements ReportComponentCallback, OnInit, OnDestroy {
   @ViewChild(SplitComponent) splitter!: SplitComponent;
-  @ViewChild(DebugTreeNewComponent) debugTreeComponent!: DebugTreeNewComponent;
+  @ViewChild(DebugTreeComponent) debugTreeComponent!: DebugTreeComponent;
 
   protected monacoEditorHeight!: number;
   protected sharedStrategy = inject(ReportSharedStrategy);

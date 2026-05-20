@@ -16,13 +16,13 @@ interface FrankTreeNode {
 
 // TODO: Rename to DebugTreeComponent some time. Can be done because old DebugTreeComponent is gone.
 @Component({
-  selector: 'app-debug-tree-new',
-  templateUrl: './debug-tree-new.component.html',
-  styleUrls: ['./debug-tree-new.component.css'],
+  selector: 'app-debug-tree',
+  templateUrl: './debug-tree.component.html',
+  styleUrls: ['./debug-tree.component.css'],
   standalone: true,
   imports: [NgSimpleFileTree],
 })
-export class DebugTreeNewComponent implements OnInit, OnDestroy {
+export class DebugTreeComponent implements OnInit, OnDestroy {
   @ViewChild('tree') tree!: NgSimpleFileTree;
   @Output() selectReportEvent = new EventEmitter<HierarchicalReport | HierarchicalCheckpoint>();
 
