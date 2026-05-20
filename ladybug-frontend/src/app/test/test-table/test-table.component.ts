@@ -123,13 +123,14 @@ export class TestTableComponent implements OnInit, OnDestroy, OnChanges, AfterCo
         next: (reports: HierarchicalReport[]): void => {
           // No need to download the same report twice. We cache the report
           // so the report component can fetch it when it opens.
-          const key: string = this.tabService.openReportTab(
+          this.tabService.openReportTab(
             reports[0].storageName,
             reports[0].storageId,
             reports[0].name,
             reports[0],
+            // When report closes return to test tab.
+            'test',
           );
-          this.router.navigate(key.split('/'));
         },
       });
   }
@@ -166,14 +167,15 @@ export class TestTableComponent implements OnInit, OnDestroy, OnChanges, AfterCo
           storageName: 'Debug',
         },
       };
-      const key: string = this.tabService.openCompareTab(
+      this.tabService.openCompareTab(
         this.testReportsService.storageName,
         report.reranReport.originalReport.storageId,
         this.testReportsService.storageName,
         report.reranReport.runResultReport.storageId,
         compareData,
+        // When comparison closes return to test tab
+        'test',
       );
-      this.router.navigate(key.split('/'));
     }
   }
 

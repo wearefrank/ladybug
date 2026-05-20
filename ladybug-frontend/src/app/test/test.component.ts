@@ -315,14 +315,15 @@ export class TestComponent implements OnInit, OnDestroy {
             originalReport: reports[0],
             runResultReport: reports[1],
           };
-          const key: string = this.tabService.openCompareTab(
+          this.tabService.openCompareTab(
             reports[0].storageName,
             reports[0].storageId,
             reports[1].storageName,
             reports[1].storageId,
             compareData,
+            // When comparison closes return to test tab
+            'test',
           );
-          this.router.navigate(key.split('/'));
         });
     }
   }

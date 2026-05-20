@@ -366,10 +366,9 @@ export class TableComponent implements OnInit, OnDestroy {
       this.toastService.showDanger('Could not find report that was selected.');
       return;
     }
-    const key: string = this.tabService.openReportTab(this.currentView.storageName, reportTab.storageId, 'Loading...');
     // Do not cache a report in the tab service. The report component needs a HierarchicalReport and
     // will download it from the storage.
-    this.router.navigate(key.split('/'));
+    this.tabService.openReportTab(this.currentView.storageName, reportTab.storageId, 'Loading...');
   }
 
   openSelected(): void {
@@ -429,14 +428,13 @@ export class TableComponent implements OnInit, OnDestroy {
             runResultReport: runResultReport,
             viewName: this.currentView.name,
           };
-          const key: string = this.tabService.openCompareTab(
+          this.tabService.openCompareTab(
             this.currentView.storageName,
             this.selectedReportIds[0],
             this.currentView.storageName,
             this.selectedReportIds[1],
             compareData,
           );
-          this.router.navigate(key.split('/'));
         },
       });
   }
@@ -598,13 +596,7 @@ export class TableComponent implements OnInit, OnDestroy {
             // Each report was put in a temporary storage on the server
             // that is not accessible anymore. We cache the reports
             // to avoid a vain download attempt.
-            const key: string = this.tabService.openReportTab(
-              report.storageName,
-              report.storageId,
-              report.name,
-              report,
-            );
-            this.router.navigate(key.split('/'));
+            this.tabService.openReportTab(report.storageName, report.storageId, report.name, report);
           }
           this.toastService.showSuccess('Report uploaded!');
         },

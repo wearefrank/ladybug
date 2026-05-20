@@ -60,7 +60,12 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   subscribeToServices(): void {
-    const refreshSubscription: Subscription = this.tabService.refresh$.subscribe(() => this.cdr.detectChanges());
+    const refreshSubscription: Subscription = this.tabService.refresh$.subscribe((navigation: string | null) => {
+      if (navigation !== null) {
+        this.router.navigate(navigation.split('/'));
+      }
+      this.cdr.detectChanges();
+    });
     this.subscriptions.add(refreshSubscription);
   }
 
@@ -92,8 +97,7 @@ export class AppComponent implements OnInit, OnDestroy {
 
       if (event.data?.action === 'ladybug-openReport') {
         const eventData = event.data as OpenReportEventData;
-        const key: string = this.tabService.openReportTab(eventData.storageName, eventData.storageId, 'Loading...');
-        this.router.navigate(key.split('/'));
+        this.tabService.openReportTab(eventData.storageName, eventData.storageId, 'Loading...');
       }
     });
   }

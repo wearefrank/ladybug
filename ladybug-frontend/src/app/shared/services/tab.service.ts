@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Observable, ReplaySubject, Subject } from 'rxjs';
-import { KEY_COMPARE, KEY_DEBUG, KEY_REPORT, KEY_TEST, routeKind, Tab } from '../interfaces/tab';
+import { debugOrTest, KEY_COMPARE, KEY_DEBUG, KEY_REPORT, KEY_TEST, routeKind, Tab } from '../interfaces/tab';
 import { ActivatedRouteSnapshot, DetachedRouteHandle } from '@angular/router';
 import { isNumber } from '../../shared/util/util';
 import { CompareData } from '../../compare/compare-data';
@@ -15,16 +15,18 @@ export class TabService {
       kind: KEY_DEBUG,
       key: KEY_DEBUG,
       title: 'Debug',
+      returnToKey: KEY_DEBUG,
     },
     {
       kind: KEY_TEST,
       key: KEY_TEST,
       title: 'Test',
+      returnToKey: KEY_TEST,
     },
   ];
 
-  private refreshSubject: Subject<void> = new ReplaySubject();
-  refresh$ = this.refreshSubject as Observable<void>;
+  private refreshSubject: Subject<string | null> = new ReplaySubject();
+  refresh$ = this.refreshSubject as Observable<string | null>;
   private compareCache: Map<string, CompareData> = new Map<string, CompareData>();
   private reportCache: Map<string, HierarchicalReport> = new Map<string, HierarchicalReport>();
 
@@ -33,20 +35,28 @@ export class TabService {
   }
 
   removeTab(key: string): void {
+    const optionalRemovedTab: Tab | undefined = this.findTab(key);
+    const navigation: debugOrTest | null = optionalRemovedTab === undefined ? null : optionalRemovedTab.returnToKey;
     this.activeTabsList = this.activeTabsList.filter((t) => t.key !== key);
-    this.refreshSubject.next();
     if (this.compareCache.has(key)) {
       this.compareCache.delete(key);
     }
     if (this.reportCache.has(key)) {
       this.reportCache.delete(key);
     }
+    this.refreshSubject.next(navigation);
   }
 
-  openReportTab(storageName: string, storageId: number, name: string, report?: HierarchicalReport): string {
+  openReportTab(
+    storageName: string,
+    storageId: number,
+    name: string,
+    report?: HierarchicalReport,
+    returnToKey?: debugOrTest,
+  ): void {
     const key: string = this.getReportTabKey(storageName, storageId);
     if (this.findTab(key) === undefined) {
-      this.addTab(KEY_REPORT, key, name);
+      this.addTab(KEY_REPORT, key, name, returnToKey);
     }
     // Do not renew cache when same storage name and storage id combination
     // is opened with an updated report. The user should close the tab
@@ -54,8 +64,7 @@ export class TabService {
     if (report !== undefined && this.reportCache.get(key) === undefined) {
       this.reportCache.set(key, report);
     }
-    this.refreshSubject.next();
-    return key;
+    this.refreshSubject.next(key);
   }
 
   openCompareTab(
@@ -64,14 +73,14 @@ export class TabService {
     rightStorageName: string,
     rightStorageId: number,
     data: CompareData,
-  ): string {
+    returnToKey?: debugOrTest,
+  ): void {
     const key: string = this.getCompareTabKey(leftStorageName, leftStorageId, rightStorageName, rightStorageId);
     if (this.findTab(key) === undefined) {
-      this.addTab(KEY_COMPARE, key, 'Compare');
+      this.addTab(KEY_COMPARE, key, 'Compare', returnToKey);
       this.compareCache.set(key, data);
     }
-    this.refreshSubject.next();
-    return key;
+    this.refreshSubject.next(key);
   }
 
   getCompareData(key: string): CompareData | undefined {
@@ -160,11 +169,12 @@ export class TabService {
     return route.paramMap.get(parameter) as string;
   }
 
-  private addTab(kind: routeKind, key: string, title?: string): Tab {
+  private addTab(kind: routeKind, key: string, title?: string, returnToKey?: debugOrTest): Tab {
     const tab: Tab = {
       kind,
       key,
       title: title === undefined ? key : title,
+      returnToKey: returnToKey === undefined ? 'debug' : returnToKey,
     };
     this.activeTabsList.push(tab);
     return tab;

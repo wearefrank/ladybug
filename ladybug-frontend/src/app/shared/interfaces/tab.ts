@@ -6,10 +6,12 @@ export const KEY_REPORT = 'report';
 export const KEY_COMPARE = 'compare';
 
 export type routeKind = 'debug' | 'test' | 'report' | 'compare';
-
+export type debugOrTest = 'debug' | 'test';
 export interface Tab {
   kind: routeKind;
   key: string;
   title: string;
   handle?: DetachedRouteHandle;
+  // Needed by report or compare tabs when they close, should be debug or test
+  returnToKey: debugOrTest;
 }
