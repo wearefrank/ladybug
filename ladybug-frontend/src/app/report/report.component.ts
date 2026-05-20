@@ -1,13 +1,4 @@
-import {
-  ChangeDetectorRef,
-  Component,
-  inject,
-  Input,
-  ViewChild,
-  OnInit,
-  AfterViewInit,
-  OnDestroy,
-} from '@angular/core';
+import { ChangeDetectorRef, Component, inject, ViewChild, OnInit, AfterViewInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AngularSplitModule, SplitComponent } from 'angular-split';
 import { TabService } from '../shared/services/tab.service';
@@ -31,7 +22,6 @@ const MIN_HEIGHT = 20;
   providers: [ReportSharedStrategy],
 })
 export class ReportComponent implements ReportComponentCallback, OnInit, AfterViewInit, OnDestroy {
-  @Input() newTab = true;
   @ViewChild(SplitComponent) splitter!: SplitComponent;
   @ViewChild(DebugTreeComponent) debugTreeComponent!: DebugTreeComponent;
 
@@ -43,18 +33,19 @@ export class ReportComponent implements ReportComponentCallback, OnInit, AfterVi
   private httpService = inject(HttpService);
   private cdr = inject(ChangeDetectorRef);
   private testRefreshService = inject(TestRefreshService);
-  private tabKey: string | undefined;
+  private storageName!: string;
+  private storageId!: number;
+  private tabKey!: string;
 
   ngOnInit(): void {
+    this.setTabKey();
     this.sharedStrategy.setCallback(this);
     // this.route.url.subscribe(() => this.handleUrlChange());
     this.sharedStrategy.listenToHeight();
   }
 
   ngAfterViewInit(): void {
-    if (this.newTab) {
-      setTimeout(() => this.handleUrlChange());
-    }
+    setTimeout(() => this.handleUrlChange());
   }
 
   ngOnDestroy(): void {
@@ -66,6 +57,7 @@ export class ReportComponent implements ReportComponentCallback, OnInit, AfterVi
   // tab after the HierarchicalReport has been fetched
   // via the URL.
   addReport(report: HierarchicalReport): void {
+    this.tabService.setTitle(this.tabKey, report.name);
     this.debugTreeComponent.addReportToTree(report);
   }
 
@@ -98,20 +90,27 @@ export class ReportComponent implements ReportComponentCallback, OnInit, AfterVi
     this.cdr.detectChanges();
   }
 
-  private handleUrlChange(): void {
-    // TODO: Take care here when working on issue https://github.com/wearefrank/ladybug-frontend/issues/1125
-    const storageName: string = this.tabService.getPathParam(this.route.snapshot, 'storageName');
+  private setTabKey(): void {
+    this.storageName = this.tabService.getPathParam(this.route.snapshot, 'storageName');
     const storageIdStr: string = this.tabService.getPathParam(this.route.snapshot, 'storageId');
     if (!isNumber(storageIdStr)) {
       throw new Error(`Cannot open ReportComponent because storage id not a number: ${storageIdStr}`);
     }
-    const storageId: number = +storageIdStr;
-    firstValueFrom(this.httpService.getHierarchicalReports([storageId], storageName, null)).then(
-      (report: HierarchicalReport[]) => {
-        this.tabKey = this.tabService.getReportTabKey(storageName, storageId);
-        this.tabService.setTitle(this.tabKey, report[0].name);
-        this.addReport(report[0]);
-      },
-    );
+    this.storageId = +storageIdStr;
+    this.tabKey = this.tabService.getReportTabKey(this.storageName, this.storageId);
+  }
+
+  private handleUrlChange(): void {
+    // TODO: Take care here when working on issue https://github.com/wearefrank/ladybug-frontend/issues/1125
+    const optionalCachedReport = this.tabService.getReportData(this.tabKey);
+    if (optionalCachedReport === undefined) {
+      firstValueFrom(this.httpService.getHierarchicalReports([this.storageId], this.storageName, null)).then(
+        (report: HierarchicalReport[]) => {
+          this.addReport(report[0]);
+        },
+      );
+    } else {
+      this.addReport(optionalCachedReport);
+    }
   }
 }

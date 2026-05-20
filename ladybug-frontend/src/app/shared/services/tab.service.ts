@@ -4,6 +4,7 @@ import { KEY_COMPARE, KEY_DEBUG, KEY_REPORT, KEY_TEST, routeKind, Tab } from '..
 import { ActivatedRouteSnapshot, DetachedRouteHandle } from '@angular/router';
 import { isNumber } from '../../shared/util/util';
 import { CompareData } from '../../compare/compare-data';
+import { HierarchicalReport } from '../interfaces/hierarchical-report';
 
 @Injectable({
   providedIn: 'root',
@@ -25,6 +26,7 @@ export class TabService {
   private refreshSubject: Subject<void> = new ReplaySubject();
   refresh$ = this.refreshSubject as Observable<void>;
   private compareCache: Map<string, CompareData> = new Map<string, CompareData>();
+  private reportCache: Map<string, HierarchicalReport> = new Map<string, HierarchicalReport>();
 
   getTabs(): Tab[] {
     return [...this.activeTabsList];
@@ -36,12 +38,21 @@ export class TabService {
     if (this.compareCache.has(key)) {
       this.compareCache.delete(key);
     }
+    if (this.reportCache.has(key)) {
+      this.reportCache.delete(key);
+    }
   }
 
-  openReportTab(storageName: string, storageId: number, name: string): string {
+  openReportTab(storageName: string, storageId: number, name: string, report?: HierarchicalReport): string {
     const key: string = this.getReportTabKey(storageName, storageId);
     if (this.findTab(key) === undefined) {
       this.addTab(KEY_REPORT, key, name);
+    }
+    // Do not renew cache when same storage name and storage id combination
+    // is opened with an updated report. The user should close the tab
+    // to update the cache.
+    if (report !== undefined && this.reportCache.get(key) === undefined) {
+      this.reportCache.set(key, report);
     }
     this.refreshSubject.next();
     return key;
@@ -65,6 +76,10 @@ export class TabService {
 
   getCompareData(key: string): CompareData | undefined {
     return this.compareCache.get(key);
+  }
+
+  getReportData(key: string): HierarchicalReport | undefined {
+    return this.reportCache.get(key);
   }
 
   storeHandle(route: ActivatedRouteSnapshot, handle: DetachedRouteHandle): void {

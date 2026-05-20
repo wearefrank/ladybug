@@ -367,6 +367,8 @@ export class TableComponent implements OnInit, OnDestroy {
       return;
     }
     const key: string = this.tabService.openReportTab(this.currentView.storageName, reportTab.storageId, 'Loading...');
+    // Do not cache a report in the tab service. The report component needs a HierarchicalReport and
+    // will download it from the storage.
     this.router.navigate(key.split('/'));
   }
 
@@ -593,10 +595,14 @@ export class TableComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (data: HierarchicalReport[]) => {
           for (let report of data) {
+            // Each report was put in a temporary storage on the server
+            // that is not accessible anymore. We cache the reports
+            // to avoid a vain download attempt.
             const key: string = this.tabService.openReportTab(
-              this.currentView.storageName,
+              report.storageName,
               report.storageId,
               report.name,
+              report,
             );
             this.router.navigate(key.split('/'));
           }

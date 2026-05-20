@@ -121,10 +121,13 @@ export class TestTableComponent implements OnInit, OnDestroy, OnChanges, AfterCo
       .pipe(catchError(this.errorHandler.handleError()))
       .subscribe({
         next: (reports: HierarchicalReport[]): void => {
+          // No need to download the same report twice. We cache the report
+          // so the report component can fetch it when it opens.
           const key: string = this.tabService.openReportTab(
-            this.testReportsService.storageName,
+            reports[0].storageName,
             reports[0].storageId,
             reports[0].name,
+            reports[0],
           );
           this.router.navigate(key.split('/'));
         },

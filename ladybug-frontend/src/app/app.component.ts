@@ -92,8 +92,7 @@ export class AppComponent implements OnInit, OnDestroy {
 
       if (event.data?.action === 'ladybug-openReport') {
         const eventData = event.data as OpenReportEventData;
-        // TODO: Fix title.
-        const key: string = this.tabService.openReportTab(eventData.storageName, eventData.storageId, 'Some title');
+        const key: string = this.tabService.openReportTab(eventData.storageName, eventData.storageId, 'Loading...');
         this.router.navigate(key.split('/'));
       }
     });
