@@ -90,7 +90,6 @@ export class AppComponent implements OnInit, OnDestroy {
       window.opener.postMessage({ action: 'ladybug-ready' }, location.origin);
     }
 
-    // TODO: This needs updating
     window.addEventListener('message', (event: MessageEvent) => {
       if (event.origin !== location.origin) return;
       if (typeof event.data?.action !== 'string' || !event.data.action.startsWith('ladybug-')) return;
