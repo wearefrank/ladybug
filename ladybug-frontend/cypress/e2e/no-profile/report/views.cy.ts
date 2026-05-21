@@ -63,7 +63,7 @@ function checkOnlyCheckpointsOfBlackBoxViewAreShown() {
 }
 
 function checkTreeNodeWithTextOccurs(text: string, amount: number) {
-  cy.get('[data-cy-debug-tree="root"] app-tree-icon').parent().find(`:contains(${text})`).should('have.length', amount);
+  cy.getShownNodesOfReportTreeWithText(text).should('have.length', amount);
 }
 
 // For some reason, the wrong view gets selected when you query by name.

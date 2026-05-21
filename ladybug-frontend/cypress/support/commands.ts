@@ -87,6 +87,8 @@ declare global {
 
       clickEndCheckpointOfThreeNodeReport(): Chainable;
 
+      getShownNodesOfReportTreeWithText(text: string): Chainable;
+
       clickRowInTable(index: number): Chainable;
 
       checkFileTreeLength(length: number): Chainable;
@@ -114,6 +116,8 @@ declare global {
       checkNavTab(index: number, text: string, selected: boolean): Chainable;
 
       windowSendPostReportEvent(storageName: string, storageId: number): Chainable;
+
+      uploadTwoReportsAndCheckTabs(): Chainable;
     }
   }
 }
@@ -407,6 +411,10 @@ Cypress.Commands.add('clickEndCheckpointOfThreeNodeReport' as keyof Chainable, (
     .click();
 });
 
+Cypress.Commands.add('getShownNodesOfReportTreeWithText', (text) => {
+  cy.get('[data-cy-debug-tree="root"] app-tree-icon').parent().find(`:contains(${text})`);
+});
+
 Cypress.Commands.add(
   'clickRowInTable' as keyof Chainable,
   (index: number): void => {
@@ -503,6 +511,22 @@ Cypress.Commands.add('windowSendPostReportEvent' as keyof Chainable, (storageNam
   cy.window().then(win => {
       win.postMessage({ action: 'ladybug-openReport', storageName: storageName, storageId: storageId }, '*');
   });
+})
+
+Cypress.Commands.add('uploadTwoReportsAndCheckTabs', () => {
+  cy.fixture('twoReports.zip', 'binary')
+    .then(Cypress.Blob.binaryStringToBlob)
+    .then((fileContent) => {
+      cy.get('[data-cy-debug="upload"]').find('input').attachFile({
+        fileContent,
+        fileName: 'twoReports.zip',
+      });
+    });
+  cy.get('[data-cy-nav-tab]').should('have.length', 4);
+  cy.checkNavTab(0, 'Debug', false);
+  cy.checkNavTab(1, 'Test', false);
+  cy.checkNavTab(2, 'Adapter1a', false);
+  cy.checkNavTab(3, 'Adapter1b', true);
 })
 
 function awaitLoadingSpinner(): void {
