@@ -40,10 +40,10 @@ describe('Debug file upload', () => {
         });
       });
     cy.get('[data-cy-nav-tab]').should('have.length', 4);
-    checkNavTab(0, 'Debug', false);
-    checkNavTab(1, 'Test', false);
-    checkNavTab(2, 'Adapter1a', false);
-    checkNavTab(3, 'Adapter1b', true);
+    cy.checkNavTab(0, 'Debug', false);
+    cy.checkNavTab(1, 'Test', false);
+    cy.checkNavTab(2, 'Adapter1a', false);
+    cy.checkNavTab(3, 'Adapter1b', true);
     cy.get('[data-cy-debug-tree]').find(':contains(Adapter1b)').should('be.visible');
     cy.get('[data-cy-debug-tree]').find(':contains(Adapter1a)').should('not.exist');
     checkCheckpointMessage('B');
@@ -58,15 +58,6 @@ describe('Debug file upload', () => {
   });
 });
 
-function checkNavTab(index: number, text: string, selected: boolean) {
-  cy.get(`[data-cy-nav-tab]:eq(${index})`).should('contain.text', text);
-  if (selected) {
-    cy.get(`[data-cy-nav-tab]:eq(${index})`).find('.active').should('be.visible');
-  } else {
-    cy.get(`[data-cy-nav-tab]:eq(${index})`).find('.active').should('not.exist');
-  }
-}
-
 function checkCheckpointMessage(distinction: string) {
-  cy.get('[data-cy-element-name').invoke('text').should('contain', 'Message').should('contain', distinction);
+  cy.get('[data-cy-element-name]').invoke('text').should('contain', 'Message').should('contain', distinction);
 }

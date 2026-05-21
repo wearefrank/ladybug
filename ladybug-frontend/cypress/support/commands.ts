@@ -110,6 +110,8 @@ declare global {
       debugTabBackToFactorySettings(): Chainable;
 
       enterSettingsDialogAndExpectReportGenerator(text: string): Chainable;
+
+      checkNavTab(index: number, text: string, selected: boolean): Chainable;
     }
   }
 }
@@ -484,6 +486,15 @@ Cypress.Commands.add('enterSettingsDialogAndExpectReportGenerator' as keyof Chai
 Cypress.Commands.add('debugTabBackToFactorySettings' as keyof Chainable, (): Chainable => {
   cy.get('[data-cy-debug="openSettings"]').as('openSettingsModal').click();
   cy.get('[data-cy-settings="factoryReset"]').click();
+})
+
+Cypress.Commands.add('checkNavTab' as keyof Chainable, (index: number, text: string, selected: boolean) => {
+  cy.get(`[data-cy-nav-tab]:eq(${index})`).should('contain.text', text);
+  if (selected) {
+    cy.get(`[data-cy-nav-tab]:eq(${index})`).find('.active').should('be.visible');
+  } else {
+    cy.get(`[data-cy-nav-tab]:eq(${index})`).find('.active').should('not.exist');
+  }
 })
 
 function awaitLoadingSpinner(): void {
