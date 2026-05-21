@@ -112,6 +112,8 @@ declare global {
       enterSettingsDialogAndExpectReportGenerator(text: string): Chainable;
 
       checkNavTab(index: number, text: string, selected: boolean): Chainable;
+
+      windowSendPostReportEvent(storageName: string, storageId: number): Chainable;
     }
   }
 }
@@ -495,6 +497,12 @@ Cypress.Commands.add('checkNavTab' as keyof Chainable, (index: number, text: str
   } else {
     cy.get(`[data-cy-nav-tab]:eq(${index})`).find('.active').should('not.exist');
   }
+})
+
+Cypress.Commands.add('windowSendPostReportEvent' as keyof Chainable, (storageName: string, storageId: number) => {
+  cy.window().then(win => {
+      win.postMessage({ action: 'ladybug-openReport', storageName: storageName, storageId: storageId }, '*');
+  });
 })
 
 function awaitLoadingSpinner(): void {
