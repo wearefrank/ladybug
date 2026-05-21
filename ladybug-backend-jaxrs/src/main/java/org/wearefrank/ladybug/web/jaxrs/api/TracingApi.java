@@ -44,7 +44,7 @@ public class TracingApi extends ApiBase {
 
     @POST
     @Consumes({"application/x-protobuf", "application/json"})
-    public Response receiveTrace(@HeaderParam("Content-Type") String contentType, byte[] data) throws InvalidProtocolBufferException {
+    public Response receiveSpans(@HeaderParam("Content-Type") String contentType, byte[] data) throws InvalidProtocolBufferException {
         ExportTraceServiceRequest request;
 
         if (contentType.startsWith("application/x-protobuf")) {
