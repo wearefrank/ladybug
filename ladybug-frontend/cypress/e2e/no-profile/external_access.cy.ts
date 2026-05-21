@@ -42,7 +42,6 @@ describe('External access', () => {
     cy.checkNavTab(0, 'Debug', true);
     cy.checkNavTab(1, 'Test', false);
     cy.windowSendPostReportEvent('Debug', 0);
-    cy.wait(1000);
     cy.checkNavTab(0, 'Debug', false);
     cy.checkNavTab(1, 'Test', false);
     cy.checkNavTab(2, 'Simple report', true);
