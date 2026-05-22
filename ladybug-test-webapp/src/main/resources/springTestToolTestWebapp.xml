@@ -94,7 +94,7 @@
 	<bean name="blackBoxView" class="org.wearefrank.ladybug.filter.View" parent="whiteBoxView">
 		<property name="name" value="Black box"/>
 		<property name="checkpointMatchers">
-			<bean class="org.wearefrank.ladybug.test.webapp.test.webapp.Matcher"/>
+			<bean class="org.wearefrank.ladybug.test.webapp.common.test.webapp.Matcher"/>
 		</property>
 	</bean>
 
@@ -130,9 +130,9 @@
 		<constructor-arg value="org/wearefrank/ladybug/test/junit/transformReport.xslt"/>
 	</bean>
 
-	<bean name="rerunner" class="org.wearefrank.ladybug.test.webapp.test.webapp.SimpleRerunner"/>
+	<bean name="rerunner" class="org.wearefrank.ladybug.test.webapp.common.test.webapp.SimpleRerunner"/>
 
-	<bean name="customReportAction" class="org.wearefrank.ladybug.test.webapp.extensions.DummyReportAction"/>
+	<bean name="customReportAction" class="org.wearefrank.ladybug.test.webapp.common.extensions.DummyReportAction"/>
 
 	<!--  Enable security elements in web.xml to test roles -->
 
@@ -177,7 +177,7 @@
 		<property name="metadataFilename" value="#{metadataFilename}"/>
 	</bean>
 
-	<bean name="errorGeneratingStorage" class="org.wearefrank.ladybug.test.webapp.storages.ErrorGeneratingStorage">
+	<bean name="errorGeneratingStorage" class="org.wearefrank.ladybug.test.webapp.common.storages.ErrorGeneratingStorage">
 		<property name="name" value="errorGeneratingStorage" />
 	</bean>
 

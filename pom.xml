@@ -52,6 +52,7 @@
     <module>ladybug-frontend-servlet</module>
     <module>ladybug-common</module>
     <module>ladybug-frontend</module>
+    <module>ladybug-test-webapp-common</module>
     <module>ladybug-test-webapp</module>
     <module>ladybug-spring-boot-test-webapp</module>
   </modules>
