@@ -36,13 +36,31 @@ public class TracingApiImpl {
 	@Autowired
 	private @Setter TestTool testTool;
 
-	public void processSpans(List<Span> spans) throws StorageException {
-		testTool.setUpdateFromStorage(true);
-
+	public void processSpans(List<Span> spans) {
 		for (Span span : spans) {
-			testTool.startpoint(byteStringToHex(span.getTraceId()), null, span.getName(), "test", byteStringToHex(span.getParentSpanId()), byteStringToHex(span.getSpanId()));
-			testTool.endpoint(byteStringToHex(span.getTraceId()), null, span.getName(), "Endpoint", byteStringToHex(span.getParentSpanId()), byteStringToHex(span.getSpanId()));
+			String traceId = byteStringToHex(span.getTraceId());
+			String spanId = byteStringToHex(span.getSpanId());
+			String parentSpanId = span.getParentSpanId().isEmpty() ? "" : byteStringToHex(span.getParentSpanId());
+			long startTime = span.getStartTimeUnixNano();
+
+			testTool.startpoint(traceId, null, span.getName(), toHashMap(span), spanId, parentSpanId, startTime);
+			testTool.endpoint(traceId, null, span.getName(), "Endpoint", spanId, parentSpanId, startTime);
+			testTool.close(traceId);
 		}
+	}
+
+	public HashMap<String, String> toHashMap(Span span) {
+		HashMap<String, String> map = new HashMap<>();
+
+		span.getAllFields().forEach((descriptor, value) -> {
+			if (value instanceof ByteString) {
+				map.put(descriptor.getName(), byteStringToHex((ByteString) value));
+			} else {
+				map.put(descriptor.getName(), value.toString());
+			}
+		});
+
+		return map;
 	}
 
 	public String byteStringToHex(ByteString byteString) {
