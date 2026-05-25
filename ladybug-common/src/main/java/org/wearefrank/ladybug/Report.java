@@ -679,6 +679,11 @@ public class Report implements Serializable {
 
 	private void moveChildrenBelowParent(Checkpoint parentCheckpoint) {
 		int parentIndex = checkpoints.indexOf(parentCheckpoint);
+
+		if (parentIndex < 0) {
+			return;
+		}
+
 		int insertIndex = parentIndex + 1;
 
 		List<Checkpoint> children = new ArrayList<>();
@@ -690,16 +695,25 @@ public class Report implements Serializable {
 		}
 
 		for (Checkpoint child : children) {
+
 			checkpoints.remove(child);
 
 			child.setLevel(parentCheckpoint.getLevel() + 1);
 
+			insertIndex = Math.min(insertIndex, checkpoints.size());
+
 			checkpoints.add(insertIndex, child);
-			insertIndex++;
 
 			moveChildrenBelowParent(child);
 
-			insertIndex = checkpoints.indexOf(child) + 1;
+			int childIndex = checkpoints.indexOf(child);
+
+			if (childIndex < 0) {
+				insertIndex = checkpoints.size();
+				continue;
+			}
+
+			insertIndex = childIndex + 1;
 
 			while (insertIndex < checkpoints.size()
 					&& checkpoints.get(insertIndex).getLevel() > child.getLevel()) {
