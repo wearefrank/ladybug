@@ -37,25 +37,18 @@ public class TracingApiImpl {
 	private @Setter TestTool testTool;
 
 	public void processSpans(List<Span> spans) {
-		Map<String, List<Span>> spansByTrace = new LinkedHashMap<>();
+		String traceId = byteStringToHex(spans.get(0).getTraceId());
+
 		for (Span span : spans) {
-			String traceId = byteStringToHex(span.getTraceId());
-			spansByTrace.computeIfAbsent(traceId, k -> new ArrayList<>()).add(span);
-		}
+			String spanId = byteStringToHex(span.getSpanId());
+			String parentSpanId = span.getParentSpanId().isEmpty()
+					? "" : byteStringToHex(span.getParentSpanId());
+			long startTime = span.getStartTimeUnixNano();
 
-		for (Map.Entry<String, List<Span>> entry : spansByTrace.entrySet()) {
-			String traceId = entry.getKey();
-			for (Span span : entry.getValue()) {
-				String spanId = byteStringToHex(span.getSpanId());
-				String parentSpanId = span.getParentSpanId().isEmpty()
-						? "" : byteStringToHex(span.getParentSpanId());
-				long startTime = span.getStartTimeUnixNano();
-
-				testTool.startpoint(traceId, null, span.getName(), toHashMap(span), spanId, parentSpanId, startTime);
-				testTool.endpoint(traceId, null, span.getName(), null, spanId, parentSpanId, startTime);
-			}
-			testTool.close(traceId);
+			testTool.startpoint(traceId, null, span.getName(), toHashMap(span), spanId, parentSpanId, startTime);
+			testTool.endpoint(traceId, null, span.getName(), null, spanId, parentSpanId, startTime);
 		}
+		testTool.close(traceId);
 	}
 
 	public HashMap<String, String> toHashMap(Span span) {

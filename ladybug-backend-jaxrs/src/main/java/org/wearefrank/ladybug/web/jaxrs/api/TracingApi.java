@@ -20,19 +20,29 @@ import com.google.protobuf.util.JsonFormat;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
 import io.opentelemetry.proto.trace.v1.ResourceSpans;
 import io.opentelemetry.proto.trace.v1.ScopeSpans;
+import io.opentelemetry.proto.trace.v1.Span;
+import jakarta.annotation.PostConstruct;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.core.Response;
 import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.wearefrank.ladybug.SpanBuffer;
 import org.wearefrank.ladybug.storage.StorageException;
 import org.wearefrank.ladybug.web.common.TracingApiImpl;
 import org.wearefrank.ladybug.web.common.Constants;
 
 @Path("/" + Constants.LADYBUG_API_PATH + "/traces")
 public class TracingApi extends ApiBase {
+    private SpanBuffer spanBuffer;
+
     @Autowired
     private @Setter TracingApiImpl delegate;
+
+    @PostConstruct
+    public void init() {
+        spanBuffer = new SpanBuffer(delegate);
+    }
 
     @POST
     @Consumes({"application/x-protobuf", "application/json"})
@@ -54,7 +64,9 @@ public class TracingApi extends ApiBase {
 
         for (ResourceSpans resourceSpans : request.getResourceSpansList()) {
             for (ScopeSpans scopeSpans : resourceSpans.getScopeSpansList()) {
-                delegate.processSpans(scopeSpans.getSpansList());
+                for (Span span : scopeSpans.getSpansList()) {
+                    spanBuffer.addSpan(span);
+                }
             }
         }
 
