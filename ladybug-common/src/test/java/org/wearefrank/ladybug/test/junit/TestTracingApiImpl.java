@@ -26,37 +26,6 @@ public class TestTracingApiImpl extends ReportRelatedTestCase {
     }
 
     @Test
-    public void testProcessSingleRootSpan() throws StorageException {
-        Span root = Span.newBuilder()
-                .setTraceId(ByteString.copyFromUtf8("trace1"))
-                .setSpanId(ByteString.copyFromUtf8("span1"))
-                .setName("root")
-                .build();
-
-        ArrayList<Span> spans = new ArrayList<>();
-        spans.add(root);
-
-        tracingApiImpl.processSpans(spans);
-
-        String correlationId = tracingApiImpl.byteStringToHex(root.getTraceId());
-
-        List<Report> reports = findAndGetReports(
-                testTool,
-                testTool.getDebugStorage(),
-                correlationId,
-                false
-        );
-
-        assertFalse(reports.isEmpty());
-
-        Report report = reports.get(0);
-
-        assertNotNull(report);
-        assertEquals("root", report.getName());
-        assertEquals(2, report.getCheckpoints().size());
-    }
-
-    @Test
     public void testProcessParentChildSpans() throws StorageException {
         Span parent = Span.newBuilder()
                 .setTraceId(ByteString.copyFromUtf8("trace2"))

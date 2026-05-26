@@ -135,18 +135,6 @@
       <artifactId>opentelemetry-exporter-otlp</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.mockito</groupId>
-      <artifactId>mockito-core</artifactId>
-      <version>5.11.0</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.mockito</groupId>
-      <artifactId>mockito-junit-jupiter</artifactId>
-      <version>5.11.0</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
       <groupId>io.opentelemetry.proto</groupId>
       <artifactId>opentelemetry-proto</artifactId>
       <version>1.9.0-alpha</version>
@@ -156,6 +144,18 @@
       <groupId>commons-codec</groupId>
       <artifactId>commons-codec</artifactId>
       <version>1.17.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-core</artifactId>
+      <version>5.18.0</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-junit-jupiter</artifactId>
+      <version>5.18.0</version>
+      <scope>test</scope>
     </dependency>
   </dependencies>
 
