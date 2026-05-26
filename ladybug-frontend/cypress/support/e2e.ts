@@ -15,10 +15,16 @@
 
 Cypress.on('uncaught:exception', (err, runnable) => {
   // Ignore Identifier '_amdLoaderGlobal' has already been declared
-  if (err.name === 'SyntaxError' && err.message.indexOf('_amdLoaderGlobal') >= 0) {
+  if (err.name === 'SyntaxError' && err.message.includes('_amdLoaderGlobal')) {
     return false;
   }
-  if (err.message.indexOf('WorkerGlobalScope') >= 0) {
+  if (err.message.includes('WorkerGlobalScope')) {
+    return false;
+  }
+  if (err.name === 'ResizeObserver') {
+    return false;
+  }
+  if (err.message.includes('ResizeObserver')) {
     return false;
   }
   return;

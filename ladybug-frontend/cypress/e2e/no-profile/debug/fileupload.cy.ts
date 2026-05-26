@@ -1,5 +1,8 @@
 describe('Debug file upload', () => {
-  before(() => cy.resetApp());
+  before(() => {
+    cy.resetApp();
+    cy.initializeApp();
+  });
 
   beforeEach(() => {
     cy.createReport();
@@ -7,7 +10,10 @@ describe('Debug file upload', () => {
     cy.initializeApp();
   });
 
-  afterEach(() => cy.resetApp());
+  afterEach(() => {
+    cy.resetApp();
+    cy.initializeApp();
+  });
 
   const reportsToTest: string[] = ['testRerun.ttr', 'testRerunForNlNnReport.ttr']
   for (const report of reportsToTest) {

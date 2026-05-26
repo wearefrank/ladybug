@@ -1,5 +1,8 @@
 describe('About opened reports', () => {
-  before(() => cy.resetApp());
+  before(() => {
+    cy.resetApp();
+    cy.initializeApp();
+  });
 
   beforeEach(() => {
     cy.createReport();
@@ -7,7 +10,10 @@ describe('About opened reports', () => {
     cy.initializeApp();
   });
 
-  afterEach(() => cy.resetApp());
+  afterEach(() => {
+    cy.resetApp();
+    cy.initializeApp();
+  });
 
   it('When we open multiple reports simultaneously from the table then they appear all in the tree', () => {
     cy.enableShowMultipleInDebugTree();

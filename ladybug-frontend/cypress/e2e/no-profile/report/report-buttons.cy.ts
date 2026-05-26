@@ -1,5 +1,8 @@
 describe('Report buttons', () => {
-  before(() => cy.resetApp());
+  before(() => {
+    cy.resetApp();
+    cy.initializeApp();
+  });
 
   afterEach(() => {
     cy.clearDebugStore();

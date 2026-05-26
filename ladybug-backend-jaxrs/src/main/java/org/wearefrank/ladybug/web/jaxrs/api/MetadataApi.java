@@ -16,13 +16,6 @@
 package org.wearefrank.ladybug.web.jaxrs.api;
 
 
-import java.util.Arrays;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.springframework.beans.factory.annotation.Autowired;
-
 import jakarta.ws.rs.DefaultValue;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
@@ -31,10 +24,15 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import java.util.Arrays;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import lombok.Setter;
-
+import org.springframework.beans.factory.annotation.Autowired;
 import org.wearefrank.ladybug.web.common.Constants;
 import org.wearefrank.ladybug.web.common.HttpInternalServerErrorException;
+import org.wearefrank.ladybug.web.common.HttpNotFoundException;
 import org.wearefrank.ladybug.web.common.MetadataApiImpl;
 
 @Path("/" + Constants.LADYBUG_API_PATH + "/metadata")
@@ -64,6 +62,8 @@ public class MetadataApi extends ApiBase {
 		try {
 			List<LinkedHashMap<String, String>> metadata = delegate.getMetadataList(storageName, metadataNames, limit, filterHeaders, filterParams);
 			return Response.ok().entity(metadata).build();
+		} catch (HttpNotFoundException e) {
+			return Response.status(Response.Status.NOT_FOUND).entity(e.getMessage()).build();
 		} catch (HttpInternalServerErrorException e) {
 			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Could not find metadata with limit " + limit + " and filter [" + filterParams + "] - detailed error message - " + e + Arrays.toString(e.getStackTrace())).build();
 		}
@@ -100,6 +100,8 @@ public class MetadataApi extends ApiBase {
 		try {
 			int count = delegate.getMetadataCount(storageName);
 			return Response.ok().entity(count).build();
+		} catch (HttpNotFoundException e) {
+			return Response.status(Response.Status.NOT_FOUND).entity(e.getMessage()).build();
 		} catch (HttpInternalServerErrorException e) {
 			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Could not find metadata count - detailed error message - " + e + Arrays.toString(e.getStackTrace())).build();
 		}

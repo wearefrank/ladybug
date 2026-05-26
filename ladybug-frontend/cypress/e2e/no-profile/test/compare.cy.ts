@@ -10,6 +10,7 @@ describe('Tests for compare button in test tab', () => {
 
   afterEach(() => {
     cy.resetApp();
+    cy.initializeApp();
   })
 
   it('should show compare button if exactly two reports are selected', () => {

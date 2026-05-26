@@ -1,5 +1,8 @@
 describe('Metadata', () => {
-  before(() => cy.resetApp());
+  before(() => {
+    cy.resetApp();
+    cy.initializeApp();
+  });
 
   afterEach(() => {
     cy.clearDebugStore();
@@ -14,9 +17,9 @@ describe('Metadata', () => {
     cy.clickRootNodeInFileTree();
     cy.wait(200);
     cy.get('[data-cy-metadata-table="table"]').should('not.exist');
-    cy.get(':contains(Show metadata)').should('be.visible');
+    cy.get('[data-cy-open-metadata-table]').should('not.be.checked');
     cy.get('[data-cy-open-metadata-table]').click();
-    cy.get(':contains(Hide metadata)').should('be.visible');
+    cy.get('[data-cy-open-metadata-table]').should('be.checked');
     cy.get('[data-cy-metadata-table="table"]').should('be.visible');
   });
 
@@ -27,9 +30,9 @@ describe('Metadata', () => {
     cy.assertDebugTableLength(1).click();
     cy.checkFileTreeLength(1);
     cy.get('[data-cy-metadata-table="table"]').should('not.exist');
-    cy.get(':contains(Show metadata)').should('be.visible');
+    cy.get('[data-cy-open-metadata-table]').should('not.be.checked');
     cy.get('[data-cy-open-metadata-table]').click();
-    cy.get(':contains(Hide metadata)').should('be.visible');
+    cy.get('[data-cy-open-metadata-table]').should('be.checked');
     cy.get('[data-cy-metadata-table="table"]').should('be.visible');
   });
 });

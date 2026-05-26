@@ -9,8 +9,16 @@ import { inject, Injectable } from '@angular/core';
 export class ErrorHandling {
   private toastService = inject(ToastService);
 
+  handleUnknownError(error: unknown): void {
+    if (error instanceof HttpErrorResponse) {
+      this.handleHttpError(error);
+    } else {
+      this.toastService.showDanger('Got unknown error!');
+    }
+  }
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private handler(error: HttpErrorResponse): Observable<any> {
+  handleHttpError(error: HttpErrorResponse): Observable<any> {
     console.warn(error);
     const message = error.error;
     if (error.status > 399 && error.status < 500) {
@@ -26,6 +34,6 @@ export class ErrorHandling {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   handleError(): (error: HttpErrorResponse) => Observable<any> {
-    return this.handler.bind(this);
+    return this.handleHttpError.bind(this);
   }
 }

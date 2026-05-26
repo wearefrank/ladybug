@@ -1,5 +1,5 @@
 /*
-   Copyright 2026 WeAreFrank!
+   Copyright 2025, 2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -24,7 +24,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import io.opentelemetry.proto.trace.v1.Span;
 import org.wearefrank.ladybug.TestTool;
-import org.wearefrank.ladybug.storage.StorageException;
 
 import java.lang.invoke.MethodHandles;
 import java.util.*;
