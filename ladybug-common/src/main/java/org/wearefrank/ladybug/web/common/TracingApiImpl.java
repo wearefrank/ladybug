@@ -23,9 +23,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.wearefrank.ladybug.TestTool;
+import org.apache.commons.codec.binary.Hex;
 
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 @Component
@@ -45,19 +47,37 @@ public class TracingApiImpl {
 		ArrayList<String> endpoints = new ArrayList<>();
 		for (int i = trace.size() - 1; i >= 0; i--) {
 			if (trace.get(i).getParentSpanId().isEmpty()) {
-				testTool.startpoint(trace.get(i).getTraceId(), null, trace.get(i).getName(), trace.get(i).toHashmap().toString());
+				testTool.startpoint(byteStringToHex(trace.get(i).getTraceId()), null, trace.get(i).getName(), toHashMap(trace.get(i)).toString());
 				endpoints.add(trace.get(i).getName());
 			} else {
 				if (parentIds.contains(trace.get(i).getSpanId())) {
-					testTool.startpoint(trace.get(i).getTraceId(), null, trace.get(i).getName(), trace.get(i).toHashmap().toString());
+					testTool.startpoint(byteStringToHex(trace.get(i).getTraceId()), null, trace.get(i).getName(), toHashMap(trace.get(i)).toString());
 					endpoints.add(trace.get(i).getName());
 				} else {
-					testTool.infopoint(trace.get(i).getTraceId(), null, trace.get(i).getName(), trace.get(i).toHashmap().toString());
+					testTool.infopoint(byteStringToHex(trace.get(i).getTraceId()), null, trace.get(i).getName(), toHashMap(trace.get(i)).toString());
 				}
 			}
 		}
 		for (int i = endpoints.size() - 1; i >= 0; i--) {
-			testTool.endpoint(trace.get(0).getTraceId(), null, endpoints.get(i), "Endpoint");
+			testTool.endpoint(byteStringToHex(trace.get(0).getTraceId()), null, endpoints.get(i), "Endpoint");
 		}
+	}
+
+	public String byteStringToHex(ByteString byteString) {
+		return Hex.encodeHexString(byteString.toByteArray());
+	}
+
+	public HashMap<String, String> toHashMap(Span span) {
+		HashMap<String, String> map = new HashMap<>();
+
+		span.getAllFields().forEach((descriptor, value) -> {
+			if (value instanceof ByteString) {
+				map.put(descriptor.getName(), byteStringToHex((ByteString) value));
+			} else {
+				map.put(descriptor.getName(), value.toString());
+			}
+		});
+
+		return map;
 	}
 }
