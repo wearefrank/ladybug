@@ -22,13 +22,13 @@ import lombok.Setter;
 import org.wearefrank.ladybug.Span;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import org.wearefrank.ladybug.web.common.CollectorApiImpl;
+import org.wearefrank.ladybug.web.common.TracingApiImpl;
 import org.wearefrank.ladybug.web.common.Constants;
 
 @Path("/" + Constants.LADYBUG_API_PATH + "/collector")
-public class CollectorApi extends ApiBase {
+public class TracingApi extends ApiBase {
     @Autowired
-    private @Setter CollectorApiImpl delegate;
+    private @Setter TracingApiImpl delegate;
 
     @POST
     public Response collectSpans(Span[] trace) {

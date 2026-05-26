@@ -1,5 +1,5 @@
 /*
-   Copyright 2025 WeAreFrank!
+   Copyright 2025, 2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@ import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 
 @Component
-public class CollectorApiImpl {
+public class TracingApiImpl {
 	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
 	@Autowired

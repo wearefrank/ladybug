@@ -1,5 +1,5 @@
 /*
-   Copyright 2025 WeAreFrank!
+   Copyright 2025, 2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -23,16 +23,16 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.wearefrank.ladybug.Span;
-import org.wearefrank.ladybug.web.common.CollectorApiImpl;
+import org.wearefrank.ladybug.web.common.TracingApiImpl;
 
 import lombok.Setter;
 
 @RestController
 @RequestMapping("/collector")
 @RolesAllowed("IbisWebService")
-public class CollectorApi {
+public class TracingApi {
 	@Autowired
-	private @Setter CollectorApiImpl delegate;
+	private @Setter TracingApiImpl delegate;
 
 	@PostMapping
 	public ResponseEntity<Void> collectSpans(Span[] trace) {
