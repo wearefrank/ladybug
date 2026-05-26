@@ -30,7 +30,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.wearefrank.ladybug.web.common.TracingApiImpl;
 import org.wearefrank.ladybug.web.common.Constants;
 
-@Path("/" + Constants.LADYBUG_API_PATH + "/collector")
+@Path("/" + Constants.LADYBUG_API_PATH + "/traces")
 public class TracingApi extends ApiBase {
     @Autowired
     private @Setter TracingApiImpl delegate;
