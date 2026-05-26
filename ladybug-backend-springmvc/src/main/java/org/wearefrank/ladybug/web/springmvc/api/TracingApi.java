@@ -48,7 +48,7 @@ public class TracingApi {
 	}
 
 	@PostMapping(consumes = { MediaType.APPLICATION_JSON_VALUE, "application/x-protobuf"})
-	public ResponseEntity<Void> receiveSpans(@RequestHeader("Content-Type") String contentType, @RequestBody byte[] data) throws InvalidProtocolBufferException {
+	public ResponseEntity<?> receiveSpans(@RequestHeader("Content-Type") String contentType, @RequestBody byte[] data) throws InvalidProtocolBufferException {
 		ExportTraceServiceRequest request;
 
 		if (contentType != null && contentType.startsWith("application/x-protobuf")) {
