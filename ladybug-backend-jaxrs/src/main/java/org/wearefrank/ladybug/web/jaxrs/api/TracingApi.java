@@ -20,7 +20,6 @@ import com.google.protobuf.util.JsonFormat;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
 import io.opentelemetry.proto.trace.v1.ResourceSpans;
 import io.opentelemetry.proto.trace.v1.ScopeSpans;
-import io.opentelemetry.proto.trace.v1.Span;
 import jakarta.annotation.PostConstruct;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Response;
@@ -47,16 +46,18 @@ public class TracingApi extends ApiBase {
     public Response receiveSpans(@HeaderParam("Content-Type") String contentType, byte[] data) throws InvalidProtocolBufferException {
         ExportTraceServiceRequest request;
 
-        if (contentType.startsWith("application/x-protobuf")) {
+        if (contentType != null && contentType.startsWith("application/x-protobuf")) {
             request = ExportTraceServiceRequest.parseFrom(data);
-        } else if (contentType.startsWith("application/json")) {
+        } else if (contentType != null && contentType.startsWith("application/json")) {
             String json = new String(data);
             ExportTraceServiceRequest.Builder builder = ExportTraceServiceRequest.newBuilder();
             JsonFormat.parser().merge(json, builder);
             request = builder.build();
         } else {
+            ExportTraceServiceResponse response = ExportTraceServiceResponse.newBuilder().build();
             return Response.status(Response.Status.UNSUPPORTED_MEDIA_TYPE)
-                    .entity("Unsupported Content-Type: " + contentType)
+                    .type(MediaType.APPLICATION_JSON)
+                    .entity(JsonFormat.printer().print(response))
                     .build();
         }
 
@@ -68,6 +69,15 @@ public class TracingApi extends ApiBase {
             }
         }
 
-        return Response.ok().build();
+        ExportTraceServiceResponse response = ExportTraceServiceResponse.newBuilder().build();
+        if (contentType.startsWith("application/x-protobuf")) {
+            return Response.ok(response.toByteArray())
+                    .type("application/x-protobuf")
+                    .build();
+        } else {
+            return Response.ok(JsonFormat.printer().print(response))
+                    .type(MediaType.APPLICATION_JSON)
+                    .build();
+        }
     }
 }

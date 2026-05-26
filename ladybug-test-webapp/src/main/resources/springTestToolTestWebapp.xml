@@ -15,7 +15,8 @@
 	>
 
 	<!-- Make ${ladybug.dir:ladybug} read system property ladybug.dir with default value ladybug -->
-	<context:property-placeholder/>
+	<!-- Read optional properties file test.properties. -->
+	<context:property-placeholder location="classpath:test.properties"/>
 
 	<context:component-scan base-package="org.wearefrank.ladybug"/>
 
@@ -168,11 +169,11 @@
 	</bean>
 
 	<bean name="reportsFilename" class="java.lang.String">
-		<constructor-arg value="../${ladybug.dir:ladybug}/data/file-storage/ladybug.tts"/>
+		<constructor-arg value="../${ladybug.dir:ladybug}/ladybug-common/data/file-storage/ladybug.tts"/>
 	</bean>
 
 	<bean name="metadataFilename" class="java.lang.String">
-		<constructor-arg value="../${ladybug.dir:ladybug}/data/file-storage/ladybug.ttm"/>
+		<constructor-arg value="../${ladybug.dir:ladybug}/ladybug-common/data/file-storage/ladybug.ttm"/>
 	</bean>
 
 	<bean name="fileStorage" class="org.wearefrank.ladybug.storage.file.Storage">
@@ -212,7 +213,7 @@
 	-->
 	<bean name="ladybugDataSource" class="org.apache.commons.dbcp2.BasicDataSource" destroy-method="close">
 		<property name="driverClassName" value="org.h2.Driver"/>
-		<property name="url" value="jdbc:h2:../${ladybug.dir:ladybug}/data/database-storage/ladybug"/>
+		<property name="url" value="jdbc:h2:../${ladybug.dir:ladybug}/ladybug-common/data/database-storage/ladybug"/>
 	</bean>
 
 	<bean name="ladybugDatabaseChangelog" class="liquibase.integration.spring.SpringLiquibase">

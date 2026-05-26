@@ -1,15 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
-
-  <groupId>org.wearefrank</groupId>
-  <artifactId>ladybug-common</artifactId>
-  <version>${revision}</version>
 
   <parent>
     <groupId>org.wearefrank</groupId>
     <artifactId>ladybug-parent</artifactId>
     <version>${revision}</version>
   </parent>
+
+  <artifactId>ladybug-common</artifactId>
 
   <name>Ladybug common</name>
 
@@ -158,6 +157,17 @@
       <version>5.11.0</version>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>io.opentelemetry.proto</groupId>
+      <artifactId>opentelemetry-proto</artifactId>
+      <version>1.9.0-alpha</version>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>commons-codec</groupId>
+      <artifactId>commons-codec</artifactId>
+      <version>1.17.0</version>
+    </dependency>
   </dependencies>
 
   <build>
@@ -172,10 +182,27 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jar-plugin</artifactId>
+        <executions>
+          <!-- Create a test jar for ibis-ladybug-test-webapp to depend on. See also https://maven.apache.org/plugins/maven-jar-plugin/examples/create-test-jar.html -->
+          <execution>
+            <goals>
+              <goal>test-jar</goal>
+            </goals>
+          </execution>
+        </executions>
       </plugin>
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
-        <version>2.22.2</version>
+      </plugin>
+      <plugin>
+        <artifactId>maven-clean-plugin</artifactId>
+        <configuration>
+          <filesets>
+            <fileset>
+              <directory>data</directory>
+            </fileset>
+          </filesets>
+        </configuration>
       </plugin>
     </plugins>
   </build>

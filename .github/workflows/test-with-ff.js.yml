@@ -7,7 +7,6 @@ on:
   push:
     branches:
       - master
-      - fix-test-with-ff-20260313
   # Martijn would love to add "pull_request:" here, but that would take too many GitHub Actions minutes.
   # The tests need more than a quarter only to start the backend. This should not be done for
   # every tiny commit on a PR.
@@ -266,7 +265,7 @@ jobs:
         working-directory: ladybug/ladybug-ff-test-webapp
         run: ./restart.sh > serverStartLog.log &
       - name: Wait for server to be available
-        working-directory: ladybug/.github/workflows/with-ff
+        working-directory: ladybug/.github/workflows
         run: ./waitForUrl.sh http://localhost:8090 1800
       - name: Be sure there are no old videos
         run: rm -rf ladybug/ladybug-ff-cypress-test/cypress/videos

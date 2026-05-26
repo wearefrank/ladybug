@@ -117,6 +117,10 @@ public class TestTool {
 		reportGeneratorEnabled = defaultReportGeneratorEnabled;
 	}
 
+	public void setOpenTelemetryEndpoint(String openTelemetryEndpoint) {
+		this.openTelemetryEndpoint = openTelemetryEndpoint;
+	}
+
 	public void setSecurityLoggerName(String securityLoggerName) {
 		securityLog = LoggerFactory.getLogger(securityLoggerName);
 	}

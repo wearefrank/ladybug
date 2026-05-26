@@ -1,10 +1,10 @@
 import { inject, Injectable } from '@angular/core';
-import { catchError, firstValueFrom } from 'rxjs';
+import { firstValueFrom } from 'rxjs';
 import { HttpService } from './http.service';
 import { OptionsSettings } from '../interfaces/options-settings';
-import { Transformation } from '../interfaces/transformation';
-import { ErrorHandling } from '../classes/error-handling.service';
 import { UploadParameters } from '../interfaces/upload-params';
+import { ToastService } from './toast.service';
+import { ErrorHandling } from '../classes/error-handling.service';
 
 export interface ServerSettings {
   isGeneratorEnabled: boolean;
@@ -17,6 +17,7 @@ export interface ServerSettings {
 })
 export class SettingsService {
   private httpService = inject(HttpService);
+  private toastService = inject(ToastService);
   private errorHandler = inject(ErrorHandling);
   private static INITIALIZATION_IDLE = 0;
   private static INITIALIZATION_BUSY = 1;
@@ -25,9 +26,11 @@ export class SettingsService {
   private static INITIALIZATION_POLL_INTERVAL_MS = 100;
 
   private initializationState = SettingsService.INITIALIZATION_IDLE;
+  private _roles: string[] = ['unknown'];
   private _isGeneratorEnabled = false;
   private _regexFilter: string | null = null;
   private _transformation: string | null = null;
+  private testModeEnabled = false;
 
   // Life cycle hooks like ngOnInit are not available for services.
   // Therefore this method is introduced. It should be run by every
@@ -52,6 +55,11 @@ export class SettingsService {
     }
   }
 
+  public isUiAsDataAdmin(): boolean {
+    const isDataAdmin = this._roles.includes('admin') || this._roles.includes('tester');
+    return isDataAdmin || this.testModeEnabled;
+  }
+
   public isGeneratorEnabled(): boolean {
     return this._isGeneratorEnabled;
   }
@@ -65,71 +73,69 @@ export class SettingsService {
   }
 
   public async refresh(): Promise<void> {
-    const settingsPromise: Promise<OptionsSettings> = firstValueFrom(
-      this.httpService.getSettings().pipe(catchError(this.errorHandler.handleError())),
-    );
-    const transformationPromise: Promise<Transformation> = firstValueFrom(
-      this.httpService.getTransformation().pipe(catchError(this.errorHandler.handleError())),
-    );
-    await Promise.all([settingsPromise, transformationPromise]);
-    const optionsSettings: OptionsSettings = await settingsPromise;
-    const transformation: Transformation = await transformationPromise;
-    this._isGeneratorEnabled = optionsSettings.generatorEnabled;
-    this._regexFilter = optionsSettings.regexFilter;
-    this._transformation = transformation.transformation;
+    try {
+      const optionsSettings: OptionsSettings = await firstValueFrom(this.httpService.getSettings());
+      const rolesString: string = optionsSettings.roles.join(', ');
+      console.log(`Received from backend: roles=${rolesString}`);
+      this._roles = optionsSettings.roles;
+      this._isGeneratorEnabled = optionsSettings.generatorEnabled!;
+      this._regexFilter = optionsSettings.regexFilter!;
+      this._transformation = null;
+      if (optionsSettings.transformation !== undefined) {
+        this._transformation = optionsSettings.transformation;
+      }
+      if (optionsSettings.uiTestMode.toLowerCase() === 'dont_block_backend') {
+        this.testModeEnabled = true;
+      }
+      if (this.testModeEnabled) {
+        console.log('SettingsService: testMode enabled');
+      } else {
+        console.log('SettingsService: testMode disabled');
+      }
+    } catch (error: unknown) {
+      this.errorHandler.handleUnknownError(error);
+    }
   }
 
-  // IbisObserver is not allowed to change enable/disable the report generator or to change the regex.
-  // IbisObserver is allowed to change the report transformation.
-  // So we send only the transformation update request when possible.
-  public async save(settings: ServerSettings): Promise<void> {
-    const isSettingsChanged =
-      settings.isGeneratorEnabled !== this._isGeneratorEnabled || settings.regexFilter !== this._regexFilter;
-    const isTransformationChanged = settings.transformation !== this._transformation;
-    const requests: Promise<void>[] = [];
-    if (isSettingsChanged) {
-      const uploadParameters: UploadParameters = {
-        generatorEnabled: settings.isGeneratorEnabled,
-        regexFilter: settings.regexFilter === null ? '' : settings.regexFilter,
-      };
-      requests.push(
-        firstValueFrom(
-          this.httpService.postSettings(uploadParameters).pipe(catchError(this.errorHandler.handleError())),
-        ),
-      );
-    }
-    if (isTransformationChanged) {
-      requests.push(
-        firstValueFrom(
-          this.httpService
-            .postTransformation(settings.transformation === null ? '' : settings.transformation)
-            .pipe(catchError(this.errorHandler.handleError())),
-        ),
-      );
-    }
+  public async saveAsDataAdmin(settings: ServerSettings): Promise<void> {
     try {
-      await Promise.all(requests);
+      const isSettingsChanged =
+        settings.isGeneratorEnabled !== this._isGeneratorEnabled || settings.regexFilter !== this._regexFilter;
+      const isTransformationChanged = settings.transformation !== this._transformation;
+      if (!(isSettingsChanged || isTransformationChanged)) {
+        return;
+      }
+      const uploadParameters: UploadParameters = {};
+      if (isSettingsChanged) {
+        uploadParameters.generatorEnabled = settings.isGeneratorEnabled;
+        uploadParameters.regexFilter = settings.regexFilter === null ? '' : settings.regexFilter;
+      }
+      if (isTransformationChanged) {
+        uploadParameters.transformation = settings.transformation === null ? '' : settings.transformation;
+      }
+      await firstValueFrom(this.httpService.postSettingsAsDataAdmin(uploadParameters));
       this._isGeneratorEnabled = settings.isGeneratorEnabled;
       this._regexFilter = settings.regexFilter;
       this._transformation = settings.transformation;
-    } catch {
-      throw new Error('Failed to save debug tab settings toserver');
+    } catch (error: unknown) {
+      this.errorHandler.handleUnknownError(error);
+    }
+  }
+
+  public async saveAsObserver(transformation: string): Promise<void> {
+    try {
+      await firstValueFrom(this.httpService.postTransformationAsObserver(transformation));
+    } catch (error: unknown) {
+      this.errorHandler.handleUnknownError(error);
     }
   }
 
   public async backToFactory(): Promise<void> {
-    // All roles have permission to do this. No need to check for changes before doint the HTTP calls.
-    const settingsPromise = firstValueFrom(
-      this.httpService.resetSettings().pipe(catchError(this.errorHandler.handleError())),
-    );
-    const transformationBackToFactoryPromise: Promise<void> = firstValueFrom(
-      this.httpService.restoreFactoryTransformation().pipe(catchError(this.errorHandler.handleError())),
-    );
     try {
-      await Promise.all([settingsPromise, transformationBackToFactoryPromise]);
+      await firstValueFrom(this.httpService.resetSettings());
       this.refresh();
-    } catch {
-      throw new Error('Failed to restore factory settings');
+    } catch (error: unknown) {
+      this.errorHandler.handleUnknownError(error);
     }
   }
 }

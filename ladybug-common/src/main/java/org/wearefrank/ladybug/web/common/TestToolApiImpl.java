@@ -15,11 +15,12 @@
 */
 package org.wearefrank.ladybug.web.common;
 
-import jakarta.annotation.PostConstruct;
 import jakarta.inject.Inject;
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.wearefrank.ladybug.MetadataExtractor;
 import org.wearefrank.ladybug.Report;
@@ -35,8 +36,13 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import lombok.extern.slf4j.Slf4j;
+
 @Component
-public class TestToolApiImpl {
+@Slf4j
+public class TestToolApiImpl implements InitializingBean {
+	private static final String KEY_TRANSFORMATION = "transformation";
+
 	private @Setter
 	@Inject
 	@Autowired TestTool testTool;
@@ -44,41 +50,67 @@ public class TestToolApiImpl {
 	private @Setter @Inject @Autowired ReportXmlTransformer reportXmlTransformer;
 	private @Setter @Inject @Autowired Views views;
 
+	@Value("${ladybug.ui.test.mode:DEFAULT}")
+	private TestToolInfoResponse.UI_TEST_MODE uiTestMode;
 
-	public Map<String, Object> getTestToolInfo() {
-		Map<String, Object> map = new HashMap<>(4);
-		map.put("generatorEnabled", testTool.isReportGeneratorEnabled());
-		map.put("estMemory", testTool.getReportsInProgressEstimatedMemoryUsage());
-		map.put("regexFilter", testTool.getRegexFilter());
-		map.put("reportsInProgress", testTool.getNumberOfReportsInProgress());
-		map.put("stubStrategies", testTool.getStubStrategies());
-		return map;
+	@Override
+	public void afterPropertiesSet() {
+		if (uiTestMode == TestToolInfoResponse.UI_TEST_MODE.DEFAULT) {
+			log.info("Using default value of test.properties item: ladybug.ui.test.mode={}", uiTestMode);
+		} else {
+			log.error("Behavior of ladybug modified by test.properties - not for production!: ladybug.ui.test.mode={}", uiTestMode);
+		}
 	}
 
-	public Map<String, Object> resetInfo() {
+	public TestToolInfoResponse getTestToolInfo() {
+		TestToolInfoResponse result = new TestToolInfoResponse();
+		result.setGeneratorEnabled(testTool.isReportGeneratorEnabled());
+		result.setEstMemory(testTool.getReportsInProgressEstimatedMemoryUsage());
+		result.setRegexFilter(testTool.getRegexFilter());
+		result.setReportsInProgress(testTool.getNumberOfReportsInProgress());
+		result.setStubStrategies(testTool.getStubStrategies());
+		result.setTransformation("");
+		String transformation = reportXmlTransformer.getXslt();
+		if (StringUtils.isEmpty(transformation)) {
+			log.error("reportXmlTransformer.getXslt() should hold non-empty XSLT transformation");
+		} else {
+			result.setTransformation(transformation);
+		}
+		result.setUiTestMode(uiTestMode);
+		return result;
+	}
+
+	public TestToolInfoResponse resetInfo() {
 		testTool.reset();
 		testTool.sendReportGeneratorStatusUpdate();
+		reportXmlTransformer.restoreDefaultXslt();
+		// Roles are added by the callers because retrieving them is specific to
+		// JAX-RS or Spring MVC authorization.
 		return getTestToolInfo();
 	}
 
-	public void updateInfo(Map<String, String> map) throws HttpBadRequestException {
+	public void updateInfo(Map<String, String> map) throws HttpBadRequestException, HttpInternalServerErrorException {
 		if (map.isEmpty()) {
 			throw new HttpBadRequestException("No settings have been provided - detailed error message - The settings that have been provided are " + map.toString());
 		}
 
-		if (map.size() > 2) {
+		if (map.size() > 3) {
 			throw new HttpBadRequestException("Too many settings have been provided - detailed error message - The settings that have been provided are " + map.toString());
 		}
-		// TODO: Check user roles.
 		String generatorEnabled = map.remove("generatorEnabled");
 		String regexFilter = map.remove("regexFilter");
+		String transformation = map.remove(KEY_TRANSFORMATION);
 
 		if (StringUtils.isNotEmpty(generatorEnabled)) {
 			testTool.setReportGeneratorEnabled("1".equalsIgnoreCase(generatorEnabled) || "true".equalsIgnoreCase(generatorEnabled));
 			testTool.sendReportGeneratorStatusUpdate();
 		}
-		if (StringUtils.isNotEmpty(regexFilter))
+		if (StringUtils.isNotEmpty(regexFilter)) {
 			testTool.setRegexFilter(regexFilter);
+		}
+		if (transformation != null) {
+			this.updateReportTransformation(transformation);
+		}
 	}
 
 	public Report getReportsInProgress(int index) throws HttpBadRequestException {
@@ -108,9 +140,13 @@ public class TestToolApiImpl {
 	}
 
 	public void updateReportTransformation(Map<String, String> map) throws HttpBadRequestException, HttpInternalServerErrorException {
-		String transformation = map.get("transformation");
-		if (StringUtils.isEmpty(transformation)) {
-			throw new HttpBadRequestException("No transformation has been provided");
+		String transformation = map.get(KEY_TRANSFORMATION);
+		updateReportTransformation(transformation);
+	}
+
+	private void updateReportTransformation(String transformation) throws HttpBadRequestException, HttpInternalServerErrorException {
+		if (StringUtils.isBlank(transformation)) {
+			throw new HttpBadRequestException("It is not allowed to clear the report transformation");
 		}
 		transformation = transformation.replace("\r\n", "\n");
 		String errorMessage = reportXmlTransformer.updateXslt(transformation);
@@ -118,20 +154,6 @@ public class TestToolApiImpl {
 			// Without "- detailed error message -" the message is not shown in the toaster
 			throw new HttpInternalServerErrorException(errorMessage + " - detailed error message - No detailed error message available");
 		}
-	}
-
-	public void restoreDefaultXsltTransformation() {
-		reportXmlTransformer.restoreDefaultXslt();
-	}
-
-	public Map<String, String> getReportTransformation() {
-		String transformation = reportXmlTransformer.getXslt();
-		if (StringUtils.isEmpty(transformation))
-			return null;
-
-		Map<String, String> map = new HashMap<>(1);
-		map.put("transformation", transformation);
-		return map;
 	}
 
 	public Map<String, Map<String, Object>> getViewsResponse() {

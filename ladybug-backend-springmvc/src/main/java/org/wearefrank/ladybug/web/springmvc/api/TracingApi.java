@@ -1,5 +1,5 @@
 /*
-   Copyright 2026 WeAreFrank!
+   Copyright 2025, 2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,22 +18,20 @@ package org.wearefrank.ladybug.web.springmvc.api;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.util.JsonFormat;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
+import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceResponse;
 import io.opentelemetry.proto.trace.v1.ResourceSpans;
 import io.opentelemetry.proto.trace.v1.ScopeSpans;
 import io.opentelemetry.proto.trace.v1.Span;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.security.RolesAllowed;
+import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.wearefrank.ladybug.SpanBuffer;
 import org.wearefrank.ladybug.web.common.TracingApiImpl;
-
-import lombok.Setter;
-
-import java.nio.charset.StandardCharsets;
 
 @RestController
 @RequestMapping("/traces")
@@ -50,19 +48,21 @@ public class TracingApi {
 	}
 
 	@PostMapping(consumes = { MediaType.APPLICATION_JSON_VALUE, "application/x-protobuf"})
-	public ResponseEntity<Void> receiveTrace(@RequestHeader(HttpHeaders.CONTENT_TYPE) String contentType, @RequestBody byte[] data) throws InvalidProtocolBufferException {
+	public ResponseEntity<Void> receiveSpans(@RequestHeader("Content-Type") String contentType, @RequestBody byte[] data) throws InvalidProtocolBufferException {
 		ExportTraceServiceRequest request;
 
-		if (contentType.startsWith("application/x-protobuf")) {
+		if (contentType != null && contentType.startsWith("application/x-protobuf")) {
 			request = ExportTraceServiceRequest.parseFrom(data);
-		} else if (contentType.startsWith(MediaType.APPLICATION_JSON_VALUE)) {
-			String json = new String(data, StandardCharsets.UTF_8);
-			ExportTraceServiceRequest.Builder builder =
-					ExportTraceServiceRequest.newBuilder();
+		} else if (contentType != null && contentType.startsWith(MediaType.APPLICATION_JSON_VALUE)) {
+			String json = new String(data);
+			ExportTraceServiceRequest.Builder builder = ExportTraceServiceRequest.newBuilder();
 			JsonFormat.parser().merge(json, builder);
 			request = builder.build();
 		} else {
-			return ResponseEntity.badRequest().build();
+			ExportTraceServiceResponse response = ExportTraceServiceResponse.newBuilder().build();
+			return ResponseEntity.status(HttpStatus.UNSUPPORTED_MEDIA_TYPE)
+					.contentType(MediaType.APPLICATION_JSON)
+					.body(JsonFormat.printer().print(response));
 		}
 
 		for (ResourceSpans resourceSpans : request.getResourceSpansList()) {
@@ -73,7 +73,15 @@ public class TracingApi {
 			}
 		}
 
-		return ResponseEntity.ok().build();
+		ExportTraceServiceResponse response = ExportTraceServiceResponse.newBuilder().build();
+		if (contentType.startsWith("application/x-protobuf")) {
+			return ResponseEntity.ok()
+					.contentType(org.springframework.http.MediaType.parseMediaType("application/x-protobuf"))
+					.body(response.toByteArray());
+		} else {
+			return ResponseEntity.ok()
+					.contentType(MediaType.APPLICATION_JSON)
+					.body(JsonFormat.printer().print(response));
+		}
 	}
-
 }

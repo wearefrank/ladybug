@@ -1,5 +1,8 @@
 describe('Tests for settings component', () => {
-  before(() => cy.resetApp());
+  before(() => {
+    cy.resetApp();
+    cy.initializeApp();
+  });
 
   beforeEach(() => {
     cy.createReport();
@@ -7,7 +10,10 @@ describe('Tests for settings component', () => {
     cy.initializeApp();
   });
 
-  afterEach(() => cy.resetApp());
+  afterEach(() => {
+    cy.resetApp();
+    cy.initializeApp();
+  });
 
   it('Should alter spacing when spacing setting is altered', () => {
     cy.get('[data-cy-debug="openSettings"]').as('openSettingsModal').click();
@@ -280,6 +286,53 @@ describe('Tests for settings component', () => {
       cy.get('@client').click();
       cy.get('@numberOfReports').invoke('val').should('equal', '10');
       cy.get('[data-cy-settings="close"]').as('close').click();
+    })
+
+    it('When transformation cleared then save aborted and transformation restored', () => {
+      cy.get('[data-cy-debug="openSettings"]').as('openSettingsModal').click();
+      cy.get('[data-cy-settings="nav-server"]').as('server').click();
+      cy.get('[data-cy-settings-transformation]').invoke('val').should('have.length.gt', 10);
+      cy.get('[data-cy-settings-transformation]').clear();
+      cy.get('[data-cy-settings-transformation]').invoke('val').should('have.length', 0);
+      cy.get('[data-cy-settings="saveChanges"]').click();
+      cy.get('[data-cy-toast="warning"]').should('contains.text', 'Clearing the global report transformation is not supported');
+      cy.get('[data-cy-settings-transformation]').invoke('val').should('have.length.gt', 10);
+    })
+
+    it('When closing confirmed with save and non-empty transformation string then saved', () => {
+      cy.get('[data-cy-debug="openSettings"]').as('openSettingsModal').click();
+      cy.get('[data-cy-settings="nav-server"]').as('server').click();
+      cy.get('[data-cy-settings-transformation]').invoke('val').should('have.length.gt', 10);
+      cy.get('[data-cy-settings-transformation]').invoke('val').should('contain', 'match');
+      cy.fixture('empty.xslt').then((emptyXslt: string) => {
+        emptyXslt = normalize(emptyXslt);
+        cy.get('[data-cy-settings-transformation]').as('transformation').clear().type(emptyXslt);
+      });
+      cy.get('[data-cy-settings-transformation]').invoke('val').should('have.length.gt', 10);
+      cy.get('[data-cy-settings-transformation]').invoke('val').should('not.contain', 'match');
+      cy.get('[data-cy-settings="close"]').click();
+      cy.get('[data-cy-debug-confirm="save"]').click();
+      cy.get('[data-cy-toast]').should('not.exist');
+      cy.get('[data-cy-debug-confirm="save"]').should('not.exist');
+      cy.get('[data-cy-settings="root"]').should('not.exist');
+      cy.wait(200);
+      cy.get('@openSettingsModal').click();
+      cy.get('[data-cy-settings="nav-server"]').as('server').click();
+      cy.get('[data-cy-settings-transformation]').invoke('val').should('not.contain', 'match');
+    })
+
+    it('When closing confirmed with save and empty transformation string then not saved', () => {
+      cy.get('[data-cy-debug="openSettings"]').as('openSettingsModal').click();
+      cy.get('[data-cy-settings="nav-server"]').as('server').click();
+      cy.get('[data-cy-settings-transformation]').invoke('val').should('have.length.gt', 10);
+      cy.get('[data-cy-settings-transformation]').clear();
+      cy.get('[data-cy-settings-transformation]').invoke('val').should('have.length', 0);
+      cy.get('[data-cy-settings="close"]').click();
+      cy.get('[data-cy-debug-confirm="save"]').click();
+      cy.get('[data-cy-toast="warning"]').should('contain.text', 'Clearing the global report transformation is not supported');
+      cy.get('[data-cy-debug-confirm="save"]').should('not.exist');
+      cy.get('[data-cy-settings-transformation]').invoke('val').should('have.length.gt', 10);
+      cy.get('[data-cy-settings="root"]').should('be.visible');
     })
   })
 

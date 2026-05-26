@@ -1,9 +1,15 @@
 describe('Test toast window', () => {
-  before(() => cy.resetApp());
+  before(() => {
+    cy.resetApp();
+    cy.initializeApp();
+  });
 
   beforeEach(() => cy.initializeApp());
 
-  afterEach(() => cy.resetApp());
+  afterEach(() => {
+    cy.resetApp();
+    cy.initializeApp();
+  });
 
   it('When new report appears in table then toast window shown', () => {
     cy.assertDebugTableLength(0);

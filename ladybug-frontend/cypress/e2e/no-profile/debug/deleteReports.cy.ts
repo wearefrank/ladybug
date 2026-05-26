@@ -1,6 +1,7 @@
 describe('About deleting reports', () => {
   beforeEach(() => {
-    cy.resetApp()
+    cy.resetApp();
+    cy.initializeApp();
   });
 
   beforeEach(() => {
@@ -13,7 +14,8 @@ describe('About deleting reports', () => {
 
   afterEach(() => {
     cy.get('[data-cy-change-view-dropdown]').select('White box');
-    cy.resetApp()
+    cy.resetApp();
+    cy.initializeApp();
   });
 
   it('Should change view and delete a single report with the deleteSelected button', () => {

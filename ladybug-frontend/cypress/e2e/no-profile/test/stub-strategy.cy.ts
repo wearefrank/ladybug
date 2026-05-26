@@ -1,6 +1,7 @@
 describe('Stub strategy', () => {
   before(() => {
     cy.resetApp();
+    cy.initializeApp();
   });
 
   beforeEach(() => {
@@ -13,6 +14,7 @@ describe('Stub strategy', () => {
 
   afterEach(() => {
     cy.resetApp();
+    cy.initializeApp();
   });
 
   it('When checkpoint level stub strategy is edited then edit can be saved', () => {

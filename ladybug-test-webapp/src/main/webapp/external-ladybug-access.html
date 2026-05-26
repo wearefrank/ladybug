@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Ladybug Director</title>
+<style>
+  body { font-family: sans-serif; font-size: 13px; padding: 16px; }
+  input { font-size: 13px; padding: 2px 4px; }
+  input[type=text] { width: 300px; }
+  input[type=number] { width: 60px; font-size: 13px; padding: 2px 4px; }
+  table { border-collapse: collapse; width: 100%; margin-top: 12px; }
+  th, td { text-align: left; padding: 4px 8px; border-bottom: 1px solid #ddd; }
+  th { font-weight: 600; background: #f5f5f5; }
+  tr:hover { background: #f0f0f0; cursor: pointer; }
+  tr.selected { background: #d0e8ff; }
+  button { font-size: 12px; cursor: pointer; }
+  #status { color: #666; margin-top: 4px; font-size: 12px; }
+</style>
+</head>
+<body>
+
+<b>Ladybug Director</b>
+
+<p style="margin-top:8px">
+  URL: <input id="lb-url" type="text" placeholder="http://localhost:8080/context/iaf">
+  Storage: <input id="lb-storage" type="text" style="width:180px" placeholder="DatabaseDebugStorage">
+  Limit: <input id="lb-limit" type="number" value="50" min="1">
+  Offset: <input id="lb-offset" type="number" value="0" min="0">
+  <button onclick="load(true)">Load</button>
+  <button onclick="openLadybug()">Open Ladybug</button>
+</p>
+<p><input id="search" type="text" placeholder="Filter…" oninput="applyFilter()" style="width:400px"></p>
+<div id="status"></div>
+
+<table>
+  <thead><tr><th>ID</th><th>Name</th><th>Time</th><th>Duration</th><th></th></tr></thead>
+  <tbody id="tbody"></tbody>
+</table>
+<div id="load-more" style="display:none; margin-top:8px">
+  <button onclick="load(false)">Load more</button>
+</div>
+
+<script>
+'use strict';
+
+let lbWindow = null, lbReady = false, pendingReport = null;
+let allRows = [], filtered = [], total = null;
+
+const urlEl     = document.getElementById('lb-url');
+const storageEl = document.getElementById('lb-storage');
+const limitEl   = document.getElementById('lb-limit');
+const offsetEl  = document.getElementById('lb-offset');
+const tbody     = document.getElementById('tbody');
+const statusEl  = document.getElementById('status');
+const loadMoreEl = document.getElementById('load-more');
+
+urlEl.value     = localStorage.getItem('lb-url')     || '';
+storageEl.value = localStorage.getItem('lb-storage') || 'DatabaseDebugStorage';
+
+urlEl.addEventListener('keydown',     e => e.key === 'Enter' && load(true));
+storageEl.addEventListener('keydown', e => e.key === 'Enter' && load(true));
+
+function apiBase() { return urlEl.value.trim().replace(/\/$/, '') + '/ladybug/api'; }
+function lbUiUrl() { return urlEl.value.trim().replace(/\/$/, '') + '/ladybug/'; }
+
+function save() {
+  localStorage.setItem('lb-url',     urlEl.value.trim());
+  localStorage.setItem('lb-storage', storageEl.value.trim());
+}
+
+// ── Open / postMessage ────────────────────────────────────────────────────
+function openLadybug() {
+  save();
+  lbWindow = window.open(lbUiUrl(), 'ladybug');
+  lbReady  = false;
+}
+
+window.addEventListener('message', e => {
+  if (!lbWindow || e.source !== lbWindow) return;
+  if (e.data?.action === 'ladybug-ready') {
+    lbReady = true;
+    if (pendingReport) { sendReport(pendingReport); pendingReport = null; }
+  }
+});
+
+function directTo(report) {
+  if (!lbWindow || lbWindow.closed) { openLadybug(); }
+  if (lbReady) { sendReport(report); return; }
+  pendingReport = report;
+  let tries = 0;
+  const poll = setInterval(() => {
+    if (lbReady || ++tries > 50) { clearInterval(poll); pendingReport = null; return; }
+    lbWindow?.postMessage({ action: 'ladybug-ping' }, '*');
+  }, 300);
+}
+
+function sendReport(report) {
+  lbWindow.postMessage({ action: 'ladybug-openReport', report, currentView: { storageName: storageEl.value.trim() } }, '*');
+}
+
+// ── Fetch ─────────────────────────────────────────────────────────────────
+async function load(reset) {
+  save();
+  const limit         = parseInt(limitEl.value)  || 50;
+  const currentOffset = parseInt(offsetEl.value) || 0;            // read once, always respected
+  if (reset) { allRows = []; total = null; }
+  const storage = storageEl.value.trim();
+  setStatus('Loading…');
+  try {
+    const url = new URL(`${apiBase()}/metadata/${encodeURIComponent(storage)}`);
+    url.searchParams.set('limit', limit);
+    url.searchParams.set('offset', currentOffset);
+    ['storageId','name','endTime','duration'].forEach(n => url.searchParams.append('metadataNames', n));
+    const r = await fetch(url, { credentials: 'include' });
+    if (!r.ok) throw new Error('HTTP ' + r.status + (r.status === 404 ? ` (storage "${storage}" not found)` : ''));
+    const rows = await r.json();
+    if (reset) {
+      try { total = await fetch(`${apiBase()}/metadata/${encodeURIComponent(storage)}/count`, { credentials: 'include' }).then(r => r.json()); } catch {}
+    }
+    allRows = reset ? rows : [...allRows, ...rows];
+    offsetEl.value = currentOffset + rows.length;
+    applyFilter();
+    setStatus(`${allRows.length}${total != null ? ' / ' + total : ''} reports`);
+  } catch(e) {
+    setStatus('Error: ' + e.message);
+  }
+}
+
+async function openReport(storageId, btn) {
+  btn.textContent = '…';
+  try {
+    const storage = storageEl.value.trim();
+    const data    = await fetch(`${apiBase()}/report/${encodeURIComponent(storage)}/${storageId}`, { credentials: 'include' }).then(r => r.json());
+    directTo(data.report ?? data);
+    btn.textContent = '✓';
+  } catch(e) {
+    btn.textContent = '✗';
+    setStatus('Error: ' + e.message);
+  }
+  setTimeout(() => btn.textContent = 'Open', 1500);
+}
+
+// ── Render ────────────────────────────────────────────────────────────────
+function applyFilter() {
+  const q = document.getElementById('search').value.toLowerCase();
+  filtered = q ? allRows.filter(r => (r.name||'').toLowerCase().includes(q)) : allRows;
+  tbody.innerHTML = filtered.map(r => `
+    <tr onclick="this.classList.toggle('selected')">
+      <td>${r.storageId ?? ''}</td>
+      <td>${esc(r.name ?? '')}</td>
+      <td style="color:#888">${fmtTime(r.endTime)}</td>
+      <td style="color:#888">${fmtDur(r.duration)}</td>
+      <td><button onclick="event.stopPropagation();openReport(${r.storageId},this)">Open</button></td>
+    </tr>`).join('') || `<tr><td colspan="5" style="color:#888;padding:16px">No reports</td></tr>`;
+  const currentOffset = parseInt(offsetEl.value) || 0;
+  loadMoreEl.style.display = (total == null || currentOffset < total) && allRows.length ? '' : 'none';
+}
+
+function setStatus(msg) { statusEl.textContent = msg; }
+
+function fmtTime(v) {
+  if (!v) return '';
+  const d = new Date(+v);
+  return isNaN(d) ? v : d.toLocaleTimeString();
+}
+
+function fmtDur(v) {
+  if (!v) return '';
+  const ms = +v;
+  return isNaN(ms) ? v : ms < 1000 ? ms + 'ms' : (ms/1000).toFixed(2) + 's';
+}
+
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+if (urlEl.value) load(true);
+</script>
+</body>
+</html>
