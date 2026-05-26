@@ -15,11 +15,16 @@
 */
 package org.wearefrank.ladybug.web.jaxrs.api;
 
+import com.google.protobuf.InvalidProtocolBufferException;
+import com.google.protobuf.util.JsonFormat;
+import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
+import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceResponse;
+import io.opentelemetry.proto.trace.v1.ResourceSpans;
+import io.opentelemetry.proto.trace.v1.ScopeSpans;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import lombok.Setter;
-import org.wearefrank.ladybug.Span;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import org.wearefrank.ladybug.web.common.TracingApiImpl;
@@ -31,15 +36,40 @@ public class TracingApi extends ApiBase {
     private @Setter TracingApiImpl delegate;
 
     @POST
-    public Response collectSpans(Span[] trace) {
-        delegate.processSpans(trace);
-        return Response.ok().build();
-    }
+    @Consumes({"application/x-protobuf", "application/json"})
+    public Response receiveSpans(@HeaderParam("Content-Type") String contentType, byte[] data) throws InvalidProtocolBufferException {
+        ExportTraceServiceRequest request;
 
-    @POST
-    @Consumes(MediaType.APPLICATION_JSON)
-    public Response collectSpansJson(Span[] trace) {
-        delegate.processSpans(trace);
-        return Response.ok().build();
+        if (contentType != null && contentType.startsWith("application/x-protobuf")) {
+            request = ExportTraceServiceRequest.parseFrom(data);
+        } else if (contentType != null && contentType.startsWith("application/json")) {
+            String json = new String(data);
+            ExportTraceServiceRequest.Builder builder = ExportTraceServiceRequest.newBuilder();
+            JsonFormat.parser().merge(json, builder);
+            request = builder.build();
+        } else {
+            ExportTraceServiceResponse response = ExportTraceServiceResponse.newBuilder().build();
+            return Response.status(Response.Status.UNSUPPORTED_MEDIA_TYPE)
+                    .type(MediaType.APPLICATION_JSON)
+                    .entity(JsonFormat.printer().print(response))
+                    .build();
+        }
+
+        for (ResourceSpans resourceSpans : request.getResourceSpansList()) {
+            for (ScopeSpans scopeSpans : resourceSpans.getScopeSpansList()) {
+                delegate.processSpans(scopeSpans.getSpansList());
+            }
+        }
+
+        ExportTraceServiceResponse response = ExportTraceServiceResponse.newBuilder().build();
+        if (contentType.startsWith("application/x-protobuf")) {
+            return Response.ok(response.toByteArray())
+                    .type("application/x-protobuf")
+                    .build();
+        } else {
+            return Response.ok(JsonFormat.printer().print(response))
+                    .type(MediaType.APPLICATION_JSON)
+                    .build();
+        }
     }
 }

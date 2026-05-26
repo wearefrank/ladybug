@@ -15,16 +15,18 @@
 */
 package org.wearefrank.ladybug.web.common;
 
+import com.google.protobuf.ByteString;
+import io.opentelemetry.proto.trace.v1.Span;
 import lombok.Setter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.wearefrank.ladybug.Span;
 import org.wearefrank.ladybug.TestTool;
 
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
+import java.util.List;
 
 @Component
 public class TracingApiImpl {
@@ -33,29 +35,29 @@ public class TracingApiImpl {
 	@Autowired
 	private @Setter TestTool testTool;
 
-	public void processSpans(Span[] trace) {
-		ArrayList<String> parentIds = new ArrayList<>();
+	public void processSpans(List<Span> trace) {
+		ArrayList<ByteString> parentIds = new ArrayList<>();
 		for (Span span: trace) {
-			if (span.getParentId() != null && !parentIds.contains(span.getParentId())) {
-				parentIds.add(span.getParentId());
+			if (!span.getParentSpanId().isEmpty() && !parentIds.contains(span.getParentSpanId())) {
+				parentIds.add(span.getParentSpanId());
 			}
 		}
 		ArrayList<String> endpoints = new ArrayList<>();
-		for (int i = trace.length - 1; i >= 0; i--) {
-			if (trace[i].getParentId() == null) {
-				testTool.startpoint(trace[i].getTraceId(), null, trace[i].getName(), trace[i].toHashmap().toString());
-				endpoints.add(trace[i].getName());
+		for (int i = trace.size() - 1; i >= 0; i--) {
+			if (trace.get(i).getParentSpanId().isEmpty()) {
+				testTool.startpoint(trace.get(i).getTraceId(), null, trace.get(i).getName(), trace.get(i).toHashmap().toString());
+				endpoints.add(trace.get(i).getName());
 			} else {
-				if (parentIds.contains(trace[i].getId())) {
-					testTool.startpoint(trace[i].getTraceId(), null, trace[i].getName(), trace[i].toHashmap().toString());
-					endpoints.add(trace[i].getName());
+				if (parentIds.contains(trace.get(i).getSpanId())) {
+					testTool.startpoint(trace.get(i).getTraceId(), null, trace.get(i).getName(), trace.get(i).toHashmap().toString());
+					endpoints.add(trace.get(i).getName());
 				} else {
-					testTool.infopoint(trace[i].getTraceId(), null, trace[i].getName(), trace[i].toHashmap().toString());
+					testTool.infopoint(trace.get(i).getTraceId(), null, trace.get(i).getName(), trace.get(i).toHashmap().toString());
 				}
 			}
 		}
 		for (int i = endpoints.size() - 1; i >= 0; i--) {
-			testTool.endpoint(trace[0].getTraceId(), null, endpoints.get(i), "Endpoint");
+			testTool.endpoint(trace.get(0).getTraceId(), null, endpoints.get(i), "Endpoint");
 		}
 	}
 }
