@@ -129,10 +129,6 @@ public class TestTool {
 		return securityLog;
 	}
 
-	public void setOpenTelemetryEndpoint(String openTelemetryEndpoint) {
-		this.openTelemetryEndpoint = openTelemetryEndpoint;
-	}
-
 	public void setConfigName(String configName) {
 		this.configName = configName;
 	}

@@ -116,6 +116,9 @@ public class TestExport {
 				if (method.getParameters()[0].getType() == int.class) {
 					Integer defaultValue = (Integer)getMethods.get(name).invoke(checkpoint, new Object[0]);
 					method.invoke(checkpoint, defaultValue + name.length());
+				} else if (method.getParameters()[0].getType() == long.class) {
+					Long defaultValue = (Long) getMethods.get(name).invoke(checkpoint, new Object[0]);
+					method.invoke(checkpoint, defaultValue + name.length());
 				} else if (method.getParameters()[0].getType() == boolean.class) {
 					assertIsMethodAvailable(isMethods, name);
 					Boolean defaultValue = (Boolean)isMethods.get(name).invoke(checkpoint, new Object[0]);
