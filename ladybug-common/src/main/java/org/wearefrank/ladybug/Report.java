@@ -520,8 +520,11 @@ public class Report implements Serializable {
 					level = 0;
 					index = 0;
 				} else if (checkpointType == CheckpointType.ENDPOINT.toInt()) {
-					level = 0;
+					level = 1;
 					index = checkpoints.size();
+				} else if (checkpointType == CheckpointType.INFOPOINT.toInt()) {
+					level = 1;
+					index = 1;
 				}
 			}  else if (!parentId.isEmpty()) {
 				if (checkpointType == CheckpointType.STARTPOINT.toInt()) {
@@ -589,7 +592,7 @@ public class Report implements Serializable {
 					Checkpoint matchingStartpoint = null;
 
 					for (Checkpoint checkpoint : checkpoints) {
-						if (Objects.equals(checkpoint.getId(), id)) {
+						if (Objects.equals(checkpoint.getId(), id) && checkpoint.getType() == CheckpointType.STARTPOINT.toInt()) {
 							matchingStartpoint = checkpoint;
 							break;
 						}
@@ -606,8 +609,25 @@ public class Report implements Serializable {
 							index++;
 						}
 					}
-				}
+				} else if (checkpointType == CheckpointType.INFOPOINT.toInt()) {
+					Checkpoint parentCheckpoint = null;
 
+					for (Checkpoint checkpoint : checkpoints) {
+						if (Objects.equals(checkpoint.getId(), parentId)
+								&& checkpoint.getType() == CheckpointType.STARTPOINT.toInt()) {
+							parentCheckpoint = checkpoint;
+							break;
+						}
+					}
+
+					if (parentCheckpoint != null) {
+						level = parentCheckpoint.getLevel() + 1;
+						index = checkpoints.indexOf(parentCheckpoint) + 1;
+					} else {
+						level = 0;
+						index = checkpoints.size();
+					}
+				}
 			}
 		}
 
@@ -776,11 +796,23 @@ public class Report implements Serializable {
 
 		int parentIndex = checkpoints.indexOf(newParent);
 
-		int insertIndex = parentIndex + 1;
+		int insertIndex;
+		insertIndex = parentIndex + 1;
+		while (insertIndex < checkpoints.size()) {
+			Checkpoint current = checkpoints.get(insertIndex);
 
-		while (insertIndex < checkpoints.size()
-				&& checkpoints.get(insertIndex).getLevel() > newParent.getLevel()) {
-			insertIndex++;
+			if (current.getLevel() == newParent.getLevel()
+					&& current.getType() == CheckpointType.ENDPOINT.toInt()) {
+				break;
+			}
+
+			if (current.getLevel() == newParent.getLevel() + 1
+					&& current.getType() == CheckpointType.INFOPOINT.toInt()) {
+				insertIndex++;
+				continue;
+			}
+
+			break;
 		}
 
 		int levelDelta = (newParent.getLevel() + 1) - orphanRoot.getLevel();

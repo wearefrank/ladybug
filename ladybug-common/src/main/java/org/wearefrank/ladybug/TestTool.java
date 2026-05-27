@@ -335,7 +335,7 @@ public class TestTool {
 		return tracer;
 	}
 
-	public <T> T checkpoint(String correlationId, String childThreadId, String sourceClassName, String name,
+	private <T> T checkpoint(String correlationId, String childThreadId, String sourceClassName, String name,
 							T message, StubableCode stubableCode, StubableCodeThrowsException stubableCodeThrowsException,
 							Set<String> matchingStubStrategies, int checkpointType, int levelChangeNextCheckpoint) {
 		return checkpoint(correlationId, childThreadId, sourceClassName, name,
@@ -343,7 +343,7 @@ public class TestTool {
 				matchingStubStrategies, checkpointType, levelChangeNextCheckpoint, null, null, -1);
 	}
 
-	public <T> T checkpoint(String correlationId, String childThreadId, String sourceClassName, String name,
+	private <T> T checkpoint(String correlationId, String childThreadId, String sourceClassName, String name,
 							T message, Map<String, Object> messageContext, StubableCode stubableCode, StubableCodeThrowsException stubableCodeThrowsException,
 							Set<String> matchingStubStrategies, int checkpointType, int levelChangeNextCheckpoint) {
 		return checkpoint(correlationId, childThreadId, sourceClassName, name,
@@ -351,7 +351,7 @@ public class TestTool {
 				matchingStubStrategies, checkpointType, levelChangeNextCheckpoint, null, null, -1);
 	}
 
-	public <T> T checkpoint(String correlationId, String childThreadId, String sourceClassName, String name,
+	private <T> T checkpoint(String correlationId, String childThreadId, String sourceClassName, String name,
 			T message, StubableCode stubableCode, StubableCodeThrowsException stubableCodeThrowsException,
 			Set<String> matchingStubStrategies, int checkpointType, int levelChangeNextCheckpoint, String id, String parentId) {
 		return checkpoint(correlationId, childThreadId, sourceClassName, name,
@@ -359,7 +359,7 @@ public class TestTool {
 				matchingStubStrategies, checkpointType, levelChangeNextCheckpoint, id, parentId, -1);
 	}
 
-	public <T> T checkpoint(String correlationId, String childThreadId, String sourceClassName, String name,
+	private <T> T checkpoint(String correlationId, String childThreadId, String sourceClassName, String name,
 							T message, StubableCode stubableCode, StubableCodeThrowsException stubableCodeThrowsException,
 							Set<String> matchingStubStrategies, int checkpointType, int levelChangeNextCheckpoint, String id, String parentId, long startTime) {
 		return checkpoint(correlationId, childThreadId, sourceClassName, name,
@@ -882,9 +882,15 @@ public class TestTool {
 		return checkpoint(correlationId, null, sourceClassName, name, message, null, null, null,
 				CheckpointType.INFOPOINT.toInt(), 0);
 	}
+
 	public <T> T infopoint(String correlationId, String sourceClassName, String name, T message, Map<String, Object> messageContext) {
 		return checkpoint(correlationId, null, sourceClassName, name, message, messageContext, null, null, null,
 				CheckpointType.INFOPOINT.toInt(), 0);
+	}
+
+	public <T> T infopoint(String correlationId, String sourceClassName, String name, T message, String id, String parentId) {
+		return checkpoint(correlationId, null, sourceClassName, name, message, null, null, null,
+				CheckpointType.INFOPOINT.toInt(), 0, id, parentId);
 	}
 
 	/**
