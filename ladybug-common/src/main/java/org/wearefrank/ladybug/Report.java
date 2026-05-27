@@ -801,11 +801,13 @@ public class Report implements Serializable {
 		while (insertIndex < checkpoints.size()) {
 			Checkpoint current = checkpoints.get(insertIndex);
 
+			if (current.getLevel() < newParent.getLevel()) {
+				break;
+			}
 			if (current.getLevel() == newParent.getLevel()
 					&& current.getType() == CheckpointType.ENDPOINT.toInt()) {
 				break;
 			}
-
 			insertIndex++;
 		}
 
@@ -816,17 +818,6 @@ public class Report implements Serializable {
 		}
 
 		checkpoints.addAll(insertIndex, subtree);
-
-		for (int i = insertIndex; i < checkpoints.size(); i++) {
-			Checkpoint cp = checkpoints.get(i);
-
-			if (Objects.equals(cp.getId(), orphanRoot.getId())
-					&& cp.getType() == CheckpointType.ENDPOINT.toInt()) {
-
-				cp.setLevel(newParent.getLevel() + 2);
-				break;
-			}
-		}
 	}
 
 	public String getThreadInfo() {
