@@ -104,6 +104,7 @@ public class TestTool {
 	boolean devMode = false; // See testConcurrentLastEndpointAndFirstStartpointForSameCorrelationId()
 	private String openTelemetryEndpoint;
 	private Tracer tracer;
+	private boolean updateReportsEnabled = false;
 
 	@PostConstruct
 	public void init() {
@@ -115,6 +116,14 @@ public class TestTool {
 	public void reset() {
 		regexFilter = defaultRegexFilter;
 		reportGeneratorEnabled = defaultReportGeneratorEnabled;
+	}
+
+	public void setUpdateReportsEnabled(boolean updateReportsEnabled) {
+		this.updateReportsEnabled = updateReportsEnabled;
+	}
+
+	public boolean isUpdateReportsEnabled() {
+		return updateReportsEnabled;
 	}
 
 	public void setOpenTelemetryEndpoint(String openTelemetryEndpoint) {
@@ -378,7 +387,7 @@ public class TestTool {
 			synchronized(reportsInProgress) {
 				report = getReportInProgress(correlationId);
 				if (report == null) {
-					if (debugStorage.isCrudStorage()) {
+					if (updateReportsEnabled && debugStorage.isCrudStorage()) {
 						try {
 							for (Integer storageId : debugStorage.getStorageIds()) {
 								if (debugStorage.getReport(storageId).getCorrelationId().equals(correlationId)) {
@@ -531,6 +540,7 @@ public class TestTool {
 								if (debugStorage.isCrudStorage()) {
 									try {
 										((CrudStorage) debugStorage).update(report);
+										report.setBeingUpdated(false);
 									} catch (StorageException e) {
 										log.error("Failed to store report", e);
 									}

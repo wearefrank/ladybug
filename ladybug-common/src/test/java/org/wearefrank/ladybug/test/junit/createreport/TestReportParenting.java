@@ -24,7 +24,6 @@ public class TestReportParenting extends ReportRelatedTestCase {
                 int levelChangeNextCheckpoint,
                 String id,
                 String parentId,
-                boolean findParent,
                 long startTime
         ) {
             return checkpoint(
@@ -40,7 +39,6 @@ public class TestReportParenting extends ReportRelatedTestCase {
                     levelChangeNextCheckpoint,
                     id,
                     parentId,
-                    findParent,
                     startTime
             );
         }
@@ -56,6 +54,7 @@ public class TestReportParenting extends ReportRelatedTestCase {
 
         report = new TestableReport();
         report.setCorrelationId("corr");
+        report.setBeingUpdated(true);
         report.setTestTool(testTool);
 
         report.initialize();
@@ -76,7 +75,6 @@ public class TestReportParenting extends ReportRelatedTestCase {
                 1,
                 "id-1",
                 "",
-                true,
                 123L
         );
 
@@ -102,7 +100,6 @@ public class TestReportParenting extends ReportRelatedTestCase {
                 1,
                 "parent-id",
                 "",
-                true,
                 100L
         );
 
@@ -119,7 +116,6 @@ public class TestReportParenting extends ReportRelatedTestCase {
                 1,
                 "child-id",
                 "parent-id",
-                true,
                 200L
         );
 
@@ -147,7 +143,6 @@ public class TestReportParenting extends ReportRelatedTestCase {
                 1,
                 "child-id",
                 "parent-id",
-                true,
                 200L
         );
 
@@ -166,7 +161,6 @@ public class TestReportParenting extends ReportRelatedTestCase {
                 1,
                 "parent-id",
                 "",
-                true,
                 100L
         );
 
@@ -195,7 +189,6 @@ public class TestReportParenting extends ReportRelatedTestCase {
                 1,
                 "parent-id",
                 "",
-                true,
                 100L
         );
 
@@ -212,7 +205,6 @@ public class TestReportParenting extends ReportRelatedTestCase {
                 1,
                 "child-2-id",
                 "parent-id",
-                true,
                 300L
         );
 
@@ -229,7 +221,6 @@ public class TestReportParenting extends ReportRelatedTestCase {
                 1,
                 "child-1-id",
                 "parent-id",
-                true,
                 200L
         );
 

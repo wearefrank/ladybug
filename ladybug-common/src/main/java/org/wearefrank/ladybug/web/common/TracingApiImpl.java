@@ -38,6 +38,8 @@ public class TracingApiImpl {
 	private @Setter TestTool testTool;
 
 	public void processSpans(List<Span> spans) {
+		testTool.setUpdateReportsEnabled(true);
+
 		String traceId = byteStringToHex(spans.get(0).getTraceId());
 
 		for (Span span : spans) {
