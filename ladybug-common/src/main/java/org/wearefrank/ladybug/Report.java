@@ -796,8 +796,8 @@ public class Report implements Serializable {
 
 		int parentIndex = checkpoints.indexOf(newParent);
 
-		int insertIndex;
-		insertIndex = parentIndex + 1;
+		int insertIndex = parentIndex + 1;
+
 		while (insertIndex < checkpoints.size()) {
 			Checkpoint current = checkpoints.get(insertIndex);
 
@@ -806,13 +806,7 @@ public class Report implements Serializable {
 				break;
 			}
 
-			if (current.getLevel() == newParent.getLevel() + 1
-					&& current.getType() == CheckpointType.INFOPOINT.toInt()) {
-				insertIndex++;
-				continue;
-			}
-
-			break;
+			insertIndex++;
 		}
 
 		int levelDelta = (newParent.getLevel() + 1) - orphanRoot.getLevel();
@@ -822,6 +816,17 @@ public class Report implements Serializable {
 		}
 
 		checkpoints.addAll(insertIndex, subtree);
+
+		for (int i = insertIndex; i < checkpoints.size(); i++) {
+			Checkpoint cp = checkpoints.get(i);
+
+			if (Objects.equals(cp.getId(), orphanRoot.getId())
+					&& cp.getType() == CheckpointType.ENDPOINT.toInt()) {
+
+				cp.setLevel(newParent.getLevel() + 2);
+				break;
+			}
+		}
 	}
 
 	public String getThreadInfo() {

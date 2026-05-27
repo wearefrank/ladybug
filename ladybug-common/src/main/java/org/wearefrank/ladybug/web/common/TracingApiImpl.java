@@ -50,7 +50,7 @@ public class TracingApiImpl {
 			for (KeyValue keyValue : span.getAttributesList()) {
 				AnyValue anyValue = keyValue.getValue();
 				String value = String.valueOf(anyValue.getField(anyValue.getDescriptorForType().findFieldByNumber(anyValue.getValueCase().getNumber())));
-				testTool.infopoint(byteStringToHex(span.getTraceId()), null, (span.getName() + " " + keyValue.getKey()), value, spanId, spanId);
+				testTool.infopoint(byteStringToHex(span.getTraceId()), null, keyValue.getKey(), value, spanId, spanId);
 			}
 			testTool.endpoint(traceId, null, span.getName(), null, spanId, parentSpanId, startTime);
 		}
