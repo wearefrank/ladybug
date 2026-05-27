@@ -326,7 +326,7 @@ public class Report implements Serializable {
 
 	protected <T> T checkpoint(String childThreadId, String sourceClassName, String name, T message, Map<String, Object> messageContext,
 			StubableCode stubableCode, StubableCodeThrowsException stubableCodeThrowsException,
-			Set<String> matchingStubStrategies, int checkpointType, int levelChangeNextCheckpoint, String id, String parentId, boolean findParent, long startTime) {
+			Set<String> matchingStubStrategies, int checkpointType, int levelChangeNextCheckpoint, String id, String parentId, long startTime) {
 		if (checkpointType == CheckpointType.THREAD_CREATEPOINT.toInt()) {
 			String parentThreadName = Thread.currentThread().getName();
 			if (!threads.contains(parentThreadName)) {
@@ -374,7 +374,7 @@ public class Report implements Serializable {
 		}
 
 		message = addCheckpoint(childThreadId, sourceClassName, name, message, messageContext, stubableCode, stubableCodeThrowsException,
-				matchingStubStrategies, checkpointType, levelChangeNextCheckpoint, id, parentId, findParent, startTime);
+				matchingStubStrategies, checkpointType, levelChangeNextCheckpoint, id, parentId, startTime);
 		return message;
 	}
 
@@ -431,7 +431,7 @@ public class Report implements Serializable {
 
 	private  <T> T addCheckpoint(String childThreadId, String sourceClassName, String name, T message, Map<String, Object> messageContext,
 			StubableCode stubableCode, StubableCodeThrowsException stubableCodeThrowsException,
-			Set<String> matchingStubStrategies, int checkpointType, int levelChangeNextCheckpoint, String id, String parentId, boolean findParent, long startTime) {
+			Set<String> matchingStubStrategies, int checkpointType, int levelChangeNextCheckpoint, String id, String parentId, long startTime) {
 		String threadName = Thread.currentThread().getName();
 		Integer index = threadCheckpointIndex.get(threadName);
 		Integer level = threadLevel.get(threadName);
@@ -497,7 +497,7 @@ public class Report implements Serializable {
 				}
 			} else {
 				message = addCheckpoint(threadName, sourceClassName, name, message, messageContext, stubableCode,
-						stubableCodeThrowsException, matchingStubStrategies, checkpointType, index, level, id, parentId, findParent, startTime);
+						stubableCodeThrowsException, matchingStubStrategies, checkpointType, index, level, id, parentId, startTime);
 			}
 			Integer newLevel = level + levelChangeNextCheckpoint;
 			threadLevel.put(threadName, newLevel);
@@ -513,8 +513,8 @@ public class Report implements Serializable {
 	@SneakyThrows
 	private  <T> T addCheckpoint(String threadName, String sourceClassName, String name, T message, Map<String, Object> messageContext,
 			StubableCode stubableCode, StubableCodeThrowsException stubableCodeThrowsException,
-			Set<String> matchingStubStrategies, int checkpointType, Integer index, Integer level, String id, String parentId, boolean findParent, long startTime) {
-		if (findParent && parentId != null) {
+			Set<String> matchingStubStrategies, int checkpointType, Integer index, Integer level, String id, String parentId, long startTime) {
+		if (beingUpdated && parentId != null) {
 			if (parentId.isEmpty()) {
 				if (checkpointType == CheckpointType.STARTPOINT.toInt()) {
 					level = 0;

@@ -433,7 +433,7 @@ public class TestTool {
 					executeStubableCode = false;
 					message = report.checkpoint(childThreadId, sourceClassName, name, message, messageContext, stubableCode,
 							stubableCodeThrowsException, matchingStubStrategies, checkpointType,
-							levelChangeNextCheckpoint, id, parentId, report.isBeingUpdated(), startTime);
+							levelChangeNextCheckpoint, id, parentId, startTime);
 					closeReportIfFinished(report);
 				}
 				report = null;
