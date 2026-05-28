@@ -160,6 +160,7 @@ export class HttpService {
       return +idString;
     } else {
       console.log(`Could not extract id from received report, uid=${uid}`);
+      return -1;
     }
   }
 
