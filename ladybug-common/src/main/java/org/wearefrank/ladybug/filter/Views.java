@@ -61,7 +61,7 @@ public class Views extends ArrayList<View> implements BeanParent {
 				return view;
 			}
 		}
-		throw new HttpNotFoundException(String.format("There is no view with name [%s]", viewName));
+		throw new IllegalArgumentException(String.format("There is no view with name [%s]", viewName));
 	}
 
 	/**

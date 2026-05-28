@@ -121,8 +121,8 @@ public class TestToolApiImpl implements InitializingBean {
 			throw new HttpBadRequestException("No progresses have been queried [" + index + "] and/or are available [" + testTool.getNumberOfReportsInProgress() + "]");
 
 		try {
-			Report base = testTool.getReportInProgress(index - 1);
-			return shownReportBuilder.transform(base);
+			Report report = testTool.getReportInProgress(index - 1);
+			return shownReportBuilder.transform(report);
 		} catch (Exception e) {
 			throw new HttpBadRequestException(e);
 		}

@@ -42,7 +42,6 @@ export class ReportComponent implements ReportComponentCallback, OnInit, AfterVi
   ngOnInit(): void {
     this.setTabKey();
     this.sharedStrategy.setCallback(this);
-    // this.route.url.subscribe(() => this.handleUrlChange());
     this.sharedStrategy.listenToHeight();
   }
 

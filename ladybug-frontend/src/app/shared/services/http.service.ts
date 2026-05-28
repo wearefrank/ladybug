@@ -113,6 +113,9 @@ export class HttpService {
       );
   }
 
+  // viewName can be null. I opened a report from the test tab and saw URL the following
+  // URL working:
+  // http://localhost/ladybug/api/report/shownReports/Test?globalTransformer=false&view=&storageIds=0
   getHierarchicalReports(
     reportIds: number[],
     storage: string,
