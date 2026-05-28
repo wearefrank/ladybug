@@ -69,7 +69,7 @@ Cypress.Commands.add('inIframeBody', (query) => {
 })
 
 Cypress.Commands.add('enterLadybug', () => {
-  cy.get('[data-cy-nav="adapterStatus"]', { timeout: 10000 }).click()
+  cy.get('[data-cy-nav="status"]', { timeout: 10000 }).click()
   cy.get('[data-cy-nav="testingLadybug"]').should('not.be.visible')
   cy.get('[data-cy-nav="testing"]').click()
   cy.get('[data-cy-nav="testingLadybug"]').click()
