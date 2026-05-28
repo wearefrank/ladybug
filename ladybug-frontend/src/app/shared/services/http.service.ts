@@ -219,19 +219,19 @@ export class HttpService {
   }
 
   getTraceReports(amount: number): Observable<Report[]> {
-    return this.http.get<Report[]>(`api/v1/traces/?amount=${amount}`);
+    return this.http.get<Report[]>(`api/traces/?amount=${amount}`);
   }
 
   getTraceReportCount(): Observable<number> {
-    return this.http.get<number>('api/v1/traces/count/');
+    return this.http.get<number>('api/traces/count/');
   }
 
   deleteAllTraces(): Observable<void> {
-    return this.http.delete<void>(`api/v1/traces/delete/`);
+    return this.http.delete<void>(`api/traces/delete/`);
   }
 
   deleteTraces(traceIds: string[]): Observable<void> {
-    return this.http.delete<void>(`api/v1/traces/delete-batch/`, {
+    return this.http.delete<void>(`api/traces/delete-batch/`, {
       body: traceIds,
     });
   }

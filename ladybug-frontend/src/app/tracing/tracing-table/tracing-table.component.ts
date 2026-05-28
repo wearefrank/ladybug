@@ -1,6 +1,6 @@
 import { Component, EventEmitter, inject, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
 import { HttpService } from '../../shared/services/http.service';
-import { catchError, Subscription } from 'rxjs';
+import { catchError, forkJoin, Subscription } from 'rxjs';
 import { Report } from '../../shared/interfaces/report';
 import { ToastService } from '../../shared/services/toast.service';
 import { TableCellShortenerPipe } from '../../shared/pipes/table-cell-shortener.pipe';
@@ -76,6 +76,8 @@ export class TracingTableComponent implements OnInit, OnDestroy {
   protected fontSize?: string;
   protected checkboxSize?: string;
 
+  protected isLoading = true;
+
   private httpService = inject(HttpService);
   private clientSettingsService = inject(ClientSettingsService);
   private toastService = inject(ToastService);
@@ -130,22 +132,21 @@ export class TracingTableComponent implements OnInit, OnDestroy {
   }
 
   loadData(): void {
-    this.httpService
-      .getTraceReports(this.displayAmount)
+    this.isLoading = true;
+
+    forkJoin({
+      traces: this.httpService.getTraceReports(this.displayAmount),
+      count: this.httpService.getTraceReportCount(),
+    })
       .pipe(catchError(this.errorHandler.handleError()))
       .subscribe({
-        next: (traces: Report[]) => {
+        next: ({ traces, count }) => {
           this.reports = traces;
           this.tableDataSource.data = traces;
-        },
-      });
-
-    this.httpService
-      .getTraceReportCount()
-      .pipe(catchError(this.errorHandler.handleError()))
-      .subscribe({
-        next: (count: number) => {
           this.traceReportCount = count;
+        },
+        complete: () => {
+          this.isLoading = false;
         },
       });
   }
