@@ -11,6 +11,7 @@ import { ReportComponentCallback, ReportSharedStrategy } from '../shared/classes
 import { isNumber } from '../shared/util/util';
 import { HttpService } from '../shared/services/http.service';
 import { firstValueFrom } from 'rxjs';
+import { ToastService } from '../shared/services/toast.service';
 
 const MIN_HEIGHT = 20;
 
@@ -28,6 +29,7 @@ export class ReportComponent implements ReportComponentCallback, OnInit, AfterVi
   protected monacoEditorHeight!: number;
   protected sharedStrategy = inject(ReportSharedStrategy);
   private tabService = inject(TabService);
+  private toastService = inject(ToastService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private httpService = inject(HttpService);
@@ -103,11 +105,13 @@ export class ReportComponent implements ReportComponentCallback, OnInit, AfterVi
     // TODO: Take care here when working on issue https://github.com/wearefrank/ladybug-frontend/issues/1125
     const optionalCachedReport = this.tabService.getReportData(this.tabKey);
     if (optionalCachedReport === undefined) {
-      firstValueFrom(this.httpService.getHierarchicalReports([this.storageId], this.storageName, null)).then(
-        (report: HierarchicalReport[]) => {
-          this.handleEntry(report[0]);
-        },
-      );
+      firstValueFrom(this.httpService.getHierarchicalReports([this.storageId], this.storageName, null))
+        .then((report: HierarchicalReport[]) => this.handleEntry(report[0]))
+        .catch(() => {
+          this.toastService.showDanger(
+            `Could not get report from server for storageName=${this.storageName} and storageId=${this.storageId}`,
+          );
+        });
     } else {
       this.handleEntry(optionalCachedReport);
     }

@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Observable, ReplaySubject, Subject } from 'rxjs';
+import { ReplaySubject, Subject } from 'rxjs';
 import { debugOrTest, KEY_COMPARE, KEY_DEBUG, KEY_REPORT, KEY_TEST, routeKind, Tab } from '../interfaces/tab';
 import { ActivatedRouteSnapshot, DetachedRouteHandle } from '@angular/router';
 import { isNumber } from '../../shared/util/util';
@@ -26,7 +26,7 @@ export class TabService {
   ];
 
   private refreshSubject: Subject<string | null> = new ReplaySubject();
-  refresh$ = this.refreshSubject as Observable<string | null>;
+  public refresh$ = this.refreshSubject.asObservable();
   private compareCache: Map<string, CompareData> = new Map<string, CompareData>();
   private reportCache: Map<string, HierarchicalReport> = new Map<string, HierarchicalReport>();
 
@@ -95,7 +95,7 @@ export class TabService {
     const key = this.getKey(route);
     const tab: Tab | undefined = this.findTab(key);
     if (tab === undefined) {
-      throw new Error(`TabService.storaHandle() finds no tab with key ${key}`);
+      throw new Error(`TabService.storeHandle() finds no tab with key ${key}`);
     }
     tab.handle = handle;
   }
