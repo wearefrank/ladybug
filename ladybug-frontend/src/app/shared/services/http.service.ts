@@ -15,6 +15,7 @@ import { UpdateReportResponse } from '../interfaces/update-report-response';
 import { TableSettings } from '../interfaces/table-settings';
 import { ClientSettingsService } from './client.settings.service';
 import { HierarchicalCheckpoint, HierarchicalReport } from '../interfaces/hierarchical-report';
+import { isNumber } from '../util/util';
 
 @Injectable({
   providedIn: 'root',
@@ -145,10 +146,20 @@ export class HttpService {
 
   private forChildSetReport(child: HierarchicalCheckpoint, report: HierarchicalReport): void {
     child.report = report;
+    child.id = this.extractIdFromUid(child.uid);
     if (child.children !== null) {
       for (const grandChild of child.children!) {
         this.forChildSetReport(grandChild, report);
       }
+    }
+  }
+
+  private extractIdFromUid(uid: string): number {
+    const idString: string = uid.split('#')[0];
+    if (isNumber(idString)) {
+      return +idString;
+    } else {
+      console.log(`Could not extract id from received report, uid=${uid}`);
     }
   }
 

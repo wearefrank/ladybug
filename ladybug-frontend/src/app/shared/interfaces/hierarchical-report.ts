@@ -42,8 +42,20 @@ export interface HierarchicalCheckpoint extends TreeItem {
   threadName: string;
   sourceClassName: string | null;
   messageClassName: string | null;
-  id: number;
   uid: string;
+
   // The fields below are computed
+
+  // This one is not computed by the backend because that would
+  // involve iterating over the checkpoints of a report.
+  // That is tricky because multiple threats in the backend
+  // can create checkpoints and because checkpoints are not
+  // always put at the end of the checkpoint list.
+  //
+  // We are cheating a bit here because the uid was already
+  // calculated by iterating over the checkpoints. But you
+  // do not see this when reviewing the fix for issue
+  // https://github.com/wearefrank/ladybug/issues/674
+  id: number;
   report: HierarchicalReport;
 }

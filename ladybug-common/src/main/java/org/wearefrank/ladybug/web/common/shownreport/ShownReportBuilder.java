@@ -215,7 +215,6 @@ public class ShownReportBuilder {
 		dest.setThreadName(source.getThreadName());
 		dest.setSourceClassName(source.getSourceClassName());
 		dest.setMessageClassName(source.getMessageClassName());
-		dest.setId(source.getId());
 		dest.setUid(source.getUid());
 	}
 }

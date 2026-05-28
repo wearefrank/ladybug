@@ -624,8 +624,6 @@ public class Checkpoint implements Serializable, Cloneable {
 		return report.getStorageId()+"#"+report.getCheckpoints().indexOf(this);
 	}
 
-	public int getId() { return report.getCheckpoints().indexOf(this); }
-
 	/**
 	 * To be called when reports are uploaded to the Ladybug. Updates variables referring to 
 	 * a report that had its storageId changed.
