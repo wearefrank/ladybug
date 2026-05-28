@@ -35,7 +35,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-@Path("/" + Constants.LADYBUG_API_PATH + "/v1/traces")
+@Path("/" + Constants.LADYBUG_API_PATH + "/traces")
 public class TracingApi extends ApiBase {
 
     @Autowired
@@ -76,23 +76,20 @@ public class TracingApi extends ApiBase {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getTraceReports(@QueryParam("amount") Integer amount) {
 
-        ArrayList<Report> traceReports = delegate.getTraceReports();
+        List<Report> traceReports = new ArrayList<>(delegate.getTraceReports());
 
         if (amount != null) {
-            if (amount > traceReports.size()) {
-                amount = traceReports.size();
-                return Response.ok(traceReports.subList(0, amount)).build();
-            } else {
-                return Response.ok(traceReports.subList(0, amount)).build();
-            }
-        } else {
-            return Response.ok(traceReports).build();
+            amount = Math.min(amount, traceReports.size());
+
+            return Response.ok(new ArrayList<>(traceReports.subList(0, amount))).build();
         }
+
+        return Response.ok(traceReports).build();
     }
 
     @GET
     @Path("/count")
-    public Response getTraceCount() throws SQLException {
+    public Response getTraceCount() {
         int count = delegate.getTraceCount();
 
         return Response.ok(count).build();

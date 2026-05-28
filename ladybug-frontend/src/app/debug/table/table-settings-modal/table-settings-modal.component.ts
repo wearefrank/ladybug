@@ -1,4 +1,4 @@
-import {Component, inject, Input, OnDestroy, OnInit, TemplateRef, ViewChild} from '@angular/core';
+import { Component, inject, Input, OnDestroy, OnInit, TemplateRef, ViewChild } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { NgbActiveModal, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ServerSettings, SettingsService } from '../../../shared/services/settings.service';
@@ -60,9 +60,7 @@ export class TableSettingsModalComponent implements OnInit, OnDestroy {
   protected activeTab = '';
 
   ngOnInit(): void {
-    this.activeTab = this.enableGlobalTab
-      ? this.GLOBAL
-      : this.CLIENT;
+    this.activeTab = this.enableGlobalTab ? this.GLOBAL : this.CLIENT;
 
     this.serverSettingsService.init().then(() => this.loadSettings());
   }
@@ -122,9 +120,7 @@ export class TableSettingsModalComponent implements OnInit, OnDestroy {
             resolve();
           })
           .catch(() => {
-            this.toastService.showDanger(
-              'Failed to reload settings after saving change',
-            );
+            this.toastService.showDanger('Failed to reload settings after saving change');
 
             reject();
           });

@@ -54,7 +54,7 @@ public class TraceTree {
     }
 
     private void dfsRecursive(Span span, HashSet<Span> visited) {
-        testTool.startpoint(byteStringToHex(span.getTraceId()), null, span.getName(), String.valueOf(toHashMap(span)), false);
+        testTool.startpoint(byteStringToHex(span.getTraceId()), null, span.getName(), toHashMap(span).toString(), false);
 
         for (KeyValue keyValue : span.getAttributesList()) {
             AnyValue anyValue = keyValue.getValue();

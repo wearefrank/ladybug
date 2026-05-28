@@ -21,7 +21,7 @@ import { DeleteModalComponent } from '../../shared/components/delete-modal/delet
 import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner/loading-spinner.component';
 import { ShortenedTableHeaderPipe } from '../../shared/pipes/shortened-table-header.pipe';
 import { ClientSettingsService } from 'src/app/shared/services/client.settings.service';
-import {TableSettingsModalComponent} from "../../debug/table/table-settings-modal/table-settings-modal.component";
+import { TableSettingsModalComponent } from '../../debug/table/table-settings-modal/table-settings-modal.component';
 
 @Component({
   selector: 'app-tracing-table',
@@ -71,7 +71,7 @@ export class TracingTableComponent implements OnInit, OnDestroy {
   }
 
   protected displayAmount = 10;
-  protected traceReportCount: number = 0;
+  protected traceReportCount = 0;
   protected tableSpacing?: string;
   protected fontSize?: string;
   protected checkboxSize?: string;
@@ -109,8 +109,9 @@ export class TracingTableComponent implements OnInit, OnDestroy {
     this.subscriptions.add(amountOfRecordsInTableSubscription);
   }
 
-  changeDisplayAmount(event: any): void {
-    this.clientSettingsService.setAmountOfRecordsInTable(Number(event.target.value));
+  changeDisplayAmount(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    this.clientSettingsService.setAmountOfRecordsInTable(Number(input.value));
   }
 
   setTableSpacing(value: number): void {
@@ -204,7 +205,7 @@ export class TracingTableComponent implements OnInit, OnDestroy {
     const selectedIds = new Set(this.selectedReports.map((report) => report.correlationId));
 
     this.httpService
-      .deleteTraces(Array.from(selectedIds))
+      .deleteTraces([...selectedIds])
       .pipe(catchError(this.errorHandler.handleError()))
       .subscribe({
         next: () => this.loadData(),
