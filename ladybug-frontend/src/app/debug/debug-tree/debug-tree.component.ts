@@ -80,6 +80,16 @@ export class DebugTreeComponent implements OnInit, OnDestroy {
     const preparedReport: FrankTreeNode = this.prepareReportForTree(report);
     const rootNodePath: string = this.tree.addItem(preparedReport);
     this.selectFirstCheckpoint(rootNodePath);
+    this.expandAll(this.tree.items![0]!);
+  }
+
+  private expandAll(node: FileTreeItem): void {
+    node.expanded = true;
+    if (node.children) {
+      for (const childNode of node.children) {
+        this.expandAll(childNode);
+      }
+    }
   }
 
   private prepareReportForTree(report: HierarchicalReport): FrankTreeNode {
@@ -123,6 +133,7 @@ export class DebugTreeComponent implements OnInit, OnDestroy {
     const lastAdded = this.tree.items[last];
     if (lastAdded.children) {
       const firstCheckpoint = lastAdded.children[0];
+      // Does not expand selected item for some reason as it should.
       this.tree.selectItem(firstCheckpoint.path);
     } else {
       this.tree.selectItem(rootNodePath);
