@@ -55,7 +55,7 @@ public class Views extends ArrayList<View> implements BeanParent {
 		return defaultView;
 	}
 
-	public View getViewByName(String viewName) throws HttpNotFoundException {
+	public View getViewByName(String viewName) {
 		for (View view: this) {
 			if (view.getName().equals(viewName)) {
 				return view;
