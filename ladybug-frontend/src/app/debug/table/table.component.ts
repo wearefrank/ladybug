@@ -344,17 +344,17 @@ export class TableComponent implements OnInit, OnDestroy {
     }
   }
 
-  getStatusColor(metadata: any): string {
+  getStatusClass(metadata: any): string {
     let statusName = this.currentView.metadataNames.find((name: string) => {
       return name.toLowerCase() === 'status';
     });
     if (statusName && metadata[statusName]) {
       if (metadata[statusName].toLowerCase() === 'success') {
-        return '#c3e6cb';
+        return 'statusSuccess';
       } else if (metadata[statusName].toLowerCase() === 'null') {
-        return '#A9A9A9FF';
+        return 'statusNull';
       } else {
-        return '#f79c9c';
+        return 'statusError';
       }
     }
     return 'none';
