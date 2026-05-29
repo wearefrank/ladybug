@@ -1,23 +1,22 @@
 import { Component, inject, OnInit, ViewChild } from '@angular/core';
-import { Report } from '../shared/interfaces/report';
 import { TableComponent } from './table/table.component';
 import { ToastService } from '../shared/services/toast.service';
 import { HttpService } from '../shared/services/http.service';
 import { View } from '../shared/interfaces/view';
 import { catchError } from 'rxjs';
 import { ErrorHandling } from '../shared/classes/error-handling.service';
-import { ReportComponent } from '../report/report.component';
+import { DebugReportComponent } from '../report/debug-report.component/debug-report.component';
+import { HierarchicalReport } from '../shared/interfaces/hierarchical-report';
 
 @Component({
   selector: 'app-debug',
   templateUrl: './debug.component.html',
   styleUrls: ['./debug.component.css'],
   standalone: true,
-  imports: [TableComponent, ReportComponent],
+  imports: [TableComponent, DebugReportComponent],
 })
 export class DebugComponent implements OnInit {
-  static readonly ROUTER_PATH: string = 'debug';
-  @ViewChild('reportComponent') customReportComponent!: ReportComponent;
+  @ViewChild('reportComponent') customReportComponent!: DebugReportComponent;
   currentView?: View;
   views?: View[];
 
@@ -29,8 +28,8 @@ export class DebugComponent implements OnInit {
     this.retrieveViews();
   }
 
-  protected addReportToTree(report: Report): void {
-    this.customReportComponent.addReportToTree(report);
+  protected addReportToTree(report: HierarchicalReport): void {
+    this.customReportComponent.addReport(report);
   }
 
   protected onViewChange(view: View): void {

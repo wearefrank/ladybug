@@ -29,4 +29,23 @@ describe('Debug file upload', () => {
       cy.checkFileTreeLength(1);
     });
   }
+
+  it ('When two reports are uploaded then two new tabs opened which are not confused', () => {
+    cy.uploadTwoReportsAndCheckTabs();
+    cy.get('[data-cy-debug-tree]').find(':contains(Adapter1b)').should('be.visible');
+    cy.get('[data-cy-debug-tree]').find(':contains(Adapter1a)').should('not.exist');
+    checkCheckpointMessage('B');
+    cy.get(`[data-cy-nav-tab]:eq(2)`).click();
+    cy.get('[data-cy-debug-tree]').find(':contains(Adapter1a)').should('be.visible');
+    cy.get('[data-cy-debug-tree]').find(':contains(Adapter1b)').should('not.exist');
+    checkCheckpointMessage('A');
+    cy.get(`[data-cy-nav-tab]:eq(3)`).click();
+    cy.get('[data-cy-debug-tree]').find(':contains(Adapter1b)').should('be.visible');
+    cy.get('[data-cy-debug-tree]').find(':contains(Adapter1a)').should('not.exist');
+    checkCheckpointMessage('B');
+  });
 });
+
+function checkCheckpointMessage(distinction: string) {
+  cy.get('[data-cy-element-name]').invoke('text').should('contain', 'Message').should('contain', distinction);
+}

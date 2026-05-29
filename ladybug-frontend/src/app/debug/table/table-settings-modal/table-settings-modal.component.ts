@@ -29,7 +29,6 @@ export class TableSettingsModalComponent implements OnInit {
   protected unsavedChanges = false;
 
   //Form Control Name keys
-  protected readonly showMultipleFilesKey: string = 'showMultipleFilesAtATime';
   protected readonly tableSpacingKey: string = 'tableSpacing';
   protected readonly amountOfRecordsShownKey: string = 'amountOfRecordsShown';
   protected readonly generatorEnabledKey: string = 'generatorEnabled';
@@ -43,7 +42,6 @@ export class TableSettingsModalComponent implements OnInit {
   protected readonly CLIENT = 'Personal';
 
   protected settingsForm: FormGroup = new FormGroup({
-    [this.showMultipleFilesKey]: new FormControl(false),
     [this.tableSpacingKey]: new FormControl(0),
     [this.amountOfRecordsShownKey]: new FormControl(0),
     [this.transformationEnabledKey]: new FormControl(true),
@@ -76,9 +74,6 @@ export class TableSettingsModalComponent implements OnInit {
 
   async loadSettings(): Promise<void> {
     await this.serverSettingsService.refresh();
-    this.settingsForm
-      .get(this.showMultipleFilesKey)
-      ?.setValue(this.clientSettingsService.isShowMultipleReportsAtATime());
     this.settingsForm.get(this.tableSpacingKey)?.setValue(this.clientSettingsService.getTableSpacing());
     this.settingsForm
       .get(this.amountOfRecordsShownKey)
@@ -140,7 +135,6 @@ export class TableSettingsModalComponent implements OnInit {
   }
 
   private saveClientSettings(): void {
-    this.clientSettingsService.setShowMultipleReportsatATime(this.settingsForm.value[this.showMultipleFilesKey]);
     this.clientSettingsService.setAmountOfRecordsInTable(this.settingsForm.value[this.amountOfRecordsShownKey]);
     this.clientSettingsService.setTableSpacing(this.settingsForm.value[this.tableSpacingKey]);
     this.clientSettingsService.setTransformationEnabled(this.settingsForm.value[this.transformationEnabledKey]);
@@ -166,13 +160,11 @@ export class TableSettingsModalComponent implements OnInit {
   }
 
   protected formHasChanged(): void {
-    const formMultipleFilesEnabled: boolean | null = this.settingsForm.value[this.showMultipleFilesKey];
     const formTableSpacing: number | null = this.settingsForm.value[this.tableSpacingKey];
     const formAmountOfRecordsShown: number | null = this.settingsForm.value[this.amountOfRecordsShownKey];
     const formTransformationEnabled: boolean | null = this.settingsForm.value[this.transformationEnabledKey];
     this.unsavedChanges =
       this.formServerSettingsChanged() ||
-      formMultipleFilesEnabled !== this.clientSettingsService.isShowMultipleReportsAtATime() ||
       formTableSpacing !== this.clientSettingsService.getTableSpacing() ||
       formAmountOfRecordsShown !== this.clientSettingsService.getAmountOfRecordsInTable() ||
       formTransformationEnabled !== this.clientSettingsService.isTransformationEnabled();

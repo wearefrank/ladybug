@@ -82,6 +82,7 @@
 	if (reportName.equals(createReportAction)) {
 		testTool.startpoint(correlationId, null, reportName, "Hello World!");
 		testTool.infopoint(correlationId, null, "Hide this checkpoint", "");
+		testTool.infopoint(correlationId, null, "This checkpoint should be visible", "");
 		testTool.setMessageEncoder(testTool.getMessageEncoder());
 		testTool.endpoint(correlationId, null, reportName, "Goodbye World!");
 	}

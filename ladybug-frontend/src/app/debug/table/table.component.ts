@@ -11,7 +11,6 @@ import { ToastService } from '../../shared/services/toast.service';
 import { TabService } from '../../shared/services/tab.service';
 import { AppVariablesService } from '../../shared/services/app.variables.service';
 import { FilterService } from '../filter-side-drawer/filter.service';
-import { ReportData } from '../../shared/interfaces/report-data';
 import { TableCellShortenerPipe } from '../../shared/pipes/table-cell-shortener.pipe';
 import { MatSort, MatSortModule } from '@angular/material/sort';
 import { ActiveFiltersComponent } from '../active-filters/active-filters.component';
@@ -37,6 +36,9 @@ import { RefreshCondition } from '../../shared/interfaces/refresh-condition';
 import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner/loading-spinner.component';
 import { ShortenedTableHeaderPipe } from '../../shared/pipes/shortened-table-header.pipe';
 import { ClientSettingsService } from 'src/app/shared/services/client.settings.service';
+import { HierarchicalReport } from '../../shared/interfaces/hierarchical-report';
+import { Router } from '@angular/router';
+import { CompareData } from '../../compare/compare-data';
 
 @Component({
   selector: 'app-table',
@@ -76,7 +78,7 @@ export class TableComponent implements OnInit, OnDestroy {
   @Input({ required: true }) views!: View[];
   @Input({ required: true }) currentView!: View;
   @Output() viewChange: EventEmitter<View> = new EventEmitter<View>();
-  @Output() openReportEvent: EventEmitter<Report> = new EventEmitter<Report>();
+  @Output() openReportEvent: EventEmitter<HierarchicalReport> = new EventEmitter<HierarchicalReport>();
 
   @ViewChild(TableSettingsModalComponent)
   protected tableSettingsModal!: TableSettingsModalComponent;
@@ -122,9 +124,9 @@ export class TableComponent implements OnInit, OnDestroy {
     return this.selectedReports.map((report: Report): number => report.storageId);
   }
 
-  private showMultipleFiles?: boolean;
   private tableDataSort?: MatSort;
 
+  private router = inject(Router);
   private httpService = inject(HttpService);
   private clientSettingsService = inject(ClientSettingsService);
   private toastService = inject(ToastService);
@@ -155,11 +157,6 @@ export class TableComponent implements OnInit, OnDestroy {
       error: () => catchError(this.errorHandler.handleError()),
     });
     this.subscriptions.add(tableSpacingSubscription);
-    const showMultipleSubscription: Subscription = this.clientSettingsService.showMultipleAtATimeObservable.subscribe({
-      next: (value: boolean) => (this.showMultipleFiles = value),
-      error: () => catchError(this.errorHandler.handleError()),
-    });
-    this.subscriptions.add(showMultipleSubscription);
     const showFilterSubscription: Subscription = this.filterService.showFilter$.subscribe({
       next: (show: boolean) => (this.tableSettings.showFilter = show),
       error: () => catchError(this.errorHandler.handleError()),
@@ -291,7 +288,7 @@ export class TableComponent implements OnInit, OnDestroy {
         .getReportInProgress(index)
         .pipe(catchError(this.errorHandler.handleError()))
         .subscribe({
-          next: (report: Report) => {
+          next: (report: HierarchicalReport) => {
             this.reportsInProgress[report.correlationId] ??= report.startTime;
             if (this.reportsInProgressMetThreshold(report)) {
               this.hasTimedOut = true;
@@ -305,7 +302,7 @@ export class TableComponent implements OnInit, OnDestroy {
     }
   }
 
-  reportsInProgressMetThreshold(report: Report): boolean {
+  reportsInProgressMetThreshold(report: HierarchicalReport): boolean {
     return (
       Date.now() - new Date(this.reportsInProgress[report.correlationId]).getTime() >
       (this.reportsInProgressThreshold ?? 0)
@@ -369,35 +366,22 @@ export class TableComponent implements OnInit, OnDestroy {
       this.toastService.showDanger('Could not find report that was selected.');
       return;
     }
-    this.httpService
-      .getReport(reportTab.storageId, this.currentView.storageName)
-      .pipe(catchError(this.errorHandler.handleError()))
-      .subscribe({
-        next: (report: Report): void => {
-          const reportData: ReportData = {
-            report: report,
-            currentView: this.currentView!,
-          };
-          this.tabService.openNewTab(reportData);
-        },
-      });
+    // Do not cache a report in the tab service. The report component needs a HierarchicalReport and
+    // will download it from the storage.
+    this.tabService.openReportTab(this.currentView.storageName, reportTab.storageId, 'Loading...');
   }
 
   openSelected(): void {
-    if (this.selectedReports.length > 1 && !this.showMultipleFiles) {
-      this.toastService.showWarning(
-        'Please enable show multiple files in settings to open multiple files in the debug tree',
-      );
+    if (this.selectedReportIds.length !== 1) {
+      this.toastService.showWarning('You can open only one report at a time!');
       return;
     }
     this.httpService
-      .getReports(this.selectedReportIds, this.currentView.storageName)
+      .getHierarchicalReports(this.selectedReportIds, this.currentView.storageName, this.currentView.name)
       .pipe(catchError(this.errorHandler.handleError()))
       .subscribe({
-        next: (data: Record<string, CompareReport>) => {
-          for (const storageId of this.selectedReportIds) {
-            this.openReportEvent.next(data[storageId].report);
-          }
+        next: (reports: HierarchicalReport[]) => {
+          this.openReportEvent.next(reports[0]);
         },
       });
   }
@@ -439,14 +423,18 @@ export class TableComponent implements OnInit, OnDestroy {
         next: (data: Record<string, CompareReport>) => {
           const originalReport = this.transformCompareToReport(data[this.selectedReportIds[0]]);
           const runResultReport = this.transformCompareToReport(data[this.selectedReportIds[1]]);
-
-          const id: string = this.tabService.createCompareTabId(originalReport, runResultReport);
-          this.tabService.openNewCompareTab({
-            id: id,
+          const compareData: CompareData = {
             originalReport: originalReport,
             runResultReport: runResultReport,
             viewName: this.currentView.name,
-          });
+          };
+          this.tabService.openCompareTab(
+            this.currentView.storageName,
+            this.selectedReportIds[0],
+            this.currentView.storageName,
+            this.selectedReportIds[1],
+            compareData,
+          );
         },
       });
   }
@@ -474,14 +462,12 @@ export class TableComponent implements OnInit, OnDestroy {
   }
 
   openReport(storageId: number): void {
-    this.debugTab.setAnyReportsOpen(true);
     this.httpService
-      .getReport(storageId, this.currentView.storageName)
+      .getHierarchicalReports([storageId], this.currentView.storageName, this.currentView.name)
       .pipe(catchError(this.errorHandler.handleError()))
       .subscribe({
-        next: (data: Report): void => {
-          data.storageName = this.currentView.storageName;
-          this.openReportEvent.next(data);
+        next: (data: HierarchicalReport[]): void => {
+          this.openReportEvent.next(data[0]);
         },
       });
   }
@@ -496,7 +482,7 @@ export class TableComponent implements OnInit, OnDestroy {
       .getReportInProgress(index)
       .pipe(catchError(this.errorHandler.handleError()))
       .subscribe({
-        next: (report: Report) => {
+        next: (report: HierarchicalReport) => {
           this.openReportEvent.next(report);
           this.toastService.showSuccess(`Opened report in progress with index [${index}]`);
         },
@@ -605,13 +591,12 @@ export class TableComponent implements OnInit, OnDestroy {
       .uploadReport(formData)
       .pipe(catchError(this.errorHandler.handleError()))
       .subscribe({
-        next: (data: Report[]) => {
+        next: (data: HierarchicalReport[]) => {
           for (let report of data) {
-            const reportData: ReportData = {
-              report: report,
-              currentView: this.currentView,
-            };
-            this.tabService.openNewTab(reportData);
+            // Each report was put in a temporary storage on the server
+            // that is not accessible anymore. We cache the reports
+            // to avoid a vain download attempt.
+            this.tabService.openReportTab(report.storageName, report.storageId, report.name, report);
           }
           this.toastService.showSuccess('Report uploaded!');
         },

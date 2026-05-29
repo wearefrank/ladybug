@@ -45,6 +45,7 @@ import lombok.Setter;
 import org.wearefrank.ladybug.web.common.TestToolInfoResponse;
 
 import org.springframework.security.core.GrantedAuthority;
+import org.wearefrank.ladybug.web.common.shownreport.ShownReport;
 
 @RestController
 @RequestMapping("/testtool")
@@ -127,7 +128,7 @@ public class TestToolApi {
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	public ResponseEntity<?> getReportsInProgress(@PathVariable("index") int index) {
 		try {
-			Report result = delegate.getReportsInProgress(index);
+			ShownReport result = delegate.getReportsInProgress(index);
 			return ResponseEntity.ok(result);
 		} catch(HttpBadRequestException e) {
 			return ResponseEntity.badRequest().body(e.getMessage());

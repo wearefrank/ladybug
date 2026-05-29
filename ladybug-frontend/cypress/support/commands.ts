@@ -18,6 +18,8 @@ const OBSERVER_PWD = 'IbisObserver';
 const TESTER_USER = 'IbisTester';
 const TESTER_PWD = 'IbisTester';
 
+type TabType = 'debug' | 'test';
+
 declare global {
   namespace Cypress {
     interface Chainable {
@@ -71,8 +73,6 @@ declare global {
 
       selectIfNotSelected(): Chainable;
 
-      enableShowMultipleInDebugTree(): Chainable;
-
       checkTestTableNumRows(length: number): Chainable;
 
       checkTestTableReportsAre(reportNames: string[]): Chainable;
@@ -86,6 +86,8 @@ declare global {
       clickRootNodeInFileTree(): Chainable;
 
       clickEndCheckpointOfThreeNodeReport(): Chainable;
+
+      getShownNodesOfReportTreeWithText(text: string): Chainable;
 
       clickRowInTable(index: number): Chainable;
 
@@ -110,6 +112,12 @@ declare global {
       debugTabBackToFactorySettings(): Chainable;
 
       enterSettingsDialogAndExpectReportGenerator(text: string): Chainable;
+
+      checkNavTab(index: number, text: string, selected: boolean): Chainable;
+
+      windowSendPostReportEvent(storageName: string, storageId: number): Chainable;
+
+      uploadTwoReportsAndCheckTabs(): Chainable;
     }
   }
 }
@@ -336,16 +344,6 @@ Cypress.Commands.add(
 );
 
 Cypress.Commands.add(
-  'enableShowMultipleInDebugTree' as keyof Chainable,
-  (): void => {
-    cy.get('[data-cy-debug="openSettings"]').click();
-    cy.get('[data-cy-settings="nav-client"]').click();
-    cy.get('[data-cy-settings="showAmount"]').check();
-    cy.get('[data-cy-settings="saveChanges"]').click();
-  },
-);
-
-Cypress.Commands.add(
   'checkTestTableNumRows' as keyof Chainable,
   (length: number): void => {
     cy.getTestTableRows().should('have.length', length);
@@ -411,6 +409,10 @@ Cypress.Commands.add('clickEndCheckpointOfThreeNodeReport' as keyof Chainable, (
     .find('.sft-item')
     .eq(0)
     .click();
+});
+
+Cypress.Commands.add('getShownNodesOfReportTreeWithText', (text) => {
+  cy.get('[data-cy-debug-tree="root"] app-tree-icon').parent().find(`:contains(${text})`);
 });
 
 Cypress.Commands.add(
@@ -496,19 +498,50 @@ Cypress.Commands.add('debugTabBackToFactorySettings' as keyof Chainable, (): Cha
   cy.get('[data-cy-settings="factoryReset"]').click();
 })
 
+Cypress.Commands.add('checkNavTab' as keyof Chainable, (index: number, text: string, selected: boolean) => {
+  cy.get(`[data-cy-nav-tab]:eq(${index})`).should('contain.text', text);
+  if (selected) {
+    cy.get(`[data-cy-nav-tab]:eq(${index})`).find('.active').should('be.visible');
+  } else {
+    cy.get(`[data-cy-nav-tab]:eq(${index})`).find('.active').should('not.exist');
+  }
+})
+
+Cypress.Commands.add('windowSendPostReportEvent' as keyof Chainable, (storageName: string, storageId: number) => {
+  cy.window().then(win => {
+      win.postMessage({ action: 'ladybug-openReport', storageName: storageName, storageId: storageId }, '*');
+  });
+})
+
+Cypress.Commands.add('uploadTwoReportsAndCheckTabs', () => {
+  cy.fixture('twoReports.zip', 'binary')
+    .then(Cypress.Blob.binaryStringToBlob)
+    .then((fileContent) => {
+      cy.get('[data-cy-debug="upload"]').find('input').attachFile({
+        fileContent,
+        fileName: 'twoReports.zip',
+      });
+    });
+  cy.get('[data-cy-nav-tab]').should('have.length', 4);
+  cy.checkNavTab(0, 'Debug', false);
+  cy.checkNavTab(1, 'Test', false);
+  cy.checkNavTab(2, 'Adapter1a', false);
+  cy.checkNavTab(3, 'Adapter1b', true);
+})
+
 function awaitLoadingSpinner(): void {
   cy.get('[data-cy-loading-spinner]', { timeout: 10000 }).should('not.exist');
 }
 
 //More string values can be added for each tab that can be opened
-function navigateToTabAndAwaitLoadingSpinner(tab: 'debug' | 'test'): void {
+function navigateToTabAndAwaitLoadingSpinner(tab: TabType): void {
   cy.visit('');
-  cy.get(`[data-cy-nav-tab="${tab}Tab"]`).click();
+  cy.get(`[data-cy-nav-tab="${tab}"]`).click();
   awaitLoadingSpinner();
 }
 
-function navigateToTab(tab: 'debug' | 'test'): void {
-  cy.get(`[data-cy-nav-tab="${tab}Tab"]`).click();
+function navigateToTab(tab: TabType): void {
+  cy.get(`[data-cy-nav-tab="${tab}"]`).click();
 }
 
 interface ApiResponse {

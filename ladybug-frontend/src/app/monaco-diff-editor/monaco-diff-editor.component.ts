@@ -88,9 +88,6 @@ export class MonacoDiffEditor implements OnInit, AfterViewInit, OnDestroy {
     if (!this.hasValuesToShow()) {
       throw new Error('Values to show have not been initialized');
     }
-    console.log(
-      `Going to show ${this.requestedOriginal?.code.slice(0, 10)}... and ${this.requestedModified?.code.slice(0, 10)}...`,
-    );
     let original = monaco.editor.createModel(this.requestedOriginal!.code, this.requestedOriginal!.language);
     let modified = monaco.editor.createModel(this.requestedModified!.code, this.requestedModified!.language);
     diffEditor.setModel({ original, modified });

@@ -19,11 +19,12 @@ import { TestTableComponent } from './test-table/test-table.component';
 import { DeleteModalComponent } from '../shared/components/delete-modal/delete-modal.component';
 import { LoadingSpinnerComponent } from '../shared/components/loading-spinner/loading-spinner.component';
 import { TabService } from '../shared/services/tab.service';
-import { CompareData } from '../compare/compare-data';
 import { CompareReport } from '../shared/interfaces/compare-reports';
 import { TestRefreshService } from './test-refresh.service';
 import { SettingsService } from '../shared/services/settings.service';
 import { ClientSettingsService } from '../shared/services/client.settings.service';
+import { Router } from '@angular/router';
+import { CompareData } from '../compare/compare-data';
 
 export const updatePathActionConst = ['move', 'copy'] as const;
 export type UpdatePathAction = (typeof updatePathActionConst)[number];
@@ -44,8 +45,6 @@ export type UpdatePathAction = (typeof updatePathActionConst)[number];
   ],
 })
 export class TestComponent implements OnInit, OnDestroy {
-  static readonly ROUTER_PATH: string = 'test';
-
   @ViewChild(CloneModalComponent) protected cloneModal!: CloneModalComponent;
   @ViewChild(DeleteModalComponent) protected deleteModal!: DeleteModalComponent;
   @ViewChild(TestFolderTreeComponent)
@@ -67,6 +66,7 @@ export class TestComponent implements OnInit, OnDestroy {
   protected clientSettingsService = inject(ClientSettingsService);
   protected currentUploadFile = '';
 
+  private router = inject(Router);
   private updatePathAction: UpdatePathAction = 'move';
   private testReportServiceSubscription?: Subscription;
   private testRefreshServiceSubscription?: Subscription;
@@ -312,11 +312,18 @@ export class TestComponent implements OnInit, OnDestroy {
         .subscribe((resp: Record<string, CompareReport>) => {
           const reports: Report[] = Object.values(resp).map((r) => r.report);
           const compareData: CompareData = {
-            id: this.tabService.createCompareTabId(reports[0], reports[1]),
             originalReport: reports[0],
             runResultReport: reports[1],
           };
-          this.tabService.openNewCompareTab(compareData);
+          this.tabService.openCompareTab(
+            reports[0].storageName,
+            reports[0].storageId,
+            reports[1].storageName,
+            reports[1].storageId,
+            compareData,
+            // When comparison closes return to test tab
+            'test',
+          );
         });
     }
   }

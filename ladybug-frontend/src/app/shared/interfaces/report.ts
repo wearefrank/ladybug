@@ -1,6 +1,8 @@
 import { Checkpoint } from './checkpoint';
 import { BaseReport } from './base-report';
 
+// TODO issue https://github.com/wearefrank/ladybug/issues/743. Use
+// HierarchicalReport instead.
 export interface Report extends BaseReport {
   checkpoints: Checkpoint[];
   correlationId: string;

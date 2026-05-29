@@ -4,7 +4,7 @@ import { map, Observable } from 'rxjs';
 import { View } from '../interfaces/view';
 import { OptionsSettings } from '../interfaces/options-settings';
 import { Report } from '../interfaces/report';
-import { CompareReport } from '../interfaces/compare-reports';
+import { CompareHierarchicalReport, CompareReport } from '../interfaces/compare-reports';
 import { TestListItem } from '../interfaces/test-list-item';
 import { CloneReport } from '../interfaces/clone-report';
 import { UploadParameters } from '../interfaces/upload-params';
@@ -14,6 +14,8 @@ import { UpdateReport } from '../interfaces/update-report';
 import { UpdateReportResponse } from '../interfaces/update-report-response';
 import { TableSettings } from '../interfaces/table-settings';
 import { ClientSettingsService } from './client.settings.service';
+import { HierarchicalCheckpoint, HierarchicalReport } from '../interfaces/hierarchical-report';
+import { isNumber } from '../util/util';
 
 @Injectable({
   providedIn: 'root',
@@ -50,12 +52,14 @@ export class HttpService {
     return this.http.get<number>(`api/metadata/${storage}/count`);
   }
 
+  // TODO issue https://github.com/wearefrank/ladybug/issues/743.
+  // Should return HierarchicalReport instead of Report.
   getLatestReports(amount: number, storage: string): Observable<Report[]> {
     return this.http.get<Report[]>(`api/report/latest/${storage}/${amount}`);
   }
 
-  getReportInProgress(index: number): Observable<Report> {
-    return this.http.get<Report>(`api/testtool/in-progress/${index}`);
+  getReportInProgress(index: number): Observable<HierarchicalReport> {
+    return this.http.get<HierarchicalReport>(`api/testtool/in-progress/${index}`);
   }
 
   deleteReportInProgress(index: number): Observable<Report> {
@@ -72,12 +76,14 @@ export class HttpService {
     });
   }
 
+  // TODO issue https://github.com/wearefrank/ladybug/issues/743.
+  // Remove this and use getHierarchicalReports() instead.
   getReport(reportId: number, storage: string): Observable<Report> {
     const transformationEnabled: string = this.clientSettingsService.isTransformationEnabled() ? 'true' : 'false';
     return this.http
       .get<
         Record<string, Report | string>
-      >(`api/report/${storage}/${reportId}?xml=true&globalTransformer=${transformationEnabled}`)
+      >(`api/report/${storage}/${reportId}?globalTransformer=${transformationEnabled}`)
       .pipe(
         map((e) => {
           const report = e['report'] as Report;
@@ -88,12 +94,14 @@ export class HttpService {
       );
   }
 
+  // TODO issue https://github.com/wearefrank/ladybug/issues/743.
+  // Remove this and use getHierarchicalReports() instead.
   getReports(reportIds: number[], storage: string): Observable<Record<string, CompareReport>> {
     const transformationEnabled = this.clientSettingsService.isTransformationEnabled() ? 'true' : 'false';
     return this.http
       .get<
         Record<string, CompareReport>
-      >(`api/report/${storage}?xml=true&globalTransformer=${transformationEnabled}`, { params: { storageIds: reportIds } })
+      >(`api/report/${storage}?globalTransformer=${transformationEnabled}`, { params: { storageIds: reportIds } })
       .pipe(
         map((data) => {
           for (const report of reportIds) {
@@ -103,6 +111,60 @@ export class HttpService {
           return data;
         }),
       );
+  }
+
+  // viewName can be null. I opened a report from the test tab and saw URL the following
+  // URL working:
+  // http://localhost/ladybug/api/report/shownReports/Test?globalTransformer=false&view=&storageIds=0
+  getHierarchicalReports(
+    reportIds: number[],
+    storage: string,
+    viewName: string | null,
+  ): Observable<HierarchicalReport[]> {
+    const transformationEnabled: string = this.clientSettingsService.isTransformationEnabled() ? 'true' : 'false';
+    const viewNameString: string = viewName === null ? '' : viewName;
+    const viewQuery = `&view=${viewNameString}`;
+    return this.http
+      .get<
+        Record<string, CompareHierarchicalReport>
+      >(`api/report/shownReports/${storage}?globalTransformer=${transformationEnabled}${viewQuery}`, { params: { storageIds: reportIds } })
+      .pipe(
+        map((data) => {
+          const result: HierarchicalReport[] = [];
+          for (const reportId of reportIds) {
+            const report: HierarchicalReport = data[reportId].report;
+            report.xml = data[reportId].xml;
+            report.checkpointsFromView = viewName;
+            result.push(report);
+            if (report.children !== null) {
+              for (const child of report.children) {
+                this.forChildSetReport(child, report);
+              }
+            }
+          }
+          return result;
+        }),
+      );
+  }
+
+  private forChildSetReport(child: HierarchicalCheckpoint, report: HierarchicalReport): void {
+    child.report = report;
+    child.id = this.extractIdFromUid(child.uid);
+    if (child.children !== null) {
+      for (const grandChild of child.children!) {
+        this.forChildSetReport(grandChild, report);
+      }
+    }
+  }
+
+  private extractIdFromUid(uid: string): number {
+    const idString: string = uid.split('#')[0];
+    if (isNumber(idString)) {
+      return +idString;
+    } else {
+      console.log(`Could not extract id from received report, uid=${uid}`);
+      return -1;
+    }
   }
 
   updateReport(reportId: string, body: UpdateReport, storage: string): Observable<UpdateReportResponse> {
@@ -119,8 +181,24 @@ export class HttpService {
     });
   }
 
-  uploadReport(formData: FormData): Observable<Report[]> {
-    return this.http.post<Report[]>('api/report/upload', formData);
+  uploadReport(formData: FormData): Observable<HierarchicalReport[]> {
+    return this.http.post<CompareHierarchicalReport[]>('api/report/upload', formData).pipe(
+      map((data) => {
+        const result: HierarchicalReport[] = [];
+        for (const item of data) {
+          const report: HierarchicalReport = item.report;
+          report.xml = item.xml;
+          report.checkpointsFromView = null;
+          result.push(report);
+          if (report.children !== null) {
+            for (const child of report.children) {
+              this.forChildSetReport(child, report);
+            }
+          }
+        }
+        return result;
+      }),
+    );
   }
 
   uploadReportToStorage(formData: FormData, storage: string): Observable<void> {
@@ -173,13 +251,8 @@ export class HttpService {
     return this.http.delete<void>(`api/report/all/${storage}`);
   }
 
-  //This endpoint never existed in the backend, so this needs to be refactored
-  // replaceReport(reportId: number, storage: string): Observable<void> {
-  //   return this.http.put<void>(`api/runner/replace/${storage}/${reportId}`, {
-  //     headers: this.headers,
-  //   });
-  // }
-
+  // TODO issue https://github.com/wearefrank/ladybug/issues/743.
+  // This method should not be needed anymore.
   getUnmatchedCheckpoints(storageName: string, storageId: number, viewName: string): Observable<string[]> {
     return this.http.get<string[]>(`api/report/${storageName}/${storageId}/checkpoints/uids`, {
       params: { view: viewName, invert: true },

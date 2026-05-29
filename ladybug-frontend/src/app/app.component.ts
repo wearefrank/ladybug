@@ -1,25 +1,23 @@
-import { Component, inject, OnDestroy, OnInit, ViewChild } from '@angular/core';
-import { Location, NgOptimizedImage } from '@angular/common';
+import { ChangeDetectorRef, Component, inject, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { NgOptimizedImage } from '@angular/common';
 import { Title } from '@angular/platform-browser';
 import { CompareComponent } from './compare/compare.component';
 import { TestComponent } from './test/test.component';
-import { CompareData } from './compare/compare-data';
 import { TabService } from './shared/services/tab.service';
 import { AppVariablesService } from './shared/services/app.variables.service';
 import { catchError, Subscription } from 'rxjs';
-import { DebugComponent } from './debug/debug.component';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
-import { Tab } from './shared/interfaces/tab';
-import { ReportData } from './shared/interfaces/report-data';
+import { KEY_COMPARE, KEY_REPORT, Tab } from './shared/interfaces/tab';
 import { ToastComponent } from './shared/components/toast/toast.component';
-import { CloseTab } from './shared/interfaces/close-tab';
 import { HttpService } from './shared/services/http.service';
 import { StubStrategy } from './shared/enums/stub-strategy';
 import { ErrorHandling } from './shared/classes/error-handling.service';
 import { VersionService } from './shared/services/version.service';
-import { ReportComponent } from './report/report.component';
-import { Report } from './shared/interfaces/report';
-import { View } from './shared/interfaces/view';
+
+interface OpenReportEventData {
+  storageName: string;
+  storageId: number;
+}
 
 @Component({
   selector: 'app-root',
@@ -33,21 +31,18 @@ export class AppComponent implements OnInit, OnDestroy {
   @ViewChild(TestComponent) testComponent!: TestComponent;
   version?: string;
   title = 'ladybug';
-  tabs: Tab[] = [];
-  newTabSubscription!: Subscription;
-  newCompareTabSubscription!: Subscription;
-  closeTabSubscription!: Subscription;
-  protected readonly debugComponentPath: string = `/${DebugComponent.ROUTER_PATH}`;
-  protected readonly testComponentPath: string = `/${TestComponent.ROUTER_PATH}`;
+  subscriptions: Subscription = new Subscription();
 
-  private titleService = inject(Title);
-  private tabService = inject(TabService);
+  protected tabService = inject(TabService);
+  // Having this local copy lets us control when to refresh
+  protected tabs: Tab[] = [];
   private router = inject(Router);
-  private location = inject(Location);
+  private titleService = inject(Title);
   private httpService = inject(HttpService);
   private errorHandler = inject(ErrorHandling);
   private versionService = inject(VersionService);
   private appVariablesService = inject(AppVariablesService);
+  private cdr = inject(ChangeDetectorRef);
 
   ngOnInit(): void {
     this.fetchAndSetVersion();
@@ -55,10 +50,11 @@ export class AppComponent implements OnInit, OnDestroy {
     this.getStubStrategies();
     this.appVariablesService.fetchCustomReportActionButtonText();
     this.setupPostMessageBridge();
+    this.tabs = this.tabService.getTabs();
   }
 
   ngOnDestroy(): void {
-    this.unsubscribeAll();
+    this.subscriptions.unsubscribe();
   }
 
   async fetchAndSetVersion(): Promise<void> {
@@ -67,76 +63,25 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   subscribeToServices(): void {
-    this.newTabSubscription = this.tabService.openReportInTab$.subscribe((value: ReportData) => {
-      this.openReportInSeparateTab(value);
-    });
-    this.newCompareTabSubscription = this.tabService.openInCompare$.subscribe((value: CompareData) => {
-      this.openNewCompareTab(value);
-    });
-    this.closeTabSubscription = this.tabService.closeTab$.subscribe((value: CloseTab) => {
-      const tab: Tab | undefined = this.tabs.find((t: Tab) => t.id === value.id);
-      if (tab) {
-        this.closeTab(tab);
+    const refreshSubscription: Subscription = this.tabService.refresh$.subscribe((navigation: string | null) => {
+      this.tabs = this.tabService.getTabs();
+      if (navigation !== null) {
+        this.router.navigate(navigation.split('/'));
       }
+      this.cdr.detectChanges();
     });
+    this.subscriptions.add(refreshSubscription);
   }
 
-  unsubscribeAll(): void {
-    if (this.newTabSubscription) {
-      this.newTabSubscription.unsubscribe();
-    }
-    if (this.newCompareTabSubscription) {
-      this.newCompareTabSubscription.unsubscribe();
-    }
-    if (this.closeTabSubscription) {
-      this.closeTabSubscription.unsubscribe();
-    }
-  }
-
-  openReportInSeparateTab(data: ReportData): void {
-    const tabIndex: number = this.tabs.findIndex((tab: Tab): boolean => tab.id === String(data.report.storageId));
-    if (tabIndex == -1) {
-      this.tabs.push({
-        key: data.report.name,
-        id: String(data.report.storageId),
-        data: data,
-        path: `report/${data.report.storageId}`,
-      } as Tab);
-    }
-
-    this.router.navigate([ReportComponent.ROUTER_PATH, data.report.storageId]);
-  }
-
-  openNewCompareTab(data: CompareData): void {
-    const tabId = this.tabService.createCompareTabId(data.originalReport, data.runResultReport);
-    const tabIndex: number = this.tabs.findIndex((tab: Tab): boolean => tab.id == tabId);
-    if (tabIndex == -1) {
-      data.id = tabId;
-      this.tabs.push({
-        key: 'Compare',
-        id: tabId,
-        data: data,
-        path: `compare/${tabId}`,
-      } as Tab);
-    }
-    this.router.navigate([CompareComponent.ROUTER_PATH, tabId]);
-  }
-
-  closeTab(tab: Tab): void {
-    const index: number = this.tabs.indexOf(tab);
-    this.tabs.splice(index, 1);
-    if (this.router.url.includes(tab.path)) {
-      this.location.back();
-    }
-    if (tab.data) {
-      this.tabService.closeTab(tab.data);
-    }
+  hasClose(tab: Tab): boolean {
+    return tab.kind === KEY_REPORT || tab.kind === KEY_COMPARE;
   }
 
   closeTabEvent(tab: Tab, event: MouseEvent): void {
     event.stopPropagation();
     event.preventDefault();
-    this.closeTab(tab);
+    this.tabService.removeTab(tab.key);
+    this.cdr.detectChanges();
   }
 
   private setupPostMessageBridge(): void {
@@ -155,11 +100,8 @@ export class AppComponent implements OnInit, OnDestroy {
       }
 
       if (event.data?.action === 'ladybug-openReport') {
-        const reportData: ReportData = {
-          report: event.data.report as Report,
-          currentView: event.data.currentView as View,
-        };
-        this.tabService.openNewTab(reportData);
+        const eventData = event.data as OpenReportEventData;
+        this.tabService.openReportTab(eventData.storageName, eventData.storageId, 'Loading...');
       }
     });
   }

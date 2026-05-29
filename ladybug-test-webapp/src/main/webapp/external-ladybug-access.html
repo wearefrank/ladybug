@@ -95,7 +95,7 @@ function directTo(report) {
 }
 
 function sendReport(report) {
-  lbWindow.postMessage({ action: 'ladybug-openReport', report, currentView: { storageName: storageEl.value.trim() } }, '*');
+  lbWindow.postMessage({ action: 'ladybug-openReport', storageName: storageEl.value.trim(), storageId: report.storageId }, '*');
 }
 
 // ── Fetch ─────────────────────────────────────────────────────────────────

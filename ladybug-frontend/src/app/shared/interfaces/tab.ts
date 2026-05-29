@@ -1,9 +1,17 @@
-import { CompareData } from '../../compare/compare-data';
-import { ReportData } from './report-data';
+import { DetachedRouteHandle } from '@angular/router';
 
+export const KEY_DEBUG = 'debug';
+export const KEY_TEST = 'test';
+export const KEY_REPORT = 'report';
+export const KEY_COMPARE = 'compare';
+
+export type routeKind = 'debug' | 'test' | 'report' | 'compare';
+export type debugOrTest = 'debug' | 'test';
 export interface Tab {
+  kind: routeKind;
   key: string;
-  id: string;
-  data?: ReportData | CompareData;
-  path: string;
+  title: string;
+  handle?: DetachedRouteHandle;
+  // Needed by report or compare tabs when they close, should be debug or test
+  returnToKey: debugOrTest;
 }

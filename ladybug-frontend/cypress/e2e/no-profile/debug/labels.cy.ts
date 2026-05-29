@@ -5,7 +5,6 @@ describe('Test labels', () => {
   });
 
   afterEach(() => {
-    cy.get('[data-cy-debug-tree="closeAll"]').click();
     cy.resetApp();
     cy.initializeApp();
   });

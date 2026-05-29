@@ -74,7 +74,7 @@ Cypress.Commands.add('enterLadybug', () => {
   cy.get('[data-cy-nav="testing"]').click()
   cy.get('[data-cy-nav="testingLadybug"]').click()
   cy.awaitLoadingSpinner()
-  cy.inIframeBody('[data-cy-nav-tab="debugTab"]').click()
+  cy.inIframeBody('[data-cy-nav-tab="debug"]').click()
 })
 
 Cypress.Commands.add('getNumLadybugReports', () => {
@@ -208,7 +208,7 @@ Cypress.Commands.add('guardedCopyReportToTestTab', (alias) => {
 })
 
 Cypress.Commands.add('checkTestTabHasReportNamed', (name) => {
-  cy.inIframeBody('[data-cy-nav-tab="testTab"]').click()
+  cy.inIframeBody('[data-cy-nav-tab="test"]').click()
   cy.inIframeBody('[data-cy-test="table"] tbody tr')
     .should('have.length', 1)
     .as('testtabReportRow')
