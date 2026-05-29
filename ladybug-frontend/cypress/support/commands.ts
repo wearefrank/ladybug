@@ -67,6 +67,8 @@ declare global {
 
       createReportOnlyCR(): Chainable;
 
+      createReportWithStatusError(): Chainable;
+
       clearDebugStore(): Chainable;
 
       clearReportsInProgress(): Chainable;
@@ -96,6 +98,8 @@ declare global {
       refreshApp(): Chainable;
 
       getDebugTableRows(): Chainable;
+
+      checkDebugTableRowsAre(reportNames: string[]): Chainable;
 
       getTestTableRows(): Chainable;
 
@@ -317,6 +321,15 @@ Cypress.Commands.add('createReportOnlyCR' as keyof Chainable, (): void => {
   });
 });
 
+Cypress.Commands.add('createReportWithStatusError' as keyof Chainable, (): void => {
+  // No cy.visit because then the API call can happen multiple times.
+  cy.request(
+    `${Cypress.env('backendServer')}/index.jsp?createReport=Complex%20error%20report`,
+  ).then((resp: Cypress.Response<ApiResponse>) => {
+    expect(resp.status).equal(200);
+  });
+})
+
 Cypress.Commands.add('clearDebugStore' as keyof Chainable, (): void => {
   cy.request(
     `${Cypress.env('backendServer')}/index.jsp?clearDebugStorage=true`,
@@ -440,6 +453,19 @@ Cypress.Commands.add('refreshApp' as keyof Chainable, (): void => {
 Cypress.Commands.add('getDebugTableRows' as keyof Chainable, (): Chainable => {
   return cy.get('[data-cy-debug="tableRow"]');
 });
+
+Cypress.Commands.add('checkDebugTableRowsAre' as keyof Chainable, (reportNames: string[]): Chainable => {
+  const NAME_COLUMN_INDEX = 4;
+  cy.getDebugTableRows().should('have.length', reportNames.length);
+  for (let rowIndex = 0; rowIndex < reportNames.length; ++rowIndex) {
+    cy.getDebugTableRows()
+      .eq(rowIndex)
+      .find('td')
+      .eq(NAME_COLUMN_INDEX)
+      .invoke('text')
+      .should('contain', reportNames[rowIndex]);
+  }
+})
 
 Cypress.Commands.add('getTestTableRows' as keyof Chainable, (): Chainable => {
   return cy.get('[data-cy-test="tableRow"]');
