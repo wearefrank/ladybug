@@ -59,10 +59,17 @@ describe('Report buttons', () => {
     cy.assertDebugTableLength(1).click();
     checkNoCheckpointIds();
     cy.get('[data-cy-debug-tree="toggleShowCheckpointId"]').click();
-    for(const nodeIndex of [0, 1, 2]) {
+    cy.get('[data-cy-debug-tree="root"]')
+      .find(`.item-name:eq(0)`)
+      .contains(/Simple report \(\d+\)/);
+    for(const nodeIndex of [1, 2]) {
       cy.get('[data-cy-debug-tree="root"]')
         .find(`.item-name:eq(${nodeIndex})`)
-        .contains(/Simple report \(\d+\)/);
+        // We test the exact checkpoint id-s. These are deterministic.
+        // This check makes sure that the storage id and the checkpoint
+        // id are not confused - both are extracted from the uid by
+        // http.service.ts.
+        .contains(`Simple report (${nodeIndex - 1})`);
     }
     cy.get('[data-cy-debug-tree="toggleShowCheckpointId"]').click();
     checkNoCheckpointIds();
