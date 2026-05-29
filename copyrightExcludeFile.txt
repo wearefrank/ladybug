@@ -6,8 +6,10 @@
 \ladybug-ff-test-webapp
 /ladybug-ff-cypress-test
 \ladybug-ff-cypress-test
-/external-ladybug-director
-\external-ladybug-director
+/ladybug-test-webapp-common
+\ladybug-test-webapp-common
+/ladybug-test-webapp
+\ladybug-test-webapp
 /.husky
 \.husky
 /src/main/webapp/

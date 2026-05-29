@@ -1,5 +1,5 @@
 /*
-   Copyright 2024, 2026 WeAreFrank!
+   Copyright 2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -13,17 +13,18 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.wearefrank.ladybug.test.webapp.storages;
+package org.wearefrank.ladybug.test.webapp.common.test.webapp;
 
-import org.wearefrank.ladybug.storage.memory.MemoryLogStorage;
+import org.wearefrank.ladybug.Checkpoint;
+import org.wearefrank.ladybug.Report;
+import org.wearefrank.ladybug.filter.CheckpointMatcher;
 
-public class ErrorGeneratingStorage extends MemoryLogStorage {
-    public ErrorGeneratingStorage() {
-        super();
-    }
+public class Matcher implements CheckpointMatcher {
 
-    @Override
-    public String getWarningsAndErrors() {
-        return "A simulated error, should show up in the Ladybug GUI";
+    public boolean match(Report report, Checkpoint checkpoint) {
+        if (checkpoint.getName() != null && checkpoint.getName().equals("Hide this checkpoint")) {
+            return false;
+        }
+        return true;
     }
 }

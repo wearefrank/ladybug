@@ -1,24 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans
-	xmlns="http://www.springframework.org/schema/beans"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xmlns:context="http://www.springframework.org/schema/context"
-	xmlns:task="http://www.springframework.org/schema/task"
-	xmlns:util="http://www.springframework.org/schema/util"
-	xsi:schemaLocation="
+		xmlns="http://www.springframework.org/schema/beans"
+		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		xmlns:context="http://www.springframework.org/schema/context"
+		xmlns:task="http://www.springframework.org/schema/task"
+		xmlns:util="http://www.springframework.org/schema/util"
+		xsi:schemaLocation="
 		http://www.springframework.org/schema/beans   http://www.springframework.org/schema/beans/spring-beans.xsd
 		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
 		http://www.springframework.org/schema/task    http://www.springframework.org/schema/task/spring-task.xsd
 		http://www.springframework.org/schema/util    http://www.springframework.org/schema/util/spring-util.xsd
 	"
-	default-lazy-init="true"
-	>
+		default-lazy-init="true"
+>
 
 	<!-- Make ${ladybug.dir:ladybug} read system property ladybug.dir with default value ladybug -->
-	<!-- Read optional properties file test.properties. -->
-	<context:property-placeholder location="classpath:test.properties"/>
+	<context:property-placeholder/>
 
-	<context:component-scan base-package="org.wearefrank.ladybug"/>
+	<context:component-scan base-package="org.wearefrank.ladybug">
+		<context:exclude-filter type="assignable" expression="org.wearefrank.ladybug.Config"/>
+	</context:component-scan>
 
 	<bean name="testTool" class="org.wearefrank.ladybug.TestTool">
 		<property name="configName" value="Ladybug Test Webapp"/>
@@ -26,25 +27,20 @@
 		<property name="maxCheckpoints" value="1000"/>
 		<property name="maxMemoryUsage" value="1000000"/>
 		<property name="maxMessageLength" value="100000"/>
-		<!-- These are added here to force Spring to call the setters.
-		     This is needed because the first setter calls are saved
-		     as the defaults. Without these, the first change by
-		     the user is taken as default -->
-		<property name="reportGeneratorEnabled" value="true"/>
 		<property name="regexFilter" value=".*"/>
 		<property name="rerunner"><ref bean="rerunner"/></property>
 	</bean>
 
 	<bean name="metadataExtractor" class="org.wearefrank.ladybug.MetadataExtractor">
 		<property name="extraMetadataFieldExtractors">
-			<list>
+			<util:list>
 				<bean class="org.wearefrank.ladybug.metadata.RegexMetadataFieldExtractor">
 					<!-- See LadybugCustomDatabaseChangelog.xml -->
 					<property name="name" value="custom"/>
 					<property name="label" value="Custom"/>
 					<property name="regex" value="(Hello).*"/>
 				</bean>
-			</list>
+			</util:list>
 		</property>
 	</bean>
 
@@ -52,14 +48,15 @@
 		<property name="name" value="White box"/>
 	</bean>
 
+
 	<!-- Demonstrate/test different list of columns for debug tab using a view -->
 	<bean name="nameOnlyView" class="org.wearefrank.ladybug.filter.View">
 		<property name="name" value="Report name only"/>
 		<property name="metadataNames">
-			<list>
-				<value>storageId</value><!-- Without storageId the report cannot be opened -->
+			<util:list>
+				<value>storageId</value>
 				<value>name</value>
-			</list>
+			</util:list>
 		</property>
 	</bean>
 
@@ -76,7 +73,7 @@
 			<ref bean="databaseStorage"/>
 		</property>
 		<property name="metadataNames">
-			<list>
+			<util:list>
 				<value>storageId</value>
 				<value>endTime</value>
 				<value>duration</value>
@@ -87,14 +84,14 @@
 				<value>estimatedMemoryUsage</value>
 				<value>storageSize</value>
 				<value>custom</value>
-			</list>
+			</util:list>
 		</property>
 	</bean>
 
 	<bean name="blackBoxView" class="org.wearefrank.ladybug.filter.View" parent="whiteBoxView">
 		<property name="name" value="Black box"/>
 		<property name="checkpointMatchers">
-			<bean class="org.wearefrank.ladybug.test.webapp.common.test.webapp.Matcher"/>
+			<bean class="org.wearefrank.ladybug.spring.boot.testtool.test.webapp.Matcher"/>
 		</property>
 	</bean>
 
@@ -106,16 +103,14 @@
 	</bean>
 	<bean name="views" class="org.wearefrank.ladybug.filter.Views">
 		<property name="views">
-			<list>
+			<util:list>
 				<ref bean="nameOnlyView"/>
 				<ref bean="blackBoxView"/>
 				<ref bean="whiteBoxView"/>
 				<ref bean="fileStorageView"/>
 				<ref bean="databaseStorageView"/>
-				<ref bean="proofOfMigrationView"/><!-- See Config.java -->
-				<ref bean="proofOfMigrationErrorsView"/><!-- See Config.java -->
 				<ref bean="lowLevelErrorTestView" />
-			</list>
+			</util:list>
 		</property>
 		<property name="defaultView" ref="defaultView"/>
 	</bean>
@@ -127,14 +122,44 @@
 	</bean>
 
 	<bean name="xsltResource" class="java.lang.String">
-		<constructor-arg value="org/wearefrank/ladybug/test/junit/transformReport.xslt"/>
+		<constructor-arg value="nl/nn/testtool/test/junit/transformReport.xslt"/>
 	</bean>
 
-	<bean name="rerunner" class="org.wearefrank.ladybug.test.webapp.common.test.webapp.SimpleRerunner"/>
+	<bean name="rerunner" class="org.wearefrank.ladybug.spring.boot.testtool.test.webapp.SimpleRerunner"/>
 
-	<bean name="customReportAction" class="org.wearefrank.ladybug.test.webapp.common.extensions.DummyReportAction"/>
+	<bean name="customReportAction" class="org.wearefrank.ladybug.spring.boot.testtool.extensions.DummyReportAction"/>
 
-	<!--  Enable security elements in web.xml to test roles -->
+	<!-- Use memory storage by default as Cypress tests depend on memory storage / starting with empty storages -->
+
+	<bean name="debugStorage" class="org.wearefrank.ladybug.storage.memory.MemoryLogStorage">
+		<property name="name" value="Debug"/>
+	</bean>
+
+	<bean name="testStorage" class="org.wearefrank.ladybug.storage.memory.MemoryCrudStorage">
+		<property name="name" value="Test"/>
+	</bean>
+
+	<bean name="reportsFilename" class="java.lang.String">
+		<constructor-arg value="../${ladybug.dir:ladybug}/data/file-storage/ladybug.tts"/>
+	</bean>
+
+	<bean name="metadataFilename" class="java.lang.String">
+		<constructor-arg value="../${ladybug.dir:ladybug}/data/file-storage/ladybug.ttm"/>
+	</bean>
+
+	<bean name="fileStorage" class="org.wearefrank.ladybug.storage.file.Storage">
+		<property name="name" value="fileStorage"/>
+		<property name="reportsFilename" value="#{reportsFilename}"/>
+		<property name="metadataFilename" value="#{metadataFilename}"/>
+	</bean>
+
+	<bean name="errorGeneratingStorage" class="org.wearefrank.ladybug.spring.boot.testtool.storages.ErrorGeneratingStorage">
+		<property name="name" value="errorGeneratingStorage" />
+	</bean>
+
+	<bean name="maxStorageSize" class="java.lang.String">
+		<constructor-arg value="#{10 * 1024 * 1024}"/>
+	</bean>
 
 	<util:list id="observerRoles">
 		<value>IbisObserver</value>
@@ -153,38 +178,6 @@
 		<value>IbisTester</value>
 	</util:list>
 
-	<!-- Use memory storage by default as Cypress tests depend on memory storage / starting with empty storages -->
-
-	<bean name="debugStorage" class="org.wearefrank.ladybug.storage.memory.MemoryLogStorage">
-		<property name="name" value="Debug"/>
-	</bean>
-
-	<bean name="testStorage" class="org.wearefrank.ladybug.storage.memory.MemoryCrudStorage">
-		<property name="name" value="Test"/>
-	</bean>
-
-	<bean name="reportsFilename" class="java.lang.String">
-		<constructor-arg value="../${ladybug.dir:ladybug}/ladybug-common/data/file-storage/ladybug.tts"/>
-	</bean>
-
-	<bean name="metadataFilename" class="java.lang.String">
-		<constructor-arg value="../${ladybug.dir:ladybug}/ladybug-common/data/file-storage/ladybug.ttm"/>
-	</bean>
-
-	<bean name="fileStorage" class="org.wearefrank.ladybug.storage.file.Storage">
-		<property name="name" value="fileStorage"/>
-		<property name="reportsFilename" value="#{reportsFilename}"/>
-		<property name="metadataFilename" value="#{metadataFilename}"/>
-	</bean>
-
-	<bean name="errorGeneratingStorage" class="org.wearefrank.ladybug.test.webapp.common.storages.ErrorGeneratingStorage">
-		<property name="name" value="errorGeneratingStorage" />
-	</bean>
-
-	<bean name="maxStorageSize" class="java.lang.String">
-		<constructor-arg value="#{10 * 1024 * 1024}"/>
-	</bean>
-
 	<!--
 	DatabaseCrudStorage will make it possible to edit and delete reports in the Debug tab (with new GUI). This is okay
 	for testing purposes but don't copy this for other situations without careful consideration / reading the LogStorage
@@ -196,7 +189,7 @@
 		depends-on="ladybugDatabaseChangelog"
 		>
 		<property name="name" value="databaseStorage"/>
-		<property name="maxStorageSize" value="#{maxStorageSize}"/>
+		<property name="maxStorageSize" value="#{10 * 1024 * 1024}"/>
 		<property name="storeReportXml" value="true"/>
 	</bean>
 
@@ -208,7 +201,7 @@
 	-->
 	<bean name="ladybugDataSource" class="org.apache.commons.dbcp2.BasicDataSource" destroy-method="close">
 		<property name="driverClassName" value="org.h2.Driver"/>
-		<property name="url" value="jdbc:h2:../${ladybug.dir:ladybug}/ladybug-common/data/database-storage/ladybug"/>
+		<property name="url" value="jdbc:h2:../${ladybug.dir:ladybug}/data/database-storage/ladybug"/>
 	</bean>
 
 	<bean name="ladybugDatabaseChangelog" class="liquibase.integration.spring.SpringLiquibase">
@@ -264,7 +257,7 @@
 		<!-- Configure Test tab with xml storage -->
 		<bean name="testStorage" class="org.wearefrank.ladybug.storage.xml.XmlStorage">
 			<property name="name" value="Test"/>
-			<property name="reportsFolder" value="../ladybug/ladybug-test-webapp/src/test/testtool"/>
+			<property name="reportsFolder" value="../ladybug-test-webapp/src/test/testtool"/>
 		</bean>
 	</beans>
 
