@@ -103,7 +103,7 @@ public class TestTool {
 	private @Setter @Getter @Inject @Autowired Views views;
 	private @Setter @Getter int reportsInProgressThreshold = 300000;
 	boolean devMode = false; // See testConcurrentLastEndpointAndFirstStartpointForSameCorrelationId()
-	private @Qualifier("openTelemetryEndpoint") String openTelemetryEndpoint;
+	private String openTelemetryEndpoint;
 	private Tracer tracer;
 
 	private AtomicInteger inProgressStorageNameSeq = new AtomicInteger(0);
@@ -118,6 +118,10 @@ public class TestTool {
 	public void reset() {
 		regexFilter = defaultRegexFilter;
 		reportGeneratorEnabled = defaultReportGeneratorEnabled;
+	}
+
+	public void setOpenTelemetryEndpoint(String openTelemetryEndpoint) {
+		this.openTelemetryEndpoint = openTelemetryEndpoint;
 	}
 
 	public void setSecurityLoggerName(String securityLoggerName) {
