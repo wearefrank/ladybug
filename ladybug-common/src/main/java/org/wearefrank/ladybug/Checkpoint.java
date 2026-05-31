@@ -34,6 +34,8 @@ import java.util.regex.Pattern;
 import javax.json.bind.annotation.JsonbTransient;
 import javax.xml.xpath.XPathExpressionException;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -81,6 +83,9 @@ public class Checkpoint implements Serializable, Cloneable {
 	private transient ByteArrayOutputStream messageCapturerOutputStream;
 	private transient Map<String, Pattern> variablesPatternMap;
 	private transient Span span = null;
+	private String parentId;
+	private String id;
+	private long startTime;
 
 	public Checkpoint() {
 		// Only for Java XML encoding/decoding! Use other constructor instead.
@@ -103,6 +108,24 @@ public class Checkpoint implements Serializable, Cloneable {
 		this.type = type;
 		this.level = level;
 	}
+
+	@Transient
+	public String getId() { return this.id; }
+
+	@Transient
+	public void setId(String id) { this.id = id; }
+
+	@Transient
+	public String getParentId() { return this.parentId; }
+
+	@Transient
+	public void setParentId(String parentId) { this.parentId = parentId; }
+
+	@Transient
+	public long getStartTime() { return this.startTime; }
+
+	@Transient
+	public void setStartTime(long startTime) { this.startTime = startTime; }
 
 	// JsonIgnore is used so that Jackson will not get into an infinite loop trying to reference report,
 	// which already contains checkpoint.

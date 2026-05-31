@@ -1,5 +1,5 @@
 /*
-   Copyright 2020-2022, 2024-2025 WeAreFrank!, 2018 Nationale-Nederlanden
+   Copyright 2020-2022, 2024-2026 WeAreFrank!, 2018 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -173,6 +173,11 @@ public class Storage implements LogStorage {
 	}
 
 	@Override
+	public void store(Report report) throws StorageException {
+		storeWithoutException(report);
+	}
+
+	@Override
 	public int getFilterType(String column) {
 		return FILTER_RESET;
 	}
@@ -185,5 +190,10 @@ public class Storage implements LogStorage {
 	@Override
 	public String getUserHelp(String column) {
 		return SearchUtil.getUserHelp();
+	}
+
+	@Override
+	public boolean isCrudStorage() {
+		return LogStorage.super.isCrudStorage();
 	}
 }

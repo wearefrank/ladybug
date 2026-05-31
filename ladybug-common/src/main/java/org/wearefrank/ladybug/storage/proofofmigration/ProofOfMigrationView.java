@@ -1,5 +1,5 @@
 /*
-   Copyright 2022-2025 WeAreFrank!
+   Copyright 2022-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import jakarta.inject.Inject;
 import lombok.Setter;
 import org.wearefrank.ladybug.filter.View;
-import org.wearefrank.ladybug.storage.LogStorage;
+import org.wearefrank.ladybug.storage.Storage;
 
 // @Dependent disabled for Quarkus for now because of the use of JdbcTemplate
 public class ProofOfMigrationView extends View {
@@ -38,7 +38,7 @@ public class ProofOfMigrationView extends View {
 	}
 
 	@Override
-	public LogStorage getDebugStorage() {
+	public Storage getDebugStorage() {
 		return proofOfMigrationStorage;
 	}
 
