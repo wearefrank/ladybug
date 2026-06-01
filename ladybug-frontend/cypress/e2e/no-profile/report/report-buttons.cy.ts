@@ -53,15 +53,23 @@ describe('Report buttons', () => {
   });
 
   it('When key button above tree is pressed then storage id and checkpoint id shown', () => {
+    const STORAGE_ID_COLUMN = 1;
     cy.visit('');
     cy.createReport();
+    cy.createReport();
+    cy.createReport();
+    cy.createReport();
     cy.get('[data-cy-debug="refresh"]').click();
-    cy.assertDebugTableLength(1).click();
+    // We want a storage id that is different from all checkpoint ids.
+    cy.assertDebugTableLength(4)
+      .eq(3)
+      .find(`td:eq(${STORAGE_ID_COLUMN})`)
+      .should('contain.text', '3').click();
     checkNoCheckpointIds();
     cy.get('[data-cy-debug-tree="toggleShowCheckpointId"]').click();
     cy.get('[data-cy-debug-tree="root"]')
       .find(`.item-name:eq(0)`)
-      .contains(/Simple report \(\d+\)/);
+      .contains('Simple report (3)');
     for(const nodeIndex of [1, 2]) {
       cy.get('[data-cy-debug-tree="root"]')
         .find(`.item-name:eq(${nodeIndex})`)
@@ -73,6 +81,14 @@ describe('Report buttons', () => {
     }
     cy.get('[data-cy-debug-tree="toggleShowCheckpointId"]').click();
     checkNoCheckpointIds();
+  })
+
+  it('When node is collapsed and expanded then the same node remains selected', () => {
+    cy.visit('');
+    cy.createReport();
+    cy.get('[data-cy-debug="refresh"]').click();
+    cy.assertDebugTableLength(1).click();
+    // To be continued
   })
 });
 
