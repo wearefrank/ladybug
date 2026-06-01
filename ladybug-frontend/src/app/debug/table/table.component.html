@@ -149,9 +149,13 @@
                 [title]="header">
               {{ header | shortenedTableHeader }}
             </th>
+            <!-- [style.background-color] is not inherited from table row.
+                 That style is overridden by something from bootstrap:
+                 .table > :not(caption) > * > * -->
             <td mat-cell class="table-cell"
                 *matCellDef="let row"
                 [style.padding]="tableSpacing"
+                [class]="getStatusClass(row)"
                 [title]="header">
               {{ getMetadata(row, getMetadataNameFromHeader(header))|tableCellShortener }}
             </td>
@@ -164,7 +168,7 @@
             *matRowDef="let row; let rowIndex = index; columns: getDisplayedColumnNames(currentView.metadataLabels)"
             [ngClass]="{'highlight': row.storageId === selectedReportStorageId}"
             [attr.data-cy-record-table-index]="rowIndex"
-            [style.background-color]="getStatusColor(row)"
+            [class]="getStatusClass(row)"
             [style.font-size]="fontSize"
             (click)="openSelectedReport(row.storageId);"
         ></tr>
