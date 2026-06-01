@@ -18,6 +18,8 @@ const OBSERVER_PWD = 'IbisObserver';
 const TESTER_USER = 'IbisTester';
 const TESTER_PWD = 'IbisTester';
 
+const TREE_ITEM_SELECTED_CLASS = 'sft-item-selected';
+
 type TabType = 'debug' | 'test';
 
 declare global {
@@ -90,6 +92,14 @@ declare global {
       clickEndCheckpointOfThreeNodeReport(): Chainable;
 
       getShownNodesOfReportTreeWithText(text: string): Chainable;
+
+      checkShownNodeWithTextSelected(reportName: string, index: number, selected: boolean): Chainable;
+
+      checkShownNodeWithTextSearched(reportName: string, searched: boolean): Chainable;
+
+      collapseNode(text: string, index: number):Chainable;
+
+      expandNode(text: string, index: number): Chainable;
 
       clickRowInTable(index: number): Chainable;
 
@@ -424,9 +434,37 @@ Cypress.Commands.add('clickEndCheckpointOfThreeNodeReport' as keyof Chainable, (
     .click();
 });
 
-Cypress.Commands.add('getShownNodesOfReportTreeWithText', (text) => {
-  cy.get('[data-cy-debug-tree="root"] app-tree-icon').parent().find(`:contains(${text})`);
+Cypress.Commands.add('getShownNodesOfReportTreeWithText' as keyof Chainable, (text): void => {
+  cy.get('[data-cy-debug-tree="root"] app-tree-icon:visible').parent().find(`:contains(${text})`);
 });
+
+Cypress.Commands.add('checkShownNodeWithTextSelected' as keyof Chainable, (reportName: string, index: number, selected: boolean): void => {
+  const predicate: string = selected === true ? 'have.class' : 'not.have.class';
+  cy.getShownNodesOfReportTreeWithText(reportName).eq(index).parent().should(predicate, TREE_ITEM_SELECTED_CLASS);
+})
+
+Cypress.Commands.add('checkShownNodeWithTextSearched' as keyof Chainable, (reportName: string, searched: boolean): void => {
+  const predicate: string = searched === true ? 'have.css' : 'not.have.css';
+  cy.getShownNodesOfReportTreeWithText(reportName).parent().should(predicate, 'color', 'rgb(255, 0, 0)');
+})
+
+Cypress.Commands.add('collapseNode' as keyof Chainable, (text, index): void => {
+  cy.getShownNodesOfReportTreeWithText(text)
+    .eq(index)
+    .parent()
+    .find('.sft-chevron-container')
+    .should('have.length', 1)
+    .click();
+})
+
+Cypress.Commands.add('expandNode' as keyof Chainable, (text, index): void => {
+  cy.getShownNodesOfReportTreeWithText(text)
+    .eq(index)
+    .parent()
+    .find('.bi-chevron-right')
+    .should('have.length', 1)
+    .click();
+})
 
 Cypress.Commands.add(
   'clickRowInTable' as keyof Chainable,

@@ -88,7 +88,56 @@ describe('Report buttons', () => {
     cy.createReport();
     cy.get('[data-cy-debug="refresh"]').click();
     cy.assertDebugTableLength(1).click();
-    // To be continued
+    cy.getShownNodesOfReportTreeWithText('Simple report').should('have.length', 3)
+      .eq(2)
+      .click();
+    checkSelectedNode();
+    cy.get('[data-cy-element-name="checkpointEditor"]').invoke('text').should('contain', 'Goodbye');
+    cy.collapseNode('Simple report', 0);
+    // Selected node is not visible
+    cy.get('[data-cy-element-name="checkpointEditor"]').invoke('text').should('contain', 'Goodbye');
+    cy.getShownNodesOfReportTreeWithText('Simple report').should('have.length', 1);
+    cy.expandNode('Simple report', 0);
+    checkSelectedNode();
+    cy.get('[data-cy-element-name="checkpointEditor"]').invoke('text').should('contain', 'Goodbye');
+    cy.getShownNodesOfReportTreeWithText('Simple report').should('have.length', 3);
+  })
+
+  it('When all nodes are collapsed and expanded then same node remains selected', () => {
+    cy.visit('');
+    cy.createReport();
+    cy.get('[data-cy-debug="refresh"]').click();
+    cy.assertDebugTableLength(1).click();
+    cy.getShownNodesOfReportTreeWithText('Simple report').should('have.length', 3)
+      .eq(2)
+      .click();
+    checkSelectedNode();
+    cy.get('[data-cy-element-name="checkpointEditor"]').invoke('text').should('contain', 'Goodbye');
+    cy.get('[data-cy-debug-tree="collapseAll"]').click();
+    // Selected node is not visible
+    cy.get('[data-cy-element-name="checkpointEditor"]').invoke('text').should('contain', 'Goodbye');
+    cy.getShownNodesOfReportTreeWithText('Simple report').should('have.length', 1);
+    cy.get('[data-cy-debug-tree="expandAll"]').click();
+    checkSelectedNode();
+    cy.get('[data-cy-element-name="checkpointEditor"]').invoke('text').should('contain', 'Goodbye');
+    cy.getShownNodesOfReportTreeWithText('Simple report').should('have.length', 3);
+  })
+
+  it('When node meets search key then red', () => {
+    cy.visit('');
+    cy.createReportWithStatusError();
+    cy.get('[data-cy-debug="refresh"]').click();
+    cy.assertDebugTableLength(1).click();
+    cy.getShownNodesOfReportTreeWithText('Complex').should('have.length', 4);
+    cy.getShownNodesOfReportTreeWithText('First').should('have.length', 6);
+    cy.getShownNodesOfReportTreeWithText('Second').should('have.length', 1);
+    cy.checkShownNodeWithTextSearched('Complex', false);
+    cy.checkShownNodeWithTextSearched('First', false);
+    cy.checkShownNodeWithTextSearched('Second', false);
+    cy.get('[data-cy-debug-tree="search"]').type('Complex');
+    cy.checkShownNodeWithTextSearched('Complex', true);
+    cy.checkShownNodeWithTextSearched('First', false);
+    cy.checkShownNodeWithTextSearched('Second', false);
   })
 });
 
@@ -100,4 +149,10 @@ function checkNoCheckpointIds() {
       .should('contain', 'Simple report')
       .should('not.contain', '(');
   }
+}
+
+function checkSelectedNode() {
+  cy.checkShownNodeWithTextSelected('Simple report', 0, false);
+  cy.checkShownNodeWithTextSelected('Simple report', 1, false);
+  cy.checkShownNodeWithTextSelected('Simple report', 2, true);
 }
