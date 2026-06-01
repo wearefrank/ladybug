@@ -76,11 +76,4 @@ public class DatabaseTracingStorage {
         return Hex.encodeHexString(byteString.toByteArray());
     }
 
-    public ByteString hexToByteString(String hex) {
-        try {
-            return ByteString.copyFrom(Hex.decodeHex(hex));
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to decode hex string", e);
-        }
-    }
 }

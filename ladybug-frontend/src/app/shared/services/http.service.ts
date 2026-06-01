@@ -227,7 +227,7 @@ export class HttpService {
   }
 
   deleteAllTraces(): Observable<void> {
-    return this.http.delete<void>(`api/traces/delete/`);
+    return this.http.delete<void>(`api/traces/`);
   }
 
   deleteTraces(traceIds: string[]): Observable<void> {

@@ -98,7 +98,7 @@ public class TestTool {
 	boolean devMode = false; // See testConcurrentLastEndpointAndFirstStartpointForSameCorrelationId()
 	private String openTelemetryEndpoint;
 	private Tracer tracer;
-	private ArrayList<Report> transientReports = new ArrayList<>();
+	private @Setter @Getter ArrayList<Report> transientReports = new ArrayList<>();
 
 	@PostConstruct
 	public void init() {
