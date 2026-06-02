@@ -157,6 +157,18 @@
       <version>5.18.0</version>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>com.google.protobuf</groupId>
+      <artifactId>protobuf-java</artifactId>
+      <version>4.34.1</version>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.google.protobuf</groupId>
+      <artifactId>protobuf-java-util</artifactId>
+      <version>4.34.1</version>
+      <scope>compile</scope>
+    </dependency>
   </dependencies>
 
   <build>

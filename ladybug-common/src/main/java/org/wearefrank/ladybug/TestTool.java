@@ -44,7 +44,6 @@ import org.wearefrank.ladybug.storage.CrudStorage;
 import org.wearefrank.ladybug.storage.LogStorage;
 import org.wearefrank.ladybug.storage.Storage;
 import org.wearefrank.ladybug.storage.StorageException;
-import org.wearefrank.ladybug.storage.database.DatabaseCrudStorage;
 import org.wearefrank.ladybug.storage.memory.MemoryLogStorage;
 import org.wearefrank.ladybug.transform.MessageTransformer;
 import org.wearefrank.ladybug.util.OpenTelemetryUtil;
@@ -102,9 +101,9 @@ public class TestTool {
 	private @Setter @Getter @Inject @Autowired Views views;
 	private @Setter @Getter int reportsInProgressThreshold = 300000;
 	boolean devMode = false; // See testConcurrentLastEndpointAndFirstStartpointForSameCorrelationId()
-	private String openTelemetryEndpoint;
+    private @Setter String openTelemetryEndpoint;
 	private Tracer tracer;
-	private boolean updateReportsEnabled = false;
+	private @Setter @Getter boolean updateReportsEnabled = false;
 
 	@PostConstruct
 	public void init() {
@@ -118,19 +117,7 @@ public class TestTool {
 		reportGeneratorEnabled = defaultReportGeneratorEnabled;
 	}
 
-	public void setUpdateReportsEnabled(boolean updateReportsEnabled) {
-		this.updateReportsEnabled = updateReportsEnabled;
-	}
-
-	public boolean isUpdateReportsEnabled() {
-		return updateReportsEnabled;
-	}
-
-	public void setOpenTelemetryEndpoint(String openTelemetryEndpoint) {
-		this.openTelemetryEndpoint = openTelemetryEndpoint;
-	}
-
-	public void setSecurityLoggerName(String securityLoggerName) {
+    public void setSecurityLoggerName(String securityLoggerName) {
 		securityLog = LoggerFactory.getLogger(securityLoggerName);
 	}
 
@@ -380,7 +367,6 @@ public class TestTool {
 			T message, Map<String, Object> messageContext, StubableCode stubableCode, StubableCodeThrowsException stubableCodeThrowsException,
 			Set<String> matchingStubStrategies, int checkpointType, int levelChangeNextCheckpoint, String id, String parentId, long startTime) {
 		boolean executeStubableCode = true;
-
 		if (reportGeneratorEnabled) {
 			Report report;
 			// Blocking for all threads for all reports
@@ -671,7 +657,7 @@ public class TestTool {
 		return checkpoint(correlationId, null, sourceClassName, name, message, null, null, null,
 				CheckpointType.ENDPOINT.toInt(), -1, id, parentId, startTime);
 	}
-	
+
 	public <T> T endpoint(String correlationId, String sourceClassName, String name, T message, Map<String, Object> messageContext) {
 		return checkpoint(correlationId, null, sourceClassName, name, message, messageContext, null, null, null,
 				CheckpointType.ENDPOINT.toInt(), -1);
