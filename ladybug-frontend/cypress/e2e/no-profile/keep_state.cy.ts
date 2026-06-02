@@ -1,4 +1,3 @@
-const TREE_ITEM_SELECTED_CLASS = 'sft-item-selected';
 const UPLOADED_REPORT_NAMES = ['Pipeline Example1a/Adapter1a', 'Pipeline Example1b/Adapter1b']
 
 describe('Tests for keeping state in tabs when switching tabs', () => {
@@ -50,26 +49,21 @@ describe('Tests for keeping state in tabs when switching tabs', () => {
     let reportName = UPLOADED_REPORT_NAMES[1]
     cy.getShownNodesOfReportTreeWithText(reportName).eq(2).click();
     cy.getShownNodesOfReportTreeWithText(reportName).should('have.length', 3);
-    checkNodeWithTextSelected(reportName, 2, true);
-    checkNodeWithTextSelected(reportName, 1, false);
+    cy.checkShownNodeWithTextSelected(reportName, 2, true);
+    cy.checkShownNodeWithTextSelected(reportName, 1, false);
     cy.get('[data-cy-nav-tab]').eq(2).click();
     reportName = UPLOADED_REPORT_NAMES[0];
     cy.getShownNodesOfReportTreeWithText(reportName).eq(2).click();
     cy.getShownNodesOfReportTreeWithText(reportName).should('have.length', 3);
-    checkNodeWithTextSelected(reportName, 2, true);
-    checkNodeWithTextSelected(reportName, 1, false);
+    cy.checkShownNodeWithTextSelected(reportName, 2, true);
+    cy.checkShownNodeWithTextSelected(reportName, 1, false);
     cy.get('[data-cy-nav-tab]').eq(3).click();
     reportName = UPLOADED_REPORT_NAMES[1];
-    checkNodeWithTextSelected(reportName, 2, true);
-    checkNodeWithTextSelected(reportName, 1, false);
+    cy.checkShownNodeWithTextSelected(reportName, 2, true);
+    cy.checkShownNodeWithTextSelected(reportName, 1, false);
     cy.get('[data-cy-nav-tab]').eq(2).click();
     reportName = UPLOADED_REPORT_NAMES[0];
-    checkNodeWithTextSelected(reportName, 2, true);
-    checkNodeWithTextSelected(reportName, 1, false);
+    cy.checkShownNodeWithTextSelected(reportName, 2, true);
+    cy.checkShownNodeWithTextSelected(reportName, 1, false);
   })
 });
-
-function checkNodeWithTextSelected(reportName: string, index: number, selected: boolean) {
-  const predicate: string = selected === true ? 'have.class' : 'not.have.class';
-  cy.getShownNodesOfReportTreeWithText(reportName).eq(index).parent().should(predicate, TREE_ITEM_SELECTED_CLASS);
-}

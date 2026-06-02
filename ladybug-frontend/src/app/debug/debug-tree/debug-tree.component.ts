@@ -80,7 +80,11 @@ export class DebugTreeComponent implements OnInit, OnDestroy {
     const preparedReport: FrankTreeNode = this.prepareReportForTree(report);
     const rootNodePath: string = this.tree.addItem(preparedReport);
     this.selectFirstCheckpoint(rootNodePath);
-    this.expandAll(this.tree.items![0]!);
+    if (this.tree.items) {
+      for (const item of this.tree.items) {
+        this.expandAll(item);
+      }
+    }
   }
 
   private expandAll(node: FileTreeItem): void {

@@ -53,19 +53,91 @@ describe('Report buttons', () => {
   });
 
   it('When key button above tree is pressed then storage id and checkpoint id shown', () => {
+    const STORAGE_ID_COLUMN = 1;
+    cy.visit('');
+    cy.createReport();
+    cy.createReport();
+    cy.createReport();
+    cy.createReport();
+    cy.get('[data-cy-debug="refresh"]').click();
+    // We want a storage id that is different from all checkpoint ids.
+    cy.assertDebugTableLength(4)
+      .eq(3)
+      .find(`td:eq(${STORAGE_ID_COLUMN})`)
+      .should('contain.text', '3').click();
+    checkNoCheckpointIds();
+    cy.get('[data-cy-debug-tree="toggleShowCheckpointId"]').click();
+    cy.get('[data-cy-debug-tree="root"]')
+      .find(`.item-name:eq(0)`)
+      .contains('Simple report (3)');
+    for(const nodeIndex of [1, 2]) {
+      cy.get('[data-cy-debug-tree="root"]')
+        .find(`.item-name:eq(${nodeIndex})`)
+        // We test the exact checkpoint id-s. These are deterministic.
+        // This check makes sure that the storage id and the checkpoint
+        // id are not confused - both are extracted from the uid by
+        // http.service.ts.
+        .contains(`Simple report (${nodeIndex - 1})`);
+    }
+    cy.get('[data-cy-debug-tree="toggleShowCheckpointId"]').click();
+    checkNoCheckpointIds();
+  })
+
+  it('When node is collapsed and expanded then the same node remains selected', () => {
     cy.visit('');
     cy.createReport();
     cy.get('[data-cy-debug="refresh"]').click();
     cy.assertDebugTableLength(1).click();
-    checkNoCheckpointIds();
-    cy.get('[data-cy-debug-tree="toggleShowCheckpointId"]').click();
-    for(const nodeIndex of [0, 1, 2]) {
-      cy.get('[data-cy-debug-tree="root"]')
-        .find(`.item-name:eq(${nodeIndex})`)
-        .contains(/Simple report \(\d+\)/);
-    }
-    cy.get('[data-cy-debug-tree="toggleShowCheckpointId"]').click();
-    checkNoCheckpointIds();
+    cy.getShownNodesOfReportTreeWithText('Simple report').should('have.length', 3)
+      .eq(2)
+      .click();
+    checkSelectedNode();
+    cy.get('[data-cy-element-name="checkpointEditor"]').invoke('text').should('contain', 'Goodbye');
+    cy.collapseNode('Simple report', 0);
+    // Selected node is not visible
+    cy.get('[data-cy-element-name="checkpointEditor"]').invoke('text').should('contain', 'Goodbye');
+    cy.getShownNodesOfReportTreeWithText('Simple report').should('have.length', 1);
+    cy.expandNode('Simple report', 0);
+    checkSelectedNode();
+    cy.get('[data-cy-element-name="checkpointEditor"]').invoke('text').should('contain', 'Goodbye');
+    cy.getShownNodesOfReportTreeWithText('Simple report').should('have.length', 3);
+  })
+
+  it('When all nodes are collapsed and expanded then same node remains selected', () => {
+    cy.visit('');
+    cy.createReport();
+    cy.get('[data-cy-debug="refresh"]').click();
+    cy.assertDebugTableLength(1).click();
+    cy.getShownNodesOfReportTreeWithText('Simple report').should('have.length', 3)
+      .eq(2)
+      .click();
+    checkSelectedNode();
+    cy.get('[data-cy-element-name="checkpointEditor"]').invoke('text').should('contain', 'Goodbye');
+    cy.get('[data-cy-debug-tree="collapseAll"]').click();
+    // Selected node is not visible
+    cy.get('[data-cy-element-name="checkpointEditor"]').invoke('text').should('contain', 'Goodbye');
+    cy.getShownNodesOfReportTreeWithText('Simple report').should('have.length', 1);
+    cy.get('[data-cy-debug-tree="expandAll"]').click();
+    checkSelectedNode();
+    cy.get('[data-cy-element-name="checkpointEditor"]').invoke('text').should('contain', 'Goodbye');
+    cy.getShownNodesOfReportTreeWithText('Simple report').should('have.length', 3);
+  })
+
+  it('When node meets search key then red', () => {
+    cy.visit('');
+    cy.createReportWithStatusError();
+    cy.get('[data-cy-debug="refresh"]').click();
+    cy.assertDebugTableLength(1).click();
+    cy.getShownNodesOfReportTreeWithText('Complex').should('have.length', 4);
+    cy.getShownNodesOfReportTreeWithText('First').should('have.length', 6);
+    cy.getShownNodesOfReportTreeWithText('Second').should('have.length', 1);
+    cy.checkShownNodeWithTextSearched('Complex', false);
+    cy.checkShownNodeWithTextSearched('First', false);
+    cy.checkShownNodeWithTextSearched('Second', false);
+    cy.get('[data-cy-debug-tree="search"]').type('Complex');
+    cy.checkShownNodeWithTextSearched('Complex', true);
+    cy.checkShownNodeWithTextSearched('First', false);
+    cy.checkShownNodeWithTextSearched('Second', false);
   })
 });
 
@@ -77,4 +149,10 @@ function checkNoCheckpointIds() {
       .should('contain', 'Simple report')
       .should('not.contain', '(');
   }
+}
+
+function checkSelectedNode() {
+  cy.checkShownNodeWithTextSelected('Simple report', 0, false);
+  cy.checkShownNodeWithTextSelected('Simple report', 1, false);
+  cy.checkShownNodeWithTextSelected('Simple report', 2, true);
 }

@@ -7,3 +7,7 @@
   padding: 10px;
   font-size: 12px;
 }
+
+.modal-footer {
+  column-gap: 0.3rem;
+}
