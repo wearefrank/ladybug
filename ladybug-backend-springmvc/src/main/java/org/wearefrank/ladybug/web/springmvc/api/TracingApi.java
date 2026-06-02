@@ -40,7 +40,7 @@ public class TracingApi {
 			return ResponseEntity.status(HttpStatus.UNSUPPORTED_MEDIA_TYPE).build();
 		} else {
 			try {
-				delegate.processSpans(contentType, data);
+				delegate.addSpansToBuffer(contentType, data);
 
 				ExportTraceServiceResponse response = ExportTraceServiceResponse.newBuilder().build();
 				if (contentType.startsWith("application/x-protobuf")) {

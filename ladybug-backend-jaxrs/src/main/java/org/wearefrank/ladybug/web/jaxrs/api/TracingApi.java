@@ -41,7 +41,7 @@ public class TracingApi extends ApiBase {
                     .build();
         } else {
             try {
-                delegate.processSpans(contentType, data);
+                delegate.addSpansToBuffer(contentType, data);
 
                 ExportTraceServiceResponse response = ExportTraceServiceResponse.newBuilder().build();
                 if (contentType.startsWith("application/x-protobuf")) {

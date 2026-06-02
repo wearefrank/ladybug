@@ -30,17 +30,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import io.opentelemetry.proto.trace.v1.Span;
+import org.wearefrank.ladybug.SpanBuffer;
 import org.wearefrank.ladybug.TestTool;
 
 import java.lang.invoke.MethodHandles;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
 @Component
 public class TracingApiImpl {
 	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+    private SpanBuffer spanBuffer = new SpanBuffer(this);
 
 	@Autowired
 	private @Setter TestTool testTool;
@@ -65,6 +65,18 @@ public class TracingApiImpl {
             testTool.endpoint(traceId, null, span.getName(), null, spanId, parentSpanId, startTime);
         }
         testTool.close(traceId);
+    }
+
+    public void addSpansToBuffer(String contentType, byte[] data) throws InvalidProtocolBufferException {
+        List<ResourceSpans> resourceSpans = parseData(contentType, data);
+
+        for (ResourceSpans resourceSpan : resourceSpans) {
+            for (ScopeSpans scopeSpans : resourceSpan.getScopeSpansList()) {
+                for (Span span : scopeSpans.getSpansList()) {
+                    spanBuffer.addSpan(span);
+                }
+            }
+        }
     }
 
     public List<ResourceSpans> parseData(String contentType, byte[] data) throws InvalidProtocolBufferException {
