@@ -17,10 +17,7 @@ package org.wearefrank.ladybug.web.springmvc.api;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.util.JsonFormat;
-import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceResponse;
-import io.opentelemetry.proto.trace.v1.ResourceSpans;
-import io.opentelemetry.proto.trace.v1.ScopeSpans;
 import jakarta.annotation.security.RolesAllowed;
 import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,39 +35,26 @@ public class TracingApi {
 	private @Setter TracingApiImpl delegate;
 
 	@PostMapping(consumes = {"application/x-protobuf", MediaType.APPLICATION_JSON_VALUE})
-	public ResponseEntity<?> receiveSpans(@RequestHeader("Content-Type") String contentType, @RequestBody byte[] data) throws InvalidProtocolBufferException {
-		ExportTraceServiceRequest request;
-
-		if (contentType != null && contentType.startsWith("application/x-protobuf")) {
-			request = ExportTraceServiceRequest.parseFrom(data);
-		} else if (contentType != null && contentType.startsWith(MediaType.APPLICATION_JSON_VALUE)) {
-			String json = new String(data);
-			ExportTraceServiceRequest.Builder builder = ExportTraceServiceRequest.newBuilder();
-			JsonFormat.parser().merge(json, builder);
-			request = builder.build();
-
+	public ResponseEntity<?> receiveSpans(@RequestHeader("Content-Type") String contentType, @RequestBody byte[] data) {
+		if (!contentType.startsWith("application/x-protobuf") && !contentType.startsWith("application/json")) {
+			return ResponseEntity.status(HttpStatus.UNSUPPORTED_MEDIA_TYPE).build();
 		} else {
-			ExportTraceServiceResponse response = ExportTraceServiceResponse.newBuilder().build();
-			return ResponseEntity.status(HttpStatus.UNSUPPORTED_MEDIA_TYPE)
-					.contentType(MediaType.APPLICATION_JSON)
-					.body(JsonFormat.printer().print(response));
-		}
+			try {
+				delegate.processSpans(contentType, data);
 
-		for (ResourceSpans resourceSpans : request.getResourceSpansList()) {
-			for (ScopeSpans scopeSpans : resourceSpans.getScopeSpansList()) {
-				delegate.processSpans(scopeSpans.getSpansList());
+				ExportTraceServiceResponse response = ExportTraceServiceResponse.newBuilder().build();
+				if (contentType.startsWith("application/x-protobuf")) {
+					return ResponseEntity.ok()
+							.contentType(org.springframework.http.MediaType.parseMediaType("application/x-protobuf"))
+							.body(response.toByteArray());
+				} else {
+					return ResponseEntity.ok()
+							.contentType(MediaType.APPLICATION_JSON)
+							.body(JsonFormat.printer().print(response));
+				}
+			} catch (InvalidProtocolBufferException e) {
+				return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
 			}
-		}
-
-		ExportTraceServiceResponse response = ExportTraceServiceResponse.newBuilder().build();
-		if (contentType.startsWith("application/x-protobuf")) {
-			return ResponseEntity.ok()
-					.contentType(org.springframework.http.MediaType.parseMediaType("application/x-protobuf"))
-					.body(response.toByteArray());
-		} else {
-			return ResponseEntity.ok()
-					.contentType(MediaType.APPLICATION_JSON)
-					.body(JsonFormat.printer().print(response));
 		}
 	}
 }

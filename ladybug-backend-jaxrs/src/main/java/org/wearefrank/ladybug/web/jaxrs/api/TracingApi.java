@@ -17,10 +17,7 @@ package org.wearefrank.ladybug.web.jaxrs.api;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.util.JsonFormat;
-import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceResponse;
-import io.opentelemetry.proto.trace.v1.ResourceSpans;
-import io.opentelemetry.proto.trace.v1.ScopeSpans;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -37,39 +34,30 @@ public class TracingApi extends ApiBase {
 
     @POST
     @Consumes({"application/x-protobuf", "application/json"})
-    public Response receiveSpans(@HeaderParam("Content-Type") String contentType, byte[] data) throws InvalidProtocolBufferException {
-        ExportTraceServiceRequest request;
-
-        if (contentType != null && contentType.startsWith("application/x-protobuf")) {
-            request = ExportTraceServiceRequest.parseFrom(data);
-        } else if (contentType != null && contentType.startsWith("application/json")) {
-            String json = new String(data);
-            ExportTraceServiceRequest.Builder builder = ExportTraceServiceRequest.newBuilder();
-            JsonFormat.parser().merge(json, builder);
-            request = builder.build();
-        } else {
-            ExportTraceServiceResponse response = ExportTraceServiceResponse.newBuilder().build();
+    public Response receiveSpans(@HeaderParam("Content-Type") String contentType, byte[] data) {
+        if (!contentType.startsWith("application/x-protobuf") && !contentType.startsWith("application/json")) {
             return Response.status(Response.Status.UNSUPPORTED_MEDIA_TYPE)
                     .type(MediaType.APPLICATION_JSON)
-                    .entity(JsonFormat.printer().print(response))
-                    .build();
-        }
-
-        for (ResourceSpans resourceSpans : request.getResourceSpansList()) {
-            for (ScopeSpans scopeSpans : resourceSpans.getScopeSpansList()) {
-                delegate.processSpans(scopeSpans.getSpansList());
-            }
-        }
-
-        ExportTraceServiceResponse response = ExportTraceServiceResponse.newBuilder().build();
-        if (contentType.startsWith("application/x-protobuf")) {
-            return Response.ok(response.toByteArray())
-                    .type("application/x-protobuf")
                     .build();
         } else {
-            return Response.ok(JsonFormat.printer().print(response))
-                    .type(MediaType.APPLICATION_JSON)
-                    .build();
+            try {
+                delegate.processSpans(contentType, data);
+
+                ExportTraceServiceResponse response = ExportTraceServiceResponse.newBuilder().build();
+                if (contentType.startsWith("application/x-protobuf")) {
+                    return Response.ok(response.toByteArray())
+                            .type("application/x-protobuf")
+                            .build();
+                } else {
+                    return Response.ok(JsonFormat.printer().print(response))
+                            .type(MediaType.APPLICATION_JSON)
+                            .build();
+                }
+            } catch (InvalidProtocolBufferException e) {
+                return Response.status(Response.Status.BAD_REQUEST)
+                        .type(MediaType.APPLICATION_JSON)
+                        .build();
+            }
         }
     }
 }
