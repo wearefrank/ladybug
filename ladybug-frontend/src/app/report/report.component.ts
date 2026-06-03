@@ -49,6 +49,7 @@ export interface PartialReport {
   transformation: string | null;
   // TODO: Issue https://github.com/wearefrank/ladybug-frontend/issues/1127
   variables: string;
+  rerunnable: boolean;
   xml: string;
   crudStorage: boolean;
   // undefined is allowed to support testing
@@ -113,6 +114,7 @@ export class ReportComponent implements OnInit, AfterViewInit, OnDestroy {
   private ngZone = inject(NgZone);
   private subscriptions: Subscription = new Subscription();
   private newTabReportData?: ReportData;
+  private rerunnable = true;
 
   ngOnInit(): void {
     const storageParam = this.route.snapshot.queryParamMap.get('storage');
@@ -181,6 +183,8 @@ export class ReportComponent implements OnInit, AfterViewInit, OnDestroy {
     if (ReportUtility.isReport(node)) {
       this.changeReportValueState('report');
       this.reportSubject.next(node as Report);
+      const report = node as Report;
+      this.rerunnable = report.rerunnable;
     } else if (ReportUtility.isCheckPoint(node)) {
       this.changeReportValueState('checkpoint');
       const checkpointNode = node as Checkpoint;
@@ -208,11 +212,19 @@ export class ReportComponent implements OnInit, AfterViewInit, OnDestroy {
         );
       }
       case 'copyReport': {
-        this.copyReport();
+        if (this.rerunnable) {
+          this.copyReport();
+        } else {
+          this.toastService.showWarning("Report can't be copied to test tab, because it is not rerunnable.");
+        }
         break;
       }
       case 'rerun': {
-        this.rerunReport();
+        if (this.rerunnable) {
+          this.rerunReport();
+        } else {
+          this.toastService.showWarning('Report is not rerunnable.');
+        }
         break;
       }
       case 'customReportAction': {

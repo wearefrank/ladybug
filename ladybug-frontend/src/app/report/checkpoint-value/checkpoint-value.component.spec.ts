@@ -222,6 +222,7 @@ function getPartialCheckpoint(message: string | null): PartialCheckpoint {
     path: null,
     transformation: null,
     variables: 'not applicable, have to fix type mismatch',
+    rerunnable: true,
     xml: 'dummy xml',
     crudStorage: true,
     // Does not have to be a stub strategy known by the FF!.

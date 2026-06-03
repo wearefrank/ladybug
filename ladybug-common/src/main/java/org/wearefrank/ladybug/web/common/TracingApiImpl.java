@@ -58,11 +58,11 @@ public class TracingApiImpl {
 				ArrayList<String> endpoints = new ArrayList<>();
 				for (int i = trace.size() - 1; i >= 0; i--) {
 					if (trace.get(i).getParentSpanId().isEmpty()) {
-						testTool.startpoint(byteStringToHex(trace.get(i).getTraceId()), null, trace.get(i).getName(), toHashMap(trace.get(i)).toString());
+						testTool.startpoint(byteStringToHex(trace.get(i).getTraceId()), null, trace.get(i).getName(), toHashMap(trace.get(i)).toString(), false);
 						endpoints.add(trace.get(i).getName());
 					} else {
 						if (parentIds.contains(trace.get(i).getSpanId())) {
-							testTool.startpoint(byteStringToHex(trace.get(i).getTraceId()), null, trace.get(i).getName(), toHashMap(trace.get(i)).toString());
+							testTool.startpoint(byteStringToHex(trace.get(i).getTraceId()), null, trace.get(i).getName(), toHashMap(trace.get(i)).toString(), false);
 							endpoints.add(trace.get(i).getName());
 						} else {
 							testTool.infopoint(byteStringToHex(trace.get(i).getTraceId()), null, trace.get(i).getName(), toHashMap(trace.get(i)).toString());
