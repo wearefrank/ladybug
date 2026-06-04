@@ -85,6 +85,8 @@ public class TestCreateReport extends ReportRelatedTestCase {
 
 	@Test
 	public void testSingleStartAndEndPointPlainMessage() throws StorageException, IOException {
+		// Suppress host in export.
+		testTool.setHost(null);
 		String correlationId = getCorrelationId();
 		testTool.startpoint(correlationId, this.getClass().getTypeName(), reportName, "startmessage");
 		testTool.endpoint(correlationId, this.getClass().getTypeName(), reportName, "endmessage");
@@ -93,6 +95,8 @@ public class TestCreateReport extends ReportRelatedTestCase {
 
 	@Test
 	public void testSingleStartAndEndPointPlainMessageWithStubableCode() throws StorageException, IOException {
+		// Suppress host in export.
+		testTool.setHost(null);
 		String correlationId = getCorrelationId();
 		testTool.startpoint(correlationId, this.getClass().getTypeName(), reportName, () -> {return "startmessage";}, new HashSet<String>());
 		testTool.endpoint(correlationId, this.getClass().getTypeName(), reportName, () -> {return "endmessage";}, new HashSet<String>());
@@ -101,6 +105,8 @@ public class TestCreateReport extends ReportRelatedTestCase {
 
 	@Test
 	public void testTwoStartAndEndPointPlainMessages() throws StorageException, IOException {
+		// Suppress host in export.
+		testTool.setHost(null);
 		testTwoStartAndEndPointPlainMessages(reportName);
 	}
 
@@ -132,6 +138,8 @@ public class TestCreateReport extends ReportRelatedTestCase {
 
 	@Test
 	public void testExceptionAsMessage() throws StorageException, IOException  {
+		// Suppress host in export.
+		testTool.setHost(null);
 		String correlationId = getCorrelationId();
 		Exception exception = new Exception("My Exception");
 		// Checkpoints are added on odd and even level to make it possible to visually check the colors in the tree
@@ -155,12 +163,16 @@ public class TestCreateReport extends ReportRelatedTestCase {
 
 	@Test
 	public void testThreads() throws StorageException, IOException {
+		// Suppress host in export.
+		testTool.setHost(null);
 		testThreads(getCorrelationId(), true, true, true, false, false, EndParentThreadAfter.CHILD_THREAD_ENDPOINT, true);
 		testThreads(getCorrelationId(), true, true, true, false, false, EndParentThreadAfter.CHILD_THREAD_CREATEPOINT, true);
 	}
 
 	@Test
 	public void testThreadsWithoutThreadCreatepoint() throws StorageException, IOException {
+		// Suppress host in export.
+		testTool.setHost(null);
 		String correlationId = getCorrelationId();
 		testThreads(correlationId, false, true, true, false, false, EndParentThreadAfter.CHILD_THREAD_ENDPOINT, true);
 		assertWarningsUseThreadCreatepointBeforeThreadStartpoint(listAppender, correlationId,
@@ -169,6 +181,8 @@ public class TestCreateReport extends ReportRelatedTestCase {
 
 	@Test
 	public void testThreadsWithoutThreadCreatepointAndThreadStartpoint() throws StorageException, IOException {
+		// Suppress host in export.
+		testTool.setHost(null);
 		String correlationId = getCorrelationId();
 		testThreads(correlationId, false, false, true, false, false, EndParentThreadAfter.CHILD_THREAD_ENDPOINT, true);
 		assertWarningsUseThreadCreatepointAndThreadStartpoint(listAppender, correlationId,
@@ -177,6 +191,8 @@ public class TestCreateReport extends ReportRelatedTestCase {
 
 	@Test
 	public void testThreadsWithThreadCreatepointOnlyAndCancelThreads() throws StorageException, IOException {
+		// Suppress host in export.
+		testTool.setHost(null);
 		String correlationId = getCorrelationId();
 		testThreads(correlationId, true, false, false, false, false, EndParentThreadAfter.CHILD_THREAD_CREATEPOINT, false);
 		assertEquals("Report should be in progress (waiting for threadStartpoint)", 1,
@@ -189,6 +205,8 @@ public class TestCreateReport extends ReportRelatedTestCase {
 
 	@Test
 	public void testCloseThreads() throws StorageException, IOException  {
+		// Suppress host in export.
+		testTool.setHost(null);
 		String correlationId = getCorrelationId();
 		testTool.setCloseThreads(true);
 		testThreads(correlationId, true, true, true, true, false, EndParentThreadAfter.CHILD_THREAD_STARTPOINT, false);
@@ -207,6 +225,8 @@ public class TestCreateReport extends ReportRelatedTestCase {
 
 	@Test
 	public void testThreadsWithThreadCreatepointOnlyAndCloseThreads() throws StorageException, IOException {
+		// Suppress host in export.
+		testTool.setHost(null);
 		testThreadsWithThreadCreatepointOnlyAndCloseThreads(true, false, false, false);
 		testThreadsWithThreadCreatepointOnlyAndCloseThreads(false, true, false, false);
 		testThreadsWithThreadCreatepointOnlyAndCloseThreads(false, true, true, false);
@@ -393,6 +413,8 @@ public class TestCreateReport extends ReportRelatedTestCase {
 	 */
 	@Test
 	public void testConcurrency() throws Throwable {
+		// Suppress host in export.
+		testTool.setHost(null);
 		// Disable the following code in Report.java to make the test fail with an ArrayIndexOutOfBoundsException:
 		//		if (threads.size() == 0) {
 		//			// This can happen when a report is still open because not all message capturers are closed while
@@ -452,6 +474,8 @@ public class TestCreateReport extends ReportRelatedTestCase {
 	 */
 	@Test
 	public void testConcurrentLastEndpointAndFirstStartpointForSameCorrelationId() throws Throwable {
+		// Suppress host in export.
+		testTool.setHost(null);
 		int minimumCountOutcome1 = 1;
 		int minimumCountOutcome2 = 1;
 		int minimumCountOutcome3 = 0;
@@ -564,6 +588,8 @@ public class TestCreateReport extends ReportRelatedTestCase {
 
 	@Test
 	public void testAbort() throws StorageException, IOException {
+		// Suppress host in export.
+		testTool.setHost(null);
 		String correlationId = getCorrelationId();
 		testTool.startpoint(correlationId, null, reportName, "startmessage1");
 		testTool.startpoint(correlationId, null, "name2", "startmessage2");
@@ -574,6 +600,8 @@ public class TestCreateReport extends ReportRelatedTestCase {
 
 	@Test
 	public void testAbortWithoutEnoughAbortpoints() throws StorageException, IOException {
+		// Suppress host in export.
+		testTool.setHost(null);
 		String correlationId = getCorrelationId();
 		testTool.startpoint(correlationId, null, reportName, "startmessage1");
 		testTool.startpoint(correlationId, null, "name2", "startmessage2");
@@ -585,6 +613,8 @@ public class TestCreateReport extends ReportRelatedTestCase {
 
 	@Test
 	public void testAbortLambda() throws StorageException, IOException {
+		// Suppress host in export.
+		testTool.setHost(null);
 		String correlationId = getCorrelationId();
 		testTool.startpoint(correlationId, null, reportName, "startmessage1");
 		testTool.startpoint(correlationId, null, "name2", () -> {return "startmessage2";}, new HashSet<String>());
@@ -602,6 +632,8 @@ public class TestCreateReport extends ReportRelatedTestCase {
 
 	@Test
 	public void testAbortThread() throws StorageException, IOException {
+		// Suppress host in export.
+		testTool.setHost(null);
 		String correlationId = getCorrelationId();
 		String parentThreadName = Thread.currentThread().getName();
 		String childThreadName = parentThreadName +"-ChildThreadName";
@@ -619,6 +651,8 @@ public class TestCreateReport extends ReportRelatedTestCase {
 
 	@Test
 	public void testCloseReport() throws StorageException, IOException {
+		// Suppress host in export.
+		testTool.setHost(null);
 		String correlationId = getCorrelationId();
 		testTool.startpoint(correlationId, null, reportName, "startmessage1");
 		testTool.startpoint(correlationId, null, "name2", "startmessage2");
@@ -628,6 +662,8 @@ public class TestCreateReport extends ReportRelatedTestCase {
 
 	@Test
 	public void testCloseReportWithThreads() throws StorageException, IOException {
+		// Suppress host in export.
+		testTool.setHost(null);
 		String correlationId = getCorrelationId();
 		testThreads(correlationId, true, true, true, true, false, EndParentThreadAfter.CHILD_THREAD_CREATEPOINT, false);
 		testTool.close(correlationId);
@@ -636,6 +672,8 @@ public class TestCreateReport extends ReportRelatedTestCase {
 
 	@Test
 	public void testCancelThreads() throws StorageException, IOException {
+		// Suppress host in export.
+		testTool.setHost(null);
 		String correlationId = getCorrelationId();
 		testThreads(correlationId, true, true, true, true, false, EndParentThreadAfter.CHILD_THREAD_CREATEPOINT, false);
 		testTool.close(correlationId, Thread.currentThread().getName() + "-ChildThreadNameA");
@@ -649,6 +687,8 @@ public class TestCreateReport extends ReportRelatedTestCase {
 	 */
 	@Test
 	public void testRemoveThreadCreatepoint() throws StorageException, IOException {
+		// Suppress host in export.
+		testTool.setHost(null);
 		String correlationId = getCorrelationId();
 		String parentThreadName = Thread.currentThread().getName();
 		String childThreadName1 = "child-1";
@@ -712,6 +752,8 @@ public class TestCreateReport extends ReportRelatedTestCase {
 
 	@Test
 	public void testCloseMessageCapturers() throws IOException, StorageException {
+		// Suppress host in export.
+		testTool.setHost(null);
 		testCloseMessageCapturers(true, false, false);
 		testCloseMessageCapturers(false, true, false);
 		testCloseMessageCapturers(false, false, true);
@@ -782,6 +824,8 @@ public class TestCreateReport extends ReportRelatedTestCase {
 
 	@Test
 	public void testIgnoreReport() throws StorageException {
+		// Suppress host in export.
+		testTool.setHost(null);
 		Storage storage = testTool.getDebugStorage();
 		testTool.setRegexFilter("^(?!" + reportName + ").*");
 		String correlationId = getCorrelationId();
@@ -797,6 +841,8 @@ public class TestCreateReport extends ReportRelatedTestCase {
 
 	@Test
 	public void testIgnoreReportAndAbort() throws StorageException {
+		// Suppress host in export.
+		testTool.setHost(null);
 		Storage storage = testTool.getDebugStorage();
 		testTool.setRegexFilter("^(?!" + reportName + ").*");
 
@@ -819,6 +865,8 @@ public class TestCreateReport extends ReportRelatedTestCase {
 
 	@Test
 	public void testReportFilter() throws StorageException, IOException {
+		// Suppress host in export.
+		testTool.setHost(null);
 		String name = "testTwoStartAndEndPointPlainMessages";
 		testTool.setRegexFilter(name);
 		testTwoStartAndEndPointPlainMessages(name);
@@ -826,6 +874,8 @@ public class TestCreateReport extends ReportRelatedTestCase {
 
 	@Test
 	public void testMaxCheckpoints() throws StorageException, IOException {
+		// Suppress host in export.
+		testTool.setHost(null);
 		testTool.setMaxCheckpoints(2);
 		String correlationId = getCorrelationId();
 		testTool.startpoint(correlationId, null, reportName, "startmessage1");
@@ -843,6 +893,8 @@ public class TestCreateReport extends ReportRelatedTestCase {
 
 	@Test
 	public void testMaxCheckpointsWithCloseThread() {
+		// Suppress host in export.
+		testTool.setHost(null);
 		testTool.setMaxCheckpoints(1);
 		String correlationId = getCorrelationId();
 		String childThreadName1 = "child-1";
@@ -991,6 +1043,8 @@ public class TestCreateReport extends ReportRelatedTestCase {
 
 	@Test
 	public void testStreamsAllClosedBeforeReportIsClosed() throws IOException, StorageException {
+		// Suppress host in export.
+		testTool.setHost(null);
 		String correlationId = getCorrelationId();
 		testTool.startpoint(correlationId, null, reportName, "startmessage");
 
@@ -1006,6 +1060,8 @@ public class TestCreateReport extends ReportRelatedTestCase {
 
 	@Test
 	public void testStreamWithCharset() throws IOException, StorageException {
+		// Suppress host in export.
+		testTool.setHost(null);
 		byte[] bytes = new byte[2];
 		bytes[0] = (byte)235; // ë in ISO-8859-1 (UTF-8 would need two bytes)
 		bytes[1] = (byte)169; // © in ISO-8859-1 (UTF-8 would need two bytes)
@@ -1041,6 +1097,8 @@ public class TestCreateReport extends ReportRelatedTestCase {
 
 	@Test
 	public void testStreamWithException() throws IOException, StorageException {
+		// Suppress host in export.
+		testTool.setHost(null);
 		testTool.setMessageCapturer(new MessageCapturerImpl() {
 			@Override
 			public <T> T toOutputStream(T message, OutputStream outputStream, Consumer<String> charsetNotifier,
@@ -1061,6 +1119,8 @@ public class TestCreateReport extends ReportRelatedTestCase {
 
 	@Test
 	public void testStreamSynchronous() throws IOException, StorageException {
+		// Suppress host in export.
+		testTool.setHost(null);
 		testTool.setMessageCapturer(new MessageCapturerImpl() {
 			@Override
 			public <T> T toWriter(T message, Writer writer, Consumer<Throwable> exceptionNotifier) {

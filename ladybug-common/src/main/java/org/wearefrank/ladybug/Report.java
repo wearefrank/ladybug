@@ -941,6 +941,12 @@ public class Report implements Serializable {
 			builder.append(" EndTime=\"" + endTime + "\"");
 			builder.append(" NumberOfCheckpoints=\"" + getNumberOfCheckpoints() + "\"");
 			builder.append(" EstimatedMemoryUsage=\"" + getEstimatedMemoryUsage() + "\"");
+			if (getHost() != null) {
+				builder.append(" Host=\"" + getHost() + "\"");
+			}
+			if (getApplication() != null) {
+				builder.append(" Application=\"" + getApplication() + "\"");
+			}
 			builder.append(">");
 			for (Checkpoint checkpoint : checkpoints) {
 				String message;
