@@ -203,10 +203,12 @@
 	    testTool.setHost(host);
 	}
 	if (request.getParameter("setApplication") != null) {
-	    String application = request.getParameter("setApplication");
-	    testTool.setApplication(application);
+	    // When it is just called "application", a compilation error occurs that
+	    // variable application is duplicate.
+	    String applicationParam = request.getParameter("setApplication");
+	    testTool.setApplication(applicationParam);
 	}
-	if (report.getParameter("clearApplication") != null) {
+	if (request.getParameter("clearApplication") != null) {
 	    testTool.setApplication(null);
 	}
 %>
@@ -242,11 +244,11 @@
   <h1>Set host and application</h1>
 
   <% for (String hostName : hostNames) { %>
-  <a href="index.jsp?setHost=<%=hostName%>"Host <%=hostName%></a><br/>
+  <a href="index.jsp?setHost=<%=hostName%>">Host <%=hostName%></a><br/>
   <% } %>
 
-  <% for (String application : applications) { %>
-  <a href="index.jsp?setApplication=<%=application%>"Application <%=application%></a><br/>
+  <% for (String anApplication : applications) { %>
+  <a href="index.jsp?setApplication=<%=anApplication%>">Application <%=anApplication%></a><br/>
   <% } %>
   <a href="index.jsp?clearApplication">Clear application</a><br/>
 
