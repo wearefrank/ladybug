@@ -40,6 +40,7 @@ import java.util.Set;
 import java.util.function.Consumer;
 
 import org.apache.xerces.dom.DocumentImpl;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -72,6 +73,14 @@ public class TestCreateReport extends ReportRelatedTestCase {
 	public void setUp() {
 		resourcePath = RESOURCE_PATH + "createreport/";
 		super.setUp();
+	}
+
+	@Test
+	public void testCanObtainHostNameFromOS() {
+		String host = testTool.getHost();
+		Assert.assertFalse(host.contains("\r"));
+		Assert.assertFalse(host.contains("\n"));
+		Assert.assertNotNull(host);
 	}
 
 	@Test
