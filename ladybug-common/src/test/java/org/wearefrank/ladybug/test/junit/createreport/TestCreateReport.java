@@ -115,6 +115,8 @@ public class TestCreateReport extends ReportRelatedTestCase {
 
 	@Test
 	public void testSpecialValues() throws StorageException, IOException {
+		testTool.setHost("MyHost");
+		testTool.setApplication("MyApplication");
 		String correlationId = getCorrelationId();
 		testTool.startpoint(correlationId, null, reportName, null);
 		testTool.infopoint(correlationId, null, "infoname1", new Date(0));
@@ -856,6 +858,8 @@ public class TestCreateReport extends ReportRelatedTestCase {
 
 	@Test
 	public void testStreamsWithReaderAndInputStream() throws IOException, StorageException {
+		testTool.setHost("MyHost");
+		// Application deliberately left null - is in another test.
 		String correlationId = getCorrelationId();
 		int maxMessageLength = 15;
 		testTool.setMaxMessageLength(maxMessageLength);
@@ -903,6 +907,8 @@ public class TestCreateReport extends ReportRelatedTestCase {
 
 	@Test
 	public void testStreamsWithWriterAndOutputStream() throws IOException, StorageException {
+		testTool.setHost("MyHost");
+		// Application deliberately left null, tested elsewhere.
 		String correlationId = getCorrelationId();
 		int maxMessageLength = 50;
 		testTool.setMaxMessageLength(maxMessageLength);

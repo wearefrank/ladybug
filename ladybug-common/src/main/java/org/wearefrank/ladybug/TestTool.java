@@ -429,6 +429,8 @@ public class TestTool {
 		if (checkpointType == CheckpointType.STARTPOINT.toInt()) {
 			log.debug("Create new report for '" + correlationId + "'");
 			report = new Report();
+			report.setHost(host);
+			report.setApplication(application);
 			report.setStartTime(System.currentTimeMillis());
 			report.setTestTool(this);
 			report.setCorrelationId(correlationId);

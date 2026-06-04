@@ -42,6 +42,8 @@ function getHierarchicalCheckpoint(): HierarchicalCheckpoint {
     xml: 'dummy xml',
     checkpointsFromView: null,
     startTime: 0,
+    host: 'MyHost',
+    application: null,
   };
   report.children?.push({
     name: 'Some name',

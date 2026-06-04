@@ -24,6 +24,12 @@
 	String correlationId = UUID.randomUUID().toString();
 	String otherCorrelationId = UUID.randomUUID().toString();
 	String reportName;
+	List<String> hostNames = new ArrayList<String>();
+	hostNames.add("Host A");
+	hostNames.add("Host B");
+	List<String> applications = new ArrayList<String>();
+	applications.add("Application X");
+	applications.add("Application Y");
 	List<String> reportNames = new ArrayList<String>();
 	String userName = null;
 
@@ -192,6 +198,17 @@
 		int time = Integer.valueOf(request.getParameter("setReportInProgressThreshold"));
 		testTool.setReportsInProgressThreshold(time);
 	}
+	if(request.getParameter("setHost") != null) {
+	    String host = request.getParameter("setHost");
+	    testTool.setHost(host);
+	}
+	if (request.getParameter("setApplication") != null) {
+	    String application = request.getParameter("setApplication");
+	    testTool.setApplication(application);
+	}
+	if (report.getParameter("clearApplication") != null) {
+	    testTool.setApplication(null);
+	}
 %>
 <html>
 
@@ -222,6 +239,16 @@
   <a href="index.jsp?createReport=<%=name%>"><%=name%></a><br/>
   <% } %>
 
+  <h1>Set host and application</h1>
+
+  <% for (String hostName : hostNames) { %>
+  <a href="index.jsp?setHost=<%=hostName%>"Host <%=hostName%></a><br/>
+  <% } %>
+
+  <% for (String application : applications) { %>
+  <a href="index.jsp?setApplication=<%=application%>"Application <%=application%></a><br/>
+  <% } %>
+  <a href="index.jsp?clearApplication">Clear application</a><br/>
 
   <h1>Other actions</h1>
 

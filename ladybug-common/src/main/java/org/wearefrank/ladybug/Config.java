@@ -1,5 +1,5 @@
 /*
-   Copyright 2022-2025 WeAreFrank!
+   Copyright 2022-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -234,6 +234,8 @@ public class Config {
 		metadataNames.add("numberOfCheckpoints");
 		metadataNames.add("estimatedMemoryUsage");
 		metadataNames.add("storageSize");
+		metadataNames.add("host");
+		metadataNames.add("application");
 		return metadataNames;
 	}
 

@@ -25,4 +25,6 @@ export interface Report extends BaseReport {
   storageName: string;
   xml: string; // Custom for the xml representation of the report
   id: string; // Custom
+  host: string | null;
+  application: string | null;
 }

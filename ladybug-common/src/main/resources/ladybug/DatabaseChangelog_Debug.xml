@@ -24,4 +24,18 @@
 		<createSequence sequenceName="SEQ_LADYBUG"/><!-- To auto increment STORAGEID on Oracle -->
 	</changeSet>
 
+	<changeSet id="Ladybug:2" author="Martijn Dirkse">
+		<comment>Add column VARIABLES</comment>
+		<addColumn tableName="LADYBUG">
+			<column name="VARIABLES" type="CLOB"/>
+		</addColumn>
+	</changeSet>
+
+	<changeSet id="Ladybug:3" author="Martijn Dirkse">
+		<comment>Add columns HOST and APPLICATION</comment>
+		<addColumn tableName="LADYBUG">
+			<column name="HOST" type="VARCHAR(256)"/>
+			<column name="APPLICATION" type="VARCHAR(256)"/>
+		</addColumn>
+	</changeSet>
 </databaseChangeLog>
