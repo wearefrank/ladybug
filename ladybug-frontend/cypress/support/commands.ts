@@ -20,6 +20,9 @@ const TESTER_PWD = 'IbisTester';
 
 const TREE_ITEM_SELECTED_CLASS = 'sft-item-selected';
 
+const HOST_COLUMN = 10;
+const APPLICATION_COLUMN = 11;
+
 type TabType = 'debug' | 'test';
 
 declare global {
@@ -132,6 +135,22 @@ declare global {
       windowSendPostReportEvent(storageName: string, storageId: number): Chainable;
 
       uploadTwoReportsAndCheckTabs(): Chainable;
+
+      setHostA(): Chainable;
+
+      setHostB(): Chainable;
+
+      setHost(host: string): Chainable;
+
+      setApplicationX(): Chainable;
+
+      setApplicationY(): Chainable;
+
+      setApplication(application: string): Chainable;
+
+      checkHostOfDebugTableRow(index: number, expected: string): Chainable;
+
+      checkApplicationOfDebugTableRow(index: number, expected: string): Chainable;
     }
   }
 }
@@ -577,7 +596,7 @@ Cypress.Commands.add('windowSendPostReportEvent' as keyof Chainable, (storageNam
   });
 })
 
-Cypress.Commands.add('uploadTwoReportsAndCheckTabs', () => {
+Cypress.Commands.add('uploadTwoReportsAndCheckTabs' as keyof Chainable, () => {
   cy.fixture('twoReports.zip', 'binary')
     .then(Cypress.Blob.binaryStringToBlob)
     .then((fileContent) => {
@@ -591,6 +610,46 @@ Cypress.Commands.add('uploadTwoReportsAndCheckTabs', () => {
   cy.checkNavTab(1, 'Test', false);
   cy.checkNavTab(2, 'Adapter1a', false);
   cy.checkNavTab(3, 'Adapter1b', true);
+})
+
+Cypress.Commands.add('setHostA' as keyof Chainable, () => {
+  cy.setHost('Host%20A');
+})
+
+Cypress.Commands.add('setHostB' as keyof Chainable, () => {
+  cy.setHost('Host%20B');
+})
+
+Cypress.Commands.add('setHost' as keyof Chainable, (host: string): void => {
+  cy.request(
+    `${Cypress.env('backendServer')}/index.jsp?setHost=${host}`,
+  ).then((resp: Cypress.Response<ApiResponse>) => {
+    expect(resp.status).equal(200);
+  });
+})
+
+Cypress.Commands.add('setApplicationX' as keyof Chainable, () => {
+  cy.setApplication('Application%20X');
+})
+
+Cypress.Commands.add('setApplicationY' as keyof Chainable, () => {
+  cy.setApplication('Application%20Y');
+})
+
+Cypress.Commands.add('setApplication' as keyof Chainable, (application: string): void => {
+  cy.request(
+    `${Cypress.env('backendServer')}/index.jsp?setApplication=${application}`,
+  ).then((resp: Cypress.Response<ApiResponse>) => {
+    expect(resp.status).equal(200);
+  });
+})
+
+Cypress.Commands.add('checkHostOfDebugTableRow' as keyof Chainable, (index: number, expected: string): void => {
+  cy.getDebugTableRows().eq(index).find('td').eq(HOST_COLUMN).should('contain.text', expected);
+})
+
+Cypress.Commands.add('checkApplicationOfDebugTableRow' as keyof Chainable, (index: number, expected: string): void => {
+  cy.getDebugTableRows().eq(index).find('td').eq(APPLICATION_COLUMN).should('contain.text', expected);
 })
 
 function awaitLoadingSpinner(): void {
