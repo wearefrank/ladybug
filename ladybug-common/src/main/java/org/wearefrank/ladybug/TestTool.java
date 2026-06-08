@@ -368,40 +368,8 @@ public class TestTool {
 			Set<String> matchingStubStrategies, int checkpointType, int levelChangeNextCheckpoint, String id, String parentId, long startTime) {
 		boolean executeStubableCode = true;
 		if (reportGeneratorEnabled) {
-			Report report;
-			// Blocking for all threads for all reports
-			synchronized(reportsInProgress) {
-				report = getReportInProgress(correlationId);
-				if (report == null) {
-					if (updateReportsEnabled && debugStorage.isCrudStorage()) {
-						try {
-							for (Integer storageId : debugStorage.getStorageIds()) {
-								if (debugStorage.getReport(storageId).getCorrelationId().equals(correlationId)) {
-									report = debugStorage.getReport(storageId);
-									synchronized (report) {
-										report.restoreRuntimeState();
-										report.setClosed(false);
-										report.setTestTool(this);
+			Report report = getOrCreateReport(correlationId, name, checkpointType);
 
-										reportsInProgress.add(0, report);
-										reportsInProgressByCorrelationId.put(correlationId, report);
-										numberOfReportsInProgress++;
-
-										report.setBeingUpdated(true);
-									}
-									break;
-								}
-							}
-						} catch (StorageException e) {
-							log.error("Failed to find report in storage", e);
-						}
-					}
-
-					if (report == null) {
-						report = createReport(correlationId, name, checkpointType);
-					}
-				}
-			}
 			if (devMode) randomSleep();
 			while (report != null) {
 				// "synchronized(report)" is only blocking for threads writing to the same report (which is only the
@@ -438,6 +406,51 @@ public class TestTool {
 			message = execute(stubableCode, stubableCodeThrowsException, message);
 		}
 		return message;
+	}
+
+	private Report getOrCreateReport(String correlationId, String name, int checkpointType) {
+		synchronized (reportsInProgress) {
+			Report report = getReportInProgress(correlationId);
+			if (report != null) {
+				return report;
+			}
+
+			if (updateReportsEnabled) {
+				report = tryLoadReportFromStorage(correlationId);
+				if (report != null) {
+					return report;
+				}
+			}
+
+			return createReport(correlationId, name, checkpointType);
+		}
+	}
+
+	private Report tryLoadReportFromStorage(String correlationId) {
+		if (!debugStorage.isCrudStorage()) {
+			log.error("Can't update report because storage does not support CRUD operations");
+			return null;
+		}
+		try {
+			for (Integer storageId : debugStorage.getStorageIds()) {
+				Report stored = debugStorage.getReport(storageId);
+				if (stored.getCorrelationId().equals(correlationId)) {
+					stored.restoreRuntimeState();
+					stored.setClosed(false);
+					stored.setTestTool(this);
+
+					reportsInProgress.add(0, stored);
+					reportsInProgressByCorrelationId.put(correlationId, stored);
+					numberOfReportsInProgress++;
+
+					stored.setBeingUpdated(true);
+					return stored;
+				}
+			}
+		} catch (StorageException e) {
+			log.error("Failed to find report in storage", e);
+		}
+		return null;
 	}
 
 	private Report createReport(String correlationId, String name, int checkpointType) {
