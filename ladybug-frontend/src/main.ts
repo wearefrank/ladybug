@@ -13,7 +13,7 @@ import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { AppRouteReuseStrategy, AppRoutingModule } from './app/app-routing.module';
 import { bootstrapApplication, BrowserModule } from '@angular/platform-browser';
-import { RouteReuseStrategy } from '@angular/router';
+import { ActivatedRouteSnapshot, RouteReuseStrategy } from '@angular/router';
 import { MatDialogModule } from '@angular/material/dialog';
 
 if (environment.production) {
@@ -39,6 +39,7 @@ function main(): void {
         MatAutocompleteModule,
         ClipboardModule,
         MatDialogModule,
+        ActivatedRouteSnapshot,
       ),
       provideAnimations(),
       provideHttpClient(withInterceptorsFromDi()),

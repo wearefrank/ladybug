@@ -1,54 +1,200 @@
 import { Injectable } from '@angular/core';
-import { Observable, ReplaySubject, Subject } from 'rxjs';
-import { ReportData } from '../interfaces/report-data';
+import { ReplaySubject, Subject } from 'rxjs';
+import { debugOrTest, KEY_COMPARE, KEY_DEBUG, KEY_REPORT, KEY_TEST, routeKind, Tab } from '../interfaces/tab';
+import { ActivatedRouteSnapshot, DetachedRouteHandle } from '@angular/router';
+import { isNumber } from '../../shared/util/util';
 import { CompareData } from '../../compare/compare-data';
-import { CloseTab } from '../interfaces/close-tab';
-import { Report } from '../interfaces/report';
+import { HierarchicalReport } from '../interfaces/hierarchical-report';
 
 @Injectable({
   providedIn: 'root',
 })
 export class TabService {
-  activeReportTabs = new Map<string, ReportData>();
-  activeCompareTabs = new Map<string, CompareData>();
+  private tabs: Tab[] = [
+    {
+      kind: KEY_DEBUG,
+      key: KEY_DEBUG,
+      title: 'Debug',
+      returnToKey: KEY_DEBUG,
+    },
+    {
+      kind: KEY_TEST,
+      key: KEY_TEST,
+      title: 'Test',
+      returnToKey: KEY_TEST,
+    },
+  ];
 
-  private openReportInTabSubject: Subject<ReportData> = new ReplaySubject();
-  private openInCompareSubject: Subject<CompareData> = new ReplaySubject();
-  private closeTabSubject: Subject<CloseTab> = new ReplaySubject();
+  private refreshSubject: Subject<string | null> = new ReplaySubject();
+  public refresh$ = this.refreshSubject.asObservable();
+  private compareCache: Map<string, CompareData> = new Map<string, CompareData>();
+  private reportCache: Map<string, HierarchicalReport> = new Map<string, HierarchicalReport>();
 
-  openReportInTab$: Observable<ReportData> = this.openReportInTabSubject.asObservable();
-
-  openInCompare$: Observable<CompareData> = this.openInCompareSubject.asObservable();
-
-  closeTab$: Observable<CloseTab> = this.closeTabSubject.asObservable();
-
-  openNewTab(value: ReportData): void {
-    this.activeReportTabs.set(value.report.storageId.toString(), value);
-    this.openReportInTabSubject.next(value);
+  getTabs(): Tab[] {
+    return [...this.tabs];
   }
 
-  openNewCompareTab(value: CompareData): void {
-    this.openInCompareSubject.next(value);
-    this.activeCompareTabs.set(value.id, value);
-  }
-
-  createCompareTabId(originalReport: Report, runResultReport: Report): string {
-    return `${originalReport.storageId}-${runResultReport.storageId}`;
-  }
-
-  closeTab(value: CompareData | ReportData): void {
-    let closeTab: CloseTab;
-    if (this.isCompareData(value)) {
-      this.activeCompareTabs.delete(value.id);
-      closeTab = { id: value.id, type: 'compare' };
-    } else {
-      this.activeReportTabs.delete(value.report.storageId.toString());
-      closeTab = { id: value.report.storageId.toString(), type: 'report' };
+  removeTab(key: string): void {
+    const optionalRemovedTab: Tab | undefined = this.findTab(key);
+    const navigation: debugOrTest | null = optionalRemovedTab === undefined ? null : optionalRemovedTab.returnToKey;
+    this.tabs = this.tabs.filter((t) => t.key !== key);
+    if (this.compareCache.has(key)) {
+      this.compareCache.delete(key);
     }
-    this.closeTabSubject.next(closeTab);
+    if (this.reportCache.has(key)) {
+      this.reportCache.delete(key);
+    }
+    this.refreshSubject.next(navigation);
   }
 
-  isCompareData(value: CompareData | ReportData): value is CompareData {
-    return !!value && !!(value as CompareData).originalReport;
+  openReportTab(
+    storageName: string,
+    storageId: number,
+    name: string,
+    report?: HierarchicalReport,
+    returnToKey?: debugOrTest,
+  ): void {
+    const key: string = this.getReportTabKey(storageName, storageId);
+    if (this.findTab(key) === undefined) {
+      this.addTab(KEY_REPORT, key, name, returnToKey);
+    }
+    // Do not renew cache when same storage name and storage id combination
+    // is opened with an updated report. The user should close the tab
+    // to update the cache.
+    if (report !== undefined && this.reportCache.get(key) === undefined) {
+      this.reportCache.set(key, report);
+    }
+    this.refreshSubject.next(key);
+  }
+
+  openCompareTab(
+    leftStorageName: string,
+    leftStorageId: number,
+    rightStorageName: string,
+    rightStorageId: number,
+    data: CompareData,
+    returnToKey?: debugOrTest,
+  ): void {
+    const key: string = this.getCompareTabKey(leftStorageName, leftStorageId, rightStorageName, rightStorageId);
+    if (this.findTab(key) === undefined) {
+      this.addTab(KEY_COMPARE, key, 'Compare', returnToKey);
+      this.compareCache.set(key, data);
+    }
+    this.refreshSubject.next(key);
+  }
+
+  getCompareData(key: string): CompareData | undefined {
+    return this.compareCache.get(key);
+  }
+
+  getReportData(key: string): HierarchicalReport | undefined {
+    return this.reportCache.get(key);
+  }
+
+  storeHandle(route: ActivatedRouteSnapshot, handle: DetachedRouteHandle): void {
+    const key = this.getKey(route);
+    const tab: Tab | undefined = this.findTab(key);
+    if (tab === undefined) {
+      throw new Error(`TabService.storeHandle() finds no tab with key ${key}`);
+    }
+    tab.handle = handle;
+  }
+
+  getHandle(route: ActivatedRouteSnapshot): DetachedRouteHandle | undefined {
+    const key = this.getKey(route);
+    const tab: Tab | undefined = this.findTab(key);
+    return tab === undefined ? undefined : tab.handle;
+  }
+
+  getReportTabKey(storageName: string, storageId: number): string {
+    return [KEY_REPORT, storageName, `${storageId}`].join('/');
+  }
+
+  getCompareTabKey(
+    leftStorageName: string,
+    leftStorageId: number,
+    rightStorageName: string,
+    rightStorageId: number,
+  ): string {
+    return [KEY_COMPARE, leftStorageName, `${leftStorageId}`, rightStorageName, `${rightStorageId}`].join('/');
+  }
+
+  getKey(route: ActivatedRouteSnapshot): string {
+    const routePath: string = route.routeConfig?.path || '';
+    if (routePath.length === 0) {
+      return '';
+    }
+    const kind = routePath.split('/')[0];
+    switch (kind) {
+      case KEY_DEBUG:
+      case KEY_TEST: {
+        return kind;
+      }
+      case KEY_REPORT: {
+        const storageName: string = this.routeParam(route, 'storageName');
+        const storageIdStr: string = this.routeParam(route, 'storageId');
+        if (!isNumber(storageIdStr)) {
+          throw new Error(`Tried to parse a numberic storage id from string ${storageIdStr}`);
+        }
+        const storageId: number = +storageIdStr;
+        return this.getReportTabKey(storageName, storageId);
+      }
+      case KEY_COMPARE: {
+        const leftStorageName = this.routeParam(route, 'leftStorageName');
+        const leftStorageIdStr = this.routeParam(route, 'leftStorageId');
+        const rightStorageName = this.routeParam(route, 'rightStorageName');
+        const rightStorageIdStr = this.routeParam(route, 'rightStorageId');
+        if (!isNumber(leftStorageIdStr)) {
+          throw new Error(`Tried to parse a numeric left storage id from string ${leftStorageIdStr}`);
+        }
+        if (!isNumber(rightStorageIdStr)) {
+          throw new Error(`Tried to parse a numeric right storage id from string ${rightStorageIdStr}`);
+        }
+        const leftStorageId: number = +leftStorageIdStr;
+        const rightStorageId: number = +rightStorageIdStr;
+        return this.getCompareTabKey(leftStorageName, leftStorageId, rightStorageName, rightStorageId);
+      }
+      default: {
+        throw new Error(`Unknown route kind ${kind}`);
+      }
+    }
+  }
+
+  setTitle(key: string, title: string): void {
+    const tab: Tab | undefined = this.findTab(key);
+    if (tab === undefined) {
+      throw new Error(`Cannot set title of tab because no tab for key ${key}`);
+    }
+    tab.title = title;
+  }
+
+  getPathParam(route: ActivatedRouteSnapshot, parameter: string): string {
+    return route.paramMap.get(parameter) as string;
+  }
+
+  findTab(key: string): Tab | undefined {
+    const result: Tab[] = this.tabs.filter((t) => t.key === key);
+    if (result.length === 0) {
+      return undefined;
+    } else if (result.length === 1) {
+      return result[0];
+    } else {
+      throw new Error(`Multiple tabs found for key ${key}`);
+    }
+  }
+
+  private addTab(kind: routeKind, key: string, title?: string, returnToKey?: debugOrTest): Tab {
+    const tab: Tab = {
+      kind,
+      key,
+      title: title === undefined ? key : title,
+      returnToKey: returnToKey === undefined ? 'debug' : returnToKey,
+    };
+    this.tabs.push(tab);
+    return tab;
+  }
+
+  private routeParam(route: ActivatedRouteSnapshot, parameter: string): string {
+    return route.params[parameter] || '';
   }
 }

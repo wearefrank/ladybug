@@ -1,17 +1,18 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
-import { Component, EventEmitter, inject, Input, OnDestroy, Output, ViewChild } from '@angular/core';
-import { Report } from '../../shared/interfaces/report';
-import { catchError, firstValueFrom, Observable, Subscription } from 'rxjs';
-import { HttpService } from '../../shared/services/http.service';
+import { Component, EventEmitter, inject, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
 import { CreateTreeItem, FileTreeItem, FileTreeOptions, NgSimpleFileTree } from 'ng-simple-file-tree';
-import { ReportHierarchyTransformer } from '../../shared/classes/report-hierarchy-transformer';
 import { SimpleFileTreeUtil as SimpleFileTreeUtility } from '../../shared/util/simple-file-tree-util';
-import { View } from '../../shared/interfaces/view';
 import { DebugTabService } from '../debug-tab.service';
-import { ErrorHandling } from '../../shared/classes/error-handling.service';
-import { RefreshCondition } from '../../shared/interfaces/refresh-condition';
-import { ClientSettingsService } from 'src/app/shared/services/client.settings.service';
+import { HierarchicalReport, HierarchicalCheckpoint } from '../../shared/interfaces/hierarchical-report';
+import { CHECKPOINT_TYPE_STRINGS, CheckpointType } from '../../shared/enums/checkpoint-type';
+import { Subscription } from 'rxjs';
+
+interface FrankTreeNode {
+  name: string;
+  uid?: string;
+  iconClass?: string;
+  children?: FrankTreeNode[];
+  originalValue: HierarchicalReport | HierarchicalCheckpoint;
+}
 
 @Component({
   selector: 'app-debug-tree',
@@ -20,13 +21,10 @@ import { ClientSettingsService } from 'src/app/shared/services/client.settings.s
   standalone: true,
   imports: [NgSimpleFileTree],
 })
-export class DebugTreeComponent implements OnDestroy {
+export class DebugTreeComponent implements OnInit, OnDestroy {
   @ViewChild('tree') tree!: NgSimpleFileTree;
-  @Input() adjustWidth: Observable<void> = {} as Observable<void>;
-  @Output() selectReportEvent = new EventEmitter<Report>();
-  @Output() closeEntireTreeEvent = new EventEmitter<any>();
+  @Output() selectReportEvent = new EventEmitter<HierarchicalReport | HierarchicalCheckpoint>();
 
-  showMultipleAtATime!: boolean;
   subscriptions: Subscription = new Subscription();
   treeOptions: FileTreeOptions = {
     hierarchyLines: {
@@ -36,27 +34,18 @@ export class DebugTreeComponent implements OnDestroy {
     folderBehaviourOnClick: 'select',
     doubleClickToOpenFolders: false,
     autoOpenCondition: this.conditionalOpenFunction,
-    determineIconClass: SimpleFileTreeUtility.conditionalCssClass,
+    determineIconClass: SimpleFileTreeUtility.conditionalCssClassNew,
   };
 
-  private _currentView!: View;
-  private lastReport?: Report | null;
+  protected checkpointAndStorageIdShown = false;
 
-  private httpService = inject(HttpService);
-  private clientSettingsService = inject(ClientSettingsService);
+  private lastReport: HierarchicalReport | null = null;
   private debugTab = inject(DebugTabService);
-  private errorHandler = inject(ErrorHandling);
 
-  constructor() {
+  private readonly THROWABLE_ENCODER: string = 'printStackTrace()';
+
+  ngOnInit(): void {
     this.subscribeToSubscriptions();
-  }
-
-  @Input({ required: true }) set currentView(value: View) {
-    if (this._currentView !== value) {
-      // TODO: Issue https://github.com/wearefrank/ladybug-frontend/issues/1125.
-      this.hideOrShowCheckpointsBasedOnView(value);
-    }
-    this._currentView = value;
   }
 
   ngOnDestroy(): void {
@@ -64,146 +53,83 @@ export class DebugTreeComponent implements OnDestroy {
   }
 
   subscribeToSubscriptions(): void {
-    const showMultipleSubscription: Subscription = this.clientSettingsService.showMultipleAtATimeObservable.subscribe({
-      next: (value: boolean) => {
-        this.showMultipleAtATime = value;
-        if (!this.showMultipleAtATime) {
-          this.removeAllReportsButOne();
-        }
-      },
-    });
-    this.subscriptions.add(showMultipleSubscription);
-    const refreshAll: Subscription = this.debugTab.refreshAll$.subscribe((condition?: RefreshCondition) =>
-      this.refreshReports(condition),
-    );
+    const refreshAll: Subscription = this.debugTab.refreshAll$.subscribe(() => this.refreshReports());
     this.subscriptions.add(refreshAll);
-    const refreshTree: Subscription = this.debugTab.refreshTree$.subscribe((condition?: RefreshCondition) =>
-      this.refreshReports(condition),
-    );
-    this.subscriptions.add(refreshTree);
   }
 
-  hideOrShowCheckpointsBasedOnView(currentView: View): void {
-    if (this.tree) {
-      this.checkUnmatchedCheckpoints(this.getTreeReports(), currentView);
-    }
-  }
-
-  checkUnmatchedCheckpoints(reports: Report[], currentView: View): void {
-    for (let report of reports) {
-      if (report.storageName === currentView.storageName) {
-        this.httpService
-          .getUnmatchedCheckpoints(report.storageName, report.storageId, currentView.name)
-          .pipe(catchError(this.errorHandler.handleError()))
-          .subscribe({
-            next: (unmatched: string[]) =>
-              SimpleFileTreeUtility.hideOrShowCheckpoints(unmatched, this.tree.elements.toArray()),
-          });
-      }
-    }
-  }
-
-  getTreeReports(): Report[] {
-    const reports: Report[] = [];
-    for (const item of this.tree.items) {
-      if (item.originalValue.storageId != undefined) {
-        reports.push(item.originalValue);
-      }
-    }
-    return reports;
-  }
-
-  removeAllReportsButOne(): void {
-    if (this.tree) {
-      this.tree.clearItems();
-    }
-    if (this.lastReport) {
-      this.addReportToTree(this.lastReport);
-    }
-  }
-
-  addReportToTree(report: Report): void {
-    if (this.selectAndReplaceReportIfPresent(report)) {
-      return;
-    }
+  addReportToTree(report: HierarchicalReport): void {
     this.lastReport = report;
-    if (!this.showMultipleAtATime) {
-      this.tree.clearItems();
-    }
-    const newReport: CreateTreeItem = new ReportHierarchyTransformer().transform(report);
-    const rootNodePath: string = this.tree.addItem(newReport);
-    this.selectFirstCheckpoint(rootNodePath);
-    if (this._currentView) {
-      this.hideOrShowCheckpointsBasedOnView(this._currentView);
-    }
+    this.refreshReports();
   }
 
   closeEntireTree(): void {
-    this.debugTab.setAnyReportsOpen(false);
-    this.closeEntireTreeEvent.emit();
-    this.tree.clearItems();
     this.lastReport = null;
+    this.tree.clearItems();
   }
 
-  changeSearchTerm(event: KeyboardEvent): void {
-    const term: string = (event.target as HTMLInputElement).value;
-    this.tree.searchTree(term);
+  private refreshReports(): void {
+    if (this.lastReport === null) {
+      this.closeEntireTree();
+    } else {
+      this.tree.clearItems();
+      this.addReportToTreeImpl(this.lastReport);
+    }
   }
 
-  conditionalOpenFunction(item: CreateTreeItem): boolean {
-    const type = item['type'];
-    return type === undefined || type === 1 || type === 2;
-  }
-
-  selectAndReplaceReportIfPresent(report: Report): boolean {
-    for (const index in this.tree.items) {
-      const treeReport: Report = this.tree.items[index].originalValue;
-      if (treeReport.storageId === report.storageId) {
-        const transformedReport = new ReportHierarchyTransformer().transform(report);
-        this.tree.items[index] = this.tree.createItemToFileItem(transformedReport);
-        this.tree.selectItem(this.tree.items[index].path);
-        return true;
+  private addReportToTreeImpl(report: HierarchicalReport): void {
+    const preparedReport: FrankTreeNode = this.prepareReportForTree(report);
+    const rootNodePath: string = this.tree.addItem(preparedReport);
+    this.selectFirstCheckpoint(rootNodePath);
+    if (this.tree.items) {
+      for (const item of this.tree.items) {
+        this.expandAll(item);
       }
     }
-    return false;
   }
 
-  async refreshReports(condition?: RefreshCondition): Promise<void> {
-    const selectedReportId: number = this.tree.getSelected().originalValue.storageId;
-    let lastSelectedReport: FileTreeItem | undefined;
-
-    const shouldProcessReport = (reportId: number): boolean =>
-      !condition?.reportIds || condition.reportIds.includes(reportId);
-
-    for (const index in this.tree.items) {
-      const report: Report = this.tree.items[index].originalValue as Report;
-
-      if (shouldProcessReport(report.storageId)) {
-        const fileItem: FileTreeItem = await this.getNewReport(report.storageId);
-
-        if (selectedReportId === report.storageId) {
-          lastSelectedReport = fileItem;
-        }
-
-        this.tree.items[index] = fileItem;
+  private expandAll(node: FileTreeItem): void {
+    node.expanded = true;
+    if (node.children) {
+      for (const childNode of node.children) {
+        this.expandAll(childNode);
       }
     }
-
-    if (lastSelectedReport) {
-      this.tree.selectItem(lastSelectedReport.path);
-    }
-
-    this.hideOrShowCheckpointsBasedOnView(this._currentView);
   }
 
-  async getNewReport(storageId: number): Promise<FileTreeItem> {
-    const response: Report = await firstValueFrom(
-      this.httpService
-        .getReport(storageId, this._currentView.storageName)
-        .pipe(catchError(this.errorHandler.handleError())),
-    );
-    const transformedReport: Report = new ReportHierarchyTransformer().transform(response);
-    return this.tree.createItemToFileItem(transformedReport);
+  private prepareReportForTree(report: HierarchicalReport): FrankTreeNode {
+    return {
+      name: this.getReportName(report),
+      originalValue: report,
+      children: report.children === null ? undefined : report.children.map((c) => this.prepareCheckpointForTree(c)),
+    };
+  }
+
+  private prepareCheckpointForTree(checkpoint: HierarchicalCheckpoint): FrankTreeNode {
+    return {
+      name: this.getCheckpointName(checkpoint),
+      uid: checkpoint.uid,
+      iconClass: this.getImage(checkpoint.type, checkpoint.encoding ?? '', checkpoint.level),
+      originalValue: checkpoint,
+      children:
+        checkpoint.children === null ? undefined : checkpoint.children.map((c) => this.prepareCheckpointForTree(c)),
+    };
+  }
+
+  private getReportName(report: HierarchicalReport): string {
+    return this.checkpointAndStorageIdShown ? `${report.name} (${report.storageId})` : report.name;
+  }
+
+  private getCheckpointName(checkpoint: HierarchicalCheckpoint): string {
+    return this.checkpointAndStorageIdShown ? `${checkpoint.name} (${checkpoint.id})` : checkpoint.name;
+  }
+
+  private getImage(type: CheckpointType, encoding: string, level: number): string {
+    let iconClass = CHECKPOINT_TYPE_STRINGS[type];
+    if (encoding === this.THROWABLE_ENCODER) {
+      iconClass += ' red';
+    }
+    iconClass += level % 2 == 0 ? ' even' : ' odd';
+    return iconClass;
   }
 
   private selectFirstCheckpoint(rootNodePath: string): void {
@@ -211,9 +137,30 @@ export class DebugTreeComponent implements OnDestroy {
     const lastAdded = this.tree.items[last];
     if (lastAdded.children) {
       const firstCheckpoint = lastAdded.children[0];
+      // Does not expand selected item for some reason as it should.
       this.tree.selectItem(firstCheckpoint.path);
     } else {
       this.tree.selectItem(rootNodePath);
     }
+  }
+
+  protected changeSearchTerm(event: KeyboardEvent): void {
+    const term: string = (event.target as HTMLInputElement).value;
+    this.tree.searchTree(term);
+  }
+
+  private conditionalOpenFunction(item: CreateTreeItem): boolean {
+    const type = item['type'];
+    return type === undefined || type === CheckpointType.Startpoint || type === CheckpointType.Endpoint;
+  }
+
+  protected toggleCheckpointAndStorageIdShown(): void {
+    this.checkpointAndStorageIdShown = !this.checkpointAndStorageIdShown;
+    this.refreshReports();
+  }
+
+  protected emitNodeSelected(item: FileTreeItem): void {
+    const createItem: FrankTreeNode = item.originalValue;
+    this.selectReportEvent.emit(createItem.originalValue);
   }
 }

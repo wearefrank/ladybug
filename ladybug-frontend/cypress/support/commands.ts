@@ -18,6 +18,10 @@ const OBSERVER_PWD = 'IbisObserver';
 const TESTER_USER = 'IbisTester';
 const TESTER_PWD = 'IbisTester';
 
+const TREE_ITEM_SELECTED_CLASS = 'sft-item-selected';
+
+type TabType = 'debug' | 'test';
+
 declare global {
   namespace Cypress {
     interface Chainable {
@@ -65,13 +69,13 @@ declare global {
 
       createReportOnlyCR(): Chainable;
 
+      createReportWithStatusError(): Chainable;
+
       clearDebugStore(): Chainable;
 
       clearReportsInProgress(): Chainable;
 
       selectIfNotSelected(): Chainable;
-
-      enableShowMultipleInDebugTree(): Chainable;
 
       checkTestTableNumRows(length: number): Chainable;
 
@@ -87,6 +91,16 @@ declare global {
 
       clickEndCheckpointOfThreeNodeReport(): Chainable;
 
+      getShownNodesOfReportTreeWithText(text: string): Chainable;
+
+      checkShownNodeWithTextSelected(reportName: string, index: number, selected: boolean): Chainable;
+
+      checkShownNodeWithTextSearched(reportName: string, searched: boolean): Chainable;
+
+      collapseNode(text: string, index: number):Chainable;
+
+      expandNode(text: string, index: number): Chainable;
+
       clickRowInTable(index: number): Chainable;
 
       checkFileTreeLength(length: number): Chainable;
@@ -94,6 +108,8 @@ declare global {
       refreshApp(): Chainable;
 
       getDebugTableRows(): Chainable;
+
+      checkDebugTableRowsAre(reportNames: string[]): Chainable;
 
       getTestTableRows(): Chainable;
 
@@ -110,6 +126,12 @@ declare global {
       debugTabBackToFactorySettings(): Chainable;
 
       enterSettingsDialogAndExpectReportGenerator(text: string): Chainable;
+
+      checkNavTab(index: number, text: string, selected: boolean): Chainable;
+
+      windowSendPostReportEvent(storageName: string, storageId: number): Chainable;
+
+      uploadTwoReportsAndCheckTabs(): Chainable;
     }
   }
 }
@@ -309,6 +331,15 @@ Cypress.Commands.add('createReportOnlyCR' as keyof Chainable, (): void => {
   });
 });
 
+Cypress.Commands.add('createReportWithStatusError' as keyof Chainable, (): void => {
+  // No cy.visit because then the API call can happen multiple times.
+  cy.request(
+    `${Cypress.env('backendServer')}/index.jsp?createReport=Complex%20error%20report`,
+  ).then((resp: Cypress.Response<ApiResponse>) => {
+    expect(resp.status).equal(200);
+  });
+})
+
 Cypress.Commands.add('clearDebugStore' as keyof Chainable, (): void => {
   cy.request(
     `${Cypress.env('backendServer')}/index.jsp?clearDebugStorage=true`,
@@ -332,16 +363,6 @@ Cypress.Commands.add(
     if (!node[0].classList.contains('selected')) {
       cy.wrap(node).click();
     }
-  },
-);
-
-Cypress.Commands.add(
-  'enableShowMultipleInDebugTree' as keyof Chainable,
-  (): void => {
-    cy.get('[data-cy-debug="openSettings"]').click();
-    cy.get('[data-cy-settings="nav-client"]').click();
-    cy.get('[data-cy-settings="showAmount"]').check();
-    cy.get('[data-cy-settings="saveChanges"]').click();
   },
 );
 
@@ -413,6 +434,38 @@ Cypress.Commands.add('clickEndCheckpointOfThreeNodeReport' as keyof Chainable, (
     .click();
 });
 
+Cypress.Commands.add('getShownNodesOfReportTreeWithText' as keyof Chainable, (text): void => {
+  cy.get('[data-cy-debug-tree="root"] app-tree-icon:visible').parent().find(`:contains(${text})`);
+});
+
+Cypress.Commands.add('checkShownNodeWithTextSelected' as keyof Chainable, (reportName: string, index: number, selected: boolean): void => {
+  const predicate: string = selected === true ? 'have.class' : 'not.have.class';
+  cy.getShownNodesOfReportTreeWithText(reportName).eq(index).parent().should(predicate, TREE_ITEM_SELECTED_CLASS);
+})
+
+Cypress.Commands.add('checkShownNodeWithTextSearched' as keyof Chainable, (reportName: string, searched: boolean): void => {
+  const predicate: string = searched === true ? 'have.css' : 'not.have.css';
+  cy.getShownNodesOfReportTreeWithText(reportName).parent().should(predicate, 'color', 'rgb(255, 0, 0)');
+})
+
+Cypress.Commands.add('collapseNode' as keyof Chainable, (text, index): void => {
+  cy.getShownNodesOfReportTreeWithText(text)
+    .eq(index)
+    .parent()
+    .find('.sft-chevron-container')
+    .should('have.length', 1)
+    .click();
+})
+
+Cypress.Commands.add('expandNode' as keyof Chainable, (text, index): void => {
+  cy.getShownNodesOfReportTreeWithText(text)
+    .eq(index)
+    .parent()
+    .find('.bi-chevron-right')
+    .should('have.length', 1)
+    .click();
+})
+
 Cypress.Commands.add(
   'clickRowInTable' as keyof Chainable,
   (index: number): void => {
@@ -438,6 +491,19 @@ Cypress.Commands.add('refreshApp' as keyof Chainable, (): void => {
 Cypress.Commands.add('getDebugTableRows' as keyof Chainable, (): Chainable => {
   return cy.get('[data-cy-debug="tableRow"]');
 });
+
+Cypress.Commands.add('checkDebugTableRowsAre' as keyof Chainable, (reportNames: string[]): Chainable => {
+  const NAME_COLUMN_INDEX = 4;
+  cy.getDebugTableRows().should('have.length', reportNames.length);
+  for (let rowIndex = 0; rowIndex < reportNames.length; ++rowIndex) {
+    cy.getDebugTableRows()
+      .eq(rowIndex)
+      .find('td')
+      .eq(NAME_COLUMN_INDEX)
+      .invoke('text')
+      .should('contain', reportNames[rowIndex]);
+  }
+})
 
 Cypress.Commands.add('getTestTableRows' as keyof Chainable, (): Chainable => {
   return cy.get('[data-cy-test="tableRow"]');
@@ -496,19 +562,50 @@ Cypress.Commands.add('debugTabBackToFactorySettings' as keyof Chainable, (): Cha
   cy.get('[data-cy-settings="factoryReset"]').click();
 })
 
+Cypress.Commands.add('checkNavTab' as keyof Chainable, (index: number, text: string, selected: boolean) => {
+  cy.get(`[data-cy-nav-tab]:eq(${index})`).should('contain.text', text);
+  if (selected) {
+    cy.get(`[data-cy-nav-tab]:eq(${index})`).find('.active').should('be.visible');
+  } else {
+    cy.get(`[data-cy-nav-tab]:eq(${index})`).find('.active').should('not.exist');
+  }
+})
+
+Cypress.Commands.add('windowSendPostReportEvent' as keyof Chainable, (storageName: string, storageId: number) => {
+  cy.window().then(win => {
+      win.postMessage({ action: 'ladybug-openReport', storageName: storageName, storageId: storageId }, '*');
+  });
+})
+
+Cypress.Commands.add('uploadTwoReportsAndCheckTabs', () => {
+  cy.fixture('twoReports.zip', 'binary')
+    .then(Cypress.Blob.binaryStringToBlob)
+    .then((fileContent) => {
+      cy.get('[data-cy-debug="upload"]').find('input').attachFile({
+        fileContent,
+        fileName: 'twoReports.zip',
+      });
+    });
+  cy.get('[data-cy-nav-tab]').should('have.length', 4);
+  cy.checkNavTab(0, 'Debug', false);
+  cy.checkNavTab(1, 'Test', false);
+  cy.checkNavTab(2, 'Adapter1a', false);
+  cy.checkNavTab(3, 'Adapter1b', true);
+})
+
 function awaitLoadingSpinner(): void {
   cy.get('[data-cy-loading-spinner]', { timeout: 10000 }).should('not.exist');
 }
 
 //More string values can be added for each tab that can be opened
-function navigateToTabAndAwaitLoadingSpinner(tab: 'debug' | 'test'): void {
+function navigateToTabAndAwaitLoadingSpinner(tab: TabType): void {
   cy.visit('');
-  cy.get(`[data-cy-nav-tab="${tab}Tab"]`).click();
+  cy.get(`[data-cy-nav-tab="${tab}"]`).click();
   awaitLoadingSpinner();
 }
 
-function navigateToTab(tab: 'debug' | 'test'): void {
-  cy.get(`[data-cy-nav-tab="${tab}Tab"]`).click();
+function navigateToTab(tab: TabType): void {
+  cy.get(`[data-cy-nav-tab="${tab}"]`).click();
 }
 
 interface ApiResponse {

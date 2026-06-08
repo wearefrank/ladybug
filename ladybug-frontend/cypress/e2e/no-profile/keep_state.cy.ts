@@ -1,5 +1,6 @@
-describe('Tests for keeping state in tabs when switching tabs', () => {
+const UPLOADED_REPORT_NAMES = ['Pipeline Example1a/Adapter1a', 'Pipeline Example1b/Adapter1b']
 
+describe('Tests for keeping state in tabs when switching tabs', () => {
   beforeEach(() => {
     cy.createReport();
     cy.createOtherReport();
@@ -42,4 +43,27 @@ describe('Tests for keeping state in tabs when switching tabs', () => {
     cy.get('[data-cy-test="selectOne"]').eq(1).should('be.checked')
   });
 
+  it('should keep state in separate report tab', () => {
+    cy.uploadTwoReportsAndCheckTabs();
+    cy.get('[data-cy-debug-tree="expandAll"]').click();
+    let reportName = UPLOADED_REPORT_NAMES[1]
+    cy.getShownNodesOfReportTreeWithText(reportName).eq(2).click();
+    cy.getShownNodesOfReportTreeWithText(reportName).should('have.length', 3);
+    cy.checkShownNodeWithTextSelected(reportName, 2, true);
+    cy.checkShownNodeWithTextSelected(reportName, 1, false);
+    cy.get('[data-cy-nav-tab]').eq(2).click();
+    reportName = UPLOADED_REPORT_NAMES[0];
+    cy.getShownNodesOfReportTreeWithText(reportName).eq(2).click();
+    cy.getShownNodesOfReportTreeWithText(reportName).should('have.length', 3);
+    cy.checkShownNodeWithTextSelected(reportName, 2, true);
+    cy.checkShownNodeWithTextSelected(reportName, 1, false);
+    cy.get('[data-cy-nav-tab]').eq(3).click();
+    reportName = UPLOADED_REPORT_NAMES[1];
+    cy.checkShownNodeWithTextSelected(reportName, 2, true);
+    cy.checkShownNodeWithTextSelected(reportName, 1, false);
+    cy.get('[data-cy-nav-tab]').eq(2).click();
+    reportName = UPLOADED_REPORT_NAMES[0];
+    cy.checkShownNodeWithTextSelected(reportName, 2, true);
+    cy.checkShownNodeWithTextSelected(reportName, 1, false);
+  })
 });

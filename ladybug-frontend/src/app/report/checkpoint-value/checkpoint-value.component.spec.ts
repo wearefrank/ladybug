@@ -1,18 +1,18 @@
 import { ComponentFixture, fakeAsync, flush, TestBed } from '@angular/core/testing';
 
-import { CheckpointValueComponent, PartialCheckpoint } from './checkpoint-value.component';
+import { CheckpointValueComponent } from './checkpoint-value.component';
 import { Observable, Subject, Subscription } from 'rxjs';
-import { PartialReport } from '../report.component';
 import { StubStrategy } from '../../shared/enums/stub-strategy';
 import { ReportButtonsState } from '../report-buttons/report-buttons';
 import { TestResult } from '../../shared/interfaces/test-result';
 import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { HierarchicalCheckpoint, HierarchicalReport } from '../../shared/interfaces/hierarchical-report';
 
 describe('CheckpointValue', () => {
   let component: CheckpointValueComponent;
   let fixture: ComponentFixture<CheckpointValueComponent>;
-  let originalValueSubject: Subject<PartialCheckpoint> | undefined;
+  let originalValueSubject: Subject<HierarchicalCheckpoint> | undefined;
   let saveDoneSubject: Subject<void> | undefined;
   let nodeValueStateSpy: jasmine.Spy | undefined;
   let buttonState: ReportButtonsState | undefined;
@@ -27,7 +27,7 @@ describe('CheckpointValue', () => {
 
     fixture = TestBed.createComponent(CheckpointValueComponent);
     component = fixture.componentInstance;
-    originalValueSubject = new Subject<PartialCheckpoint>();
+    originalValueSubject = new Subject<HierarchicalCheckpoint>();
     saveDoneSubject = new Subject<void>();
     nodeValueStateSpy = spyOn(component.nodeValueState, 'emit');
     component.originalCheckpoint$ = originalValueSubject;
@@ -176,7 +176,7 @@ describe('CheckpointValue', () => {
 
   it('When the checkpoint-s report is in a CRUD storage then the emitted events indicate not read-only', fakeAsync(() => {
     let checkpoint = getPartialCheckpoint('Some value');
-    checkpoint.parentReport.crudStorage = true;
+    checkpoint.report.crudStorage = true;
     originalValueSubject!.next(checkpoint);
     flush();
     expect(nodeValueStateSpy?.calls.mostRecent().args[0].isReadOnly).toEqual(false);
@@ -189,7 +189,7 @@ describe('CheckpointValue', () => {
 
   it('When the checkpoint-s report is not in a CRUD storage then the emitted events indicate read-only', fakeAsync(() => {
     let checkpoint = getPartialCheckpoint('Some value');
-    checkpoint.parentReport.crudStorage = false;
+    checkpoint.report.crudStorage = false;
     originalValueSubject!.next(checkpoint);
     flush();
     expect(nodeValueStateSpy?.calls.mostRecent().args[0].isReadOnly).toEqual(true);
@@ -215,36 +215,44 @@ describe('CheckpointValue', () => {
   }
 });
 
-function getPartialCheckpoint(message: string | null): PartialCheckpoint {
-  const parentSeed = {
+function getPartialCheckpoint(message: string | null): HierarchicalCheckpoint {
+  const report: HierarchicalReport = {
     name: 'My name',
+    children: [],
     description: null,
     path: null,
-    transformation: null,
-    variables: 'not applicable, have to fix type mismatch',
-    rerunnable: true,
-    xml: 'dummy xml',
-    crudStorage: true,
-    // Does not have to be a stub strategy known by the FF!.
     stubStrategy: 'Some stub strategy',
-    correlationId: '1',
-    estimatedMemoryUsage: 5,
+    linkMethod: 'Some link method',
+    transformation: null,
+    storageId: 0,
     storageName: 'My storage',
+    crudStorage: true,
+    estimatedMemoryUsage: 5,
+    correlationId: '1',
+    variables: {},
+    xml: 'dummy xml',
+    checkpointsFromView: null,
+    startTime: 0,
   };
-  const parent: PartialReport = { ...parentSeed };
-  const result = {
-    index: 0,
-    message,
-    stubbed: false,
-    preTruncatedMessageLength: message === null ? 0 : message.length,
-    // Use report level stub strategy
-    stub: StubStrategy.checkpointIndex2Stub(0),
-    parentReport: parent,
+  report.children!.push({
     name: 'Some name',
-    threadName: 'Some thread name',
-    typeAsString: 'string',
+    children: null,
+    message,
+    encoding: '',
+    messageContext: null,
+    type: 1,
     level: 1,
+    stub: StubStrategy.checkpointIndex2Stub(0),
+    stubbed: false,
+    stubNotFound: null,
+    preTruncatedMessageLength: message === null ? 0 : message.length,
+    typeAsString: 'string',
+    threadName: 'Some thread name',
+    sourceClassName: 'Some source class name',
+    messageClassName: 'Some message class name',
+    id: 0,
     uid: '0#0',
-  };
-  return { ...result };
+    report,
+  });
+  return report.children![0];
 }

@@ -15,41 +15,18 @@ describe('About opened reports', () => {
     cy.initializeApp();
   });
 
-  it('When we open multiple reports simultaneously from the table then they appear all in the tree', () => {
-    cy.enableShowMultipleInDebugTree();
+  it('When multiple reports are selected and open selected pressed then only warning', () => {
+    cy.getDebugTableRows().should('have.length', 2);
+    cy.clickRowInTable(0);
+    cy.checkFileTreeLength(1);
+    cy.clickRowInTable(1);
+    cy.checkFileTreeLength(1);
+    cy.get('[data-cy-debug-tree="close"]').click();
     cy.get('[data-cy-debug="selectAll"]').click();
     cy.get('[data-cy-debug="openSelected"]').click();
-    // Each of the two reports has three lines.
-    cy.checkFileTreeLength(2);
-    cy.get('[data-cy-debug-tree="root"] app-tree-item > div').should('contain.text', 'Simple report');
-    cy.get('[data-cy-debug-tree="root"] app-tree-item > div > div:contains(Simple report)')
-      .first()
-      .selectIfNotSelected();
-    cy.get('[data-cy-debug-tree="root"] > app-tree-item .item-name')
-      .should('contain.text', 'Another simple report')
-      .eq(0)
-      .click();
-    cy.get('[data-cy-debug-tree="closeAll"]').click();
-    cy.get('[data-cy-debug-tree="root"] app-tree-item').should('not.exist');
-  });
-
-  it('When we open reports sequentially with multiple allowed in the debug tree then they appear next to each other', () => {
-    cy.enableShowMultipleInDebugTree();
-    cy.getDebugTableRows().find('td:contains(Simple report)').first().click();
-    cy.checkFileTreeLength(1);
-    cy.getDebugTableRows().find('td:contains("Another simple report")').first().click();
-    cy.checkFileTreeLength(2);
-    // Check sequence of opened reports. We expect "Simple report" first, then "Another simple report".
-    cy.get('[data-cy-debug-tree="root"] > app-tree-item:nth-child(1) > div > .sft-item > .item-name').should(
-      'contain.text',
-      'Simple report',
-    );
-    cy.get('[data-cy-debug-tree="root"] > app-tree-item:nth-child(2) > div > .sft-item > .item-name')
-      .eq(0)
-      .should('contain.text', 'Another simple report');
-    cy.get('[data-cy-debug-tree="closeAll"]').click();
-    cy.get('[data-cy-debug-tree="root"] app-tree-item').should('not.exist');
-  });
+    cy.contains('You can open only one report at a time!');
+    cy.checkFileTreeLength(0);
+  })
 
   it('When we collapse a parent checkpoint then the child becomes invisible', () => {
     cy.createReportWithInfopoint();

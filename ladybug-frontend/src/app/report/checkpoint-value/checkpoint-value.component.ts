@@ -7,36 +7,14 @@ import {
   NodeValueLabels,
   ReportAlertMessage2Component,
 } from '../report-alert-message2/report-alert-message2.component';
-import { NodeValueState, PartialReport, UpdateNode } from '../report.component';
 import { ButtonCommand, DownloadOptions, ReportButtons, ReportButtonsState } from '../report-buttons/report-buttons';
 import { StubStrategy } from '../../shared/enums/stub-strategy';
 import { TestResult } from '../../shared/interfaces/test-result';
 import { CheckpointMetadataTable } from '../checkpoint-metadata-table/checkpoint-metadata-table';
 import { MessagecontextTableComponent } from '../../shared/components/messagecontext-table/messagecontext-table.component';
-import { Checkpoint } from '../../shared/interfaces/checkpoint';
-import { prettify } from '../report.component';
+import { NodeValueState, UpdateNode, prettify } from '../../shared/classes/report-shared-strategy';
 import { UpdateCheckpoint, UpdateReport } from 'src/app/shared/interfaces/update-report';
-
-export interface PartialCheckpoint {
-  index: number;
-  uid: string;
-  message: string | null;
-  stubbed: boolean;
-  // TODO: Server will not send undefined. Issue https://github.com/wearefrank/ladybug-frontend/issues/1127.
-  encoding?: string | null;
-  // TODO: Server will not send undefined. Issue https://github.com/wearefrank/ladybug-frontend/issues/1127.
-  messageClassName?: string | null;
-  showConverted?: boolean;
-  preTruncatedMessageLength: number;
-  stubNotFound?: string;
-  stub: number;
-  parentReport: PartialReport;
-  name: string;
-  threadName: string;
-  typeAsString: string;
-  level: number;
-  sourceClassName?: number;
-}
+import { HierarchicalCheckpoint } from '../../shared/interfaces/hierarchical-report';
 
 @Component({
   selector: 'app-checkpoint-value',
@@ -57,14 +35,14 @@ export class CheckpointValueComponent implements OnInit, OnDestroy {
   save = output<UpdateNode>();
   downloadRequest = output<DownloadOptions>();
   @Input() height = 0;
-  @Input({ required: true }) originalCheckpoint$!: Observable<PartialCheckpoint | undefined>;
+  @Input({ required: true }) originalCheckpoint$!: Observable<HierarchicalCheckpoint | undefined>;
   @Input({ required: true }) saveDone$!: Observable<void>;
   @Input({ required: true }) rerunResult$!: Observable<TestResult | undefined>;
   @ViewChild(DifferenceModalComponent) saveModal!: DifferenceModalComponent;
   labels: NodeValueLabels | undefined;
   buttonStateSubject = new BehaviorSubject<ReportButtonsState>(CheckpointValueComponent.getDefaultButtonState());
 
-  protected originalCheckpoint: PartialCheckpoint | undefined;
+  protected originalCheckpoint: HierarchicalCheckpoint | undefined;
   protected metadataTableVisible = false;
   protected messageContextTableVisible = false;
   protected editorContentsSubject = new BehaviorSubject<string | undefined>(undefined);
@@ -80,7 +58,7 @@ export class CheckpointValueComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.subscriptions.add(
-      this.originalCheckpoint$.subscribe((value: PartialCheckpoint | undefined) => {
+      this.originalCheckpoint$.subscribe((value: HierarchicalCheckpoint | undefined) => {
         if (value !== undefined) {
           this.newOriginalCheckpoint(value);
         }
@@ -119,6 +97,10 @@ export class CheckpointValueComponent implements OnInit, OnDestroy {
 
   onButton(command: ButtonCommand): void {
     switch (command) {
+      case 'close': {
+        this.button.emit('close');
+        break;
+      }
       case 'makeNull': {
         this.editToNull();
         break;
@@ -181,7 +163,7 @@ export class CheckpointValueComponent implements OnInit, OnDestroy {
     return new DifferencesBuilder()
       .nullableVariable(this.originalCheckpoint.message, this.getEditedRealCheckpointValue(), 'Value', true)
       .nonNullableVariable(
-        this.originalCheckpoint.parentReport.stubStrategy,
+        this.originalCheckpoint.report.stubStrategy,
         this.actualReportStubStrategy,
         'Report level stub strategy',
       )
@@ -207,7 +189,7 @@ export class CheckpointValueComponent implements OnInit, OnDestroy {
       );
     }
     const message: string | null = this.getEditedRealCheckpointValue();
-    const checkpointId = `${this.originalCheckpoint!.index}`;
+    const checkpointId = `${this.originalCheckpoint!.id}`;
     let update: UpdateReport = {};
     const newMessage: boolean = message !== this.originalCheckpoint!.message;
     const newStub = this.actualCheckpointStubStrategy !== this.originalCheckpoint!.stub;
@@ -223,7 +205,7 @@ export class CheckpointValueComponent implements OnInit, OnDestroy {
       }
       update.checkpoints = [checkpointUpdate];
     }
-    if (this.actualReportStubStrategy !== this.originalCheckpoint!.parentReport.stubStrategy) {
+    if (this.actualReportStubStrategy !== this.originalCheckpoint!.report.stubStrategy) {
       update.stubStrategy = this.actualReportStubStrategy;
     }
     this.save.emit({
@@ -234,11 +216,6 @@ export class CheckpointValueComponent implements OnInit, OnDestroy {
 
   protected onDownload(downloadOptions: DownloadOptions): void {
     this.downloadRequest.emit(downloadOptions);
-  }
-
-  // TODO: Issue https://github.com/wearefrank/ladybug-frontend/issues/1127.
-  protected asCheckpoint(p: PartialCheckpoint): Checkpoint {
-    return p as Checkpoint;
   }
 
   protected monacoOptions: Partial<monaco.editor.IStandaloneEditorConstructionOptions> = {
@@ -252,7 +229,7 @@ export class CheckpointValueComponent implements OnInit, OnDestroy {
     wordWrap: 'on',
   };
 
-  private newOriginalCheckpoint(originalCheckpoint: PartialCheckpoint | undefined): void {
+  private newOriginalCheckpoint(originalCheckpoint: HierarchicalCheckpoint | undefined): void {
     if (originalCheckpoint === undefined) {
       throw new Error('CheckpointValueComponent.neworiginalCheckpoint(): Did not expect to receive value undefined');
     }
@@ -265,11 +242,11 @@ export class CheckpointValueComponent implements OnInit, OnDestroy {
     // Do not trust the Monaco editor sends an event for the first text.
     this.actualEditorContents = requestedEditorContents;
     this.actualCheckpointStubStrategy = originalCheckpoint.stub;
-    this.actualReportStubStrategy = originalCheckpoint.parentReport.stubStrategy;
+    this.actualReportStubStrategy = originalCheckpoint.report.stubStrategy;
     this.handleLabelsAndNodeValueState();
     this.editorContentsSubject.next(requestedEditorContents);
     this.originalCheckpointStubStrategySubject.next(originalCheckpoint.stub);
-    this.originalReportStubStrategySubject.next(originalCheckpoint.parentReport.stubStrategy);
+    this.originalReportStubStrategySubject.next(originalCheckpoint.report.stubStrategy);
     this.buttonComponentResetSubject.next();
   }
 
@@ -305,7 +282,7 @@ export class CheckpointValueComponent implements OnInit, OnDestroy {
     // the line endings are converted to LF.
     const isEdited = this.isEdited();
     const editedCheckpointValue = this.getEditedRealCheckpointValue();
-    const isReadOnly = this.originalCheckpoint === undefined ? true : !this.originalCheckpoint.parentReport.crudStorage;
+    const isReadOnly = this.originalCheckpoint === undefined ? true : !this.originalCheckpoint.report.crudStorage;
     this.labels = {
       isReadOnly,
       isEdited,
@@ -321,12 +298,14 @@ export class CheckpointValueComponent implements OnInit, OnDestroy {
         this.originalCheckpoint.message,
         this.originalCheckpoint.preTruncatedMessageLength,
       ),
-      stubNotFound: this.originalCheckpoint.stubNotFound,
+      stubNotFound: this.originalCheckpoint.stubNotFound ?? undefined,
     };
     this.nodeValueState.emit({
       isReadOnly,
       isEdited,
-      storageId: this.originalCheckpoint?.parentReport.storageId,
+      storageId: this.originalCheckpoint?.report.storageId,
+      storageName: this.originalCheckpoint?.report.storageName,
+      checkpointsFromView: this.originalCheckpoint?.report.checkpointsFromView,
     });
     const saveAllowed = !isReadOnly && isEdited;
     this.buttonStateSubject.next({
@@ -341,8 +320,7 @@ export class CheckpointValueComponent implements OnInit, OnDestroy {
     const isCheckpointEdited =
       this.normalizeLineEndings(editedCheckpointValue) !== this.normalizeLineEndings(this.originalCheckpoint!.message);
     const isCheckpointStubStrategyEdited = this.actualCheckpointStubStrategy !== this.originalCheckpoint!.stub;
-    const isReportStubStrategyEdited =
-      this.actualReportStubStrategy !== this.originalCheckpoint!.parentReport.stubStrategy;
+    const isReportStubStrategyEdited = this.actualReportStubStrategy !== this.originalCheckpoint!.report.stubStrategy;
     return isCheckpointEdited || isCheckpointStubStrategyEdited || isReportStubStrategyEdited;
   }
 

@@ -16,9 +16,6 @@ import { catchError, Subscription } from 'rxjs';
 import { HttpService } from '../../shared/services/http.service';
 import { ErrorHandling } from '../../shared/classes/error-handling.service';
 import { TabService } from '../../shared/services/tab.service';
-import { Report } from '../../shared/interfaces/report';
-import { ReportData } from '../../shared/interfaces/report-data';
-import { View } from '../../shared/interfaces/view';
 import { TestReportsService } from '../test-reports.service';
 import { ToastService } from '../../shared/services/toast.service';
 import { FormsModule } from '@angular/forms';
@@ -36,6 +33,9 @@ import {
 } from '@angular/material/table';
 import { NgClass, NgIf } from '@angular/common';
 import { ClientSettingsService } from 'src/app/shared/services/client.settings.service';
+import { HierarchicalReport } from 'src/app/shared/interfaces/hierarchical-report';
+import { Router } from '@angular/router';
+import { CompareData } from '../../compare/compare-data';
 
 @Component({
   selector: 'app-test-table',
@@ -69,6 +69,7 @@ export class TestTableComponent implements OnInit, OnDestroy, OnChanges, AfterCo
   amountOfSelectedReports = 0;
   protected displayedColumns: string[] = [];
 
+  private router = inject(Router);
   private httpService = inject(HttpService);
   private clientSettingsService = inject(ClientSettingsService);
   private errorHandler = inject(ErrorHandling);
@@ -116,18 +117,20 @@ export class TestTableComponent implements OnInit, OnDestroy, OnChanges, AfterCo
 
   openReport(storageId: number): void {
     this.httpService
-      .getReport(storageId, this.testReportsService.storageName)
+      .getHierarchicalReports([storageId], this.testReportsService.storageName, null)
       .pipe(catchError(this.errorHandler.handleError()))
       .subscribe({
-        next: (report: Report): void => {
-          const reportData: ReportData = {
-            report: report,
-            currentView: {
-              storageName: this.testReportsService.storageName,
-              metadataNames: this.testReportsService.metadataNames,
-            } as View,
-          };
-          this.tabService.openNewTab(reportData);
+        next: (reports: HierarchicalReport[]): void => {
+          // No need to download the same report twice. We cache the report
+          // so the report component can fetch it when it opens.
+          this.tabService.openReportTab(
+            reports[0].storageName,
+            reports[0].storageId,
+            reports[0].name,
+            reports[0],
+            // When report closes return to test tab.
+            'test',
+          );
         },
       });
   }
@@ -153,12 +156,7 @@ export class TestTableComponent implements OnInit, OnDestroy, OnChanges, AfterCo
 
   compareReports(report: TestListItem): void {
     if (report.reranReport) {
-      const tabId: string = this.tabService.createCompareTabId(
-        report.reranReport.originalReport,
-        report.reranReport.runResultReport,
-      );
-      this.tabService.openNewCompareTab({
-        id: tabId,
+      const compareData: CompareData = {
         originalReport: {
           ...report.reranReport.originalReport,
           storageName: this.testReportsService.storageName,
@@ -168,7 +166,16 @@ export class TestTableComponent implements OnInit, OnDestroy, OnChanges, AfterCo
           ...report.reranReport.runResultReport,
           storageName: 'Debug',
         },
-      });
+      };
+      this.tabService.openCompareTab(
+        this.testReportsService.storageName,
+        report.reranReport.originalReport.storageId,
+        this.testReportsService.storageName,
+        report.reranReport.runResultReport.storageId,
+        compareData,
+        // When comparison closes return to test tab
+        'test',
+      );
     }
   }
 
