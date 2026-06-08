@@ -296,4 +296,19 @@
 		</bean>
 	</beans>
 
+	<beans profile="hostAndApplication">
+		<util:list id="metadataNames">
+			<value>storageId</value>
+			<value>endTime</value>
+			<value>duration</value>
+			<value>name</value>
+			<value>correlationId</value>
+			<value>status</value>
+			<value>numberOfCheckpoints</value>
+			<value>estimatedMemoryUsage</value>
+			<value>storageSize</value>
+			<value>host</value>
+			<value>application</value>
+		</util:list>
+	</beans>
 </beans>

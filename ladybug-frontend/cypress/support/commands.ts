@@ -151,6 +151,8 @@ declare global {
       checkHostOfDebugTableRow(index: number, expected: string): Chainable;
 
       checkApplicationOfDebugTableRow(index: number, expected: string): Chainable;
+
+      checkNoHostAndNoApplication(rowIndex: number): Chainable;
     }
   }
 }
@@ -650,6 +652,11 @@ Cypress.Commands.add('checkHostOfDebugTableRow' as keyof Chainable, (index: numb
 
 Cypress.Commands.add('checkApplicationOfDebugTableRow' as keyof Chainable, (index: number, expected: string): void => {
   cy.getDebugTableRows().eq(index).find('td').eq(APPLICATION_COLUMN).should('contain.text', expected);
+})
+
+Cypress.Commands.add('checkNoHostAndNoApplication' as keyof Chainable, (rowIndex: number) => {
+  cy.getDebugTableRows().eq(rowIndex).find('td').eq(HOST_COLUMN).should('not.exist');
+  cy.getDebugTableRows().eq(rowIndex).find('td').eq(APPLICATION_COLUMN).should('not.exist');
 })
 
 function awaitLoadingSpinner(): void {

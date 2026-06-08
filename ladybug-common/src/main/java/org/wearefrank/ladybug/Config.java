@@ -234,8 +234,11 @@ public class Config {
 		metadataNames.add("numberOfCheckpoints");
 		metadataNames.add("estimatedMemoryUsage");
 		metadataNames.add("storageSize");
-		metadataNames.add("host");
-		metadataNames.add("application");
+		// "host" and "application" are omitted here. Otherwise
+		// all views that use this default would show the host and
+		// the application, requiring everyone's configurations
+		// to be updated for a feature meant for a specific
+		// customer.
 		return metadataNames;
 	}
 
