@@ -259,6 +259,8 @@ public class Config {
 	@DefaultBean
 	@Bean
 	@Scope("singleton")
+	// ladybug-test-webapp and the Frank!Framework have their own implementation
+	// that supersede this default.
 	String xsltResource() {
 		return "ladybug/default.xslt";
 	}
