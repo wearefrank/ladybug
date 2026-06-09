@@ -129,11 +129,6 @@ export class TestComponent implements OnInit, OnDestroy {
   }
 
   run(report: TestListItem): void {
-    if (!report.rerunnable) {
-      this.toastService.showWarning('This report cannot be rerun');
-      return;
-    }
-
     if (this.settingsService.isGeneratorEnabled()) {
       this.httpService
         .runReport(this.testReportsService.storageName, report.storageId)
@@ -157,9 +152,7 @@ export class TestComponent implements OnInit, OnDestroy {
 
   runSelected(): void {
     for (const report of this.getSelectedReports()) {
-      //if (report.rerunnable) {
-        this.run(report);
-      //}
+      this.run(report);
     }
   }
 

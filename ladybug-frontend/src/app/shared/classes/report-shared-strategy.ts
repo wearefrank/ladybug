@@ -183,6 +183,10 @@ export class ReportSharedStrategy {
   }
 
   private copyReport(): void {
+    if (!this.nodeValueState?.rerunnable) {
+      this.toastService.showWarning('This report cannot be copied to test tab');
+      return;
+    }
     if (this.nodeValueState?.storageId === undefined) {
       throw new Error('Cannot copy report because ReportComponent does not have the storageId');
     }
