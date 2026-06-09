@@ -7,4 +7,5 @@ export interface TestListItem extends BaseReport {
   error?: string;
   variablesCsv?: string;
   variables: Record<string, string>;
+  rerunnable: boolean;
 }

@@ -303,6 +303,7 @@ export class CheckpointValueComponent implements OnInit, OnDestroy {
     this.nodeValueState.emit({
       isReadOnly,
       isEdited,
+      rerunnable: this.originalCheckpoint?.report.rerunnable,
       storageId: this.originalCheckpoint?.report.storageId,
       storageName: this.originalCheckpoint?.report.storageName,
       checkpointsFromView: this.originalCheckpoint?.report.checkpointsFromView,

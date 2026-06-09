@@ -37,6 +37,7 @@ public class ShownReport extends TreeNode implements Serializable {
 	private @Setter @Getter long estimatedMemoryUsage;
 	private @Setter @Getter String correlationId;
 	private @Setter @Getter Map<String, String> variables;
+	private @Setter @Getter boolean rerunnable;
 	private @Setter @Getter long startTime;
 
 	public void validate() {
