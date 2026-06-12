@@ -1,10 +1,15 @@
 import { Injectable } from '@angular/core';
 import { ReplaySubject, Subject } from 'rxjs';
 import { debugOrTest, KEY_COMPARE, KEY_DEBUG, KEY_REPORT, KEY_TEST, routeKind, Tab } from '../interfaces/tab';
-import { ActivatedRouteSnapshot, DetachedRouteHandle } from '@angular/router';
+import { ActivatedRouteSnapshot, DetachedRouteHandle, Params } from '@angular/router';
 import { isNumber } from '../../shared/util/util';
 import { CompareData } from '../../compare/compare-data';
 import { HierarchicalReport } from '../interfaces/hierarchical-report';
+
+export interface FilterFromUrl {
+  metadataName: string;
+  value: string;
+}
 
 @Injectable({
   providedIn: 'root',
@@ -126,7 +131,10 @@ export class TabService {
     }
     const kind = routePath.split('/')[0];
     switch (kind) {
-      case KEY_DEBUG:
+      case KEY_DEBUG: {
+        const filters: FilterFromUrl[] = this.routeGetFilters(route);
+        return `${KEY_DEBUG}${this.encodeFiltersForKey(filters)}`;
+      }
       case KEY_TEST: {
         return kind;
       }
@@ -172,6 +180,27 @@ export class TabService {
     return route.paramMap.get(parameter) as string;
   }
 
+  routeGetFilters(route: ActivatedRouteSnapshot): FilterFromUrl[] {
+    const FILTER_PREFIX = 'filter-';
+    const filterParameters: string[] = [];
+    const queryParameters: Params = route.queryParams;
+    for (const [k, _] of Object.entries(queryParameters)) {
+      if (k.slice(0, FILTER_PREFIX.length) === FILTER_PREFIX) {
+        filterParameters.push(k);
+      }
+    }
+    filterParameters.sort();
+    const result: FilterFromUrl[] = [];
+    for (const s of filterParameters) {
+      const rawValue: string = queryParameters[s] as string;
+      result.push({
+        metadataName: s.slice(FILTER_PREFIX.length),
+        value: decodeURIComponent(rawValue),
+      });
+    }
+    return result;
+  }
+
   findTab(key: string): Tab | undefined {
     const result: Tab[] = this.tabs.filter((t) => t.key === key);
     if (result.length === 0) {
@@ -196,5 +225,16 @@ export class TabService {
 
   private routeParam(route: ActivatedRouteSnapshot, parameter: string): string {
     return route.params[parameter] || '';
+  }
+
+  private encodeFiltersForKey(filters: FilterFromUrl[]): string {
+    if (filters.length === 0) {
+      return '';
+    }
+    return `?${filters.map((f) => this.encodeFilterItemForKey(f)).join('&')}`;
+  }
+
+  private encodeFilterItemForKey(f: FilterFromUrl): string {
+    return `${f.metadataName}=${encodeURIComponent(f.value)}`;
   }
 }
