@@ -11,17 +11,18 @@ export interface FilterFromUrl {
   value: string;
 }
 
+export interface HtmlNavigation {
+  path: string[];
+  queryParameters?: Record<string, string>;
+}
+
+const FILTER_PREFIX = 'filter-';
+
 @Injectable({
   providedIn: 'root',
 })
 export class TabService {
   private tabs: Tab[] = [
-    {
-      kind: KEY_DEBUG,
-      key: KEY_DEBUG,
-      title: 'Debug',
-      returnToKey: KEY_DEBUG,
-    },
     {
       kind: KEY_TEST,
       key: KEY_TEST,
@@ -50,6 +51,25 @@ export class TabService {
       this.reportCache.delete(key);
     }
     this.refreshSubject.next(navigation);
+  }
+
+  visitDebugTab(route: ActivatedRouteSnapshot): void {
+    const key = this.getKey(route);
+    let debugTab: Tab | undefined = this.findDebugTab();
+    if (debugTab === undefined) {
+      debugTab = {
+        kind: KEY_DEBUG,
+        key,
+        title: 'Debug',
+        returnToKey: KEY_DEBUG,
+      };
+      this.tabs.unshift(debugTab);
+    }
+    if (debugTab.key !== key) {
+      debugTab.handle = undefined;
+    }
+    debugTab.key = key;
+    this.refreshSubject.next(debugTab.key);
   }
 
   openReportTab(
@@ -181,7 +201,6 @@ export class TabService {
   }
 
   routeGetFilters(route: ActivatedRouteSnapshot): FilterFromUrl[] {
-    const FILTER_PREFIX = 'filter-';
     const filterParameters: string[] = [];
     const queryParameters: Params = route.queryParams;
     for (const [k, _] of Object.entries(queryParameters)) {
@@ -192,10 +211,10 @@ export class TabService {
     filterParameters.sort();
     const result: FilterFromUrl[] = [];
     for (const s of filterParameters) {
-      const rawValue: string = queryParameters[s] as string;
       result.push({
         metadataName: s.slice(FILTER_PREFIX.length),
-        value: decodeURIComponent(rawValue),
+        // No need to decode. Angular should have done so.
+        value: queryParameters[s],
       });
     }
     return result;
@@ -210,6 +229,41 @@ export class TabService {
     } else {
       throw new Error(`Multiple tabs found for key ${key}`);
     }
+  }
+
+  keyToNavigation(key: string): HtmlNavigation {
+    const querySplit: string[] = key.split('?');
+    if (querySplit.length === 1) {
+      return {
+        path: this.getPathComponents(querySplit[0]),
+      };
+    } else if (querySplit.length === 2) {
+      return {
+        path: this.getPathComponents(querySplit[0]),
+        queryParameters: this.getQueryObject(querySplit[1]),
+      };
+    } else {
+      throw new Error(`Could not convert key to Navigation: ${key}`);
+    }
+  }
+
+  private getPathComponents(path: string): string[] {
+    return path.split('/');
+  }
+
+  private getQueryObject(queryString: string): Record<string, string> {
+    const result: Record<string, string> = {};
+    const queryComponents = queryString.split('&');
+    for (const queryComponent of queryComponents) {
+      const keyAndValue: string[] = queryComponent.split('=');
+      if (keyAndValue.length !== 2) {
+        throw new Error(`Invalid query string component: ${queryComponent}`);
+      }
+      const key = keyAndValue[0];
+      const value = decodeURIComponent(keyAndValue[1]);
+      result[key] = value;
+    }
+    return result;
   }
 
   private addTab(kind: routeKind, key: string, title?: string, returnToKey?: debugOrTest): Tab {
@@ -235,6 +289,17 @@ export class TabService {
   }
 
   private encodeFilterItemForKey(f: FilterFromUrl): string {
-    return `${f.metadataName}=${encodeURIComponent(f.value)}`;
+    return `${FILTER_PREFIX}${f.metadataName}=${encodeURIComponent(f.value)}`;
+  }
+
+  private findDebugTab(): Tab | undefined {
+    const result: Tab[] = this.tabs.filter((t) => t.kind === KEY_DEBUG);
+    if (result.length === 0) {
+      return undefined;
+    } else if (result.length === 1) {
+      return result[0];
+    } else {
+      throw new Error('Expected to find exactly one debug tab');
+    }
   }
 }

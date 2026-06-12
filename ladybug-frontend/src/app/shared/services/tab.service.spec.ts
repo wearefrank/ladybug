@@ -46,7 +46,7 @@ describe('TabService', () => {
     expect(filters[0].value).toEqual('Application X');
     expect(filters[1].metadataName).toEqual('host');
     expect(filters[1].value).toEqual('Host A');
-    expect(service.getKey(route)).toEqual(`${KEY_DEBUG}?application=Application%20X&host=Host%20A`);
+    expect(service.getKey(route)).toEqual(`${KEY_DEBUG}?filter-application=Application%20X&filter-host=Host%20A`);
   });
 
   it('When activated route has filters in different order then same filters and same key', () => {
@@ -61,7 +61,7 @@ describe('TabService', () => {
     expect(filters[0].value).toEqual('Application X');
     expect(filters[1].metadataName).toEqual('host');
     expect(filters[1].value).toEqual('Host A');
-    expect(service.getKey(route)).toEqual(`${KEY_DEBUG}?application=Application%20X&host=Host%20A`);
+    expect(service.getKey(route)).toEqual(`${KEY_DEBUG}?filter-application=Application%20X&filter-host=Host%20A`);
   });
 });
 
@@ -77,12 +77,16 @@ function getDefaultActivatedRouteSnapshotWithPath(path: string): ActivatedRouteS
     routeConfig: {
       path,
     },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     root: {} as any,
     parent: null,
     firstChild: null,
     children: [],
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     pathFromRoot: [] as any,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     paramMap: new Map() as any,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     queryParamMap: new Map() as any,
     toString: () => '/products/42',
     title: '',

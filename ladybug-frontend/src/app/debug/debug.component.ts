@@ -7,6 +7,8 @@ import { catchError } from 'rxjs';
 import { ErrorHandling } from '../shared/classes/error-handling.service';
 import { DebugReportComponent } from '../report/debug-report.component/debug-report.component';
 import { HierarchicalReport } from '../shared/interfaces/hierarchical-report';
+import { ActivatedRoute } from '@angular/router';
+import { FilterFromUrl, TabService } from '../shared/services/tab.service';
 
 @Component({
   selector: 'app-debug',
@@ -20,12 +22,21 @@ export class DebugComponent implements OnInit {
   currentView?: View;
   views?: View[];
 
+  protected urlFilters: FilterFromUrl[] = [];
   private httpService = inject(HttpService);
   private toastService = inject(ToastService);
   private errorHandler = inject(ErrorHandling);
+  private tabService = inject(TabService);
+  private route = inject(ActivatedRoute);
 
   ngOnInit(): void {
+    this.urlFilters = this.tabService.routeGetFilters(this.route.snapshot);
+    console.log('Initialized URL filters from route:');
+    for (const urlFilter of this.urlFilters) {
+      console.log(`  ${urlFilter.metadataName}=${urlFilter.value}`);
+    }
     this.retrieveViews();
+    this.tabService.visitDebugTab(this.route.snapshot);
   }
 
   protected addReportToTree(report: HierarchicalReport): void {

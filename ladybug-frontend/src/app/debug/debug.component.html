@@ -1,4 +1,13 @@
 <div class="box">
+  Here are the filters
+  <table>
+    @for (urlFilter of urlFilters; track urlFilter.metadataName) {
+      <tr>
+        <td [attr.data-cy-debug-url-filter-key]="urlFilter.metadataName">{{ urlFilter.metadataName }}</td>
+        <td [attr.data-cy-debug-url-filter-value]="urlFilter.value">{{ urlFilter.value }}</td>
+      </tr>
+    }
+  </table>
   <div class="row top">
     <div class="w-100 h-100">
       @if (views && currentView) {
