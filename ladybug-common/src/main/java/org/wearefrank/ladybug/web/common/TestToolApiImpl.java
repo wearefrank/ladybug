@@ -172,6 +172,8 @@ public class TestToolApiImpl implements InitializingBean {
 			map.put("defaultView", view == views.getDefaultView());
 			map.put("metadataNames", view.getMetadataNames());
 			map.put("metadataLabels", view.getMetadataLabels());
+			// Expose the view's metadata filter so the frontend can apply it to the report list.
+			map.put("metadataFilter", view.getMetadataFilter());
 			map.put("crudStorage", view.getDebugStorage() instanceof CrudStorage);
 			map.put("nodeLinkStrategy", view.getNodeLinkStrategy());
 			map.put("hasCheckpointMatchers", view.hasCheckpointMatchers());
