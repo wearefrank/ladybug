@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 
-import { FilterFromUrl, TabService } from './tab.service';
+import { FilterFromUrl, TabService, HtmlNavigation } from './tab.service';
 import { KEY_DEBUG } from '../interfaces/tab';
 import { ActivatedRouteSnapshot, UrlSegment } from '@angular/router';
 
@@ -32,6 +32,9 @@ describe('TabService', () => {
     const filters: FilterFromUrl[] = service.routeGetFilters(route);
     expect(filters.length).toEqual(0);
     expect(service.getKey(route)).toEqual(`${KEY_DEBUG}`);
+    const navigation: HtmlNavigation = service.keyToNavigation(KEY_DEBUG);
+    expect(navigation.path).toEqual([KEY_DEBUG]);
+    expect(navigation.queryParameters).toEqual(undefined);
   });
 
   it('When activated route has filters then parsed and added to key', () => {
@@ -47,6 +50,12 @@ describe('TabService', () => {
     expect(filters[1].metadataName).toEqual('host');
     expect(filters[1].value).toEqual('Host A');
     expect(service.getKey(route)).toEqual(`${KEY_DEBUG}?filter-application=Application%20X&filter-host=Host%20A`);
+    const navigation: HtmlNavigation = service.keyToNavigation(service.getKey(route));
+    expect(navigation.path).toEqual([KEY_DEBUG]);
+    expect(navigation.queryParameters).toEqual({
+      'filter-application': 'Application X',
+      'filter-host': 'Host A',
+    });
   });
 
   it('When activated route has filters in different order then same filters and same key', () => {
@@ -62,6 +71,12 @@ describe('TabService', () => {
     expect(filters[1].metadataName).toEqual('host');
     expect(filters[1].value).toEqual('Host A');
     expect(service.getKey(route)).toEqual(`${KEY_DEBUG}?filter-application=Application%20X&filter-host=Host%20A`);
+    const navigation: HtmlNavigation = service.keyToNavigation(service.getKey(route));
+    expect(navigation.path).toEqual([KEY_DEBUG]);
+    expect(navigation.queryParameters).toEqual({
+      'filter-application': 'Application X',
+      'filter-host': 'Host A',
+    });
   });
 });
 
