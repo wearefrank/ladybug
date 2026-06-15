@@ -141,10 +141,16 @@
 	if (reportName.equals(createReportAction)) {
 		ComplexReports.fillComplexErrorReport(correlationId, reportName, testTool);
 	}
+	// This is meant to test the database storage.
+	// Do not expect realistic values from it in the debug table.
 	reportNames.add(reportName = "Add report to database storage");
 	if (reportName.equals(createReportAction)) {
 		Report report = new Report();
 		report.setName("Report for database storage");
+		// Do not leave null because ShownReport.validate() should return true.
+		report.setCorrelationId(correlationId);
+		report.setStubStrategy("Some stub strategy");
+		report.setLinkMethod("Some link method");
 		((CrudStorage)testTool.getStorage("databaseStorage")).store(report);
 	}
 	reportNames.add(reportName = "Report with message context");
