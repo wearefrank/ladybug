@@ -8,7 +8,7 @@ import { TableSettings } from '../../shared/interfaces/table-settings';
 import { catchError, Subscription } from 'rxjs';
 import { Report } from '../../shared/interfaces/report';
 import { ToastService } from '../../shared/services/toast.service';
-import { TabService } from '../../shared/services/tab.service';
+import { FilterFromUrl, TabService } from '../../shared/services/tab.service';
 import { AppVariablesService } from '../../shared/services/app.variables.service';
 import { FilterService } from '../filter-side-drawer/filter.service';
 import { TableCellShortenerPipe } from '../../shared/pipes/table-cell-shortener.pipe';
@@ -39,6 +39,7 @@ import { ClientSettingsService } from 'src/app/shared/services/client.settings.s
 import { HierarchicalReport } from '../../shared/interfaces/hierarchical-report';
 import { Router } from '@angular/router';
 import { CompareData } from '../../compare/compare-data';
+import { FilterCombineStrategy, Request } from './filter-combine-strategy';
 
 @Component({
   selector: 'app-table',
@@ -77,6 +78,7 @@ export class TableComponent implements OnInit, OnDestroy {
 
   @Input({ required: true }) views!: View[];
   @Input({ required: true }) currentView!: View;
+  @Input() filtersFromUrl?: FilterFromUrl[];
   @Output() viewChange: EventEmitter<View> = new EventEmitter<View>();
   @Output() openReportEvent: EventEmitter<HierarchicalReport> = new EventEmitter<HierarchicalReport>();
 
@@ -134,11 +136,16 @@ export class TableComponent implements OnInit, OnDestroy {
   private filterService = inject(FilterService);
   private errorHandler = inject(ErrorHandling);
   private debugTab = inject(DebugTabService);
+  private filterCombineStrategy = inject(FilterCombineStrategy);
 
   private isLoadingData = false;
 
   ngOnInit(): void {
-    this.filterService.setMetadataTypes(this.currentView.metadataTypes);
+    this.filterCombineStrategy.setFiltersFromUrl(this.filtersFromUrl === undefined ? [] : this.filtersFromUrl);
+    this.filterCombineStrategy.setMetadataNamesOfView(this.currentView.metadataLabels);
+    this.filterService.setMetadataTypes(
+      this.filterCombineStrategy.getTypesOfShownMetadataLabels(this.currentView.metadataTypes),
+    );
     this.subscribeToObservables();
     this.loadData();
   }
@@ -220,8 +227,17 @@ export class TableComponent implements OnInit, OnDestroy {
   }
 
   retrieveRecords(showToast = true): void {
+    const request: Request = this.filterCombineStrategy.getHttpRequestParameters(
+      [...this.tableSettings.currentFilters.keys()],
+      [...this.tableSettings.currentFilters.values()],
+    );
     this.httpService
-      .getMetadataReports(this.tableSettings, this.currentView)
+      .getMetadataReports(this.currentView, {
+        limit: this.tableSettings.displayAmount,
+        filterHeader: [...request.filterNames],
+        filter: [...request.filterValues],
+        metadataNames: [...request.metadataNames],
+      })
       .pipe(catchError(this.errorHandler.handleError()))
       .subscribe({
         next: (value: Report[]) => {
@@ -238,8 +254,12 @@ export class TableComponent implements OnInit, OnDestroy {
 
   changeView(view: View): void {
     this.currentView = view;
+    this.filterCombineStrategy.setMetadataNamesOfView(view.metadataLabels);
     this.loadData();
-    this.filterService.setMetadataLabels(this.currentView.metadataNames);
+    this.filterService.setMetadataLabels(this.filterCombineStrategy.getShownMetadataLabels());
+    this.filterService.setMetadataTypes(
+      this.filterCombineStrategy.getTypesOfShownMetadataLabels(this.currentView.metadataTypes),
+    );
     this.viewChange.next(this.currentView);
     this.tableSettings.showFilter = false;
     this.filterService.setShowFilter(this.tableSettings.showFilter);
@@ -310,8 +330,10 @@ export class TableComponent implements OnInit, OnDestroy {
   }
 
   toggleFilter(): void {
-    this.filterService.setMetadataLabels(this.currentView.metadataNames);
-    this.filterService.setMetadataTypes(this.currentView.metadataTypes);
+    this.filterService.setMetadataLabels(this.filterCombineStrategy.getShownMetadataLabels());
+    this.filterService.setMetadataTypes(
+      this.filterCombineStrategy.getTypesOfShownMetadataLabels(this.currentView.metadataTypes),
+    );
     this.tableSettings.showFilter = !this.tableSettings.showFilter;
     this.filterService.setShowFilter(this.tableSettings.showFilter);
     this.filterService.setCurrentRecords(this.tableSettings.uniqueValues);
@@ -522,20 +544,31 @@ export class TableComponent implements OnInit, OnDestroy {
   }
 
   downloadReportsAsCsv(): void {
-    this.httpService.getMetadataReports(this.tableSettings, this.currentView).subscribe({
-      next: (reports) => {
-        if (!reports?.length) {
-          this.toastService.showWarning('No data to export.');
-          return;
-        }
+    const request: Request = this.filterCombineStrategy.getHttpRequestParameters(
+      [...this.tableSettings.currentFilters.keys()],
+      [...this.tableSettings.currentFilters.values()],
+    );
+    this.httpService
+      .getMetadataReports(this.currentView, {
+        limit: this.tableSettings.displayAmount,
+        filterHeader: [...request.filterNames],
+        filter: [...request.filterValues],
+        metadataNames: [...request.metadataNames],
+      })
+      .subscribe({
+        next: (reports) => {
+          if (!reports?.length) {
+            this.toastService.showWarning('No data to export.');
+            return;
+          }
 
-        const csv = this.jsonToCsv(reports);
-        this.triggerCsvDownload(csv, 'export.csv');
-      },
-      error: () => {
-        this.toastService.showWarning('Failed to fetch data.');
-      },
-    });
+          const csv = this.jsonToCsv(reports);
+          this.triggerCsvDownload(csv, 'export.csv');
+        },
+        error: () => {
+          this.toastService.showWarning('Failed to fetch data.');
+        },
+      });
   }
 
   private triggerCsvDownload(csv: string, filename: string): void {

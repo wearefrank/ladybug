@@ -4,6 +4,7 @@ import { TableComponent } from './table.component';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { View } from '../../shared/interfaces/view';
 import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
+import { FilterCombineStrategy } from './filter-combine-strategy';
 
 describe('TableComponent', () => {
   let component: TableComponent;
@@ -12,7 +13,7 @@ describe('TableComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [TableComponent],
-      providers: [provideHttpClient(withInterceptorsFromDi()), provideHttpClientTesting()],
+      providers: [provideHttpClient(withInterceptorsFromDi()), provideHttpClientTesting(), FilterCombineStrategy],
     }).compileComponents();
   });
 
@@ -22,8 +23,12 @@ describe('TableComponent', () => {
     component.currentView = {
       storageName: 'mockStorage',
       metadataNames: ['mockMetadata'],
+      // TODO: Am I confusing metadataNames and metadataLabels?
+      metadataLabels: ['mockMetadata'],
       metadataTypes: new Map(),
     } as View;
+    // TODO: Pass this to the table component.
+    component.filtersFromUrl = [];
     fixture.detectChanges();
   });
 

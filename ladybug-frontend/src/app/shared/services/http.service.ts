@@ -12,10 +12,16 @@ import { UpdatePathSettings } from '../interfaces/update-path-settings';
 import { TestResult } from '../interfaces/test-result';
 import { UpdateReport } from '../interfaces/update-report';
 import { UpdateReportResponse } from '../interfaces/update-report-response';
-import { TableSettings } from '../interfaces/table-settings';
 import { ClientSettingsService } from './client.settings.service';
 import { HierarchicalCheckpoint, HierarchicalReport } from '../interfaces/hierarchical-report';
 import { isNumber } from '../util/util';
+
+export interface MetadataParameters {
+  limit: number;
+  filterHeader: string[];
+  filter: string[];
+  metadataNames: string[];
+}
 
 @Injectable({
   providedIn: 'root',
@@ -29,13 +35,13 @@ export class HttpService {
     return this.http.get<Record<string, View>>('api/testtool/views').pipe(map((response) => Object.values(response)));
   }
 
-  getMetadataReports(settings: TableSettings, view: View): Observable<Report[]> {
+  getMetadataReports(view: View, params: MetadataParameters): Observable<Report[]> {
     return this.http.get<Report[]>(`api/metadata/${view.storageName}`, {
       params: {
-        limit: settings.displayAmount,
-        filterHeader: [...settings.currentFilters.keys()],
-        filter: [...settings.currentFilters.values()],
-        metadataNames: view.metadataNames,
+        limit: params.limit,
+        filterHeader: params.filterHeader,
+        filter: params.filter,
+        metadataNames: params.metadataNames,
       },
     });
   }
