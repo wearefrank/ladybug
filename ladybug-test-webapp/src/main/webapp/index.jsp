@@ -141,6 +141,12 @@
 	if (reportName.equals(createReportAction)) {
 		ComplexReports.fillComplexErrorReport(correlationId, reportName, testTool);
 	}
+	reportNames.add(reportName = "Add report to database storage");
+	if (reportName.equals(createReportAction)) {
+		Report report = new Report();
+		report.setName("Report for database storage");
+		((CrudStorage)testTool.getStorage("databaseStorage")).store(report);
+	}
 	reportNames.add(reportName = "Report with message context");
 	if (reportName.equals(createReportAction)) {
 		testTool.startpoint(correlationId, null, reportName, "Hello World!");
