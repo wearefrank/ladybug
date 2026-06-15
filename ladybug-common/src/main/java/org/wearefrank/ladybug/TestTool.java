@@ -111,7 +111,6 @@ public class TestTool {
 	private Tracer tracer;
 
 	// The default value is the hostname obtained from the operating system.
-	// Example: "LAPTOP-R1SK28C".
 	private @Getter @Setter String host = null;
 
 	private @Getter @Setter String application = null;
