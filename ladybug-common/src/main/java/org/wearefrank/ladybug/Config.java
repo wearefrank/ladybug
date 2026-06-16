@@ -237,7 +237,9 @@ public class Config {
 		// Metadata names host and application are special because it is decided
 		// dynamically whether these are shown in the table of the debug tab in
 		// the Angular UI. They are here so that these metadata names are present
-		// by default. Then
+		// by default. See interface HostAndApplicationHolder for the logic
+		// that will omit the host and the application from a view when not
+		// relevant.
 		metadataNames.add("host");
 		metadataNames.add("application");
 		return metadataNames;
