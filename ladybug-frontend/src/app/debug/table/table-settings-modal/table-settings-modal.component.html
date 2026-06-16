@@ -17,6 +17,9 @@
           <li class="nav-item">
             <a data-cy-settings="nav-client" [class]="getNavClasses(CLIENT)" (click)="selectNav(CLIENT)">{{ CLIENT }}</a>
           </li>
+          <li class="nav-item">
+            <a data-cy-settings="nav-url" [class]="getNavClasses(URL)" (click)="selectNav(URL)">{{ URL }}</a>
+          </li>
         </ul>
         @if (activeTab === GLOBAL) {
           <div class="form-group" [title]="optionalNotAuthorized()">
@@ -74,6 +77,20 @@
               </label>
             </div>
           </div>
+        }
+        @if (activeTab === URL) {
+          @if (filtersFromUrl) {
+            <table>
+              @for (filter of filtersFromUrl; track filter.metadataName) {
+                <tr>
+                  <td>{{ filter.metadataName }}</td>
+                  <td>{{ filter.value }}</td>
+                </tr>
+              }
+            </table>
+          } @else {
+            No filters supplied through URL
+          }
         }
       </div>
     </div>

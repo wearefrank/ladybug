@@ -12,17 +12,26 @@ export interface Request {
 })
 export class FilterCombineStrategy {
   private metadataNamesOfView?: string[];
+  private metadataLabelsOfView?: string[];
   private filtersFromUrl?: FilterFromUrl[];
   private filtersFromUrlMap: Map<string, string> = new Map<string, string>();
+  private shownMetadataNames?: string[];
+  private shownMetadataLabels?: string[];
+
+  private isInitialized(): boolean {
+    return this.metadataNamesOfView !== undefined && this.filtersFromUrl !== undefined;
+  }
 
   private checkInitialized(): void {
-    if (this.metadataNamesOfView === undefined || this.filtersFromUrl === undefined) {
+    if (!this.isInitialized()) {
       throw new Error('Expected that metadataNamesOfView and filtersFromUrl have been set');
     }
   }
 
-  setMetadataNamesOfView(value: string[]): void {
-    this.metadataNamesOfView = value;
+  setViewInformation(metadataNames: string[], metadataLabels: string[]): void {
+    this.metadataNamesOfView = metadataNames;
+    this.metadataLabelsOfView = metadataLabels;
+    this.update();
   }
 
   setFiltersFromUrl(value: FilterFromUrl[]): void {
@@ -32,18 +41,28 @@ export class FilterCombineStrategy {
       m.set(entry.metadataName, entry.value);
     }
     this.filtersFromUrlMap = m;
+    this.update();
+  }
+
+  getShownMetadataNames(): string[] {
+    this.checkInitialized();
+    return [...this.shownMetadataNames!];
   }
 
   // Only these are expected in the filter drawer
   getShownMetadataLabels(): string[] {
     this.checkInitialized();
-    return this.metadataNamesOfView!.filter((name) => !this.filtersFromUrlMap.has(name));
+    return [...this.shownMetadataLabels!];
   }
 
-  getTypesOfShownMetadataLabels(typesFromView: Map<string, string>): Map<string, string> {
+  getTypesOfShownMetadata(rawTypesFromView: Map<string, string>): Map<string, string> {
     this.checkInitialized();
+    // Workaround because rawTypesFromView is not really a Map.
+    // View.metadataTypes is captured from JSON. That cannot
+    // produce a Map.
+    const typesFromView: Map<string, string> = new Map<string, string>(Object.entries(rawTypesFromView));
     const result = new Map<string, string>();
-    const shownMetadataNames: Set<string> = new Set<string>(this.getShownMetadataLabels());
+    const shownMetadataNames: Set<string> = new Set<string>(this.getShownMetadataNames());
     for (const [key, value] of typesFromView.entries()) {
       if (shownMetadataNames.has(key)) {
         result.set(key, value);
@@ -54,8 +73,8 @@ export class FilterCombineStrategy {
 
   getHttpRequestParameters(userFilterKeys: string[], userFilterValues: string[]): Request {
     this.checkInitialized();
-    const shownMetadataLabels: string[] = [...this.getShownMetadataLabels()];
-    const allowedUserFilterKeys = new Set<string>(shownMetadataLabels);
+    const shownMetadataNames: string[] = [...this.getShownMetadataNames()];
+    const allowedUserFilterKeys = new Set<string>(shownMetadataNames);
     const offensiveUserFilterKeys = userFilterKeys.filter((filter) => !allowedUserFilterKeys.has(filter));
     if (offensiveUserFilterKeys.length > 0) {
       throw new Error(
@@ -66,7 +85,21 @@ export class FilterCombineStrategy {
     return {
       filterNames: [...userFilterKeys, ...urlFilterKeys],
       filterValues: [...userFilterValues, ...this.filtersFromUrl!.map((f) => f.value)],
-      metadataNames: [...shownMetadataLabels, ...urlFilterKeys],
+      metadataNames: [...shownMetadataNames, ...urlFilterKeys],
     };
+  }
+
+  private update(): void {
+    if (this.isInitialized()) {
+      this.shownMetadataNames = this.metadataNamesOfView!.filter((name) => !this.filtersFromUrlMap.has(name));
+      const shownMetadataNamesSet = new Set<string>(this.shownMetadataNames);
+      this.shownMetadataLabels = [];
+      for (let i = 0; i < this.metadataNamesOfView!.length; ++i) {
+        const metadataName = this.metadataNamesOfView![i];
+        if (shownMetadataNamesSet.has(metadataName)) {
+          this.shownMetadataLabels.push(this.metadataLabelsOfView![i]);
+        }
+      }
+    }
   }
 }

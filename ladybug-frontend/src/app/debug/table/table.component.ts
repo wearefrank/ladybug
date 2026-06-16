@@ -136,15 +136,15 @@ export class TableComponent implements OnInit, OnDestroy {
   private filterService = inject(FilterService);
   private errorHandler = inject(ErrorHandling);
   private debugTab = inject(DebugTabService);
-  private filterCombineStrategy = inject(FilterCombineStrategy);
+  public filterCombineStrategy = inject(FilterCombineStrategy);
 
   private isLoadingData = false;
 
   ngOnInit(): void {
     this.filterCombineStrategy.setFiltersFromUrl(this.filtersFromUrl === undefined ? [] : this.filtersFromUrl);
-    this.filterCombineStrategy.setMetadataNamesOfView(this.currentView.metadataLabels);
+    this.filterCombineStrategy.setViewInformation(this.currentView.metadataNames, this.currentView.metadataLabels);
     this.filterService.setMetadataTypes(
-      this.filterCombineStrategy.getTypesOfShownMetadataLabels(this.currentView.metadataTypes),
+      this.filterCombineStrategy.getTypesOfShownMetadata(this.currentView.metadataTypes),
     );
     this.subscribeToObservables();
     this.loadData();
@@ -254,11 +254,11 @@ export class TableComponent implements OnInit, OnDestroy {
 
   changeView(view: View): void {
     this.currentView = view;
-    this.filterCombineStrategy.setMetadataNamesOfView(view.metadataLabels);
+    this.filterCombineStrategy.setViewInformation(view.metadataNames, view.metadataLabels);
     this.loadData();
     this.filterService.setMetadataLabels(this.filterCombineStrategy.getShownMetadataLabels());
     this.filterService.setMetadataTypes(
-      this.filterCombineStrategy.getTypesOfShownMetadataLabels(this.currentView.metadataTypes),
+      this.filterCombineStrategy.getTypesOfShownMetadata(this.currentView.metadataTypes),
     );
     this.viewChange.next(this.currentView);
     this.tableSettings.showFilter = false;
@@ -332,7 +332,7 @@ export class TableComponent implements OnInit, OnDestroy {
   toggleFilter(): void {
     this.filterService.setMetadataLabels(this.filterCombineStrategy.getShownMetadataLabels());
     this.filterService.setMetadataTypes(
-      this.filterCombineStrategy.getTypesOfShownMetadataLabels(this.currentView.metadataTypes),
+      this.filterCombineStrategy.getTypesOfShownMetadata(this.currentView.metadataTypes),
     );
     this.tableSettings.showFilter = !this.tableSettings.showFilter;
     this.filterService.setShowFilter(this.tableSettings.showFilter);
@@ -690,12 +690,8 @@ export class TableComponent implements OnInit, OnDestroy {
     return this.currentView.metadataNames[index];
   }
 
-  getDisplayedColumnNames(labels: string[]): string[] {
-    const names: string[] = ['select'];
-    for (const header of labels) {
-      names.push(this.getMetadataNameFromHeader(header));
-    }
-    return names;
+  getDisplayedColumnNames(): string[] {
+    return ['select', ...this.filterCombineStrategy.getShownMetadataNames()];
   }
 
   processCustomReportAction(): void {

@@ -139,9 +139,10 @@
           </td>
         </ng-container>
 
-        @for (header of currentView.metadataLabels; let index = $index; track header) {
+        @for (name of filterCombineStrategy.getShownMetadataNames(); let index = $index; track name) {
+          @let header = filterCombineStrategy.getShownMetadataLabels()[$index];
           <!--For every metadata label, a header and row structure is created-->
-          <ng-container [matColumnDef]="getMetadataNameFromHeader(header)">
+          <ng-container [matColumnDef]="name">
             <th mat-header-cell mat-sort-header
                 data-cy-debug="metadataLabel"
                 class="table-id-cell header-cell header-padding"
@@ -157,15 +158,15 @@
                 [style.padding]="tableSpacing"
                 [class]="getStatusClass(row)"
                 [title]="header">
-              {{ getMetadata(row, getMetadataNameFromHeader(header))|tableCellShortener }}
+              {{ getMetadata(row, name)|tableCellShortener }}
             </td>
           </ng-container>
         }
 
         <!--Values are passed to their respective header and row elements-->
-        <tr mat-header-row *matHeaderRowDef="getDisplayedColumnNames(currentView.metadataLabels); sticky: true" [style.font-size]="fontSize"></tr>
+        <tr mat-header-row *matHeaderRowDef="getDisplayedColumnNames(); sticky: true" [style.font-size]="fontSize"></tr>
         <tr data-cy-debug="tableRow" mat-row class="table-row"
-            *matRowDef="let row; let rowIndex = index; columns: getDisplayedColumnNames(currentView.metadataLabels)"
+            *matRowDef="let row; let rowIndex = index; columns: getDisplayedColumnNames()"
             [ngClass]="{'highlight': row.storageId === selectedReportStorageId}"
             [attr.data-cy-record-table-index]="rowIndex"
             [class]="getStatusClass(row)"
@@ -179,5 +180,5 @@
   <app-loading-spinner/>
 }
 
-<app-table-settings-modal/>
+<app-table-settings-modal [filtersFromUrl]="filtersFromUrl"/>
 <app-delete-modal (confirmDeleteEvent)="deleteAll()"></app-delete-modal>

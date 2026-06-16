@@ -1,10 +1,11 @@
-import { Component, inject, OnInit, TemplateRef, ViewChild } from '@angular/core';
+import { Component, inject, Input, OnInit, TemplateRef, ViewChild } from '@angular/core';
 import { AbstractControl, FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { NgbActiveModal, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ServerSettings, SettingsService } from '../../../shared/services/settings.service';
 import { ToastService } from '../../../shared/services/toast.service';
 import { ClientSettingsService } from 'src/app/shared/services/client.settings.service';
 import { ErrorHandling } from 'src/app/shared/classes/error-handling.service';
+import { FilterFromUrl } from '../../../shared/services/tab.service';
 
 @Component({
   selector: 'app-table-settings-modal',
@@ -17,6 +18,7 @@ export class TableSettingsModalComponent implements OnInit {
   @ViewChild('modal') protected settingsModalElement!: TemplateRef<HTMLElement>;
   @ViewChild('unsavedChangesModal')
   protected unsavedChangesModalElement!: TemplateRef<HTMLElement>;
+  @Input() filtersFromUrl?: FilterFromUrl[];
 
   // Cannot be defined after protected members because they
   // are used to initialize the protected members.
@@ -40,6 +42,7 @@ export class TableSettingsModalComponent implements OnInit {
 
   protected readonly GLOBAL = 'Everyone';
   protected readonly CLIENT = 'Personal';
+  protected readonly URL = 'URL';
 
   protected settingsForm: FormGroup = new FormGroup({
     [this.tableSpacingKey]: new FormControl(0),
