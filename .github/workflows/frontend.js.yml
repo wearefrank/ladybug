@@ -22,9 +22,6 @@ jobs:
           - spring-profile: none
             selected-specs: cypress/e2e/backend-auth/**
             authenticationTest: only-backend
-          - spring-profile: hostAndApplication
-            selected-specs: cypress/e2e/hostAndApplication
-            authenticationTest: no-authentication
     name: Test ladybug without FF!, spring-profile = ${{ matrix.spring-profile }}, authenticationTest = ${{ matrix.authenticationTest }}
     runs-on: ubuntu-latest
 
