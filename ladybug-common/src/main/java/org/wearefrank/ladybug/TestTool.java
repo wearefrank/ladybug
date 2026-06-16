@@ -39,6 +39,7 @@ import jakarta.inject.Inject;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;
+import org.wearefrank.ladybug.filter.HostAndApplicationHolder;
 import org.wearefrank.ladybug.filter.View;
 import org.wearefrank.ladybug.filter.Views;
 import org.wearefrank.ladybug.run.ReportRunner;
@@ -54,7 +55,7 @@ import org.wearefrank.ladybug.util.OpenTelemetryUtil;
  * @author Jaco de Groot
  */
 @ApplicationScoped
-public class TestTool {
+public class TestTool implements HostAndApplicationHolder {
 	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 	private static Logger securityLog;
 	private String configName;
