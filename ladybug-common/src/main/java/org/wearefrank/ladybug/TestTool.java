@@ -15,9 +15,6 @@
 */
 package org.wearefrank.ladybug;
 
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Reader;
 import java.lang.invoke.MethodHandles;
 import java.rmi.server.UID;
 import java.util.ArrayList;
@@ -52,7 +49,6 @@ import org.wearefrank.ladybug.storage.StorageException;
 import org.wearefrank.ladybug.storage.memory.MemoryLogStorage;
 import org.wearefrank.ladybug.transform.MessageTransformer;
 import org.wearefrank.ladybug.util.OpenTelemetryUtil;
-import org.wearefrank.ladybug.util.StringUtil;
 
 /**
  * @author Jaco de Groot
@@ -110,32 +106,21 @@ public class TestTool {
 	private @Qualifier("openTelemetryEndpoint") String openTelemetryEndpoint;
 	private Tracer tracer;
 
-	// The default value is the hostname obtained from the operating system.
-	private @Getter @Setter String host = null;
-
-	private @Getter @Setter String application = null;
+	private @Getter boolean hostSet = false;
+	private @Getter String host = null;
+	private @Getter boolean applicationSet = false;
+	private @Getter String application = null;
 
 	private AtomicInteger inProgressStorageNameSeq = new AtomicInteger(0);
 
-	public TestTool() {
-		try {
-			Process process = Runtime.getRuntime().exec("hostname");
-			process.waitFor();
-			if (process.exitValue() == 0) {
-				String systemHost = StringUtil.readString(new InputStreamReader(process.getInputStream())).trim();
-				if (host == null) {
-					host = systemHost;
-				} else {
-					log.warn("Cannot happen - setter of host cannot be called before constructor is done");
-				}
-			} else {
-				log.warn("Could not get hostname because process returned with exit code [{}]", process.exitValue());
-			}
-		} catch(IOException e) {
-			log.warn("Got IOException while trying to get host from Runtime", e);
-		} catch (InterruptedException e) {
-			log.warn("Got InterruptedException while trying to get host from Runtime", e);
-		}
+	public void setHost(String host) {
+		this.hostSet = true;
+		this.host = host;
+	}
+
+	public void setApplication(String application) {
+		this.applicationSet = true;
+		this.application = application;
 	}
 
 	@PostConstruct
