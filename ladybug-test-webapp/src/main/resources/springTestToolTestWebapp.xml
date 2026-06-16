@@ -268,7 +268,6 @@
 		</bean>
 	</beans>
 
-	<!-- Please sync with storage.database.and.hostAndApplication -->
 	<beans profile="storage.database">
 		<!-- White box view and TestTool (creating and storing reports) are using debugStorage -->
 		<bean
@@ -297,59 +296,4 @@
 		</bean>
 	</beans>
 
-	<!-- Please sync with storage.database.and.hostAndApplication -->
-	<beans profile="hostAndApplication">
-		<util:list id="metadataNames">
-			<value>storageId</value>
-			<value>endTime</value>
-			<value>duration</value>
-			<value>name</value>
-			<value>correlationId</value>
-			<value>status</value>
-			<value>numberOfCheckpoints</value>
-			<value>estimatedMemoryUsage</value>
-			<value>storageSize</value>
-			<value>host</value>
-			<value>application</value>
-		</util:list>
-	</beans>
-
-	<!-- This profile was introduced because it is difficult to set multiple Spring
-	     profiles through the Frank!Runner. If in an ANT script you put "-Dprofile1,profile2",
-	     then ANT interprets the second profile as an ANT target. -->
-	<!-- Please sync this XML with profiles storage.database and hostAndApplication -->
-	<beans profile="storage.database.and.hostAndApplication">
-		<!-- White box view and TestTool (creating and storing reports) are using debugStorage -->
-		<bean
-						name="debugStorage"
-						class="org.wearefrank.ladybug.storage.database.DatabaseLogStorage"
-						depends-on="ladybugDatabaseChangelog"
-		>
-			<property name="name" value="Debug"/>
-			<property name="maxStorageSize" value="#{maxStorageSize}"/>
-			<property name="storeReportXml" value="true"/>
-		</bean>
-		<!-- Configure Test tab with database storage -->
-		<bean
-						name="testStorage"
-						class="org.wearefrank.ladybug.storage.database.DatabaseTestStorage"
-						depends-on="ladybugDatabaseChangelog"
-		>
-			<property name="name" value="Test"/>
-		</bean>
-
-		<util:list id="metadataNames">
-			<value>storageId</value>
-			<value>endTime</value>
-			<value>duration</value>
-			<value>name</value>
-			<value>correlationId</value>
-			<value>status</value>
-			<value>numberOfCheckpoints</value>
-			<value>estimatedMemoryUsage</value>
-			<value>storageSize</value>
-			<value>host</value>
-			<value>application</value>
-		</util:list>
-	</beans>
 </beans>

@@ -208,6 +208,9 @@
 	    String applicationParam = request.getParameter("setApplication");
 	    testTool.setApplication(applicationParam);
 	}
+	if (request.getParameter("clearHost") != null) {
+	    testTool.setHost(null);
+	}
 	if (request.getParameter("clearApplication") != null) {
 	    testTool.setApplication(null);
 	}
@@ -251,6 +254,7 @@
   <% for (String anApplication : applications) { %>
   <a href="index.jsp?setApplication=<%=anApplication%>">Application <%=anApplication%></a><br/>
   <% } %>
+  <a href="index.jsp?clearHost">Clear host</a><br/>
   <a href="index.jsp?clearApplication">Clear application</a><br/>
 
   <h1>Other actions</h1>
