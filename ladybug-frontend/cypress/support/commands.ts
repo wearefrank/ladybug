@@ -148,6 +148,8 @@ declare global {
 
       setApplication(application: string): Chainable;
 
+      clearHostAndApplication(): Chainable();
+
       checkHostOfDebugTableRow(index: number, expected: string): Chainable;
 
       checkApplicationOfDebugTableRow(index: number, expected: string): Chainable;
@@ -641,6 +643,19 @@ Cypress.Commands.add('setApplicationY' as keyof Chainable, () => {
 Cypress.Commands.add('setApplication' as keyof Chainable, (application: string): void => {
   cy.request(
     `${Cypress.env('backendServer')}/index.jsp?setApplication=${application}`,
+  ).then((resp: Cypress.Response<ApiResponse>) => {
+    expect(resp.status).equal(200);
+  });
+})
+
+Cypress.Commands.add('clearHostAndApplication' as keyof Chainable, () => {
+  cy.request(
+    `${Cypress.env('backendServer')}/index.jsp?clearHost`,
+  ).then((resp: Cypress.Response<ApiResponse>) => {
+    expect(resp.status).equal(200);
+  });
+  cy.request(
+    `${Cypress.env('backendServer')}/index.jsp?clearApplication`,
   ).then((resp: Cypress.Response<ApiResponse>) => {
     expect(resp.status).equal(200);
   });

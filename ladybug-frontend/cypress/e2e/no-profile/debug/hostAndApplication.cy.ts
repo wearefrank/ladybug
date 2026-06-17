@@ -1,8 +1,3 @@
-// This test extends the debug table with columns host and application.
-// This can only be reversed by restarting the server which is not feasible
-// in cypress tests. This is not an issue as long as all other Cypress tests
-// in folder "no-profile" do not check anything about columns host and
-// application.
 describe('Tests about host and application', () => {
   before(() => {
     cy.resetApp();
@@ -11,6 +6,10 @@ describe('Tests about host and application', () => {
 
   afterEach(() => {
     cy.clearDebugStore();
+  });
+
+  after(() => {
+    cy.clearHostAndApplication();
   });
 
   it('When host and application not set on TestTool then host and application do not appear in debug table', () => {
