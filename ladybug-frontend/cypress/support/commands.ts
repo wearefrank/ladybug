@@ -148,7 +148,7 @@ declare global {
 
       setApplication(application: string): Chainable;
 
-      clearHostAndApplication(): Chainable();
+      clearHostAndApplication(): Chainable;
 
       checkHostOfDebugTableRow(index: number, expected: string): Chainable;
 
