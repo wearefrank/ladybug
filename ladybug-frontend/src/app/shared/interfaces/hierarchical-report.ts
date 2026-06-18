@@ -42,7 +42,7 @@ export interface HierarchicalCheckpoint extends TreeItem {
   stubNotFound: string | null;
   preTruncatedMessageLength: number;
   typeAsString: string;
-  threadName: string;
+  threadName: string | null;
   sourceClassName: string | null;
   messageClassName: string | null;
   uid: string;

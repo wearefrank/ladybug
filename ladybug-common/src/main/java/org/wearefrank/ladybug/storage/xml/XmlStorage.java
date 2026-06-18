@@ -299,6 +299,10 @@ public class XmlStorage extends MemoryCrudStorage {
 				if (storageIdNode != null) {
 					report.setStorageId(Integer.valueOf(storageIdNode.getTextContent()));
 				}
+				Node correlationIdNode = attributes.getNamedItem("CorrelationId");
+				if (correlationIdNode != null) {
+					report.setCorrelationId(correlationIdNode.getTextContent());
+				}
 				Node nameNode = attributes.getNamedItem("Name");
 				if (nameNode != null) {
 					report.setName(nameNode.getTextContent());
