@@ -150,6 +150,7 @@
 	reportNames.add(reportName = "Add report to database storage");
 	if (reportName.equals(createReportAction)) {
 		Report report = new Report();
+		report.setCorrelationId(correlationId);
 		report.setName("Report for database storage");
 		((CrudStorage)testTool.getStorage("databaseStorage")).store(report);
 	}
