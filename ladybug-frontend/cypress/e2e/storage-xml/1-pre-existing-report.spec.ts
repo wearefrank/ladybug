@@ -1,14 +1,77 @@
 // This test should be run as the first. Other tests
 // have to delete all reports from the test tab and
-// would remove pre-existing reports.
+// remove pre-existing reports.
 //
+
+const STORAGE_ID_HEADING = 'Storage Id';
+const STORAGE_ID_COLUMN_INDEX = 1;
+
 describe('Pre existing report', () => {
   beforeEach(() => {
     cy.initializeApp();
     cy.navigateToTestTabAndAwaitLoadingSpinner();
+    showStorageIdColumn();
   })
 
-  it('Report present in src/test/testtool should be shown', () => {
-    cy.getTestTableRows().contains('Pre existing report').should('have.length', 1)
+  it('Reports present in src/test/testtool should be shown', () => {
+    cy.getTestTableRows().contains('reportWithoutStorageId').should('have.length', 1)
+    cy.getTestTableRows().contains('reportWithStorageId').should('have.length', 1)
+  })
+
+  it('When report file has no storage id then negative storage id assigned', () => {
+    cy.getTestTableRows().contains('reportWithoutStorageId').should('have.length', 1)
+      .parent()
+      .find('td')
+      .eq(STORAGE_ID_COLUMN_INDEX)
+      .should('contain.text', '-1');
+  })
+
+  it('When report file has storage id then taken from file', () => {
+    cy.getTestTableRows().contains('reportWithStorageId').should('have.length', 1)
+      .parent()
+      .find('td')
+      .eq(STORAGE_ID_COLUMN_INDEX)
+      .should('contain.text', '3');
+  })
+
+  it('Can open the pre-existing report without storage id', () => {
+    cy.getTestTableRows()
+      .contains('reportWithoutStorageId')
+      .parent()
+      .find('[data-cy-test="openReport"]').click();
+    cy.wait(500);
+    cy.get("[data-cy-toast]").should('not.exist');
+    // Assume we open the first checkpoint by default
+    cy.get('[data-cy-element-name="checkpointEditor"]')
+      .invoke('text')
+      .should('contain', 'Hello')
+      .should('contain', 'World');
+    cy.clickRootNodeInFileTree();
+    cy.get('[data-cy-element-name="name"]').invoke('val').should('contain', 'reportWithoutStorageId');
+  })
+
+  it('Can open the pre-existing report with storage id', () => {
+    cy.getTestTableRows()
+      .contains('reportWithStorageId')
+      .parent()
+      .find('[data-cy-test="openReport"]').click();
+    cy.wait(500);
+    cy.get("[data-cy-toast]").should('not.exist');
+    // Assume we open the first checkpoint by default
+    cy.get('[data-cy-element-name="checkpointEditor"]')
+      .invoke('text')
+      .should('contain', 'Other')
+      .should('contain', 'message')
+      .should('contain', 'hello');
+    cy.clickRootNodeInFileTree();
+    cy.get('[data-cy-element-name="name"]').invoke('val').should('contain', 'reportWithStorageId');
   })
 })
+
+function showStorageIdColumn() {
+  cy.get('[data-cy-test="showHideStorageIds"]').should('contain.text', 'Show');
+  cy.get('[data-cy-test="tableHeaderRow"]').contains(STORAGE_ID_HEADING).should('not.exist');
+  cy.get('[data-cy-test="showHideStorageIds"]').click();
+  cy.get('[data-cy-test="showHideStorageIds"]').should('contain.text', 'Hide');
+  cy.get('[data-cy-test="tableHeaderRow"]').contains(STORAGE_ID_HEADING).should('be.visible');
+}
