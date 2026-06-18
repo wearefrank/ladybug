@@ -43,8 +43,6 @@ public class ShownReport extends TreeNode implements Serializable {
 
 	public void validate() {
 		checkNotNull(getName(), "name");
-		checkNotNull(stubStrategy, "stubStrategy");
-		checkNotNull(linkMethod, "linkMethod");
 		checkNotNull(storageName, "storageName");
 		checkNotNull(correlationId, "correlationId");
 		if (getChildren() != null) {

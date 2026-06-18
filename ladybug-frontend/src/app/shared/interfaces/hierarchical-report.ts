@@ -9,8 +9,8 @@ export interface TreeItem {
 export interface HierarchicalReport extends TreeItem {
   description: string | null;
   path: string | null;
-  stubStrategy: string;
-  linkMethod: string;
+  stubStrategy: string | null;
+  linkMethod: string | null;
   transformation: string | null;
   storageId: number;
   storageName: string;

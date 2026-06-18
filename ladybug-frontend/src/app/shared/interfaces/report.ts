@@ -19,7 +19,7 @@ export interface Report extends BaseReport {
   startTime: number;
   // TODO: Remove, is not provided by the backend. https://github.com/wearefrank/ladybug-frontend/issues/1127
   stub: number;
-  stubStrategy: string;
+  stubStrategy: string | null;
   transformation: string;
   variables: string;
   storageName: string;
