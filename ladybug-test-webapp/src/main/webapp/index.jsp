@@ -1,4 +1,6 @@
 <%@ page import="org.wearefrank.ladybug.Report"%>
+<%@ page import="org.wearefrank.ladybug.Checkpoint"%>
+<%@ page import="org.wearefrank.ladybug.CheckpointType"%>
 <%@ page import="org.wearefrank.ladybug.TestTool"%>
 <%@ page import="org.wearefrank.ladybug.MessageEncoderImpl"%>
 <%@ page import="org.wearefrank.ladybug.storage.CrudStorage"%>
@@ -147,6 +149,18 @@
 	if (reportName.equals(createReportAction)) {
 		ComplexReports.fillComplexErrorReport(correlationId, reportName, testTool);
 	}
+	reportNames.add(reportName = "Add report without stub strategy and without link method");
+	if (reportName.equals(createReportAction)) {
+		Report report = new Report();
+		report.setCorrelationId(correlationId);
+		report.setName("Report without stub strategy and without link method");
+		Checkpoint checkpoint = new Checkpoint();
+		checkpoint.setType(CheckpointType.valueOfString("Startpoint").toInt());
+		checkpoint.setName("Report without stub strategy and without link method");
+		report.setCheckpoints(Arrays.asList(checkpoint));
+		((LogStorage) testTool.getDebugStorage()).storeWithoutException(report);
+	}
+
 	reportNames.add(reportName = "Add report to database storage");
 	if (reportName.equals(createReportAction)) {
 		Report report = new Report();
