@@ -36,10 +36,11 @@ public class MetadataApiImpl {
 	@Autowired TestTool testTool;
 
 	public List<LinkedHashMap<String, String>> getMetadataList(String storageName,
-															   List<String> metadataNames,
-															   int limit,
-															   List<String> filterHeaders,
-															   List<String> filterParams) throws HttpNotFoundException, HttpInternalServerErrorException {
+																   List<String> metadataNames,
+																   int limit,
+																   int offset,
+																   List<String> filterHeaders,
+																   List<String> filterParams) throws HttpNotFoundException, HttpInternalServerErrorException {
 		List<String> searchValues = new ArrayList<>();
 		for (String field : metadataNames) {
 			boolean changed = false;
@@ -60,7 +61,7 @@ public class MetadataApiImpl {
 		}
 		List<List<Object>> records = null;
 		try {
-			records = storage.getMetadata(limit, metadataNames, searchValues, MetadataExtractor.VALUE_TYPE_GUI);
+			records = storage.getMetadata(limit, offset, metadataNames, searchValues, MetadataExtractor.VALUE_TYPE_GUI);
 			if (records == null) {
 				throw new HttpInternalServerErrorException(String.format("Got null pointer from asking records from storage [%s]", storageName));
 			}
