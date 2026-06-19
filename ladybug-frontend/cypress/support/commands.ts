@@ -74,6 +74,8 @@ declare global {
 
       createReportWithStatusError(): Chainable;
 
+      createReportWithStubStrategyNull(): Chainable;
+
       clearDebugStore(): Chainable;
 
       clearReportsInProgress(): Chainable;
@@ -362,6 +364,14 @@ Cypress.Commands.add('createReportWithStatusError' as keyof Chainable, (): void 
     expect(resp.status).equal(200);
   });
 })
+
+Cypress.Commands.add('createReportWithStubStrategyNull' as keyof Chainable, (): void => {
+  cy.request(
+    `${Cypress.env('backendServer')}/index.jsp?createReport=Add%20report%20without%20stub%20strategy%20and%20without%20link%20method`,
+  ).then((resp: Cypress.Response<ApiResponse>) => {
+    expect(resp.status).equal(200);
+  });
+});
 
 Cypress.Commands.add('clearDebugStore' as keyof Chainable, (): void => {
   cy.request(
