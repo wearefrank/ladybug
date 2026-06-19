@@ -3,8 +3,9 @@
 // remove pre-existing reports.
 //
 
+import { STORAGE_ID_COLUMN } from 'cypress/support/e2e';
+
 const STORAGE_ID_HEADING = 'Storage Id';
-const STORAGE_ID_COLUMN_INDEX = 1;
 
 describe('Pre existing report', () => {
   beforeEach(() => {
@@ -22,7 +23,7 @@ describe('Pre existing report', () => {
     cy.getTestTableRows().contains('reportWithoutStorageId').should('have.length', 1)
       .parent()
       .find('td')
-      .eq(STORAGE_ID_COLUMN_INDEX)
+      .eq(STORAGE_ID_COLUMN)
       .should('contain.text', '-1');
   })
 
@@ -30,7 +31,7 @@ describe('Pre existing report', () => {
     cy.getTestTableRows().contains('reportWithStorageId').should('have.length', 1)
       .parent()
       .find('td')
-      .eq(STORAGE_ID_COLUMN_INDEX)
+      .eq(STORAGE_ID_COLUMN)
       .should('contain.text', '3');
   })
 
@@ -50,7 +51,7 @@ describe('Pre existing report', () => {
     cy.get('[data-cy-element-name="name"]').invoke('val').should('contain', 'reportWithoutStorageId');
   })
 
-  it('Can open the pre-existing report with storage id', () => {
+  it('Can open the pre-existing report with storage id and it has host and application', () => {
     cy.getTestTableRows()
       .contains('reportWithStorageId')
       .parent()
@@ -65,6 +66,9 @@ describe('Pre existing report', () => {
       .should('contain', 'hello');
     cy.clickRootNodeInFileTree();
     cy.get('[data-cy-element-name="name"]').invoke('val').should('contain', 'reportWithStorageId');
+    cy.get('[data-cy-open-metadata-table]').check();
+    cy.get('[data-cy-metadata-table="table"]').should('contain.text', 'MyPredefinedHost');
+    cy.get('[data-cy-metadata-table="table"]').should('contain.text', 'MyPredefinedApplication');       
   })
 })
 
