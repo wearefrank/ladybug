@@ -18,18 +18,7 @@ package org.wearefrank.ladybug;
 import java.beans.Transient;
 import java.io.Serializable;
 import java.lang.invoke.MethodHandles;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Scanner;
-import java.util.Set;
+import java.util.*;
 
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
@@ -134,6 +123,15 @@ public class Report implements Serializable {
 	private transient boolean logMaxMemoryUsage = true;
 	private transient Map<Object, Set<Checkpoint>> streamingMessageListeners = new HashMap<>();
 	private transient Map<Object, StreamingMessageResult> streamingMessageResults = new HashMap<>();
+	private boolean beingUpdated;
+
+	@Transient
+	@JsonIgnore
+	public boolean isBeingUpdated() { return beingUpdated; }
+
+	@Transient
+	@JsonIgnore
+	public void setBeingUpdated(boolean beingUpdated) { this.beingUpdated = beingUpdated; }
 
 	@Transient
 	@JsonIgnore
@@ -273,9 +271,62 @@ public class Report implements Serializable {
 		threadsActiveCount++;
 	}
 
+	public void restoreRuntimeState() {
+		if (threads == null) {
+			threads = new ArrayList<>();
+		}
+		if (threadsWithThreadCreatepoint == null) {
+			threadsWithThreadCreatepoint = new ArrayList<>();
+		}
+		if (threadCheckpointIndex == null) {
+			threadCheckpointIndex = new HashMap<>();
+		}
+		if (threadFirstLevel == null) {
+			threadFirstLevel = new HashMap<>();
+		}
+		if (threadLevel == null) {
+			threadLevel = new HashMap<>();
+		}
+		if (threadParent == null) {
+			threadParent = new HashMap<>();
+		}
+		if (truncatedMessageMap == null) {
+			truncatedMessageMap = new RefCompareMap<>();
+		}
+		if (streamingMessageListeners == null) {
+			streamingMessageListeners = new HashMap<>();
+		}
+		if (streamingMessageResults == null) {
+			streamingMessageResults = new HashMap<>();
+		}
+
+		mainThread = Thread.currentThread().getName();
+
+		if (!threads.contains(mainThread)) {
+			threads.add(mainThread);
+		}
+
+		int level = 0;
+
+		if (!checkpoints.isEmpty()) {
+			level = checkpoints.get(checkpoints.size() - 1).getLevel();
+		}
+
+		threadCheckpointIndex.put(mainThread, checkpoints.size());
+		threadFirstLevel.put(mainThread, level);
+		threadLevel.put(mainThread, level);
+
+		threadsActiveCount = 1;
+
+		reportFilterMatching = true;
+		logReportFilterMatching = true;
+		logMaxCheckpoints = true;
+		logMaxMemoryUsage = true;
+	}
+
 	protected <T> T checkpoint(String childThreadId, String sourceClassName, String name, T message, Map<String, Object> messageContext,
 			StubableCode stubableCode, StubableCodeThrowsException stubableCodeThrowsException,
-			Set<String> matchingStubStrategies, int checkpointType, int levelChangeNextCheckpoint) {
+			Set<String> matchingStubStrategies, int checkpointType, int levelChangeNextCheckpoint, String id, String parentId, long startTime) {
 		if (checkpointType == CheckpointType.THREAD_CREATEPOINT.toInt()) {
 			String parentThreadName = Thread.currentThread().getName();
 			if (!threads.contains(parentThreadName)) {
@@ -317,8 +368,13 @@ public class Report implements Serializable {
 				}
 			}
 		}
+
+		if (checkpointType == CheckpointType.STARTPOINT.toInt() && parentId != null && parentId.isEmpty()) {
+			setName(name);
+		}
+
 		message = addCheckpoint(childThreadId, sourceClassName, name, message, messageContext, stubableCode, stubableCodeThrowsException,
-				matchingStubStrategies, checkpointType, levelChangeNextCheckpoint);
+				matchingStubStrategies, checkpointType, levelChangeNextCheckpoint, id, parentId, startTime);
 		return message;
 	}
 
@@ -375,7 +431,7 @@ public class Report implements Serializable {
 
 	private  <T> T addCheckpoint(String childThreadId, String sourceClassName, String name, T message, Map<String, Object> messageContext,
 			StubableCode stubableCode, StubableCodeThrowsException stubableCodeThrowsException,
-			Set<String> matchingStubStrategies, int checkpointType, int levelChangeNextCheckpoint) {
+			Set<String> matchingStubStrategies, int checkpointType, int levelChangeNextCheckpoint, String id, String parentId, long startTime) {
 		String threadName = Thread.currentThread().getName();
 		Integer index = threadCheckpointIndex.get(threadName);
 		Integer level = threadLevel.get(threadName);
@@ -441,7 +497,7 @@ public class Report implements Serializable {
 				}
 			} else {
 				message = addCheckpoint(threadName, sourceClassName, name, message, messageContext, stubableCode,
-						stubableCodeThrowsException, matchingStubStrategies, checkpointType, index, level);
+						stubableCodeThrowsException, matchingStubStrategies, checkpointType, index, level, id, parentId, startTime);
 			}
 			Integer newLevel = level + levelChangeNextCheckpoint;
 			threadLevel.put(threadName, newLevel);
@@ -457,9 +513,138 @@ public class Report implements Serializable {
 	@SneakyThrows
 	private  <T> T addCheckpoint(String threadName, String sourceClassName, String name, T message, Map<String, Object> messageContext,
 			StubableCode stubableCode, StubableCodeThrowsException stubableCodeThrowsException,
-			Set<String> matchingStubStrategies, int checkpointType, Integer index, Integer level) {
+			Set<String> matchingStubStrategies, int checkpointType, Integer index, Integer level, String id, String parentId, long startTime) {
+		if (beingUpdated && parentId != null) {
+			if (parentId.isEmpty()) {
+				if (checkpointType == CheckpointType.STARTPOINT.toInt()) {
+					level = 0;
+					index = 0;
+				} else if (checkpointType == CheckpointType.ENDPOINT.toInt()) {
+					level = 1;
+					index = checkpoints.size();
+				} else if (checkpointType == CheckpointType.INFOPOINT.toInt()) {
+					level = 1;
+					index = 1;
+				}
+			}  else if (!parentId.isEmpty()) {
+				if (checkpointType == CheckpointType.STARTPOINT.toInt()) {
+					Checkpoint parentCheckpoint = null;
+
+					for (Checkpoint checkpoint : checkpoints) {
+						if (Objects.equals(checkpoint.getId(), parentId) && checkpoint.getType() == CheckpointType.STARTPOINT.toInt()) {
+							parentCheckpoint = checkpoint;
+							break;
+						}
+					}
+
+					if (parentCheckpoint != null) {
+						level = parentCheckpoint.getLevel() + 1;
+
+						if (checkpointType == CheckpointType.STARTPOINT.toInt()) {
+							int parentIndex = checkpoints.indexOf(parentCheckpoint);
+
+							index = parentIndex + 1;
+
+							if (startTime == -1) {
+								while (index < checkpoints.size()
+										&& checkpoints.get(index).getLevel() > parentCheckpoint.getLevel()) {
+									index++;
+								}
+							} else if (parentCheckpoint.getStartTime() != -1){
+								int childLevel = parentCheckpoint.getLevel() + 1;
+								int i = index;
+
+								while (i < checkpoints.size()) {
+									Checkpoint current = checkpoints.get(i);
+
+									if (current.getLevel() == parentCheckpoint.getLevel() + 1
+											&& current.getType() == CheckpointType.ENDPOINT.toInt()) {
+										break;
+									}
+
+									if (current.getLevel() == childLevel
+											&& current.getType() == CheckpointType.STARTPOINT.toInt()) {
+										if (current.getStartTime() > startTime) {
+											break;
+										}
+										i++;
+										while (i < checkpoints.size()) {
+											Checkpoint inner = checkpoints.get(i);
+											if (inner.getLevel() == childLevel + 1
+													&& inner.getType() == CheckpointType.ENDPOINT.toInt()) {
+												i++;
+												break;
+											}
+											i++;
+										}
+									} else {
+										i++;
+									}
+								}
+								index = i;
+							}
+						}
+					} else {
+						level = 0;
+						index = checkpoints.size();
+					}
+				} else if (checkpointType == CheckpointType.ENDPOINT.toInt()) {
+					Checkpoint matchingStartpoint = null;
+
+					for (Checkpoint checkpoint : checkpoints) {
+						if (Objects.equals(checkpoint.getId(), id) && checkpoint.getType() == CheckpointType.STARTPOINT.toInt()) {
+							matchingStartpoint = checkpoint;
+							break;
+						}
+					}
+
+					if (matchingStartpoint != null) {
+						level = matchingStartpoint.getLevel() + 1;
+
+						int parentLevel = matchingStartpoint.getLevel();
+
+						index = checkpoints.indexOf(matchingStartpoint) + 1;
+
+						while (index < checkpoints.size() && checkpoints.get(index).getLevel() > parentLevel) {
+							index++;
+						}
+					}
+				} else if (checkpointType == CheckpointType.INFOPOINT.toInt()) {
+					Checkpoint parentCheckpoint = null;
+
+					for (Checkpoint checkpoint : checkpoints) {
+						if (Objects.equals(checkpoint.getId(), parentId)
+								&& checkpoint.getType() == CheckpointType.STARTPOINT.toInt()) {
+							parentCheckpoint = checkpoint;
+							break;
+						}
+					}
+
+					if (parentCheckpoint != null) {
+						level = parentCheckpoint.getLevel() + 1;
+						index = checkpoints.indexOf(parentCheckpoint) + 1;
+					} else {
+						level = 0;
+						index = checkpoints.size();
+					}
+				}
+			}
+		}
+
 		Checkpoint checkpoint = new Checkpoint(this, threadName, sourceClassName, name, checkpointType, level);
+
+		if (id != null) {
+			checkpoint.setId(id);
+		}
+
+		if (parentId != null && !parentId.isEmpty()) {
+			checkpoint.setParentId(parentId);
+		}
+
+		checkpoint.setStartTime(startTime);
+
 		checkpoint.setMessageContext(messageContext);
+
 		if (testTool.getOpenTelemetryTracer() != null) {
 			SpanBuilder checkpointSpanBuilder = testTool.getOpenTelemetryTracer().spanBuilder("checkpoint - " + name);
 			for (Checkpoint checkpointInList: checkpoints) {
@@ -539,6 +724,9 @@ public class Report implements Serializable {
 		// Add checkpoint to the list after stubable code has been executed. Otherwise when a report in progress is
 		// opened it might give the impression that the stubable code is already executed
 		checkpoints.add(index, checkpoint);
+
+		reparentOrphans(checkpoint);
+
 		for (int i = threads.indexOf(threadName); i < threads.size(); i++) {
 			String key = threads.get(i);
 			Integer value = threadCheckpointIndex.get(key);
@@ -562,6 +750,74 @@ public class Report implements Serializable {
 		}
 
 		return message;
+	}
+
+	private void reparentOrphans(Checkpoint parentCheckpoint) {
+		if (parentCheckpoint.getId() == null) {
+			return;
+		}
+
+		List<Checkpoint> orphans = new ArrayList<>();
+
+		for (Checkpoint checkpoint : checkpoints) {
+			if (checkpoint == parentCheckpoint) {
+				continue;
+			}
+
+			if (Objects.equals(parentCheckpoint.getId(), checkpoint.getParentId())
+					&& checkpoint.getLevel() == 0) {
+				orphans.add(checkpoint);
+			}
+		}
+
+		for (Checkpoint orphan : orphans) {
+			moveSubtree(parentCheckpoint, orphan);
+		}
+	}
+
+	private void moveSubtree(Checkpoint newParent, Checkpoint orphanRoot) {
+		int orphanIndex = checkpoints.indexOf(orphanRoot);
+
+		if (orphanIndex < 0) {
+			return;
+		}
+
+		int subtreeEnd = orphanIndex + 1;
+
+		while (subtreeEnd < checkpoints.size()
+				&& checkpoints.get(subtreeEnd).getLevel() > orphanRoot.getLevel()) {
+			subtreeEnd++;
+		}
+
+		List<Checkpoint> subtree =
+				new ArrayList<>(checkpoints.subList(orphanIndex, subtreeEnd));
+
+		checkpoints.subList(orphanIndex, subtreeEnd).clear();
+
+		int parentIndex = checkpoints.indexOf(newParent);
+
+		int insertIndex = parentIndex + 1;
+
+		while (insertIndex < checkpoints.size()) {
+			Checkpoint current = checkpoints.get(insertIndex);
+
+			if (current.getLevel() < newParent.getLevel()) {
+				break;
+			}
+			if (current.getLevel() == newParent.getLevel()
+					&& current.getType() == CheckpointType.ENDPOINT.toInt()) {
+				break;
+			}
+			insertIndex++;
+		}
+
+		int levelDelta = (newParent.getLevel() + 1) - orphanRoot.getLevel();
+
+		for (Checkpoint checkpoint : subtree) {
+			checkpoint.setLevel(checkpoint.getLevel() + levelDelta);
+		}
+
+		checkpoints.addAll(insertIndex, subtree);
 	}
 
 	public String getThreadInfo() {
