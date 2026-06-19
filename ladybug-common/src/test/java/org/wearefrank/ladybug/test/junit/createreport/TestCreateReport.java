@@ -84,6 +84,25 @@ public class TestCreateReport extends ReportRelatedTestCase {
 	}
 
 	@Test
+	public void whenReportHasHostAndApplicationThenPutIntoXml() throws StorageException, IOException {
+		List<Integer> oldStorageIds = testTool.getDebugStorage().getStorageIds();
+		testTool.setHost("MyHost");
+		testTool.setApplication("MyApplication");
+		String correlationId = getCorrelationId();
+		testTool.startpoint(correlationId, this.getClass().getTypeName(), reportName, "startmessage");
+		testTool.endpoint(correlationId, this.getClass().getTypeName(), reportName, "endmessage");
+		List<Integer> newStorageIds = testTool.getDebugStorage().getStorageIds();
+		Set<Integer> addedStorageIds = new HashSet<Integer>(newStorageIds);
+		addedStorageIds.removeAll(new HashSet<Integer>(oldStorageIds));
+		assertEquals(1, addedStorageIds.size());
+		Report addedReport = testTool.getDebugStorage().getReport(addedStorageIds.iterator().next());
+		String reportXml = addedReport.toXml();
+		assertTrue(reportXml.contains("Host=\"MyHost\""));
+		assertTrue(reportXml.contains("Application=\"MyApplication\""));
+		assertTrue(reportXml.contains("CorrelationId="));
+	}
+
+	@Test
 	public void testSingleStartAndEndPointPlainMessageWithStubableCode() throws StorageException, IOException {
 		String correlationId = getCorrelationId();
 		testTool.startpoint(correlationId, this.getClass().getTypeName(), reportName, () -> {return "startmessage";}, new HashSet<String>());

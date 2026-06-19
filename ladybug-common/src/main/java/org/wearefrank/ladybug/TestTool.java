@@ -107,21 +107,19 @@ public class TestTool implements HostAndApplicationHolder {
 	private @Qualifier("openTelemetryEndpoint") String openTelemetryEndpoint;
 	private Tracer tracer;
 
-	private @Getter boolean hostSet = false;
-	private @Getter String host = null;
-	private @Getter boolean applicationSet = false;
-	private @Getter String application = null;
+	private @Getter @Setter String host = null;
+	private @Getter @Setter String application = null;
 
 	private AtomicInteger inProgressStorageNameSeq = new AtomicInteger(0);
 
-	public void setHost(String host) {
-		this.hostSet = true;
-		this.host = host;
+	@Override
+	public boolean isHostSet() {
+		return host != null;
 	}
 
-	public void setApplication(String application) {
-		this.applicationSet = true;
-		this.application = application;
+	@Override
+	public boolean isApplicationSet() {
+		return application != null;
 	}
 
 	@PostConstruct

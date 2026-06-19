@@ -74,6 +74,8 @@ declare global {
 
       createReportWithStatusError(): Chainable;
 
+      createReportWithStubStrategyNull(): Chainable;
+
       clearDebugStore(): Chainable;
 
       clearReportsInProgress(): Chainable;
@@ -147,6 +149,8 @@ declare global {
       setApplicationY(): Chainable;
 
       setApplication(application: string): Chainable;
+
+      clearHostAndApplication(): Chainable;
 
       checkHostOfDebugTableRow(index: number, expected: string): Chainable;
 
@@ -360,6 +364,14 @@ Cypress.Commands.add('createReportWithStatusError' as keyof Chainable, (): void 
     expect(resp.status).equal(200);
   });
 })
+
+Cypress.Commands.add('createReportWithStubStrategyNull' as keyof Chainable, (): void => {
+  cy.request(
+    `${Cypress.env('backendServer')}/index.jsp?createReport=Add%20report%20without%20stub%20strategy%20and%20without%20link%20method`,
+  ).then((resp: Cypress.Response<ApiResponse>) => {
+    expect(resp.status).equal(200);
+  });
+});
 
 Cypress.Commands.add('clearDebugStore' as keyof Chainable, (): void => {
   cy.request(
@@ -641,6 +653,19 @@ Cypress.Commands.add('setApplicationY' as keyof Chainable, () => {
 Cypress.Commands.add('setApplication' as keyof Chainable, (application: string): void => {
   cy.request(
     `${Cypress.env('backendServer')}/index.jsp?setApplication=${application}`,
+  ).then((resp: Cypress.Response<ApiResponse>) => {
+    expect(resp.status).equal(200);
+  });
+})
+
+Cypress.Commands.add('clearHostAndApplication' as keyof Chainable, () => {
+  cy.request(
+    `${Cypress.env('backendServer')}/index.jsp?clearHost`,
+  ).then((resp: Cypress.Response<ApiResponse>) => {
+    expect(resp.status).equal(200);
+  });
+  cy.request(
+    `${Cypress.env('backendServer')}/index.jsp?clearApplication`,
   ).then((resp: Cypress.Response<ApiResponse>) => {
     expect(resp.status).equal(200);
   });
