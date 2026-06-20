@@ -79,7 +79,7 @@
       </td>
     </ng-container>
 
-    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+    <tr data-cy-test="tableHeaderRow" mat-header-row *matHeaderRowDef="displayedColumns"></tr>
     <tr data-cy-test="tableRow" mat-row *matRowDef="let report; columns: displayedColumns;"></tr>
   </table>
 </div>

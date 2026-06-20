@@ -65,7 +65,7 @@ export class ReportValueComponent implements OnInit, OnDestroy {
   originalVariables: Variable[] = [];
   editedVariables: Variable[] = [];
   duplicateVariables: Set<number> = new Set<number>();
-  editedReportStubStrategy?: string;
+  editedReportStubStrategy?: string | null;
 
   // It would have been nice to make this protected, but we need to edit this during Karma tests.
   report?: HierarchicalReport;
@@ -101,7 +101,7 @@ export class ReportValueComponent implements OnInit, OnDestroy {
   protected transformationReadOnlySubject = new BehaviorSubject<boolean>(true);
   protected reportContentRequestSubject = new BehaviorSubject<string | undefined>(undefined);
   protected reportReadOnlySubject = new BehaviorSubject<boolean>(true);
-  protected originalReportStubStrategySubject = new BehaviorSubject<string | undefined>(undefined);
+  protected originalReportStubStrategySubject = new BehaviorSubject<string | null | undefined>(undefined);
   protected buttonComponentResetSubject = new Subject<void>();
   private _height = 0;
   private http = inject(HttpService);
@@ -248,7 +248,7 @@ export class ReportValueComponent implements OnInit, OnDestroy {
         'Transformation',
         true,
       )
-      .nonNullableVariable(this.report!.stubStrategy, this.editedReportStubStrategy, 'Report level stub strategy');
+      .nullableVariable(this.report!.stubStrategy, this.editedReportStubStrategy, 'Report level stub strategy');
     const editedVariables = this.getRealEditedVariables();
     const originalVariableNames: string[] = this.originalVariables.map((v) => v.name);
     const editedVariableNames: string[] = editedVariables.map((v) => v.name);

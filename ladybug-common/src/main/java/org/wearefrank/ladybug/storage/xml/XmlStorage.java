@@ -1,5 +1,5 @@
 /*
-   Copyright 2020-2025 WeAreFrank!
+   Copyright 2020-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -299,6 +299,10 @@ public class XmlStorage extends MemoryCrudStorage {
 				if (storageIdNode != null) {
 					report.setStorageId(Integer.valueOf(storageIdNode.getTextContent()));
 				}
+				Node correlationIdNode = attributes.getNamedItem("CorrelationId");
+				if (correlationIdNode != null) {
+					report.setCorrelationId(correlationIdNode.getTextContent());
+				}
 				Node nameNode = attributes.getNamedItem("Name");
 				if (nameNode != null) {
 					report.setName(nameNode.getTextContent());
@@ -316,6 +320,14 @@ public class XmlStorage extends MemoryCrudStorage {
 					report.setLinkMethod(linkMethodNode.getTextContent());
 				} else {
 					report.setLinkMethod(LinkMethodType.NTH_NAME_AND_TYPE.toString());
+				}
+				Node hostNode = attributes.getNamedItem("Host");
+				if (hostNode != null) {
+					report.setHost(hostNode.getTextContent());
+				}
+				Node applicationNode = attributes.getNamedItem("Application");
+				if (applicationNode != null) {
+					report.setApplication(applicationNode.getTextContent());
 				}
 			}
 			report.setName(file.getName().substring(0, file.getName().length() - FILE_EXTENSION.length()));

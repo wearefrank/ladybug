@@ -834,11 +834,11 @@ public class ReportsComponent extends BaseComponent implements BeanParent, Actio
 			displayAndLogError(storageException);
 		}
 		// Update filter table and metadata table layout when metadata names have changed
-		List metadataNames = getSelectedView().getMetadataNames();
+		List metadataNames = getSelectedView().getMetadataNames(testTool);
 		if (metadataNamesChanged) {
 			filterRow.removeAll();
 			Map metadataFilter = getSelectedView().getMetadataFilter();
-			Iterator iterator = getSelectedView().getMetadataNames().iterator();
+			Iterator iterator = getSelectedView().getMetadataNames(testTool).iterator();
 			while (iterator.hasNext()) {
 				String metadataName = (String)iterator.next();
 				int filterType = storage.getFilterType(metadataName);

@@ -25,7 +25,11 @@
 			<xsl:value-of select="concat('Original length: ', string-length(.))"/>
 		</xsl:attribute>
 	</xsl:template>
-	
+
+	<xsl:template match="@Host">
+		<xsl:attribute name="Host">IGNORED</xsl:attribute>
+	</xsl:template>
+
 	<xsl:template match="node()|@*">
 		<xsl:copy>
 			<xsl:apply-templates select="node()|@*"/>

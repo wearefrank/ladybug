@@ -39,6 +39,7 @@ import jakarta.inject.Inject;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;
+import org.wearefrank.ladybug.filter.HostAndApplicationHolder;
 import org.wearefrank.ladybug.filter.View;
 import org.wearefrank.ladybug.filter.Views;
 import org.wearefrank.ladybug.run.ReportRunner;
@@ -54,7 +55,7 @@ import org.wearefrank.ladybug.util.OpenTelemetryUtil;
  * @author Jaco de Groot
  */
 @ApplicationScoped
-public class TestTool {
+public class TestTool implements HostAndApplicationHolder {
 	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 	private static Logger securityLog;
 	private String configName;
@@ -106,7 +107,20 @@ public class TestTool {
 	private @Qualifier("openTelemetryEndpoint") String openTelemetryEndpoint;
 	private Tracer tracer;
 
+	private @Getter @Setter String host = null;
+	private @Getter @Setter String application = null;
+
 	private AtomicInteger inProgressStorageNameSeq = new AtomicInteger(0);
+
+	@Override
+	public boolean isHostSet() {
+		return host != null;
+	}
+
+	@Override
+	public boolean isApplicationSet() {
+		return application != null;
+	}
 
 	@PostConstruct
 	public void init() {
@@ -398,6 +412,8 @@ public class TestTool {
 		if (checkpointType == CheckpointType.STARTPOINT.toInt()) {
 			log.debug("Create new report for '" + correlationId + "'");
 			report = new Report();
+			report.setHost(host);
+			report.setApplication(application);
 			report.setStartTime(System.currentTimeMillis());
 			report.setTestTool(this);
 			report.setCorrelationId(correlationId);

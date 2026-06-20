@@ -42,7 +42,7 @@ public class View implements BeanParent {
 	protected String name;
 	protected String nodeLinkStrategy;
 	private @Setter @Getter @Inject @Autowired Storage debugStorage;
-	private @Setter @Getter @Inject @Resource(name="metadataNames") List<String> metadataNames;
+	private @Setter @Inject @Resource(name="metadataNames") List<String> metadataNames;
 	private Map<String, String> metadataFilter;
 	private List<CheckpointMatcher> checkpointMatchers;
 	private BeanParent beanParent;
@@ -72,6 +72,10 @@ public class View implements BeanParent {
 			return NodeLinkStrategy.PATH.toString();
 		}
 		return nodeLinkStrategy;
+	}
+
+	public List<String> getMetadataNames(HostAndApplicationHolder hostAndApplicationHolder) {
+		return hostAndApplicationHolder.filterMetadataNames(metadataNames);
 	}
 
 	public void setMetadataFilter(Map<String, String> metadataFilter) {
@@ -129,9 +133,9 @@ public class View implements BeanParent {
 		return getName();
 	}
 
-	public List<String> getMetadataLabels() {
+	public List<String> getMetadataLabels(HostAndApplicationHolder hostAndApplicationHolder) {
 		List<String> metadataLabels = new ArrayList<>();
-		for (String metadataName : getMetadataNames()) {
+		for (String metadataName : getMetadataNames(hostAndApplicationHolder)) {
 			metadataLabels.add(metadataExtractor.getLabel(metadataName));
 		}
 

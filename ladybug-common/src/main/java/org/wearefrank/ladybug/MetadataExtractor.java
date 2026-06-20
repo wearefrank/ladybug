@@ -1,5 +1,5 @@
 /*
-   Copyright 2020, 2022-2025 WeAreFrank!, 2018-2019 Nationale-Nederlanden
+   Copyright 2020, 2022-2026 WeAreFrank!, 2018-2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -112,6 +112,12 @@ public class MetadataExtractor {
 			if (metadataName.equals("duration")) {
 				return "Duration";
 			}
+			if (metadataName.equals("host")) {
+				return "Host";
+			}
+			if (metadataName.equals("application")) {
+				return "Application";
+			}
 			for (MetadataFieldExtractor metadataFieldExtractor : metadataFieldExtractors) {
 				if (metadataFieldExtractor.getName().equals(metadataName)) {
 					label = metadataFieldExtractor.getLabel();
@@ -166,6 +172,12 @@ public class MetadataExtractor {
 			}
 			if (metadataName.equals("duration")) {
 				return "Duration";
+			}
+			if (metadataName.equals("host")) {
+				return "Host";
+			}
+			if (metadataName.equals("application")) {
+				return "Application";
 			}
 			for (MetadataFieldExtractor metadataFieldExtractor : metadataFieldExtractors) {
 				if (metadataFieldExtractor.getName().equals(metadataName)) {
@@ -224,6 +236,12 @@ public class MetadataExtractor {
 		}
 		if (metadataName.equals("duration")) {
 			return Long.valueOf(report.getEndTime() - report.getStartTime());
+		}
+		if (metadataName.equals("host")) {
+			return report.getHost();
+		}
+		if (metadataName.equals("application")) {
+			return report.getApplication();
 		}
 		if (metadataName.equals("variables")) {
 			return report.getVariables();

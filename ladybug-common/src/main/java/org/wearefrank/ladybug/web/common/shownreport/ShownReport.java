@@ -38,11 +38,11 @@ public class ShownReport extends TreeNode implements Serializable {
 	private @Setter @Getter String correlationId;
 	private @Setter @Getter Map<String, String> variables;
 	private @Setter @Getter long startTime;
+	private @Setter @Getter String host;
+	private @Setter @Getter String application;
 
 	public void validate() {
 		checkNotNull(getName(), "name");
-		checkNotNull(stubStrategy, "stubStrategy");
-		checkNotNull(linkMethod, "linkMethod");
 		checkNotNull(storageName, "storageName");
 		checkNotNull(correlationId, "correlationId");
 		if (getChildren() != null) {
