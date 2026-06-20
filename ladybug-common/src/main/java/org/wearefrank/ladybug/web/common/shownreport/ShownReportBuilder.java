@@ -197,6 +197,7 @@ public class ShownReportBuilder {
 			}
 			dest.setVariables(destVariables);
 		}
+		dest.setRerunnable(source.isRerunnable());
 		dest.setStartTime(source.getStartTime());
 	}
 

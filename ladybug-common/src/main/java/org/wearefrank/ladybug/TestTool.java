@@ -103,7 +103,7 @@ public class TestTool {
 	private @Setter @Getter @Inject @Autowired Views views;
 	private @Setter @Getter int reportsInProgressThreshold = 300000;
 	boolean devMode = false; // See testConcurrentLastEndpointAndFirstStartpointForSameCorrelationId()
-	private @Qualifier("openTelemetryEndpoint") String openTelemetryEndpoint;
+    private @Setter String openTelemetryEndpoint;
 	private Tracer tracer;
 
 	private AtomicInteger inProgressStorageNameSeq = new AtomicInteger(0);
@@ -120,7 +120,7 @@ public class TestTool {
 		reportGeneratorEnabled = defaultReportGeneratorEnabled;
 	}
 
-	public void setSecurityLoggerName(String securityLoggerName) {
+    public void setSecurityLoggerName(String securityLoggerName) {
 		securityLog = LoggerFactory.getLogger(securityLoggerName);
 	}
 
@@ -339,12 +339,28 @@ public class TestTool {
 			Set<String> matchingStubStrategies, int checkpointType, int levelChangeNextCheckpoint) {
 		return checkpoint(correlationId, childThreadId, sourceClassName, name,
 				message, null, stubableCode, stubableCodeThrowsException,
-				matchingStubStrategies, checkpointType, levelChangeNextCheckpoint);
+				matchingStubStrategies, checkpointType, levelChangeNextCheckpoint, true);
+	}
+
+	private <T> T checkpoint(String correlationId, String childThreadId, String sourceClassName, String name,
+							 T message, Map<String, Object> messageContext, StubableCode stubableCode, StubableCodeThrowsException stubableCodeThrowsException,
+							 Set<String> matchingStubStrategies, int checkpointType, int levelChangeNextCheckpoint) {
+		return checkpoint(correlationId, childThreadId, sourceClassName, name,
+				message, messageContext, stubableCode, stubableCodeThrowsException,
+				matchingStubStrategies, checkpointType, levelChangeNextCheckpoint, true);
+	}
+
+	private <T> T checkpoint(String correlationId, String childThreadId, String sourceClassName, String name,
+							 T message, StubableCode stubableCode, StubableCodeThrowsException stubableCodeThrowsException,
+							 Set<String> matchingStubStrategies, int checkpointType, int levelChangeNextCheckpoint, boolean shouldBeRerunnable) {
+		return checkpoint(correlationId, childThreadId, sourceClassName, name,
+				message, null, stubableCode, stubableCodeThrowsException,
+				matchingStubStrategies, checkpointType, levelChangeNextCheckpoint, shouldBeRerunnable);
 	}
 
 	private <T> T checkpoint(String correlationId, String childThreadId, String sourceClassName, String name,
 			T message, Map<String, Object> messageContext, StubableCode stubableCode, StubableCodeThrowsException stubableCodeThrowsException,
-			Set<String> matchingStubStrategies, int checkpointType, int levelChangeNextCheckpoint) {
+			Set<String> matchingStubStrategies, int checkpointType, int levelChangeNextCheckpoint, boolean shouldBeRerunnable) {
 		boolean executeStubableCode = true;
 		if (reportGeneratorEnabled) {
 			Report report;
@@ -352,7 +368,7 @@ public class TestTool {
 			synchronized(reportsInProgress) {
 				report = getReportInProgress(correlationId);
 				if (report == null) {
-					report = createReport(correlationId, name, checkpointType);
+					report = createReport(correlationId, name, checkpointType, shouldBeRerunnable);
 				}
 			}
 			if (devMode) randomSleep();
@@ -372,7 +388,7 @@ public class TestTool {
 						synchronized(reportsInProgress) {
 							report = getReportInProgress(correlationId);
 							if (report == null) {
-								report = createReport(correlationId, name, checkpointType);
+								report = createReport(correlationId, name, checkpointType, shouldBeRerunnable);
 							}
 						}
 						// Synchronize and check isClosed() on report again as it will now point to a different report
@@ -393,7 +409,7 @@ public class TestTool {
 		return message;
 	}
 
-	private Report createReport(String correlationId, String name, int checkpointType) {
+	private Report createReport(String correlationId, String name, int checkpointType, boolean shouldBeRerunnable) {
 		Report report = null;
 		if (checkpointType == CheckpointType.STARTPOINT.toInt()) {
 			log.debug("Create new report for '" + correlationId + "'");
@@ -411,6 +427,7 @@ public class TestTool {
 					report.setReportFilterMatching(false);
 				}
 			}
+			report.setRerunnable(shouldBeRerunnable);
 			Report originalReport;
 			synchronized(originalReports) {
 				originalReport = (Report)originalReports.remove(correlationId);
@@ -524,6 +541,11 @@ public class TestTool {
 	public <T> T startpoint(String correlationId, String sourceClassName, String name, T message) {
 		return checkpoint(correlationId, null, sourceClassName, name, message, null, null, null,
 				CheckpointType.STARTPOINT.toInt(), 1);
+	}
+
+	public <T> T startpoint(String correlationId, String sourceClassName, String name, T message, boolean shouldBeRerunnable) {
+		return checkpoint(correlationId, null, sourceClassName, name, message, null, null, null,
+				CheckpointType.STARTPOINT.toInt(), 1, shouldBeRerunnable);
 	}
 
 	public <T> T startpoint(String correlationId, String sourceClassName, String name, T message, Map<String, Object> messageContext) {

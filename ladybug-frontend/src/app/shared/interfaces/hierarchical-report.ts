@@ -19,6 +19,7 @@ export interface HierarchicalReport extends TreeItem {
   correlationId: string;
   startTime: number;
   variables: Record<string, string>;
+  rerunnable: boolean;
   // The fields below do not come from the backend but are computed
   xml: string;
   // null means - no view so all checkpoints included

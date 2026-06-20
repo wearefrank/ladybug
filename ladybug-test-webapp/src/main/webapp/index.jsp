@@ -17,6 +17,8 @@
 <%@ page import="java.util.Map" %>
 <%@ page import="java.util.HashMap" %>
 <%@ page import="jakarta.servlet.ServletContext"%>
+<%@ page import="org.wearefrank.ladybug.web.common.TracingApiImpl"%>
+<%@ page import="java.nio.charset.StandardCharsets" %>
 <%
 	ServletContext servletContext = request.getSession().getServletContext();
 	WebApplicationContext webApplicationContext = WebApplicationContextUtils.getWebApplicationContext(servletContext);
@@ -26,6 +28,8 @@
 	String reportName;
 	List<String> reportNames = new ArrayList<String>();
 	String userName = null;
+	TracingApiImpl tracingApiImpl =
+			webApplicationContext.getBean(TracingApiImpl.class);
 
 	if (request.getUserPrincipal() != null) {
 		userName = request.getUserPrincipal().getName();
@@ -163,6 +167,48 @@
 	if (reportName.equals(createReportAction)) {
 		testTool.startpoint(correlationId, null, reportName, "Start\r");
 		testTool.endpoint(correlationId, null, reportName, "\r");
+	}
+	reportNames.add(reportName = "OpenTelemetry report");
+	if (reportName.equals(createReportAction)) {
+		String spansJson =
+				"{"
+						+ "\"resourceSpans\":[{"
+						+ "\"resource\":{\"attributes\":[{"
+						+ "\"key\":\"service.name\","
+						+ "\"value\":{\"stringValue\":\"my.service\"}"
+						+ "}]},"
+						+ "\"scopeSpans\":[{"
+						+ "\"scope\":{"
+						+ "\"name\":\"my.library\","
+						+ "\"version\":\"1.0.0\""
+						+ "},"
+						+ "\"spans\":["
+						+ "{"
+						+ "\"traceId\":\"5b8efff798038103d269b633813fc60d\","
+						+ "\"spanId\":\"eee19b7ec3c1b176\","
+						+ "\"parentSpanId\":\"eee19b7ec3c1b175\","
+						+ "\"name\":\"Child\","
+						+ "\"startTimeUnixNano\":\"2\","
+						+ "\"endTimeUnixNano\":\"3\","
+						+ "\"kind\":2"
+						+ "},"
+						+ "{"
+						+ "\"traceId\":\"5b8efff798038103d269b633813fc60d\","
+						+ "\"spanId\":\"eee19b7ec3c1b175\","
+						+ "\"name\":\"Root\","
+						+ "\"startTimeUnixNano\":\"1\","
+						+ "\"endTimeUnixNano\":\"4\","
+						+ "\"kind\":2"
+						+ "}"
+						+ "]"
+						+ "}]"
+						+ "}]"
+						+ "}";
+
+		tracingApiImpl.processSpans(
+				"application/json",
+				spansJson.getBytes(java.nio.charset.StandardCharsets.UTF_8)
+		);
 	}
 	// Other actions
 	if ("true".equals(request.getParameter("clearDebugStorage"))) {

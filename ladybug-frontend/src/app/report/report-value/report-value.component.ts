@@ -148,6 +148,7 @@ export class ReportValueComponent implements OnInit, OnDestroy {
     const state: NodeValueState = {
       isReadOnly,
       isEdited,
+      rerunnable: this.report?.rerunnable,
       storageId: this.report?.storageId,
       storageName: this.report?.storageName,
       checkpointsFromView: this.report?.checkpointsFromView,
