@@ -30,12 +30,27 @@ export class HttpService {
   }
 
   getMetadataReports(settings: TableSettings, view: View): Observable<Report[]> {
+    // Merge the view's metadataFilter beneath the user's column filters. A filter only applies to a
+    // column the backend selects, so filtered columns are added to metadataNames (the table still
+    // renders only view.metadataNames).
+    const filters = new Map<string, string>(settings.currentFilters);
+    const metadataNames = [...view.metadataNames];
+    if (view.metadataFilter) {
+      for (const [key, value] of Object.entries(view.metadataFilter)) {
+        if (!filters.has(key)) {
+          filters.set(key, value);
+        }
+        if (!metadataNames.includes(key)) {
+          metadataNames.push(key);
+        }
+      }
+    }
     return this.http.get<Report[]>(`api/metadata/${view.storageName}`, {
       params: {
         limit: settings.displayAmount,
-        filterHeader: [...settings.currentFilters.keys()],
-        filter: [...settings.currentFilters.values()],
-        metadataNames: view.metadataNames,
+        filterHeader: [...filters.keys()],
+        filter: [...filters.values()],
+        metadataNames: metadataNames,
       },
     });
   }
