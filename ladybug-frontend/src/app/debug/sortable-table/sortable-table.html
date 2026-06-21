@@ -1,0 +1,56 @@
+<div data-cy-debug="table" class="table-responsive table-container">
+  <table mat-table class="table mb-0" matSort [dataSource]="tableDataSource">
+    <!--Header and row container for checkboxes-->
+    <ng-container matColumnDef="select">
+      <th mat-header-cell class="table-row-checkbox header-padding" *matHeaderCellDef>
+        <input
+          data-cy-debug="selectAll"
+          type="checkbox"
+          class="vertical-middle"
+          title="Select all rows"
+          [checked]="allChecked()"
+          [style.width]="checkboxSize"
+          [style.height]="checkboxSize"
+          (click)="toggleSelectAll()">
+      </th>
+      <td mat-cell class="table-row-checkbox" *matCellDef="let row" [style.padding]="tableSpacing">
+        <input type="checkbox" data-cy-debug="selectOne" [checked]="row.checked" [style.width]="checkboxSize" [style.height]="checkboxSize" (click)="toggleCheck(row)">
+      </td>
+    </ng-container>
+
+    @for (name of this.getColumnNames(); let index = $index; track name) {
+      @let header = columns![$index].label;
+      <!--For every metadata label, a header and row structure is created-->
+      <ng-container [matColumnDef]="name">
+        <th mat-header-cell mat-sort-header
+            data-cy-debug="metadataLabel"
+            class="table-id-cell header-cell header-padding"
+            *matHeaderCellDef
+            [title]="header">
+          {{ header | shortenedTableHeader }}
+        </th>
+        <!-- [style.background-color] is not inherited from table row.
+              That style is overridden by something from bootstrap:
+              .table > :not(caption) > * > * -->
+        <td mat-cell class="table-cell"
+            *matCellDef="let row"
+            [style.padding]="tableSpacing"
+            [class]="getStatusClass(row)"
+            [title]="header">
+          {{ getMetadata(row, name)|tableCellShortener }}
+        </td>
+      </ng-container>
+    }
+
+    <!--Values are passed to their respective header and row elements-->
+    <tr mat-header-row *matHeaderRowDef="getColumnLabels(); sticky: true" [style.font-size]="fontSize"></tr>
+    <tr data-cy-debug="tableRow" mat-row class="table-row"
+        *matRowDef="let row; let rowIndex = index; columns: getColumnLabels()"
+        [ngClass]="{'highlight': row.fields.storageId === selectedStorageId}"
+        [attr.data-cy-record-table-index]="rowIndex"
+        [class]="getStatusClass(row)"
+        [style.font-size]="fontSize"
+        (click)="clickReportWithStorageId.emit(row.fields.storageId)"
+    ></tr>
+  </table>
+</div>
