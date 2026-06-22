@@ -19,7 +19,7 @@
     </ng-container>
 
     @for (name of this.getColumnNames(); let index = $index; track name) {
-      @let header = columns![$index].label;
+      @let header = data!.columns[$index].label;
       <!--For every metadata label, a header and row structure is created-->
       <ng-container [matColumnDef]="name">
         <th mat-header-cell mat-sort-header
