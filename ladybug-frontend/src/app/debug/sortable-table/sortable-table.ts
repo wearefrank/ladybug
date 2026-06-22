@@ -5,23 +5,13 @@ import { MatSort, MatSortModule } from '@angular/material/sort';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { NgClass } from '@angular/common';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
-import { ErrorHandling } from 'src/app/shared/classes/error-handling.service';
+import { ErrorHandling } from '../../shared/classes/error-handling.service';
 import { ShortenedTableHeaderPipe } from '../../shared/pipes/shortened-table-header.pipe';
-import { ClientSettingsService } from 'src/app/shared/services/client.settings.service';
+import { ClientSettingsService } from '../../shared/services/client.settings.service';
+import { Column, Filter2Service, TableData } from '../../shared/services/filter2.service';
 
 const STORAGE_ID_COLUMN_NAME = 'storageId';
 const STATUS_COLUMN_NAME = 'status';
-
-export interface Column {
-  name: string;
-  label: string;
-}
-
-export interface TableData {
-  rows: Record<string, string>[];
-  columns: Column[];
-  numericMetadataNames: Set<string>;
-}
 
 interface RowData {
   checked: boolean;
@@ -50,26 +40,6 @@ interface WorkingData {
   ],
 })
 export class SortableTable implements OnInit {
-  @Input() set tableData(argument: TableData) {
-    this.data = {
-      rows: argument.rows.map((r) => {
-        return { checked: false, fields: r };
-      }),
-      columns: argument.columns,
-      numericMetadataNames: argument.numericMetadataNames,
-    };
-    const storageIdColumns: Column[] = this.data.columns.filter((c) => c.name === STORAGE_ID_COLUMN_NAME);
-    if (storageIdColumns.length !== 1) {
-      throw new Error(`SortableTable.set tableData(): Expected column ${STORAGE_ID_COLUMN_NAME}`);
-    }
-    if (!this.data.numericMetadataNames.has(STORAGE_ID_COLUMN_NAME)) {
-      throw new Error(`SortableTableData.set tableData(): Expected column ${STORAGE_ID_COLUMN_NAME} to be numeric`);
-    }
-    const statusColumns: Column[] = this.data.columns.filter((c) => c.name === STATUS_COLUMN_NAME);
-    if (statusColumns.length !== 1) {
-      throw new Error(`SortableTableData.set tableData(): Expected column ${STATUS_COLUMN_NAME}`);
-    }
-  }
   @Input() selectedStorageId: string | null = null;
   @Output() clickReportWithStorageId: EventEmitter<number> = new EventEmitter<number>();
 
@@ -83,6 +53,7 @@ export class SortableTable implements OnInit {
   private clientSettingsService = inject(ClientSettingsService);
   private errorHandler = inject(ErrorHandling);
   private subscriptions = new Subscription();
+  private filterService = inject(Filter2Service);
 
   @ViewChild(MatSort)
   protected set matSort(sort: MatSort) {
@@ -106,6 +77,33 @@ export class SortableTable implements OnInit {
       error: () => catchError(this.errorHandler.handleError()),
     });
     this.subscriptions.add(tableSpacingSubscription);
+    const tableDataSubscription = this.filterService.tableData$.subscribe((data) => {
+      if (data !== undefined) {
+        this.setTableData(data);
+      }
+    });
+    this.subscriptions.add(tableDataSubscription);
+  }
+
+  private setTableData(argument: TableData): void {
+    this.data = {
+      rows: argument.rows.map((r) => {
+        return { checked: false, fields: r };
+      }),
+      columns: argument.columns,
+      numericMetadataNames: argument.numericMetadataNames,
+    };
+    const storageIdColumns: Column[] = this.data.columns.filter((c) => c.name === STORAGE_ID_COLUMN_NAME);
+    if (storageIdColumns.length !== 1) {
+      throw new Error(`SortableTable.set tableData(): Expected column ${STORAGE_ID_COLUMN_NAME}`);
+    }
+    if (!this.data.numericMetadataNames.has(STORAGE_ID_COLUMN_NAME)) {
+      throw new Error(`SortableTableData.set tableData(): Expected column ${STORAGE_ID_COLUMN_NAME} to be numeric`);
+    }
+    const statusColumns: Column[] = this.data.columns.filter((c) => c.name === STATUS_COLUMN_NAME);
+    if (statusColumns.length !== 1) {
+      throw new Error(`SortableTableData.set tableData(): Expected column ${STATUS_COLUMN_NAME}`);
+    }
   }
 
   protected allChecked(): boolean {
@@ -142,7 +140,7 @@ export class SortableTable implements OnInit {
     }
   }
 
-  protected selectAll(value: boolean): void {
+  protected checkAll(value: boolean): void {
     if (this.data) {
       for (const row of this.data.rows) {
         row.checked = value;
@@ -150,12 +148,12 @@ export class SortableTable implements OnInit {
     }
   }
 
-  protected toggleSelectAll(): void {
+  protected toggleCheckAll(): void {
     if (this.data && this.data.rows.length > 0) {
       if (this.noneChecked()) {
-        this.selectAll(true);
+        this.checkAll(true);
       } else {
-        this.selectAll(false);
+        this.checkAll(false);
       }
     }
   }
@@ -164,12 +162,16 @@ export class SortableTable implements OnInit {
     row.checked = !row.checked;
   }
 
-  protected getColumnNames(): string[] {
-    return this.data?.columns.map((c) => c.name) ?? [];
+  protected getShownColumnNames(): string[] {
+    return this.getShownColumns().map((c) => c.name);
   }
 
-  protected getColumnLabels(): string[] {
-    return this.data?.columns.map((c) => c.label) ?? [];
+  protected getShownColumnLabels(): string[] {
+    return this.getShownColumns().map((c) => c.label);
+  }
+
+  private getShownColumns(): Column[] {
+    return this.data?.columns.filter((c) => c.shown === true) ?? [];
   }
 
   sortingDataAccessor(row: RowData, columnName: string): string | number {
