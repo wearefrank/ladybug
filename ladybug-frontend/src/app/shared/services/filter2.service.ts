@@ -43,6 +43,7 @@ export class Filter2Service implements OnDestroy {
   private clientSettingsService = inject(ClientSettingsService);
   private errorHandling = inject(ErrorHandler);
   private subscriptions = new Subscription();
+  private subscribed = false;
 
   public urlFilters: FilterFromUrl[] = [];
   public viewFilters: FilterFromUrl[] = [];
@@ -62,34 +63,25 @@ export class Filter2Service implements OnDestroy {
     this.userFilterChoicesSubject.asObservable();
   public fixedFilters$: Observable<FixedFilters | undefined> = this.fixedFiltersSubject.asObservable();
 
-  constructor() {
-    const userFilterSubscription = this.userFilters$.subscribe((userFilters) => {
-      this.update(userFilters);
-    });
-    this.subscriptions.add(userFilterSubscription);
-    const maxAmountOfRecordsSubscription = this.clientSettingsService.amountOfRecordsInTableObservable.subscribe(() => {
-      this.resetFilters();
-    });
-    this.subscriptions.add(maxAmountOfRecordsSubscription);
-  }
-
   ngOnDestroy(): void {
     this.subscriptions.unsubscribe();
   }
 
   setCurrentView(currentView: View): void {
     this.currentView = currentView;
-    this.initialize();
+    this.initialize(this.currentView);
   }
 
   setUrlFilters(urlFilters: FilterFromUrl[]): void {
     this.urlFilters = urlFilters;
-    this.initialize();
+    if (this.currentView) {
+      this.initialize(this.currentView);
+    }
   }
 
   refresh(): void {
     if (this.currentView) {
-      this.initialize();
+      this.initialize(this.currentView);
     }
   }
 
@@ -116,28 +108,41 @@ export class Filter2Service implements OnDestroy {
     this.onUserFilterChanged();
   }
 
-  private initialize(): void {
-    if (this.currentView !== undefined) {
-      this.setViewFilters();
-      this.setNotShownMetadataNames();
-      this.setNumericMetadataNames();
-      this.setColumns();
-      this.fixedFiltersSubject.next({
-        urlFilters: this.urlFilters,
-        viewFilters: this.viewFilters,
-      });
-      this.userFilterColumnsSubject.next(this.columns.filter((c) => c.shown === true));
-      this.resetFilters();
+  private initialize(currentView: View): void {
+    if (!this.subscribed) {
+      this.subscribeToSubscriptions();
+      this.subscribed = true;
     }
+    this.setViewFilters(currentView);
+    this.setNotShownMetadataNames();
+    this.setNumericMetadataNames(currentView);
+    this.setColumns(currentView);
+    this.fixedFiltersSubject.next({
+      urlFilters: this.urlFilters,
+      viewFilters: this.viewFilters,
+    });
+    this.userFilterColumnsSubject.next(this.columns.filter((c) => c.shown === true));
+    this.resetFilters();
   }
 
-  private setViewFilters(): void {
+  private subscribeToSubscriptions(): void {
+    const userFilterSubscription = this.userFilters$.subscribe((userFilters) => {
+      this.update(userFilters);
+    });
+    this.subscriptions.add(userFilterSubscription);
+    const maxAmountOfRecordsSubscription = this.clientSettingsService.amountOfRecordsInTableObservable.subscribe(() => {
+      this.resetFilters();
+    });
+    this.subscriptions.add(maxAmountOfRecordsSubscription);
+  }
+
+  private setViewFilters(currentView: View): void {
     this.viewFilters = [];
-    if (this.currentView!.metadataFilter) {
-      for (const metadataName of Object.keys(this.currentView!.metadataFilter)) {
+    if (currentView.metadataFilter) {
+      for (const metadataName of Object.keys(currentView.metadataFilter)) {
         this.viewFilters.push({
           metadataName,
-          value: this.currentView!.metadataFilter![metadataName],
+          value: currentView.metadataFilter![metadataName],
         });
       }
     }
@@ -150,12 +155,10 @@ export class Filter2Service implements OnDestroy {
     }
   }
 
-  private setNumericMetadataNames(): void {
+  private setNumericMetadataNames(currentView: View): void {
     this.numericMetadataNames.clear();
-    const metadataTypesMap: Map<string, string> = new Map<string, string>(
-      Object.entries(this.currentView!.metadataTypes),
-    );
-    for (const metadataName of this.currentView!.metadataNames) {
+    const metadataTypesMap: Map<string, string> = new Map<string, string>(Object.entries(currentView.metadataTypes));
+    for (const metadataName of currentView.metadataNames) {
       const metadataType: string = metadataTypesMap.get(metadataName) ?? '';
       if (metadataType === 'int' || metadataType === 'long') {
         this.numericMetadataNames.add(metadataName);
@@ -163,19 +166,22 @@ export class Filter2Service implements OnDestroy {
     }
   }
 
-  private setColumns(): void {
+  private setColumns(currentView: View): void {
     this.columns = [];
-    for (let index = 0; index < this.currentView!.metadataNames.length; ++index) {
-      const metadataName = this.currentView!.metadataNames[index];
+    for (let index = 0; index < currentView.metadataNames.length; ++index) {
+      const metadataName = currentView.metadataNames[index];
       this.columns.push({
         name: metadataName,
-        label: this.currentView!.metadataLabels[index],
+        label: currentView.metadataLabels[index],
         shown: !this.notShownMetadataNames.has(metadataName),
       });
     }
   }
 
   private update(userFiltersMap: Map<string, string>): void {
+    if (!this.currentView) {
+      throw new Error('Cannot happen because we subscribe to subscriptions only after receiving the first view');
+    }
     const userFilters: FilterFromUrl[] = [];
     for (const [key, value] of userFiltersMap.entries()) {
       userFilters.push({
@@ -185,8 +191,8 @@ export class Filter2Service implements OnDestroy {
     }
     const allFilters: FilterFromUrl[] = [...this.urlFilters, ...this.viewFilters, ...userFilters];
     firstValueFrom(
-      this.httpService.getMetadata(this.currentView!, {
-        metadataNames: this.currentView!.metadataNames,
+      this.httpService.getMetadata(this.currentView, {
+        metadataNames: this.currentView.metadataNames,
         filterHeader: allFilters.map((f) => f.metadataName),
         filter: allFilters.map((f) => f.value),
         limit: this.clientSettingsService.getAmountOfRecordsInTable(),
