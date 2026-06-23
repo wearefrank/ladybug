@@ -79,9 +79,10 @@
           </div>
         }
         @if (activeTab === URL) {
-          @if (filtersFromUrl) {
+          @if (filterService.urlFilters.length > 0) {
+            <h2>Filters from URL:</h2>
             <table>
-              @for (filter of filtersFromUrl; track filter.metadataName) {
+              @for (filter of filterService.urlFilters; track filter.metadataName) {
                 <tr>
                   <td>{{ filter.metadataName }}</td>
                   <td>{{ filter.value }}</td>
@@ -89,7 +90,20 @@
               }
             </table>
           } @else {
-            No filters supplied through URL
+            <h2>No filters from URL</h2>
+          }
+          @if (filterService.viewFilters.length > 0) {
+            <h2>Filters from current view</h2>
+            <table>
+              @for (filter of filterService.viewFilters; track filter.metadataName) {
+                <tr>
+                  <td>{{ filter.metadataName }}</td>
+                  <td>{{ filter.value }}</td>
+                </tr>
+              }
+            </table>
+          } @else {
+            <h2>No filters from current view</h2>
           }
         }
       </div>

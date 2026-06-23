@@ -26,6 +26,7 @@ export class HelperService {
     );
   }
 
+  // TODO: Can this be removed?
   getSelectedIds(reports: BaseReport[]): number[] {
     let copiedIds: number[] = [];
     for (const report of this.getSelectedReports(reports)) {

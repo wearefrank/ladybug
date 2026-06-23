@@ -9,6 +9,7 @@ import { ErrorHandling } from '../../shared/classes/error-handling.service';
 import { ShortenedTableHeaderPipe } from '../../shared/pipes/shortened-table-header.pipe';
 import { ClientSettingsService } from '../../shared/services/client.settings.service';
 import { Column, Filter2Service, TableData } from '../../shared/services/filter2.service';
+import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner/loading-spinner.component';
 
 const STORAGE_ID_COLUMN_NAME = 'storageId';
 const STATUS_COLUMN_NAME = 'status';
@@ -25,11 +26,12 @@ interface WorkingData {
 }
 
 @Component({
-  selector: 'app-table',
+  selector: 'app-sortable-table',
   templateUrl: './sortable-table.html',
   styleUrls: ['./sortable-table.css'],
   standalone: true,
   imports: [
+    LoadingSpinnerComponent,
     ReactiveFormsModule,
     FormsModule,
     MatSortModule,
@@ -42,7 +44,9 @@ interface WorkingData {
 export class SortableTable implements OnInit {
   @Input() selectedStorageId: string | null = null;
   @Output() clickReportWithStorageId: EventEmitter<number> = new EventEmitter<number>();
+  @Output() checkedStorageIds = new EventEmitter<string[]>();
 
+  protected dataLoaded = false;
   protected data?: WorkingData;
   protected tableDataSort?: MatSort;
   protected tableDataSource: MatTableDataSource<RowData> = new MatTableDataSource<RowData>();
@@ -104,6 +108,8 @@ export class SortableTable implements OnInit {
     if (statusColumns.length !== 1) {
       throw new Error(`SortableTableData.set tableData(): Expected column ${STATUS_COLUMN_NAME}`);
     }
+    this.reportCheckedStorageIds();
+    this.dataLoaded = true;
   }
 
   protected allChecked(): boolean {
@@ -140,7 +146,7 @@ export class SortableTable implements OnInit {
     }
   }
 
-  protected checkAll(value: boolean): void {
+  private checkAll(value: boolean): void {
     if (this.data) {
       for (const row of this.data.rows) {
         row.checked = value;
@@ -155,11 +161,13 @@ export class SortableTable implements OnInit {
       } else {
         this.checkAll(false);
       }
+      this.reportCheckedStorageIds();
     }
   }
 
   protected toggleCheck(row: RowData): void {
     row.checked = !row.checked;
+    this.reportCheckedStorageIds();
   }
 
   protected getShownColumnNames(): string[] {
@@ -199,6 +207,14 @@ export class SortableTable implements OnInit {
       }
     }
     return 'none';
+  }
+
+  private reportCheckedStorageIds(): void {
+    if (this.data) {
+      this.checkedStorageIds.emit(
+        this.data.rows.filter((r) => r.checked === true).map((r) => r.fields[STORAGE_ID_COLUMN_NAME]),
+      );
+    }
   }
 
   private setCheckBoxSize(value: number): void {

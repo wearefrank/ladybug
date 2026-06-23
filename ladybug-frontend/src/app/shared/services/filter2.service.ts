@@ -1,7 +1,7 @@
-import { ErrorHandler, inject, Injectable } from '@angular/core';
+import { ErrorHandler, inject, Injectable, OnDestroy } from '@angular/core';
 import { View } from '../interfaces/view';
 import { FilterFromUrl } from './tab.service';
-import { BehaviorSubject, firstValueFrom, Observable } from 'rxjs';
+import { BehaviorSubject, debounceTime, firstValueFrom, Observable, Subject, Subscription } from 'rxjs';
 import { HttpService } from './http.service';
 import { ClientSettingsService } from './client.settings.service';
 
@@ -28,27 +28,54 @@ export interface FixedFilters {
 @Injectable({
   providedIn: 'root',
 })
-export class Filter2Service {
+export class Filter2Service implements OnDestroy {
   private currentView?: View;
-  private urlFilters: FilterFromUrl[] = [];
-  private viewFilters: FilterFromUrl[] = [];
   private notShownMetadataNames = new Set<string>();
   private numericMetadataNames = new Set<string>();
   private columns: Column[] = [];
-  private userFilters: Map<string, string> = new Map<string, string>();
   private tableDataSubject = new BehaviorSubject<TableData | undefined>(undefined);
   private userFilterColumnsSubject = new BehaviorSubject<Column[] | undefined>(undefined);
   private userFilterChoicesSubject = new BehaviorSubject<Map<string, string[]> | undefined>(undefined);
   private fixedFiltersSubject = new BehaviorSubject<FixedFilters | undefined>(undefined);
-
+  private userFiltersSubject = new Subject<Map<string, string>>();
+  private userFilters$ = this.userFiltersSubject.pipe(debounceTime(300));
   private httpService = inject(HttpService);
   private clientSettingsService = inject(ClientSettingsService);
   private errorHandling = inject(ErrorHandler);
+  private subscriptions = new Subscription();
 
-  tableData$: Observable<TableData | undefined> = this.tableDataSubject.asObservable();
-  userFilterColumns$: Observable<Column[] | undefined> = this.userFilterColumnsSubject.asObservable();
-  userFilterChoices$: Observable<Map<string, string[]> | undefined> = this.userFilterChoicesSubject.asObservable();
-  fixedFilters$: Observable<FixedFilters | undefined> = this.fixedFiltersSubject.asObservable();
+  public urlFilters: FilterFromUrl[] = [];
+  public viewFilters: FilterFromUrl[] = [];
+  private _userFiltersBeingEdited: Record<string, string> = {};
+  public set userFiltersBeingEdited(_userFiltersBeingEdited: Record<string, string>) {
+    this._userFiltersBeingEdited = _userFiltersBeingEdited;
+    this.userFiltersSubject.next(new Map<string, string>(Object.entries(this._userFiltersBeingEdited)));
+  }
+  public get userFiltersBeingEdited(): Record<string, string> {
+    return this._userFiltersBeingEdited;
+  }
+  public shouldShowFilterDrawer = false;
+  public lastMetadata: Record<string, string>[] = [];
+  public tableData$: Observable<TableData | undefined> = this.tableDataSubject.asObservable();
+  public userFilterColumns$: Observable<Column[] | undefined> = this.userFilterColumnsSubject.asObservable();
+  public userFilterChoices$: Observable<Map<string, string[]> | undefined> =
+    this.userFilterChoicesSubject.asObservable();
+  public fixedFilters$: Observable<FixedFilters | undefined> = this.fixedFiltersSubject.asObservable();
+
+  constructor() {
+    const userFilterSubscription = this.userFilters$.subscribe((userFilters) => {
+      this.update(userFilters);
+    });
+    this.subscriptions.add(userFilterSubscription);
+    const maxAmountOfRecordsSubscription = this.clientSettingsService.amountOfRecordsInTableObservable.subscribe(() => {
+      this.resetFilters();
+    });
+    this.subscriptions.add(maxAmountOfRecordsSubscription);
+  }
+
+  ngOnDestroy(): void {
+    this.subscriptions.unsubscribe();
+  }
 
   setCurrentView(currentView: View): void {
     this.currentView = currentView;
@@ -60,15 +87,33 @@ export class Filter2Service {
     this.initialize();
   }
 
-  updateUserFilterContext(filterName: string, filterContext: string): void {
-    if (filterContext.length > 0) {
-      this.userFilters.set(filterName, filterContext);
-    } else {
-      this.userFilters.delete(filterName);
-    }
+  refresh(): void {
     if (this.currentView) {
-      this.update();
+      this.initialize();
     }
+  }
+
+  onUserFilterChanged(): void {
+    this.userFiltersSubject.next(new Map<string, string>(Object.entries(this.userFiltersBeingEdited)));
+  }
+
+  updateFilter(value: string, columnName: string): void {
+    if (value.length === 0) {
+      delete this.userFiltersBeingEdited[columnName];
+    } else {
+      this.userFiltersBeingEdited[columnName] = value;
+    }
+    this.onUserFilterChanged();
+  }
+
+  removeFilter(metadataName: string): void {
+    delete this.userFiltersBeingEdited[metadataName];
+    this.onUserFilterChanged();
+  }
+
+  resetFilters(): void {
+    this.userFiltersBeingEdited = {};
+    this.onUserFilterChanged();
   }
 
   private initialize(): void {
@@ -82,7 +127,7 @@ export class Filter2Service {
         viewFilters: this.viewFilters,
       });
       this.userFilterColumnsSubject.next(this.columns.filter((c) => c.shown === true));
-      this.update();
+      this.resetFilters();
     }
   }
 
@@ -130,9 +175,9 @@ export class Filter2Service {
     }
   }
 
-  private update(): void {
+  private update(userFiltersMap: Map<string, string>): void {
     const userFilters: FilterFromUrl[] = [];
-    for (const [key, value] of this.userFilters.entries()) {
+    for (const [key, value] of userFiltersMap.entries()) {
       userFilters.push({
         metadataName: key,
         value,
@@ -148,6 +193,7 @@ export class Filter2Service {
       }),
     )
       .then((metadata) => {
+        this.lastMetadata = metadata;
         this.tableDataSubject.next({
           rows: metadata,
           columns: this.columns,
@@ -169,7 +215,7 @@ export class Filter2Service {
       }
       const MAX_AMOUNT_OF_FILTER_SUGGESTIONS = 15;
       const uniqueValues: string[] =
-        uniqueValuesSet.size < MAX_AMOUNT_OF_FILTER_SUGGESTIONS ? this.sortUniqueValues(uniqueValuesSet) : [];
+        uniqueValuesSet.size <= MAX_AMOUNT_OF_FILTER_SUGGESTIONS ? this.sortUniqueValues(uniqueValuesSet) : [];
       result.set(column.name, uniqueValues);
     }
     return result;

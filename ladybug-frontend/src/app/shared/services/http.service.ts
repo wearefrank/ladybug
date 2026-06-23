@@ -58,8 +58,18 @@ export class HttpService {
     });
   }
 
+  // TODO: Do not use this one, but getUserHelp2.
   getUserHelp(storage: string, metadataNames: string[]): Observable<Report> {
     return this.http.get<Report>(`api/metadata/${storage}/userHelp`, {
+      params: {
+        metadataNames: metadataNames,
+      },
+    });
+  }
+
+  // TODO: Rename to getUserHelp.
+  getUserHelp2(storage: string, metadataNames: string[]): Observable<Record<string, string>> {
+    return this.http.get<Record<string, string>>(`api/metadata/${storage}/userHelp`, {
       params: {
         metadataNames: metadataNames,
       },

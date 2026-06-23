@@ -1,0 +1,55 @@
+@if (filterService.shouldShowFilterDrawer) {
+  <div data-cy-debug="filter-side-drawer" class="filter-vertical-panel" @removeTrigger>
+    <div class="panel-container">
+      <h1 class="h1 filter-label">Filter</h1>
+      <div class="filter-input-container">
+        @for (column of shownColumns; track column.name) {
+          <div class="input-container">
+            <label data-cy-debug="filterLabel" class="metadata-input-label">{{ column.label| shortenedTableHeader | titlecase }}</label>
+            <div class="metadata-input-container input-group">
+              <input
+                class="form-control"
+                type="text"
+                data-cy-debug="tableFilter"
+                [title]="toolTipSuggestions?.get(column.name)"
+                [matAutocomplete]="auto"
+                [(ngModel)]="filterService.userFiltersBeingEdited[column.name]"
+                (input)="filterService.onUserFilterChanged()">
+              <div class="input-group-append input-group-append">
+                <button
+                  class="btn btn-sm btn-danger button-clear-text input-group-text"
+                  data-cy-debug="filterClearButton"
+                  (click)="filterService.removeFilter(column.name)">
+                  Clear
+                </button>
+              </div>
+            </div>
+            <mat-autocomplete
+              #auto="matAutocomplete"
+              (optionSelected)="filterService.updateFilter($event.option.value, column.name)">
+              @for (option of userFilterChoices.get(column.name); track option) {
+                <mat-option
+                  class="filter-option"
+                  data-cy-debug="matAutocompleteOption"
+                  [value]="option">
+                  {{ option }}
+                </mat-option>
+              }
+            </mat-autocomplete>
+          </div>
+        }
+      </div>
+      <div class="btn-container">
+        <button class="close-filter-btn btn btn-info" data-cy-debug="close-filter-btn" (click)="filterService.shouldShowFilterDrawer = false">
+          Close
+        </button>
+        <button
+          class="clear-filter-btn btn btn-info"
+          data-cy-debug="clear-filter-btn"
+          (click)="filterService.resetFilters()">
+          Clear
+        </button>
+      </div>
+    </div>
+  </div>
+}

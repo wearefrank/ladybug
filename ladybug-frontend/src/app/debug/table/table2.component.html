@@ -1,0 +1,132 @@
+<div data-cy-debug="root" class="table-wrapper">
+  <app-filter-side-drawer2 [currentView]="currentView"></app-filter-side-drawer2>
+  <div class="button-row">
+    <button data-cy-debug="refresh" class="btn btn-info btn-table" title="Refresh" (click)="refresh()">
+      <i class="fa fa-refresh"></i>
+    </button>
+    <button data-cy-debug="openSettings" class="btn btn-info btn-table" title="Settings"
+            (click)="tableSettingsModal.open()">
+      <i class="fa fa-cog"></i>
+    </button>
+    <button data-cy-debug="filter" class="btn btn-info btn-table" title="Filter" (click)="toggleFilter()">
+      <i class="fa fa-filter"></i>
+    </button>
+    <div ngbDropdown title="Download">
+      <button ngbDropdownToggle data-cy-debug="download" class="btn btn-info">
+        <i class="fa fa-download px-2"></i><span class="caret"></span>
+      </button>
+      <div ngbDropdownMenu>
+        <div class="dropdown-checkbox">
+          <input data-cy-debug="forMultipleOmitIfXmlEmpty" type="checkbox" (change)="onForMultipleOmitIfXmlEmptyChanged($event)">
+          <label class="dropdown-checkbox-label">If multiple selected, then omit empty reports</label>
+        </div>
+        <button ngbDropdownItem (click)="downloadReports(true, true)">
+          Report & XML summary
+        </button>
+        <button ngbDropdownItem (click)="downloadReports(false, true)">
+          XML summary only
+        </button>
+        <button ngbDropdownItem (click)="downloadReports(true, false)">
+          Report only
+        </button>
+        <hr class="dropdown-separator"/>
+        <button ngbDropdownItem (click)="downloadReportsAsCsv()">
+          CSV summary only (empty reports included)
+        </button>
+      </div>
+    </div>
+    <button data-cy-debug="upload" class="btn btn-info" title="Upload" (click)="uploadFileTable.click()">
+      <i class="fa fa-upload"></i>
+      <input [(ngModel)]="currentUploadFile" #uploadFileTable type="file" class="upload" (change)="uploadReports($event)">
+    </button>
+    <button data-cy-debug="openSelected" class="btn btn-info btn-table" title="Open Selected Reports" (click)="openSelected()">
+      Open Selected
+    </button>
+    @if (currentView && currentView.crudStorage) {
+      <button data-cy-debug="deleteSelected" class="btn btn-danger btn-table" title="Delete selected reports" (click)="deleteSelected()">
+        <i class="fa fa-trash"></i>
+      </button>
+    }
+    <button data-cy-debug="deleteAll" class="btn btn-danger btn-table" title="Delete all reports" (click)="openDeleteModal()">
+      Delete all
+    </button>
+
+    <div class="input-group w-auto">
+      <input data-cy-debug="displayAmount" type="number" class="form-control input-field"
+              [ngModel]="tableSettings.displayAmount" (keydown.enter)="changeTableLimit($event)"
+              (blur)="changeTableLimit($event)">
+      <div data-cy-debug="amountShown" class="input-group-append">
+        <div class="input-group-text">/{{ metadataCount }}</div>
+      </div>
+    </div>
+
+    @if (views !== undefined && currentView !== undefined) {
+      <app-view-dropdown [currentView]="currentView" [views]="views" (viewChanged)="changeView($event)"/>
+    }
+
+    <div data-cy-debug-in-progress-counter class="btn btn-static"
+    >Reports in progress: {{ tableSettings.numberOfReportsInProgress }}
+    </div>
+    @if (tableSettings.numberOfReportsInProgress > 0 && openInProgress) {
+      <span class="progress-buttons">
+        <div class="btn btn-static "> Estimated memory usage of reports in
+          progress: {{ tableSettings.estimatedMemoryUsage }} Bytes
+        </div>
+        <div class="input-group w-auto h-auto">
+          <input #openIndex type="number" min="0" class="form-control input-field" data-cy-debug="openInProgressNo"
+                  [formControl]="openInProgress"
+                  [value]="tableSettings.numberOfReportsInProgress" [max]="tableSettings.numberOfReportsInProgress"/>
+          <div class="input-group-append">
+            <button data-cy-debug="openInProgress" class="btn btn-info" type="button"
+                    [disabled]="openInProgress.invalid"
+                    (click)="openReportInProgress(+openIndex.value)">Open
+            </button>
+          </div>
+        </div>
+        <div class="input-group w-auto">
+          <input #deleteIndex type="number" min="0" class="form-control input-field"
+                  [value]="tableSettings.numberOfReportsInProgress" [max]="tableSettings.numberOfReportsInProgress"/>
+          <div class="input-group-append">
+            <button class="btn btn-info" type="button"
+                    (click)="deleteReportInProgress(+deleteIndex.value)"><i class="fa fa-trash"></i></button>
+          </div>
+        </div>
+      </span>
+    }
+
+    @switch (checkedStorageIds.length) {
+      @case (1) {
+        <button data-cy-debug="openReportTab" class="btn btn-info btn-table" title="Open In New Tab"
+                (click)="openReportInTab()">
+          Open In New Tab
+        </button>
+      }
+      @case (2) {
+        <button data-cy-debug="compare" class="btn btn-info btn-table" title="Compare" (click)="compareTwoReports()">
+          Compare
+        </button>
+      }
+    }
+
+    @if (checkedStorageIds.length > 0 && appVariablesService.getVariable('customReportActionButtonText') !== null) {
+      <button data-cy-test="customReportAction" class="btn btn-info" [title]="appVariablesService.getVariable('customReportActionButtonText')"
+                (click)="processCustomReportAction()">
+          {{ appVariablesService.getVariable('customReportActionButtonText') }}
+      </button>
+    }
+    <app-active-filters class="ml-2" (click)="toggleFilter()"/>
+  </div>
+  @if (hasTimedOut) {
+    <h4 class="progress-report-timeout">[One or more reports are in progress for more
+      than {{ (reportsInProgressThreshold ?? 1) / 1000 / 60 }} minutes]</h4>
+  }
+  <app-sortable-table
+    [selectedStorageId]="selectedStorageId"
+    (checkedStorageIds)= "onCheckedStorageIds($event)"
+    (clickReportWithStorageId)="openReport($event)">
+  </app-sortable-table>
+</div>
+
+<!-- TODO: Enrich modal dialog by injecting Filter2Service and show filters in tab -->
+<app-table-settings-modal/>
+<app-delete-modal (confirmDeleteEvent)="deleteAll()"></app-delete-modal>

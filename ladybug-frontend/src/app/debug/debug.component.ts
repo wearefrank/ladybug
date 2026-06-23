@@ -1,5 +1,4 @@
 import { Component, inject, OnInit, ViewChild } from '@angular/core';
-import { TableComponent } from './table/table.component';
 import { ToastService } from '../shared/services/toast.service';
 import { HttpService } from '../shared/services/http.service';
 import { View } from '../shared/interfaces/view';
@@ -9,30 +8,33 @@ import { DebugReportComponent } from '../report/debug-report.component/debug-rep
 import { HierarchicalReport } from '../shared/interfaces/hierarchical-report';
 import { ActivatedRoute } from '@angular/router';
 import { FilterFromUrl, TabService } from '../shared/services/tab.service';
+import { Filter2Service } from '../shared/services/filter2.service';
+import { TableComponent2 } from './table/table2.component';
 
 @Component({
   selector: 'app-debug',
   templateUrl: './debug.component.html',
   styleUrls: ['./debug.component.css'],
   standalone: true,
-  imports: [TableComponent, DebugReportComponent],
+  imports: [TableComponent2, DebugReportComponent],
 })
 export class DebugComponent implements OnInit {
   @ViewChild('reportComponent') customReportComponent!: DebugReportComponent;
   currentView?: View;
   views?: View[];
 
-  protected urlFilters: FilterFromUrl[] = [];
   private httpService = inject(HttpService);
   private toastService = inject(ToastService);
   private errorHandler = inject(ErrorHandling);
   private tabService = inject(TabService);
+  private filterService = inject(Filter2Service);
   private route = inject(ActivatedRoute);
 
   ngOnInit(): void {
-    this.urlFilters = this.tabService.routeGetFilters(this.route.snapshot);
+    const urlFilters: FilterFromUrl[] = this.tabService.routeGetFilters(this.route.snapshot);
+    this.filterService.setUrlFilters(urlFilters);
     console.log('Initialized URL filters from route:');
-    for (const urlFilter of this.urlFilters) {
+    for (const urlFilter of urlFilters) {
       console.log(`  ${urlFilter.metadataName}=${urlFilter.value}`);
     }
     this.retrieveViews();
