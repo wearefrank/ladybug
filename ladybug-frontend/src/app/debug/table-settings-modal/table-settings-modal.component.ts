@@ -5,7 +5,7 @@ import { ServerSettings, SettingsService } from '../../shared/services/settings.
 import { ToastService } from '../../shared/services/toast.service';
 import { ClientSettingsService } from '../../shared/services/client.settings.service';
 import { ErrorHandling } from '../../shared/classes/error-handling.service';
-import { Filter2Service } from '../../shared/services/filter2.service';
+import { FilterService } from '../../shared/services/filter.service';
 
 @Component({
   selector: 'app-table-settings-modal',
@@ -25,7 +25,7 @@ export class TableSettingsModalComponent implements OnInit {
   private modalService = inject(NgbModal);
   public clientSettingsService = inject(ClientSettingsService);
   public serverSettingsService = inject(SettingsService);
-  protected filterService = inject(Filter2Service);
+  protected filterService = inject(FilterService);
   private toastService = inject(ToastService);
 
   protected unsavedChanges = false;

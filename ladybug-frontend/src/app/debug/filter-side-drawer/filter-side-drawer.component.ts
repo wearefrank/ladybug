@@ -6,7 +6,7 @@ import { FormsModule } from '@angular/forms';
 import { TitleCasePipe } from '@angular/common';
 import { View } from '../../shared/interfaces/view';
 import { ShortenedTableHeaderPipe } from '../../shared/pipes/shortened-table-header.pipe';
-import { Column, Filter2Service } from '../../shared/services/filter2.service';
+import { Column, FilterService } from '../../shared/services/filter.service';
 import { HttpService } from '../../shared/services/http.service';
 import { ErrorHandling } from '../../shared/classes/error-handling.service';
 
@@ -45,7 +45,7 @@ export class FilterSideDrawerComponent implements OnDestroy, OnInit {
   protected toolTipSuggestions?: Map<string, string>;
   private subscriptions: Subscription = new Subscription();
 
-  protected filterService = inject(Filter2Service);
+  protected filterService = inject(FilterService);
   private httpService = inject(HttpService);
   private errorHandler = inject(ErrorHandling);
   private initialized = false;

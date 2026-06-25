@@ -3,7 +3,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { DebugTableGridComponent } from './debug-table-grid.component';
-import { TableData } from '../../shared/services/filter2.service';
+import { TableData } from '../../shared/services/filter.service';
 import { By } from '@angular/platform-browser';
 
 describe('DebugTableGridComponent', () => {

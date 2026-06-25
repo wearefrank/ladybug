@@ -3,7 +3,7 @@ import { DictionaryPipe } from '../../shared/pipes/dictionary.pipe';
 import { NgClass, TitleCasePipe } from '@angular/common';
 import { catchError, Subscription } from 'rxjs';
 import { ErrorHandling } from '../../shared/classes/error-handling.service';
-import { Filter2Service } from '../../shared/services/filter2.service';
+import { FilterService } from '../../shared/services/filter.service';
 
 @Component({
   selector: 'app-active-filters',
@@ -16,7 +16,7 @@ export class ActiveFiltersComponent implements OnInit, OnDestroy {
   protected activeFilters: Map<string, string> = new Map<string, string>();
   private filterContextSubscription: Subscription = new Subscription();
 
-  private filterService = inject(Filter2Service);
+  private filterService = inject(FilterService);
   private errorHandler = inject(ErrorHandling);
 
   ngOnInit(): void {

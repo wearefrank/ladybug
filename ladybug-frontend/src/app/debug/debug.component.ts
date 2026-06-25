@@ -8,7 +8,7 @@ import { DebugReportComponent } from '../report/debug-report.component/debug-rep
 import { HierarchicalReport } from '../shared/interfaces/hierarchical-report';
 import { ActivatedRoute } from '@angular/router';
 import { FilterFromUrl, TabService } from '../shared/services/tab.service';
-import { Filter2Service } from '../shared/services/filter2.service';
+import { FilterService } from '../shared/services/filter.service';
 import { DebugTableWithControlsComponent } from './debug-table-with-controls/debug-table-with-controls.component';
 
 @Component({
@@ -27,7 +27,7 @@ export class DebugComponent implements OnInit {
   private toastService = inject(ToastService);
   private errorHandler = inject(ErrorHandling);
   private tabService = inject(TabService);
-  private filterService = inject(Filter2Service);
+  private filterService = inject(FilterService);
   private route = inject(ActivatedRoute);
 
   ngOnInit(): void {

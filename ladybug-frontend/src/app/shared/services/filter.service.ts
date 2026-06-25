@@ -30,7 +30,7 @@ export interface FixedFilters {
 @Injectable({
   providedIn: 'root',
 })
-export class Filter2Service implements OnDestroy {
+export class FilterService implements OnDestroy {
   private currentView?: View;
   private notShownMetadataNames = new Set<string>();
   private numericMetadataNames = new Set<string>();

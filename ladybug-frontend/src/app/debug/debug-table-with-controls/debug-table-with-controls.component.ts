@@ -9,7 +9,7 @@ import { Report } from '../../shared/interfaces/report';
 import { ToastService } from '../../shared/services/toast.service';
 import { TabService } from '../../shared/services/tab.service';
 import { AppVariablesService } from '../../shared/services/app.variables.service';
-import { Filter2Service } from '../../shared/services/filter2.service';
+import { FilterService } from '../../shared/services/filter.service';
 import { ActiveFiltersComponent } from '../active-filters/active-filters.component';
 import { FormControl, FormsModule, ReactiveFormsModule, ValidatorFn, Validators } from '@angular/forms';
 import {
@@ -94,7 +94,7 @@ export class DebugTableWithControlsComponent implements OnInit, OnDestroy {
   private clientSettingsService = inject(ClientSettingsService);
   private toastService = inject(ToastService);
   private tabService = inject(TabService);
-  private filterService = inject(Filter2Service);
+  private filterService = inject(FilterService);
   private errorHandler = inject(ErrorHandling);
   private debugTab = inject(DebugTabService);
 

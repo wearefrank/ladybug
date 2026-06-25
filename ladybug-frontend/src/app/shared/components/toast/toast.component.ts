@@ -5,7 +5,7 @@ import { ToastService } from '../../services/toast.service';
 import { Subscription } from 'rxjs';
 import { ClipboardModule } from '@angular/cdk/clipboard';
 import { NgClass } from '@angular/common';
-import { Filter2Service } from '../../services/filter2.service';
+import { FilterService } from '../../services/filter.service';
 
 @Component({
   selector: 'app-toast',
@@ -25,7 +25,7 @@ export class ToastComponent implements OnInit, OnDestroy {
 
   private modalService = inject(NgbModal);
   private toastService = inject(ToastService);
-  private filterService = inject(Filter2Service);
+  private filterService = inject(FilterService);
   private ngZone = inject(NgZone);
 
   ngOnInit(): void {

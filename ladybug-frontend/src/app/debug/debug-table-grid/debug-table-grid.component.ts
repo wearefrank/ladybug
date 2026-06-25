@@ -8,7 +8,7 @@ import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { ErrorHandling } from '../../shared/classes/error-handling.service';
 import { ShortenedTableHeaderPipe } from '../../shared/pipes/shortened-table-header.pipe';
 import { ClientSettingsService } from '../../shared/services/client.settings.service';
-import { Column, Filter2Service, TableData } from '../../shared/services/filter2.service';
+import { Column, FilterService, TableData } from '../../shared/services/filter.service';
 import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner/loading-spinner.component';
 
 const STORAGE_ID_COLUMN_NAME = 'storageId';
@@ -57,7 +57,7 @@ export class DebugTableGridComponent implements OnInit {
   private clientSettingsService = inject(ClientSettingsService);
   private errorHandler = inject(ErrorHandling);
   private subscriptions = new Subscription();
-  private filterService = inject(Filter2Service);
+  private filterService = inject(FilterService);
 
   @ViewChild(MatSort)
   protected set matSort(sort: MatSort) {
