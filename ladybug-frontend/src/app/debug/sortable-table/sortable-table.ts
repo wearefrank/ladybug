@@ -89,7 +89,8 @@ export class SortableTable implements OnInit {
     this.subscriptions.add(tableDataSubscription);
   }
 
-  private setTableData(argument: TableData): void {
+  // Not called directly in production - available for Karma tests.
+  setTableData(argument: TableData): void {
     this.data = {
       rows: argument.rows.map((r) => {
         return { checked: false, fields: r };
@@ -104,10 +105,7 @@ export class SortableTable implements OnInit {
     if (!this.data.numericMetadataNames.has(STORAGE_ID_COLUMN_NAME)) {
       throw new Error(`SortableTableData.set tableData(): Expected column ${STORAGE_ID_COLUMN_NAME} to be numeric`);
     }
-    const statusColumns: Column[] = this.data.columns.filter((c) => c.name === STATUS_COLUMN_NAME);
-    if (statusColumns.length !== 1) {
-      throw new Error(`SortableTableData.set tableData(): Expected column ${STATUS_COLUMN_NAME}`);
-    }
+    this.tableDataSource.data = this.data.rows;
     this.reportCheckedStorageIds();
     this.dataLoaded = true;
   }
@@ -170,16 +168,16 @@ export class SortableTable implements OnInit {
     this.reportCheckedStorageIds();
   }
 
+  protected getShownColumns(): Column[] {
+    return this.data?.columns.filter((c) => c.shown === true) ?? [];
+  }
+
   protected getShownColumnNames(): string[] {
     return this.getShownColumns().map((c) => c.name);
   }
 
   protected getShownColumnLabels(): string[] {
     return this.getShownColumns().map((c) => c.label);
-  }
-
-  private getShownColumns(): Column[] {
-    return this.data?.columns.filter((c) => c.shown === true) ?? [];
   }
 
   sortingDataAccessor(row: RowData, columnName: string): string | number {

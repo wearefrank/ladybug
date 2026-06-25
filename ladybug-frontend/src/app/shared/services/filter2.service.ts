@@ -8,8 +8,10 @@ import { ClientSettingsService } from './client.settings.service';
 export interface Column {
   name: string;
   label: string;
-  // The status and storageId columns should be present in the table cells,
-  // but they are not necessarily shown.
+  // The status and storageId columns can be present in the table cells,
+  // also if they are not shown. This allows coloring the table rows
+  // by status when a status is known but when it is not shown because
+  // of filtering.
   shown: boolean;
 }
 

@@ -1,4 +1,4 @@
-@if (dataLoaded) {
+@if (dataLoaded && data) {
   <div data-cy-debug="table" class="table-responsive table-container">
     <table mat-table class="table mb-0" matSort [dataSource]="tableDataSource">
       <!--Header and row container for checkboxes-->
@@ -19,16 +19,15 @@
         </td>
       </ng-container>
 
-      @for (name of this.getShownColumnNames(); let index = $index; track name) {
-        @let header = data!.columns[$index].label;
+      @for (column of getShownColumns(); let index = $index; track column.name) {
         <!--For every metadata label, a header and row structure is created-->
-        <ng-container [matColumnDef]="name">
+        <ng-container [matColumnDef]="column.name">
           <th mat-header-cell mat-sort-header
               data-cy-debug="metadataLabel"
               class="table-id-cell header-cell header-padding"
               *matHeaderCellDef
-              [title]="header">
-            {{ header | shortenedTableHeader }}
+              [title]="column.label">
+            {{ column.label | shortenedTableHeader }}
           </th>
           <!-- [style.background-color] is not inherited from table row.
                 That style is overridden by something from bootstrap:
@@ -37,16 +36,16 @@
               *matCellDef="let row"
               [style.padding]="tableSpacing"
               [class]="getStatusClass(row)"
-              [title]="header">
-            {{ getMetadata(row, name)|tableCellShortener }}
+              [title]="column.label">
+            {{ getMetadata(row, column.name)|tableCellShortener }}
           </td>
         </ng-container>
       }
 
       <!--Values are passed to their respective header and row elements-->
-      <tr mat-header-row *matHeaderRowDef="getShownColumnLabels(); sticky: true" [style.font-size]="fontSize"></tr>
+      <tr mat-header-row *matHeaderRowDef="getShownColumnNames(); sticky: true" [style.font-size]="fontSize"></tr>
       <tr data-cy-debug="tableRow" mat-row class="table-row"
-          *matRowDef="let row; let rowIndex = index; columns: getShownColumnLabels()"
+          *matRowDef="let row of data.rows; let rowIndex = index; columns: getShownColumnNames()"
           [ngClass]="{'highlight': row.fields.storageId === selectedStorageId}"
           [attr.data-cy-record-table-index]="rowIndex"
           [class]="getStatusClass(row)"
