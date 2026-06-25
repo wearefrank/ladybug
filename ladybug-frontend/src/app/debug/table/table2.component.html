@@ -114,7 +114,7 @@
           {{ appVariablesService.getVariable('customReportActionButtonText') }}
       </button>
     }
-    <app-active-filters class="ml-2" (click)="toggleFilter()"/>
+    <app-active-filters (click)="toggleFilter()"/>
   </div>
   @if (hasTimedOut) {
     <h4 class="progress-report-timeout">[One or more reports are in progress for more

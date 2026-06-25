@@ -40,13 +40,12 @@ export class Filter2Service implements OnDestroy {
   private userFilterChoicesSubject = new BehaviorSubject<Map<string, string[]> | undefined>(undefined);
   private fixedFiltersSubject = new BehaviorSubject<FixedFilters | undefined>(undefined);
   private userFiltersSubject = new Subject<Map<string, string>>();
-  private userFilters$ = this.userFiltersSubject.pipe(debounceTime(300));
   private httpService = inject(HttpService);
   private clientSettingsService = inject(ClientSettingsService);
   private errorHandling = inject(ErrorHandler);
   private subscriptions = new Subscription();
   private subscribed = false;
-
+  public userFilters$ = this.userFiltersSubject.pipe(debounceTime(300));
   public urlFilters: FilterFromUrl[] = [];
   public viewFilters: FilterFromUrl[] = [];
   private _userFiltersBeingEdited: Record<string, string> = {};
