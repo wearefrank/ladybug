@@ -9,10 +9,10 @@
             type="checkbox"
             class="vertical-middle"
             title="Select all rows"
-            [checked]="allChecked()"
+            [checked]="allChecked"
             [style.width]="checkboxSize"
             [style.height]="checkboxSize"
-            (click)="toggleCheckAll()">
+            (click)="toggleCheckAll($event)">
         </th>
         <td mat-cell class="table-row-checkbox" *matCellDef="let row" [style.padding]="tableSpacing">
           <input type="checkbox" data-cy-debug="selectOne" [checked]="row.checked" [style.width]="checkboxSize" [style.height]="checkboxSize" (click)="toggleCheck(row)">
@@ -43,9 +43,9 @@
       }
 
       <!--Values are passed to their respective header and row elements-->
-      <tr mat-header-row *matHeaderRowDef="getShownColumnNames(); sticky: true" [style.font-size]="fontSize"></tr>
+      <tr mat-header-row *matHeaderRowDef="getSelectAndOtherShownColumnNames(); sticky: true" [style.font-size]="fontSize"></tr>
       <tr data-cy-debug="tableRow" mat-row class="table-row"
-          *matRowDef="let row of data.rows; let rowIndex = index; columns: getShownColumnNames()"
+          *matRowDef="let row of data.rows; let rowIndex = index; columns: getSelectAndOtherShownColumnNames()"
           [ngClass]="{'highlight': row.fields.storageId === selectedStorageId}"
           [attr.data-cy-record-table-index]="rowIndex"
           [class]="getStatusClass(row)"

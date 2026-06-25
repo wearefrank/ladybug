@@ -50,6 +50,7 @@ export class DebugTableGridComponent implements OnInit {
   protected data?: WorkingData;
   protected tableDataSort?: MatSort;
   protected tableDataSource: MatTableDataSource<RowData> = new MatTableDataSource<RowData>();
+  protected allChecked = false;
   protected checkboxSize?: string;
   protected fontSize?: string;
   protected tableSpacing?: string;
@@ -112,7 +113,7 @@ export class DebugTableGridComponent implements OnInit {
     this.dataLoaded = true;
   }
 
-  protected allChecked(): boolean {
+  protected isAllChecked(): boolean {
     if (this.data) {
       if (this.data.rows.length === 0) {
         return false;
@@ -129,7 +130,7 @@ export class DebugTableGridComponent implements OnInit {
     }
   }
 
-  protected noneChecked(): boolean {
+  protected isNoneChecked(): boolean {
     if (this.data) {
       if (this.data.rows.length === 0) {
         return false;
@@ -152,21 +153,20 @@ export class DebugTableGridComponent implements OnInit {
         row.checked = value;
       }
     }
+    this.allChecked = value;
   }
 
-  protected toggleCheckAll(): void {
+  protected toggleCheckAll(beingCheckedEvent: Event): void {
+    const beingChecked: boolean = (beingCheckedEvent.target as HTMLInputElement).checked;
     if (this.data && this.data.rows.length > 0) {
-      if (this.noneChecked()) {
-        this.checkAll(true);
-      } else {
-        this.checkAll(false);
-      }
+      this.checkAll(beingChecked);
       this.reportCheckedStorageIds();
     }
   }
 
   protected toggleCheck(row: RowData): void {
     row.checked = !row.checked;
+    this.allChecked = this.isAllChecked();
     this.reportCheckedStorageIds();
   }
 
@@ -174,12 +174,8 @@ export class DebugTableGridComponent implements OnInit {
     return this.data?.columns.filter((c) => c.shown === true) ?? [];
   }
 
-  protected getShownColumnNames(): string[] {
-    return this.getShownColumns().map((c) => c.name);
-  }
-
-  protected getShownColumnLabels(): string[] {
-    return this.getShownColumns().map((c) => c.label);
+  protected getSelectAndOtherShownColumnNames(): string[] {
+    return ['select', ...this.getShownColumns().map((c) => c.name)];
   }
 
   sortingDataAccessor(row: RowData, columnName: string): string | number {
