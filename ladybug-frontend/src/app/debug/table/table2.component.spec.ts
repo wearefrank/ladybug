@@ -4,7 +4,6 @@ import { TableComponent2 } from './table2.component';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { View } from '../../shared/interfaces/view';
 import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
-import { FilterCombineStrategy } from './filter-combine-strategy';
 
 describe('TableComponent', () => {
   let component: TableComponent2;
@@ -13,7 +12,7 @@ describe('TableComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [TableComponent2],
-      providers: [provideHttpClient(withInterceptorsFromDi()), provideHttpClientTesting(), FilterCombineStrategy],
+      providers: [provideHttpClient(withInterceptorsFromDi()), provideHttpClientTesting()],
     }).compileComponents();
   });
 

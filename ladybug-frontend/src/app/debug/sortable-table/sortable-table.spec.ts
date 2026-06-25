@@ -29,15 +29,9 @@ describe('TableComponent', () => {
 
   it('When column is numeric then sorted numerically', () => {
     const tableData: TableData = {
-      columns: [
-        { name: 'storageId', label: 'Storage Id', shown: true },
-      ],
+      columns: [{ name: 'storageId', label: 'Storage Id', shown: true }],
       numericMetadataNames: new Set<string>(['storageId']),
-      rows: [
-        { storageId: '1' },
-        { storageId: '10' },
-        { storageId: '2'},
-      ]
+      rows: [{ storageId: '1' }, { storageId: '10' }, { storageId: '2' }],
     };
     component.setTableData(tableData);
     fixture.detectChanges();
@@ -49,7 +43,7 @@ describe('TableComponent', () => {
     checkColumn(['1', '2', '10'], 0, 1);
     sortArrow.nativeElement.click();
     checkColumn(['10', '2', '1'], 0, 1);
-  })
+  });
 
   it('When column is text then sorted alphabetically', () => {
     const tableData: TableData = {
@@ -62,7 +56,7 @@ describe('TableComponent', () => {
         { storageId: '1', text: 'T1' },
         { storageId: '10', text: 'T10' },
         { storageId: '2', text: 'T2' },
-      ]
+      ],
     };
     component.setTableData(tableData);
     fixture.detectChanges();
@@ -76,7 +70,7 @@ describe('TableComponent', () => {
     checkColumn(['T1', 'T10', 'T2'], 1, 2);
     sortArrow.nativeElement.click();
     checkColumn(['T2', 'T10', 'T1'], 1, 2);
-  })
+  });
 
   it('When status is not shown then coloring is still done based on status', () => {
     const tableData: TableData = {
@@ -89,7 +83,7 @@ describe('TableComponent', () => {
         { storageId: '1', status: 'error' },
         { storageId: '10', status: 'success' },
         { storageId: '2', status: 'success' },
-      ]
+      ],
     };
     component.setTableData(tableData);
     fixture.detectChanges();
@@ -102,9 +96,9 @@ describe('TableComponent', () => {
     checkStatuses(['statusError', 'statusSuccess', 'statusSuccess']);
     sortArrow.nativeElement.click();
     checkStatuses(['statusSuccess', 'statusSuccess', 'statusError']);
-  })
+  });
 
-  function checkColumn(expected: string[], columnNumber: number, expectedNumColumns: number) {
+  function checkColumn(expected: string[], columnNumber: number, expectedNumColumns: number): void {
     const rowElements = fixture.debugElement.queryAll(By.css('[data-cy-debug="tableRow"]'));
     expect(rowElements.length).toEqual(expected.length);
     for (const [index, rowElement] of rowElements.entries()) {
@@ -114,7 +108,7 @@ describe('TableComponent', () => {
     }
   }
 
-  function checkStatuses(expected: string[]) {
+  function checkStatuses(expected: string[]): void {
     const rowElements = fixture.debugElement.queryAll(By.css('[data-cy-debug="tableRow"]'));
     expect(rowElements.length).toEqual(expected.length);
     for (const [index, rowElement] of rowElements.entries()) {

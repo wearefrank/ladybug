@@ -4,7 +4,6 @@ import { Component, EventEmitter, inject, Input, OnDestroy, OnInit, Output, View
 import { HelperService } from '../../shared/services/helper.service';
 import { HttpService } from '../../shared/services/http.service';
 import { TableSettingsModalComponent } from './table-settings-modal/table-settings-modal.component';
-import { TableSettings } from '../../shared/interfaces/table-settings';
 import { catchError, Subscription } from 'rxjs';
 import { Report } from '../../shared/interfaces/report';
 import { ToastService } from '../../shared/services/toast.service';
@@ -20,7 +19,6 @@ import {
   NgbDropdownMenu,
   NgbDropdownToggle,
 } from '@ng-bootstrap/ng-bootstrap';
-import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { View } from '../../shared/interfaces/view';
 import { OptionsSettings } from '../../shared/interfaces/options-settings';
 import { ErrorHandling } from 'src/app/shared/classes/error-handling.service';
@@ -51,7 +49,6 @@ import { FilterSideDrawer2Component } from '../filter-side-drawer/filter-side-dr
     FormsModule,
     ActiveFiltersComponent,
     TableSettingsModalComponent,
-    MatTableModule,
     ViewDropdownComponent,
     DeleteModalComponent,
     SortableTable,
@@ -118,7 +115,9 @@ export class TableComponent2 implements OnInit, OnDestroy {
       this.refresh(condition),
     );
     this.subscriptions.add(refreshTable);
-    const displayAmountSubscription = this.clientSettingsService.amountOfRecordsInTableObservable.subscribe((amount) => this.displayAmount = amount);
+    const displayAmountSubscription = this.clientSettingsService.amountOfRecordsInTableObservable.subscribe(
+      (amount) => (this.displayAmount = amount),
+    );
     this.subscriptions.add(displayAmountSubscription);
   }
 
@@ -205,6 +204,7 @@ export class TableComponent2 implements OnInit, OnDestroy {
   }
 
   toggleFilter(): void {
+    // TODO: Impacts the toast component. Do we need to detect changes?
     this.filterService.shouldShowFilterDrawer = !this.filterService.shouldShowFilterDrawer;
   }
 
