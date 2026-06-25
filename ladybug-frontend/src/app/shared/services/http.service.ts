@@ -35,18 +35,6 @@ export class HttpService {
     return this.http.get<Record<string, View>>('api/testtool/views').pipe(map((response) => Object.values(response)));
   }
 
-  // TODO: Replace by getMetadata.
-  getMetadataReports(view: View, params: MetadataParameters): Observable<Report[]> {
-    return this.http.get<Report[]>(`api/metadata/${view.storageName}`, {
-      params: {
-        limit: params.limit,
-        filterHeader: params.filterHeader,
-        filter: params.filter,
-        metadataNames: params.metadataNames,
-      },
-    });
-  }
-
   getMetadata(view: View, params: MetadataParameters): Observable<Record<string, string>[]> {
     return this.http.get<Record<string, string>[]>(`api/metadata/${view.storageName}`, {
       params: {
