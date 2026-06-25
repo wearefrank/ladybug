@@ -12,23 +12,8 @@
   margin: 0 auto auto 0;
 }
 
-/* TODO: Does this belong in another component? */
-.filter-header {
-  vertical-align: middle;
-  padding-right: 0.25rem;
-}
-
 .input-field {
   width: 4rem;
-}
-
-/* TODO: Does this belong in another component? */
-.filter-option {
-  height: fit-content;
-
-  > span {
-    font-size: 9pt;
-  }
 }
 
 .progress-report-timeout {

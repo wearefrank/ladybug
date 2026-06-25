@@ -26,7 +26,6 @@ export interface FixedFilters {
   viewFilters: FilterFromUrl[];
 }
 
-// TODO: Should replace FilterService.
 @Injectable({
   providedIn: 'root',
 })

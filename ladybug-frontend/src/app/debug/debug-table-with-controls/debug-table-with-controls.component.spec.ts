@@ -22,11 +22,9 @@ describe('DebugTableWithControlsComponent', () => {
     component.currentView = {
       storageName: 'mockStorage',
       metadataNames: ['mockMetadata'],
-      // TODO: Am I confusing metadataNames and metadataLabels?
       metadataLabels: ['mockMetadata'],
       metadataTypes: new Map(),
     } as View;
-    // TODO: Pass this to the table component.
     fixture.detectChanges();
   });
 
