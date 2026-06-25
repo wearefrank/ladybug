@@ -9,14 +9,14 @@ import { HierarchicalReport } from '../shared/interfaces/hierarchical-report';
 import { ActivatedRoute } from '@angular/router';
 import { FilterFromUrl, TabService } from '../shared/services/tab.service';
 import { Filter2Service } from '../shared/services/filter2.service';
-import { TableComponent2 } from './table/table2.component';
+import { DebugTableWithControls } from './table/debug-table-with-controls.component';
 
 @Component({
   selector: 'app-debug',
   templateUrl: './debug.component.html',
   styleUrls: ['./debug.component.css'],
   standalone: true,
-  imports: [TableComponent2, DebugReportComponent],
+  imports: [DebugTableWithControls, DebugReportComponent],
 })
 export class DebugComponent implements OnInit {
   @ViewChild('reportComponent') customReportComponent!: DebugReportComponent;

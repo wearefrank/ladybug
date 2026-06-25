@@ -35,8 +35,8 @@ import { FilterSideDrawer2Component } from '../filter-side-drawer/filter-side-dr
 
 @Component({
   selector: 'app-table2',
-  templateUrl: './table2.component.html',
-  styleUrls: ['./table2.component.css'],
+  templateUrl: './debug-table-with-controls.component.html',
+  styleUrls: ['./debug-table-with-controls.component.css'],
   standalone: true,
   imports: [
     FilterSideDrawer2Component,
@@ -54,7 +54,7 @@ import { FilterSideDrawer2Component } from '../filter-side-drawer/filter-side-dr
     SortableTable,
   ],
 })
-export class TableComponent2 implements OnInit, OnDestroy {
+export class DebugTableWithControls implements OnInit, OnDestroy {
   private readonly defaultDisplayAmount: number = 10;
   private readonly subscriptions: Subscription = new Subscription();
   private readonly defaultReportInProgressValidators: ValidatorFn[] = [
