@@ -48,6 +48,7 @@ export class DebugComponent implements OnInit {
   protected onViewChange(view: View): void {
     this.currentView = view;
     this.retrieveErrorsAndWarnings();
+    this.filterService.setCurrentView(this.currentView);
   }
 
   private retrieveViews(): void {
