@@ -1,23 +1,23 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { DebugTableWithControls } from './debug-table-with-controls.component';
+import { DebugTableWithControlsComponent } from './debug-table-with-controls.component';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { View } from '../../shared/interfaces/view';
 import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 
-describe('DebugTableWithControls', () => {
-  let component: DebugTableWithControls;
-  let fixture: ComponentFixture<DebugTableWithControls>;
+describe('DebugTableWithControlsComponent', () => {
+  let component: DebugTableWithControlsComponent;
+  let fixture: ComponentFixture<DebugTableWithControlsComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [DebugTableWithControls],
+      imports: [DebugTableWithControlsComponent],
       providers: [provideHttpClient(withInterceptorsFromDi()), provideHttpClientTesting()],
     }).compileComponents();
   });
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(DebugTableWithControls);
+    fixture = TestBed.createComponent(DebugTableWithControlsComponent);
     component = fixture.componentInstance;
     component.currentView = {
       storageName: 'mockStorage',

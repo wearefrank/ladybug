@@ -26,9 +26,9 @@ interface WorkingData {
 }
 
 @Component({
-  selector: 'app-sortable-table',
-  templateUrl: './sortable-table.html',
-  styleUrls: ['./sortable-table.css'],
+  selector: 'app-debug-table-grid',
+  templateUrl: './debug-table-grid.component.html',
+  styleUrls: ['./debug-table-grid.component.css'],
   standalone: true,
   imports: [
     LoadingSpinnerComponent,
@@ -41,7 +41,7 @@ interface WorkingData {
     ShortenedTableHeaderPipe,
   ],
 })
-export class SortableTable implements OnInit {
+export class DebugTableGridComponent implements OnInit {
   @Input() selectedStorageId: string | null = null;
   @Output() clickReportWithStorageId: EventEmitter<number> = new EventEmitter<number>();
   @Output() checkedStorageIds = new EventEmitter<string[]>();
@@ -100,10 +100,12 @@ export class SortableTable implements OnInit {
     };
     const storageIdColumns: Column[] = this.data.columns.filter((c) => c.name === STORAGE_ID_COLUMN_NAME);
     if (storageIdColumns.length !== 1) {
-      throw new Error(`SortableTable.set tableData(): Expected column ${STORAGE_ID_COLUMN_NAME}`);
+      throw new Error(`DebugTableGridComponent.set tableData(): Expected column ${STORAGE_ID_COLUMN_NAME}`);
     }
     if (!this.data.numericMetadataNames.has(STORAGE_ID_COLUMN_NAME)) {
-      throw new Error(`SortableTableData.set tableData(): Expected column ${STORAGE_ID_COLUMN_NAME} to be numeric`);
+      throw new Error(
+        `DebugTableGridComponentData.set tableData(): Expected column ${STORAGE_ID_COLUMN_NAME} to be numeric`,
+      );
     }
     this.tableDataSource.data = this.data.rows;
     this.reportCheckedStorageIds();

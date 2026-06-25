@@ -2,23 +2,23 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
-import { SortableTable } from './sortable-table';
+import { DebugTableGridComponent } from './debug-table-grid.component';
 import { TableData } from '../../shared/services/filter2.service';
 import { By } from '@angular/platform-browser';
 
-describe('TableComponent', () => {
-  let component: SortableTable;
-  let fixture: ComponentFixture<SortableTable>;
+describe('DebugTableGridComponent', () => {
+  let component: DebugTableGridComponent;
+  let fixture: ComponentFixture<DebugTableGridComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [SortableTable],
+      imports: [DebugTableGridComponent],
       providers: [provideHttpClient(withInterceptorsFromDi()), provideHttpClientTesting()],
     }).compileComponents();
   });
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(SortableTable);
+    fixture = TestBed.createComponent(DebugTableGridComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

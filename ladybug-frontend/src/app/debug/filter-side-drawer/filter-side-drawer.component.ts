@@ -12,9 +12,9 @@ import { ErrorHandling } from '../../shared/classes/error-handling.service';
 
 @Component({
   standalone: true,
-  selector: 'app-filter-side-drawer2',
-  templateUrl: './filter-side-drawer2.component.html',
-  styleUrl: './filter-side-drawer2.component.css',
+  selector: 'app-filter-side-drawer',
+  templateUrl: './filter-side-drawer.component.html',
+  styleUrl: './filter-side-drawer.component.css',
   animations: [
     trigger('removeTrigger', [
       transition(':enter', [
@@ -26,7 +26,7 @@ import { ErrorHandling } from '../../shared/classes/error-handling.service';
   ],
   imports: [MatAutocompleteModule, FormsModule, TitleCasePipe, ShortenedTableHeaderPipe],
 })
-export class FilterSideDrawer2Component implements OnDestroy, OnInit {
+export class FilterSideDrawerComponent implements OnDestroy, OnInit {
   private _currentView: View | undefined;
   // The currentView is also set in Filter2Service.
   // Most data for the side drawer is calculated there.

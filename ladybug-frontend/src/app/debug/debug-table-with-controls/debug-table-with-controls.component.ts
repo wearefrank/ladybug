@@ -3,7 +3,7 @@
 import { Component, EventEmitter, inject, Input, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
 import { HelperService } from '../../shared/services/helper.service';
 import { HttpService } from '../../shared/services/http.service';
-import { TableSettingsModalComponent } from './table-settings-modal/table-settings-modal.component';
+import { TableSettingsModalComponent } from '../table-settings-modal/table-settings-modal.component';
 import { catchError, Subscription } from 'rxjs';
 import { Report } from '../../shared/interfaces/report';
 import { ToastService } from '../../shared/services/toast.service';
@@ -30,16 +30,16 @@ import { RefreshCondition } from '../../shared/interfaces/refresh-condition';
 import { ClientSettingsService } from 'src/app/shared/services/client.settings.service';
 import { HierarchicalReport } from '../../shared/interfaces/hierarchical-report';
 import { CompareData } from '../../compare/compare-data';
-import { SortableTable } from '../sortable-table/sortable-table';
-import { FilterSideDrawer2Component } from '../filter-side-drawer/filter-side-drawer2.component';
+import { DebugTableGridComponent } from '../debug-table-grid/debug-table-grid.component';
+import { FilterSideDrawerComponent } from '../filter-side-drawer/filter-side-drawer.component';
 
 @Component({
-  selector: 'app-table2',
+  selector: 'app-debug-table-with-controls',
   templateUrl: './debug-table-with-controls.component.html',
   styleUrls: ['./debug-table-with-controls.component.css'],
   standalone: true,
   imports: [
-    FilterSideDrawer2Component,
+    FilterSideDrawerComponent,
     NgbDropdown,
     NgbDropdownToggle,
     NgbDropdownMenu,
@@ -51,10 +51,10 @@ import { FilterSideDrawer2Component } from '../filter-side-drawer/filter-side-dr
     TableSettingsModalComponent,
     ViewDropdownComponent,
     DeleteModalComponent,
-    SortableTable,
+    DebugTableGridComponent,
   ],
 })
-export class DebugTableWithControls implements OnInit, OnDestroy {
+export class DebugTableWithControlsComponent implements OnInit, OnDestroy {
   private readonly defaultDisplayAmount: number = 10;
   private readonly subscriptions: Subscription = new Subscription();
   private readonly defaultReportInProgressValidators: ValidatorFn[] = [
