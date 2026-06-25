@@ -81,23 +81,11 @@ export class TableComponent2 implements OnInit, OnDestroy {
   protected metadataCount = 0;
   protected checkedStorageIds: number[] = [];
   protected hasTimedOut = false;
-  protected tableDataSource: MatTableDataSource<Report> = new MatTableDataSource<Report>();
-  protected tableSettings: TableSettings = {
-    reportMetadata: [],
-    tableLoaded: false,
-    displayAmount: this.defaultDisplayAmount,
-    showFilter: false,
-    currentFilters: new Map<string, string>(),
-    numberOfReportsInProgress: 0,
-    estimatedMemoryUsage: '',
-    uniqueValues: new Map<string, string[]>(),
-  };
-
+  protected displayAmount = 0;
+  protected numberOfReportsInProgress = 0;
+  protected estimatedMemoryUsage = '';
   protected reportsInProgressThreshold?: number;
   protected selectedReportStorageId?: number;
-  protected tableSpacing?: string;
-  protected fontSize?: string;
-  protected checkboxSize?: string;
   protected openInProgress: FormControl = new FormControl(1, this.defaultReportInProgressValidators);
   protected appVariablesService = inject(AppVariablesService);
   protected currentUploadFile = '';
@@ -114,6 +102,7 @@ export class TableComponent2 implements OnInit, OnDestroy {
   private debugTab = inject(DebugTabService);
 
   ngOnInit(): void {
+    this.displayAmount = this.clientSettingsService.getAmountOfRecordsInTable();
     this.subscribeToObservables();
     this.loadData();
   }
@@ -129,6 +118,8 @@ export class TableComponent2 implements OnInit, OnDestroy {
       this.refresh(condition),
     );
     this.subscriptions.add(refreshTable);
+    const displayAmountSubscription = this.clientSettingsService.amountOfRecordsInTableObservable.subscribe((amount) => this.displayAmount = amount);
+    this.subscriptions.add(displayAmountSubscription);
   }
 
   loadData(): void {
@@ -173,13 +164,13 @@ export class TableComponent2 implements OnInit, OnDestroy {
       .pipe(catchError(this.errorHandler.handleError()))
       .subscribe({
         next: (settings: OptionsSettings) => {
-          this.tableSettings.numberOfReportsInProgress = settings.reportsInProgress;
-          this.tableSettings.estimatedMemoryUsage = settings.estMemory;
+          this.numberOfReportsInProgress = settings.reportsInProgress;
+          this.estimatedMemoryUsage = settings.estMemory;
           this.loadReportInProgressDates();
           this.openInProgress.setValue(1);
           this.openInProgress.setValidators([
             ...this.defaultReportInProgressValidators,
-            Validators.max(this.tableSettings.numberOfReportsInProgress),
+            Validators.max(this.numberOfReportsInProgress),
           ]);
         },
       });
@@ -187,7 +178,7 @@ export class TableComponent2 implements OnInit, OnDestroy {
 
   loadReportInProgressDates(): void {
     let hasChanged = false;
-    for (let index = 1; index <= this.tableSettings.numberOfReportsInProgress; index++) {
+    for (let index = 1; index <= this.numberOfReportsInProgress; index++) {
       this.httpService
         .getReportInProgress(index)
         .pipe(catchError(this.errorHandler.handleError()))
@@ -343,12 +334,10 @@ export class TableComponent2 implements OnInit, OnDestroy {
   }
 
   downloadReports(exportBinary: boolean, exportXML: boolean): void {
-    const selectedReports = this.tableSettings.reportMetadata.filter((report) => report.checked);
-
-    if (selectedReports.length > 0) {
+    if (this.checkedStorageIds.length > 0) {
       let queryString = '';
-      for (let report of selectedReports) {
-        queryString += `id=${report.storageId}&`;
+      for (const storageId of this.checkedStorageIds) {
+        queryString += `id=${storageId}&`;
       }
       this.helperService.download(
         queryString,

@@ -1,5 +1,6 @@
 import { Report } from './report';
 
+// TODO: Remove this file.
 export interface TableSettings {
   reportMetadata: Report[];
   displayAmount: number;

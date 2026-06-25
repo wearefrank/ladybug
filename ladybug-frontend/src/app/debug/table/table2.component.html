@@ -53,7 +53,7 @@
 
     <div class="input-group w-auto">
       <input data-cy-debug="displayAmount" type="number" class="form-control input-field"
-              [ngModel]="tableSettings.displayAmount" (keydown.enter)="changeTableLimit($event)"
+              [ngModel]="displayAmount" (keydown.enter)="changeTableLimit($event)"
               (blur)="changeTableLimit($event)">
       <div data-cy-debug="amountShown" class="input-group-append">
         <div class="input-group-text">/{{ metadataCount }}</div>
@@ -65,17 +65,17 @@
     }
 
     <div data-cy-debug-in-progress-counter class="btn btn-static"
-    >Reports in progress: {{ tableSettings.numberOfReportsInProgress }}
+    >Reports in progress: {{ numberOfReportsInProgress }}
     </div>
-    @if (tableSettings.numberOfReportsInProgress > 0 && openInProgress) {
+    @if (numberOfReportsInProgress > 0 && openInProgress) {
       <span class="progress-buttons">
         <div class="btn btn-static "> Estimated memory usage of reports in
-          progress: {{ tableSettings.estimatedMemoryUsage }} Bytes
+          progress: {{ estimatedMemoryUsage }} Bytes
         </div>
         <div class="input-group w-auto h-auto">
           <input #openIndex type="number" min="0" class="form-control input-field" data-cy-debug="openInProgressNo"
                   [formControl]="openInProgress"
-                  [value]="tableSettings.numberOfReportsInProgress" [max]="tableSettings.numberOfReportsInProgress"/>
+                  [value]="numberOfReportsInProgress" [max]="numberOfReportsInProgress"/>
           <div class="input-group-append">
             <button data-cy-debug="openInProgress" class="btn btn-info" type="button"
                     [disabled]="openInProgress.invalid"
@@ -85,7 +85,7 @@
         </div>
         <div class="input-group w-auto">
           <input #deleteIndex type="number" min="0" class="form-control input-field"
-                  [value]="tableSettings.numberOfReportsInProgress" [max]="tableSettings.numberOfReportsInProgress"/>
+                  [value]="numberOfReportsInProgress" [max]="numberOfReportsInProgress"/>
           <div class="input-group-append">
             <button class="btn btn-info" type="button"
                     (click)="deleteReportInProgress(+deleteIndex.value)"><i class="fa fa-trash"></i></button>
