@@ -218,7 +218,7 @@ export class DebugTableWithControlsComponent implements OnInit, OnDestroy {
       this.selectedReportStorageId = this.checkedStorageIds[0];
       this.openReport(this.checkedStorageIds[0]);
     } else {
-      this.toastService.showWarning('You can only open one report at a time in the debug tab');
+      this.toastService.showWarning('You can open only one report at a time!');
     }
   }
 
