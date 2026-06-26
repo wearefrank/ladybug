@@ -4,6 +4,7 @@ import { FilterFromUrl } from './tab.service';
 import { BehaviorSubject, debounceTime, firstValueFrom, Observable, Subject, Subscription } from 'rxjs';
 import { HttpService } from './http.service';
 import { ClientSettingsService } from './client.settings.service';
+import { ToastService } from './toast.service';
 
 export interface Column {
   name: string;
@@ -42,6 +43,7 @@ export class FilterService implements OnDestroy {
   private httpService = inject(HttpService);
   private clientSettingsService = inject(ClientSettingsService);
   private errorHandling = inject(ErrorHandler);
+  private toastService = inject(ToastService);
   private subscriptions = new Subscription();
   private subscribed = false;
   public userFilters$ = this.userFiltersSubject.pipe(debounceTime(300));
@@ -206,6 +208,7 @@ export class FilterService implements OnDestroy {
           numericMetadataNames: this.numericMetadataNames,
         });
         this.userFilterChoicesSubject.next(this.getUniqueOptions(metadata));
+        this.toastService.showSuccess('Data loaded!');
       })
       .catch((error) => {
         this.errorHandling.handleError(error);
