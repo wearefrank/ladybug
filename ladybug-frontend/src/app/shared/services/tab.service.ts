@@ -23,6 +23,16 @@ const FILTER_PREFIX = 'filter-';
 })
 export class TabService {
   private tabs: Tab[] = [
+    // We have a default debug tab that does not filter on host or on application.
+    // When the user directly visits the URL of a report, then the debug tab should
+    // not be lost. If the debug tab is later visited with filter parameters, then
+    // these filter parameters are applied by changing the existing debug tab.
+    {
+      kind: KEY_DEBUG,
+      key: KEY_DEBUG,
+      title: 'Debug',
+      returnToKey: KEY_DEBUG,
+    },
     {
       kind: KEY_TEST,
       key: KEY_TEST,
