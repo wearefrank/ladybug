@@ -55,7 +55,6 @@ import { FilterSideDrawerComponent } from '../filter-side-drawer/filter-side-dra
   ],
 })
 export class DebugTableWithControlsComponent implements OnInit, OnDestroy {
-  private readonly defaultDisplayAmount: number = 10;
   private readonly subscriptions: Subscription = new Subscription();
   private readonly defaultReportInProgressValidators: ValidatorFn[] = [
     Validators.min(1),
@@ -224,7 +223,7 @@ export class DebugTableWithControlsComponent implements OnInit, OnDestroy {
   }
 
   openDeleteModal(): void {
-    if (this.checkedStorageIds.length > 0) {
+    if (this.metadataCount > 0) {
       this.deleteModal.open(true);
     } else {
       this.toastService.showWarning('No reports to be deleted!');
