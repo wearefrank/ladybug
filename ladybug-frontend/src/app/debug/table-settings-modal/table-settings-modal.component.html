@@ -18,7 +18,7 @@
             <a data-cy-settings="nav-client" [class]="getNavClasses(CLIENT)" (click)="selectNav(CLIENT)">{{ CLIENT }}</a>
           </li>
           <li class="nav-item">
-            <a data-cy-settings="nav-url" [class]="getNavClasses(URL)" (click)="selectNav(URL)">{{ URL }}</a>
+            <a data-cy-settings="nav-url" [class]="getNavClasses(FILTERS)" (click)="selectNav(FILTERS)">{{ FILTERS }}</a>
           </li>
         </ul>
         @if (activeTab === GLOBAL) {
@@ -78,33 +78,19 @@
             </div>
           </div>
         }
-        @if (activeTab === URL) {
-          @if (filterService.urlFilters.length > 0) {
-            <h2>Filters from URL:</h2>
-            <table>
-              @for (filter of filterService.urlFilters; track filter.metadataName) {
-                <tr>
-                  <td>{{ filter.metadataName }}</td>
-                  <td>{{ filter.value }}</td>
-                </tr>
-              }
-            </table>
-          } @else {
-            <h2>No filters from URL</h2>
-          }
-          @if (filterService.viewFilters.length > 0) {
-            <h2>Filters from current view</h2>
-            <table>
-              @for (filter of filterService.viewFilters; track filter.metadataName) {
-                <tr>
-                  <td>{{ filter.metadataName }}</td>
-                  <td>{{ filter.value }}</td>
-                </tr>
-              }
-            </table>
-          } @else {
-            <h2>No filters from current view</h2>
-          }
+        @if (activeTab === FILTERS) {
+          <app-fixed-filter-info
+            titleWhenFilters="Filters from URL"
+            titleNoFilters="No filters from URL"
+            filterKind="urlFilter"
+            [filters]="filterService.urlFilters"
+          />
+          <app-fixed-filter-info
+            titleWhenFilters="Filters from current view"
+            titleNoFilters="No filters from current view"
+            filterKind="viewFilter"
+            [filters]="filterService.viewFilters"
+          />
         }
       </div>
     </div>

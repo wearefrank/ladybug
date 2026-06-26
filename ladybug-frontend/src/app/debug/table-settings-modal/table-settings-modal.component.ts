@@ -6,13 +6,14 @@ import { ToastService } from '../../shared/services/toast.service';
 import { ClientSettingsService } from '../../shared/services/client.settings.service';
 import { ErrorHandling } from '../../shared/classes/error-handling.service';
 import { FilterService } from '../../shared/services/filter.service';
+import { FixedFilterInfoComponent } from '../fixed-filters-info/fixed-filter-info.component';
 
 @Component({
   selector: 'app-table-settings-modal',
   templateUrl: './table-settings-modal.component.html',
   styleUrls: ['./table-settings-modal.component.css'],
   standalone: true,
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, FixedFilterInfoComponent],
 })
 export class TableSettingsModalComponent implements OnInit {
   @ViewChild('modal') protected settingsModalElement!: TemplateRef<HTMLElement>;
@@ -42,7 +43,7 @@ export class TableSettingsModalComponent implements OnInit {
 
   protected readonly GLOBAL = 'Everyone';
   protected readonly CLIENT = 'Personal';
-  protected readonly URL = 'URL';
+  protected readonly FILTERS = 'Filters';
 
   protected settingsForm: FormGroup = new FormGroup({
     [this.tableSpacingKey]: new FormControl(0),
