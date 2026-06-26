@@ -40,6 +40,7 @@ import java.util.Set;
 import java.util.function.Consumer;
 
 import org.apache.xerces.dom.DocumentImpl;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -83,6 +84,25 @@ public class TestCreateReport extends ReportRelatedTestCase {
 	}
 
 	@Test
+	public void whenReportHasHostAndApplicationThenPutIntoXml() throws StorageException, IOException {
+		List<Integer> oldStorageIds = testTool.getDebugStorage().getStorageIds();
+		testTool.setHost("MyHost");
+		testTool.setApplication("MyApplication");
+		String correlationId = getCorrelationId();
+		testTool.startpoint(correlationId, this.getClass().getTypeName(), reportName, "startmessage");
+		testTool.endpoint(correlationId, this.getClass().getTypeName(), reportName, "endmessage");
+		List<Integer> newStorageIds = testTool.getDebugStorage().getStorageIds();
+		Set<Integer> addedStorageIds = new HashSet<Integer>(newStorageIds);
+		addedStorageIds.removeAll(new HashSet<Integer>(oldStorageIds));
+		assertEquals(1, addedStorageIds.size());
+		Report addedReport = testTool.getDebugStorage().getReport(addedStorageIds.iterator().next());
+		String reportXml = addedReport.toXml();
+		assertTrue(reportXml.contains("Host=\"MyHost\""));
+		assertTrue(reportXml.contains("Application=\"MyApplication\""));
+		assertTrue(reportXml.contains("CorrelationId="));
+	}
+
+	@Test
 	public void testSingleStartAndEndPointPlainMessageWithStubableCode() throws StorageException, IOException {
 		String correlationId = getCorrelationId();
 		testTool.startpoint(correlationId, this.getClass().getTypeName(), reportName, () -> {return "startmessage";}, new HashSet<String>());
@@ -106,6 +126,8 @@ public class TestCreateReport extends ReportRelatedTestCase {
 
 	@Test
 	public void testSpecialValues() throws StorageException, IOException {
+		testTool.setHost("MyHost");
+		testTool.setApplication("MyApplication");
 		String correlationId = getCorrelationId();
 		testTool.startpoint(correlationId, null, reportName, null);
 		testTool.infopoint(correlationId, null, "infoname1", new Date(0));
@@ -847,6 +869,8 @@ public class TestCreateReport extends ReportRelatedTestCase {
 
 	@Test
 	public void testStreamsWithReaderAndInputStream() throws IOException, StorageException {
+		testTool.setHost("MyHost");
+		// Application deliberately left null - is in another test.
 		String correlationId = getCorrelationId();
 		int maxMessageLength = 15;
 		testTool.setMaxMessageLength(maxMessageLength);
@@ -894,6 +918,8 @@ public class TestCreateReport extends ReportRelatedTestCase {
 
 	@Test
 	public void testStreamsWithWriterAndOutputStream() throws IOException, StorageException {
+		testTool.setHost("MyHost");
+		// Application deliberately left null, tested elsewhere.
 		String correlationId = getCorrelationId();
 		int maxMessageLength = 50;
 		testTool.setMaxMessageLength(maxMessageLength);

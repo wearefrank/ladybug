@@ -32,5 +32,7 @@ Cypress.on('uncaught:exception', (err, runnable) => {
 
 import 'cypress-file-upload';
 
+export const STORAGE_ID_COLUMN = 1;
+
 // Import commands.js using ES2015 syntax:
 import './commands';

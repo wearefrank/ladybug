@@ -1,4 +1,6 @@
 <%@ page import="org.wearefrank.ladybug.Report"%>
+<%@ page import="org.wearefrank.ladybug.Checkpoint"%>
+<%@ page import="org.wearefrank.ladybug.CheckpointType"%>
 <%@ page import="org.wearefrank.ladybug.TestTool"%>
 <%@ page import="org.wearefrank.ladybug.MessageEncoderImpl"%>
 <%@ page import="org.wearefrank.ladybug.storage.CrudStorage"%>
@@ -24,6 +26,12 @@
 	String correlationId = UUID.randomUUID().toString();
 	String otherCorrelationId = UUID.randomUUID().toString();
 	String reportName;
+	List<String> hostNames = new ArrayList<String>();
+	hostNames.add("Host A");
+	hostNames.add("Host B");
+	List<String> applications = new ArrayList<String>();
+	applications.add("Application X");
+	applications.add("Application Y");
 	List<String> reportNames = new ArrayList<String>();
 	String userName = null;
 
@@ -141,9 +149,22 @@
 	if (reportName.equals(createReportAction)) {
 		ComplexReports.fillComplexErrorReport(correlationId, reportName, testTool);
 	}
+	reportNames.add(reportName = "Add report without stub strategy and without link method");
+	if (reportName.equals(createReportAction)) {
+		Report report = new Report();
+		report.setCorrelationId(correlationId);
+		report.setName("Report without stub strategy and without link method");
+		Checkpoint checkpoint = new Checkpoint();
+		checkpoint.setType(CheckpointType.valueOfString("Startpoint").toInt());
+		checkpoint.setName("Report without stub strategy and without link method");
+		report.setCheckpoints(Arrays.asList(checkpoint));
+		((LogStorage) testTool.getDebugStorage()).storeWithoutException(report);
+	}
+
 	reportNames.add(reportName = "Add report to database storage");
 	if (reportName.equals(createReportAction)) {
 		Report report = new Report();
+		report.setCorrelationId(correlationId);
 		report.setName("Report for database storage");
 		((CrudStorage)testTool.getStorage("databaseStorage")).store(report);
 	}
@@ -192,6 +213,22 @@
 		int time = Integer.valueOf(request.getParameter("setReportInProgressThreshold"));
 		testTool.setReportsInProgressThreshold(time);
 	}
+	if(request.getParameter("setHost") != null) {
+	    String host = request.getParameter("setHost");
+	    testTool.setHost(host);
+	}
+	if (request.getParameter("setApplication") != null) {
+	    // When it is just called "application", a compilation error occurs that
+	    // variable application is duplicate.
+	    String applicationParam = request.getParameter("setApplication");
+	    testTool.setApplication(applicationParam);
+	}
+	if (request.getParameter("clearHost") != null) {
+	    testTool.setHost(null);
+	}
+	if (request.getParameter("clearApplication") != null) {
+	    testTool.setApplication(null);
+	}
 %>
 <html>
 
@@ -203,7 +240,8 @@
 
   <a href="ladybug">New Angular GUI</a><br/>
   <a href="http://localhost:4200">New Angular GUI using Node.js</a><br/>
-
+  <a href="http://localhost:4200/debug?filter-application=Application%20X&filter-host=Host%20A">New Angular GUI filter X/A</a><br/>
+  <a href="http://localhost:4200/debug?filter-application=Application%20Y&filter-host=Host%20B">New Angular GUI filter Y/B</a><br/>
   <br/>
 
   <a href="ladybug/api/testtool">TestTool API</a><br/>
@@ -222,6 +260,17 @@
   <a href="index.jsp?createReport=<%=name%>"><%=name%></a><br/>
   <% } %>
 
+  <h1>Set host and application</h1>
+
+  <% for (String hostName : hostNames) { %>
+  <a href="index.jsp?setHost=<%=hostName%>">Host <%=hostName%></a><br/>
+  <% } %>
+
+  <% for (String anApplication : applications) { %>
+  <a href="index.jsp?setApplication=<%=anApplication%>">Application <%=anApplication%></a><br/>
+  <% } %>
+  <a href="index.jsp?clearHost">Clear host</a><br/>
+  <a href="index.jsp?clearApplication">Clear application</a><br/>
 
   <h1>Other actions</h1>
 

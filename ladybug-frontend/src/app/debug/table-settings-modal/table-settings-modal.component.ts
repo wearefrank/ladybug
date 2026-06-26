@@ -1,17 +1,19 @@
 import { Component, inject, OnInit, TemplateRef, ViewChild } from '@angular/core';
 import { AbstractControl, FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { NgbActiveModal, NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { ServerSettings, SettingsService } from '../../../shared/services/settings.service';
-import { ToastService } from '../../../shared/services/toast.service';
-import { ClientSettingsService } from 'src/app/shared/services/client.settings.service';
-import { ErrorHandling } from 'src/app/shared/classes/error-handling.service';
+import { ServerSettings, SettingsService } from '../../shared/services/settings.service';
+import { ToastService } from '../../shared/services/toast.service';
+import { ClientSettingsService } from '../../shared/services/client.settings.service';
+import { ErrorHandling } from '../../shared/classes/error-handling.service';
+import { FilterService } from '../../shared/services/filter.service';
+import { FixedFilterInfoComponent } from '../fixed-filters-info/fixed-filter-info.component';
 
 @Component({
   selector: 'app-table-settings-modal',
   templateUrl: './table-settings-modal.component.html',
   styleUrls: ['./table-settings-modal.component.css'],
   standalone: true,
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, FixedFilterInfoComponent],
 })
 export class TableSettingsModalComponent implements OnInit {
   @ViewChild('modal') protected settingsModalElement!: TemplateRef<HTMLElement>;
@@ -24,6 +26,7 @@ export class TableSettingsModalComponent implements OnInit {
   private modalService = inject(NgbModal);
   public clientSettingsService = inject(ClientSettingsService);
   public serverSettingsService = inject(SettingsService);
+  protected filterService = inject(FilterService);
   private toastService = inject(ToastService);
 
   protected unsavedChanges = false;
@@ -40,6 +43,7 @@ export class TableSettingsModalComponent implements OnInit {
 
   protected readonly GLOBAL = 'Everyone';
   protected readonly CLIENT = 'Personal';
+  protected readonly FILTERS = 'Filters';
 
   protected settingsForm: FormGroup = new FormGroup({
     [this.tableSpacingKey]: new FormControl(0),

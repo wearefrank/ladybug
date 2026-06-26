@@ -93,7 +93,7 @@ public class TestExport {
 				} else if (name.equals("globalReportXmlTransformer")) {
 					report.setGlobalReportXmlTransformer(new ReportXmlTransformer());
 				} else if (name.equals("variables")) {
-					report.setVariables(new HashMap<String, String>());
+					// Do not overwrite value set using variablesCSV
 				} else if (!name.equals("storageId") && !name.equals("checkpoints")) {
 					// No need to test with multiple storages so CONTEXT_FILE_STORAGE will do.
 					method.invoke(report, Common.CONTEXT_FILE_STORAGE.getBean(name));

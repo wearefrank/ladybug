@@ -2,12 +2,12 @@
   <div class="row top">
     <div class="w-100 h-100">
       @if (views && currentView) {
-        <app-table
+        <app-debug-table-with-controls
           [views]="views"
           [currentView]="currentView"
           (openReportEvent)="addReportToTree($event)"
           (viewChange)="onViewChange($event)"
-        ></app-table>
+        ></app-debug-table-with-controls>
       }
     </div>
   </div>

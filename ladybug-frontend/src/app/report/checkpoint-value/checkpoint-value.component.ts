@@ -48,11 +48,11 @@ export class CheckpointValueComponent implements OnInit, OnDestroy {
   protected editorContentsSubject = new BehaviorSubject<string | undefined>(undefined);
   protected editorReadOnlySubject = new BehaviorSubject<boolean>(true);
   protected originalCheckpointStubStrategySubject = new BehaviorSubject<number | undefined>(undefined);
-  protected originalReportStubStrategySubject = new BehaviorSubject<string | undefined>(undefined);
+  protected originalReportStubStrategySubject = new BehaviorSubject<string | null | undefined>(undefined);
   protected buttonComponentResetSubject = new Subject<void>();
   private actualEditorContents = '';
   private actualCheckpointStubStrategy?: number;
-  private actualReportStubStrategy?: string;
+  private actualReportStubStrategy?: string | null;
   private emptyIsNull = true;
   private subscriptions = new Subscription();
 
@@ -162,7 +162,7 @@ export class CheckpointValueComponent implements OnInit, OnDestroy {
     }
     return new DifferencesBuilder()
       .nullableVariable(this.originalCheckpoint.message, this.getEditedRealCheckpointValue(), 'Value', true)
-      .nonNullableVariable(
+      .nullableVariable(
         this.originalCheckpoint.report.stubStrategy,
         this.actualReportStubStrategy,
         'Report level stub strategy',

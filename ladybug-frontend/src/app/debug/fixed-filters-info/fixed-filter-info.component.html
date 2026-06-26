@@ -1,0 +1,15 @@
+<div>
+  @if (filters.length > 0) {
+    <h2>{{ titleWhenFilters }}</h2>
+    <table>
+      @for (filter of filters; track filter.metadataName) {
+        <tr [attr.data-cy-settings]="filterKind">
+          <td data-cy-settings="filterMetadataName">{{ filter.metadataName }}</td>
+          <td data-cy-settings="filterMetadataValue">{{ filter.value }}</td>
+        </tr>
+      }
+    </table>
+  } @else {
+    <h2>{{ titleNoFilters }}</h2>
+  }
+</div>

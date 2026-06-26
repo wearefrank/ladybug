@@ -357,8 +357,8 @@ public class ReportRelatedTestCase {
 	}
 
 	public static String applyEstimatedMemoryUsageIgnore(String string) {
-		return string.replaceFirst("EstimatedMemoryUsage=\"\\d*\">",
-								   "EstimatedMemoryUsage=\"IGNORE\">");
+		return string.replaceFirst("EstimatedMemoryUsage=\"\\d*\"",
+								   "EstimatedMemoryUsage=\"IGNORE\"");
 	}
 
 	public static String applyCorrelationIdIgnores(String xml, String correlationId) {

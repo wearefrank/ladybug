@@ -170,15 +170,15 @@ public class TestToolApiImpl implements InitializingBean {
 			map.put("name", view.getName());
 			map.put("storageName", view.getDebugStorage().getName());
 			map.put("defaultView", view == views.getDefaultView());
-			map.put("metadataNames", view.getMetadataNames());
-			map.put("metadataLabels", view.getMetadataLabels());
+			map.put("metadataNames", view.getMetadataNames(testTool));
+			map.put("metadataLabels", view.getMetadataLabels(testTool));
 			// Expose the view's metadata filter so the frontend can apply it to the report list.
 			map.put("metadataFilter", view.getMetadataFilter());
 			map.put("crudStorage", view.getDebugStorage() instanceof CrudStorage);
 			map.put("nodeLinkStrategy", view.getNodeLinkStrategy());
 			map.put("hasCheckpointMatchers", view.hasCheckpointMatchers());
 			Map<String, String> metadataTypes = new HashMap<>();
-			for (String metadataName : view.getMetadataNames()) {
+			for (String metadataName : view.getMetadataNames(testTool)) {
 				metadataTypes.put(metadataName, metadataExtractor.getType(metadataName));
 			}
 			map.put("metadataTypes", metadataTypes);

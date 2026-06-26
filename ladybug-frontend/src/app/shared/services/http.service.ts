@@ -12,10 +12,16 @@ import { UpdatePathSettings } from '../interfaces/update-path-settings';
 import { TestResult } from '../interfaces/test-result';
 import { UpdateReport } from '../interfaces/update-report';
 import { UpdateReportResponse } from '../interfaces/update-report-response';
-import { TableSettings } from '../interfaces/table-settings';
 import { ClientSettingsService } from './client.settings.service';
 import { HierarchicalCheckpoint, HierarchicalReport } from '../interfaces/hierarchical-report';
 import { isNumber } from '../util/util';
+
+export interface MetadataParameters {
+  limit: number;
+  filterHeader: string[];
+  filter: string[];
+  metadataNames: string[];
+}
 
 @Injectable({
   providedIn: 'root',
@@ -29,34 +35,19 @@ export class HttpService {
     return this.http.get<Record<string, View>>('api/testtool/views').pipe(map((response) => Object.values(response)));
   }
 
-  getMetadataReports(settings: TableSettings, view: View): Observable<Report[]> {
-    // Merge the view's metadataFilter beneath the user's column filters. A filter only applies to a
-    // column the backend selects, so filtered columns are added to metadataNames (the table still
-    // renders only view.metadataNames).
-    const filters = new Map<string, string>(settings.currentFilters);
-    const metadataNames = [...view.metadataNames];
-    if (view.metadataFilter) {
-      for (const [key, value] of Object.entries(view.metadataFilter)) {
-        if (!filters.has(key)) {
-          filters.set(key, value);
-        }
-        if (!metadataNames.includes(key)) {
-          metadataNames.push(key);
-        }
-      }
-    }
-    return this.http.get<Report[]>(`api/metadata/${view.storageName}`, {
+  getMetadata(view: View, params: MetadataParameters): Observable<Record<string, string>[]> {
+    return this.http.get<Record<string, string>[]>(`api/metadata/${view.storageName}`, {
       params: {
-        limit: settings.displayAmount,
-        filterHeader: [...filters.keys()],
-        filter: [...filters.values()],
-        metadataNames: metadataNames,
+        limit: params.limit,
+        filterHeader: params.filterHeader,
+        filter: params.filter,
+        metadataNames: params.metadataNames,
       },
     });
   }
 
-  getUserHelp(storage: string, metadataNames: string[]): Observable<Report> {
-    return this.http.get<Report>(`api/metadata/${storage}/userHelp`, {
+  getUserHelp(storage: string, metadataNames: string[]): Observable<Record<string, string>> {
+    return this.http.get<Record<string, string>>(`api/metadata/${storage}/userHelp`, {
       params: {
         metadataNames: metadataNames,
       },

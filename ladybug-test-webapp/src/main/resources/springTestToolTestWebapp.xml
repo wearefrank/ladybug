@@ -98,6 +98,18 @@
 		</property>
 	</bean>
 
+	<util:map id="metadataFilters">
+		<entry key="name">
+			<!-- Parenthesis in value make it a regex search and case sensitive -->
+			<value>(Simple report)</value>
+		</entry>
+	</util:map>
+
+	<bean name="rowFilteringView" class="org.wearefrank.ladybug.filter.View">
+		<property name="name" value="Only rows name=Simple report"/>
+		<property name="metadataFilter" ref="metadataFilters"/>
+	</bean>
+
 	<bean name="lowLevelErrorTestView" class="org.wearefrank.ladybug.filter.View">
 		<property name="name" value="Low level error demo view" />
 		<property name="debugStorage">
@@ -115,6 +127,7 @@
 				<ref bean="proofOfMigrationView"/><!-- See Config.java -->
 				<ref bean="proofOfMigrationErrorsView"/><!-- See Config.java -->
 				<ref bean="lowLevelErrorTestView" />
+				<ref bean="rowFilteringView"/>
 			</list>
 		</property>
 		<property name="defaultView" ref="defaultView"/>

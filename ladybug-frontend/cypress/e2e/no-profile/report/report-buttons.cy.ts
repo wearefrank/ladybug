@@ -1,3 +1,5 @@
+import { STORAGE_ID_COLUMN } from '../../../support/e2e';
+
 describe('Report buttons', () => {
   before(() => {
     cy.resetApp();
@@ -53,7 +55,6 @@ describe('Report buttons', () => {
   });
 
   it('When key button above tree is pressed then storage id and checkpoint id shown', () => {
-    const STORAGE_ID_COLUMN = 1;
     cy.visit('');
     cy.createReport();
     cy.createReport();

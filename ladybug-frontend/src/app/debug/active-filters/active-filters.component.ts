@@ -2,8 +2,8 @@ import { Component, inject, OnDestroy, OnInit } from '@angular/core';
 import { DictionaryPipe } from '../../shared/pipes/dictionary.pipe';
 import { NgClass, TitleCasePipe } from '@angular/common';
 import { catchError, Subscription } from 'rxjs';
-import { FilterService } from '../filter-side-drawer/filter.service';
 import { ErrorHandling } from '../../shared/classes/error-handling.service';
+import { FilterService } from '../../shared/services/filter.service';
 
 @Component({
   selector: 'app-active-filters',
@@ -20,7 +20,7 @@ export class ActiveFiltersComponent implements OnInit, OnDestroy {
   private errorHandler = inject(ErrorHandling);
 
   ngOnInit(): void {
-    this.filterContextSubscription = this.filterService.filterContext$.subscribe({
+    this.filterContextSubscription = this.filterService.userFilters$.subscribe({
       next: (context: Map<string, string>) => this.changeFilter(context),
       error: () => catchError(this.errorHandler.handleError()),
     });

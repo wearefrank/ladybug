@@ -1,5 +1,5 @@
 /*
-   Copyright 2022-2025 WeAreFrank!
+   Copyright 2022-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -234,6 +234,14 @@ public class Config {
 		metadataNames.add("numberOfCheckpoints");
 		metadataNames.add("estimatedMemoryUsage");
 		metadataNames.add("storageSize");
+		// Metadata names host and application are special because it is decided
+		// dynamically whether these are shown in the table of the debug tab in
+		// the Angular UI. They are here so that these metadata names are present
+		// by default. See interface HostAndApplicationHolder for the logic
+		// that will omit the host and the application from a view when not
+		// relevant.
+		metadataNames.add("host");
+		metadataNames.add("application");
 		return metadataNames;
 	}
 
@@ -257,6 +265,8 @@ public class Config {
 	@DefaultBean
 	@Bean
 	@Scope("singleton")
+	// ladybug-test-webapp and the Frank!Framework have their own implementation
+	// that supersede this default.
 	String xsltResource() {
 		return "ladybug/default.xslt";
 	}

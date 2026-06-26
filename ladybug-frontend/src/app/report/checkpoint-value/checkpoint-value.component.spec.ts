@@ -233,6 +233,8 @@ function getPartialCheckpoint(message: string | null): HierarchicalCheckpoint {
     xml: 'dummy xml',
     checkpointsFromView: null,
     startTime: 0,
+    host: null,
+    application: 'MyApplication',
   };
   report.children!.push({
     name: 'Some name',
