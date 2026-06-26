@@ -1,5 +1,4 @@
 import { Component, inject, OnInit, ViewChild } from '@angular/core';
-import { TableComponent } from './table/table.component';
 import { ToastService } from '../shared/services/toast.service';
 import { HttpService } from '../shared/services/http.service';
 import { View } from '../shared/interfaces/view';
@@ -7,13 +6,17 @@ import { catchError } from 'rxjs';
 import { ErrorHandling } from '../shared/classes/error-handling.service';
 import { DebugReportComponent } from '../report/debug-report.component/debug-report.component';
 import { HierarchicalReport } from '../shared/interfaces/hierarchical-report';
+import { ActivatedRoute } from '@angular/router';
+import { FilterFromUrl, TabService } from '../shared/services/tab.service';
+import { FilterService } from '../shared/services/filter.service';
+import { DebugTableWithControlsComponent } from './debug-table-with-controls/debug-table-with-controls.component';
 
 @Component({
   selector: 'app-debug',
   templateUrl: './debug.component.html',
   styleUrls: ['./debug.component.css'],
   standalone: true,
-  imports: [TableComponent, DebugReportComponent],
+  imports: [DebugTableWithControlsComponent, DebugReportComponent],
 })
 export class DebugComponent implements OnInit {
   @ViewChild('reportComponent') customReportComponent!: DebugReportComponent;
@@ -23,9 +26,19 @@ export class DebugComponent implements OnInit {
   private httpService = inject(HttpService);
   private toastService = inject(ToastService);
   private errorHandler = inject(ErrorHandling);
+  private tabService = inject(TabService);
+  private filterService = inject(FilterService);
+  private route = inject(ActivatedRoute);
 
   ngOnInit(): void {
+    const urlFilters: FilterFromUrl[] = this.tabService.routeGetFilters(this.route.snapshot);
+    this.filterService.setUrlFilters(urlFilters);
+    console.log('Initialized URL filters from route:');
+    for (const urlFilter of urlFilters) {
+      console.log(`  ${urlFilter.metadataName}=${urlFilter.value}`);
+    }
     this.retrieveViews();
+    this.tabService.visitDebugTab(this.route.snapshot);
   }
 
   protected addReportToTree(report: HierarchicalReport): void {
@@ -35,6 +48,7 @@ export class DebugComponent implements OnInit {
   protected onViewChange(view: View): void {
     this.currentView = view;
     this.retrieveErrorsAndWarnings();
+    this.filterService.setCurrentView(this.currentView);
   }
 
   private retrieveViews(): void {

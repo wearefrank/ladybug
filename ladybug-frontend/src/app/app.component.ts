@@ -65,9 +65,7 @@ export class AppComponent implements OnInit, OnDestroy {
   subscribeToServices(): void {
     const refreshSubscription: Subscription = this.tabService.refresh$.subscribe((navigation: string | null) => {
       this.tabs = this.tabService.getTabs();
-      if (navigation !== null) {
-        this.router.navigate(navigation.split('/'));
-      }
+      this.doNavigation(navigation);
       this.cdr.detectChanges();
     });
     this.subscriptions.add(refreshSubscription);
@@ -82,6 +80,20 @@ export class AppComponent implements OnInit, OnDestroy {
     event.preventDefault();
     this.tabService.removeTab(tab.key);
     this.cdr.detectChanges();
+  }
+
+  protected doNavigation(navigation: string | null): void {
+    if (navigation === null) {
+      return;
+    }
+    const parsedNavigation = this.tabService.keyToNavigation(navigation);
+    if (parsedNavigation.queryParameters === undefined) {
+      this.router.navigate(parsedNavigation.path);
+    } else {
+      this.router.navigate(parsedNavigation.path, {
+        queryParams: parsedNavigation.queryParameters,
+      });
+    }
   }
 
   private setupPostMessageBridge(): void {

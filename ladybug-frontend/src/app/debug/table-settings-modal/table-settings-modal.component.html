@@ -17,6 +17,9 @@
           <li class="nav-item">
             <a data-cy-settings="nav-client" [class]="getNavClasses(CLIENT)" (click)="selectNav(CLIENT)">{{ CLIENT }}</a>
           </li>
+          <li class="nav-item">
+            <a data-cy-settings="nav-url" [class]="getNavClasses(FILTERS)" (click)="selectNav(FILTERS)">{{ FILTERS }}</a>
+          </li>
         </ul>
         @if (activeTab === GLOBAL) {
           <div class="form-group" [title]="optionalNotAuthorized()">
@@ -74,6 +77,20 @@
               </label>
             </div>
           </div>
+        }
+        @if (activeTab === FILTERS) {
+          <app-fixed-filter-info
+            titleWhenFilters="Filters from URL"
+            titleNoFilters="No filters from URL"
+            filterKind="urlFilter"
+            [filters]="filterService.urlFilters"
+          />
+          <app-fixed-filter-info
+            titleWhenFilters="Filters from current view"
+            titleNoFilters="No filters from current view"
+            filterKind="viewFilter"
+            [filters]="filterService.viewFilters"
+          />
         }
       </div>
     </div>
