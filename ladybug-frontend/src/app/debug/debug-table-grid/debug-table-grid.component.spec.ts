@@ -9,17 +9,17 @@ import { By } from '@angular/platform-browser';
 describe('DebugTableGridComponent', () => {
   let component: DebugTableGridComponent;
   let fixture: ComponentFixture<DebugTableGridComponent>;
+  let checkedStorageIdsSpy: jasmine.Spy | undefined;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [DebugTableGridComponent],
       providers: [provideHttpClient(withInterceptorsFromDi()), provideHttpClientTesting()],
     }).compileComponents();
-  });
 
-  beforeEach(() => {
     fixture = TestBed.createComponent(DebugTableGridComponent);
     component = fixture.componentInstance;
+    checkedStorageIdsSpy = spyOn(component.checkedStorageIds, 'emit');
     fixture.detectChanges();
   });
 
@@ -35,14 +35,15 @@ describe('DebugTableGridComponent', () => {
     };
     component.setTableData(tableData);
     fixture.detectChanges();
-    const headerElement = fixture.debugElement.query(By.css('th'));
-    expect(headerElement.nativeElement.textContent.trim()).toEqual('Storage Id');
-    checkColumn(['1', '10', '2'], 0, 1);
+    const headerElements = fixture.debugElement.queryAll(By.css('th'));
+    // Column #0 is the checkbox at the start of the table row.
+    expect(headerElements[1].nativeElement.textContent.trim()).toEqual('Storage Id');
+    checkColumn(['1', '10', '2'], 1, 2);
     const sortArrow = fixture.debugElement.query(By.css('.mat-sort-header-arrow'));
     sortArrow.nativeElement.click();
-    checkColumn(['1', '2', '10'], 0, 1);
+    checkColumn(['1', '2', '10'], 1, 2);
     sortArrow.nativeElement.click();
-    checkColumn(['10', '2', '1'], 0, 1);
+    checkColumn(['10', '2', '1'], 1, 2);
   });
 
   it('When column is text then sorted alphabetically', () => {
@@ -61,15 +62,17 @@ describe('DebugTableGridComponent', () => {
     component.setTableData(tableData);
     fixture.detectChanges();
     const headerElements = fixture.debugElement.queryAll(By.css('th'));
-    expect(headerElements.length).toEqual(2);
-    expect(headerElements[0].nativeElement.textContent.trim()).toEqual('Storage Id');
-    expect(headerElements[1].nativeElement.textContent.trim()).toEqual('Text');
-    checkColumn(['T1', 'T10', 'T2'], 1, 2);
+    // Checkbox, StorageId, Text.
+    expect(headerElements.length).toEqual(3);
+    expect(headerElements[1].nativeElement.textContent.trim()).toEqual('Storage Id');
+    expect(headerElements[2].nativeElement.textContent.trim()).toEqual('Text');
+    checkColumn(['T1', 'T10', 'T2'], 2, 3);
+    // Column #0 has no sort arrow, sort arrows have index one lower than columns.
     const sortArrow = fixture.debugElement.queryAll(By.css('.mat-sort-header-arrow'))[1];
     sortArrow.nativeElement.click();
-    checkColumn(['T1', 'T10', 'T2'], 1, 2);
+    checkColumn(['T1', 'T10', 'T2'], 2, 3);
     sortArrow.nativeElement.click();
-    checkColumn(['T2', 'T10', 'T1'], 1, 2);
+    checkColumn(['T2', 'T10', 'T1'], 2, 3);
   });
 
   it('When status is not shown then coloring is still done based on status', () => {
@@ -88,14 +91,65 @@ describe('DebugTableGridComponent', () => {
     component.setTableData(tableData);
     fixture.detectChanges();
     const headerElements = fixture.debugElement.queryAll(By.css('th'));
-    expect(headerElements.length).toEqual(1);
-    expect(headerElements[0].nativeElement.textContent.trim()).toEqual('Storage Id');
+    // Column #0 is the checkbox.
+    expect(headerElements.length).toEqual(2);
+    expect(headerElements[1].nativeElement.textContent.trim()).toEqual('Storage Id');
     checkStatuses(['statusError', 'statusSuccess', 'statusSuccess']);
     const sortArrow = fixture.debugElement.query(By.css('.mat-sort-header-arrow'));
     sortArrow.nativeElement.click();
     checkStatuses(['statusError', 'statusSuccess', 'statusSuccess']);
     sortArrow.nativeElement.click();
     checkStatuses(['statusSuccess', 'statusSuccess', 'statusError']);
+  });
+
+  describe('Check / uncheck', () => {
+    beforeEach(() => {
+      const tableData: TableData = {
+        columns: [{ name: 'storageId', label: 'Storage Id', shown: true }],
+        numericMetadataNames: new Set<string>(['storageId']),
+        rows: [{ storageId: '1' }, { storageId: '10' }, { storageId: '2' }],
+      };
+      component.setTableData(tableData);
+      fixture.detectChanges();
+    });
+
+    it('When row checked or unchecked then event emitted', () => {
+      const dataCheckboxElements = fixture.debugElement.queryAll(By.css('[data-cy-debug="selectOne"]'));
+      dataCheckboxElements[1].nativeElement.click();
+      expect(checkedStorageIdsSpy!.calls.mostRecent().args[0]).toEqual(['10']);
+      dataCheckboxElements[1].nativeElement.click();
+      expect(checkedStorageIdsSpy!.calls.mostRecent().args[0]).toEqual([]);
+    });
+
+    it('When multiple rows checked then storage ids reported in ascending numerical order', () => {
+      const dataCheckboxElements = fixture.debugElement.queryAll(By.css('[data-cy-debug="selectOne"]'));
+      dataCheckboxElements[2].nativeElement.click();
+      dataCheckboxElements[1].nativeElement.click();
+      dataCheckboxElements[0].nativeElement.click();
+      expect(checkedStorageIdsSpy!.calls.mostRecent().args[0]).toEqual(['1', '2', '10']);
+    });
+
+    it('When some rows checked and all selected checkbox is checked then all are checked', () => {
+      const dataCheckboxElements = fixture.debugElement.queryAll(By.css('[data-cy-debug="selectOne"]'));
+      dataCheckboxElements[1].nativeElement.click();
+      expect(checkedStorageIdsSpy!.calls.mostRecent().args[0]).toEqual(['10']);
+      const selectAllCheckbox = fixture.debugElement.query(By.css('[data-cy-debug="selectAll"]'));
+      selectAllCheckbox.nativeElement.click();
+      fixture.detectChanges();
+      expect(selectAllCheckbox.nativeElement.checked).toEqual(true);
+      for (const dataCheckboxElement of dataCheckboxElements) {
+        expect(dataCheckboxElement.nativeElement.checked).toEqual(true);
+      }
+      expect(checkedStorageIdsSpy!.calls.mostRecent().args[0]).toEqual(['1', '2', '10']);
+      // Clicking another time should deselect all
+      selectAllCheckbox.nativeElement.click();
+      fixture.detectChanges();
+      expect(selectAllCheckbox.nativeElement.checked).toEqual(false);
+      for (const dataCheckboxElement of dataCheckboxElements) {
+        expect(dataCheckboxElement.nativeElement.checked).toEqual(false);
+      }
+      expect(checkedStorageIdsSpy!.calls.mostRecent().args[0]).toEqual([]);
+    });
   });
 
   function checkColumn(expected: string[], columnNumber: number, expectedNumColumns: number): void {

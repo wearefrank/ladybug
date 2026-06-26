@@ -207,9 +207,13 @@ export class DebugTableGridComponent implements OnInit {
 
   private reportCheckedStorageIds(): void {
     if (this.data) {
-      this.checkedStorageIds.emit(
-        this.data.rows.filter((r) => r.checked === true).map((r) => r.fields[STORAGE_ID_COLUMN_NAME]),
-      );
+      // Conversion to number is safe because we checked that column storageId
+      // exists and that it is numeric according to the server.
+      const checkedStorageIdsNumbers: number[] = this.data.rows
+        .filter((r) => r.checked === true)
+        .map((r) => +r.fields[STORAGE_ID_COLUMN_NAME]);
+      checkedStorageIdsNumbers.sort((a, b) => a - b);
+      this.checkedStorageIds.emit(checkedStorageIdsNumbers.map((n) => `${n}`));
     }
   }
 

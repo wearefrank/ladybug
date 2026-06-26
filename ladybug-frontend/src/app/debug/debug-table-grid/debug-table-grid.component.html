@@ -14,7 +14,7 @@
             [style.height]="checkboxSize"
             (click)="toggleCheckAll($event)">
         </th>
-        <td mat-cell class="table-row-checkbox" *matCellDef="let row" [style.padding]="tableSpacing">
+        <td mat-cell class="table-row-checkbox" *matCellDef="let row" [class]="getStatusClass(row)" [style.padding]="tableSpacing">
           <input type="checkbox" data-cy-debug="selectOne" [checked]="row.checked" [style.width]="checkboxSize" [style.height]="checkboxSize" (click)="toggleCheck(row)">
         </td>
       </ng-container>
