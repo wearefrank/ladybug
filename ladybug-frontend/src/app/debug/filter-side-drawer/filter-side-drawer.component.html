@@ -3,7 +3,7 @@
     <div class="panel-container">
       <h1 class="h1 filter-label">Filter</h1>
       <div class="filter-input-container">
-        @for (column of shownColumns; track column.name) {
+        @for (column of userFilterableColumns; track column.name) {
           <div class="input-container">
             <label data-cy-debug="filterLabel" class="metadata-input-label">{{ column.label| shortenedTableHeader | titlecase }}</label>
             <div class="metadata-input-container input-group">
@@ -47,7 +47,7 @@
           class="clear-filter-btn btn btn-info"
           data-cy-debug="clear-filter-btn"
           (click)="filterService.resetFilters()">
-          Clear
+          {{ filterService.urlFilters.length === 0 ? 'Clear' : 'Reset' }}
         </button>
       </div>
     </div>

@@ -40,7 +40,7 @@ export class FilterSideDrawerComponent implements OnDestroy, OnInit {
     return this._currentView;
   }
 
-  protected shownColumns: Column[] = [];
+  protected userFilterableColumns: Column[] = [];
   protected userFilterChoices: Map<string, string[]> = new Map<string, string[]>();
   protected toolTipSuggestions?: Map<string, string>;
   private subscriptions: Subscription = new Subscription();
@@ -63,11 +63,13 @@ export class FilterSideDrawerComponent implements OnDestroy, OnInit {
   }
 
   private setSubscriptions(): void {
-    const columnsSubscription: Subscription = this.filterService.userFilterColumns$.subscribe((shownColumns) => {
-      if (shownColumns) {
-        this.shownColumns = shownColumns;
-      }
-    });
+    const columnsSubscription: Subscription = this.filterService.userFilterColumns$.subscribe(
+      (userFilterableColumns) => {
+        if (userFilterableColumns) {
+          this.userFilterableColumns = userFilterableColumns;
+        }
+      },
+    );
     this.subscriptions.add(columnsSubscription);
     const userFilterChoicesSubscription: Subscription = this.filterService.userFilterChoices$.subscribe((choices) => {
       if (choices) {

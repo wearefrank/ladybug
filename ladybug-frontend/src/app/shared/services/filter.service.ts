@@ -9,11 +9,7 @@ import { ToastService } from './toast.service';
 export interface Column {
   name: string;
   label: string;
-  // The status and storageId columns can be present in the table cells,
-  // also if they are not shown. This allows coloring the table rows
-  // by status when a status is known but when it is not shown because
-  // of filtering.
-  shown: boolean;
+  userFilterable: boolean;
 }
 
 export interface TableData {
@@ -27,7 +23,7 @@ export interface TableData {
 })
 export class FilterService implements OnDestroy {
   private currentView?: View;
-  private notShownMetadataNames = new Set<string>();
+  private notUserFilterableMetadataNames = new Set<string>();
   private numericMetadataNames = new Set<string>();
   private columns: Column[] = [];
   private tableDataSubject = new BehaviorSubject<TableData | undefined>(undefined);
@@ -100,6 +96,9 @@ export class FilterService implements OnDestroy {
 
   resetFilters(): void {
     this.userFiltersBeingEdited = {};
+    for (const filter of this.urlFilters) {
+      this.userFiltersBeingEdited[filter.metadataName] = filter.value;
+    }
     this.onUserFilterChanged();
   }
 
@@ -109,10 +108,10 @@ export class FilterService implements OnDestroy {
       this.subscribed = true;
     }
     this.setViewFilters(currentView);
-    this.setNotShownMetadataNames();
+    this.setNotUserFilterableMetadataNames();
     this.setNumericMetadataNames(currentView);
     this.setColumns(currentView);
-    this.userFilterColumnsSubject.next(this.columns.filter((c) => c.shown === true));
+    this.userFilterColumnsSubject.next(this.columns.filter((c) => c.userFilterable === true));
     this.resetFilters();
   }
 
@@ -139,10 +138,10 @@ export class FilterService implements OnDestroy {
     }
   }
 
-  private setNotShownMetadataNames(): void {
-    this.notShownMetadataNames.clear();
-    for (const metadataName of [...this.urlFilters, ...this.viewFilters].map((f) => f.metadataName)) {
-      this.notShownMetadataNames.add(metadataName);
+  private setNotUserFilterableMetadataNames(): void {
+    this.notUserFilterableMetadataNames.clear();
+    for (const metadataName of this.viewFilters.map((f) => f.metadataName)) {
+      this.notUserFilterableMetadataNames.add(metadataName);
     }
   }
 
@@ -164,7 +163,7 @@ export class FilterService implements OnDestroy {
       this.columns.push({
         name: metadataName,
         label: currentView.metadataLabels[index],
-        shown: !this.notShownMetadataNames.has(metadataName),
+        userFilterable: !this.notUserFilterableMetadataNames.has(metadataName),
       });
     }
   }
@@ -180,7 +179,7 @@ export class FilterService implements OnDestroy {
         value,
       });
     }
-    const allFilters: MetadataFilter[] = [...this.urlFilters, ...this.viewFilters, ...userFilters];
+    const allFilters: MetadataFilter[] = [...this.viewFilters, ...userFilters];
     firstValueFrom(
       this.httpService.getMetadata(this.currentView, {
         metadataNames: this.currentView.metadataNames,
@@ -206,7 +205,7 @@ export class FilterService implements OnDestroy {
 
   private getUniqueOptions(rows: Record<string, string>[]): Map<string, string[]> {
     const result: Map<string, string[]> = new Map<string, string[]>();
-    for (const column of this.columns.filter((c) => c.shown)) {
+    for (const column of this.columns.filter((c) => c.userFilterable)) {
       let uniqueValuesSet: Set<string> = new Set<string>();
       for (const row of rows) {
         uniqueValuesSet.add(row[column.name]);

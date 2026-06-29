@@ -14,12 +14,12 @@
             [style.height]="checkboxSize"
             (click)="toggleCheckAll($event)">
         </th>
-        <td mat-cell class="table-row-checkbox" *matCellDef="let row" [class]="getStatusClass(row)" [style.padding]="tableSpacing">
+        <td mat-cell class="table-row-checkbox" *matCellDef="let row" [class]="getStatusOrHighlightClass(row)" [style.padding]="tableSpacing">
           <input type="checkbox" data-cy-debug="selectOne" [checked]="row.checked" [style.width]="checkboxSize" [style.height]="checkboxSize" (click)="toggleCheck(row)">
         </td>
       </ng-container>
 
-      @for (column of getShownColumns(); let index = $index; track column.name) {
+      @for (column of data.columns; let index = $index; track column.name) {
         <!--For every metadata label, a header and row structure is created-->
         <ng-container [matColumnDef]="column.name">
           <th mat-header-cell mat-sort-header
@@ -35,7 +35,7 @@
           <td mat-cell class="table-cell"
               *matCellDef="let row"
               [style.padding]="tableSpacing"
-              [class]="getStatusClass(row)"
+              [class]="getStatusOrHighlightClass(row)"
               [title]="column.label">
             {{ getMetadata(row, column.name)|tableCellShortener }}
           </td>
@@ -48,7 +48,7 @@
           *matRowDef="let row of data.rows; let rowIndex = index; columns: getSelectAndOtherShownColumnNames()"
           [ngClass]="{'highlight': row.fields.storageId === selectedStorageId}"
           [attr.data-cy-record-table-index]="rowIndex"
-          [class]="getStatusClass(row)"
+          [class]="getStatusOrHighlightClass(row)"
           [style.font-size]="fontSize"
           (click)="clickReportWithStorageId.emit(row.fields.storageId)"
       ></tr>

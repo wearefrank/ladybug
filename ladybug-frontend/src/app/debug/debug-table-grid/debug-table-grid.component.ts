@@ -170,12 +170,9 @@ export class DebugTableGridComponent implements OnInit {
     this.reportCheckedStorageIds();
   }
 
-  protected getShownColumns(): Column[] {
-    return this.data?.columns.filter((c) => c.shown === true) ?? [];
-  }
-
   protected getSelectAndOtherShownColumnNames(): string[] {
-    return ['select', ...this.getShownColumns().map((c) => c.name)];
+    const columnNames: string[] = this.data?.columns.map((c) => c.name) ?? [];
+    return ['select', ...columnNames];
   }
 
   sortingDataAccessor(row: RowData, columnName: string): string | number {
@@ -191,7 +188,15 @@ export class DebugTableGridComponent implements OnInit {
     return row.fields[name] ?? '';
   }
 
-  protected getStatusClass(row: RowData): string {
+  protected getStatusOrHighlightClass(row: RowData): string {
+    let result = this.getStatusClass(row);
+    if (row.fields[STORAGE_ID_COLUMN_NAME] === this.selectedStorageId) {
+      result = `${result} highlight`;
+    }
+    return result;
+  }
+
+  private getStatusClass(row: RowData): string {
     if (row.fields[STATUS_COLUMN_NAME]) {
       const status: string = row.fields[STATUS_COLUMN_NAME];
       if (status.toLowerCase() === 'success') {
