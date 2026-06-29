@@ -6,7 +6,7 @@ import { isNumber } from '../../shared/util/util';
 import { CompareData } from '../../compare/compare-data';
 import { HierarchicalReport } from '../interfaces/hierarchical-report';
 
-export interface FilterFromUrl {
+export interface MetadataFilter {
   metadataName: string;
   value: string;
 }
@@ -162,7 +162,7 @@ export class TabService {
     const kind = routePath.split('/')[0];
     switch (kind) {
       case KEY_DEBUG: {
-        const filters: FilterFromUrl[] = this.routeGetFilters(route);
+        const filters: MetadataFilter[] = this.routeGetFilters(route);
         return `${KEY_DEBUG}${this.encodeFiltersForKey(filters)}`;
       }
       case KEY_TEST: {
@@ -210,7 +210,7 @@ export class TabService {
     return route.paramMap.get(parameter) as string;
   }
 
-  routeGetFilters(route: ActivatedRouteSnapshot): FilterFromUrl[] {
+  routeGetFilters(route: ActivatedRouteSnapshot): MetadataFilter[] {
     const filterParameters: string[] = [];
     const queryParameters: Params = route.queryParams;
     for (const [k, _] of Object.entries(queryParameters)) {
@@ -219,7 +219,7 @@ export class TabService {
       }
     }
     filterParameters.sort();
-    const result: FilterFromUrl[] = [];
+    const result: MetadataFilter[] = [];
     for (const s of filterParameters) {
       result.push({
         metadataName: s.slice(FILTER_PREFIX.length),
@@ -291,14 +291,14 @@ export class TabService {
     return route.params[parameter] || '';
   }
 
-  private encodeFiltersForKey(filters: FilterFromUrl[]): string {
+  private encodeFiltersForKey(filters: MetadataFilter[]): string {
     if (filters.length === 0) {
       return '';
     }
     return `?${filters.map((f) => this.encodeFilterItemForKey(f)).join('&')}`;
   }
 
-  private encodeFilterItemForKey(f: FilterFromUrl): string {
+  private encodeFilterItemForKey(f: MetadataFilter): string {
     return `${FILTER_PREFIX}${f.metadataName}=${encodeURIComponent(f.value)}`;
   }
 

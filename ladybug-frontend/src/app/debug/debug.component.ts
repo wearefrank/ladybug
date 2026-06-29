@@ -7,7 +7,7 @@ import { ErrorHandling } from '../shared/classes/error-handling.service';
 import { DebugReportComponent } from '../report/debug-report.component/debug-report.component';
 import { HierarchicalReport } from '../shared/interfaces/hierarchical-report';
 import { ActivatedRoute } from '@angular/router';
-import { FilterFromUrl, TabService } from '../shared/services/tab.service';
+import { MetadataFilter, TabService } from '../shared/services/tab.service';
 import { FilterService } from '../shared/services/filter.service';
 import { DebugTableWithControlsComponent } from './debug-table-with-controls/debug-table-with-controls.component';
 
@@ -31,7 +31,7 @@ export class DebugComponent implements OnInit {
   private route = inject(ActivatedRoute);
 
   ngOnInit(): void {
-    const urlFilters: FilterFromUrl[] = this.tabService.routeGetFilters(this.route.snapshot);
+    const urlFilters: MetadataFilter[] = this.tabService.routeGetFilters(this.route.snapshot);
     this.filterService.setUrlFilters(urlFilters);
     console.log('Initialized URL filters from route:');
     for (const urlFilter of urlFilters) {

@@ -1,6 +1,6 @@
 import { ErrorHandler, inject, Injectable, OnDestroy } from '@angular/core';
 import { View } from '../interfaces/view';
-import { FilterFromUrl } from './tab.service';
+import { MetadataFilter } from './tab.service';
 import { BehaviorSubject, debounceTime, firstValueFrom, Observable, Subject, Subscription } from 'rxjs';
 import { HttpService } from './http.service';
 import { ClientSettingsService } from './client.settings.service';
@@ -41,8 +41,8 @@ export class FilterService implements OnDestroy {
   private subscriptions = new Subscription();
   private subscribed = false;
   public userFilters$ = this.userFiltersSubject.pipe(debounceTime(300));
-  public urlFilters: FilterFromUrl[] = [];
-  public viewFilters: FilterFromUrl[] = [];
+  public urlFilters: MetadataFilter[] = [];
+  public viewFilters: MetadataFilter[] = [];
   private _userFiltersBeingEdited: Record<string, string> = {};
   public set userFiltersBeingEdited(_userFiltersBeingEdited: Record<string, string>) {
     this._userFiltersBeingEdited = _userFiltersBeingEdited;
@@ -67,7 +67,7 @@ export class FilterService implements OnDestroy {
     this.initialize(this.currentView);
   }
 
-  setUrlFilters(urlFilters: FilterFromUrl[]): void {
+  setUrlFilters(urlFilters: MetadataFilter[]): void {
     this.urlFilters = urlFilters;
     if (this.currentView) {
       this.initialize(this.currentView);
@@ -173,14 +173,14 @@ export class FilterService implements OnDestroy {
     if (!this.currentView) {
       throw new Error('Cannot happen because we subscribe to subscriptions only after receiving the first view');
     }
-    const userFilters: FilterFromUrl[] = [];
+    const userFilters: MetadataFilter[] = [];
     for (const [key, value] of userFiltersMap.entries()) {
       userFilters.push({
         metadataName: key,
         value,
       });
     }
-    const allFilters: FilterFromUrl[] = [...this.urlFilters, ...this.viewFilters, ...userFilters];
+    const allFilters: MetadataFilter[] = [...this.urlFilters, ...this.viewFilters, ...userFilters];
     firstValueFrom(
       this.httpService.getMetadata(this.currentView, {
         metadataNames: this.currentView.metadataNames,

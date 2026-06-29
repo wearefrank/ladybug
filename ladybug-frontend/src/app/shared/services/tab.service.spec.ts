@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 
-import { FilterFromUrl, TabService, HtmlNavigation } from './tab.service';
+import { MetadataFilter, TabService, HtmlNavigation } from './tab.service';
 import { KEY_DEBUG } from '../interfaces/tab';
 import { ActivatedRouteSnapshot, UrlSegment } from '@angular/router';
 
@@ -29,7 +29,7 @@ describe('TabService', () => {
   it('When activated route has no filters then no filters and key is just debug', () => {
     let route = getDefaultActivatedRouteSnapshotWithPath(KEY_DEBUG);
     route.queryParams = {};
-    const filters: FilterFromUrl[] = service.routeGetFilters(route);
+    const filters: MetadataFilter[] = service.routeGetFilters(route);
     expect(filters.length).toEqual(0);
     expect(service.getKey(route)).toEqual(`${KEY_DEBUG}`);
     const navigation: HtmlNavigation = service.keyToNavigation(KEY_DEBUG);
@@ -43,7 +43,7 @@ describe('TabService', () => {
       'filter-host': 'Host A',
       'filter-application': 'Application X',
     };
-    const filters: FilterFromUrl[] = service.routeGetFilters(route);
+    const filters: MetadataFilter[] = service.routeGetFilters(route);
     expect(filters.length).toEqual(2);
     expect(filters[0].metadataName).toEqual('application');
     expect(filters[0].value).toEqual('Application X');
@@ -64,7 +64,7 @@ describe('TabService', () => {
       'filter-application': 'Application X',
       'filter-host': 'Host A',
     };
-    const filters: FilterFromUrl[] = service.routeGetFilters(route);
+    const filters: MetadataFilter[] = service.routeGetFilters(route);
     expect(filters.length).toEqual(2);
     expect(filters[0].metadataName).toEqual('application');
     expect(filters[0].value).toEqual('Application X');
