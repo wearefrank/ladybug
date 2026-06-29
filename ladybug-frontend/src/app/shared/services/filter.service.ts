@@ -22,11 +22,6 @@ export interface TableData {
   numericMetadataNames: Set<string>;
 }
 
-export interface FixedFilters {
-  urlFilters: FilterFromUrl[];
-  viewFilters: FilterFromUrl[];
-}
-
 @Injectable({
   providedIn: 'root',
 })
@@ -38,7 +33,6 @@ export class FilterService implements OnDestroy {
   private tableDataSubject = new BehaviorSubject<TableData | undefined>(undefined);
   private userFilterColumnsSubject = new BehaviorSubject<Column[] | undefined>(undefined);
   private userFilterChoicesSubject = new BehaviorSubject<Map<string, string[]> | undefined>(undefined);
-  private fixedFiltersSubject = new BehaviorSubject<FixedFilters | undefined>(undefined);
   private userFiltersSubject = new Subject<Map<string, string>>();
   private httpService = inject(HttpService);
   private clientSettingsService = inject(ClientSettingsService);
@@ -63,7 +57,6 @@ export class FilterService implements OnDestroy {
   public userFilterColumns$: Observable<Column[] | undefined> = this.userFilterColumnsSubject.asObservable();
   public userFilterChoices$: Observable<Map<string, string[]> | undefined> =
     this.userFilterChoicesSubject.asObservable();
-  public fixedFilters$: Observable<FixedFilters | undefined> = this.fixedFiltersSubject.asObservable();
 
   ngOnDestroy(): void {
     this.subscriptions.unsubscribe();
@@ -119,10 +112,6 @@ export class FilterService implements OnDestroy {
     this.setNotShownMetadataNames();
     this.setNumericMetadataNames(currentView);
     this.setColumns(currentView);
-    this.fixedFiltersSubject.next({
-      urlFilters: this.urlFilters,
-      viewFilters: this.viewFilters,
-    });
     this.userFilterColumnsSubject.next(this.columns.filter((c) => c.shown === true));
     this.resetFilters();
   }
