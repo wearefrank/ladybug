@@ -29,7 +29,7 @@ describe('DebugTableGridComponent', () => {
 
   it('When column is numeric then sorted numerically', () => {
     const tableData: TableData = {
-      columns: [{ name: 'storageId', label: 'Storage Id', shown: true }],
+      columns: [{ name: 'storageId', label: 'Storage Id', userFilterable: true }],
       numericMetadataNames: new Set<string>(['storageId']),
       rows: [{ storageId: '1' }, { storageId: '10' }, { storageId: '2' }],
     };
@@ -49,8 +49,8 @@ describe('DebugTableGridComponent', () => {
   it('When column is text then sorted alphabetically', () => {
     const tableData: TableData = {
       columns: [
-        { name: 'storageId', label: 'Storage Id', shown: true },
-        { name: 'text', label: 'Text', shown: true },
+        { name: 'storageId', label: 'Storage Id', userFilterable: true },
+        { name: 'text', label: 'Text', userFilterable: true },
       ],
       numericMetadataNames: new Set<string>(['storageId']),
       rows: [
@@ -75,11 +75,11 @@ describe('DebugTableGridComponent', () => {
     checkColumn(['T2', 'T10', 'T1'], 2, 3);
   });
 
-  it('When status is not shown then coloring is still done based on status', () => {
+  it('Should color based on status', () => {
     const tableData: TableData = {
       columns: [
-        { name: 'storageId', label: 'Storage Id', shown: true },
-        { name: 'status', label: 'Status', shown: false },
+        { name: 'storageId', label: 'Storage Id', userFilterable: true },
+        { name: 'status', label: 'Status', userFilterable: true },
       ],
       numericMetadataNames: new Set<string>(['storageId']),
       rows: [
@@ -92,8 +92,9 @@ describe('DebugTableGridComponent', () => {
     fixture.detectChanges();
     const headerElements = fixture.debugElement.queryAll(By.css('th'));
     // Column #0 is the checkbox.
-    expect(headerElements.length).toEqual(2);
+    expect(headerElements.length).toEqual(3);
     expect(headerElements[1].nativeElement.textContent.trim()).toEqual('Storage Id');
+    expect(headerElements[2].nativeElement.textContent.trim()).toEqual('Status');
     checkStatuses(['statusError', 'statusSuccess', 'statusSuccess']);
     const sortArrow = fixture.debugElement.query(By.css('.mat-sort-header-arrow'));
     sortArrow.nativeElement.click();
@@ -105,7 +106,7 @@ describe('DebugTableGridComponent', () => {
   describe('Check / uncheck', () => {
     beforeEach(() => {
       const tableData: TableData = {
-        columns: [{ name: 'storageId', label: 'Storage Id', shown: true }],
+        columns: [{ name: 'storageId', label: 'Storage Id', userFilterable: true }],
         numericMetadataNames: new Set<string>(['storageId']),
         rows: [{ storageId: '1' }, { storageId: '10' }, { storageId: '2' }],
       };
