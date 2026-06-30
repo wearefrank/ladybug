@@ -1,7 +1,7 @@
 import { ErrorHandler, inject, Injectable, OnDestroy } from '@angular/core';
 import { View } from '../interfaces/view';
 import { MetadataFilter } from './tab.service';
-import { BehaviorSubject, debounceTime, firstValueFrom, Observable, Subject, Subscription } from 'rxjs';
+import { BehaviorSubject, debounceTime, firstValueFrom, Observable, Subscription } from 'rxjs';
 import { HttpService } from './http.service';
 import { ClientSettingsService } from './client.settings.service';
 import { ToastService } from './toast.service';
@@ -29,7 +29,7 @@ export class FilterService implements OnDestroy {
   private tableDataSubject = new BehaviorSubject<TableData | undefined>(undefined);
   private userFilterColumnsSubject = new BehaviorSubject<Column[] | undefined>(undefined);
   private userFilterChoicesSubject = new BehaviorSubject<Map<string, string[]> | undefined>(undefined);
-  private userFiltersSubject = new Subject<Map<string, string>>();
+  private userFiltersSubject = new BehaviorSubject<Map<string, string>>(new Map<string, string>());
   private httpService = inject(HttpService);
   private clientSettingsService = inject(ClientSettingsService);
   private errorHandling = inject(ErrorHandler);
@@ -112,6 +112,7 @@ export class FilterService implements OnDestroy {
     this.setNumericMetadataNames(currentView);
     this.setColumns(currentView);
     this.userFilterColumnsSubject.next(this.columns.filter((c) => c.userFilterable === true));
+    this.onUserFilterChanged();
     this.resetFilters();
   }
 
