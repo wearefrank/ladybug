@@ -142,7 +142,6 @@ describe('About URL filters and row filtering views', () => {
 
   it('When URL filters on host then applied in grid and shown in side drawer', () => {
     cy.visit('debug?filter-host=Host%20A');
-    cy.get('[data-cy-debug="refresh"]').click();
     cy.checkDebugTableRowsAre(['Simple report']);
     cy.checkHostOfDebugTableRow(0, 'Host A');
     cy.get('[data-cy-active-filter]').should('have.length', 1);
@@ -173,7 +172,6 @@ describe('About URL filters and row filtering views', () => {
 
   it('When URL filters then we have a reset button that restores URL filters', () => {
     cy.visit('debug?filter-host=Host%20A');
-    cy.get('[data-cy-debug="refresh"]').click();
     cy.checkDebugTableRowsAre(['Simple report']);
     cy.checkHostOfDebugTableRow(0, 'Host A');
     cy.get('[data-cy-debug="filter"]').click();
