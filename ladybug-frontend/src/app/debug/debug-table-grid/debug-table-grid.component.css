@@ -65,4 +65,13 @@ th {
 
 td.mat-mdc-cell {
   border: none;
+
+  &:hover {
+    filter: brightness(85%);
+    cursor: pointer;
+
+    &.highlight {
+      filter: brightness(50%);
+    }
+  }
 }
