@@ -2,7 +2,7 @@ import { Component, inject, OnInit, ViewChild } from '@angular/core';
 import { ToastService } from '../shared/services/toast.service';
 import { HttpService } from '../shared/services/http.service';
 import { View } from '../shared/interfaces/view';
-import { catchError } from 'rxjs';
+import { catchError, Subject } from 'rxjs';
 import { ErrorHandling } from '../shared/classes/error-handling.service';
 import { DebugReportComponent } from '../report/debug-report.component/debug-report.component';
 import { HierarchicalReport } from '../shared/interfaces/hierarchical-report';
@@ -23,6 +23,7 @@ export class DebugComponent implements OnInit {
   currentView?: View;
   views?: View[];
 
+  protected reportClosedSubject = new Subject<boolean>();
   private httpService = inject(HttpService);
   private toastService = inject(ToastService);
   private errorHandler = inject(ErrorHandling);

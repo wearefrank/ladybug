@@ -3,7 +3,6 @@ import { catchError, Subscription } from 'rxjs';
 import { TableCellShortenerPipe } from '../../shared/pipes/table-cell-shortener.pipe';
 import { MatSort, MatSortModule } from '@angular/material/sort';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { NgClass } from '@angular/common';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { ErrorHandling } from '../../shared/classes/error-handling.service';
 import { ShortenedTableHeaderPipe } from '../../shared/pipes/shortened-table-header.pipe';
@@ -35,14 +34,13 @@ interface WorkingData {
     ReactiveFormsModule,
     FormsModule,
     MatSortModule,
-    NgClass,
     TableCellShortenerPipe,
     MatTableModule,
     ShortenedTableHeaderPipe,
   ],
 })
 export class DebugTableGridComponent implements OnInit {
-  @Input() selectedStorageId: string | null = null;
+  @Input() selectedStorageId: number | null = null;
   @Output() clickReportWithStorageId: EventEmitter<number> = new EventEmitter<number>();
   @Output() checkedStorageIds = new EventEmitter<string[]>();
 
@@ -190,7 +188,9 @@ export class DebugTableGridComponent implements OnInit {
 
   protected getStatusOrHighlightClass(row: RowData): string {
     let result = this.getStatusClass(row);
-    if (row.fields[STORAGE_ID_COLUMN_NAME] === this.selectedStorageId) {
+    // Storage id field can be converted to a number. We checked already that storageId
+    // is a numeric field according to the backend.
+    if (+row.fields[STORAGE_ID_COLUMN_NAME] === this.selectedStorageId) {
       result = `${result} highlight`;
     }
     return result;

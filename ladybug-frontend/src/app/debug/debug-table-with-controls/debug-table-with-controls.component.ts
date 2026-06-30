@@ -4,7 +4,7 @@ import { Component, EventEmitter, inject, Input, OnDestroy, OnInit, Output, View
 import { HelperService } from '../../shared/services/helper.service';
 import { HttpService } from '../../shared/services/http.service';
 import { TableSettingsModalComponent } from '../table-settings-modal/table-settings-modal.component';
-import { catchError, Subscription } from 'rxjs';
+import { catchError, Observable, Subscription } from 'rxjs';
 import { Report } from '../../shared/interfaces/report';
 import { ToastService } from '../../shared/services/toast.service';
 import { TabService } from '../../shared/services/tab.service';
@@ -65,6 +65,7 @@ export class DebugTableWithControlsComponent implements OnInit, OnDestroy {
   // The debug tab waits until the views are known before creating this component.
   @Input({ required: true }) views!: View[];
   @Input({ required: true }) currentView!: View;
+  @Input({ required: true }) reportClosed$!: Observable<boolean>;
   @Output() viewChange: EventEmitter<View> = new EventEmitter<View>();
   @Output() openReportEvent: EventEmitter<HierarchicalReport> = new EventEmitter<HierarchicalReport>();
 
@@ -86,7 +87,7 @@ export class DebugTableWithControlsComponent implements OnInit, OnDestroy {
   protected appVariablesService = inject(AppVariablesService);
   protected currentUploadFile = '';
 
-  protected selectedStorageId: string | null = null;
+  protected selectedStorageId: number | null = null;
   private reportsInProgress: Record<string, number> = {};
 
   private httpService = inject(HttpService);
@@ -118,6 +119,8 @@ export class DebugTableWithControlsComponent implements OnInit, OnDestroy {
       (amount) => (this.displayAmount = amount),
     );
     this.subscriptions.add(displayAmountSubscription);
+    const reportClosedSubscription = this.reportClosed$.subscribe(() => (this.selectedStorageId = null));
+    this.subscriptions.add(reportClosedSubscription);
   }
 
   loadData(): void {
@@ -303,6 +306,7 @@ export class DebugTableWithControlsComponent implements OnInit, OnDestroy {
       .pipe(catchError(this.errorHandler.handleError()))
       .subscribe({
         next: (data: HierarchicalReport[]): void => {
+          this.selectedStorageId = data[0].storageId;
           this.openReportEvent.next(data[0]);
         },
       });
@@ -314,6 +318,7 @@ export class DebugTableWithControlsComponent implements OnInit, OnDestroy {
       .pipe(catchError(this.errorHandler.handleError()))
       .subscribe({
         next: (report: HierarchicalReport) => {
+          this.selectedStorageId = null;
           this.openReportEvent.next(report);
           this.toastService.showSuccess(`Opened report in progress with index [${index}]`);
         },

@@ -45,8 +45,7 @@
       <!--Values are passed to their respective header and row elements-->
       <tr mat-header-row *matHeaderRowDef="getSelectAndOtherShownColumnNames(); sticky: true" [style.font-size]="fontSize"></tr>
       <tr data-cy-debug="tableRow" mat-row class="table-row"
-          *matRowDef="let row of data.rows; let rowIndex = index; columns: getSelectAndOtherShownColumnNames()"
-          [ngClass]="{'highlight': row.fields.storageId === selectedStorageId}"
+          *matRowDef="let row; let rowIndex = index; columns: getSelectAndOtherShownColumnNames()"
           [attr.data-cy-record-table-index]="rowIndex"
           [class]="getStatusOrHighlightClass(row)"
           [style.font-size]="fontSize"
