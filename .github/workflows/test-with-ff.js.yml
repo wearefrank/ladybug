@@ -184,10 +184,10 @@ jobs:
       - name: Copy cypress.config_cicd.ts to cypress.config.ts to listen to correct port
         working-directory: ladybug/ladybug-ff-cypress-test
         run: cp cypress.config_cicd.ts cypress.config.ts
-      - name: Use Node.js 20.x
+      - name: Use Node.js 24.x
         uses: actions/setup-node@v4
         with:
-          node-version: 20.x
+          node-version: 24.x
           cache: "yarn"
           cache-dependency-path: "**/yarn.lock"
       - name: Update yarn
