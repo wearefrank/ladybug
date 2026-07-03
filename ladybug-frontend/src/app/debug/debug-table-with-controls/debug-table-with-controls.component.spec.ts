@@ -4,6 +4,7 @@ import { DebugTableWithControlsComponent } from './debug-table-with-controls.com
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { View } from '../../shared/interfaces/view';
 import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
+import { Subject } from 'rxjs';
 
 describe('DebugTableWithControlsComponent', () => {
   let component: DebugTableWithControlsComponent;
@@ -20,11 +21,14 @@ describe('DebugTableWithControlsComponent', () => {
     fixture = TestBed.createComponent(DebugTableWithControlsComponent);
     component = fixture.componentInstance;
     component.currentView = {
+      name: 'Some view',
       storageName: 'mockStorage',
       metadataNames: ['mockMetadata'],
       metadataLabels: ['mockMetadata'],
       metadataTypes: new Map(),
     } as View;
+    component.views = [component.currentView];
+    component.reportClosed$ = new Subject<boolean>();
     fixture.detectChanges();
   });
 
