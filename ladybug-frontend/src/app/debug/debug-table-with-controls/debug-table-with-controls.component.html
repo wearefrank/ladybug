@@ -121,7 +121,7 @@
       than {{ (reportsInProgressThreshold ?? 1) / 1000 / 60 }} minutes]</h4>
   }
   <app-debug-table-grid
-    [selectedStorageId]="selectedStorageId"
+    [openedStorageId]="openedStorageId"
     (checkedStorageIds)= "onCheckedStorageIds($event)"
     (clickReportWithStorageId)="openReport($event)">
   </app-debug-table-grid>

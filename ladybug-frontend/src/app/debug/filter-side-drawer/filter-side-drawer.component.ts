@@ -28,7 +28,7 @@ import { ErrorHandling } from '../../shared/classes/error-handling.service';
 })
 export class FilterSideDrawerComponent implements OnDestroy, OnInit {
   private _currentView: View | undefined;
-  // The currentView is also set in Filter2Service.
+  // The currentView is also set in FilterService.
   // Most data for the side drawer is calculated there.
   @Input() set currentView(_currentView: View | undefined) {
     this._currentView = _currentView;

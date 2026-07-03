@@ -87,7 +87,7 @@ export class DebugTableWithControlsComponent implements OnInit, OnDestroy {
   protected appVariablesService = inject(AppVariablesService);
   protected currentUploadFile = '';
 
-  protected selectedStorageId: number | null = null;
+  protected openedStorageId: number | null = null;
   private reportsInProgress: Record<string, number> = {};
 
   private httpService = inject(HttpService);
@@ -119,7 +119,7 @@ export class DebugTableWithControlsComponent implements OnInit, OnDestroy {
       (amount) => (this.displayAmount = amount),
     );
     this.subscriptions.add(displayAmountSubscription);
-    const reportClosedSubscription = this.reportClosed$.subscribe(() => (this.selectedStorageId = null));
+    const reportClosedSubscription = this.reportClosed$.subscribe(() => (this.openedStorageId = null));
     this.subscriptions.add(reportClosedSubscription);
   }
 
@@ -137,7 +137,7 @@ export class DebugTableWithControlsComponent implements OnInit, OnDestroy {
   changeView(view: View): void {
     this.currentView = view;
     this.viewChange.next(this.currentView);
-    // Filter2Service already triggers retrieving the records when the view is changed.
+    // FilterService already triggers retrieving the records when the view is changed.
     this.update();
   }
 
@@ -306,7 +306,7 @@ export class DebugTableWithControlsComponent implements OnInit, OnDestroy {
       .pipe(catchError(this.errorHandler.handleError()))
       .subscribe({
         next: (data: HierarchicalReport[]): void => {
-          this.selectedStorageId = data[0].storageId;
+          this.openedStorageId = data[0].storageId;
           this.openReportEvent.next(data[0]);
         },
       });
@@ -318,7 +318,7 @@ export class DebugTableWithControlsComponent implements OnInit, OnDestroy {
       .pipe(catchError(this.errorHandler.handleError()))
       .subscribe({
         next: (report: HierarchicalReport) => {
-          this.selectedStorageId = null;
+          this.openedStorageId = null;
           this.openReportEvent.next(report);
           this.toastService.showSuccess(`Opened report in progress with index [${index}]`);
         },

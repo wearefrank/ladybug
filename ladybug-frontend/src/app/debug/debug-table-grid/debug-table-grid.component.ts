@@ -40,7 +40,7 @@ interface WorkingData {
   ],
 })
 export class DebugTableGridComponent implements OnInit {
-  @Input() selectedStorageId: number | null = null;
+  @Input() openedStorageId: number | null = null;
   @Output() clickReportWithStorageId: EventEmitter<number> = new EventEmitter<number>();
   @Output() checkedStorageIds = new EventEmitter<string[]>();
 
@@ -190,7 +190,7 @@ export class DebugTableGridComponent implements OnInit {
     let result = this.getStatusClass(row);
     // Storage id field can be converted to a number. We checked already that storageId
     // is a numeric field according to the backend.
-    if (+row.fields[STORAGE_ID_COLUMN_NAME] === this.selectedStorageId) {
+    if (+row.fields[STORAGE_ID_COLUMN_NAME] === this.openedStorageId) {
       result = `${result} highlight`;
     }
     return result;
