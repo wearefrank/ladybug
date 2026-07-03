@@ -48,4 +48,17 @@ describe('Clicking a report', () => {
       cy.wrap(cell).should('not.have.class', 'highlight');
     })
   })
+
+  it('When report is closed then no longer highlighted in table', () => {
+    cy.getDebugTableRows().first().click();
+    cy.get('[data-cy-debug-tree="buttons"]').should('be.visible');
+    cy.getDebugTableRows().first().find('td').each((cell) => {
+      cy.wrap(cell).should('have.class', 'highlight');
+    });
+    cy.get('[data-cy-debug-tree="close"]').click();
+    cy.get('[data-cy-debug-tree="buttons"]').should('not.exist');
+    cy.getDebugTableRows().first().find('td').each((cell) => {
+      cy.wrap(cell).should('not.have.class', 'highlight');
+    });
+  })
 });
