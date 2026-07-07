@@ -20,6 +20,9 @@ import java.util.Set;
 import java.util.HashSet;
 import java.util.stream.Collectors;
 
+// This interface is implemented by class org.wearefrank.ladybug.TestTool. The reason for introducing this
+// interface is to hide most data of class TestTool for methods working with this interface.
+//
 // The metadata fields host and application have dynamic behavior that cannot be caught completely in Spring
 // configuration files. When an instrumented application runs in a Kubernetes cluster, then the host and the
 // application are relevant. The instrumented application should set the host and the application in class TestTool.
