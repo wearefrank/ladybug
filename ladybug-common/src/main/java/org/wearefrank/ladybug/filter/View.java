@@ -74,8 +74,8 @@ public class View implements BeanParent {
 		return nodeLinkStrategy;
 	}
 
-	public List<String> getMetadataNames(HostAndApplicationHolder hostAndApplicationHolder) {
-		return hostAndApplicationHolder.filterMetadataNames(metadataNames);
+	public List<String> getMetadataNames(ApplicationMetadataItemHolder applicationMetadataItemHolder) {
+		return applicationMetadataItemHolder.filterMetadataNames(metadataNames);
 	}
 
 	public void setMetadataFilter(Map<String, String> metadataFilter) {
@@ -133,9 +133,9 @@ public class View implements BeanParent {
 		return getName();
 	}
 
-	public List<String> getMetadataLabels(HostAndApplicationHolder hostAndApplicationHolder) {
+	public List<String> getMetadataLabels(ApplicationMetadataItemHolder applicationMetadataItemHolder) {
 		List<String> metadataLabels = new ArrayList<>();
-		for (String metadataName : getMetadataNames(hostAndApplicationHolder)) {
+		for (String metadataName : getMetadataNames(applicationMetadataItemHolder)) {
 			metadataLabels.add(metadataExtractor.getLabel(metadataName));
 		}
 
