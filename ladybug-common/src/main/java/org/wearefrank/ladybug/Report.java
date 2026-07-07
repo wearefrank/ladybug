@@ -83,6 +83,7 @@ public class Report implements Serializable {
 	private List<Checkpoint> checkpoints = new ArrayList<Checkpoint>();
 	private @Setter @Getter String transformation;
 	private Map<String, String> variables;
+	private @Setter @Getter boolean rerunnable = true;
 	// Please note that the get and set methods need @Transient annotation for XmlEncoder to not store the property.
 	// This is in contrast to serialization / ObjectOutputStream that is using variables (and doesn't look at get and
 	// set methods) and needs a variable to be declared transient to not store the field.

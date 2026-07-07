@@ -38,6 +38,7 @@ function getAPartialReport(): HierarchicalReport {
     estimatedMemoryUsage: 5,
     correlationId: '1',
     variables: {},
+    rerunnable: true,
     xml: 'dummy xml',
     checkpointsFromView: null,
     startTime: 0,

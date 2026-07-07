@@ -21,6 +21,7 @@ const INDENT_TWO_SPACES = '  ';
 export interface NodeValueState {
   isEdited: boolean;
   isReadOnly: boolean;
+  rerunnable?: boolean;
   storageId?: number;
   storageName?: string;
   checkpointsFromView?: string | null;
@@ -182,6 +183,10 @@ export class ReportSharedStrategy {
   }
 
   private copyReport(): void {
+    if (!this.nodeValueState?.rerunnable) {
+      this.toastService.showWarning('This report cannot be copied to test tab');
+      return;
+    }
     if (this.nodeValueState?.storageId === undefined) {
       throw new Error('Cannot copy report because ReportComponent does not have the storageId');
     }
@@ -203,6 +208,10 @@ export class ReportSharedStrategy {
   }
 
   private rerunReport(): void {
+    if (!this.nodeValueState?.rerunnable) {
+      this.toastService.showWarning('This report cannot be rerun');
+      return;
+    }
     if (this.nodeValueState?.storageId === undefined) {
       throw new Error('Cannot rerun report because ReportComponent does not have the storageId');
     }

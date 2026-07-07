@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.zip.GZIPInputStream;
 
 import org.junit.Test;
@@ -51,11 +52,11 @@ public class TestExport {
 		// Find all bean properties and change default values to test that transient properties are not added to the
 		// XMLEncoder xml (properties with default values will never be added to the xml by XMLEncoder)
 		Report report = new Report();
-		Map<String, Method> setMethods = new HashMap<>();
+		Map<String, Method> setMethods = new TreeMap<>();
 		getBeanProperties(report.getClass(), "set", setMethods);
-		Map<String, Method> getMethods = new HashMap<>();
+		Map<String, Method> getMethods = new TreeMap<>();
 		getBeanProperties(report.getClass(), "get", getMethods);
-		Map<String, Method> isMethods = new HashMap<>();
+		Map<String, Method> isMethods = new TreeMap<>();
 		getBeanProperties(report.getClass(), "is", isMethods);
 		for (String name : setMethods.keySet()) {
 			Method method = setMethods.get(name);
