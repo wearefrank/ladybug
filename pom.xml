@@ -74,10 +74,10 @@
     <spring.version>6.2.15</spring.version>
     <spring.security.version>6.5.9</spring.security.version>
     <cxf.version>4.2.0</cxf.version>
-    <jackson.version.stripped>2.21</jackson.version.stripped>
+    <jackson.version.stripped>2.22</jackson.version.stripped>
     <jackson.version>2.21.2</jackson.version>
     <jackson.databind.version>2.21.2</jackson.databind.version>
-    <logback.version>1.5.32</logback.version>
+    <logback.version>1.5.33</logback.version>
   </properties>
 
   <dependencyManagement>
@@ -306,7 +306,7 @@
       <dependency>
         <groupId>org.liquibase</groupId>
         <artifactId>liquibase-core</artifactId>
-        <version>4.26.0</version>
+        <version>5.0.2</version>
         <scope>test</scope>
       </dependency>
       <dependency>
