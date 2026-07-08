@@ -74,6 +74,9 @@ public class View implements BeanParent {
 		return nodeLinkStrategy;
 	}
 
+	// The ApplicationMetadataItemHolder cannot be injected by Spring because that would produce a
+	// circular dependency. The interface is implemented by class TestTool which gets injected an
+	// instance of class Views.
 	public List<String> getMetadataNames(ApplicationMetadataItemHolder applicationMetadataItemHolder) {
 		return applicationMetadataItemHolder.filterMetadataNames(metadataNames);
 	}
