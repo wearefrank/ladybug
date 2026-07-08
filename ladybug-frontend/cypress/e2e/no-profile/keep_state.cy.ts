@@ -81,7 +81,7 @@ describe('Tests for keeping state in tabs when switching tabs - with URL filters
     cy.setHostB();
     cy.setApplicationY();
     cy.createOtherReport();
-    cy.visit('debug?filter-host=Host%20A&filter-application=Application%20X');
+    cy.visit('debug?filter-application=Application%20x');
     // Check the URL filter has effect - Another simple report should not be included.
     cy.checkDebugTableRowsAre(['Simple report']);
   });

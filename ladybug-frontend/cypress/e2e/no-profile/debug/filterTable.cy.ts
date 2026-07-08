@@ -108,7 +108,7 @@ describe('Tests for table filter', () => {
 });
 
 describe('About URL filters and row filtering views', () => {
-  const FILTER_SIDE_DRAWER_HOST_ITEM = 9;
+  const FILTER_SIDE_DRAWER_APPLICATION_ITEM = 9;
 
   before(() => {
     cy.resetApp();
@@ -129,59 +129,57 @@ describe('About URL filters and row filtering views', () => {
   it('When no filters in URL then no active filters and no filters in side drawer', () => {
     cy.navigateToDebugTabAndAwaitLoadingSpinner();
     cy.checkDebugTableRowsAre(['Simple report', 'Another simple report']);
-    cy.checkHostOfDebugTableRow(0, 'Host A');
     cy.checkApplicationOfDebugTableRow(0, 'Application X');
-    cy.checkHostOfDebugTableRow(1, 'Host B');
     cy.checkApplicationOfDebugTableRow(1, 'Application Y');
     cy.get('[data-cy-active-filter]').should('not.exist');
     cy.get('[data-cy-debug="filter"]').click();
     cy.get('[data-cy-debug="filter-side-drawer"]').should('be.visible');
     cy.get('[data-cy-debug="filterLabel"]').contains('Name').should('be.visible');
-    cy.get('[data-cy-debug="tableFilter"]').eq(FILTER_SIDE_DRAWER_HOST_ITEM).invoke('val').should('have.length', 0);
+    cy.get('[data-cy-debug="tableFilter"]').eq(FILTER_SIDE_DRAWER_APPLICATION_ITEM).invoke('val').should('have.length', 0);
   })
 
-  it('When URL filters on host then applied in grid and shown in side drawer', () => {
-    cy.visit('debug?filter-host=Host%20A');
+  it('When URL filter on application then applied in grid and shown in side drawer', () => {
+    cy.visit('debug?filter-application=Application%20X');
     cy.checkDebugTableRowsAre(['Simple report']);
-    cy.checkHostOfDebugTableRow(0, 'Host A');
+    cy.checkApplicationOfDebugTableRow(0, 'Application X');
     cy.get('[data-cy-active-filter]').should('have.length', 1);
-    cy.get('[data-cy-active-filter="host"]').invoke('text').should('include', 'Host A');
+    cy.get('[data-cy-active-filter="application"]').invoke('text').should('include', 'Application X');
     cy.get('[data-cy-debug="filter"]').click();
     cy.get('[data-cy-debug="filter-side-drawer"]').should('be.visible');
     cy.get('[data-cy-debug="filterLabel"]').contains('Name').should('be.visible');
-    cy.get('[data-cy-debug="tableFilter"]').eq(FILTER_SIDE_DRAWER_HOST_ITEM).invoke('val').should('equal', 'Host A');
+    cy.get('[data-cy-debug="tableFilter"]').eq(FILTER_SIDE_DRAWER_APPLICATION_ITEM).invoke('val').should('equal', 'Application X');
   })
 
   it('When no URL filters then we have a clear button the removes all filters', () => {
     cy.navigateToDebugTabAndAwaitLoadingSpinner();
     cy.checkDebugTableRowsAre(['Simple report', 'Another simple report']);
-    cy.checkHostOfDebugTableRow(0, 'Host A');
-    cy.checkHostOfDebugTableRow(1, 'Host B');
+    cy.checkApplicationOfDebugTableRow(0, 'Application X');
+    cy.checkApplicationOfDebugTableRow(1, 'Application Y');
     cy.get('[data-cy-debug="filter"]').click();
     cy.get('[data-cy-debug="filter-side-drawer"]').should('be.visible');
-    cy.get('[data-cy-debug="tableFilter"]').eq(FILTER_SIDE_DRAWER_HOST_ITEM).type('Host A');
+    cy.get('[data-cy-debug="tableFilter"]').eq(FILTER_SIDE_DRAWER_APPLICATION_ITEM).type('Application X');
     cy.checkDebugTableRowsAre(['Simple report']);
-    cy.checkHostOfDebugTableRow(0, 'Host A');
+    cy.checkApplicationOfDebugTableRow(0, 'Application X');
     cy.get('[data-cy-debug="clear-filter-btn"]').invoke('text').should('include', 'Clear');
     cy.get('[data-cy-debug="clear-filter-btn"]').click();
     cy.checkDebugTableRowsAre(['Simple report', 'Another simple report']);
-    cy.checkHostOfDebugTableRow(0, 'Host A');
-    cy.checkHostOfDebugTableRow(1, 'Host B');
-    cy.get('[data-cy-debug="tableFilter"]').eq(FILTER_SIDE_DRAWER_HOST_ITEM).invoke('val').should('have.length', 0);
+    cy.checkApplicationOfDebugTableRow(0, 'Application X');
+    cy.checkApplicationOfDebugTableRow(1, 'Application');
+    cy.get('[data-cy-debug="tableFilter"]').eq(FILTER_SIDE_DRAWER_APPLICATION_ITEM).invoke('val').should('have.length', 0);
   })
 
   it('When URL filters then we have a reset button that restores URL filters', () => {
-    cy.visit('debug?filter-host=Host%20A');
+    cy.visit('debug?filter-application=Application%20X');
     cy.checkDebugTableRowsAre(['Simple report']);
-    cy.checkHostOfDebugTableRow(0, 'Host A');
+    cy.checkApplicationOfDebugTableRow(0, 'Application X');
     cy.get('[data-cy-debug="filter"]').click();
     cy.get('[data-cy-debug="filter-side-drawer"]').should('be.visible');
-    cy.get('[data-cy-debug="tableFilter"]').eq(FILTER_SIDE_DRAWER_HOST_ITEM).invoke('val').should('equal', 'Host A');
-    cy.get('[data-cy-debug="tableFilter"]').eq(FILTER_SIDE_DRAWER_HOST_ITEM).clear();
+    cy.get('[data-cy-debug="tableFilter"]').eq(FILTER_SIDE_DRAWER_APPLICATION_ITEM).invoke('val').should('equal', 'Application X');
+    cy.get('[data-cy-debug="tableFilter"]').eq(FILTER_SIDE_DRAWER_APPLICATION_ITEM).clear();
     cy.checkDebugTableRowsAre(['Simple report', 'Another simple report']);
     cy.get('[data-cy-debug="clear-filter-btn"]').invoke('text').should('include', 'Reset');
     cy.get('[data-cy-debug="clear-filter-btn"]').click();
-    cy.get('[data-cy-debug="tableFilter"]').eq(FILTER_SIDE_DRAWER_HOST_ITEM).invoke('val').should('equal', 'Host A');
+    cy.get('[data-cy-debug="tableFilter"]').eq(FILTER_SIDE_DRAWER_APPLICATION_ITEM).invoke('val').should('equal', 'Application X');
     cy.checkDebugTableRowsAre(['Simple report']);
   })
 
