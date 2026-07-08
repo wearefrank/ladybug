@@ -20,8 +20,7 @@ const TESTER_PWD = 'IbisTester';
 
 const TREE_ITEM_SELECTED_CLASS = 'sft-item-selected';
 
-const HOST_COLUMN = 10;
-const APPLICATION_COLUMN = 11;
+const APPLICATION_COLUMN = 10;
 
 type TabType = 'debug' | 'test';
 
@@ -152,11 +151,9 @@ declare global {
 
       clearHostAndApplication(): Chainable;
 
-      checkHostOfDebugTableRow(index: number, expected: string): Chainable;
-
       checkApplicationOfDebugTableRow(index: number, expected: string): Chainable;
 
-      checkNoHostAndNoApplication(rowIndex: number): Chainable;
+      checkNoApplication(rowIndex: number): Chainable;
     }
   }
 }
@@ -671,16 +668,11 @@ Cypress.Commands.add('clearHostAndApplication' as keyof Chainable, () => {
   });
 })
 
-Cypress.Commands.add('checkHostOfDebugTableRow' as keyof Chainable, (index: number, expected: string): void => {
-  cy.getDebugTableRows().eq(index).find('td').eq(HOST_COLUMN).should('contain.text', expected);
-})
-
 Cypress.Commands.add('checkApplicationOfDebugTableRow' as keyof Chainable, (index: number, expected: string): void => {
   cy.getDebugTableRows().eq(index).find('td').eq(APPLICATION_COLUMN).should('contain.text', expected);
 })
 
-Cypress.Commands.add('checkNoHostAndNoApplication' as keyof Chainable, (rowIndex: number) => {
-  cy.getDebugTableRows().eq(rowIndex).find('td').eq(HOST_COLUMN).should('not.exist');
+Cypress.Commands.add('checkNoApplication' as keyof Chainable, (rowIndex: number) => {
   cy.getDebugTableRows().eq(rowIndex).find('td').eq(APPLICATION_COLUMN).should('not.exist');
 })
 
