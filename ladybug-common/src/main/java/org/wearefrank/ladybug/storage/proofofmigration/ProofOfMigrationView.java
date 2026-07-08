@@ -21,7 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import jakarta.inject.Inject;
 import lombok.Setter;
-import org.wearefrank.ladybug.filter.HostAndApplicationHolder;
+import org.wearefrank.ladybug.filter.ApplicationMetadataItemHolder;
 import org.wearefrank.ladybug.filter.View;
 import org.wearefrank.ladybug.storage.LogStorage;
 
@@ -44,7 +44,7 @@ public class ProofOfMigrationView extends View {
 	}
 
 	@Override
-	public List<String> getMetadataNames(HostAndApplicationHolder hostAndApplicationHolder) {
+	public List<String> getMetadataNames(ApplicationMetadataItemHolder applicationMetadataItemHolder) {
 		return proofOfMigrationStorage.getMetadataNames();
 	}
 

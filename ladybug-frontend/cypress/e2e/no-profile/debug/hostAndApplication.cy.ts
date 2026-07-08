@@ -18,8 +18,9 @@ describe('Tests about host and application', () => {
     cy.createReport();
     cy.visit('');
     cy.get('[data-cy-debug="refresh"]').click();
+    cy.get('[data-cy-debug="metadataLabel"]').contains('Host').should('not.exist');
     cy.checkDebugTableRowsAre(['Simple report']);
-    cy.checkNoHostAndNoApplication(0);
+    cy.checkNoApplication(0);
   })
 
   describe('When host and application are set on TestTool', () => {
@@ -32,13 +33,12 @@ describe('Tests about host and application', () => {
       cy.createOtherReport();
     })
 
-    it('Then debug table rows have host and application', () => {
+    it('Then debug table rows still do not have host but have application', () => {
       cy.visit('');
       cy.get('[data-cy-debug="refresh"]').click();
+      cy.get('[data-cy-debug="metadataLabel"]').contains('Host').should('not.exist');
       cy.checkDebugTableRowsAre(['Simple report', 'Another simple report']);
-      cy.checkHostOfDebugTableRow(0, 'Host A');
       cy.checkApplicationOfDebugTableRow(0, 'Application X');
-      cy.checkHostOfDebugTableRow(1, 'Host B');
       cy.checkApplicationOfDebugTableRow(1, 'Application Y');
     })
 
