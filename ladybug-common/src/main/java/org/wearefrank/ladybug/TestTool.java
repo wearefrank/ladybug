@@ -16,6 +16,8 @@
 package org.wearefrank.ladybug;
 
 import java.lang.invoke.MethodHandles;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.rmi.server.UID;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -117,10 +119,26 @@ public class TestTool implements ApplicationMetadataItemHolder {
 		return application != null;
 	}
 
+	public TestTool() {
+		initializeHostAstIpAddress();
+	}
+
 	@PostConstruct
 	public void init() {
 		if (openTelemetryEndpoint != null) {
 			tracer = OpenTelemetryUtil.getOpenTelemetryTracer(openTelemetryEndpoint);
+		}
+	}
+
+	private void initializeHostAstIpAddress() {
+		try {
+			InetAddress localMachine = InetAddress.getLocalHost();
+			String ipAddress = localMachine.getHostAddress();
+			// It would be nice to log this IP address, but that requires quite a big change of
+			// the test code. The test code would have to ignore the log statement.
+			this.host = ipAddress;
+		} catch(UnknownHostException uhe) {
+			log.error("Cannot initialize host because of UnknownHostException", uhe);
 		}
 	}
 
