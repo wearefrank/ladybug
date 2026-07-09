@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -41,7 +42,6 @@ import jakarta.inject.Inject;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;
-import org.wearefrank.ladybug.filter.ApplicationMetadataItemHolder;
 import org.wearefrank.ladybug.filter.View;
 import org.wearefrank.ladybug.filter.Views;
 import org.wearefrank.ladybug.run.ReportRunner;
@@ -57,7 +57,7 @@ import org.wearefrank.ladybug.util.OpenTelemetryUtil;
  * @author Jaco de Groot
  */
 @ApplicationScoped
-public class TestTool implements ApplicationMetadataItemHolder {
+public class TestTool {
 	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 	private static Logger securityLog;
 	private String configName;
@@ -114,17 +114,15 @@ public class TestTool implements ApplicationMetadataItemHolder {
 
 	private AtomicInteger inProgressStorageNameSeq = new AtomicInteger(0);
 
-	@Override
-	public boolean isApplicationSet() {
-		return application != null;
-	}
-
 	public TestTool() {
 		initializeHostAstIpAddress();
 	}
 
 	@PostConstruct
 	public void init() {
+		for (View view: views) {
+			view.setTestTool(this);
+		}
 		if (openTelemetryEndpoint != null) {
 			tracer = OpenTelemetryUtil.getOpenTelemetryTracer(openTelemetryEndpoint);
 		}
