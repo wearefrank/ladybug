@@ -37,6 +37,7 @@ describe('Tests about host and application', () => {
       cy.visit('');
       cy.get('[data-cy-debug="refresh"]').click();
       cy.get('[data-cy-debug="metadataLabel"]').contains('Host').should('not.exist');
+      cy.get('[data-cy-debug="metadataLabel"]').contains('Application').should('be.visible');
       cy.checkDebugTableRowsAre(['Simple report', 'Another simple report']);
       cy.checkApplicationOfDebugTableRow(0, 'Application X');
       cy.checkApplicationOfDebugTableRow(1, 'Application Y');
