@@ -33,7 +33,12 @@
 		<property name="reportGeneratorEnabled" value="true"/>
 		<property name="regexFilter" value=".*"/>
 		<property name="rerunner"><ref bean="rerunner"/></property>
+<!--		<property name="openTelemetryEndpoint" ref="openTelemetryEndpoint"/>-->
 	</bean>
+
+<!--	<bean name="openTelemetryEndpoint" class="java.lang.String">-->
+<!--		<constructor-arg value="jaeger"/>-->
+<!--	</bean>-->
 
 	<bean name="metadataExtractor" class="org.wearefrank.ladybug.MetadataExtractor">
 		<property name="extraMetadataFieldExtractors">
