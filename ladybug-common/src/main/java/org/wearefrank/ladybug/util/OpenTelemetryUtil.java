@@ -1,5 +1,5 @@
 /*
-   Copyright 2024, 2025 WeAreFrank!
+   Copyright 2024, 2025, 2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -71,7 +71,7 @@ public class OpenTelemetryUtil {
 						ContextPropagators.create(
 						TextMapPropagator.composite(
 						W3CTraceContextPropagator.getInstance(), W3CBaggagePropagator.getInstance())))
-				.buildAndRegisterGlobal();
+				.build();
 			return openTelemetry.getTracer(Report.class.getName(), "0.1.0");
 		}
 		return null;

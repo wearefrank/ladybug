@@ -30,7 +30,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 
 import io.opentelemetry.api.trace.Tracer;
 import jakarta.annotation.PostConstruct;
@@ -71,7 +70,7 @@ public class TestTool {
 	private Map<String, Report> reportsInProgressByCorrelationId = new HashMap<String, Report>();
 	private long numberOfReportsInProgress = 0;
 	private Map<String, Report> originalReports = new HashMap<String, Report>();
-	private @Setter @Getter @Inject @Autowired LogStorage debugStorage;
+	private @Setter @Getter @Inject @Autowired Storage debugStorage;
 	private @Setter @Getter @Inject @Autowired CrudStorage testStorage;
 	private MessageEncoder messageEncoder = new MessageEncoderImpl();
 	private MessageCapturer messageCapturer = new MessageCapturerImpl();
@@ -103,8 +102,9 @@ public class TestTool {
 	private @Setter @Getter @Inject @Autowired Views views;
 	private @Setter @Getter int reportsInProgressThreshold = 300000;
 	boolean devMode = false; // See testConcurrentLastEndpointAndFirstStartpointForSameCorrelationId()
-	private @Qualifier("openTelemetryEndpoint") String openTelemetryEndpoint;
+    private @Setter String openTelemetryEndpoint;
 	private Tracer tracer;
+	private @Setter @Getter boolean updateReportsEnabled = false;
 
 	private AtomicInteger inProgressStorageNameSeq = new AtomicInteger(0);
 
@@ -120,7 +120,7 @@ public class TestTool {
 		reportGeneratorEnabled = defaultReportGeneratorEnabled;
 	}
 
-	public void setSecurityLoggerName(String securityLoggerName) {
+    public void setSecurityLoggerName(String securityLoggerName) {
 		securityLog = LoggerFactory.getLogger(securityLoggerName);
 	}
 
@@ -335,26 +335,44 @@ public class TestTool {
 	}
 
 	private <T> T checkpoint(String correlationId, String childThreadId, String sourceClassName, String name,
-			T message, StubableCode stubableCode, StubableCodeThrowsException stubableCodeThrowsException,
-			Set<String> matchingStubStrategies, int checkpointType, int levelChangeNextCheckpoint) {
+							T message, StubableCode stubableCode, StubableCodeThrowsException stubableCodeThrowsException,
+							Set<String> matchingStubStrategies, int checkpointType, int levelChangeNextCheckpoint) {
 		return checkpoint(correlationId, childThreadId, sourceClassName, name,
 				message, null, stubableCode, stubableCodeThrowsException,
-				matchingStubStrategies, checkpointType, levelChangeNextCheckpoint);
+				matchingStubStrategies, checkpointType, levelChangeNextCheckpoint, null, null, -1);
+	}
+
+	private <T> T checkpoint(String correlationId, String childThreadId, String sourceClassName, String name,
+							T message, Map<String, Object> messageContext, StubableCode stubableCode, StubableCodeThrowsException stubableCodeThrowsException,
+							Set<String> matchingStubStrategies, int checkpointType, int levelChangeNextCheckpoint) {
+		return checkpoint(correlationId, childThreadId, sourceClassName, name,
+				message, messageContext, stubableCode, stubableCodeThrowsException,
+				matchingStubStrategies, checkpointType, levelChangeNextCheckpoint, null, null, -1);
+	}
+
+	private <T> T checkpoint(String correlationId, String childThreadId, String sourceClassName, String name,
+			T message, StubableCode stubableCode, StubableCodeThrowsException stubableCodeThrowsException,
+			Set<String> matchingStubStrategies, int checkpointType, int levelChangeNextCheckpoint, String id, String parentId) {
+		return checkpoint(correlationId, childThreadId, sourceClassName, name,
+				message, null, stubableCode, stubableCodeThrowsException,
+				matchingStubStrategies, checkpointType, levelChangeNextCheckpoint, id, parentId, -1);
+	}
+
+	private <T> T checkpoint(String correlationId, String childThreadId, String sourceClassName, String name,
+							T message, StubableCode stubableCode, StubableCodeThrowsException stubableCodeThrowsException,
+							Set<String> matchingStubStrategies, int checkpointType, int levelChangeNextCheckpoint, String id, String parentId, long startTime) {
+		return checkpoint(correlationId, childThreadId, sourceClassName, name,
+				message, null, stubableCode, stubableCodeThrowsException,
+				matchingStubStrategies, checkpointType, levelChangeNextCheckpoint, id, parentId, startTime);
 	}
 
 	private <T> T checkpoint(String correlationId, String childThreadId, String sourceClassName, String name,
 			T message, Map<String, Object> messageContext, StubableCode stubableCode, StubableCodeThrowsException stubableCodeThrowsException,
-			Set<String> matchingStubStrategies, int checkpointType, int levelChangeNextCheckpoint) {
+			Set<String> matchingStubStrategies, int checkpointType, int levelChangeNextCheckpoint, String id, String parentId, long startTime) {
 		boolean executeStubableCode = true;
 		if (reportGeneratorEnabled) {
-			Report report;
-			// Blocking for all threads for all reports
-			synchronized(reportsInProgress) {
-				report = getReportInProgress(correlationId);
-				if (report == null) {
-					report = createReport(correlationId, name, checkpointType);
-				}
-			}
+			Report report = getOrCreateReport(correlationId, name, checkpointType);
+
 			if (devMode) randomSleep();
 			while (report != null) {
 				// "synchronized(report)" is only blocking for threads writing to the same report (which is only the
@@ -381,7 +399,7 @@ public class TestTool {
 					executeStubableCode = false;
 					message = report.checkpoint(childThreadId, sourceClassName, name, message, messageContext, stubableCode,
 							stubableCodeThrowsException, matchingStubStrategies, checkpointType,
-							levelChangeNextCheckpoint);
+							levelChangeNextCheckpoint, id, parentId, startTime);
 					closeReportIfFinished(report);
 				}
 				report = null;
@@ -391,6 +409,51 @@ public class TestTool {
 			message = execute(stubableCode, stubableCodeThrowsException, message);
 		}
 		return message;
+	}
+
+	private Report getOrCreateReport(String correlationId, String name, int checkpointType) {
+		synchronized (reportsInProgress) {
+			Report report = getReportInProgress(correlationId);
+			if (report != null) {
+				return report;
+			}
+
+			if (updateReportsEnabled) {
+				report = tryLoadReportFromStorage(correlationId);
+				if (report != null) {
+					return report;
+				}
+			}
+
+			return createReport(correlationId, name, checkpointType);
+		}
+	}
+
+	private Report tryLoadReportFromStorage(String correlationId) {
+		if (!debugStorage.isCrudStorage()) {
+			log.error("Can't update report because storage does not support CRUD operations");
+			return null;
+		}
+		try {
+			for (Integer storageId : debugStorage.getStorageIds()) {
+				Report stored = debugStorage.getReport(storageId);
+				if (stored.getCorrelationId().equals(correlationId)) {
+					stored.restoreRuntimeState();
+					stored.setClosed(false);
+					stored.setTestTool(this);
+
+					reportsInProgress.add(0, stored);
+					reportsInProgressByCorrelationId.put(correlationId, stored);
+					numberOfReportsInProgress++;
+
+					stored.setBeingUpdated(true);
+					return stored;
+				}
+			}
+		} catch (StorageException e) {
+			log.error("Failed to find report in storage", e);
+		}
+		return null;
 	}
 
 	private Report createReport(String correlationId, String name, int checkpointType) {
@@ -475,7 +538,22 @@ public class TestTool {
 							numberOfReportsInProgress--;
 						}
 						if (report.isReportFilterMatching()) {
-							debugStorage.storeWithoutException(report);
+							if (report.isBeingUpdated()) {
+								if (debugStorage.isCrudStorage()) {
+									try {
+										((CrudStorage) debugStorage).update(report);
+										report.setBeingUpdated(false);
+									} catch (StorageException e) {
+										log.error("Failed to store report", e);
+									}
+								}
+							} else {
+								try {
+									debugStorage.store(report);
+								} catch (StorageException e) {
+
+								}
+							}
 						}
 					}
 				}
@@ -549,6 +627,16 @@ public class TestTool {
 				CheckpointType.STARTPOINT.toInt(), 1);
 	}
 
+	public <T> T startpoint(String correlationId, String sourceClassName, String name, T message, String id, String parentId) {
+		return checkpoint(correlationId, null, sourceClassName, name, message, null, null, null,
+				CheckpointType.STARTPOINT.toInt(), 1, id, parentId);
+	}
+
+	public <T> T startpoint(String correlationId, String sourceClassName, String name, T message, String id, String parentId, long startTime) {
+		return checkpoint(correlationId, null, sourceClassName, name, message, null, null, null,
+				CheckpointType.STARTPOINT.toInt(), 1, id, parentId, startTime);
+	}
+
 	/**
 	 * Parameter throwsException determines the type of exception thrown. E.g. when set to (IOException)null the
 	 * compiler will report this method to throw an IOException which needs to be handled. When set to null the compiler
@@ -575,7 +663,17 @@ public class TestTool {
 		return checkpoint(correlationId, null, sourceClassName, name, message, null, null, null,
 				CheckpointType.ENDPOINT.toInt(), -1);
 	}
-	
+
+	public <T> T endpoint(String correlationId, String sourceClassName, String name, T message, String id, String parentId) {
+		return checkpoint(correlationId, null, sourceClassName, name, message, null, null, null,
+				CheckpointType.ENDPOINT.toInt(), -1, id, parentId);
+	}
+
+	public <T> T endpoint(String correlationId, String sourceClassName, String name, T message, String id, String parentId, long startTime) {
+		return checkpoint(correlationId, null, sourceClassName, name, message, null, null, null,
+				CheckpointType.ENDPOINT.toInt(), -1, id, parentId, startTime);
+	}
+
 	public <T> T endpoint(String correlationId, String sourceClassName, String name, T message, Map<String, Object> messageContext) {
 		return checkpoint(correlationId, null, sourceClassName, name, message, messageContext, null, null, null,
 				CheckpointType.ENDPOINT.toInt(), -1);
@@ -796,9 +894,15 @@ public class TestTool {
 		return checkpoint(correlationId, null, sourceClassName, name, message, null, null, null,
 				CheckpointType.INFOPOINT.toInt(), 0);
 	}
+
 	public <T> T infopoint(String correlationId, String sourceClassName, String name, T message, Map<String, Object> messageContext) {
 		return checkpoint(correlationId, null, sourceClassName, name, message, messageContext, null, null, null,
 				CheckpointType.INFOPOINT.toInt(), 0);
+	}
+
+	public <T> T infopoint(String correlationId, String sourceClassName, String name, T message, String id, String parentId) {
+		return checkpoint(correlationId, null, sourceClassName, name, message, null, null, null,
+				CheckpointType.INFOPOINT.toInt(), 0, id, parentId);
 	}
 
 	/**
