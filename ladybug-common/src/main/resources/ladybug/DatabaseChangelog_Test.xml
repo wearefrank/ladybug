@@ -24,12 +24,4 @@
 			<column name="VARIABLES" type="CLOB"/>
 		</addColumn>
 	</changeSet>
-
-	<changeSet id="LadybugTest:3" author="Martijn Dirkse">
-		<comment>Add columns HOST and APPLICATION</comment>
-		<addColumn tableName="LADYBUGTEST">
-			<column name="HOST" type="VARCHAR(256)"/>
-			<column name="APPLICATION" type="VARCHAR(256)"/>
-		</addColumn>
-	</changeSet>
 </databaseChangeLog>

@@ -24,6 +24,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.zip.GZIPInputStream;
@@ -84,6 +85,14 @@ public class TestExport {
 					} else {
 						method.invoke(report, name);
 					}
+				} else if (name.equals("variables")) {
+					// Keep key and value in sync with setVariablesCsv. Properties
+					// variables and variablesCsv are the same field in Report. The
+					// order in which the setters are accessed is not determined so
+					// the last setter call will appear in the exported XML.
+					Map<String, String> value = new LinkedHashMap<String, String>();
+					value.put("variablesCsv", "variablesCsv");
+					report.setVariables(value);
 				} else if (name.equals("storage")) {
 					report.setStorage(new MemoryStorage());
 				} else if (name.equals("originalReport")) {
@@ -92,8 +101,6 @@ public class TestExport {
 					report.setReportXmlTransformer(new ReportXmlTransformer());
 				} else if (name.equals("globalReportXmlTransformer")) {
 					report.setGlobalReportXmlTransformer(new ReportXmlTransformer());
-				} else if (name.equals("variables")) {
-					// Do not overwrite value set using variablesCSV
 				} else if (!name.equals("storageId") && !name.equals("checkpoints")) {
 					// No need to test with multiple storages so CONTEXT_FILE_STORAGE will do.
 					method.invoke(report, Common.CONTEXT_FILE_STORAGE.getBean(name));

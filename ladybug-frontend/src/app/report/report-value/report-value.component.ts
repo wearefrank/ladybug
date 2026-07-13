@@ -431,7 +431,7 @@ export class ReportValueComponent implements OnInit, OnDestroy {
     };
   }
 
-  static initVariables(variables: Record<string, string>): Variable[] {
+  static initVariables(variables: Record<string, string> | null): Variable[] {
     if (!variables) return [];
     return Object.entries(variables).map(([name, value]) => ({ name, value }));
   }
