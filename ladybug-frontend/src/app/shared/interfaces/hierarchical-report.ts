@@ -9,16 +9,19 @@ export interface TreeItem {
 export interface HierarchicalReport extends TreeItem {
   description: string | null;
   path: string | null;
-  stubStrategy: string;
-  linkMethod: string;
+  stubStrategy: string | null;
+  linkMethod: string | null;
   transformation: string | null;
   storageId: number;
   storageName: string;
   crudStorage: boolean;
   estimatedMemoryUsage: number;
   correlationId: string;
+  variables: Record<string, string> | null;
   startTime: number;
-  variables: Record<string, string>;
+  host: string | null;
+  application: string | null;
+
   // The fields below do not come from the backend but are computed
   xml: string;
   // null means - no view so all checkpoints included
@@ -31,6 +34,8 @@ export interface HierarchicalReport extends TreeItem {
 export interface HierarchicalCheckpoint extends TreeItem {
   message: string | null;
   encoding: string | null;
+  // TODO issue https://github.com/wearefrank/ladybug/issues/863. Fix
+  // type mismatch of next field with the backend.
   messageContext: string | null;
   type: number;
   level: number;
@@ -39,7 +44,7 @@ export interface HierarchicalCheckpoint extends TreeItem {
   stubNotFound: string | null;
   preTruncatedMessageLength: number;
   typeAsString: string;
-  threadName: string;
+  threadName: string | null;
   sourceClassName: string | null;
   messageClassName: string | null;
   uid: string;

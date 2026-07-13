@@ -16,6 +16,8 @@
 package org.wearefrank.ladybug;
 
 import java.lang.invoke.MethodHandles;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.rmi.server.UID;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -106,12 +108,34 @@ public class TestTool {
 	private @Qualifier("openTelemetryEndpoint") String openTelemetryEndpoint;
 	private Tracer tracer;
 
+	private @Getter @Setter String host = null;
+	private @Getter @Setter String application = null;
+
 	private AtomicInteger inProgressStorageNameSeq = new AtomicInteger(0);
+
+	public TestTool() {
+		initializeHostAstIpAddress();
+	}
 
 	@PostConstruct
 	public void init() {
+		for (View view: views) {
+			view.setTestTool(this);
+		}
 		if (openTelemetryEndpoint != null) {
 			tracer = OpenTelemetryUtil.getOpenTelemetryTracer(openTelemetryEndpoint);
+		}
+	}
+
+	private void initializeHostAstIpAddress() {
+		try {
+			InetAddress localMachine = InetAddress.getLocalHost();
+			String ipAddress = localMachine.getHostAddress();
+			// It would be nice to log this IP address, but that requires quite a big change of
+			// the test code. The test code would have to ignore the log statement.
+			this.host = ipAddress;
+		} catch(UnknownHostException uhe) {
+			log.error("Cannot initialize host because of UnknownHostException", uhe);
 		}
 	}
 
@@ -398,6 +422,8 @@ public class TestTool {
 		if (checkpointType == CheckpointType.STARTPOINT.toInt()) {
 			log.debug("Create new report for '" + correlationId + "'");
 			report = new Report();
+			report.setHost(host);
+			report.setApplication(application);
 			report.setStartTime(System.currentTimeMillis());
 			report.setTestTool(this);
 			report.setCorrelationId(correlationId);

@@ -16,8 +16,11 @@
 package org.wearefrank.ladybug.filter;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -29,6 +32,7 @@ import lombok.Setter;
 import org.wearefrank.ladybug.Checkpoint;
 import org.wearefrank.ladybug.MetadataExtractor;
 import org.wearefrank.ladybug.Report;
+import org.wearefrank.ladybug.TestTool;
 import org.wearefrank.ladybug.echo2.BeanParent;
 import org.wearefrank.ladybug.echo2.Echo2Application;
 import org.wearefrank.ladybug.echo2.reports.ReportsComponent;
@@ -42,7 +46,10 @@ public class View implements BeanParent {
 	protected String name;
 	protected String nodeLinkStrategy;
 	private @Setter @Getter @Inject @Autowired Storage debugStorage;
-	private @Setter @Getter @Inject @Resource(name="metadataNames") List<String> metadataNames;
+	private @Setter @Inject @Resource(name="metadataNames") List<String> metadataNames;
+	// No autowired annotation here, otherwise we would have a circular dependency.
+	// This member variable is instantiated by class TestTool.
+	private @Setter TestTool testTool;
 	private Map<String, String> metadataFilter;
 	private List<CheckpointMatcher> checkpointMatchers;
 	private BeanParent beanParent;
@@ -72,6 +79,20 @@ public class View implements BeanParent {
 			return NodeLinkStrategy.PATH.toString();
 		}
 		return nodeLinkStrategy;
+	}
+
+	// Metadata name "application" is special because it is determined dynamically whether it is returned
+	// by a View. When a database storage is used and when the database stores reports from different
+	// applications, showing column "application" in the metadata table of the debug tab makes sense.
+	// If the storage only holds reports of a single application, then metadata name "application"
+	// should be omitted. We want that these two situations do not require different Spring configurations
+	// for Ladybug. This is the reason we have this method to filter the metadata names.
+	public List<String> getMetadataNames() {
+		Set<String> omit = new HashSet<>();
+		if(testTool.getApplication() == null) {
+			omit.add("application");
+		}
+		return metadataNames.stream().filter(n -> !omit.contains(n)).collect(Collectors.toList());
 	}
 
 	public void setMetadataFilter(Map<String, String> metadataFilter) {

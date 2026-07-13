@@ -177,6 +177,7 @@ public class DatabaseStorage implements Storage {
 
 	@PostConstruct
 	public void init() throws StorageException {
+		log.debug("DatabaseStorage uses metadata names {}", metadataNames);
 		if (!(getMetadataNames() != null && getMetadataNames().contains(getStorageIdColumn()))) {
 			throw new StorageException("List metadataNames " + metadataNames
 					+ " should at least contain storageId column name '" + getStorageIdColumn() + "'");
