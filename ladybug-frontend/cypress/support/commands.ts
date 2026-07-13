@@ -154,6 +154,8 @@ declare global {
       checkApplicationOfDebugTableRow(index: number, expected: string): Chainable;
 
       checkNoApplication(rowIndex: number): Chainable;
+
+      openReportByClickInDebugTable(reportIndex: number): Chainable;
     }
   }
 }
@@ -674,6 +676,13 @@ Cypress.Commands.add('checkApplicationOfDebugTableRow' as keyof Chainable, (inde
 
 Cypress.Commands.add('checkNoApplication' as keyof Chainable, (rowIndex: number) => {
   cy.getDebugTableRows().eq(rowIndex).find('td').eq(APPLICATION_COLUMN).should('not.exist');
+})
+
+Cypress.Commands.add('openReportByClickInDebugTable', (reportIndex: number) => {
+  // Do not click the <tr> element directly. That hits the center of the table row.
+  // Some day that might no longer be covered by a table cell. We also avoid
+  // hitting the checkbox by taking <td> index 1 instead of 0.
+  cy.getDebugTableRows().eq(reportIndex).find('td').eq(1).click();
 })
 
 function awaitLoadingSpinner(): void {
