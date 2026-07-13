@@ -114,17 +114,15 @@ public class TestTool implements ApplicationMetadataItemHolder {
 
 	private AtomicInteger inProgressStorageNameSeq = new AtomicInteger(0);
 
-	@Override
-	public boolean isApplicationSet() {
-		return application != null;
-	}
-
 	public TestTool() {
 		initializeHostAstIpAddress();
 	}
 
 	@PostConstruct
 	public void init() {
+		for (View view: views) {
+			view.setTestTool(this);
+		}
 		if (openTelemetryEndpoint != null) {
 			tracer = OpenTelemetryUtil.getOpenTelemetryTracer(openTelemetryEndpoint);
 		}

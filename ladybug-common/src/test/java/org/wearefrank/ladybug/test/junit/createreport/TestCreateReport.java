@@ -75,6 +75,7 @@ public class TestCreateReport extends ReportRelatedTestCase {
 	public void setUp() {
 		resourcePath = RESOURCE_PATH + "createreport/";
 		super.setUp();
+		testTool.setHost(null);
 	}
 
 	@Test
@@ -95,7 +96,6 @@ public class TestCreateReport extends ReportRelatedTestCase {
 
 	@Test
 	public void whenReportHasHostAndApplicationThenPutIntoXml() throws StorageException, IOException {
-		testTool.setHost(null);
 		List<Integer> oldStorageIds = testTool.getDebugStorage().getStorageIds();
 		testTool.setHost("MyHost");
 		testTool.setApplication("MyApplication");

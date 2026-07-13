@@ -241,9 +241,8 @@ public class Config {
 		//
 		// Metadata name "application" is special because it is decided
 		// dynamically whether it is shown in the table of the debug tab in
-		// the Angular UI. See interface ApplicationMetadataItemHolder for the logic
-		// that will omit "application" as metadata name from a view when not
-		// relevant.
+		// the Angular UI. See class View for the logic that will omit
+		// "application" as metadata name from a view when not relevant.
 		metadataNames.add("application");
 		return metadataNames;
 	}
