@@ -17,6 +17,10 @@
   text-align: center;
 }
 
+.form-select {
+  font-size: 0.6rem;
+}
+
 /* Height comes from class form-control */
 .button-section-buttons {
   display: flex;
