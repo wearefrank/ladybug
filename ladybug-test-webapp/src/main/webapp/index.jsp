@@ -185,6 +185,10 @@
 		testTool.startpoint(correlationId, null, reportName, "Start\r");
 		testTool.endpoint(correlationId, null, reportName, "\r");
 	}
+	reportNames.add(reportName = "Add report with correlationId null");
+	if (reportName.equals(createReportAction)) {
+        testTool.startpoint(null, null, reportName, "Some messege for report with correlationId null");
+	}
 	// Other actions
 	if ("true".equals(request.getParameter("clearDebugStorage"))) {
 		LogStorage debugStorage = (LogStorage)webApplicationContext.getBean("debugStorage");
