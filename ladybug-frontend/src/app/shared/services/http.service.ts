@@ -74,7 +74,16 @@ export class HttpService {
   }
 
   getReportInProgress(index: number): Observable<HierarchicalReport> {
-    return this.http.get<HierarchicalReport>(`api/testtool/in-progress/${index}`);
+    return this.http.get<HierarchicalReport>(`api/testtool/in-progress/${index}`).pipe(
+      map((report) => {
+        if (report.children !== null) {
+          for (const child of report.children) {
+            this.forChildSetReport(child, report);
+          }
+        }
+        return report;
+      }),
+    );
   }
 
   deleteReportInProgress(index: number): Observable<Report> {

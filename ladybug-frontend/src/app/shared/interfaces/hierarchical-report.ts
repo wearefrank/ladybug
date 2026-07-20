@@ -16,7 +16,7 @@ export interface HierarchicalReport extends TreeItem {
   storageName: string;
   crudStorage: boolean;
   estimatedMemoryUsage: number;
-  correlationId: string;
+  correlationId: string | null;
   variables: Record<string, string> | null;
   startTime: number;
   host: string | null;

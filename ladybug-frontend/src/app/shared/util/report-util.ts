@@ -8,7 +8,10 @@ type HierarchicalReportOrCheckpoint = HierarchicalReport | HierarchicalCheckpoin
 
 export const ReportUtil = {
   isReport(node: ReportOrCheckpoint | HierarchicalReportOrCheckpoint): node is Report {
-    return !!node && (!!(node as Report).correlationId || !!(node as HierarchicalReport).correlationId);
+    if (!node) {
+      return false;
+    }
+    return !this.isCheckPoint(node);
   },
 
   isCheckPoint(node: ReportOrCheckpoint | HierarchicalReportOrCheckpoint): node is Checkpoint {
