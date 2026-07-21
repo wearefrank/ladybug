@@ -32,15 +32,15 @@ describe('Tests with views and filtering', () => {
   const isDatabaseStorage: boolean = Cypress.env('debugStorageName') === 'DatabaseDebugStorage'
 
   const columnAndNameCombinations: ColumnAndName[] = [
-    { name: 'Storage Id', colNr: 1, labelFilterPanel: 'Storageid', enabled: !isDatabaseStorage },
-    { name: 'End time', colNr: 2, labelFilterPanel: 'Endtime', enabled: !isDatabaseStorage },
+    { name: 'Storage Id', colNr: 1, labelFilterPanel: 'Storage Id', enabled: !isDatabaseStorage },
+    { name: 'End time', colNr: 2, labelFilterPanel: 'End time', enabled: !isDatabaseStorage },
     { name: 'Duration', colNr: 3, labelFilterPanel: 'Duration', enabled: true },
     { name: 'Name', colNr: 4, labelFilterPanel: 'Name', enabled: true },
-    { name: 'Correlation Id', colNr: 5, labelFilterPanel: 'Correlationid', enabled: true },
+    { name: 'Correlation Id', colNr: 5, labelFilterPanel: 'Correlation Id', enabled: true },
     { name: 'Status', colNr: 6, labelFilterPanel: 'Status', enabled: true },
-    { name: 'Checkpoints', colNr: 7, labelFilterPanel: 'Numberofcheckpoints', enabled: !isDatabaseStorage },
-    { name: 'Memory', colNr: 8, labelFilterPanel: 'Estimatedmemoryusage', enabled: true },
-    { name: 'Size', colNr: 9, labelFilterPanel: 'Storagesize', enabled: true },
+    { name: 'Checkpoints', colNr: 7, labelFilterPanel: 'Checkpoints', enabled: !isDatabaseStorage },
+    { name: 'Memory', colNr: 8, labelFilterPanel: 'Memory', enabled: true },
+    { name: 'Size', colNr: 9, labelFilterPanel: 'Size', enabled: true },
     { name: 'Input', colNr: 10, labelFilterPanel: 'Input', enabled: true }
   ]
 
