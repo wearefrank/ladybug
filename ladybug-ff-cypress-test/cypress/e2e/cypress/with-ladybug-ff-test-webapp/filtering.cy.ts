@@ -38,9 +38,9 @@ describe('Tests with views and filtering', () => {
     { name: 'Name', colNr: 4, filterSphereLabel: 'Name', enabled: true },
     { name: 'Correlation Id', colNr: 5, filterSphereLabel: 'Correlationid', enabled: true },
     { name: 'Status', colNr: 6, filterSphereLabel: 'Status', enabled: true },
-    { name: 'Checkpoints', colNr: 7, filterSphereLabel: 'Numberofcheckpoints', enabled: !isDatabaseStorage },
-    { name: 'Memory', colNr: 8, filterSphereLabel: 'Estimatedmemoryusage', enabled: true },
-    { name: 'Size', colNr: 9, filterSphereLabel: 'Storagesize', enabled: true },
+    { name: 'Checkpoints', colNr: 7, filterSphereLabel: 'Checkpoints', enabled: !isDatabaseStorage },
+    { name: 'Memory', colNr: 8, filterSphereLabel: 'Memory', enabled: true },
+    { name: 'Size', colNr: 9, filterSphereLabel: 'Size', enabled: true },
     { name: 'Input', colNr: 10, filterSphereLabel: 'Input', enabled: true }
   ]
 

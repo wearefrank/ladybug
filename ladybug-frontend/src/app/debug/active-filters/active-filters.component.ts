@@ -4,13 +4,14 @@ import { NgClass, TitleCasePipe } from '@angular/common';
 import { catchError, Subscription } from 'rxjs';
 import { ErrorHandling } from '../../shared/classes/error-handling.service';
 import { FilterService } from '../../shared/services/filter.service';
+import { ShortenedTableHeaderPipe } from '../../shared/pipes/shortened-table-header.pipe';
 
 @Component({
   selector: 'app-active-filters',
   templateUrl: './active-filters.component.html',
   styleUrls: ['./active-filters.component.css'],
   standalone: true,
-  imports: [NgClass, TitleCasePipe, DictionaryPipe],
+  imports: [NgClass, TitleCasePipe, ShortenedTableHeaderPipe, DictionaryPipe],
 })
 export class ActiveFiltersComponent implements OnInit, OnDestroy {
   protected activeFilters: Map<string, string> = new Map<string, string>();
