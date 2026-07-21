@@ -233,6 +233,9 @@ export class CheckpointValueComponent implements OnInit, OnDestroy {
     if (originalCheckpoint === undefined) {
       throw new Error('CheckpointValueComponent.neworiginalCheckpoint(): Did not expect to receive value undefined');
     }
+    if (originalCheckpoint.report === undefined) {
+      throw new Error('CheckpointValueComponent.neworiginalCheckpoint(): Checkpoint does not have its report defined');
+    }
     this.metadataTableVisible = false;
     this.messageContextTableVisible = false;
     this.originalCheckpoint = originalCheckpoint;

@@ -185,7 +185,7 @@ export class DebugTableWithControlsComponent implements OnInit, OnDestroy {
         .pipe(catchError(this.errorHandler.handleError()))
         .subscribe({
           next: (report: HierarchicalReport) => {
-            this.reportsInProgress[report.correlationId] ??= report.startTime;
+            this.reportsInProgress[this.getCorrelationIdKey(report.correlationId)] ??= report.startTime;
             if (this.reportsInProgressMetThreshold(report)) {
               this.hasTimedOut = true;
               hasChanged = true;
@@ -200,7 +200,7 @@ export class DebugTableWithControlsComponent implements OnInit, OnDestroy {
 
   reportsInProgressMetThreshold(report: HierarchicalReport): boolean {
     return (
-      Date.now() - new Date(this.reportsInProgress[report.correlationId]).getTime() >
+      Date.now() - new Date(this.reportsInProgress[this.getCorrelationIdKey(report.correlationId)]).getTime() >
       (this.reportsInProgressThreshold ?? 0)
     );
   }
@@ -456,5 +456,9 @@ export class DebugTableWithControlsComponent implements OnInit, OnDestroy {
   onCheckedStorageIds(checkedStorageIds: string[]): void {
     // TODO: Add check that really numeric or harmonize types.
     this.checkedStorageIds = checkedStorageIds.map((s) => +s);
+  }
+
+  private getCorrelationIdKey(k: string | null): string {
+    return k === null ? '@!$null!!' : k;
   }
 }
