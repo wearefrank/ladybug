@@ -1,4 +1,4 @@
-import { Component, EventEmitter, inject, Input, OnInit, Output, ViewChild } from '@angular/core';
+import { Component, EventEmitter, inject, Input, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
 import { catchError, Subscription } from 'rxjs';
 import { TableCellShortenerPipe } from '../../shared/pipes/table-cell-shortener.pipe';
 import { MatSort, MatSortModule } from '@angular/material/sort';
@@ -39,7 +39,7 @@ interface WorkingData {
     ShortenedTableHeaderPipe,
   ],
 })
-export class DebugTableGridComponent implements OnInit {
+export class DebugTableGridComponent implements OnInit, OnDestroy {
   @Input() openedStorageId: number | null = null;
   @Output() clickReportWithStorageId: EventEmitter<number> = new EventEmitter<number>();
   @Output() checkedStorageIds = new EventEmitter<string[]>();
@@ -68,6 +68,10 @@ export class DebugTableGridComponent implements OnInit {
 
   ngOnInit(): void {
     this.subscribeToObservables();
+  }
+
+  ngOnDestroy(): void {
+    this.subscriptions.unsubscribe();
   }
 
   subscribeToObservables(): void {
