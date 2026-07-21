@@ -7,7 +7,7 @@
 
     <import resource="springIbisTestTool.xml"/>
 
-    <bean name="whiteBoxViewLessColumns" parent="whiteBoxView" autowire="byName">
+    <bean name="whiteBoxViewLessColumns" parent="whiteBoxView">
         <property name="name" value="White box view with less metadata" />
         <property name="metadataNames">
             <list>
