@@ -33,7 +33,7 @@ describe('Tests with views and filtering', () => {
 
   const columnAndNameCombinations: ColumnAndName[] = [
     { name: 'Storage Id', colNr: 1, filterSphereLabel: 'Storageid', enabled: !isDatabaseStorage },
-    { name: 'End time', colNr: 2, filterSphereLabel: 'Endtime', enabled: !isDatabaseStorage },
+    { name: 'End Time', colNr: 2, filterSphereLabel: 'Endtime', enabled: !isDatabaseStorage },
     { name: 'Duration', colNr: 3, filterSphereLabel: 'Duration', enabled: true },
     { name: 'Name', colNr: 4, filterSphereLabel: 'Name', enabled: true },
     { name: 'Correlation Id', colNr: 5, filterSphereLabel: 'Correlationid', enabled: true },
