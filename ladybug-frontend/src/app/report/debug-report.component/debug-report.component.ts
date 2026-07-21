@@ -1,4 +1,13 @@
-import { ChangeDetectorRef, Component, inject, ViewChild, OnInit, OnDestroy } from '@angular/core';
+import {
+  ChangeDetectorRef,
+  Component,
+  inject,
+  ViewChild,
+  OnInit,
+  OnDestroy,
+  Output,
+  EventEmitter,
+} from '@angular/core';
 import { Router } from '@angular/router';
 import { AngularSplitModule, SplitComponent } from 'angular-split';
 import { ReportValueComponent } from '../report-value/report-value.component';
@@ -19,6 +28,7 @@ const MARGIN = 50;
   providers: [ReportSharedStrategy],
 })
 export class DebugReportComponent implements ReportComponentCallback, OnInit, OnDestroy {
+  @Output() closeReportEvent = new EventEmitter<boolean>();
   @ViewChild(SplitComponent) splitter!: SplitComponent;
   @ViewChild(DebugTreeComponent) debugTreeComponent!: DebugTreeComponent;
 
@@ -45,6 +55,7 @@ export class DebugReportComponent implements ReportComponentCallback, OnInit, On
   closeEntireTree(): void {
     this.debugTreeComponent.closeEntireTree();
     this.sharedStrategy.changeReportValueState('none');
+    this.closeReportEvent.emit(true);
   }
 
   navigateToTestTab(): void {

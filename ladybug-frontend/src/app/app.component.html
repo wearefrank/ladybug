@@ -1,8 +1,11 @@
 <div class="px-1 pt-1" id="ladybug-tabs">
   <ul class="nav nav-tabs">
-    @for (tab of tabs; track tab) {
+    @for (tab of tabs; track tab.key) {
+      @let nav = tabService.keyToNavigation(tab.key);
       <li class="nav-item" [attr.data-cy-nav-tab]="tab.key">
-        <a class="nav-link" routerLinkActive="active" [routerLink]="tab.key">
+        <a class="nav-link" routerLinkActive="active"
+            [routerLink]="nav.path"
+            [queryParams]="nav.queryParameters">
           <span>{{ tab.title }}</span>
           @if (hasClose(tab)) {
             <i class="bi bi-x close-tab" (click)="closeTabEvent(tab, $event)"></i>

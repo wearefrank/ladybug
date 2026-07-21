@@ -3,16 +3,13 @@
 import { Component, EventEmitter, inject, Input, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
 import { HelperService } from '../../shared/services/helper.service';
 import { HttpService } from '../../shared/services/http.service';
-import { TableSettingsModalComponent } from './table-settings-modal/table-settings-modal.component';
-import { TableSettings } from '../../shared/interfaces/table-settings';
-import { catchError, Subscription } from 'rxjs';
+import { TableSettingsModalComponent } from '../table-settings-modal/table-settings-modal.component';
+import { catchError, Observable, Subscription } from 'rxjs';
 import { Report } from '../../shared/interfaces/report';
 import { ToastService } from '../../shared/services/toast.service';
 import { TabService } from '../../shared/services/tab.service';
 import { AppVariablesService } from '../../shared/services/app.variables.service';
-import { FilterService } from '../filter-side-drawer/filter.service';
-import { TableCellShortenerPipe } from '../../shared/pipes/table-cell-shortener.pipe';
-import { MatSort, MatSortModule } from '@angular/material/sort';
+import { FilterService } from '../../shared/services/filter.service';
 import { ActiveFiltersComponent } from '../active-filters/active-filters.component';
 import { FormControl, FormsModule, ReactiveFormsModule, ValidatorFn, Validators } from '@angular/forms';
 import {
@@ -22,9 +19,6 @@ import {
   NgbDropdownMenu,
   NgbDropdownToggle,
 } from '@ng-bootstrap/ng-bootstrap';
-import { FilterSideDrawerComponent } from '../filter-side-drawer/filter-side-drawer.component';
-import { NgClass } from '@angular/common';
-import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { View } from '../../shared/interfaces/view';
 import { OptionsSettings } from '../../shared/interfaces/options-settings';
 import { ErrorHandling } from 'src/app/shared/classes/error-handling.service';
@@ -33,17 +27,16 @@ import { DebugTabService } from '../debug-tab.service';
 import { ViewDropdownComponent } from '../../shared/components/view-dropdown/view-dropdown.component';
 import { DeleteModalComponent } from '../../shared/components/delete-modal/delete-modal.component';
 import { RefreshCondition } from '../../shared/interfaces/refresh-condition';
-import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner/loading-spinner.component';
-import { ShortenedTableHeaderPipe } from '../../shared/pipes/shortened-table-header.pipe';
 import { ClientSettingsService } from 'src/app/shared/services/client.settings.service';
 import { HierarchicalReport } from '../../shared/interfaces/hierarchical-report';
-import { Router } from '@angular/router';
 import { CompareData } from '../../compare/compare-data';
+import { DebugTableGridComponent } from '../debug-table-grid/debug-table-grid.component';
+import { FilterSideDrawerComponent } from '../filter-side-drawer/filter-side-drawer.component';
 
 @Component({
-  selector: 'app-table',
-  templateUrl: './table.component.html',
-  styleUrls: ['./table.component.css'],
+  selector: 'app-debug-table-with-controls',
+  templateUrl: './debug-table-with-controls.component.html',
+  styleUrls: ['./debug-table-with-controls.component.css'],
   standalone: true,
   imports: [
     FilterSideDrawerComponent,
@@ -55,19 +48,13 @@ import { CompareData } from '../../compare/compare-data';
     ReactiveFormsModule,
     FormsModule,
     ActiveFiltersComponent,
-    MatSortModule,
-    NgClass,
     TableSettingsModalComponent,
-    TableCellShortenerPipe,
-    MatTableModule,
     ViewDropdownComponent,
     DeleteModalComponent,
-    LoadingSpinnerComponent,
-    ShortenedTableHeaderPipe,
+    DebugTableGridComponent,
   ],
 })
-export class TableComponent implements OnInit, OnDestroy {
-  private readonly defaultDisplayAmount: number = 10;
+export class DebugTableWithControlsComponent implements OnInit, OnDestroy {
   private readonly subscriptions: Subscription = new Subscription();
   private readonly defaultReportInProgressValidators: ValidatorFn[] = [
     Validators.min(1),
@@ -75,8 +62,10 @@ export class TableComponent implements OnInit, OnDestroy {
     Validators.required,
   ];
 
+  // The debug tab waits until the views are known before creating this component.
   @Input({ required: true }) views!: View[];
   @Input({ required: true }) currentView!: View;
+  @Input({ required: true }) reportClosed$!: Observable<boolean>;
   @Output() viewChange: EventEmitter<View> = new EventEmitter<View>();
   @Output() openReportEvent: EventEmitter<HierarchicalReport> = new EventEmitter<HierarchicalReport>();
 
@@ -84,49 +73,23 @@ export class TableComponent implements OnInit, OnDestroy {
   protected tableSettingsModal!: TableSettingsModalComponent;
   @ViewChild(DeleteModalComponent) protected deleteModal!: DeleteModalComponent;
 
-  @ViewChild(MatSort)
-  protected set matSort(sort: MatSort) {
-    this.tableDataSort = sort;
-    this.tableDataSource.sort = this.tableDataSort;
-  }
-
   public helperService = inject(HelperService);
 
   protected metadataCount = 0;
-  protected selectedReports: Report[] = [];
+  protected checkedStorageIds: number[] = [];
   protected hasTimedOut = false;
-  protected tableDataSource: MatTableDataSource<Report> = new MatTableDataSource<Report>();
-  protected tableSettings: TableSettings = {
-    reportMetadata: [],
-    tableLoaded: false,
-    displayAmount: this.defaultDisplayAmount,
-    showFilter: false,
-    currentFilters: new Map<string, string>(),
-    numberOfReportsInProgress: 0,
-    estimatedMemoryUsage: '',
-    uniqueValues: new Map<string, string[]>(),
-  };
-
+  protected displayAmount = 0;
+  protected numberOfReportsInProgress = 0;
+  protected estimatedMemoryUsage = '';
   protected reportsInProgressThreshold?: number;
   protected selectedReportStorageId?: number;
-  protected tableSpacing?: string;
-  protected fontSize?: string;
-  protected checkboxSize?: string;
   protected openInProgress: FormControl = new FormControl(1, this.defaultReportInProgressValidators);
-
   protected appVariablesService = inject(AppVariablesService);
-
   protected currentUploadFile = '';
 
+  protected openedStorageId: number | null = null;
   private reportsInProgress: Record<string, number> = {};
 
-  private get selectedReportIds(): number[] {
-    return this.selectedReports.map((report: Report): number => report.storageId);
-  }
-
-  private tableDataSort?: MatSort;
-
-  private router = inject(Router);
   private httpService = inject(HttpService);
   private clientSettingsService = inject(ClientSettingsService);
   private toastService = inject(ToastService);
@@ -135,10 +98,8 @@ export class TableComponent implements OnInit, OnDestroy {
   private errorHandler = inject(ErrorHandling);
   private debugTab = inject(DebugTabService);
 
-  private isLoadingData = false;
-
   ngOnInit(): void {
-    this.filterService.setMetadataTypes(this.currentView.metadataTypes);
+    this.displayAmount = this.clientSettingsService.getAmountOfRecordsInTable();
     this.subscribeToObservables();
     this.loadData();
   }
@@ -148,101 +109,36 @@ export class TableComponent implements OnInit, OnDestroy {
   }
 
   subscribeToObservables(): void {
-    const tableSpacingSubscription: Subscription = this.clientSettingsService.tableSpacingObservable.subscribe({
-      next: (value: number) => {
-        this.setTableSpacing(value);
-        this.setFontSize(value);
-        this.setCheckBoxSize(value);
-      },
-      error: () => catchError(this.errorHandler.handleError()),
-    });
-    this.subscriptions.add(tableSpacingSubscription);
-    const showFilterSubscription: Subscription = this.filterService.showFilter$.subscribe({
-      next: (show: boolean) => (this.tableSettings.showFilter = show),
-      error: () => catchError(this.errorHandler.handleError()),
-    });
-    this.subscriptions.add(showFilterSubscription);
-    const filterContextSubscription: Subscription = this.filterService.filterContext$.subscribe({
-      next: (context: Map<string, string>) => this.changeFilter(context),
-      error: () => catchError(this.errorHandler.handleError()),
-    });
-    this.subscriptions.add(filterContextSubscription);
     const refreshAll = this.debugTab.refreshAll$.subscribe((condition?: RefreshCondition) => this.refresh(condition));
     this.subscriptions.add(refreshAll);
     const refreshTable = this.debugTab.refreshTable$.subscribe((condition?: RefreshCondition) =>
       this.refresh(condition),
     );
     this.subscriptions.add(refreshTable);
-    const amountOfRecordsInTableSubscription = this.clientSettingsService.amountOfRecordsInTableObservable.subscribe(
-      (value) => {
-        this.tableSettings.displayAmount = value;
-        if (!this.isLoadingData) {
-          this.retrieveRecords();
-        }
-      },
+    const displayAmountSubscription = this.clientSettingsService.amountOfRecordsInTableObservable.subscribe(
+      (amount) => (this.displayAmount = amount),
     );
-    this.subscriptions.add(amountOfRecordsInTableSubscription);
+    this.subscriptions.add(displayAmountSubscription);
+    const reportClosedSubscription = this.reportClosed$.subscribe(() => (this.openedStorageId = null));
+    this.subscriptions.add(reportClosedSubscription);
   }
 
-  setTableSpacing(value: number): void {
-    this.tableSpacing = `${value * 0.25}em 0 ${value * 0.25}em 0`;
+  loadData(): void {
+    this.filterService.refresh();
+    this.update();
   }
 
-  setFontSize(value: number): void {
-    const fontSizeSpacingModifier = 1.2;
-    const defaultFontSize = 8;
-    this.fontSize = `${defaultFontSize + value * fontSizeSpacingModifier}pt`;
-  }
-
-  setCheckBoxSize(value: number): void {
-    const defaultCheckBoxSize = 13;
-    this.checkboxSize = `${defaultCheckBoxSize + value}px`;
-  }
-
-  changeFilter(filters: Map<string, string>): void {
-    for (let value of filters.values()) {
-      if (!value) {
-        value = '';
-      }
-    }
-    this.tableSettings.currentFilters = filters;
-    this.retrieveRecords();
-  }
-
-  loadData(showToast = true): void {
-    this.isLoadingData = true;
-    this.tableSettings.tableLoaded = false;
-    this.retrieveRecords(showToast);
+  private update(): void {
     this.loadMetadataCount();
     this.loadReportInProgressThreshold();
     this.loadReportInProgressSettings();
-    this.isLoadingData = false;
-  }
-
-  retrieveRecords(showToast = true): void {
-    this.httpService
-      .getMetadataReports(this.tableSettings, this.currentView)
-      .pipe(catchError(this.errorHandler.handleError()))
-      .subscribe({
-        next: (value: Report[]) => {
-          this.setUniqueOptions(value);
-          this.tableSettings.reportMetadata = value;
-          this.tableDataSource.data = value;
-          this.tableSettings.tableLoaded = true;
-          if (showToast) {
-            this.toastService.showSuccess('Data loaded!');
-          }
-        },
-      });
   }
 
   changeView(view: View): void {
     this.currentView = view;
-    this.loadData();
-    this.filterService.setMetadataLabels(this.currentView.metadataNames);
     this.viewChange.next(this.currentView);
-    this.tableSettings.showFilter = false;
-    this.filterService.setShowFilter(this.tableSettings.showFilter);
+    // FilterService already triggers retrieving the records when the view is changed.
+    this.update();
   }
 
   loadMetadataCount(): void {
@@ -269,13 +165,13 @@ export class TableComponent implements OnInit, OnDestroy {
       .pipe(catchError(this.errorHandler.handleError()))
       .subscribe({
         next: (settings: OptionsSettings) => {
-          this.tableSettings.numberOfReportsInProgress = settings.reportsInProgress;
-          this.tableSettings.estimatedMemoryUsage = settings.estMemory;
+          this.numberOfReportsInProgress = settings.reportsInProgress;
+          this.estimatedMemoryUsage = settings.estMemory;
           this.loadReportInProgressDates();
           this.openInProgress.setValue(1);
           this.openInProgress.setValidators([
             ...this.defaultReportInProgressValidators,
-            Validators.max(this.tableSettings.numberOfReportsInProgress),
+            Validators.max(this.numberOfReportsInProgress),
           ]);
         },
       });
@@ -283,7 +179,7 @@ export class TableComponent implements OnInit, OnDestroy {
 
   loadReportInProgressDates(): void {
     let hasChanged = false;
-    for (let index = 1; index <= this.tableSettings.numberOfReportsInProgress; index++) {
+    for (let index = 1; index <= this.numberOfReportsInProgress; index++) {
       this.httpService
         .getReportInProgress(index)
         .pipe(catchError(this.errorHandler.handleError()))
@@ -310,84 +206,27 @@ export class TableComponent implements OnInit, OnDestroy {
   }
 
   toggleFilter(): void {
-    this.filterService.setMetadataLabels(this.currentView.metadataNames);
-    this.filterService.setMetadataTypes(this.currentView.metadataTypes);
-    this.tableSettings.showFilter = !this.tableSettings.showFilter;
-    this.filterService.setShowFilter(this.tableSettings.showFilter);
-    this.filterService.setCurrentRecords(this.tableSettings.uniqueValues);
-  }
-
-  toggleCheck(report: Report, event: MouseEvent): void {
-    event.stopPropagation();
-    report.checked = !report.checked;
-    if (report.checked) {
-      this.selectedReports.push(report);
-    } else {
-      const index = this.selectedReports.indexOf(report);
-      this.selectedReports.splice(index, 1);
-    }
-  }
-
-  toggleSelectAll(): void {
-    if (this.selectedReports.length === this.tableSettings.reportMetadata.length) {
-      this.setCheckedForAllReports(false);
-      this.selectedReports = [];
-    } else {
-      this.setCheckedForAllReports(true);
-      this.selectedReports = [...this.tableSettings.reportMetadata];
-    }
-  }
-
-  setCheckedForAllReports(value: boolean): void {
-    for (const report of this.tableSettings.reportMetadata) {
-      report.checked = value;
-    }
-  }
-
-  getStatusClass(metadata: any): string {
-    let statusName = this.currentView.metadataNames.find((name: string) => {
-      return name.toLowerCase() === 'status';
-    });
-    if (statusName && metadata[statusName]) {
-      if (metadata[statusName].toLowerCase() === 'success') {
-        return 'statusSuccess';
-      } else if (metadata[statusName].toLowerCase() === 'null') {
-        return 'statusNull';
-      } else {
-        return 'statusError';
-      }
-    }
-    return 'none';
+    // TODO: Impacts the toast component. Do we need to detect changes?
+    this.filterService.shouldShowFilterDrawer = !this.filterService.shouldShowFilterDrawer;
   }
 
   openReportInTab(): void {
-    const reportTab: Report | undefined = this.tableSettings.reportMetadata.find((report: Report) => report.checked);
-    if (!reportTab) {
-      this.toastService.showDanger('Could not find report that was selected.');
-      return;
+    for (const storageId of this.checkedStorageIds) {
+      this.tabService.openReportTab(this.currentView.storageName, storageId, 'Loading...');
     }
-    // Do not cache a report in the tab service. The report component needs a HierarchicalReport and
-    // will download it from the storage.
-    this.tabService.openReportTab(this.currentView.storageName, reportTab.storageId, 'Loading...');
   }
 
   openSelected(): void {
-    if (this.selectedReportIds.length !== 1) {
+    if (this.checkedStorageIds.length === 1) {
+      this.selectedReportStorageId = this.checkedStorageIds[0];
+      this.openReport(this.checkedStorageIds[0]);
+    } else {
       this.toastService.showWarning('You can open only one report at a time!');
-      return;
     }
-    this.httpService
-      .getHierarchicalReports(this.selectedReportIds, this.currentView.storageName, this.currentView.name)
-      .pipe(catchError(this.errorHandler.handleError()))
-      .subscribe({
-        next: (reports: HierarchicalReport[]) => {
-          this.openReportEvent.next(reports[0]);
-        },
-      });
   }
 
   openDeleteModal(): void {
-    if (this.tableSettings.reportMetadata.length > 0) {
+    if (this.metadataCount > 0) {
       this.deleteModal.open(true);
     } else {
       this.toastService.showWarning('No reports to be deleted!');
@@ -395,13 +234,12 @@ export class TableComponent implements OnInit, OnDestroy {
   }
 
   deleteSelected(): void {
-    const reportIds = this.helperService.getSelectedIds(this.tableSettings.reportMetadata);
-    if (reportIds.length > 0) {
+    if (this.checkedStorageIds.length > 0) {
       this.httpService
-        .deleteReport(reportIds, this.currentView.storageName)
+        .deleteReport(this.checkedStorageIds, this.currentView.storageName)
         .pipe(catchError(this.errorHandler.handleError()))
         .subscribe({
-          next: () => this.retrieveRecords(),
+          next: () => this.loadData(),
         });
     }
   }
@@ -411,18 +249,18 @@ export class TableComponent implements OnInit, OnDestroy {
       .deleteAllReports(this.currentView.storageName)
       .pipe(catchError(this.errorHandler.handleError()))
       .subscribe({
-        next: () => this.retrieveRecords(),
+        next: () => this.loadData(),
       });
   }
 
   compareTwoReports(): void {
     this.httpService
-      .getReports(this.selectedReportIds, this.currentView.storageName)
+      .getReports(this.checkedStorageIds, this.currentView.storageName)
       .pipe(catchError(this.errorHandler.handleError()))
       .subscribe({
         next: (data: Record<string, CompareReport>) => {
-          const originalReport = this.transformCompareToReport(data[this.selectedReportIds[0]]);
-          const runResultReport = this.transformCompareToReport(data[this.selectedReportIds[1]]);
+          const originalReport = this.transformCompareToReport(data[this.checkedStorageIds[0]]);
+          const runResultReport = this.transformCompareToReport(data[this.checkedStorageIds[1]]);
           const compareData: CompareData = {
             originalReport: originalReport,
             runResultReport: runResultReport,
@@ -430,9 +268,9 @@ export class TableComponent implements OnInit, OnDestroy {
           };
           this.tabService.openCompareTab(
             this.currentView.storageName,
-            this.selectedReportIds[0],
+            this.checkedStorageIds[0],
             this.currentView.storageName,
-            this.selectedReportIds[1],
+            this.checkedStorageIds[1],
             compareData,
           );
         },
@@ -454,8 +292,9 @@ export class TableComponent implements OnInit, OnDestroy {
   }
 
   refresh(refreshCondition?: RefreshCondition): void {
+    // TODO: Control displaying toast?
     if (refreshCondition) {
-      this.loadData(refreshCondition.displayToast);
+      this.loadData();
     } else {
       this.loadData();
     }
@@ -467,14 +306,10 @@ export class TableComponent implements OnInit, OnDestroy {
       .pipe(catchError(this.errorHandler.handleError()))
       .subscribe({
         next: (data: HierarchicalReport[]): void => {
+          this.openedStorageId = data[0].storageId;
           this.openReportEvent.next(data[0]);
         },
       });
-  }
-
-  openSelectedReport(storageId: number): void {
-    this.selectedReportStorageId = storageId;
-    this.openReport(storageId);
   }
 
   openReportInProgress(index: number): void {
@@ -483,6 +318,7 @@ export class TableComponent implements OnInit, OnDestroy {
       .pipe(catchError(this.errorHandler.handleError()))
       .subscribe({
         next: (report: HierarchicalReport) => {
+          this.openedStorageId = null;
           this.openReportEvent.next(report);
           this.toastService.showSuccess(`Opened report in progress with index [${index}]`);
         },
@@ -502,12 +338,10 @@ export class TableComponent implements OnInit, OnDestroy {
   }
 
   downloadReports(exportBinary: boolean, exportXML: boolean): void {
-    const selectedReports = this.tableSettings.reportMetadata.filter((report) => report.checked);
-
-    if (selectedReports.length > 0) {
+    if (this.checkedStorageIds.length > 0) {
       let queryString = '';
-      for (let report of selectedReports) {
-        queryString += `id=${report.storageId}&`;
+      for (const storageId of this.checkedStorageIds) {
+        queryString += `id=${storageId}&`;
       }
       this.helperService.download(
         queryString,
@@ -522,20 +356,15 @@ export class TableComponent implements OnInit, OnDestroy {
   }
 
   downloadReportsAsCsv(): void {
-    this.httpService.getMetadataReports(this.tableSettings, this.currentView).subscribe({
-      next: (reports) => {
-        if (!reports?.length) {
-          this.toastService.showWarning('No data to export.');
-          return;
-        }
-
-        const csv = this.jsonToCsv(reports);
-        this.triggerCsvDownload(csv, 'export.csv');
-      },
-      error: () => {
-        this.toastService.showWarning('Failed to fetch data.');
-      },
+    const metadata: Record<string, string>[] = this.filterService.lastMetadata.map((o) => {
+      return { ...o };
     });
+    if (metadata.length === 0) {
+      this.toastService.showWarning('No data to export.');
+      return;
+    }
+    const csv = this.jsonToCsv(metadata);
+    this.triggerCsvDownload(csv, 'export.csv');
   }
 
   private triggerCsvDownload(csv: string, filename: string): void {
@@ -603,73 +432,10 @@ export class TableComponent implements OnInit, OnDestroy {
       });
   }
 
-  setUniqueOptions(data: any): void {
-    for (const headerName of this.currentView.metadataNames as string[]) {
-      const lowerHeaderName = headerName.toLowerCase();
-      const upperHeaderName = headerName.toUpperCase();
-      let uniqueValues: Set<string> = new Set<string>();
-      for (let element of data) {
-        if (element[lowerHeaderName]) {
-          uniqueValues.add(element[lowerHeaderName]);
-        }
-        if (element[upperHeaderName]) {
-          uniqueValues.add(element[upperHeaderName]);
-        }
-        if (element[headerName]) {
-          uniqueValues.add(element[headerName]);
-        }
-      }
-      const MAX_AMOUNT_OF_FILTER_SUGGESTIONS = 15;
-      this.tableSettings.uniqueValues.set(
-        lowerHeaderName,
-        uniqueValues.size < MAX_AMOUNT_OF_FILTER_SUGGESTIONS ? this.sortUniqueValues(uniqueValues) : [],
-      );
-      this.filterService.setCurrentRecords(this.tableSettings.uniqueValues);
-    }
-  }
-
-  sortUniqueValues(values: Set<string>): string[] {
-    //Sort list alphabetically, if string is actually a number, sort smallest to biggest
-    return [...values].toSorted((a, b) => {
-      // eslint-disable-next-line unicorn/prefer-number-properties
-      const isANumber = !isNaN(Number(a));
-      // eslint-disable-next-line unicorn/prefer-number-properties
-      const isBNumber = !isNaN(Number(b));
-      if (isANumber && isBNumber) {
-        return Number(a) - Number(b);
-      }
-      if (isANumber && !isBNumber) {
-        return -1;
-      } else if (!isANumber && isBNumber) {
-        return 1;
-      }
-      return a.localeCompare(b);
-    });
-  }
-
-  getMetadata(report: Report, field: string): string {
-    const value = report[field as keyof Report];
-    return value !== undefined && value !== null ? String(value) : '';
-  }
-
-  getMetadataNameFromHeader(header: string): string {
-    const index = this.currentView.metadataLabels.indexOf(header);
-    return this.currentView.metadataNames[index];
-  }
-
-  getDisplayedColumnNames(labels: string[]): string[] {
-    const names: string[] = ['select'];
-    for (const header of labels) {
-      names.push(this.getMetadataNameFromHeader(header));
-    }
-    return names;
-  }
-
   processCustomReportAction(): void {
-    const reportIds = this.helperService.getSelectedIds(this.tableSettings.reportMetadata);
-    if (reportIds.length > 0) {
+    if (this.checkedStorageIds.length > 0) {
       this.httpService
-        .processCustomReportAction(this.currentView.storageName, reportIds)
+        .processCustomReportAction(this.currentView.storageName, this.checkedStorageIds)
         .pipe(catchError(this.errorHandler.handleError()))
         .subscribe({
           next: (data: Record<string, string>) => {
@@ -685,6 +451,11 @@ export class TableComponent implements OnInit, OnDestroy {
           },
         });
     }
+  }
+
+  onCheckedStorageIds(checkedStorageIds: string[]): void {
+    // TODO: Add check that really numeric or harmonize types.
+    this.checkedStorageIds = checkedStorageIds.map((s) => +s);
   }
 
   private getCorrelationIdKey(k: string | null): string {

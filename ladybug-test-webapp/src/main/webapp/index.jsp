@@ -244,7 +244,8 @@
 
   <a href="ladybug">New Angular GUI</a><br/>
   <a href="http://localhost:4200">New Angular GUI using Node.js</a><br/>
-
+  <a href="http://localhost:4200/debug?filter-application=Application%20X&filter-host=Host%20A">New Angular GUI filter X/A</a><br/>
+  <a href="http://localhost:4200/debug?filter-application=Application%20Y&filter-host=Host%20B">New Angular GUI filter Y/B</a><br/>
   <br/>
 
   <a href="ladybug/api/testtool">TestTool API</a><br/>

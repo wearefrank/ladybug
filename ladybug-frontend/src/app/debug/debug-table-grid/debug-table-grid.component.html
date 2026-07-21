@@ -1,0 +1,58 @@
+@if (dataLoaded && data) {
+  <div data-cy-debug="table" class="table-responsive table-container">
+    <table mat-table class="table mb-0" matSort [dataSource]="tableDataSource">
+      <!--Header and row container for checkboxes-->
+      <ng-container matColumnDef="select">
+        <th mat-header-cell class="table-row-checkbox header-padding" *matHeaderCellDef>
+          <input
+            data-cy-debug="selectAll"
+            type="checkbox"
+            class="vertical-middle"
+            title="Select all rows"
+            [checked]="allChecked"
+            [style.width]="checkboxSize"
+            [style.height]="checkboxSize"
+            (click)="toggleCheckAll($event)">
+        </th>
+        <td mat-cell class="table-row-checkbox" *matCellDef="let row" [class]="getStatusOrHighlightClass(row)" [style.padding]="tableSpacing">
+          <input type="checkbox" data-cy-debug="selectOne" [checked]="row.checked" [style.width]="checkboxSize" [style.height]="checkboxSize" (click)="toggleCheck(row)">
+        </td>
+      </ng-container>
+
+      @for (column of data.columns; let index = $index; track column.name) {
+        <!--For every metadata label, a header and row structure is created-->
+        <ng-container [matColumnDef]="column.name">
+          <th mat-header-cell mat-sort-header
+              data-cy-debug="metadataLabel"
+              class="table-id-cell header-cell header-padding"
+              *matHeaderCellDef
+              [title]="column.label">
+            {{ column.label | shortenedTableHeader }}
+          </th>
+          <!-- [style.background-color] is not inherited from table row.
+                That style is overridden by something from bootstrap:
+                .table > :not(caption) > * > * -->
+          <td mat-cell class="table-cell"
+              *matCellDef="let row"
+              [style.padding]="tableSpacing"
+              [class]="getStatusOrHighlightClass(row)"
+              [title]="column.label"
+              (click)="clickReportWithStorageId.emit(row.fields.storageId)">
+            {{ getMetadata(row, column.name)|tableCellShortener }}
+          </td>
+        </ng-container>
+      }
+
+      <!--Values are passed to their respective header and row elements-->
+      <tr mat-header-row *matHeaderRowDef="getSelectAndOtherShownColumnNames(); sticky: true" [style.font-size]="fontSize"></tr>
+      <tr data-cy-debug="tableRow" mat-row class="table-row"
+          *matRowDef="let row; let rowIndex = index; columns: getSelectAndOtherShownColumnNames()"
+          [attr.data-cy-record-table-index]="rowIndex"
+          [class]="getStatusOrHighlightClass(row)"
+          [style.font-size]="fontSize"
+      ></tr>
+    </table>
+  </div>
+} @else {
+  <app-loading-spinner/>
+}

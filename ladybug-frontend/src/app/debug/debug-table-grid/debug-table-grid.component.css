@@ -1,0 +1,77 @@
+.table-container {
+  resize: vertical;
+  overflow: auto;
+  height: 31vh;
+}
+
+.highlight {
+  filter: brightness(85%);
+}
+
+.statusSuccess {
+  background-color: #c3e6cb;
+}
+
+.statusNull {
+  background-color: #A9A9A9FF;
+}
+
+.statusError {
+  background-color: #f79c9c;
+}
+
+th {
+  padding: 0 0 0 0;
+}
+
+.table-col:hover {
+  cursor: pointer;
+  filter: brightness(85%);
+}
+
+.table-row-checkbox {
+  display: table-cell;
+  flex-direction: row;
+  justify-content: center;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.header-padding {
+  padding-top: 0.125rem;
+  padding-bottom: 0.125rem;
+  border-top: 0;
+  border-bottom-width: 1px;
+}
+
+.table-cell {
+  width: fit-content;
+  vertical-align: middle;
+}
+
+.vertical-middle {
+  vertical-align: middle;
+}
+
+.mat-mdc-header-row {
+  height: auto;
+  font-size: inherit;
+}
+
+.mat-mdc-row {
+  height: auto;
+  font-size: inherit;
+}
+
+td.mat-mdc-cell {
+  border: none;
+
+  &:hover {
+    filter: brightness(85%);
+    cursor: pointer;
+
+    &.highlight {
+      filter: brightness(50%);
+    }
+  }
+}
