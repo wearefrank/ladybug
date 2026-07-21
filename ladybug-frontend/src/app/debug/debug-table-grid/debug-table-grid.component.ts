@@ -9,6 +9,7 @@ import { ShortenedTableHeaderPipe } from '../../shared/pipes/shortened-table-hea
 import { ClientSettingsService } from '../../shared/services/client.settings.service';
 import { Column, FilterService, TableData } from '../../shared/services/filter.service';
 import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner/loading-spinner.component';
+import { TitleCasePipe } from '@angular/common';
 
 const STORAGE_ID_COLUMN_NAME = 'storageId';
 const STATUS_COLUMN_NAME = 'status';
@@ -37,6 +38,7 @@ interface WorkingData {
     TableCellShortenerPipe,
     MatTableModule,
     ShortenedTableHeaderPipe,
+    TitleCasePipe,
   ],
 })
 export class DebugTableGridComponent implements OnInit, OnDestroy {
