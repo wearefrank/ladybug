@@ -27,7 +27,7 @@
               class="table-id-cell header-cell header-padding"
               *matHeaderCellDef
               [title]="column.label">
-            {{ column.label | shortenedTableHeader }}
+            {{ column.label | shortenedTableHeader | titlecase }}
           </th>
           <!-- [style.background-color] is not inherited from table row.
                 That style is overridden by something from bootstrap:

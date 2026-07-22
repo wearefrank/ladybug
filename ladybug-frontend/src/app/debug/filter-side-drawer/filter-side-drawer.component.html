@@ -5,7 +5,7 @@
       <div class="filter-input-container">
         @for (column of userFilterableColumns; track column.name) {
           <div class="input-container">
-            <label data-cy-debug="filterLabel" class="metadata-input-label">{{ column.label| shortenedTableHeader | titlecase }}</label>
+            <label data-cy-debug="filterLabel" class="metadata-input-label">{{ column.label | shortenedTableHeader | titlecase }}</label>
             <div class="metadata-input-container input-group">
               <input
                 class="form-control"
