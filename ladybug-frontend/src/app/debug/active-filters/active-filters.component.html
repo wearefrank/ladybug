@@ -4,7 +4,7 @@
         @if (filter.value !== '') {
           <span [attr.data-cy-active-filter]="filter.key" class="filter-container d-flex align-items-center rounded-pill px-3 py-2 text-white "
                 [title]="'Active filter for ' + filter.key">
-          {{ filter.key | shortenedTableHeader | titlecase }}: {{ filter.value }}
+          {{ safeColumnNameToLabel(filter.key) | shortenedTableHeader | titlecase }}: {{ filter.value }}
           </span>
         }
     }
