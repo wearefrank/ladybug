@@ -1,5 +1,5 @@
 /*
-   Copyright 2022, 2024-2025 WeAreFrank!
+   Copyright 2022, 2024-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -64,8 +64,32 @@ public class DbmsSupport {
 		commonDatabaseName = JdbcUtils.commonDatabaseName(databaseProductName);
 	}
 
+	// ── no-offset variants (delegate to offset-aware overloads) ─────────────────
+
 	public String provideLimitAfterFirstKeyword(int limit, List<Object> args, List<Integer> argTypes) {
-		if (limit > -1 && "Microsoft SQL Server".equals(commonDatabaseName)) {
+		return provideLimitAfterFirstKeyword(limit, 0, args, argTypes);
+	}
+
+	public String provideFirstRowsHintAfterFirstKeyword(int limit) {
+		return provideFirstRowsHintAfterFirstKeyword(limit, 0);
+	}
+
+	public String provideLimitWithRowNumber(int limit, List<Object> args, List<Integer> argTypes) {
+		return provideLimitWithRowNumber(limit, 0, args, argTypes);
+	}
+
+	public String provideLimit(int limit, List<Object> args, List<Integer> argTypes) {
+		return provideLimit(limit, 0, args, argTypes);
+	}
+
+	// ── offset-aware overloads ───────────────────────────────────────────────────
+
+	/**
+	 * SQL Server: emit TOP(N) only when offset is 0. When offset > 0 the caller
+	 * must use OFFSET/FETCH (see {@link #provideLimit(int, int, List, List)}).
+	 */
+	public String provideLimitAfterFirstKeyword(int limit, int offset, List<Object> args, List<Integer> argTypes) {
+		if (limit > -1 && "Microsoft SQL Server".equals(commonDatabaseName) && offset <= 0) {
 			args.add(limit);
 			argTypes.add(Types.INTEGER);
 			return " top(" + limit + ")";
@@ -73,13 +97,75 @@ public class DbmsSupport {
 		return "";
 	}
 
-	public String provideFirstRowsHintAfterFirstKeyword(int limit) {
+	/**
+	 * Oracle: adjust the first_rows hint to cover offset + limit rows so the
+	 * optimizer knows the total number of rows the outer WHERE needs to inspect.
+	 */
+	public String provideFirstRowsHintAfterFirstKeyword(int limit, int offset) {
 		if (limit > -1 && "Oracle".equals(commonDatabaseName)) {
-			// Cannot be parameterized (int is not susceptible to SQL injection)
-			return " /*+ first_rows(" + limit + ") */ * from (select";
+			int hintRows = offset > 0 ? limit + offset : limit;
+			return " /*+ first_rows(" + hintRows + ") */ * from (select";
 		}
 		return "";
 	}
+
+	/**
+	 * Oracle: close the row-number subquery.
+	 * Without offset: {@code WHERE rn <= limit}
+	 * With offset:    {@code WHERE rn > offset AND rn <= offset + limit}
+	 */
+	public String provideLimitWithRowNumber(int limit, int offset, List<Object> args, List<Integer> argTypes) {
+		if (limit > -1 && "Oracle".equals(commonDatabaseName)) {
+			if (offset > 0) {
+				args.add(offset);
+				argTypes.add(Types.INTEGER);
+				args.add(limit + offset);
+				argTypes.add(Types.INTEGER);
+				return ") where rn > ? and rn <= ?";
+			}
+			args.add(limit);
+			argTypes.add(Types.INTEGER);
+			return ") where rn <= ?";
+		}
+		return "";
+	}
+
+	/**
+	 * PostgreSQL / MySQL / H2: LIMIT N
+	 * SQL Server with offset: OFFSET ? ROWS FETCH NEXT ? ROWS ONLY (replaces TOP N)
+	 */
+	public String provideLimit(int limit, int offset, List<Object> args, List<Integer> argTypes) {
+		if (limit > -1 && "Microsoft SQL Server".equals(commonDatabaseName) && offset > 0) {
+			args.add(offset);
+			argTypes.add(Types.INTEGER);
+			args.add(limit);
+			argTypes.add(Types.INTEGER);
+			return " offset ? rows fetch next ? rows only";
+		}
+		if (limit > -1 && !"Oracle".equals(commonDatabaseName)
+				&& !"Microsoft SQL Server".equals(commonDatabaseName)) {
+			args.add(limit);
+			argTypes.add(Types.INTEGER);
+			return " limit ?";
+		}
+		return "";
+	}
+
+	/**
+	 * PostgreSQL / MySQL / H2: OFFSET N (appended after LIMIT).
+	 * Oracle and SQL Server handle offset inside their own limit clauses.
+	 */
+	public String provideOffset(int offset, List<Object> args, List<Integer> argTypes) {
+		if (offset > 0 && !"Oracle".equals(commonDatabaseName)
+				&& !"Microsoft SQL Server".equals(commonDatabaseName)) {
+			args.add(offset);
+			argTypes.add(Types.INTEGER);
+			return " offset ?";
+		}
+		return "";
+	}
+
+	// ── unchanged methods ────────────────────────────────────────────────────────
 
 	public String provideOrderWithRowNumber(int limit, String orderByColumn, SortOrder sortOrder) {
 		if (limit > -1 && "Oracle".equals(commonDatabaseName)) {
@@ -88,28 +174,9 @@ public class DbmsSupport {
 		return "";
 	}
 
-	public String provideLimitWithRowNumber(int limit, List<Object> args, List<Integer> argTypes) {
-		if (limit > -1 && "Oracle".equals(commonDatabaseName)) {
-			args.add(limit);
-			argTypes.add(Types.INTEGER);
-			return ") where rn <= ?";
-		}
-		return "";
-	}
-
 	public String provideOrder(int limit, String orderByColumn, SortOrder sortOrder) {
 		if (!"Oracle".equals(commonDatabaseName) || limit < 0) {
 			return " order by " + orderByColumn + " " + sortOrder;
-		}
-		return "";
-	}
-
-	public String provideLimit(int limit, List<Object> args, List<Integer> argTypes) {
-		if (limit > -1 && !"Oracle".equals(commonDatabaseName)
-				&& !"Microsoft SQL Server".equals(commonDatabaseName)) {
-			args.add(limit);
-			argTypes.add(Types.INTEGER);
-			return " limit ?";
 		}
 		return "";
 	}

@@ -1,5 +1,5 @@
 /*
-   Copyright 2022-2025 WeAreFrank!
+   Copyright 2022-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -351,6 +351,12 @@ public class DatabaseStorage implements Storage {
 	@Override
 	public List<List<Object>> getMetadata(int maxNumberOfRecords, List<String> metadataNames, List<String> searchValues,
 			int metadataValueType) throws StorageException {
+		return getMetadata(maxNumberOfRecords, 0, metadataNames, searchValues, metadataValueType);
+	}
+
+	@Override
+	public List<List<Object>> getMetadata(int maxNumberOfRecords, int offset, List<String> metadataNames,
+			List<String> searchValues, int metadataValueType) throws StorageException {
 		// Prevent SQL injection (searchValues are passed as parameters to the SQL statement)
 		for (String metadataName : metadataNames) {
 			if (!getMetadataNames().contains(metadataName)) {
@@ -385,7 +391,7 @@ public class DatabaseStorage implements Storage {
 		StringBuilder query = new StringBuilder();
 		List<Object> args = new ArrayList<Object>();
 		List<Integer> argTypes = new ArrayList<Integer>();
-		buildMetadataQuery(maxNumberOfRecords, metadataNames, searchValues, rangeSearchValues, query, args, argTypes);
+		buildMetadataQuery(maxNumberOfRecords, offset, metadataNames, searchValues, rangeSearchValues, query, args, argTypes);
 		if (log.isDebugEnabled()) {
 			log.debug("Get metadata query (with arguments: " + args + "): " + query.toString());
 		}
@@ -431,10 +437,16 @@ public class DatabaseStorage implements Storage {
 	protected void buildMetadataQuery(int maxNumberOfRecords, List<String> metadataNames, List<String> searchValues,
 			List<String> rangeSearchValues, StringBuilder query, List<Object> args, List<Integer> argTypes)
 			throws StorageException {
+		buildMetadataQuery(maxNumberOfRecords, 0, metadataNames, searchValues, rangeSearchValues, query, args, argTypes);
+	}
+
+	protected void buildMetadataQuery(int maxNumberOfRecords, int offset, List<String> metadataNames,
+			List<String> searchValues, List<String> rangeSearchValues, StringBuilder query,
+			List<Object> args, List<Integer> argTypes) throws StorageException {
 		SortOrder sortOrder = SortOrder.DESC;
 		query.append("select");
-		query.append(dbmsSupport.provideLimitAfterFirstKeyword(maxNumberOfRecords, args, argTypes));
-		query.append(dbmsSupport.provideFirstRowsHintAfterFirstKeyword(maxNumberOfRecords));
+		query.append(dbmsSupport.provideLimitAfterFirstKeyword(maxNumberOfRecords, offset, args, argTypes));
+		query.append(dbmsSupport.provideFirstRowsHintAfterFirstKeyword(maxNumberOfRecords, offset));
 		boolean addComma = false;
 		for (String metadataName : metadataNames) {
 			if (addComma) {
@@ -508,9 +520,10 @@ public class DatabaseStorage implements Storage {
 			// Clean up trailing space used by addExpression() to determine to add "where" or "and"
 			query.deleteCharAt(query.length() - 1);
 		}
-		query.append(dbmsSupport.provideLimitWithRowNumber(maxNumberOfRecords, args, argTypes));
+		query.append(dbmsSupport.provideLimitWithRowNumber(maxNumberOfRecords, offset, args, argTypes));
 		query.append(dbmsSupport.provideOrder(maxNumberOfRecords, metadataNames.get(0), sortOrder));
-		query.append(dbmsSupport.provideLimit(maxNumberOfRecords, args, argTypes));
+		query.append(dbmsSupport.provideLimit(maxNumberOfRecords, offset, args, argTypes));
+		query.append(dbmsSupport.provideOffset(offset, args, argTypes));
 	}
 
 	/*
