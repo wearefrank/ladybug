@@ -22,7 +22,6 @@ export interface Report extends BaseReport {
   stubStrategy: string | null;
   transformation: string;
   variables: string;
-  rerunnable: boolean;
   storageName: string;
   xml: string; // Custom for the xml representation of the report
   id: string; // Custom
