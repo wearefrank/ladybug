@@ -24,5 +24,4 @@
 			<column name="VARIABLES" type="CLOB"/>
 		</addColumn>
 	</changeSet>
-
 </databaseChangeLog>

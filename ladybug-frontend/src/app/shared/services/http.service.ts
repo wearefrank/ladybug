@@ -12,10 +12,16 @@ import { UpdatePathSettings } from '../interfaces/update-path-settings';
 import { TestResult } from '../interfaces/test-result';
 import { UpdateReport } from '../interfaces/update-report';
 import { UpdateReportResponse } from '../interfaces/update-report-response';
-import { TableSettings } from '../interfaces/table-settings';
 import { ClientSettingsService } from './client.settings.service';
 import { HierarchicalCheckpoint, HierarchicalReport } from '../interfaces/hierarchical-report';
 import { isNumber } from '../util/util';
+
+export interface MetadataParameters {
+  limit: number;
+  filterHeader: string[];
+  filter: string[];
+  metadataNames: string[];
+}
 
 @Injectable({
   providedIn: 'root',
@@ -29,19 +35,19 @@ export class HttpService {
     return this.http.get<Record<string, View>>('api/testtool/views').pipe(map((response) => Object.values(response)));
   }
 
-  getMetadataReports(settings: TableSettings, view: View): Observable<Report[]> {
-    return this.http.get<Report[]>(`api/metadata/${view.storageName}`, {
+  getMetadata(view: View, params: MetadataParameters): Observable<Record<string, string>[]> {
+    return this.http.get<Record<string, string>[]>(`api/metadata/${view.storageName}`, {
       params: {
-        limit: settings.displayAmount,
-        filterHeader: [...settings.currentFilters.keys()],
-        filter: [...settings.currentFilters.values()],
-        metadataNames: view.metadataNames,
+        limit: params.limit,
+        filterHeader: params.filterHeader,
+        filter: params.filter,
+        metadataNames: params.metadataNames,
       },
     });
   }
 
-  getUserHelp(storage: string, metadataNames: string[]): Observable<Report> {
-    return this.http.get<Report>(`api/metadata/${storage}/userHelp`, {
+  getUserHelp(storage: string, metadataNames: string[]): Observable<Record<string, string>> {
+    return this.http.get<Record<string, string>>(`api/metadata/${storage}/userHelp`, {
       params: {
         metadataNames: metadataNames,
       },
@@ -59,7 +65,16 @@ export class HttpService {
   }
 
   getReportInProgress(index: number): Observable<HierarchicalReport> {
-    return this.http.get<HierarchicalReport>(`api/testtool/in-progress/${index}`);
+    return this.http.get<HierarchicalReport>(`api/testtool/in-progress/${index}`).pipe(
+      map((report) => {
+        if (report.children !== null) {
+          for (const child of report.children) {
+            this.forChildSetReport(child, report);
+          }
+        }
+        return report;
+      }),
+    );
   }
 
   deleteReportInProgress(index: number): Observable<Report> {

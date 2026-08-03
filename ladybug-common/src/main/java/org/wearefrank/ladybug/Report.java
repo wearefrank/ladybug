@@ -83,7 +83,10 @@ public class Report implements Serializable {
 	private List<Checkpoint> checkpoints = new ArrayList<Checkpoint>();
 	private @Setter @Getter String transformation;
 	private Map<String, String> variables;
-	private @Setter @Getter boolean rerunnable = true;
+
+	private @Getter @Setter String host;
+	private @Getter @Setter String application;
+
 	// Please note that the get and set methods need @Transient annotation for XmlEncoder to not store the property.
 	// This is in contrast to serialization / ObjectOutputStream that is using variables (and doesn't look at get and
 	// set methods) and needs a variable to be declared transient to not store the field.
@@ -903,6 +906,8 @@ public class Report implements Serializable {
 			variables.putAll(getVariables());
 			report.setVariables(variables);
 		}
+		report.setHost(host);
+		report.setApplication(application);
 		List<Checkpoint> checkpoints = new ArrayList<Checkpoint>();
 		for (Checkpoint checkpoint : this.checkpoints) {
 			checkpoint = checkpoint.clone();
@@ -936,6 +941,12 @@ public class Report implements Serializable {
 			builder.append(" EndTime=\"" + endTime + "\"");
 			builder.append(" NumberOfCheckpoints=\"" + getNumberOfCheckpoints() + "\"");
 			builder.append(" EstimatedMemoryUsage=\"" + getEstimatedMemoryUsage() + "\"");
+			if (getHost() != null) {
+				builder.append(" Host=\"" + getHost() + "\"");
+			}
+			if (getApplication() != null) {
+				builder.append(" Application=\"" + getApplication() + "\"");
+			}
 			builder.append(">");
 			for (Checkpoint checkpoint : checkpoints) {
 				String message;

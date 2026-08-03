@@ -39,6 +39,7 @@ describe('About deleting reports', () => {
   });
 
   it ('Should not open the delete modal when there are no reports', () => {
+    cy.assertDebugTableLength(2);
     cy.get('[data-cy-debug="deleteAll"]').click();
     cy.get('[data-cy-delete-modal="confirm"]').should('exist').click();
     cy.get('[data-cy-debug="deleteAll"]').click();

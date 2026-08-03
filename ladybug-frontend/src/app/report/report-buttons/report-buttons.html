@@ -32,7 +32,7 @@
             <input data-cy-open-messagecontext-table id="messagecontext" type="checkbox" [value]="messageContextTableVisible" (click)="toggleMessageContextTable()"/>
             <label for="messagecontext">messagecontext</label>
           </div>
-          <select data-cy-checkpoint-stub-strategy #checkpointStubStrategy id="checkpointStubStrategy" class="form-control" [(ngModel)]="currentCheckpointStubStrategyStr"
+          <select data-cy-checkpoint-stub-strategy #checkpointStubStrategy id="checkpointStubStrategy" class="form-select" [(ngModel)]="currentCheckpointStubStrategyStr"
                   (ngModelChange)="onCheckpointStubStrategyChange($event)">
             @for (stubOptionStr of StubStrategy.checkpoints; track stubOptionStr) {
               <option [ngValue]="stubOptionStr" [selected]="currentCheckpointStubStrategyStr === stubOptionStr">{{ stubOptionStr }}</option>
@@ -91,7 +91,7 @@
       </button>
       }
       <div>
-        <select data-cy-report-stub-strategy #reportStubStrategy class="form-control"
+        <select data-cy-report-stub-strategy #reportStubStrategy class="form-select"
           [(ngModel)]="currentReportStubStrategy"
           (ngModelChange)="onReportStubStrategyChange($event)">
           @for (strategy of StubStrategy.report; track strategy) {

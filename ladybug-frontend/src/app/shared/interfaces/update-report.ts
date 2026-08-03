@@ -10,6 +10,6 @@ export interface UpdateReport {
   description?: string | null;
   transformation?: string | null;
   variables?: Record<string, string>;
-  stubStrategy?: string;
+  stubStrategy?: string | null;
   checkpoints?: UpdateCheckpoint[];
 }

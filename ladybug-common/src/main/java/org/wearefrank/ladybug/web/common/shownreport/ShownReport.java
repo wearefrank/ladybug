@@ -39,13 +39,14 @@ public class ShownReport extends TreeNode implements Serializable {
 	private @Setter @Getter Map<String, String> variables;
 	private @Setter @Getter boolean rerunnable;
 	private @Setter @Getter long startTime;
+	private @Setter @Getter String host;
+	private @Setter @Getter String application;
 
 	public void validate() {
 		checkNotNull(getName(), "name");
-		checkNotNull(stubStrategy, "stubStrategy");
-		checkNotNull(linkMethod, "linkMethod");
 		checkNotNull(storageName, "storageName");
-		checkNotNull(correlationId, "correlationId");
+		// The Frank!Framework makes reports with correlationId = null, for example
+		// when you run an SQL query in the Frank!Console.
 		if (getChildren() != null) {
 			getChildren().forEach(ShownCheckpoint::validate);
 		}

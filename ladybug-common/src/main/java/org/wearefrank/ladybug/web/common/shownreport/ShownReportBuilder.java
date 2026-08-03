@@ -190,6 +190,8 @@ public class ShownReportBuilder {
 		dest.setCrudStorage(source.isCrudStorage());
 		dest.setEstimatedMemoryUsage(source.getEstimatedMemoryUsage());
 		dest.setCorrelationId(source.getCorrelationId());
+		dest.setHost(source.getHost());
+		dest.setApplication(source.getApplication());
 		if (source.getVariables() != null) {
 			Map<String, String> destVariables = new HashMap<>();
 			for (String key: source.getVariables().keySet()) {

@@ -104,33 +104,17 @@ public class ShownReportBuilderTest extends ReportRelatedTestCase {
 	}
 
 	@Test
-	public void whenReportLinkMethodIsNullThenConversionToShownReportFails() {
+	public void whenCheckpointNameIsNullThenConversionToShownReportFails() {
 		boolean caught = false;
 		try {
 			Report report = getReportThatShouldByTransformable();
-			report.setLinkMethod(null);
+			report.getCheckpoints().get(0).setName(null);
 			instance.transform(report, testView);
 		} catch(IllegalArgumentException e) {
 			System.out.println(e);
 			caught = true;
 			// From ShownReport.
-			Assert.assertTrue(e.getMessage().contains("linkMethod"));
-		}
-		Assert.assertTrue(caught);
-	}
-
-	@Test
-	public void whenCheckpointThreadNameIsNullThenConversionToShownReportFails() {
-		boolean caught = false;
-		try {
-			Report report = getReportThatShouldByTransformable();
-			report.getCheckpoints().get(0).setThreadName(null);
-			instance.transform(report, testView);
-		} catch(IllegalArgumentException e) {
-			System.out.println(e);
-			caught = true;
-			// From ShownReport.
-			Assert.assertTrue(e.getMessage().contains("threadName"));
+			Assert.assertTrue(e.getMessage().contains("ShownCheckpoint.name"));
 		}
 		Assert.assertTrue(caught);
 	}

@@ -20,6 +20,8 @@ const TESTER_PWD = 'IbisTester';
 
 const TREE_ITEM_SELECTED_CLASS = 'sft-item-selected';
 
+const APPLICATION_COLUMN = 10;
+
 type TabType = 'debug' | 'test';
 
 declare global {
@@ -70,6 +72,8 @@ declare global {
       createReportOnlyCR(): Chainable;
 
       createReportWithStatusError(): Chainable;
+
+      createReportWithStubStrategyNull(): Chainable;
 
       clearDebugStore(): Chainable;
 
@@ -132,6 +136,26 @@ declare global {
       windowSendPostReportEvent(storageName: string, storageId: number): Chainable;
 
       uploadTwoReportsAndCheckTabs(): Chainable;
+
+      setHostA(): Chainable;
+
+      setHostB(): Chainable;
+
+      setHost(host: string): Chainable;
+
+      setApplicationX(): Chainable;
+
+      setApplicationY(): Chainable;
+
+      setApplication(application: string): Chainable;
+
+      clearHostAndApplication(): Chainable;
+
+      checkApplicationOfDebugTableRow(index: number, expected: string): Chainable;
+
+      checkNoApplication(rowIndex: number): Chainable;
+
+      openReportByClickInDebugTable(reportIndex: number): Chainable;
     }
   }
 }
@@ -339,6 +363,14 @@ Cypress.Commands.add('createReportWithStatusError' as keyof Chainable, (): void 
     expect(resp.status).equal(200);
   });
 })
+
+Cypress.Commands.add('createReportWithStubStrategyNull' as keyof Chainable, (): void => {
+  cy.request(
+    `${Cypress.env('backendServer')}/index.jsp?createReport=Add%20report%20without%20stub%20strategy%20and%20without%20link%20method`,
+  ).then((resp: Cypress.Response<ApiResponse>) => {
+    expect(resp.status).equal(200);
+  });
+});
 
 Cypress.Commands.add('clearDebugStore' as keyof Chainable, (): void => {
   cy.request(
@@ -577,7 +609,7 @@ Cypress.Commands.add('windowSendPostReportEvent' as keyof Chainable, (storageNam
   });
 })
 
-Cypress.Commands.add('uploadTwoReportsAndCheckTabs', () => {
+Cypress.Commands.add('uploadTwoReportsAndCheckTabs' as keyof Chainable, () => {
   cy.fixture('twoReports.zip', 'binary')
     .then(Cypress.Blob.binaryStringToBlob)
     .then((fileContent) => {
@@ -591,6 +623,66 @@ Cypress.Commands.add('uploadTwoReportsAndCheckTabs', () => {
   cy.checkNavTab(1, 'Test', false);
   cy.checkNavTab(2, 'Adapter1a', false);
   cy.checkNavTab(3, 'Adapter1b', true);
+})
+
+Cypress.Commands.add('setHostA' as keyof Chainable, () => {
+  cy.setHost('Host%20A');
+})
+
+Cypress.Commands.add('setHostB' as keyof Chainable, () => {
+  cy.setHost('Host%20B');
+})
+
+Cypress.Commands.add('setHost' as keyof Chainable, (host: string): void => {
+  cy.request(
+    `${Cypress.env('backendServer')}/index.jsp?setHost=${host}`,
+  ).then((resp: Cypress.Response<ApiResponse>) => {
+    expect(resp.status).equal(200);
+  });
+})
+
+Cypress.Commands.add('setApplicationX' as keyof Chainable, () => {
+  cy.setApplication('Application%20X');
+})
+
+Cypress.Commands.add('setApplicationY' as keyof Chainable, () => {
+  cy.setApplication('Application%20Y');
+})
+
+Cypress.Commands.add('setApplication' as keyof Chainable, (application: string): void => {
+  cy.request(
+    `${Cypress.env('backendServer')}/index.jsp?setApplication=${application}`,
+  ).then((resp: Cypress.Response<ApiResponse>) => {
+    expect(resp.status).equal(200);
+  });
+})
+
+Cypress.Commands.add('clearHostAndApplication' as keyof Chainable, () => {
+  cy.request(
+    `${Cypress.env('backendServer')}/index.jsp?clearHost`,
+  ).then((resp: Cypress.Response<ApiResponse>) => {
+    expect(resp.status).equal(200);
+  });
+  cy.request(
+    `${Cypress.env('backendServer')}/index.jsp?clearApplication`,
+  ).then((resp: Cypress.Response<ApiResponse>) => {
+    expect(resp.status).equal(200);
+  });
+})
+
+Cypress.Commands.add('checkApplicationOfDebugTableRow' as keyof Chainable, (index: number, expected: string): void => {
+  cy.getDebugTableRows().eq(index).find('td').eq(APPLICATION_COLUMN).should('contain.text', expected);
+})
+
+Cypress.Commands.add('checkNoApplication' as keyof Chainable, (rowIndex: number) => {
+  cy.getDebugTableRows().eq(rowIndex).find('td').eq(APPLICATION_COLUMN).should('not.exist');
+})
+
+Cypress.Commands.add('openReportByClickInDebugTable', (reportIndex: number) => {
+  // Do not click the <tr> element directly. That hits the center of the table row.
+  // Some day that might no longer be covered by a table cell. We also avoid
+  // hitting the checkbox by taking <td> index 1 instead of 0.
+  cy.getDebugTableRows().eq(reportIndex).find('td').eq(1).click();
 })
 
 function awaitLoadingSpinner(): void {

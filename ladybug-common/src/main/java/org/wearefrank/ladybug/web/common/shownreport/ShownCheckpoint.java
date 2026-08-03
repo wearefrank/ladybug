@@ -44,7 +44,6 @@ public class ShownCheckpoint extends TreeNode implements Serializable {
 	public void validate() {
 		checkNotNull(getName(), "name");
 		checkNotNull(typeAsString, "typeAsString");
-		checkNotNull(threadName, "threadName");
 		checkNotNull(uid, "uid");
 	}
 

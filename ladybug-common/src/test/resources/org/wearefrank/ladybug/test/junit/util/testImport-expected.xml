@@ -5,7 +5,9 @@
         StartTime="Original length: 1"
         EndTime="Original length: 20"
         NumberOfCheckpoints="1"
-        EstimatedMemoryUsage="14">
+        EstimatedMemoryUsage="14"
+        Host="host"
+        Application="application">
    <Checkpoint Name="name"
                Type="Inputpoint"
                Level="5"
