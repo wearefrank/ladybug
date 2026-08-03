@@ -363,7 +363,7 @@ public class TestTool {
 			Set<String> matchingStubStrategies, int checkpointType, int levelChangeNextCheckpoint) {
 		return checkpoint(correlationId, childThreadId, sourceClassName, name,
 				message, null, stubableCode, stubableCodeThrowsException,
-				matchingStubStrategies, checkpointType, levelChangeNextCheckpoint, true);
+				matchingStubStrategies, checkpointType, levelChangeNextCheckpoint);
 	}
 
 	private <T> T checkpoint(String correlationId, String childThreadId, String sourceClassName, String name,
