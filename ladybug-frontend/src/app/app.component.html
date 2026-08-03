@@ -2,7 +2,7 @@
   <ul class="nav nav-tabs">
     @for (tab of tabs; track tab.key) {
       @let nav = tabService.keyToNavigation(tab.key);
-      <li class="nav-item" [attr.data-cy-nav-tab]="tab.key">
+      <li class="nav-item" [attr.data-cy-nav-tab]="tab.kind">
         <a class="nav-link" routerLinkActive="active"
             [routerLink]="nav.path"
             [queryParams]="nav.queryParameters">
