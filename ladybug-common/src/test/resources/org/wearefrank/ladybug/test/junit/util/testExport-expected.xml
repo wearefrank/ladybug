@@ -88,9 +88,6 @@
   <void property="path">
    <string>path</string>
   </void>
-  <void property="rerunnable">
-   <boolean>false</boolean>
-  </void>
   <void property="startTime">
    <long>9</long>
   </void>
