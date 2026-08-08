@@ -125,7 +125,7 @@ public class ApiAuthorizationFilter implements ContainerRequestFilter {
 
 	public void setWebServiceRoles(List<String> webServiceRoles) {
 		if (constructorDone) log.info("Set web service roles");
-		addConfigurationPart("POST/" + Constants.LADYBUG_API_PATH + "/collector/.*$", webServiceRoles);
+		addConfigurationPart("POST/" + Constants.LADYBUG_API_PATH + "/traces/.*$", webServiceRoles);
 	}
 
 	public void setLadybugApiRoles(Map<String, List<String>> ladybugApiRoles) {
