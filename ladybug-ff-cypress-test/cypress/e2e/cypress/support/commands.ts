@@ -55,6 +55,7 @@ declare namespace Cypress {
     visitAsTester(): void
     visitAs(username: string, password: string): void
     enableReportGenerator(): void
+    executeJdbcQuery(): void
   }
 }
 
@@ -406,4 +407,17 @@ Cypress.Commands.add('enableReportGenerator', { prevSubject: false }, () => {
   cy.inIframeBody('[data-cy-settings="generatorEnabled"]').select('Enabled');
   cy.inIframeBody('[data-cy-settings="generatorEnabled"]').find(':selected').invoke('text').should('equal', 'Enabled');
   cy.inIframeBody('[data-cy-settings="saveChanges"]').click()
+})
+
+Cypress.Commands.add('executeJdbcQuery', { prevSubject: false }, () => {
+  cy.request({
+    method: 'POST',
+    url: `${Cypress.config('baseUrl')}/iaf/api/jdbc/query}`,
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: '{"query":"SELECT * FROM LADYBUG","queryType":"AUTO","datasource":"jdbc/webapp","resultType":"csv","avoidLocking":false,"trimSpaces":false}',
+  }).then((resp) => {
+    expect(resp.status).to.equal(200);
+  });
 })
