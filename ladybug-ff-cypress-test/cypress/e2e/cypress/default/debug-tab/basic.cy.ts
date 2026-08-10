@@ -7,19 +7,15 @@ describe('Basic tests', () => {
     })
   })
 
-  it('When a JDBC query is done in the console then a Ladybug report is created', () => {
-    cy.env(['storage']).then(({storage}) => {
-      if (storage === 'database') {
-        cy.visit('')
-        cy.getNumLadybugReports().then(numReports => {
-          cy.executeJdbcQuery();
-          cy.getNumLadybugReports().should('equal', numReports + 1)
-        })
-      } else {
-        cy.log('Test not applicable if storage !== database');
-      }
+  if (Cypress.env('storage') === 'database') {
+    it('When a JDBC query is done in the console then a Ladybug report is created', () => {
+      cy.visit('')
+      cy.getNumLadybugReports().then(numReports => {
+        cy.executeJdbcQuery();
+        cy.getNumLadybugReports().should('equal', numReports + 1)
+      })
     })
-  })
+  }
 
   it('Filter no regex', () => {
     cy.visit('')
