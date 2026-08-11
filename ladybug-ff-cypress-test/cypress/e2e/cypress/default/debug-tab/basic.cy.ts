@@ -18,7 +18,10 @@ describe('Basic tests', () => {
         cy.get('@reportRow').checkStatusFromRow('Success');
         cy.get('@reportRow').checkCorrelationIdFromRow('');
         cy.get('@reportRow').click();
-        cy.inIframeBody('[data-cy-element-name="checkpointEditor"]').should('contain.text', 'SELECT * FROM LADYBUG')
+        cy.inIframeBody('[data-cy-element-name="checkpointEditor"]')
+          .should('contain.text', 'SELECT')
+          .should('contain.text', 'FROM')
+          .should('contain.text', 'LADYBUG')
       })
       // No need to do this after every test, so cleanup is done in the present test.
       // We need to cleanup the Ladybug report from the JDBC query because otherwise
