@@ -14,6 +14,10 @@ describe('Basic tests', () => {
         cy.executeJdbcQuery();
         cy.getNumLadybugReports().should('equal', numReports + 1)
       })
+      // No need to do this after every test, so cleanup is done in the present test.
+      // We need to cleanup the Ladybug report from the JDBC query because otherwise
+      // next tests in this suite will fail.
+      cy.apiDeleteAll(Cypress.env('debugStorageName') as string)
     })
   }
 
