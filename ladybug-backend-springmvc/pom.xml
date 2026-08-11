@@ -57,6 +57,15 @@
     <dependency>
       <groupId>com.google.protobuf</groupId>
       <artifactId>protobuf-java-util</artifactId>
+      <exclusions>
+        <!-- This dependency is excluded because it is not allowed in the Frank!Framework.
+             We accept that excluding this may break OpenTelemetry support.
+             We test OpenTelemetry to some extent with ladybug-backend-jaxrs. -->
+        <exclusion>
+          <groupId>com.google.code.findbugs</groupId>
+          <artifactId>jsr305</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>io.opentelemetry.proto</groupId>
