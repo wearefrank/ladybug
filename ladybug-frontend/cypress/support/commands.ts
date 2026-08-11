@@ -75,6 +75,8 @@ declare global {
 
       createReportWithStubStrategyNull(): Chainable;
 
+      createOpenTelemetryReport(): Chainable;
+
       clearDebugStore(): Chainable;
 
       clearReportsInProgress(): Chainable;
@@ -371,6 +373,14 @@ Cypress.Commands.add('createReportWithStubStrategyNull' as keyof Chainable, (): 
     expect(resp.status).equal(200);
   });
 });
+
+Cypress.Commands.add('createOpenTelemetryReport' as keyof Chainable, (): void => {
+  cy.request(
+    `${Cypress.env('backendServer')}/index.jsp?createReport=OpenTelemetry%20report`,
+  ).then((resp: Cypress.Response<ApiResponse>) => {
+    expect(resp.status).equal(200);
+  });
+})
 
 Cypress.Commands.add('clearDebugStore' as keyof Chainable, (): void => {
   cy.request(
