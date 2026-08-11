@@ -256,6 +256,14 @@ To work with Jaeger, you can run the following command:
 
 `docker run --rm -e COLLECTOR_ZIPKIN_HOST_PORT=:9411 -p 16686:16686 -p 4317:4317 -p 4318:4318 -p 9411:9411 jaegertracing/all-in-one:latest`
 
+You'll need to uncomment or add:
+
+```
+<property name="openTelemetryEndpoint" ref="openTelemetryEndpoint"/>
+```
+
+In the testTool bean.
+
 To choose between one of the collectors in the Ladybug application, there is a bean available to make your choice. You have to add the following and change the string value of this bean to the collector you want to use. For Zipkin, enter the endpoint in the string value. For Jaeger (which doesn't use a endpoint), you can just enter "jaeger":
 ```
 <bean name="openTelemetryEndpoint" class="java.lang.String">
@@ -271,7 +279,7 @@ In Ladybug, there is also an API available to gather telemetry data from OpenTel
 
 ```
 SdkTracerProvider sdkTracerProvider = SdkTracerProvider.builder()
-.addSpanProcessor(BatchSpanProcessor.builder(ZipkinSpanExporter.builder().setEndpoint("http://localhost/ladybug/api/collector/").build()).build())
+.addSpanProcessor(BatchSpanProcessor.builder(ZipkinSpanExporter.builder().setEndpoint("http://localhost/ladybug/api/v1/traces/").build()).build())
 .setResource(resource)
 .build();
 ```
