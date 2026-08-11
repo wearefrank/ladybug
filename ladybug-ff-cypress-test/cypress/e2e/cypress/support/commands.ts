@@ -424,7 +424,7 @@ Cypress.Commands.add('executeJdbcQuery', { prevSubject: false }, () => {
   });
 })
 
-Cypress.Commands.add('checkCorrelationIdFromRow' { prevSubject: true }, (row, expectedCorrelationId) => {
+Cypress.Commands.add('checkCorrelationIdFromRow', { prevSubject: true }, (row, expectedCorrelationId) => {
   cy.wrap(row).find('td:eq(5)').trimmedText().should('equal', expectedCorrelationId)
 })
 
