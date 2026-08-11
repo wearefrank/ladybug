@@ -55,6 +55,9 @@ declare namespace Cypress {
     visitAsTester(): void
     visitAs(username: string, password: string): void
     enableReportGenerator(): void
+    executeJdbcQuery(): void
+    checkCorrelationIdFromRow(row: unknown, expectedCorrelationId: string): void
+    checkStatusFromRow(row: unknown, expectedStatus: string): void
   }
 }
 
@@ -406,4 +409,25 @@ Cypress.Commands.add('enableReportGenerator', { prevSubject: false }, () => {
   cy.inIframeBody('[data-cy-settings="generatorEnabled"]').select('Enabled');
   cy.inIframeBody('[data-cy-settings="generatorEnabled"]').find(':selected').invoke('text').should('equal', 'Enabled');
   cy.inIframeBody('[data-cy-settings="saveChanges"]').click()
+})
+
+Cypress.Commands.add('executeJdbcQuery', { prevSubject: false }, () => {
+  cy.request({
+    method: 'POST',
+    url: `${Cypress.config('baseUrl')}/iaf/api/jdbc/query`,
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: '{"query":"SELECT * FROM LADYBUG","queryType":"AUTO","datasource":"jdbc/webapp","resultType":"csv","avoidLocking":false,"trimSpaces":false}',
+  }).then((resp) => {
+    expect(resp.status).to.equal(200);
+  });
+})
+
+Cypress.Commands.add('checkCorrelationIdFromRow', { prevSubject: true }, (row, expectedCorrelationId) => {
+  cy.wrap(row).find('td:eq(5)').trimmedText().should('equal', expectedCorrelationId)
+})
+
+Cypress.Commands.add('checkStatusFromRow', { prevSubject: true }, (row, expectedStatus) => {
+  cy.wrap(row).find('td:eq(6)').trimmedText().should('equal', expectedStatus)
 })
