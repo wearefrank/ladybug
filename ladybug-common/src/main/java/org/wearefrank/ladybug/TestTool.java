@@ -105,7 +105,7 @@ public class TestTool {
 	private @Setter @Getter @Inject @Autowired Views views;
 	private @Setter @Getter int reportsInProgressThreshold = 300000;
 	boolean devMode = false; // See testConcurrentLastEndpointAndFirstStartpointForSameCorrelationId()
-	private @Setter String openTelemetryEndpoint;
+	private @Qualifier("openTelemetryEndpoint") String openTelemetryEndpoint;
 	private Tracer tracer;
 
 	private @Getter @Setter String host = null;
