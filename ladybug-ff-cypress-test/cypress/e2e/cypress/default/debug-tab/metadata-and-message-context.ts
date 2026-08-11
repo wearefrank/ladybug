@@ -18,12 +18,7 @@ describe('Metadata and message context', () => {
     cy.getNumLadybugReports()
     cy.inIframeBody('[data-cy-debug="tableRow"]').should('have.length', 1).as('reportRow')
     cy.get('@reportRow').contains('Conclusion').click()
-    // Status column.
-    // TODO: Test exact value of status column if possible.
-
-    // TODO: Re-enable this line
-    //cy.get('@reportRow').find('td:eq(6)').trimmedText().should('equal', 'Success')
-
+    cy.get('@reportRow').checkStatusFromRow('Success');
     cy.selectTreeNode([
       'Pipeline Conclusion/IngestDocument',
       'Pipeline Conclusion/IngestDocument',
