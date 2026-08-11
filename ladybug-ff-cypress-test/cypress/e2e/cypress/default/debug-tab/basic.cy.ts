@@ -13,9 +13,10 @@ describe('Basic tests', () => {
       cy.getNumLadybugReports().then(numReports => {
         cy.executeJdbcQuery();
         cy.getNumLadybugReports().should('equal', numReports + 1)
-        cy.inIframeBody(`[data-cy-debug="tableRow"]:eq(${numReports})`).should('have.length', 1).as('reportRow')
+        // Newest report is on top
+        cy.inIframeBody(`[data-cy-debug="tableRow"]:eq(0)`).should('have.length', 1).as('reportRow')
         cy.get('@reportRow').checkStatusFromRow('Success');
-        cy.get('@reportRow').checkCorrelationIdFromRow('null');
+        cy.get('@reportRow').checkCorrelationIdFromRow('');
         cy.get('@reportRow').click();
         // See the report from the video - will update this PR to test the open report
         cy.wait(1000);
