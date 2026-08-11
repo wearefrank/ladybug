@@ -28,7 +28,7 @@ import org.springframework.web.bind.annotation.*;
 import org.wearefrank.ladybug.web.common.TracingApiImpl;
 
 @RestController
-@RequestMapping("/traces")
+@RequestMapping("/v1/traces")
 @RolesAllowed("IbisWebService")
 public class TracingApi {
 	@Autowired
