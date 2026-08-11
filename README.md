@@ -248,6 +248,8 @@ You can also test your frontend code as Maven artifact before merging your code 
 OpenTelemetry
 =============
 
+WARNING: OpenTelemetry is still onder development. We test it to some extent combined with ladybug-backend-jaxrs, the Ladybug version that handles authorization with JAX-RS. For ladybug-backend-springmvc we have excluded a transitive dependency because it is not allowed in the Frank!Framework. We do not know yet whether that exclusion breaks OpenTelemetry support.
+
 Ladybug is able to create telemetry data from Ladybug reports and send it to a telemetry-collector. A telemetry-collector provides an overview based on time that helps to detect latency problems. There are two collectors available to send the data to: Zipkin and Jaeger. To use Zipkin, you can run the following command: 
 
 `docker run --rm -d -p 9411:9411 --name zipkin openzipkin/zipkin`
