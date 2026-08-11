@@ -279,7 +279,7 @@ In Ladybug, there is also an API available to gather telemetry data from OpenTel
 
 ```
 SdkTracerProvider sdkTracerProvider = SdkTracerProvider.builder()
-.addSpanProcessor(BatchSpanProcessor.builder(ZipkinSpanExporter.builder().setEndpoint("http://localhost/ladybug/api/collector/").build()).build())
+.addSpanProcessor(BatchSpanProcessor.builder(ZipkinSpanExporter.builder().setEndpoint("http://localhost/ladybug/api/traces/").build()).build())
 .setResource(resource)
 .build();
 ```
