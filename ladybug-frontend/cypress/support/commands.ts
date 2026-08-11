@@ -582,15 +582,19 @@ Cypress.Commands.add('copyReportsToTestTab' as keyof Chainable, (names: string[]
 })
 
 Cypress.Commands.add('editCheckpointValue' as keyof Chainable, (value: string): Chainable => {
-  // Some slack, give app time to recognize item as type-able.
-  cy.wait(500);
-  cy.window().then(win => {
-    const editor = win.monaco.editor.getEditors()[0];
-    editor.executeEdits('', [{
-      range: editor.getModel().getFullModelRange(),
-      text: value
-    }]);
-  });
+  // Monaco is loaded asynchronously after cy.visit(), so instead of a fixed wait
+  // (which is racy under CI load), retry until an editor instance actually exists.
+  cy.window({ timeout: 10_000 })
+    .should((win: any) => {
+      expect(win.monaco?.editor?.getEditors()?.length).to.be.greaterThan(0);
+    })
+    .then((win: any) => {
+      const editor = win.monaco.editor.getEditors()[0];
+      editor.executeEdits('', [{
+        range: editor.getModel().getFullModelRange(),
+        text: value
+      }]);
+    });
 });
 
 Cypress.Commands.add('enterSettingsDialogAndExpectReportGenerator' as keyof Chainable, (text: string): Chainable => {
