@@ -13,6 +13,12 @@ describe('Basic tests', () => {
       cy.getNumLadybugReports().then(numReports => {
         cy.executeJdbcQuery();
         cy.getNumLadybugReports().should('equal', numReports + 1)
+        cy.inIframeBody(`[data-cy-debug="tableRow"]:eq(${numReports})`).should('have.length', 1).as('reportRow')
+        cy.get('@reportRow').checkStatusFromRow('Success');
+        cy.get('@reportRow').checkCorrelationIdFromRow('null');
+        cy.get('@reportRow').click();
+        // See the report from the video - will update this PR to test the open report
+        cy.wait(1000);
       })
       // No need to do this after every test, so cleanup is done in the present test.
       // We need to cleanup the Ladybug report from the JDBC query because otherwise

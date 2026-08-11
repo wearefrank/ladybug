@@ -56,6 +56,8 @@ declare namespace Cypress {
     visitAs(username: string, password: string): void
     enableReportGenerator(): void
     executeJdbcQuery(): void
+    checkCorrelationIdFromRow(row: unknown, expectedCorrelationId: string): void
+    checkStatusFromRow(row: unknown, expectedStatus: string): void
   }
 }
 
@@ -420,4 +422,12 @@ Cypress.Commands.add('executeJdbcQuery', { prevSubject: false }, () => {
   }).then((resp) => {
     expect(resp.status).to.equal(200);
   });
+})
+
+Cypress.Commands.add('checkCorrelationIdFromRow' { prevSubject: true }, (row, expectedCorrelationId) => {
+  cy.wrap(row).find('td:eq(5)').trimmedText().should('equal', expectedCorrelationId)
+})
+
+Cypress.Commands.add('checkStatusFromRow', { prevSubject: true }, (row, expectedStatus) => {
+  cy.wrap(row).find('td:eq(6)').trimmedText().should('equal', expectedStatus)
 })
