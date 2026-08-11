@@ -412,7 +412,7 @@ Cypress.Commands.add('enableReportGenerator', { prevSubject: false }, () => {
 Cypress.Commands.add('executeJdbcQuery', { prevSubject: false }, () => {
   cy.request({
     method: 'POST',
-    url: `${Cypress.config('baseUrl')}/iaf/api/jdbc/query}`,
+    url: `${Cypress.config('baseUrl')}/iaf/api/jdbc/query`,
     headers: {
       'Content-Type': 'application/json',
     },
