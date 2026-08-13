@@ -8,7 +8,7 @@ import { Clipboard } from '@angular/cdk/clipboard';
   standalone: true,
 })
 export class CopyTooltipDirective {
-  @Input({ required: true, alias: 'appCopyTooltip' }) value!: string | number | undefined;
+  @Input({ required: true, alias: 'appCopyTooltip' }) value!: string | number | null | undefined;
 
   private tooltipInstance = inject(MatTooltip);
   private clipboard = inject(Clipboard);

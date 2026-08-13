@@ -1,6 +1,6 @@
 import { Component, Input } from '@angular/core';
 import { CopyTooltipDirective } from 'src/app/shared/directives/copy-tooltip.directive';
-import { PartialReport } from '../report.component';
+import { HierarchicalReport } from 'src/app/shared/interfaces/hierarchical-report';
 
 @Component({
   selector: 'app-report-metadata-table2',
@@ -9,5 +9,5 @@ import { PartialReport } from '../report.component';
   styleUrl: './report-metadata-table.css',
 })
 export class ReportMetadataTable {
-  @Input({ required: true }) report!: PartialReport;
+  @Input({ required: true }) report!: HierarchicalReport;
 }

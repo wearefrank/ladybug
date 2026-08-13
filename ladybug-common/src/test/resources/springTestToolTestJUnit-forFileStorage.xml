@@ -21,6 +21,7 @@
 	</bean>
 
 	<bean name="debugStorage" class="org.wearefrank.ladybug.storage.file.Storage" autowire="byName">
+		<property name="name" value="debugStorage"/>
 		<property name="reportsFilename" value="data/file-storage/ladybug.tts"/>
 		<property name="metadataFilename" value="data/file-storage/ladybug.ttm"/>
 		<property name="metadataExtractor">

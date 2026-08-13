@@ -9,7 +9,7 @@ import { ErrorHandling } from '../../shared/classes/error-handling.service';
 import { Transformation } from '../../shared/interfaces/transformation';
 import { DifferenceModalComponent } from '../difference-modal/difference-modal.component';
 import { DifferencesBuilder } from '../../shared/util/differences-builder';
-import { NodeValueState, PartialReport, UpdateNode } from '../report.component';
+import { NodeValueState, UpdateNode } from '../../shared/classes/report-shared-strategy';
 import {
   NodeValueLabels,
   ReportAlertMessage2Component,
@@ -20,6 +20,7 @@ import { UpdateReport } from '../../shared/interfaces/update-report';
 import { ReportMetadataTable } from '../report-metadata-table/report-metadata-table';
 import { OverwriteTransformationComponent } from '../overwrite-transformation-modal/overwrite-transformation-modal.component';
 import { MatDialog } from '@angular/material/dialog';
+import { HierarchicalReport } from '../../shared/interfaces/hierarchical-report';
 
 export interface Variable {
   name: string;
@@ -49,7 +50,7 @@ export class ReportValueComponent implements OnInit, OnDestroy {
   button = output<ButtonCommand>();
   save = output<UpdateNode>();
   downloadRequest = output<DownloadOptions>();
-  @Input({ required: true }) report$!: Observable<PartialReport | undefined>;
+  @Input({ required: true }) report$!: Observable<HierarchicalReport | undefined>;
   @Input({ required: true }) saveDone$!: Observable<void>;
   @Input({ required: true }) rerunResult$!: Observable<TestResult | undefined>;
   @ViewChild(DifferenceModalComponent) saveModal!: DifferenceModalComponent;
@@ -64,10 +65,10 @@ export class ReportValueComponent implements OnInit, OnDestroy {
   originalVariables: Variable[] = [];
   editedVariables: Variable[] = [];
   duplicateVariables: Set<number> = new Set<number>();
-  editedReportStubStrategy?: string;
+  editedReportStubStrategy?: string | null;
 
   // It would have been nice to make this protected, but we need to edit this during Karma tests.
-  report?: PartialReport;
+  report?: HierarchicalReport;
 
   labels: NodeValueLabels = {
     isEdited: false,
@@ -100,7 +101,7 @@ export class ReportValueComponent implements OnInit, OnDestroy {
   protected transformationReadOnlySubject = new BehaviorSubject<boolean>(true);
   protected reportContentRequestSubject = new BehaviorSubject<string | undefined>(undefined);
   protected reportReadOnlySubject = new BehaviorSubject<boolean>(true);
-  protected originalReportStubStrategySubject = new BehaviorSubject<string | undefined>(undefined);
+  protected originalReportStubStrategySubject = new BehaviorSubject<string | null | undefined>(undefined);
   protected buttonComponentResetSubject = new Subject<void>();
   private _height = 0;
   private http = inject(HttpService);
@@ -144,7 +145,13 @@ export class ReportValueComponent implements OnInit, OnDestroy {
     const isEdited = this.isEdited();
     this.labels.isEdited = isEdited;
     this.labels.isReadOnly = isReadOnly;
-    const state: NodeValueState = { isReadOnly, isEdited, storageId: this.report?.storageId };
+    const state: NodeValueState = {
+      isReadOnly,
+      isEdited,
+      storageId: this.report?.storageId,
+      storageName: this.report?.storageName,
+      checkpointsFromView: this.report?.checkpointsFromView,
+    };
     this.buttonStateSubject.next(ReportValueComponent.getButtonState(state));
     this.nodeValueState.emit(state);
   }
@@ -156,6 +163,10 @@ export class ReportValueComponent implements OnInit, OnDestroy {
 
   onButton(command: ButtonCommand): void {
     switch (command) {
+      case 'close': {
+        this.button.emit('close');
+        break;
+      }
       case 'makeNull': {
         throw new Error('Button makeNull should not be accessible when no checkpoint is shown');
       }
@@ -237,7 +248,7 @@ export class ReportValueComponent implements OnInit, OnDestroy {
         'Transformation',
         true,
       )
-      .nonNullableVariable(this.report!.stubStrategy, this.editedReportStubStrategy, 'Report level stub strategy');
+      .nullableVariable(this.report!.stubStrategy, this.editedReportStubStrategy, 'Report level stub strategy');
     const editedVariables = this.getRealEditedVariables();
     const originalVariableNames: string[] = this.originalVariables.map((v) => v.name);
     const editedVariableNames: string[] = editedVariables.map((v) => v.name);
@@ -313,7 +324,7 @@ export class ReportValueComponent implements OnInit, OnDestroy {
     this.downloadRequest.emit(downloadOptions);
   }
 
-  private newReport(report: PartialReport): void {
+  private newReport(report: HierarchicalReport): void {
     // When a report is edited, the update report is received from a
     // subscription. Reacting on a subscription is not automatically
     // in the Angular zone, so we have to run in the Angular zone
@@ -420,9 +431,7 @@ export class ReportValueComponent implements OnInit, OnDestroy {
     };
   }
 
-  // TODO: Fix issue with types. Issue https://github.com/wearefrank/ladybug-frontend/issues/1127.
-  // Report.variables is declared to be a string, but it is really an object.
-  static initVariables(variables: string | null): Variable[] {
+  static initVariables(variables: Record<string, string> | null): Variable[] {
     if (!variables) return [];
     return Object.entries(variables).map(([name, value]) => ({ name, value }));
   }

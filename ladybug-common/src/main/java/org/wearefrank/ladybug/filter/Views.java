@@ -1,5 +1,5 @@
 /*
-   Copyright 2020, 2022, 2025 WeAreFrank!, 2018 Nationale-Nederlanden
+   Copyright 2020, 2022, 2025, 2026 WeAreFrank!, 2018 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import java.util.List;
 
 import org.wearefrank.ladybug.echo2.BeanParent;
 import org.wearefrank.ladybug.echo2.Echo2Application;
+import org.wearefrank.ladybug.web.common.HttpNotFoundException;
 
 /**
  * @author Jaco de Groot
@@ -52,6 +53,15 @@ public class Views extends ArrayList<View> implements BeanParent {
 
 	public View getDefaultView() {
 		return defaultView;
+	}
+
+	public View getViewByName(String viewName) {
+		for (View view: this) {
+			if (view.getName().equals(viewName)) {
+				return view;
+			}
+		}
+		throw new IllegalArgumentException(String.format("There is no view with name [%s]", viewName));
 	}
 
 	/**

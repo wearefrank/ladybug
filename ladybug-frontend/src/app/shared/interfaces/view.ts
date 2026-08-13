@@ -7,4 +7,6 @@ export interface View {
   storageName: string;
   name: string;
   hasCheckpointMatchers: boolean;
+  // Optional per-view filter (metadataName -> value) applied to the report list.
+  metadataFilter?: Record<string, string>;
 }

@@ -15,7 +15,7 @@
     <app-checkpoint-metadata-table [checkpoint]="originalCheckpoint"></app-checkpoint-metadata-table>
   }
   @if (originalCheckpoint !== undefined && messageContextTableVisible) {
-    <app-messagecontext-table [report]="asCheckpoint(originalCheckpoint)"/>
+    <app-messagecontext-table [report]="originalCheckpoint"/>
   }
   <app-monaco-editor data-cy-element-name="checkpointEditor" [options]="monacoOptions"
     [editorContentRequest$]="editorContentsSubject" [readOnlyRequest$]="editorReadOnlySubject"

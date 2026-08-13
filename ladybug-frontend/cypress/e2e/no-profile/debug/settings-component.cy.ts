@@ -40,35 +40,12 @@ describe('Tests for settings component', () => {
     cy.get('@tableCell').should('have.attr', 'style', 'padding: 0em 0px;');
   });
 
-  it('Should allow multiple files to be opened in debug tree when setting is enabled and close all but one report when setting is disabled', () => {
-    cy.get('[data-cy-debug="openSettings"]').as('openSettingsModal').click();
-    cy.get('[data-cy-settings="nav-client"]').as('clientTab').click();
-    cy.get('[data-cy-settings="showAmount"]').should('not.be.checked');
-    cy.get('[data-cy-settings="saveChanges"]').click();
-    cy.get('[data-cy-record-table-index="0"]').click();
-    cy.get('[data-cy-record-table-index="1"]').click();
-    cy.checkFileTreeLength(1);
-    cy.get('@openSettingsModal').click();
-    cy.get('@clientTab').click();
-    cy.get('[data-cy-settings="showAmount"]').check();
-    cy.get('[data-cy-settings="showAmount"]').should('be.checked');
-    cy.get('[data-cy-settings="saveChanges"]').click();
-    cy.get('[data-cy-record-table-index="0"]').click();
-    cy.checkFileTreeLength(2);
-    cy.get('@openSettingsModal').click();
-    cy.get('@clientTab').click();
-    cy.get('[data-cy-settings="showAmount"]').uncheck();
-    cy.get('[data-cy-settings="saveChanges"]').click();
-    cy.checkFileTreeLength(1);
-  });
-
   describe('Restore, factory reset, save', () => {
     beforeEach(() => {
       cy.debugTabBackToFactorySettings();
       cy.get('[data-cy-debug="openSettings"]').as('openSettingsModal').click();
       cy.get('[data-cy-settings="nav-client"]').click();
       cy.get('[data-cy-settings="openLatestReports"]').invoke('val').should('equal', '10');
-      cy.get('[data-cy-settings="showAmount"]').should('not.be.checked');
       cy.get('[data-cy-settings="spacingDropdown"] option:selected').should(
         'have.text',
         '1x',
@@ -104,28 +81,6 @@ describe('Tests for settings component', () => {
       cy.get('[data-cy-debug="openSettings"]').as('openSettingsModal').click();
       cy.get('[data-cy-settings="nav-client"]').as('client').click();
       cy.get('@numberOfReports').invoke('val').should('equal', '10');
-      cy.get('[data-cy-settings="close"]').as('close').click();
-    })
-
-    it('When change of show multiple is discarded then not changed and when saved then changed', () => {
-      cy.get('[data-cy-debug="openSettings"]').as('openSettingsModal').click();
-      cy.get('[data-cy-settings="nav-client"]').as('client').click();
-      cy.get('[data-cy-settings="showAmount"]').as('showMultiple').check();
-      cy.get('[data-cy-settings="close"]').as('close').click();
-      cy.get('[data-cy-debug-confirm="discard"]').click();
-      cy.get('@openSettingsModal').click();
-      cy.get('@client').click();
-      cy.get('@showMultiple').should('not.be.checked');
-      cy.get('@showMultiple').check();
-      cy.get('@close').click();
-      cy.get('[data-cy-debug-confirm="save"]').click();
-      cy.get('@openSettingsModal').click();
-      cy.get('@client').click();
-      cy.get('@showMultiple').should('be.checked');      
-      cy.get('[data-cy-settings="factoryReset"]').click();
-      cy.get('[data-cy-debug="openSettings"]').as('openSettingsModal').click();
-      cy.get('[data-cy-settings="nav-client"]').as('client').click();
-      cy.get('@showMultiple').should('not.be.checked');
       cy.get('[data-cy-settings="close"]').as('close').click();
     })
 
@@ -341,7 +296,6 @@ describe('Tests for settings component', () => {
       cy.get('[data-cy-debug="openSettings"]').as('openSettingsModal').click();
       cy.get('[data-cy-settings="nav-client"]').as('client').click();
       cy.get('[data-cy-settings="openLatestReports"]').as('numberOfReports').type('{selectAll}8');
-      cy.get('[data-cy-settings="showAmount"]').as('showMultiple').check();
       cy.get('[data-cy-settings="spacingDropdown"]').select('5x');
       cy.get('[data-cy-settings-transformation-enabled]').as('transformationEnabled').uncheck();
       cy.get('[data-cy-settings="nav-server"]').as('server').click();
@@ -367,7 +321,6 @@ describe('Tests for settings component', () => {
       cy.get('[data-cy-settings="nav-client"]').as('client').click();
       cy.get('[data-cy-settings="openLatestReports"]').as('numberOfReports').type('{selectAll}6');
       cy.get('@numberOfReports').invoke('val').should('equal', '6');
-      cy.get('[data-cy-settings="showAmount"]').as('showMultiple').uncheck();
       cy.get('[data-cy-settings="spacingDropdown"]').select('3x');
       cy.get('[data-cy-settings-transformation-enabled]').as('transformationEnabled').check();
       cy.get('[data-cy-settings="nav-server"]').as('server').click();
@@ -384,7 +337,6 @@ describe('Tests for settings component', () => {
 function checkSavedModification() {
   cy.get('@client').click();
   cy.get('@numberOfReports').invoke('val').should('equal', '8');
-  cy.get('@showMultiple').should('be.checked');
   cy.get('[data-cy-settings="spacingDropdown"] option:selected').should('have.text', '5x');
   cy.get('@transformationEnabled').should('not.be.checked');
   cy.get('@server').click();

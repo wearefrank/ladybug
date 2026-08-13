@@ -5,7 +5,8 @@
         StartTime="Original length: 13"
         EndTime="Original length: 13"
         NumberOfCheckpoints="8"
-        EstimatedMemoryUsage="224">
+        EstimatedMemoryUsage="224"
+        Host="MyHost">
    <Checkpoint Name="testStreamsWithReaderAndInputStream"
                Type="Startpoint"
                Level="0">startmessage</Checkpoint>

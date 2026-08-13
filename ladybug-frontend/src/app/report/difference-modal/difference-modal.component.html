@@ -42,13 +42,11 @@
   @if (isConfirmClicked) {
     <div class="working">Working...</div>
   } @else {
-    <div class="modal-footer">
-      <div class="col-md-12 text-center">
-        <button data-cy-difference-modal="confirm" type="button" class="btn btn-info mr-2" (click)="onClickConfirm()"
-        >Save
-        </button>
-        <button type="button" class="btn btn-info ml-2" (click)="closeModal()">Don't save</button>
-      </div>
+    <div class="modal-footer col-md-12 text-center">
+      <button data-cy-difference-modal="confirm" type="button" class="btn btn-info" (click)="onClickConfirm()"
+      >Save
+      </button>
+      <button type="button" class="btn btn-info" (click)="closeModal()">Don't save</button>
     </div>
   }
 </ng-template>

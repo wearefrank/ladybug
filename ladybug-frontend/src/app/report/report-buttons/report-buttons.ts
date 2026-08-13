@@ -20,6 +20,7 @@ export interface ReportButtonsState {
 }
 
 export type ButtonCommand =
+  | 'close'
   | 'makeNull'
   | 'prettify'
   | 'save'
@@ -57,7 +58,7 @@ export class ReportButtons implements OnInit, OnDestroy {
   downloadRequest = output<DownloadOptions>();
   @Input({ required: true }) state$!: Observable<ReportButtonsState>;
   @Input() originalCheckpointStubStrategy$?: Observable<number | undefined>;
-  @Input({ required: true }) originalReportStubStrategy$!: Observable<string | undefined>;
+  @Input({ required: true }) originalReportStubStrategy$!: Observable<string | null | undefined>;
   @Input({ required: true }) reset$!: Observable<void>;
   @Input({ required: true }) rerunResult$!: Observable<TestResult | undefined>;
 
@@ -69,7 +70,7 @@ export class ReportButtons implements OnInit, OnDestroy {
 
   protected readonly StubStrategy = StubStrategy;
   protected currentCheckpointStubStrategyStr?: string;
-  protected currentReportStubStrategy?: string;
+  protected currentReportStubStrategy?: string | null;
   protected rerunResult?: TestResult;
   protected metadataTableVisible = false;
   protected messageContextTableVisible = false;
@@ -120,6 +121,10 @@ export class ReportButtons implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.subscriptions.unsubscribe();
+  }
+
+  protected close(): void {
+    this.reportCommand.emit('close');
   }
 
   protected makeNull(): void {
