@@ -46,6 +46,7 @@ public class MetadataApi extends ApiBase {
 	 * @param storageName Name of the storage to search.
 	 * @param metadataNames The metadata names to return.
 	 * @param limit Maximum number of results to return.
+	 * @param offset Number of matching records to skip before returning results.
 	 * @param filterHeaders The headers on which we filter.
 	 * @param filterParams The regex on which the report names will be filtered
 	 * @return Response containing fields [List[String]] and values [List[List[Object]]].
@@ -57,10 +58,11 @@ public class MetadataApi extends ApiBase {
 	public Response getMetadataList(@PathParam("storage") String storageName,
 									@QueryParam("metadataNames") List<String> metadataNames,
 									@DefaultValue("-1") @QueryParam("limit") int limit,
+									@DefaultValue("0") @QueryParam("offset") int offset,
 									@QueryParam("filterHeader") List<String> filterHeaders,
 									@QueryParam("filter") List<String> filterParams) {
 		try {
-			List<LinkedHashMap<String, String>> metadata = delegate.getMetadataList(storageName, metadataNames, limit, filterHeaders, filterParams);
+			List<LinkedHashMap<String, String>> metadata = delegate.getMetadataList(storageName, metadataNames, limit, offset, filterHeaders, filterParams);
 			return Response.ok().entity(metadata).build();
 		} catch (HttpNotFoundException e) {
 			return Response.status(Response.Status.NOT_FOUND).entity(e.getMessage()).build();
