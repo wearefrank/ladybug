@@ -140,10 +140,10 @@ public class ProofOfMigrationStorage extends DatabaseLogStorage {
 	}
 
 	@Override
-	protected void buildMetadataQuery(int maxNumberOfRecords, List<String> metadataNames, List<String> searchValues,
+	protected void buildMetadataQuery(int maxNumberOfRecords, int offset, List<String> metadataNames, List<String> searchValues,
 			List<String> rangeSearchValues, StringBuilder query, List<Object> args, List<Integer> argTypes)
 			throws StorageException {
-		super.buildMetadataQuery(maxNumberOfRecords, metadataNames, searchValues, rangeSearchValues, query, args,
+		super.buildMetadataQuery(maxNumberOfRecords, offset, metadataNames, searchValues, rangeSearchValues, query, args,
 				argTypes);
 		if (log.isDebugEnabled()) {
 			log.debug("Get metadata original query: " + query.toString());

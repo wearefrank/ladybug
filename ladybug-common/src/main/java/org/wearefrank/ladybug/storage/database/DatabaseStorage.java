@@ -433,12 +433,6 @@ public class DatabaseStorage implements Storage {
 		return metadata;
 	}
 
-	protected void buildMetadataQuery(int maxNumberOfRecords, List<String> metadataNames, List<String> searchValues,
-			List<String> rangeSearchValues, StringBuilder query, List<Object> args, List<Integer> argTypes)
-			throws StorageException {
-		buildMetadataQuery(maxNumberOfRecords, 0, metadataNames, searchValues, rangeSearchValues, query, args, argTypes);
-	}
-
 	protected void buildMetadataQuery(int maxNumberOfRecords, int offset, List<String> metadataNames,
 			List<String> searchValues, List<String> rangeSearchValues, StringBuilder query,
 			List<Object> args, List<Integer> argTypes) throws StorageException {

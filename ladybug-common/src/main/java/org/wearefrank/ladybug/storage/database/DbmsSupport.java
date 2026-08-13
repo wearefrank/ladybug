@@ -64,26 +64,6 @@ public class DbmsSupport {
 		commonDatabaseName = JdbcUtils.commonDatabaseName(databaseProductName);
 	}
 
-	// ── no-offset variants (delegate to offset-aware overloads) ─────────────────
-
-	public String provideLimitAfterFirstKeyword(int limit, List<Object> args, List<Integer> argTypes) {
-		return provideLimitAfterFirstKeyword(limit, 0, args, argTypes);
-	}
-
-	public String provideFirstRowsHintAfterFirstKeyword(int limit) {
-		return provideFirstRowsHintAfterFirstKeyword(limit, 0);
-	}
-
-	public String provideLimitWithRowNumber(int limit, List<Object> args, List<Integer> argTypes) {
-		return provideLimitWithRowNumber(limit, 0, args, argTypes);
-	}
-
-	public String provideLimit(int limit, List<Object> args, List<Integer> argTypes) {
-		return provideLimit(limit, 0, args, argTypes);
-	}
-
-	// ── offset-aware overloads ───────────────────────────────────────────────────
-
 	/**
 	 * SQL Server: emit TOP(N) only when offset is 0. When offset > 0 the caller
 	 * must use OFFSET/FETCH (see {@link #provideLimit(int, int, List, List)}).
