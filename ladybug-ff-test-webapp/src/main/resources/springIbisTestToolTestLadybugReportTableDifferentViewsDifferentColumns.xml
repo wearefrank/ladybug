@@ -37,7 +37,7 @@
         </constructor-arg>
     </bean>
 
-    <bean name="whiteBoxViewNoNameNoInput" parent="whiteBoxView" autowire="byName">
+    <bean name="whiteBoxViewNoNameNoInput" parent="whiteBoxView">
         <property name="name" value="White box view no name no input" />
         <property name="metadataNames">
             <list>
@@ -53,7 +53,7 @@
         </property>
     </bean>
 
-    <bean name="whiteBoxViewNoInput" parent="whiteBoxView" autowire="byName">
+    <bean name="whiteBoxViewNoInput" parent="whiteBoxView">
         <property name="name" value="White box view no input" />
         <property name="metadataNames">
             <list>
@@ -70,7 +70,7 @@
         </property>
     </bean>
 
-    <bean name="whiteBoxViewNoName" parent="whiteBoxView" autowire="byName">
+    <bean name="whiteBoxViewNoName" parent="whiteBoxView">
         <property name="name" value="White box view no name" />
         <property name="metadataNames">
             <list>

@@ -6,6 +6,7 @@ import { CopyTooltipDirective } from '../../directives/copy-tooltip.directive';
 import { Report } from '../../interfaces/report';
 import { Checkpoint } from '../../interfaces/checkpoint';
 import { ReportUtil as ReportUtility } from '../../util/report-util';
+import { HierarchicalCheckpoint, HierarchicalReport } from '../../interfaces/hierarchical-report';
 
 // TODO: Only applicable to Checkpoint, not Report. Issue https://github.com/wearefrank/ladybug-frontend/issues/1124.
 @Component({
@@ -16,7 +17,7 @@ import { ReportUtil as ReportUtility } from '../../util/report-util';
   imports: [ClipboardModule, MatTooltipModule, CopyTooltipDirective, CommonModule],
 })
 export class MessagecontextTableComponent implements OnInit, OnChanges {
-  @Input({ required: true }) report!: Report | Checkpoint;
+  @Input({ required: true }) report!: Report | Checkpoint | HierarchicalReport | HierarchicalCheckpoint;
   messageContextData: [string, string][] = [];
   protected readonly ReportUtil = ReportUtility;
 

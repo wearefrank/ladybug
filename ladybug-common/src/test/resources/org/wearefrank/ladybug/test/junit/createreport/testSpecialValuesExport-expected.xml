@@ -2,6 +2,9 @@
 <java version="IGNORE-JAVA-VERSION" class="java.beans.XMLDecoder">
  <null/>
  <object class="org.wearefrank.ladybug.Report" id="Report0">
+  <void property="application">
+   <string>MyApplication</string>
+  </void>
   <void property="checkpoints">
    <void method="add">
     <object class="org.wearefrank.ladybug.Checkpoint">
@@ -203,6 +206,9 @@
   </void>
   <void property="endTime">
    <long>IGNORE-END-TIME</long>
+  </void>
+  <void property="host">
+   <string>MyHost</string>
   </void>
   <void property="linkMethod">
    <string>Path and type</string>

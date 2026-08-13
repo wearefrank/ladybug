@@ -5,24 +5,24 @@ import { TestComponent } from './test/test.component';
 import { CompareComponent } from './compare/compare.component';
 import { TabService } from './shared/services/tab.service';
 import { ReportComponent } from './report/report.component';
-
+import { KEY_COMPARE, KEY_DEBUG, KEY_REPORT, KEY_TEST } from './shared/interfaces/tab';
 export const routes: Routes = [
   {
     component: DebugComponent,
-    path: DebugComponent.ROUTER_PATH,
+    path: KEY_DEBUG,
     pathMatch: 'full',
   },
   {
     component: TestComponent,
-    path: TestComponent.ROUTER_PATH,
+    path: KEY_TEST,
   },
   {
     component: ReportComponent,
-    path: `${ReportComponent.ROUTER_PATH}/:id`,
+    path: `${KEY_REPORT}/:storageName/:storageId`,
   },
   {
     component: CompareComponent,
-    path: `${CompareComponent.ROUTER_PATH}/:id`,
+    path: `${KEY_COMPARE}/:leftStorageName/:leftStorageId/:rightStorageName/:rightStorageId`,
   },
   {
     path: '',
@@ -41,57 +41,28 @@ export class AppRoutingModule {}
   providedIn: 'root',
 })
 export class AppRouteReuseStrategy implements RouteReuseStrategy {
-  storedRoutes: Record<string, DetachedRouteHandle> = {};
   private tabService = inject(TabService);
 
-  constructor() {
-    this.tabService.closeTab$.subscribe((closeTab) => {
-      const pathPrefix = closeTab.type === 'report' ? 'report' : 'compare';
-      const routePath = `${pathPrefix}/${closeTab.id}`;
-
-      delete this.storedRoutes[routePath];
-    });
-  }
-
-  shouldDetach(_route: ActivatedRouteSnapshot): boolean {
-    return true;
+  shouldDetach(route: ActivatedRouteSnapshot): boolean {
+    const key = this.tabService.getKey(route);
+    return key !== '' && this.tabService.findTab(key) !== undefined;
   }
 
   store(route: ActivatedRouteSnapshot, handle: DetachedRouteHandle | null): void {
     if (route.routeConfig && handle) {
-      const path = route.routeConfig.path || '';
-      const id = this.getRouteId(route);
-
-      if (path.startsWith('report') || path.startsWith('compare')) {
-        if (
-          (path.startsWith('report') && this.tabService.activeReportTabs.has(id)) ||
-          (path.startsWith('compare') && this.tabService.activeCompareTabs.has(id))
-        ) {
-          this.storedRoutes[path] = handle;
-        } else {
-          delete this.storedRoutes[path];
-        }
-      } else {
-        this.storedRoutes[path] = handle;
-      }
+      this.tabService.storeHandle(route, handle);
     }
   }
 
   shouldAttach(route: ActivatedRouteSnapshot): boolean {
-    const path = route.routeConfig?.path || '';
-    return !!this.storedRoutes[path];
+    return this.tabService.getHandle(route) !== undefined;
   }
 
   retrieve(route: ActivatedRouteSnapshot): DetachedRouteHandle | null {
-    const path = route.routeConfig?.path || '';
-    return this.storedRoutes[path] || null;
+    return this.tabService.getHandle(route)!;
   }
 
   shouldReuseRoute(future: ActivatedRouteSnapshot, current: ActivatedRouteSnapshot): boolean {
-    return future.routeConfig === current.routeConfig;
-  }
-
-  private getRouteId(route: ActivatedRouteSnapshot): string {
-    return route.params['id'] || '';
+    return this.tabService.getKey(future) === this.tabService.getKey(current);
   }
 }

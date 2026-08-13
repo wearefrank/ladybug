@@ -248,6 +248,8 @@ You can also test your frontend code as Maven artifact before merging your code 
 OpenTelemetry
 =============
 
+WARNING: OpenTelemetry is still onder development. We test it to some extent combined with ladybug-backend-jaxrs, the Ladybug version that handles authorization with JAX-RS. For ladybug-backend-springmvc we have excluded a transitive dependency because it is not allowed in the Frank!Framework. We do not know yet whether that exclusion breaks OpenTelemetry support.
+
 Ladybug is able to create telemetry data from Ladybug reports and send it to a telemetry-collector. A telemetry-collector provides an overview based on time that helps to detect latency problems. There are two collectors available to send the data to: Zipkin and Jaeger. To use Zipkin, you can run the following command: 
 
 `docker run --rm -d -p 9411:9411 --name zipkin openzipkin/zipkin`
@@ -255,6 +257,14 @@ Ladybug is able to create telemetry data from Ladybug reports and send it to a t
 To work with Jaeger, you can run the following command: 
 
 `docker run --rm -e COLLECTOR_ZIPKIN_HOST_PORT=:9411 -p 16686:16686 -p 4317:4317 -p 4318:4318 -p 9411:9411 jaegertracing/all-in-one:latest`
+
+You'll need to uncomment or add:
+
+```
+<property name="openTelemetryEndpoint" ref="openTelemetryEndpoint"/>
+```
+
+In the testTool bean.
 
 To choose between one of the collectors in the Ladybug application, there is a bean available to make your choice. You have to add the following and change the string value of this bean to the collector you want to use. For Zipkin, enter the endpoint in the string value. For Jaeger (which doesn't use a endpoint), you can just enter "jaeger":
 ```
@@ -271,7 +281,7 @@ In Ladybug, there is also an API available to gather telemetry data from OpenTel
 
 ```
 SdkTracerProvider sdkTracerProvider = SdkTracerProvider.builder()
-.addSpanProcessor(BatchSpanProcessor.builder(ZipkinSpanExporter.builder().setEndpoint("http://localhost/ladybug/api/collector/").build()).build())
+.addSpanProcessor(BatchSpanProcessor.builder(ZipkinSpanExporter.builder().setEndpoint("http://localhost/ladybug/api/v1/traces/").build()).build())
 .setResource(resource)
 .build();
 ```

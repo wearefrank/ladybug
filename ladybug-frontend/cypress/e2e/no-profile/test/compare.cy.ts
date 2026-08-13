@@ -27,7 +27,7 @@ describe('Tests for compare button in test tab', () => {
 
   it('should open a compare tab when clicking the compare button in the test tab', () => {
     selectFirstTwoReportsInTestTab(true)
-    cy.get('[data-cy-nav-tab="Compare"]').should('exist');
+    cy.get('[data-cy-nav-tab] :contains(Compare)').should('exist');
     cy.get('app-compare').should('exist');
   });
 
@@ -40,7 +40,7 @@ describe('Tests for compare button in test tab', () => {
     cy.get('[data-cy-test-table="storageId"]').eq(0).invoke('text').then((firstStorageId) => {
       cy.get('[data-cy-test-table="storageId"]').eq(1).invoke('text').then((secondStorageId) => {
         selectFirstTwoReportsInTestTab(true)
-        cy.get('[data-cy-nav-tab="Compare"]').should('exist');
+        cy.get('[data-cy-nav-tab] :contains(Compare)').should('exist');
         cy.get('app-compare').should('exist');
         cy.url().should('include', firstStorageId).and('include', secondStorageId);
       });

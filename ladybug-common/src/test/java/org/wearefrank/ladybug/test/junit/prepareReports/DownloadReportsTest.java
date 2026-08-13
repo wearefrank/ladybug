@@ -1,4 +1,4 @@
-package org.wearefrank.ladybug.test.junit.downloadReports;
+package org.wearefrank.ladybug.test.junit.prepareReports;
 
 import io.micrometer.common.util.StringUtils;
 import liquibase.util.FileUtil;

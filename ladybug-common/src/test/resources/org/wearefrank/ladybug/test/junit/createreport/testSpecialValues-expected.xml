@@ -5,7 +5,9 @@
         StartTime="Original length: 13"
         EndTime="Original length: 13"
         NumberOfCheckpoints="7"
-        EstimatedMemoryUsage="IGNORE">
+        EstimatedMemoryUsage="IGNORE"
+        Host="MyHost"
+        Application="MyApplication">
    <Checkpoint Name="testSpecialValues"
                Type="Startpoint"
                Level="0"

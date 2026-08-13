@@ -24,7 +24,6 @@ describe('Tests with views and filtering', () => {
   interface ColumnAndName {
     readonly name: string
     readonly colNr: number
-    readonly labelFilterPanel: string
     // TODO: Get rid of this when issue https://github.com/wearefrank/ladybug/issues/429 is fixed
     readonly enabled: boolean
   }
@@ -32,16 +31,16 @@ describe('Tests with views and filtering', () => {
   const isDatabaseStorage: boolean = Cypress.env('debugStorageName') === 'DatabaseDebugStorage'
 
   const columnAndNameCombinations: ColumnAndName[] = [
-    { name: 'Storage Id', colNr: 1, labelFilterPanel: 'Storageid', enabled: !isDatabaseStorage },
-    { name: 'End time', colNr: 2, labelFilterPanel: 'Endtime', enabled: !isDatabaseStorage },
-    { name: 'Duration', colNr: 3, labelFilterPanel: 'Duration', enabled: true },
-    { name: 'Name', colNr: 4, labelFilterPanel: 'Name', enabled: true },
-    { name: 'Correlation Id', colNr: 5, labelFilterPanel: 'Correlationid', enabled: true },
-    { name: 'Status', colNr: 6, labelFilterPanel: 'Status', enabled: true },
-    { name: 'Checkpoints', colNr: 7, labelFilterPanel: 'Numberofcheckpoints', enabled: !isDatabaseStorage },
-    { name: 'Memory', colNr: 8, labelFilterPanel: 'Estimatedmemoryusage', enabled: true },
-    { name: 'Size', colNr: 9, labelFilterPanel: 'Storagesize', enabled: true },
-    { name: 'Input', colNr: 10, labelFilterPanel: 'Input', enabled: true }
+    { name: 'Storage Id', colNr: 1, enabled: !isDatabaseStorage },
+    { name: 'End Time', colNr: 2, enabled: !isDatabaseStorage },
+    { name: 'Duration', colNr: 3, enabled: true },
+    { name: 'Name', colNr: 4, enabled: true },
+    { name: 'Correlation Id', colNr: 5, enabled: true },
+    { name: 'Status', colNr: 6, enabled: true },
+    { name: 'Checkpoints', colNr: 7, enabled: !isDatabaseStorage },
+    { name: 'Memory', colNr: 8, enabled: true },
+    { name: 'Size', colNr: 9, enabled: true },
+    { name: 'Input', colNr: 10, enabled: true }
   ]
 
   const testedColumnAndNameCombinations = columnAndNameCombinations.filter((testCase) => testCase.name !== 'Status')
@@ -58,15 +57,15 @@ describe('Tests with views and filtering', () => {
         const firstRowFieldValue = el.text().trim()
         cy.log(`Filtering on value: ${firstRowFieldValue}`)
         cy.inIframeBody('[data-cy-debug="filter"]').click()
-        cy.enterFilter(testCase.labelFilterPanel, firstRowFieldValue)
+        cy.enterFilter(testCase.name, firstRowFieldValue)
         cy.inIframeBody('[data-cy-debug="tableRow"]').should('have.length.lessThan', 5)
         cy.inIframeBody('[data-cy-debug="tableRow"]').should('have.length.greaterThan', 0)
-        cy.checkActiveFilterSphere(testCase.labelFilterPanel, firstRowFieldValue).should('be.visible')
+        cy.checkActiveFilterSphere(testCase.name, firstRowFieldValue).should('be.visible')
         cy.inIframeBody('[data-cy-debug="clear-filter-btn"]').should('have.length', 1).click()
         cy.inIframeBody('[data-cy-debug="tableRow"]').should('have.length', 5)
         cy.inIframeBody('[data-cy-debug="close-filter-btn"]').click()
         cy.inIframeBody('[data-cy-debug="close-filter-btn"]').should('not.exist')
-        cy.checkActiveFilterSphere(testCase.labelFilterPanel, firstRowFieldValue).should('not.exist')
+        cy.checkActiveFilterSphere(testCase.name, firstRowFieldValue).should('not.exist')
       })
     })
   }

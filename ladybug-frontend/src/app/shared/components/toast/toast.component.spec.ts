@@ -6,6 +6,8 @@ import { of } from 'rxjs';
 import { DebugElement, NO_ERRORS_SCHEMA } from '@angular/core';
 import { Toast } from '../../interfaces/toast';
 import { By } from '@angular/platform-browser';
+import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 
 describe('ToastComponent', () => {
   let component: ToastComponent;
@@ -27,6 +29,8 @@ describe('ToastComponent', () => {
     await TestBed.configureTestingModule({
       imports: [ToastComponent],
       providers: [
+        provideHttpClient(withInterceptorsFromDi()),
+        provideHttpClientTesting(),
         { provide: ToastService, useValue: mockToastService },
         { provide: NgbModal, useValue: mockNgbModal },
       ],

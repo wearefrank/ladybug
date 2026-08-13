@@ -23,6 +23,7 @@
 	<bean
             name="debugStorage"
             class="org.wearefrank.ladybug.storage.database.DatabaseLogStorage" autowire="byName" depends-on="ladybugDatabaseChangelog">
+		<property name="name" value="debugStorage"/>
 		<property name="table" value="LADYBUG"/>
 		<property name="metadataExtractor" ref="metadataExtractor"/>
 	</bean>

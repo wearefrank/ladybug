@@ -1,6 +1,8 @@
 import { Checkpoint } from './checkpoint';
 import { BaseReport } from './base-report';
 
+// TODO issue https://github.com/wearefrank/ladybug/issues/743. Use
+// HierarchicalReport instead.
 export interface Report extends BaseReport {
   checkpoints: Checkpoint[];
   correlationId: string;
@@ -17,10 +19,12 @@ export interface Report extends BaseReport {
   startTime: number;
   // TODO: Remove, is not provided by the backend. https://github.com/wearefrank/ladybug-frontend/issues/1127
   stub: number;
-  stubStrategy: string;
+  stubStrategy: string | null;
   transformation: string;
   variables: string;
   storageName: string;
   xml: string; // Custom for the xml representation of the report
   id: string; // Custom
+  host: string | null;
+  application: string | null;
 }
