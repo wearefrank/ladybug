@@ -533,6 +533,13 @@ public class DatabaseStorage implements Storage {
 
 	private void addLikeOrEqualsExpression(StringBuilder query, List<Object> args, List<Integer> argTypes,
 			String column, String searchValue) throws StorageException {
+		if (searchValue.startsWith("[[[") && searchValue.endsWith("]]]")) {
+			addExpression(query, column + " = ?");
+			searchValue = searchValue.substring(3, searchValue.length() - 3);
+			args.add(searchValue);
+			argTypes.add(Types.VARCHAR);
+			return;
+		}
 		if (!(searchValue.startsWith("[") && searchValue.endsWith("]"))
 				&& !(searchValue.startsWith("*") || searchValue.endsWith("*"))) {
 			searchValue = "*" + searchValue + "*";
