@@ -56,6 +56,8 @@ declare namespace Cypress {
     visitAs(username: string, password: string): void
     enableReportGenerator(): void
     executeJdbcQuery(): void
+    stopAdapter(configuration: string, adapter: string): void
+    startAdapter(configuration: string, adapter: string): void
     checkCorrelationIdFromRow(row: unknown, expectedCorrelationId: string): void
     checkStatusFromRow(row: unknown, expectedStatus: string): void
   }
@@ -422,6 +424,32 @@ Cypress.Commands.add('executeJdbcQuery', { prevSubject: false }, () => {
   }).then((resp) => {
     expect(resp.status).to.equal(200);
   });
+})
+
+Cypress.Commands.add('stopAdapter', { prevSubject: false }, (configuration: string, adapter: string) => {
+  cy.request({
+    method: 'PUT',
+    url: `${Cypress.config('baseUrl')}/iaf/api/configurations/${uncodeURIComponent(configuration)}/adapters/${encodeURIComponent(adapter)}`,
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: '{"action":"stop"}',
+  }).then((resp) => {
+    expect(resp.status).to.equal(200);
+  })
+})
+
+Cypress.Commands.add('startAdapter', { prevSubject: false }, (configuration: string, adapter: string) => {
+  cy.request({
+    method: 'PUT',
+    url: `${Cypress.config('baseUrl')}/iaf/api/configurations/${uncodeURIComponent(configuration)}/adapters/${encodeURIComponent(adapter)}`,
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: '{"action":"start"}',
+  }).then((resp) => {
+    expect(resp.status).to.equal(200);
+  })
 })
 
 Cypress.Commands.add('checkCorrelationIdFromRow', { prevSubject: true }, (row, expectedCorrelationId) => {
