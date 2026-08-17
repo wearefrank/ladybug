@@ -58,6 +58,7 @@ declare namespace Cypress {
     executeJdbcQuery(): void
     stopAdapter(configuration: string, adapter: string): void
     startAdapter(configuration: string, adapter: string): void
+    awaitAdapterStatus(configuration: string, adapter: string, status: string, retries: number): void
     checkCorrelationIdFromRow(row: unknown, expectedCorrelationId: string): void
     checkStatusFromRow(row: unknown, expectedStatus: string): void
   }
@@ -435,7 +436,8 @@ Cypress.Commands.add('stopAdapter', { prevSubject: false }, (configuration: stri
     },
     body: '{"action":"stop"}',
   }).then((resp) => {
-    expect(resp.status).to.equal(200);
+    expect(resp.status).to.equal(202);
+    cy.awaitAdapterStatus(configuration, adapter, 'stopped', 20)
   })
 })
 
@@ -448,9 +450,28 @@ Cypress.Commands.add('startAdapter', { prevSubject: false }, (configuration: str
     },
     body: '{"action":"start"}',
   }).then((resp) => {
-    expect(resp.status).to.equal(200);
+    expect(resp.status).to.equal(202);
+    cy.awaitAdapterStatus(configuration, adapter, 'started', 20)
   })
 })
+
+Cypress.Commands.add('awaitAdapterStatus', { prevSubject: false }, (configuration: string, adapter: string, status: string, retries: number) => {
+  cy.request({
+    method: 'GET',
+    url: `${Cypress.config('baseUrl')}/iaf/api/configurations/${encodeURIComponent(configuration)}/adapters/${encodeURIComponent(adapter)}`,
+  }).then((resp) => {
+    expect(resp.status).to.equal(200);
+    if (resp.body.state === status || retries <= 0) {
+      expect(resp.body.state).toEqual(status)
+    } else {
+      cy.wait(5000)
+      cy.awaitAdapterStatus(configuration, adapter, status, retries - 1);
+    }
+  })
+})
+
+// http://localhost/iaf/api/configurations/Example1a/adapters/Adapter1a
+// awaitAdapterStatus(configuration: string, adapter: string, status: string): void
 
 Cypress.Commands.add('checkCorrelationIdFromRow', { prevSubject: true }, (row, expectedCorrelationId) => {
   cy.wrap(row).find('td:eq(5)').trimmedText().should('equal', expectedCorrelationId)
