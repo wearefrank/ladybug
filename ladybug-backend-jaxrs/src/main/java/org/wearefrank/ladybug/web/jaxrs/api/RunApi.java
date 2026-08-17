@@ -41,65 +41,29 @@ import org.wearefrank.ladybug.storage.StorageException;
 import org.wearefrank.ladybug.transform.ReportXmlTransformer;
 
 import org.wearefrank.ladybug.web.common.Constants;
+import org.wearefrank.ladybug.web.common.HttpBadRequestException;
+import org.wearefrank.ladybug.web.common.HttpInternalServerErrorException;
+import org.wearefrank.ladybug.web.common.RunApiImpl;
 
 import static org.wearefrank.ladybug.web.common.Util.fullMessage;
 
 @Path("/" + Constants.LADYBUG_API_PATH + "/runner")
 public class RunApi extends ApiBase {
-	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-	private @Setter @Inject @Autowired TestTool testTool;
-	private @Setter @Inject @Autowired ReportXmlTransformer reportXmlTransformer;
+	@Autowired
+	private @Setter RunApiImpl delegate;
 
 	@POST
 	@Path("/run/{storageName}/{storageId}")
 	@Produces(MediaType.APPLICATION_JSON)
 	@Consumes(MediaType.APPLICATION_JSON)
 	public Response runReport(@PathParam("storageName") String storageName, @PathParam("storageId") int storageId) {
-		Map<String, Object> result = new HashMap<>();
-		String errorMessage = null;
 		try {
-			Report report = testTool.getStorage(storageName).getReport(storageId);
-			if (report != null) {
-				report.setTestTool(testTool);
-				ReportRunner runner = new ReportRunner();
-				runner.setTestTool(testTool);
-				runner.setDebugStorage(testTool.getDebugStorage());
-				runner.setSecurityContext(this);
-				errorMessage = runner.run(Collections.singletonList(report), true, true);
-				if (errorMessage == null) {
-					RunResult runResult = runner.getResults().get(storageId);
-					if (runResult.errorMessage == null) {
-						Report runResultReport = runner.getRunResultReport(runResult.correlationId);
-						runResultReport.setTestTool(testTool);
-						result = extractRunResult(report, runResultReport, runner);
-					} else {
-						errorMessage = runResult.errorMessage;
-					}
-				}
-			}
-		} catch (StorageException e) {
-			errorMessage = "Storage exception: " + fullMessage(e);
-			log.error(errorMessage, e);
+			Map<String, Object> result = delegate.runReport(storageName, storageId);
+			return Response.ok(result).build();
+		} catch (HttpBadRequestException e) {
+			return Response.status(Response.Status.BAD_REQUEST).entity(e.getMessage()).build();
+		} catch (HttpInternalServerErrorException e) {
+			return Response.serverError().entity(e.getMessage()).build();
 		}
-		if (errorMessage != null) {
-			return Response.serverError().entity(errorMessage).build();
-		}
-		return Response.ok(result).build();
 	}
-
-	private Map<String, Object> extractRunResult(Report report, Report runResultReport, ReportRunner runner) {
-		Map<String, Object> res = new HashMap<>();
-		report.setGlobalReportXmlTransformer(reportXmlTransformer);
-		runResultReport.setGlobalReportXmlTransformer(reportXmlTransformer);
-		runResultReport.setTransformation(report.getTransformation());
-		runResultReport.setReportXmlTransformer(report.getReportXmlTransformer());
-		res.put("info", ReportRunner.getRunResultInfo(report, runResultReport));
-		res.put("equal", report.toXml(runner).equals(runResultReport.toXml(runner)));
-		res.put("originalReport", report);
-		res.put("runResultReport", runResultReport);
-		res.put("originalXml", report.toXml(runner));
-		res.put("runResultXml", runResultReport.toXml(runner));
-		return res;
-	}
-
 }
