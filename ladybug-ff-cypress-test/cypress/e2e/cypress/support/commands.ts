@@ -429,7 +429,7 @@ Cypress.Commands.add('executeJdbcQuery', { prevSubject: false }, () => {
 Cypress.Commands.add('stopAdapter', { prevSubject: false }, (configuration: string, adapter: string) => {
   cy.request({
     method: 'PUT',
-    url: `${Cypress.config('baseUrl')}/iaf/api/configurations/${uncodeURIComponent(configuration)}/adapters/${encodeURIComponent(adapter)}`,
+    url: `${Cypress.config('baseUrl')}/iaf/api/configurations/${encodeURIComponent(configuration)}/adapters/${encodeURIComponent(adapter)}`,
     headers: {
       'Content-Type': 'application/json',
     },
@@ -442,7 +442,7 @@ Cypress.Commands.add('stopAdapter', { prevSubject: false }, (configuration: stri
 Cypress.Commands.add('startAdapter', { prevSubject: false }, (configuration: string, adapter: string) => {
   cy.request({
     method: 'PUT',
-    url: `${Cypress.config('baseUrl')}/iaf/api/configurations/${uncodeURIComponent(configuration)}/adapters/${encodeURIComponent(adapter)}`,
+    url: `${Cypress.config('baseUrl')}/iaf/api/configurations/${encodeURIComponent(configuration)}/adapters/${encodeURIComponent(adapter)}`,
     headers: {
       'Content-Type': 'application/json',
     },
