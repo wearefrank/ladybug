@@ -58,9 +58,12 @@ describe('Test user stories about testing with Ladybug', () => {
         .find('[data-cy-test="runReport"]').click()
       cy.inIframeBody('[data-cy-toast="warning"]')
         .should('be.visible')
-        .should('contain.text', 'stopped');
+        .should('contain.text', 'Adapter')
+        .should('contain.text', 'STOPPED');
       cy.checkTestTabHasReportNamed('Pipeline Example1a_Adapter1a')
-        .find('td:eq(5)').should('contain', 'STOPPED')
+        .find('td:eq(5)')
+        .should('contain', 'Adapter')
+        .should('contain', 'STOPPED')
     })
   })
 })
