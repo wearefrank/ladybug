@@ -5,6 +5,10 @@ describe('Test user stories about testing with Ladybug', () => {
     cy.visit('')
   })
 
+  after(() => {
+    cy.startAdapter('Example1a', 'Adapter1a');
+  })
+
   it('Run report', () => {
     cy.createReportInLadybug('Example1a', 'Adapter1a', 'xxx').then(storageId => {
       cy.wrap('Found report just created, storageId=' + storageId)
@@ -56,8 +60,7 @@ describe('Test user stories about testing with Ladybug', () => {
         .should('be.visible')
         .should('contain.text', 'stopped');
       cy.checkTestTabHasReportNamed('Pipeline Example1a_Adapter1a')
-        .find('td:eq(5)').should('contain', 'stopped')
-      cy.startAdapter('Example1a', 'Adapter1a');
+        .find('td:eq(5)').should('contain', 'STOPPED')
     })
   })
 })
