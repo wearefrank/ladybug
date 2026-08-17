@@ -462,7 +462,7 @@ Cypress.Commands.add('awaitAdapterStatus', { prevSubject: false }, (configuratio
   }).then((resp) => {
     expect(resp.status).to.equal(200);
     if (resp.body.state === status || retries <= 0) {
-      expect(resp.body.state).toEqual(status)
+      expect(resp.body.state).to.equal(status)
     } else {
       cy.wait(5000)
       cy.awaitAdapterStatus(configuration, adapter, status, retries - 1);
