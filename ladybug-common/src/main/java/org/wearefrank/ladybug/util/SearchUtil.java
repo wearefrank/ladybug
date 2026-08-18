@@ -1,5 +1,5 @@
 /*
-   Copyright 2020, 2022-2023, 2025 WeAreFrank!, 2018 Nationale-Nederlanden
+   Copyright 2020, 2022-2023, 2025-2026 WeAreFrank!, 2018 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -59,6 +59,10 @@ public class SearchUtil {
 
 	public static boolean matches(Object value, String query) {
 		if (query != null && !"".equals(query)) {
+			if (query.startsWith("[[[") && query.endsWith("]]]")) {
+				query = query.substring(3, query.length() - 3);
+				return value != null && value.equals(query);
+			}
 			if (query.startsWith("(") && query.endsWith(")")) {
 				// Regex search
 				if (value == null) {
