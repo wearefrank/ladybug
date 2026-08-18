@@ -1,6 +1,6 @@
 import { ErrorHandler, inject, Injectable, OnDestroy } from '@angular/core';
 import { View } from '../interfaces/view';
-import { MetadataFilter } from './tab.service';
+import { MetadataFilter, TabService } from './tab.service';
 import { BehaviorSubject, debounceTime, firstValueFrom, Observable, Subscription } from 'rxjs';
 import { HttpService } from './http.service';
 import { ClientSettingsService } from './client.settings.service';
@@ -29,11 +29,12 @@ export class FilterService implements OnDestroy {
   private tableDataSubject = new BehaviorSubject<TableData | undefined>(undefined);
   private userFilterColumnsSubject = new BehaviorSubject<Column[] | undefined>(undefined);
   private userFilterChoicesSubject = new BehaviorSubject<Map<string, string[]> | undefined>(undefined);
-  private userFiltersSubject = new BehaviorSubject<Map<string, string>>(new Map<string, string>());
+  private userFiltersSubject = new BehaviorSubject<MetadataFilter[]>([]);
   private httpService = inject(HttpService);
   private clientSettingsService = inject(ClientSettingsService);
   private errorHandling = inject(ErrorHandler);
   private toastService = inject(ToastService);
+  private tabService = inject(TabService);
   private subscriptions = new Subscription();
   private subscribed = false;
   public userFilters$ = this.userFiltersSubject.pipe(debounceTime(300));
@@ -42,7 +43,7 @@ export class FilterService implements OnDestroy {
   private _userFiltersBeingEdited: Record<string, string> = {};
   public set userFiltersBeingEdited(_userFiltersBeingEdited: Record<string, string>) {
     this._userFiltersBeingEdited = _userFiltersBeingEdited;
-    this.userFiltersSubject.next(new Map<string, string>(Object.entries(this._userFiltersBeingEdited)));
+    this.userFiltersSubject.next(this.parseUserFilters(this._userFiltersBeingEdited));
   }
   public get userFiltersBeingEdited(): Record<string, string> {
     return this._userFiltersBeingEdited;
@@ -77,7 +78,7 @@ export class FilterService implements OnDestroy {
   }
 
   onUserFilterChanged(): void {
-    this.userFiltersSubject.next(new Map<string, string>(Object.entries(this.userFiltersBeingEdited)));
+    this.userFiltersSubject.next(this.parseUserFilters(this.userFiltersBeingEdited));
   }
 
   updateFilter(value: string, columnName: string): void {
@@ -118,7 +119,7 @@ export class FilterService implements OnDestroy {
 
   private subscribeToSubscriptions(): void {
     const userFilterSubscription = this.userFilters$.subscribe((userFilters) => {
-      this.update(userFilters);
+      this.update(userFilters, this.currentView!);
     });
     this.subscriptions.add(userFilterSubscription);
     const maxAmountOfRecordsSubscription = this.clientSettingsService.amountOfRecordsInTableObservable.subscribe(() => {
@@ -131,10 +132,9 @@ export class FilterService implements OnDestroy {
     this.viewFilters = [];
     if (currentView.metadataFilter) {
       for (const metadataName of Object.keys(currentView.metadataFilter)) {
-        this.viewFilters.push({
-          metadataName,
-          value: currentView.metadataFilter![metadataName],
-        });
+        this.viewFilters.push(
+          this.tabService.filterQuery2MetadataFilter(metadataName, currentView.metadataFilter![metadataName]),
+        );
       }
     }
   }
@@ -169,21 +169,11 @@ export class FilterService implements OnDestroy {
     }
   }
 
-  private update(userFiltersMap: Map<string, string>): void {
-    if (!this.currentView) {
-      throw new Error('Cannot happen because we subscribe to subscriptions only after receiving the first view');
-    }
-    const userFilters: MetadataFilter[] = [];
-    for (const [key, value] of userFiltersMap.entries()) {
-      userFilters.push({
-        metadataName: key,
-        value,
-      });
-    }
+  private update(userFilters: MetadataFilter[], currentView: View): void {
     const allFilters: MetadataFilter[] = [...this.viewFilters, ...userFilters];
     firstValueFrom(
-      this.httpService.getMetadata(this.currentView, {
-        metadataNames: this.currentView.metadataNames,
+      this.httpService.getMetadata(currentView, {
+        metadataNames: currentView.metadataNames,
         filterHeader: allFilters.map((f) => f.metadataName),
         filter: allFilters.map((f) => f.value),
         limit: this.clientSettingsService.getAmountOfRecordsInTable(),
@@ -191,17 +181,31 @@ export class FilterService implements OnDestroy {
     )
       .then((metadata) => {
         this.lastMetadata = metadata;
-        this.tableDataSubject.next({
-          rows: metadata,
-          columns: this.columns,
-          numericMetadataNames: this.numericMetadataNames,
-        });
+        this.tableDataSubject.next(this.metadata2TableData(metadata, allFilters, currentView));
         this.userFilterChoicesSubject.next(this.getUniqueOptions(metadata));
         this.toastService.showSuccess('Data loaded!');
       })
       .catch((error) => {
         this.errorHandling.handleError(error);
       });
+  }
+
+  private metadata2TableData(
+    metadata: Record<string, string>[],
+    allFilters: MetadataFilter[],
+    currentView: View,
+  ): TableData {
+    const exactFilteredNames = new Set<string>(allFilters.filter((f) => f.exact).map((f) => f.metadataName));
+    const retainedMetadataNames = new Set<string>(currentView.metadataNames.filter((n) => !exactFilteredNames.has(n)));
+    const columns = this.columns.filter((c) => retainedMetadataNames.has(c.name));
+    // No need to remove data from metadata and numericMetadataNames about columns that
+    // are not in the retained columns. The observer taking this data should be able to
+    // handle this unused data.
+    return {
+      rows: metadata,
+      columns,
+      numericMetadataNames: this.numericMetadataNames,
+    };
   }
 
   private getUniqueOptions(rows: Record<string, string>[]): Map<string, string[]> {
@@ -236,5 +240,20 @@ export class FilterService implements OnDestroy {
       }
       return a.localeCompare(b);
     });
+  }
+
+  private parseUserFilters(rawValues: Record<string, string>): MetadataFilter[] {
+    if (!this.currentView) {
+      throw new Error('Cannot happen because we subscribe to subscriptions only after receiving the first view');
+    }
+    const values = new Map<string, string>(Object.entries(rawValues));
+    let metadataNames: string[] = [...values.keys()];
+    metadataNames.sort();
+    const userFilters: MetadataFilter[] = [];
+    for (const metadataName of metadataNames) {
+      const value: string = values.get(metadataName)!;
+      userFilters.push(this.tabService.filterQuery2MetadataFilter(metadataName, value));
+    }
+    return userFilters;
   }
 }
