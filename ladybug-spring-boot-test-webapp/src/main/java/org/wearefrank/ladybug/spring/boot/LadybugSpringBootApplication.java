@@ -15,6 +15,7 @@
 */
 package org.wearefrank.ladybug.spring.boot;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
@@ -25,6 +26,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ImportResource;
 import org.springframework.core.annotation.Order;
+import org.springframework.transaction.TransactionManager;
+import org.springframework.transaction.annotation.TransactionManagementConfigurer;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -87,6 +90,15 @@ public class LadybugSpringBootApplication {
 		// TODO: Do we want to disable CSRF protection for Ladybug?
 		http.csrf().disable();
 		return http.build();
+	}
+
+	@Bean
+	// Spring Boot's autoconfiguration adds its own TransactionManager for the ladybugDataSource bean, in addition to
+	// the ladybugTransactionManager bean from org.wearefrank.ladybug.Config. This makes @Transactional on
+	// DatabaseStorage ambiguous, so tell annotation-driven transaction management which one to use.
+	TransactionManagementConfigurer transactionManagementConfigurer(
+			@Qualifier("ladybugTransactionManager") TransactionManager ladybugTransactionManager) {
+		return () -> ladybugTransactionManager;
 	}
 
 	@Bean
