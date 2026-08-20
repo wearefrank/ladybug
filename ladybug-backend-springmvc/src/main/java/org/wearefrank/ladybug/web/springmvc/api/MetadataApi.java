@@ -47,10 +47,11 @@ public class MetadataApi {
 	public ResponseEntity<?> getMetadataList(@PathVariable("storage") String storageName,
 											 @RequestParam(name = "metadataNames") List<String> metadataNames,
 											 @RequestParam(name="limit", defaultValue = "-1") int limit,
+											 @RequestParam(name = "offset", defaultValue = "0") int offset,
 											 @RequestParam(name = "filterHeader", defaultValue = "") List<String> filterHeaders,
 											 @RequestParam(name = "filter", defaultValue = "") List<String> filterParams) {
 		try {
-			List<LinkedHashMap<String, String>> metadata = delegate.getMetadataList(storageName, metadataNames, limit, filterHeaders, filterParams);
+			List<LinkedHashMap<String, String>> metadata = delegate.getMetadataList(storageName, metadataNames, limit, offset, filterHeaders, filterParams);
 			return ResponseEntity.ok(metadata);
 		} catch(HttpNotFoundException e) {
 			return ResponseEntity.status(404).body(e.getMessage());

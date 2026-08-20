@@ -10,19 +10,27 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - spring-profile: none
+          - name: default
+            spring-profile: none
             selected-specs: cypress/e2e/no-profile/**
             authenticationTest: no-authentication
-          - spring-profile: storage.xml
+          - name: xmlStorage
+            spring-profile: storage.xml
             selected-specs: cypress/e2e/storage-xml/**
             authenticationTest: no-authentication
-          - spring-profile: none
+          - name: authorization
+            spring-profile: none
             selected-specs: cypress/e2e/production-auth/**
             authenticationTest: production
-          - spring-profile: none
+          - name: backendAuthorization
+            spring-profile: none
             selected-specs: cypress/e2e/backend-auth/**
             authenticationTest: only-backend
-    name: Test ladybug without FF!, spring-profile = ${{ matrix.spring-profile }}, authenticationTest = ${{ matrix.authenticationTest }}
+          - name: openTelemetry
+            spring-profile: none
+            selected-specs: cypress/e2e/open-telemetry/**
+            authenticationTest: no-authentication
+    name: Test ladybug without FF!, ${{ matrix.name }}
     runs-on: ubuntu-latest
 
     steps:
@@ -163,7 +171,7 @@ jobs:
         uses: actions/upload-artifact@v4
         if: failure()
         with:
-          name: logs and videos ${{ matrix.spring-profile }}
+          name: logs and videos ${{ matrix.name }}
           path: | 
             frank-runner/specials/ladybug/build.properties
             frank-runner/build/*/logs/*
@@ -176,6 +184,6 @@ jobs:
         uses: actions/upload-artifact@v4
         if: failure()
         with:
-          name: installFrankRunnerEnv ${{ matrix.spring-profile }}
+          name: installFrankRunnerEnv ${{ matrix.name }}
           path: | 
             frank-runner/installFrankRunnerEnv.log

@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2025 WeAreFrank!, 2018 Nationale-Nederlanden
+   Copyright 2019-2026 WeAreFrank!, 2018 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -86,6 +86,15 @@ public class Checkpoint implements Serializable, Cloneable {
 		// Only for Java XML encoding/decoding! Use other constructor instead.
 	}
 
+	// The level is used by org.wearefrank.ladybug.web.common.shownreport.ShownReportBuilder
+	// to organize the checkpoints in a tree instead of a list. The contract is as follows:
+	// - The checkpoints of a report appear in the same order as the order to be
+	//   shown by the frontend.
+	// - All checkpoints that should be shown as children of a parent have a higher
+	//   leven than the parent's level.
+	// - The first checkpoint that has a level equal to or lower than the level of some
+	//   reference closes that reference. The mentioned checkpoint and its successors
+	//   are not children of the reference.
 	public Checkpoint(Report report, String threadName, String sourceClassName,	String name, int type, int level) {
 		this.report = report;
 		this.threadName = threadName;

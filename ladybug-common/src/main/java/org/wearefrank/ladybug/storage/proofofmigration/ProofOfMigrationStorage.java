@@ -1,5 +1,5 @@
 /*
-   Copyright 2022-2025 WeAreFrank!
+   Copyright 2022-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -140,10 +140,10 @@ public class ProofOfMigrationStorage extends DatabaseLogStorage {
 	}
 
 	@Override
-	protected void buildMetadataQuery(int maxNumberOfRecords, List<String> metadataNames, List<String> searchValues,
+	protected void buildMetadataQuery(int maxNumberOfRecords, int offset, List<String> metadataNames, List<String> searchValues,
 			List<String> rangeSearchValues, StringBuilder query, List<Object> args, List<Integer> argTypes)
 			throws StorageException {
-		super.buildMetadataQuery(maxNumberOfRecords, metadataNames, searchValues, rangeSearchValues, query, args,
+		super.buildMetadataQuery(maxNumberOfRecords, offset, metadataNames, searchValues, rangeSearchValues, query, args,
 				argTypes);
 		if (log.isDebugEnabled()) {
 			log.debug("Get metadata original query: " + query.toString());
@@ -216,6 +216,8 @@ public class ProofOfMigrationStorage extends DatabaseLogStorage {
 					return list;
 				});
 		Report report = new Report();
+		// Host and application are not set. This is not a report originating from
+		// a Java application that is tested with Ladybug.
 		report.setTestTool(testTool);
 		report.setStorage(this);
 		report.setStorageId(storageId);

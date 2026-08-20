@@ -19,6 +19,9 @@ import { SimpleFileTreeUtil as SimpleFileTreeUtility } from '../../shared/util/s
 export const treeSideConst = ['left', 'right'] as const;
 export type TreeSide = (typeof treeSideConst)[number];
 
+// TODO issue https://github.com/wearefrank/ladybug/issues/743.
+// This component should be based on HierarchicalReport and
+// DebugTreeComponent.
 @Component({
   selector: 'app-compare-tree',
   templateUrl: './compare-tree.component.html',

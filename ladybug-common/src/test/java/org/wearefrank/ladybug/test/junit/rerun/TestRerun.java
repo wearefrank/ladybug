@@ -20,6 +20,7 @@ import static org.junit.Assert.assertNull;
 
 import java.io.IOException;
 
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -52,6 +53,8 @@ public class TestRerun extends ReportRelatedTestCase {
 
 	@Test
 	public void testRerun() throws StorageException, IOException {
+		testTool.setHost("OriginalHost");
+		testTool.setApplication("TheApplication");
 		testTool.setRerunner(new Rerunner() {
 			@SneakyThrows
 			@Override
@@ -68,9 +71,11 @@ public class TestRerun extends ReportRelatedTestCase {
 		String correlationId = ReportRelatedTestCase.getCorrelationId();
 		addSomething(testTool, correlationId, reportName, 10);
 		assertEquals((Integer)10, i);
+		testTool.setHost("RerunningHost");
 		Storage storage = testTool.getDebugStorage();
 		Report report = ReportRelatedTestCase.findAndGetReport(testTool, storage, correlationId);
 		report.setTestTool(testTool);
+		Assert.assertEquals(report.getHost(), "OriginalHost");
 		report.getCheckpoints().get(1).setStub(StubType.YES.toInt());
 		String actual = report.toXml();
 		actual = ReportRelatedTestCase.applyToXmlIgnores(actual, report);
@@ -78,10 +83,13 @@ public class TestRerun extends ReportRelatedTestCase {
 		actual = ReportRelatedTestCase.applyEstimatedMemoryUsageIgnore(actual);
 		ReportRelatedTestCase.assertXml(RESOURCE_PATH, reportName, actual);
 		int maxStorageIdBeforeRerun = ReportRelatedTestCase.getMaxStorageId(testTool, storage);
-		assertNull(testTool.rerun(ReportRelatedTestCase.getCorrelationId(), report, null, null));
+		String rerunCorrelationId = ReportRelatedTestCase.getCorrelationId();
+		assertNull(testTool.rerun(rerunCorrelationId, report, null, null));
 		int maxStorageIdAfterRerun = ReportRelatedTestCase.getMaxStorageId(testTool, storage);
 		assertEquals(maxStorageIdAfterRerun, maxStorageIdBeforeRerun + 1);
 		assertEquals((Integer)10, i);
+		Report rerunReport = ReportRelatedTestCase.findAndGetReport(testTool, storage, rerunCorrelationId);
+		Assert.assertEquals("RerunningHost", rerunReport.getHost());
 	}
 
 	private static void addSomething(TestTool testTool, String correlationId, String name, Integer something) {

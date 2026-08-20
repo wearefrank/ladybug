@@ -1,0 +1,8 @@
+<Report Name="Simple report" Description="" Path=""
+    StorageId="3"
+    CorrelationId="7c97503a-e5c5-49a2-a76f-6e8855efb71c" StartTime="1781783281505"
+    EndTime="1781783281509" NumberOfCheckpoints="2" EstimatedMemoryUsage="52"
+    Host="MyPredefinedHost" Application="MyPredefinedApplication">
+    <Checkpoint Name="Simple report" Type="Startpoint" Level="0">Other message, hello</Checkpoint>
+    <Checkpoint Name="Simple report" Type="Endpoint" Level="1">Other message, goodbye</Checkpoint>
+</Report>

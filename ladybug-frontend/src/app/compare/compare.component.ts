@@ -18,10 +18,11 @@ import { HttpService } from '../shared/services/http.service';
 import { ErrorHandling } from '../shared/classes/error-handling.service';
 import { catchError, Subject } from 'rxjs';
 import { SimpleFileTreeUtil as SimpleFileTreeUtility } from '../shared/util/simple-file-tree-util';
-import { DebugComponent } from '../debug/debug.component';
 import { TreeItemComponent } from 'ng-simple-file-tree';
 import { ReportAlertMessageComponent } from '../report/report-alert-message/report-alert-message.component';
 import { DiffEditorModel, MonacoDiffEditor } from '../monaco-diff-editor/monaco-diff-editor.component';
+import { isNumber } from '../shared/util/util';
+import { KEY_DEBUG } from '../shared/interfaces/tab';
 
 @Component({
   selector: 'app-compare',
@@ -42,7 +43,6 @@ import { DiffEditorModel, MonacoDiffEditor } from '../monaco-diff-editor/monaco-
   ],
 })
 export class CompareComponent implements AfterViewInit, OnInit {
-  static readonly ROUTER_PATH: string = 'compare';
   @ViewChild(CompareTreeComponent) compareTreeComponent!: CompareTreeComponent;
 
   public tabService = inject(TabService);
@@ -76,7 +76,8 @@ export class CompareComponent implements AfterViewInit, OnInit {
   private errorHandler = inject(ErrorHandling);
 
   ngOnInit(): void {
-    this.compareData = this.getData(this.getIdsFromPath());
+    const routeKey = this.getKeyFromRoute();
+    this.compareData = this.tabService.getCompareData(routeKey);
     this.getStrategyFromLocalStorage();
     this.getViews();
   }
@@ -86,7 +87,7 @@ export class CompareComponent implements AfterViewInit, OnInit {
       this.renderDiffs(this.compareData.originalReport.xml, this.compareData.runResultReport.xml);
       this.showReports();
     } else {
-      this.router.navigate([DebugComponent.ROUTER_PATH]);
+      this.router.navigate([KEY_DEBUG]);
     }
   }
 
@@ -205,14 +206,6 @@ export class CompareComponent implements AfterViewInit, OnInit {
     return true;
   }
 
-  private getData(id: string): CompareData | undefined {
-    return this.tabService.activeCompareTabs.get(id);
-  }
-
-  private getIdsFromPath(): string {
-    return this.route.snapshot.paramMap.get('id') as string;
-  }
-
   private renderDiffs(leftSide: string, rightSide: string): void {
     // TODO: Issue https://github.com/wearefrank/ladybug-frontend/issues/1124
     this.originalModelRequestSubject.next({ language: 'xml', code: leftSide });
@@ -254,5 +247,21 @@ export class CompareComponent implements AfterViewInit, OnInit {
       .subscribe({
         next: (response: string[]) => SimpleFileTreeUtility.hideOrShowCheckpoints(response, treeElements),
       });
+  }
+
+  private getKeyFromRoute(): string {
+    const leftStorageName = this.tabService.getPathParam(this.route.snapshot, 'leftStorageName');
+    const leftStorageIdStr = this.tabService.getPathParam(this.route.snapshot, 'leftStorageId');
+    const rightStorageName = this.tabService.getPathParam(this.route.snapshot, 'rightStorageName');
+    const rightStorageIdStr = this.tabService.getPathParam(this.route.snapshot, 'rightStorageId');
+    if (!isNumber(leftStorageIdStr)) {
+      throw new Error(`Cannot open compare tab with leftStorageId [${leftStorageIdStr}]`);
+    }
+    if (!isNumber(rightStorageIdStr)) {
+      throw new Error(`Cannot open compare tab with rightStorageId [${rightStorageIdStr}]`);
+    }
+    const leftStorageId: number = +leftStorageIdStr;
+    const rightStorageId: number = +rightStorageIdStr;
+    return this.tabService.getCompareTabKey(leftStorageName, leftStorageId, rightStorageName, rightStorageId);
   }
 }

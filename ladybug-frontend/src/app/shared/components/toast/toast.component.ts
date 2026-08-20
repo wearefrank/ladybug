@@ -5,7 +5,7 @@ import { ToastService } from '../../services/toast.service';
 import { Subscription } from 'rxjs';
 import { ClipboardModule } from '@angular/cdk/clipboard';
 import { NgClass } from '@angular/common';
-import { FilterService } from '../../../debug/filter-side-drawer/filter.service';
+import { FilterService } from '../../services/filter.service';
 
 @Component({
   selector: 'app-toast',
@@ -33,10 +33,6 @@ export class ToastComponent implements OnInit, OnDestroy {
       this.ngZone.run(() => this.toasts.push(toast));
     });
     this.subscriptions.add(toastSubscription);
-    const filterSubscription = this.filterService.filterSidePanel$.subscribe((value) => {
-      this.filterPanelVisible = value;
-    });
-    this.subscriptions.add(filterSubscription);
   }
 
   ngOnDestroy(): void {
