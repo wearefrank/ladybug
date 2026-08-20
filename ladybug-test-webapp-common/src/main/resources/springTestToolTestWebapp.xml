@@ -205,6 +205,8 @@
 		depends-on="ladybugDatabaseChangelog"
 		>
 		<property name="name" value="databaseStorage"/>
+		<!-- This constant is not factored out in a bean, because a SpEL bean-reference silently breaks under
+		     Spring Boot's bootstrapping. -->
 		<property name="maxStorageSize" value="#{10 * 1024 * 1024}"/>
 		<property name="storeReportXml" value="true"/>
 	</bean>
