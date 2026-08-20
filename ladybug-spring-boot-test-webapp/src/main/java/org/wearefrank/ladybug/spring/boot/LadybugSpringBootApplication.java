@@ -15,6 +15,7 @@
 */
 package org.wearefrank.ladybug.spring.boot;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
@@ -24,8 +25,9 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ImportResource;
-import org.springframework.context.annotation.Scope;
 import org.springframework.core.annotation.Order;
+import org.springframework.transaction.TransactionManager;
+import org.springframework.transaction.annotation.TransactionManagementConfigurer;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -40,9 +42,6 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.wearefrank.ladybug.web.FrontendServlet;
 import org.springframework.http.HttpMethod;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.Filter;
@@ -94,56 +93,37 @@ public class LadybugSpringBootApplication {
 	}
 
 	@Bean
+	// Spring Boot's autoconfiguration adds its own TransactionManager for the ladybugDataSource bean, in addition to
+	// the ladybugTransactionManager bean from org.wearefrank.ladybug.Config. This makes @Transactional on
+	// DatabaseStorage ambiguous, so tell annotation-driven transaction management which one to use.
+	TransactionManagementConfigurer transactionManagementConfigurer(
+			@Qualifier("ladybugTransactionManager") TransactionManager ladybugTransactionManager) {
+		return () -> ladybugTransactionManager;
+	}
+
+	@Bean
 	InMemoryUserDetailsManager userDetailsManager() {
 		UserDetails observerUser = User.builder()
 				.username("observer")
-				.password("{noop}observer")
+				.password("{noop}IbisObserver")
 				.roles("IbisObserver")
 				.build();
 		UserDetails dataAdminUser = User.builder()
 				.username("dataAdmin")
-				.password("{noop}dataAdmin")
+				.password("{noop}IbisDataAdmin")
 				.roles("IbisDataAdmin")
 				.build();
 		UserDetails adminUser = User.builder()
 				.username("admin")
-				.password("{noop}admin")
+				.password("{noop}IbisAdmin")
 				.roles("IbisAdmin")
 				.build();
 		UserDetails testerUser = User.builder()
 				.username("tester")
-				.password("{noop}tester")
+				.password("{noop}IbisTester")
 				.roles("IbisTester")
 				.build();
 		// Create an UserDetailsManager without any users.
 		return new InMemoryUserDetailsManager(observerUser, dataAdminUser, adminUser, testerUser);
-	}
-
-	@Bean
-	@Scope("singleton")
-	DbmsSupport dbmsSupport() {
-		return new DbmsSupport();
-	}
-
-	@Bean
-	@Scope("singleton")
-	public ReportXmlTransformer reportXmlTransformer() {
-		return new ReportXmlTransformer();
-	}
-
-	@Bean
-	@Scope("singleton")
-	List<String> metadataNames() {
-		List<String> metadataNames = new ArrayList<String>();
-		metadataNames.add("storageId");
-		metadataNames.add("endTime");
-		metadataNames.add("duration");
-		metadataNames.add("name");
-		metadataNames.add("correlationId");
-		metadataNames.add("status");
-		metadataNames.add("numberOfCheckpoints");
-		metadataNames.add("estimatedMemoryUsage");
-		metadataNames.add("storageSize");
-		return metadataNames;
 	}
 }

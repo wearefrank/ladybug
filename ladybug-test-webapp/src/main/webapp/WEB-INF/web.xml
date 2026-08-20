@@ -59,7 +59,7 @@
 
 	<!--CICD_AUTH
 	Enable security elements below to test security
-	See also ApiAuthorizationFilter.java and *Roles beans in springTestToolTestWebapp.xml
+	See also ApiAuthorizationFilter.java and *Roles beans in springTestToolTestWebapp.xml (ladybug-test-webapp-common)
 	<login-config>
 		<auth-method>BASIC</auth-method>
 		<realm-name>Ladybug test webapp</realm-name>

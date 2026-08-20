@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans
+	xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd"
+	default-lazy-init="true"
+	>
+
+	<!-- Shared Spring configuration reused by all Ladybug test webapps -->
+	<import resource="classpath:springTestToolTestWebapp.xml"/>
+
+	<!-- Beans depending on the working directory of this particular webapp -->
+
+	<bean name="reportsFilename" class="java.lang.String">
+		<constructor-arg value="../${ladybug.dir:ladybug}/ladybug-common/data/file-storage/ladybug.tts"/>
+	</bean>
+
+	<bean name="metadataFilename" class="java.lang.String">
+		<constructor-arg value="../${ladybug.dir:ladybug}/ladybug-common/data/file-storage/ladybug.ttm"/>
+	</bean>
+
+	<!--
+	Without connection pooling (considerably slows down GUI performance). E.g. when using:
+	<bean name="ladybugDataSource" class="org.h2.jdbcx.JdbcDataSource">
+		<property name="URL" value="jdbc:h2:../${ladybug.dir:ladybug}/data/database-storage/ladybug"/>
+	</bean>
+	-->
+	<bean name="ladybugDataSource" class="org.apache.commons.dbcp2.BasicDataSource" destroy-method="close">
+		<property name="driverClassName" value="org.h2.Driver"/>
+		<property name="url" value="jdbc:h2:../${ladybug.dir:ladybug}/ladybug-common/data/database-storage/ladybug"/>
+	</bean>
+
+	<beans profile="storage.xml">
+		<!-- Configure Test tab with xml storage -->
+		<bean name="testStorage" class="org.wearefrank.ladybug.storage.xml.XmlStorage">
+			<property name="name" value="Test"/>
+			<property name="reportsFolder" value="../ladybug/ladybug-test-webapp/src/test/testtool"/>
+		</bean>
+	</beans>
+
+</beans>
