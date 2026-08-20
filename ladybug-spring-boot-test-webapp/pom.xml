@@ -24,6 +24,13 @@
       <groupId>org.wearefrank</groupId>
       <artifactId>ladybug-test-webapp-common</artifactId>
       <version>${project.version}</version>
+      <!-- Spring Boot brings Logback via spring-boot-starter-web; slf4j-simple would compete as a second SLF4J provider -->
+      <exclusions>
+        <exclusion>
+          <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-simple</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>

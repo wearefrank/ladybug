@@ -91,7 +91,7 @@
 	<bean name="blackBoxView" class="org.wearefrank.ladybug.filter.View" parent="whiteBoxView">
 		<property name="name" value="Black box"/>
 		<property name="checkpointMatchers">
-			<bean class="org.wearefrank.ladybug.spring.boot.testtool.test.webapp.Matcher"/>
+			<bean class="org.wearefrank.ladybug.test.webapp.common.test.webapp.Matcher"/>
 		</property>
 	</bean>
 
@@ -125,9 +125,9 @@
 		<constructor-arg value="nl/nn/testtool/test/junit/transformReport.xslt"/>
 	</bean>
 
-	<bean name="rerunner" class="org.wearefrank.ladybug.spring.boot.testtool.test.webapp.SimpleRerunner"/>
+	<bean name="rerunner" class="org.wearefrank.ladybug.test.webapp.common.test.webapp.SimpleRerunner"/>
 
-	<bean name="customReportAction" class="org.wearefrank.ladybug.spring.boot.testtool.extensions.DummyReportAction"/>
+	<bean name="customReportAction" class="org.wearefrank.ladybug.test.webapp.common.extensions.DummyReportAction"/>
 
 	<!-- Use memory storage by default as Cypress tests depend on memory storage / starting with empty storages -->
 
@@ -153,7 +153,7 @@
 		<property name="metadataFilename" value="#{metadataFilename}"/>
 	</bean>
 
-	<bean name="errorGeneratingStorage" class="org.wearefrank.ladybug.spring.boot.testtool.storages.ErrorGeneratingStorage">
+	<bean name="errorGeneratingStorage" class="org.wearefrank.ladybug.test.webapp.common.storages.ErrorGeneratingStorage">
 		<property name="name" value="errorGeneratingStorage" />
 	</bean>
 
