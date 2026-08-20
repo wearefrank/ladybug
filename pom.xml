@@ -117,6 +117,11 @@
 
         <version>${revision}</version>
       </dependency>
+      <dependency>
+        <groupId>org.wearefrank</groupId>
+        <artifactId>ladybug-test-webapp-common</artifactId>
+        <version>${revision}</version>
+      </dependency>
 
       <dependency>
         <groupId>org.apache.cxf</groupId>
