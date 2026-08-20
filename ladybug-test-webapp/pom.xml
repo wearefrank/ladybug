@@ -23,6 +23,10 @@
       <groupId>org.wearefrank</groupId>
       <artifactId>ladybug-backend-jaxrs</artifactId>
     </dependency>
+    <dependency>
+      <groupId>org.wearefrank</groupId>
+      <artifactId>ladybug-test-webapp-common</artifactId>
+    </dependency>
     <!-- Reuse transformReport.xslt from ibis-ladybug test resources. See also https://maven.apache.org/plugins/maven-jar-plugin/examples/create-test-jar.html -->
     <!-- Bad practice, but accepted for now. This artifact will automatically become available after running 'mvn install' once which makes it availabe in your local repository. -->
     <dependency>
