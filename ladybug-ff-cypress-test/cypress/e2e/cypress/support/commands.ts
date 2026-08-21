@@ -230,6 +230,8 @@ Cypress.Commands.add('enterFilter', (field: string, filter: string) => {
 
 Cypress.Commands.add('checkActiveFilterSphere', (field: string, value: string) => {
   const expectedText = `${field}: ${value}`
+  cy.inIframeBody('app-active-filters').should('not.contain', '[');
+  cy.inIframeBody('app-active-filters').should('not.contain', ']');
   return cy.inIframeBody('app-active-filters').contains(expectedText)
 })
 
