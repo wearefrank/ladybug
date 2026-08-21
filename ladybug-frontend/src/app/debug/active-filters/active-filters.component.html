@@ -8,7 +8,9 @@
           {{ safeColumnNameToLabel(filter.metadataName) | shortenedTableHeader | titlecase }}: {{ filter.shownValue }}
         </div>
         @if (filter.exact) {
-          <div class="exact"><i class="bi bi-check2"></i></div>
+          <div class="exact" data-cy-active-filter-exact>
+            <i class="bi bi-eye-slash"></i>
+          </div>
         }
       </div>
     }
