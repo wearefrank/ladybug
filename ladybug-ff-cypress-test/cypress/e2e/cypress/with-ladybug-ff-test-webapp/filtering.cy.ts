@@ -44,8 +44,6 @@ describe('Tests with views and filtering', () => {
     { name: 'Memory', colNr: 8, testExactMatch: false, enabled: true },
     { name: 'Size', colNr: 9, testExactMatch: false, enabled: true },
     { name: 'Input', colNr: 10, testExactMatch: false, enabled: true },
-    { name: 'Application', colNr: 11, testExactMatch: false, enabled: true },
-    { name: 'Application', colNr: 11, testExactMatch: true, enabled: true },
   ]
 
   const testedColumnAndNameCombinations = columnAndNameCombinations.filter((testCase) => testCase.name !== 'Status')
@@ -82,6 +80,20 @@ describe('Tests with views and filtering', () => {
       })
     })
   }
+
+  it('Can manipulate filter on Application, even though column is not shown', () => {
+    cy.visit('')
+    cy.getNumLadybugReports().should('equal', 5)
+    cy.inIframeBody('[data-cy-debug="table"]').find(`th:contains(Name)`).should('be.visible')
+    cy.inIframeBody('[data-cy-debug="table"]').find(`th:contains(Application)`).should('not.exist')
+    // Test that the FF! opens Ladybug so that we filter on Application by default
+    cy.checkActiveFilterSphere('Application', 'ladybug-ff-test-webapp').should('be.visible')
+    cy.inIframeBody('[data-cy-debug="filterLabel"]:contains(Application)')
+      .parent()
+      .contains('Clear')
+      .click()
+    cy.inIframeBody('app-active-filters').should('not.exist')
+  })
 
   it('Filter on two criteria', () => {
     cy.visit('')
