@@ -35,6 +35,7 @@ describe('Tests with views and filtering', () => {
     { name: 'Storage Id', colNr: 1, testExactMatch: false, enabled: !isDatabaseStorage },
     { name: 'End Time', colNr: 2, testExactMatch: false, enabled: !isDatabaseStorage },
     { name: 'Duration', colNr: 3, testExactMatch: false, enabled: true },
+    { name: 'Duration', colNr: 3, testExactMatch: true, enabled: true },
     { name: 'Name', colNr: 4, testExactMatch: false, enabled: true },
     { name: 'Name', colNr: 4, testExactMatch: true, enabled: true },
     { name: 'Correlation Id', colNr: 5, testExactMatch: false, enabled: true },
@@ -50,7 +51,11 @@ describe('Tests with views and filtering', () => {
   const testedColumnAndNameCombinations = columnAndNameCombinations.filter((testCase) => testCase.name !== 'Status')
 
   for (const testCase of testedColumnAndNameCombinations.filter((c) => c.enabled)) {
-    it(`Filter on field ${testCase.name}, expected at column ${testCase.colNr}`, () => {
+    let exactPhrase = '';
+    if (testCase.testExactMatch) {
+      exactPhrase = ', with exact matching';
+    }
+    it(`Filter on field ${testCase.name}, expected at column ${testCase.colNr}${exactPhrase}`, () => {
       cy.visit('')
       // Enter Ladybug
       cy.getNumLadybugReports().should('equal', 5)
