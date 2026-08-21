@@ -105,6 +105,40 @@ describe('Tests for table filter', () => {
     cy.get('[data-cy-debug="filter"]').click();
     cy.get('[data-cy-debug="tableFilter"').eq(1).should('not.contain.value', '1')
   })
+
+  it('When exact filter is requested then column omitted from table', () => {
+    cy.assertDebugTableLength(2);
+    cy.get('[data-cy-debug="filterLabel"]').contains('Name').should('be.visible');
+    cy.get('[data-cy-debug="filter"]').click();
+    cy.get('[data-cy-debug="tableFilter"]').eq(3).type('[[[Simple report]]]{enter}');
+    cy.assertDebugTableLength(1);
+    cy.get('[data-cy-debug="filterLabel"]').contains('Name').should('not.exist');
+    // No [[[ ]]]
+    cy.get('[data-cy-active-filter]').should('contain.text', 'Name: Simple report');
+    cy.get('[data-cy-active-filter]')
+      .should('have.length', 1)
+      .find('[data-cy-active-filter-exact]').should('be.visible')
+    cy.get('[data-cy-debug="tableFilter"]').eq(3).clear().type('{enter}');
+    cy.assertDebugTableLength(2);
+    cy.get('[data-cy-active-filter]').should('not.exist')
+  })
+
+  it('When non-exact filter is requested then column not omitted from table', () => {
+    cy.assertDebugTableLength(2);
+    cy.get('[data-cy-debug="filterLabel"]').contains('Name').should('be.visible');
+    cy.get('[data-cy-debug="filter"]').click();
+    cy.get('[data-cy-debug="tableFilter"]').eq(3).type('Simple report{enter}');
+    cy.assertDebugTableLength(1);
+    cy.get('[data-cy-debug="filterLabel"]').contains('Name').should('be.visible');
+    // No [[[ ]]]
+    cy.get('[data-cy-active-filter]').should('contain.text', 'Name: Simple report');
+    cy.get('[data-cy-active-filter]')
+      .should('have.length', 1)
+      .find('[data-cy-active-filter-exact]').should('not.exist')
+    cy.get('[data-cy-debug="tableFilter"]').eq(3).clear().type('{enter}');
+    cy.assertDebugTableLength(2);
+    cy.get('[data-cy-active-filter]').should('not.exist')
+  })
 });
 
 describe('About URL filters and row filtering views', () => {
