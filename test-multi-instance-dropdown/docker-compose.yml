@@ -1,0 +1,57 @@
+name: frank-mermaid-dashboard
+services:
+  db:
+    image: frankframework.org/frank-manual/src-steps/frank-2-transactions/postgresql
+    build: ./db
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_PASSWORD: testiaf_user00
+      POSTGRES_USER: testiaf_user
+      POSTGRES_DB: frank-mermaid-dashboard
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U testiaf_user -d frank-mermaid-dashboard"]
+      interval: 2s
+      timeout: 5s
+      retries: 15
+  frank-mermaid-dashboard:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      args:
+        PG_VERSION: 42.7.8
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8090:8080"
+      - "5700-5709:5700-5709"
+    volumes:
+        - ./backend/src/main/configurations:/opt/frank/configurations
+        - ./backend/src/main/resources:/opt/frank/resources
+    environment:
+      instance.name: frank-mermaid-dashboard
+      management.gateway.inbound.class: org.frankframework.management.gateway.HazelcastInboundGateway
+      management.gateway.outbound.class: org.frankframework.management.gateway.HazelcastOutboundGateway
+      configurations.directory.autoLoad: true
+      configurations.frank-mermaid-dashboard-config.allowCustomClasses: true
+  monitored-1:
+    build:
+      context: ./monitored1
+      dockerfile: Dockerfile
+      args:
+        PG_VERSION: 42.7.8
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8091:8080"
+      - "5710-5720:5700-5710"
+    volumes:
+      - ./monitored1/configurations:/opt/frank/configurations
+      - ./monitored1/resources:/opt/frank/resources
+    environment:
+      instance.name: monitored-1
+      management.gateway.inbound.class: org.frankframework.management.gateway.HazelcastInboundGateway
+      dtap.stage: LOC
+      configurations.directory.autoLoad: true
