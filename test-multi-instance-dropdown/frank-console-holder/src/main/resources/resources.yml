@@ -1,6 +1,6 @@
 jdbc:
-  - name: "monitored-1"
+  - name: "frank-console-holder"
     type: "org.postgresql.ds.PGSimpleDataSource"
-    url: "jdbc:postgresql://db:5432/frank-mermaid-dashboard"
+    url: "jdbc:postgresql://db:5432/frank-console-holder"
     username: "testiaf_user"
     password: "testiaf_user00"

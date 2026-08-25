@@ -1,4 +1,4 @@
-<Configuration name="frank-mermaid-dashboard-config"
+<Configuration name="frank-console-holder-config"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:noNamespaceSchemaLocation="../FrankConfig.xsd"
 	>
