@@ -12,22 +12,22 @@
 	<!-- Beans depending on the working directory of this particular webapp -->
 
 	<bean name="reportsFilename" class="java.lang.String">
-		<constructor-arg value="../${ladybug.dir:ladybug}/ladybug-common/data/file-storage/ladybug.tts"/>
+		<constructor-arg value="../${ladybug.dir:ladybug}/${ladybug.data.module:ladybug-test-webapp}/data/file-storage/ladybug.tts"/>
 	</bean>
 
 	<bean name="metadataFilename" class="java.lang.String">
-		<constructor-arg value="../${ladybug.dir:ladybug}/ladybug-common/data/file-storage/ladybug.ttm"/>
+		<constructor-arg value="../${ladybug.dir:ladybug}/${ladybug.data.module:ladybug-test-webapp}/data/file-storage/ladybug.ttm"/>
 	</bean>
 
 	<!--
 	Without connection pooling (considerably slows down GUI performance). E.g. when using:
 	<bean name="ladybugDataSource" class="org.h2.jdbcx.JdbcDataSource">
-		<property name="URL" value="jdbc:h2:../${ladybug.dir:ladybug}/data/database-storage/ladybug"/>
+		<property name="URL" value="jdbc:h2:../${ladybug.dir:ladybug}/${ladybug.data.module:ladybug-test-webapp}/data/database-storage/ladybug"/>
 	</bean>
 	-->
 	<bean name="ladybugDataSource" class="org.apache.commons.dbcp2.BasicDataSource" destroy-method="close">
 		<property name="driverClassName" value="org.h2.Driver"/>
-		<property name="url" value="jdbc:h2:../${ladybug.dir:ladybug}/ladybug-common/data/database-storage/ladybug"/>
+		<property name="url" value="jdbc:h2:../${ladybug.dir:ladybug}/${ladybug.data.module:ladybug-test-webapp}/data/database-storage/ladybug"/>
 	</bean>
 
 	<beans profile="storage.xml">
