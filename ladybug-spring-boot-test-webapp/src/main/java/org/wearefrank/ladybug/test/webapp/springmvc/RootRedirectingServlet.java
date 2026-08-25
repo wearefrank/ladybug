@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.wearefrank.ladybug.spring.boot;
+package org.wearefrank.ladybug.test.webapp.springmvc;
 
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;

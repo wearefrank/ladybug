@@ -1,4 +1,4 @@
-package org.wearefrank.ladybug.spring.boot;
+package org.wearefrank.ladybug.test.webapp.springmvc;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
