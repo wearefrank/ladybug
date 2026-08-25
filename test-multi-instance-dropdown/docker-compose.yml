@@ -20,6 +20,7 @@ services:
       dockerfile: Dockerfile
       args:
         PG_VERSION: 42.7.8
+        FF_VERSION: ${FF_VERSION:-latest}
     depends_on:
       db:
         condition: service_healthy
@@ -41,6 +42,7 @@ services:
       dockerfile: Dockerfile
       args:
         PG_VERSION: 42.7.8
+        FF_VERSION: ${FF_VERSION:-latest}
     depends_on:
       db:
         condition: service_healthy
