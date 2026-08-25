@@ -17,8 +17,9 @@
 	<!--
 	Shared Spring configuration for the Ladybug test webapps (ladybug-test-webapp and
 	ladybug-spring-boot-test-webapp). Beans whose value depends on the working directory of the
-	consuming webapp (reportsFilename, metadataFilename, ladybugDataSource and the testStorage bean
-	of profile storage.xml) are not defined here and must be provided by the importing webapp.
+	consuming webapp (reportsFilename, metadataFilename, ladybugDataSource and the debugStorage/
+	testStorage beans of profiles storage.file and storage.xml) are not defined here and must be
+	provided by the importing webapp.
 	-->
 
 	<!-- Make ${ladybug.dir:ladybug} read system property ladybug.dir with default value ladybug -->
@@ -244,21 +245,6 @@
 	-->
 
 	<!-- Profiles -->
-
-	<beans profile="storage.file">
-		<!-- White box view and TestTool (creating and storing reports) are using debugStorage -->
-		<bean name="debugStorage" class="org.wearefrank.ladybug.storage.file.Storage">
-			<property name="name" value="Debug"/>
-			<property name="reportsFilename" value="../${ladybug.dir:ladybug}/data/file-storage/ladybug.tts"/>
-			<property name="metadataFilename" value="../${ladybug.dir:ladybug}/data/file-storage/ladybug.ttm"/>
-		</bean>
-		<!-- Configure Test tab with file storage -->
-		<bean name="testStorage" class="org.wearefrank.ladybug.storage.file.TestStorage">
-			<property name="name" value="Test"/>
-			<property name="reportsFilename" value="../${ladybug.dir:ladybug}/data/file-storage/ladybug.tts"/>
-			<property name="metadataFilename" value="../${ladybug.dir:ladybug}/data/file-storage/ladybug.ttm"/>
-		</bean>
-	</beans>
 
 	<beans profile="storage.database">
 		<!-- White box view and TestTool (creating and storing reports) are using debugStorage -->

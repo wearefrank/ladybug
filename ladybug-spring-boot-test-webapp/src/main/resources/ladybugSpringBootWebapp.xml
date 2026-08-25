@@ -24,6 +24,21 @@
 		<property name="url" value="jdbc:h2:./data/database-storage/ladybug"/>
 	</bean>
 
+	<beans profile="storage.file">
+		<!-- White box view and TestTool (creating and storing reports) are using debugStorage -->
+		<bean name="debugStorage" class="org.wearefrank.ladybug.storage.file.Storage">
+			<property name="name" value="Debug"/>
+			<property name="reportsFilename" value="data/file-storage/ladybug.tts"/>
+			<property name="metadataFilename" value="data/file-storage/ladybug.ttm"/>
+		</bean>
+		<!-- Configure Test tab with file storage -->
+		<bean name="testStorage" class="org.wearefrank.ladybug.storage.file.TestStorage">
+			<property name="name" value="Test"/>
+			<property name="reportsFilename" value="data/file-storage/ladybug.tts"/>
+			<property name="metadataFilename" value="data/file-storage/ladybug.ttm"/>
+		</bean>
+	</beans>
+
 	<beans profile="storage.xml">
 		<!-- Configure Test tab with xml storage -->
 		<bean name="testStorage" class="org.wearefrank.ladybug.storage.xml.XmlStorage">
