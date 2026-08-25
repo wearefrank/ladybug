@@ -28,10 +28,12 @@ import org.springframework.context.annotation.ImportResource;
 import org.springframework.core.annotation.Order;
 import org.springframework.transaction.TransactionManager;
 import org.springframework.transaction.annotation.TransactionManagementConfigurer;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
@@ -41,17 +43,32 @@ import org.springframework.security.web.servlet.util.matcher.PathPatternRequestM
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.wearefrank.ladybug.web.FrontendServlet;
+import org.wearefrank.ladybug.web.common.TestToolInfoResponse;
 import org.springframework.http.HttpMethod;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.Filter;
+
+import java.util.Arrays;
+
+import lombok.extern.slf4j.Slf4j;
 
 @Configuration
 @SpringBootApplication
 @ImportResource("classpath:ladybugSpringBootWebapp.xml")
 @EnableWebSecurity
 @EnableMethodSecurity(jsr250Enabled = true, proxyTargetClass = true)
+@Slf4j
 public class LadybugSpringBootApplication {
+	// All backend roles known to Ladybug. Granted to anonymous requests when
+	// ladybug.ui.test.mode=NO_AUTH, so that both the URL-level and the
+	// @RolesAllowed method-level authorization checks let every request through.
+	private static final String[] ALL_LADYBUG_ROLES = {
+			"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester", "IbisWebService"
+	};
+
+	@Value("${ladybug.ui.test.mode:DEFAULT}")
+	private TestToolInfoResponse.UI_TEST_MODE uiTestMode;
 
 	public static void main(String[] args) {
 		SpringApplication.run(LadybugSpringBootApplication.class, args);
@@ -80,12 +97,23 @@ public class LadybugSpringBootApplication {
 		// This does not authenticate the user, but only means the filter will be triggered.
 		http.securityMatcher(builder.matcher("/**"));
 
-		// Enables security for URL /ladybug/api
-		http.authorizeHttpRequests(requests -> requests
-				.requestMatchers(builder.matcher("/**")).authenticated());
+		if (uiTestMode.equals(TestToolInfoResponse.UI_TEST_MODE.NO_AUTH)) {
+			log.error("Behavior of ladybug modified by test.properties - not for production!: authorization for {} is disabled because ladybug.ui.test.mode=NO_AUTH", builder.matcher("/**"));
+			// Let every request through at the URL level...
+			http.authorizeHttpRequests(requests -> requests
+					.requestMatchers(builder.matcher("/**")).permitAll());
+			// ...and grant every Ladybug role to unauthenticated requests, so that
+			// @RolesAllowed checks on controller methods do not block them either.
+			http.anonymous(anonymous -> anonymous.authorities(AuthorityUtils.createAuthorityList(
+					Arrays.stream(ALL_LADYBUG_ROLES).map(role -> "ROLE_" + role).toArray(String[]::new))));
+		} else {
+			// Enables security for URL /ladybug/api
+			http.authorizeHttpRequests(requests -> requests
+					.requestMatchers(builder.matcher("/**")).authenticated());
 
-		// Uses a BasicAuthenticationEntryPoint to force users to log in
-		http.httpBasic(Customizer.withDefaults());
+			// Uses a BasicAuthenticationEntryPoint to force users to log in
+			http.httpBasic(Customizer.withDefaults());
+		}
 
 		// TODO: Do we want to disable CSRF protection for Ladybug?
 		http.csrf().disable();
