@@ -1,0 +1,13 @@
+<Configuration name="frank-console-holder-config"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:noNamespaceSchemaLocation="../FrankConfig.xsd"
+	>
+	<Adapter name="HelloWorld">
+		<Receiver name="HelloWorld">
+			<ApiListener name="HelloWorld" uriPattern="hello"/>
+		</Receiver>
+		<Pipeline>
+			<EchoPipe name="HelloWorldPipe8090" getInputFromFixedValue="Hello World from port 8090!"/>
+		</Pipeline>
+	</Adapter>
+</Configuration>

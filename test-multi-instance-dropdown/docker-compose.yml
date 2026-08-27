@@ -1,0 +1,59 @@
+name: test-multi-instance-dropdown
+services:
+  db:
+    image: frankframework.org/frank-manual/src-steps/frank-2-transactions/postgresql
+    build: ./db
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_PASSWORD: testiaf_user00
+      POSTGRES_USER: testiaf_user
+      POSTGRES_DB: frank-console-holder
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U testiaf_user -d frank-console-holder"]
+      interval: 2s
+      timeout: 5s
+      retries: 15
+  frank-console-holder:
+    build:
+      context: ./frank-console-holder
+      dockerfile: Dockerfile
+      args:
+        PG_VERSION: 42.7.8
+        FF_VERSION: ${FF_VERSION:-latest}
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8090:8080"
+      - "5700-5709:5700-5709"
+    volumes:
+        - ./frank-console-holder/src/main/configurations:/opt/frank/configurations
+        - ./frank-console-holder/src/main/resources:/opt/frank/resources
+    environment:
+      instance.name: frank-console-holder
+      management.gateway.inbound.class: org.frankframework.management.gateway.HazelcastInboundGateway
+      management.gateway.outbound.class: org.frankframework.management.gateway.HazelcastOutboundGateway
+      configurations.directory.autoLoad: true
+      configurations.frank-console-holder-config.allowCustomClasses: true
+  frank-other:
+    build:
+      context: ./frank-other
+      dockerfile: Dockerfile
+      args:
+        PG_VERSION: 42.7.8
+        FF_VERSION: ${FF_VERSION:-latest}
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8091:8080"
+      - "5710-5720:5700-5710"
+    volumes:
+      - ./frank-other/configurations:/opt/frank/configurations
+      - ./frank-other/resources:/opt/frank/resources
+    environment:
+      instance.name: frank-other
+      management.gateway.inbound.class: org.frankframework.management.gateway.HazelcastInboundGateway
+      dtap.stage: LOC
+      configurations.directory.autoLoad: true
