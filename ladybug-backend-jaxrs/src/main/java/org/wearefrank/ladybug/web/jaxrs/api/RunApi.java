@@ -58,7 +58,7 @@ public class RunApi extends ApiBase {
 	@Consumes(MediaType.APPLICATION_JSON)
 	public Response runReport(@PathParam("storageName") String storageName, @PathParam("storageId") int storageId) {
 		try {
-			Map<String, Object> result = delegate.runReport(storageName, storageId);
+			Map<String, Object> result = delegate.runReport(storageName, storageId, this);
 			return Response.ok(result).build();
 		} catch (HttpBadRequestException e) {
 			return Response.status(Response.Status.BAD_REQUEST).entity(e.getMessage()).build();

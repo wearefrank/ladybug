@@ -21,6 +21,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.wearefrank.ladybug.Report;
+import org.wearefrank.ladybug.SecurityContext;
 import org.wearefrank.ladybug.TestTool;
 import org.wearefrank.ladybug.run.ReportRunner;
 import org.wearefrank.ladybug.run.RunResult;
@@ -41,7 +42,7 @@ public class RunApiImpl {
 	@Autowired TestTool testTool;
 	private @Setter @Autowired ReportXmlTransformer reportXmlTransformer;
 
-	public Map<String, Object> runReport(String storageName, int storageId) throws HttpBadRequestException, HttpInternalServerErrorException {
+	public Map<String, Object> runReport(String storageName, int storageId, SecurityContext securityContext) throws HttpBadRequestException, HttpInternalServerErrorException {
 		Map<String, Object> result = new HashMap<>();
 		String errorMessage = null;
 		try {
@@ -51,6 +52,7 @@ public class RunApiImpl {
 				ReportRunner runner = new ReportRunner();
 				runner.setTestTool(testTool);
 				runner.setDebugStorage(testTool.getDebugStorage());
+				runner.setSecurityContext(securityContext);
 				errorMessage = runner.run(Collections.singletonList(report), true, true);
 				if (errorMessage == null) {
 					RunResult runResult = runner.getResults().get(storageId);

@@ -1100,7 +1100,7 @@ public class TestTool {
 	}
 
 	/**
-	 * See {@link Rerunner#rerun(String, Report, SecurityContext, ReportRunner)}
+	 * See {@link Rerunner#rerunWithoutThrowingException(String, Report, SecurityContext, ReportRunner)}
 	 * 
 	 * @param correlationId ...
 	 * @param report ...
@@ -1112,7 +1112,7 @@ public class TestTool {
 	}
 
 	/**
-	 * See {@link Rerunner#rerun(String, Report, SecurityContext, ReportRunner)}
+	 * See {@link Rerunner#rerunWithoutThrowingException(String, Report, SecurityContext, ReportRunner)}
 	 * 
 	 * @param correlationId ...
 	 * @param report ...
@@ -1135,9 +1135,9 @@ public class TestTool {
 			}
 			try {
 				if (rerunner != null) {
-					errorMessage = rerunner.rerun(correlationId, report, securityContext, reportRunner);
+					errorMessage = rerunner.rerunWithoutThrowingException(correlationId, report, securityContext, reportRunner);
 				} else {
-					errorMessage = debugger.rerun(correlationId, report, securityContext, reportRunner);
+					errorMessage = debugger.rerunWithoutThrowingException(correlationId, report, securityContext, reportRunner);
 				}
 			} finally {
 				if (reportGeneratorEnabled) {
