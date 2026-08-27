@@ -48,7 +48,12 @@ describe('Tests for report transformation', () => {
     cy.get('[data-cy-debug="openSettings"]').click();
     cy.get('[data-cy-settings="nav-client"]').click();
     cy.get('[data-cy-settings-transformation-enabled]').uncheck();
+    // Saving settings triggers a debounced metadata reload (see FilterService),
+    // which re-renders the table rows. Wait for it to finish before interacting
+    // with the table, otherwise the row can detach mid-click (flaky failure).
+    cy.intercept('GET', '**/api/metadata/**').as('metadataReload');
     cy.get('[data-cy-settings="saveChanges"]').click();
+    cy.wait('@metadataReload');
     openTheReport();
     cy.get('[data-cy-element-name="reportXmlEditor"]').contains('Name="IGNORED"').should('not.exist');
     cy.get('[data-cy-element-name="name"]').should('have.value', 'Another simple report');
