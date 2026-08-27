@@ -18,7 +18,7 @@
 	</listener>
 
 	<listener>
-		<listener-class>org.wearefrank.ladybug.test.web.ServletListener</listener-class>
+		<listener-class>org.wearefrank.ladybug.test.webapp.jaxrs.ServletListener</listener-class>
 	</listener>
 
 	<servlet>
