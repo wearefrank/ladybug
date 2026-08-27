@@ -135,22 +135,22 @@ public class LadybugSpringBootApplication {
 	@Bean
 	InMemoryUserDetailsManager userDetailsManager() {
 		UserDetails observerUser = User.builder()
-				.username("observer")
+				.username("IbisObserver")
 				.password("{noop}IbisObserver")
 				.roles("IbisObserver")
 				.build();
 		UserDetails dataAdminUser = User.builder()
-				.username("dataAdmin")
+				.username("IbisDataAdmin")
 				.password("{noop}IbisDataAdmin")
 				.roles("IbisDataAdmin")
 				.build();
 		UserDetails adminUser = User.builder()
-				.username("admin")
+				.username("IbisAdmin")
 				.password("{noop}IbisAdmin")
 				.roles("IbisAdmin")
 				.build();
 		UserDetails testerUser = User.builder()
-				.username("tester")
+				.username("IbisTester")
 				.password("{noop}IbisTester")
 				.roles("IbisTester")
 				.build();
