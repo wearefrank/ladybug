@@ -92,7 +92,10 @@ public class LadybugSpringBootApplication {
 
 	@Bean
 	public SecurityFilterChain ladybugApiSecurityFilterChain(HttpSecurity http) throws Exception {
-		PathPatternRequestMatcher.Builder builder = PathPatternRequestMatcher.withDefaults().basePath("/ladybug/api");
+		// Protect the whole Ladybug application (frontend and api), not just /ladybug/api. Otherwise the
+		// initial page load is never challenged for Basic Authentication, so the browser never caches
+		// credentials for the realm and subsequent calls to /ladybug/api are sent unauthenticated.
+		PathPatternRequestMatcher.Builder builder = PathPatternRequestMatcher.withDefaults().basePath("/ladybug");
 		// Endpoints on which the SecurityFilterChain (filter) will match, also for OPTIONS requests!
 		// This does not authenticate the user, but only means the filter will be triggered.
 		http.securityMatcher(builder.matcher("/**"));
@@ -107,7 +110,7 @@ public class LadybugSpringBootApplication {
 			http.anonymous(anonymous -> anonymous.authorities(AuthorityUtils.createAuthorityList(
 					Arrays.stream(ALL_LADYBUG_ROLES).map(role -> "ROLE_" + role).toArray(String[]::new))));
 		} else {
-			// Enables security for URL /ladybug/api
+			// Enables security for URL /ladybug
 			http.authorizeHttpRequests(requests -> requests
 					.requestMatchers(builder.matcher("/**")).authenticated());
 
