@@ -114,7 +114,6 @@
       <dependency>
         <groupId>org.wearefrank</groupId>
         <artifactId>ladybug-frontend</artifactId>
-
         <version>${revision}</version>
       </dependency>
       <dependency>

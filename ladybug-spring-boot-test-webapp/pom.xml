@@ -23,7 +23,6 @@
     <dependency>
       <groupId>org.wearefrank</groupId>
       <artifactId>ladybug-test-webapp-common</artifactId>
-      <version>${project.version}</version>
       <!-- Spring Boot brings Logback via spring-boot-starter-web; slf4j-simple would compete as a second SLF4J provider -->
       <exclusions>
         <exclusion>
@@ -65,7 +64,6 @@
     <dependency>
       <groupId>org.wearefrank</groupId>
       <artifactId>ladybug-backend-springmvc</artifactId>
-      <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>jakarta.transaction</groupId>
