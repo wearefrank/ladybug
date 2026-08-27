@@ -1,0 +1,131 @@
+name: Testing ladybug-spring-boot-test-webapp
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+jobs:
+  springmvc:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: default
+            spring-profile: none
+            selected-specs: cypress/e2e/no-profile/**
+            uiTestMode: NO_AUTH
+          - name: xmlStorage
+            spring-profile: storage.xml
+            selected-specs: cypress/e2e/storage-xml/**
+            uiTestMode: NO_AUTH
+          - name: authorization
+            spring-profile: none
+            selected-specs: cypress/e2e/production-auth/**
+            uiTestMode: DEFAULT
+          - name: backendAuthorization
+            spring-profile: none
+            selected-specs: cypress/e2e/backend-auth/**
+            uiTestMode: DONT_BLOCK_BACKEND
+          - name: openTelemetry
+            spring-profile: none
+            selected-specs: cypress/e2e/open-telemetry/**
+            uiTestMode: NO_AUTH
+    name: Test ladybug-spring-boot-test-webapp, ${{ matrix.name }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Show chosen Spring profile for backend, chosen ladybug.ui.test.mode and chosen specs to run
+        run: echo "Start backend with Spring profile ${{ matrix.spring-profile }}, ladybug.ui.test.mode=${{ matrix.uiTestMode }} and run specs ${{ matrix.selected-specs }}"
+      - name: Checkout ladybug
+        uses: actions/checkout@v2
+        with:
+          repository: wearefrank/ladybug
+          path: ladybug
+
+      - uses: pnpm/action-setup@v4
+        name: Install pnpm
+        with:
+          version: 9.4
+          run_install: false
+      - name: Get pnpm store directory
+        id: store-path
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_OUTPUT
+      - uses: actions/cache@v4
+        name: Setup pnpm cache
+        with:
+          path: ${{ steps.store-path.outputs.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+      - name: Show pnpm version (before pnpm install)
+        run: pnpm -v
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+          cache-dependency-path: 'ladybug/ladybug-frontend/pnpm-lock.yaml'
+
+      - uses: actions/cache@v4
+        name: Cache Cypress
+        with:
+          path: ~/.cache/Cypress
+          key: ${{ runner.os }}-cypress-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-cypress-
+
+      - name: Install Cypress
+        run: npx cypress install
+        working-directory: ladybug/ladybug-frontend
+
+      - name: Set Cypress environment variables
+        run: cp .github/workflows/cypress.env.json.cicd ladybug-frontend/cypress.env.json
+        working-directory: ladybug
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Build ladybug-spring-boot-test-webapp and the modules it depends on
+        working-directory: ladybug
+        run: mvn -B -pl ladybug-spring-boot-test-webapp -am install -DskipTests -Dmaven.javadoc.skip=true -Dmaven.skip.copyright=true
+
+      - name: Show current time, allows you to check that logs are not old
+        run: date
+
+      - name: Start ladybug-spring-boot-test-webapp
+        working-directory: ladybug/ladybug-spring-boot-test-webapp
+        run: mvn -B spring-boot:run -Dspring-boot.run.arguments="--server.port=8090 --spring.profiles.active=${{ matrix.spring-profile }}" -Dspring-boot.run.jvmArguments="-Dladybug.ui.test.mode=${{ matrix.uiTestMode }}" > serverStartLog.log 2>&1 &
+
+      - name: Wait for server to be available
+        working-directory: ladybug/.github/workflows
+        run: ./waitForUrl.sh http://localhost:8090 300
+
+      - name: Run cypress with chrome browser
+        uses: cypress-io/github-action@v6.6.0
+        with:
+          working-directory: ladybug/ladybug-frontend
+          spec: ${{ matrix.selected-specs }}
+          config: baseUrl=http://localhost:8090/ladybug
+          browser: chrome
+
+      - name: Show files
+        run: tree -d -L 5 .
+        if: failure()
+
+      - name: Store logs
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: logs and videos ${{ matrix.name }}
+          path: |
+            ladybug/ladybug-spring-boot-test-webapp/serverStartLog.log
+            ladybug/ladybug-frontend/cypress/screenshots/
+            ladybug/ladybug-frontend/cypress/videos/
+            ladybug/ladybug-frontend/cypress/firefox/screenshots/
+            ladybug/ladybug-frontend/cypress/firefox/videos/
