@@ -8,6 +8,8 @@
 \ladybug-ff-cypress-test
 /external-ladybug-director
 \external-ladybug-director
+/test-multi-instance-dropdown
+\test-multi-instance-dropdown
 /.husky
 \.husky
 /src/main/webapp/
