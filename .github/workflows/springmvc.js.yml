@@ -98,7 +98,13 @@ jobs:
       - name: Show current time, allows you to check that logs are not old
         run: date
 
-      - name: Start ladybug-spring-boot-test-webapp
+      - name: Start ladybug-spring-boot-test-webapp (default spring profile and uiTestMode)
+        if: matrix.spring-profile == 'none' && matrix.uiTestMode == 'DEFAULT'
+        working-directory: ladybug/ladybug-spring-boot-test-webapp
+        run: mvn -B spring-boot:run -Dspring-boot.run.arguments="--server.port=8090" > serverStartLog.log 2>&1 &
+
+      - name: Start ladybug-spring-boot-test-webapp (non-default spring profile or uiTestMode)
+        if: matrix.spring-profile != 'none' || matrix.uiTestMode != 'DEFAULT'
         working-directory: ladybug/ladybug-spring-boot-test-webapp
         run: mvn -B spring-boot:run -Dspring-boot.run.arguments="--server.port=8090 --spring.profiles.active=${{ matrix.spring-profile }}" -Dspring-boot.run.jvmArguments="-Dladybug.ui.test.mode=${{ matrix.uiTestMode }}" > serverStartLog.log 2>&1 &
 
