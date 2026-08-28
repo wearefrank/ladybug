@@ -15,29 +15,17 @@
 */
 package org.wearefrank.ladybug.web.springmvc.api;
 
-import java.lang.invoke.MethodHandles;
 import java.security.Principal;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import jakarta.annotation.security.RolesAllowed;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 
-import lombok.Setter;
-import org.wearefrank.ladybug.Report;
 import org.wearefrank.ladybug.SecurityContext;
-import org.wearefrank.ladybug.TestTool;
-import org.wearefrank.ladybug.run.ReportRunner;
-import org.wearefrank.ladybug.run.RunResult;
-import org.wearefrank.ladybug.storage.StorageException;
-import org.wearefrank.ladybug.transform.ReportXmlTransformer;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -47,8 +35,6 @@ import org.springframework.web.bind.annotation.RestController;
 import org.wearefrank.ladybug.web.common.HttpBadRequestException;
 import org.wearefrank.ladybug.web.common.HttpInternalServerErrorException;
 import org.wearefrank.ladybug.web.common.RunApiImpl;
-
-import static org.wearefrank.ladybug.web.common.Util.fullMessage;
 
 @RestController
 @RequestMapping("/runner")
