@@ -53,36 +53,45 @@ import static org.wearefrank.ladybug.web.common.Util.fullMessage;
 @RestController
 @RequestMapping("/runner")
 @RolesAllowed("IbisTester")
-public class RunApi implements SecurityContext {
-	private @Autowired RunApiImpl delegate;
-
-	@Override
-	public Principal getUserPrincipal() {
-		return SecurityContextHolder.getContext().getAuthentication();
-	}
-
-	@Override
-	public boolean isUserInRoles(List<String> roles) {
-		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-		if (authentication == null) {
-			return true;
+public class RunApi {
+	/**
+	 * Kept as a static nested class instead of having {@link RunApi} implement {@link SecurityContext} directly.
+	 * RunApi is a Spring-managed {@code @RestController} secured with {@code @RolesAllowed}, so it is wrapped in a
+	 * method-security proxy. If RunApi implemented an interface, Spring would proxy it with a JDK dynamic proxy
+	 * instead of a CGLIB subclass, which only exposes the interface's methods and hides the class-level
+	 * {@code @RequestMapping} annotations, so the endpoint would never get registered.
+	 */
+	private static class SpringSecurityContext implements SecurityContext {
+		@Override
+		public Principal getUserPrincipal() {
+			return SecurityContextHolder.getContext().getAuthentication();
 		}
-		for (GrantedAuthority authority : authentication.getAuthorities()) {
-			String role = authority.getAuthority();
-			if (role.startsWith("ROLE_")) {
-				role = role.substring(5);
-			}
-			if (roles.contains(role)) {
+
+		@Override
+		public boolean isUserInRoles(List<String> roles) {
+			Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+			if (authentication == null) {
 				return true;
 			}
+			for (GrantedAuthority authority : authentication.getAuthorities()) {
+				String role = authority.getAuthority();
+				if (role.startsWith("ROLE_")) {
+					role = role.substring(5);
+				}
+				if (roles.contains(role)) {
+					return true;
+				}
+			}
+			return false;
 		}
-		return false;
 	}
+
+	private @Autowired RunApiImpl delegate;
 
 	@PostMapping(value = "/run/{storageName}/{storageId}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> runReport(@PathVariable("storageName") String storageName, @PathVariable("storageId") int storageId) {
 		try {
-			Map<String, Object> result = delegate.runReport(storageName, storageId, this);
+			Map<String, Object> result = delegate.runReport(storageName, storageId, new SpringSecurityContext());
 			return ResponseEntity.ok(result);
 		} catch (HttpBadRequestException e) {
 			return ResponseEntity.badRequest().body(e.getMessage());
