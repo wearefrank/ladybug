@@ -100,7 +100,7 @@ describe('Tests for table filter', () => {
     cy.get('[data-cy-debug="tableFilter"]').eq(1).type('1{enter}');
     cy.get('[data-cy-change-view-dropdown]').select('Report name only');
     cy.get('[data-cy-debug="filter"]').click();
-    cy.get('[data-cy-active-filter]').eq(1).should('not.contain', 'Endtime');
+    cy.get('[data-cy-debug="filterLabel"]').eq(1).should('not.contain', 'Endtime');
     cy.get('[data-cy-change-view-dropdown]').select('White box');
     cy.get('[data-cy-debug="filter"]').click();
     cy.get('[data-cy-debug="tableFilter"').eq(1).should('not.contain.value', '1')
@@ -108,11 +108,11 @@ describe('Tests for table filter', () => {
 
   it('When exact filter is requested then column omitted from table', () => {
     cy.assertDebugTableLength(2);
-    cy.get('[data-cy-active-filter]').contains('Name').should('be.visible');
+    cy.get('[data-cy-debug="filterLabel"]').contains('Name').should('be.visible');
     cy.get('[data-cy-debug="filter"]').click();
     cy.get('[data-cy-debug="tableFilter"]').eq(3).type('[[[Simple report]]]{enter}');
     cy.assertDebugTableLength(1);
-    cy.get('[data-cy-active-filter]').contains('Name').should('not.exist');
+    cy.get('[data-cy-debug="filterLabel"]').contains('Name').should('not.exist');
     // No [[[ ]]]
     cy.get('[data-cy-active-filter]').should('contain.text', 'Name: Simple report');
     cy.get('[data-cy-active-filter]')
@@ -125,11 +125,11 @@ describe('Tests for table filter', () => {
 
   it('When non-exact filter is requested then column not omitted from table', () => {
     cy.assertDebugTableLength(2);
-    cy.get('[data-cy-active-filter]').contains('Name').should('be.visible');
+    cy.get('[data-cy-debug="filterLabel"]').contains('Name').should('be.visible');
     cy.get('[data-cy-debug="filter"]').click();
     cy.get('[data-cy-debug="tableFilter"]').eq(3).type('Simple report{enter}');
     cy.assertDebugTableLength(1);
-    cy.get('[data-cy-active-filter]').contains('Name').should('be.visible');
+    cy.get('[data-cy-debug="filterLabel"]').contains('Name').should('be.visible');
     // No [[[ ]]]
     cy.get('[data-cy-active-filter]').should('contain.text', 'Name: Simple report');
     cy.get('[data-cy-active-filter]')
@@ -168,7 +168,7 @@ describe('About URL filters and row filtering views', () => {
     cy.get('[data-cy-active-filter]').should('not.exist');
     cy.get('[data-cy-debug="filter"]').click();
     cy.get('[data-cy-debug="filter-side-drawer"]').should('be.visible');
-    cy.get('[data-cy-active-filter]').contains('Name').should('be.visible');
+    cy.get('[data-cy-debug="filterLabel"]').contains('Name').should('be.visible');
     cy.get('[data-cy-debug="tableFilter"]').eq(FILTER_SIDE_DRAWER_APPLICATION_ITEM).invoke('val').should('have.length', 0);
   })
 
@@ -180,7 +180,7 @@ describe('About URL filters and row filtering views', () => {
     cy.get('[data-cy-active-filter="application"]').invoke('text').should('include', 'Application X');
     cy.get('[data-cy-debug="filter"]').click();
     cy.get('[data-cy-debug="filter-side-drawer"]').should('be.visible');
-    cy.get('[data-cy-active-filter]').contains('Name').should('be.visible');
+    cy.get('[data-cy-debug="filterLabel"]').contains('Name').should('be.visible');
     cy.get('[data-cy-debug="tableFilter"]').eq(FILTER_SIDE_DRAWER_APPLICATION_ITEM).invoke('val').should('equal', 'Application X');
   })
 
@@ -226,6 +226,6 @@ describe('About URL filters and row filtering views', () => {
     cy.get('[data-cy-active-filter]').should('not.exist');
     cy.get('[data-cy-debug="filter"]').click();
     cy.get('[data-cy-debug="filter-side-drawer"]').should('be.visible');
-    cy.get('[data-cy-active-filter]').contains('Name').should('not.exist');
+    cy.get('[data-cy-debug="filterLabel"]').contains('Name').should('not.exist');
   })
 })
