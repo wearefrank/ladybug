@@ -3,7 +3,7 @@ import { HttpService } from '../shared/services/http.service';
 import { CloneModalComponent } from './clone-modal/clone-modal.component';
 import { TestResult } from '../shared/interfaces/test-result';
 import { ReranReport } from '../shared/interfaces/reran-report';
-import { catchError, Observable, of, Subscription } from 'rxjs';
+import { catchError, Subscription } from 'rxjs';
 import { Report } from '../shared/interfaces/report';
 import { HelperService } from '../shared/services/helper.service';
 import { ToastService } from '../shared/services/toast.service';
@@ -130,21 +130,21 @@ export class TestComponent implements OnInit, OnDestroy {
 
   run(report: TestListItem): void {
     if (this.settingsService.isGeneratorEnabled()) {
-      this.httpService
-        .runReport(this.testReportsService.storageName, report.storageId)
-        .pipe(
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          catchError((error: HttpErrorResponse): Observable<any> => {
-            report.error = error.message;
-            return of(error);
-          }),
-        )
-        .subscribe({
-          next: (response: TestResult): void => {
-            report.reranReport = this.createReranReport(response);
-            this.matches();
-          },
-        });
+      this.httpService.runReport(this.testReportsService.storageName, report.storageId).subscribe({
+        next: (response: TestResult): void => {
+          report.reranReport = this.createReranReport(response);
+          this.matches();
+        },
+        error: (error: HttpErrorResponse) => {
+          const message = typeof error.error === 'string' && error.error ? error.error : error.message;
+          report.error = message;
+          if (error.status > 399 && error.status < 500) {
+            this.toastService.showWarning(message);
+          } else {
+            this.toastService.showDanger(message);
+          }
+        },
+      });
     } else {
       this.toastService.showWarning('Generator is disabled!');
     }
