@@ -22,29 +22,6 @@ import org.wearefrank.ladybug.run.ReportRunner;
  */
 public interface Rerunner {
 	/**
-	 * Rerun a previous generated report and handle the case that the implementation
-	 * throws an Exception. The Exception's message is the string to present to
-	 * the user.
-	 *
-	 * @param correlationId   the correlationId to be used so the report of the rerun will have this correlationId and
-	 *                        can be linked to the original report so stub strategy can be copied and stubbing can be
-	 *                        applied
-	 * @param originalReport  the original report that should be rerun
-	 * @param securityContext ...
-	 * @param reportRunner    ...
-	 * @return                an error message when an error occurred
-	 */
-
-	public default String rerunWithoutThrowingException(String correlationId, Report originalReport, SecurityContext securityContext,
-														ReportRunner reportRunner) {
-		try {
-			return rerun(correlationId, originalReport, securityContext, reportRunner);
-		} catch (Exception e) {
-			return e.getMessage();
-		}
-	}
-
-	/**
 	 * Rerun a previous generated report. This method should at least trigger
 	 * the same first checkpoint as has been triggered when the original report
 	 * was created.

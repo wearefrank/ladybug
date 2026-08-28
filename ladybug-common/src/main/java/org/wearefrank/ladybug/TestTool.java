@@ -1100,7 +1100,7 @@ public class TestTool {
 	}
 
 	/**
-	 * See {@link Rerunner#rerunWithoutThrowingException(String, Report, SecurityContext, ReportRunner)}
+	 * See {@link Rerunner#rerun(String, Report, SecurityContext, ReportRunner)}
 	 * 
 	 * @param correlationId ...
 	 * @param report ...
@@ -1112,7 +1112,7 @@ public class TestTool {
 	}
 
 	/**
-	 * See {@link Rerunner#rerunWithoutThrowingException(String, Report, SecurityContext, ReportRunner)}
+	 * See {@link Rerunner#rerun(String, Report, SecurityContext, ReportRunner)}
 	 * 
 	 * @param correlationId ...
 	 * @param report ...
@@ -1135,21 +1135,22 @@ public class TestTool {
 			}
 			try {
 				if (rerunner != null) {
-					errorMessage = rerunner.rerunWithoutThrowingException(correlationId, report, securityContext, reportRunner);
+					errorMessage = rerunner.rerun(correlationId, report, securityContext, reportRunner);
 				} else {
-					errorMessage = debugger.rerunWithoutThrowingException(correlationId, report, securityContext, reportRunner);
+					errorMessage = debugger.rerun(correlationId, report, securityContext, reportRunner);
 				}
-			} finally {
-				if (reportGeneratorEnabled) {
-					// Verify that originalReport has been removed from originalReports by checkpoint()
-					Report originalReport;
-					synchronized(originalReports) {
-						originalReport = (Report)originalReports.remove(correlationId);
-					}
-					if (errorMessage == null && originalReport != null) {
-						errorMessage = "Rerun didn't trigger any checkpoint or new report didn't get correlationId '"
-								+ correlationId + "'";
-					}
+			} catch(Throwable t) {
+				errorMessage = t.getMessage();
+			}
+			if (reportGeneratorEnabled) {
+				// Verify that originalReport has been removed from originalReports by checkpoint()
+				Report originalReport;
+				synchronized(originalReports) {
+					originalReport = (Report)originalReports.remove(correlationId);
+				}
+				if (errorMessage == null && originalReport != null) {
+					errorMessage = "Rerun didn't trigger any checkpoint or new report didn't get correlationId '"
+							+ correlationId + "'";
 				}
 			}
 		}
