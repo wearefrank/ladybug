@@ -49,17 +49,26 @@ public class RunApiImpl {
 			Report report = testTool.getStorage(storageName).getReport(storageId);
 			if (report != null) {
 				report.setTestTool(testTool);
-				ReportRunner runner = new ReportRunner();
-				runner.setTestTool(testTool);
-				runner.setDebugStorage(testTool.getDebugStorage());
-				runner.setSecurityContext(securityContext);
-				errorMessage = runner.run(Collections.singletonList(report), true, true);
+				ReportRunner reportRunner = new ReportRunner();
+				reportRunner.setTestTool(testTool);
+				reportRunner.setDebugStorage(testTool.getDebugStorage());
+				reportRunner.setSecurityContext(securityContext);
+				errorMessage = reportRunner.run(Collections.singletonList(report), true, true);
 				if (errorMessage == null) {
-					RunResult runResult = runner.getResults().get(storageId);
+					RunResult runResult = reportRunner.getResults().get(storageId);
 					if (runResult.errorMessage == null) {
-						Report runResultReport = runner.getRunResultReport(runResult.correlationId);
-						runResultReport.setTestTool(testTool);
-						result = extractRunResult(report, runResultReport, runner);
+						Report runResultReport = reportRunner.getRunResultReport(runResult.correlationId);
+						if (runResultReport == null) {
+							// Report generator probably disabled
+							result = new HashMap<>();
+							result.put("info", "No run result info available");
+							// Do not show as error as it might still be useful to rerun a report when report generator
+							// is disabled
+							result.put("equal", "true");
+						} else {
+							runResultReport.setTestTool(testTool);
+							result = extractRunResult(report, runResultReport, reportRunner);
+						}
 					} else {
 						errorMessage = runResult.errorMessage;
 					}
