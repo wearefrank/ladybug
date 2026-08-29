@@ -60,7 +60,6 @@ public class RunApiImpl {
 						Report runResultReport = reportRunner.getRunResultReport(runResult.correlationId);
 						if (runResultReport == null) {
 							// Report generator probably disabled
-							result = new HashMap<>();
 							result.put("info", "No run result info available");
 							// Do not show as error as it might still be useful to rerun a report when report generator
 							// is disabled
@@ -73,6 +72,8 @@ public class RunApiImpl {
 						errorMessage = runResult.errorMessage;
 					}
 				}
+			} else {
+				result.put("info", "Report with storage id '" + storageId + "' not found");
 			}
 		} catch (StorageException e) {
 			errorMessage = "Storage exception: " + fullMessage(e);
