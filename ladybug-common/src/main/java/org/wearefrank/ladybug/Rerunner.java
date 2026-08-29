@@ -30,7 +30,9 @@ public interface Rerunner {
 	 *                        can be linked to the original report so stub strategy can be copied and stubbing can be
 	 *                        applied
 	 * @param originalReport  the original report that should be rerun
-	 * @param securityContext ...
+	 * @param securityContext can be used to do implementation specific security checks. For example, Tibet2 connects to
+	 *                        LDAP to check the role for the principal name:
+	 *                        https://github.com/frankframework/frankframework/blob/v7.9.8/ladybug/src/main/java/nl/nn/ibistesttool/tibet2/Debugger.java#L75
 	 * @param reportRunner    ...
 	 * @return                an error message when an error occurred 
 	 */
