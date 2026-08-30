@@ -62,7 +62,9 @@ public class RunApiImpl {
 							// Report generator probably disabled
 							result.put("info", "No run result info available");
 							// Do not show as error as it might still be useful to rerun a report when report generator
-							// is disabled
+							// is disabled. E.g. Tibet2 has a custom Debugger to execute business logic that doesn't
+							// need the result report (which is not available in P because the report generator is
+							// disabled).
 							result.put("equal", "true");
 						} else {
 							runResultReport.setTestTool(testTool);
