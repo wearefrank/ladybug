@@ -99,7 +99,7 @@ describe('Tests with views and filtering', () => {
 
   it('Filter on two criteria', () => {
     cy.visit('')
-    cy.get('[data-cy-change-view-dropdown]').select('White box view no application');
+    cy.inIframeBody('[data-cy-change-view-dropdown]').select('White box view no application');
     // Enter Ladybug
     cy.getNumLadybugReports().should('equal', 5)
     cy.inIframeBody('[data-cy-debug="filter"]').click()
