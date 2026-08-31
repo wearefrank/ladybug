@@ -7,6 +7,16 @@ export default defineConfig({
     FILESEP: '\\',
   },
   e2e: {
+    setupNodeEvents(on) {
+      // Allow running as root (e.g. in CI/Docker): Chromium refuses to start
+      // as root without --no-sandbox.
+      on('before:browser:launch', (browser, launchOptions) => {
+        if (browser.family === 'chromium') {
+          launchOptions.args.push('--no-sandbox', '--disable-gpu');
+        }
+        return launchOptions;
+      });
+    },
     baseUrl: 'http://localhost:4200',
     excludeSpecPattern: ['**/cypress/e2e/1-getting-started/**', '**/cypress/e2e/2-advanced-examples/**'],
     viewportWidth: 1920,
