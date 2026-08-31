@@ -55,9 +55,9 @@ describe('Tests with views and filtering', () => {
     }
     it(`Filter on field ${testCase.name}, expected at column ${testCase.colNr}${exactPhrase}`, () => {
       cy.visit('')
-      cy.get('[data-cy-change-view-dropdown]').select('White box view no application');
       // Enter Ladybug
       cy.getNumLadybugReports().should('equal', 5)
+      cy.inIframeBody('[data-cy-change-view-dropdown]').select('White box view no application');
       // Check the name and column number combination
       cy.inIframeBody('[data-cy-debug="table"]').find(`th:eq(${testCase.colNr})`).contains(`${testCase.name}`)
       cy.inIframeBody('[data-cy-debug="tableRow"]:eq(0)').find(`td:eq(${testCase.colNr})`).then((el: JQuery<HTMLElement>) => {
@@ -84,8 +84,8 @@ describe('Tests with views and filtering', () => {
 
   it('Can manipulate filter on Application, even though column is not shown', () => {
     cy.visit('')
-    cy.get('[data-cy-change-view-dropdown]').select('White box view no application');
     cy.getNumLadybugReports().should('equal', 5)
+    cy.inIframeBody('[data-cy-change-view-dropdown]').select('White box view no application');
     cy.inIframeBody('[data-cy-debug="table"]').find(`th:contains(Name)`).should('be.visible')
     cy.inIframeBody('[data-cy-debug="table"]').find(`th:contains(Application)`).should('not.exist')
     // Test that the FF! opens Ladybug so that we filter on Application by default
@@ -99,9 +99,9 @@ describe('Tests with views and filtering', () => {
 
   it('Filter on two criteria', () => {
     cy.visit('')
-    cy.inIframeBody('[data-cy-change-view-dropdown]').select('White box view no application');
     // Enter Ladybug
     cy.getNumLadybugReports().should('equal', 5)
+    cy.inIframeBody('[data-cy-change-view-dropdown]').select('White box view no application');
     cy.inIframeBody('[data-cy-debug="filter"]').click()
     cy.enterFilter('Name', 'Adapter')
     cy.enterFilter('Input', 'yyy')
@@ -120,9 +120,9 @@ describe('Tests with views and filtering', () => {
 
   it('Change view so that a column goes on which there was a filter and original filter not saved', () => {
     cy.visit('')
-    cy.get('[data-cy-change-view-dropdown]').select('White box view no application');
     // Enter Ladybug
     cy.getNumLadybugReports().should('equal', 5)
+    cy.inIframeBody('[data-cy-change-view-dropdown]').select('White box view no application');
     cy.inIframeBody('[data-cy-debug="filter"]').click()
     cy.enterFilter('Input', 'yyy')
     cy.inIframeBody('[data-cy-debug="close-filter-btn"]').click()
