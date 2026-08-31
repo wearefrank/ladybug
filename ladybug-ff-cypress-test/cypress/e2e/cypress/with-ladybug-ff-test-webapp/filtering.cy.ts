@@ -55,6 +55,7 @@ describe('Tests with views and filtering', () => {
     }
     it(`Filter on field ${testCase.name}, expected at column ${testCase.colNr}${exactPhrase}`, () => {
       cy.visit('')
+      cy.get('[data-cy-change-view-dropdown]').select('White box view no application');
       // Enter Ladybug
       cy.getNumLadybugReports().should('equal', 5)
       // Check the name and column number combination
@@ -83,6 +84,7 @@ describe('Tests with views and filtering', () => {
 
   it('Can manipulate filter on Application, even though column is not shown', () => {
     cy.visit('')
+    cy.get('[data-cy-change-view-dropdown]').select('White box view no application');
     cy.getNumLadybugReports().should('equal', 5)
     cy.inIframeBody('[data-cy-debug="table"]').find(`th:contains(Name)`).should('be.visible')
     cy.inIframeBody('[data-cy-debug="table"]').find(`th:contains(Application)`).should('not.exist')
@@ -97,6 +99,7 @@ describe('Tests with views and filtering', () => {
 
   it('Filter on two criteria', () => {
     cy.visit('')
+    cy.get('[data-cy-change-view-dropdown]').select('White box view no application');
     // Enter Ladybug
     cy.getNumLadybugReports().should('equal', 5)
     cy.inIframeBody('[data-cy-debug="filter"]').click()
@@ -117,6 +120,7 @@ describe('Tests with views and filtering', () => {
 
   it('Change view so that a column goes on which there was a filter and original filter not saved', () => {
     cy.visit('')
+    cy.get('[data-cy-change-view-dropdown]').select('White box view no application');
     // Enter Ladybug
     cy.getNumLadybugReports().should('equal', 5)
     cy.inIframeBody('[data-cy-debug="filter"]').click()
