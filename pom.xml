@@ -62,7 +62,7 @@
   </scm>
 
   <properties>
-    <revision>4.1-SNAPSHOT</revision>
+    <revision>4.1-20260813.191427</revision>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <!-- property [ladybug.rootdir] is available to get the root of the project, because of the
     [directory-maven-plugin] -->
