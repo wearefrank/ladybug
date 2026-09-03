@@ -14,9 +14,17 @@
 	default-lazy-init="true"
 	>
 
+	<!--
+	Shared Spring configuration for the Ladybug test webapps (ladybug-test-webapp and
+	ladybug-spring-boot-test-webapp). Beans whose value depends on the working directory of the
+	consuming webapp (reportsFilename, metadataFilename, ladybugDataSource and the debugStorage/
+	testStorage beans of profiles storage.file and storage.xml) are not defined here and must be
+	provided by the importing webapp.
+	-->
+
 	<!-- Make ${ladybug.dir:ladybug} read system property ladybug.dir with default value ladybug -->
 	<!-- Read optional properties file test.properties. -->
-	<context:property-placeholder location="classpath:test.properties"/>
+	<context:property-placeholder location="classpath:test.properties" ignore-resource-not-found="true"/>
 
 	<context:component-scan base-package="org.wearefrank.ladybug"/>
 
@@ -95,7 +103,7 @@
 	<bean name="blackBoxView" class="org.wearefrank.ladybug.filter.View" parent="whiteBoxView">
 		<property name="name" value="Black box"/>
 		<property name="checkpointMatchers">
-			<bean class="org.wearefrank.ladybug.test.webapp.test.webapp.Matcher"/>
+			<bean class="org.wearefrank.ladybug.test.webapp.common.test.webapp.Matcher"/>
 		</property>
 	</bean>
 
@@ -144,9 +152,9 @@
 		<constructor-arg value="org/wearefrank/ladybug/test/junit/transformReport.xslt"/>
 	</bean>
 
-	<bean name="rerunner" class="org.wearefrank.ladybug.test.webapp.test.webapp.SimpleRerunner"/>
+	<bean name="rerunner" class="org.wearefrank.ladybug.test.webapp.common.test.webapp.SimpleRerunner"/>
 
-	<bean name="customReportAction" class="org.wearefrank.ladybug.test.webapp.extensions.DummyReportAction"/>
+	<bean name="customReportAction" class="org.wearefrank.ladybug.test.webapp.common.extensions.DummyReportAction"/>
 
 	<!--  Enable security elements in web.xml to test roles -->
 
@@ -177,26 +185,14 @@
 		<property name="name" value="Test"/>
 	</bean>
 
-	<bean name="reportsFilename" class="java.lang.String">
-		<constructor-arg value="../${ladybug.dir:ladybug}/ladybug-common/data/file-storage/ladybug.tts"/>
-	</bean>
-
-	<bean name="metadataFilename" class="java.lang.String">
-		<constructor-arg value="../${ladybug.dir:ladybug}/ladybug-common/data/file-storage/ladybug.ttm"/>
-	</bean>
-
 	<bean name="fileStorage" class="org.wearefrank.ladybug.storage.file.Storage">
 		<property name="name" value="fileStorage"/>
 		<property name="reportsFilename" value="#{reportsFilename}"/>
 		<property name="metadataFilename" value="#{metadataFilename}"/>
 	</bean>
 
-	<bean name="errorGeneratingStorage" class="org.wearefrank.ladybug.test.webapp.storages.ErrorGeneratingStorage">
+	<bean name="errorGeneratingStorage" class="org.wearefrank.ladybug.test.webapp.common.storages.ErrorGeneratingStorage">
 		<property name="name" value="errorGeneratingStorage" />
-	</bean>
-
-	<bean name="maxStorageSize" class="java.lang.String">
-		<constructor-arg value="#{10 * 1024 * 1024}"/>
 	</bean>
 
 	<!--
@@ -210,19 +206,10 @@
 		depends-on="ladybugDatabaseChangelog"
 		>
 		<property name="name" value="databaseStorage"/>
-		<property name="maxStorageSize" value="#{maxStorageSize}"/>
+		<!-- This constant is not factored out in a bean, because a SpEL bean-reference silently breaks under
+		     Spring Boot's bootstrapping. -->
+		<property name="maxStorageSize" value="#{10 * 1024 * 1024}"/>
 		<property name="storeReportXml" value="true"/>
-	</bean>
-
-	<!--
-	Without connection pooling (considerably slows down GUI performance). E.g. when using:
-	<bean name="ladybugDataSource" class="org.h2.jdbcx.JdbcDataSource">
-		<property name="URL" value="jdbc:h2:../${ladybug.dir:ladybug}/data/database-storage/ladybug"/>
-	</bean>
-	-->
-	<bean name="ladybugDataSource" class="org.apache.commons.dbcp2.BasicDataSource" destroy-method="close">
-		<property name="driverClassName" value="org.h2.Driver"/>
-		<property name="url" value="jdbc:h2:../${ladybug.dir:ladybug}/ladybug-common/data/database-storage/ladybug"/>
 	</bean>
 
 	<bean name="ladybugDatabaseChangelog" class="liquibase.integration.spring.SpringLiquibase">
@@ -259,29 +246,6 @@
 
 	<!-- Profiles -->
 
-	<beans profile="storage.file">
-		<!-- White box view and TestTool (creating and storing reports) are using debugStorage -->
-		<bean name="debugStorage" class="org.wearefrank.ladybug.storage.file.Storage">
-			<property name="name" value="Debug"/>
-			<property name="reportsFilename" value="../${ladybug.dir:ladybug}/data/file-storage/ladybug.tts"/>
-			<property name="metadataFilename" value="../${ladybug.dir:ladybug}/data/file-storage/ladybug.ttm"/>
-		</bean>
-		<!-- Configure Test tab with file storage -->
-		<bean name="testStorage" class="org.wearefrank.ladybug.storage.file.TestStorage">
-			<property name="name" value="Test"/>
-			<property name="reportsFilename" value="../${ladybug.dir:ladybug}/data/file-storage/ladybug.tts"/>
-			<property name="metadataFilename" value="../${ladybug.dir:ladybug}/data/file-storage/ladybug.ttm"/>
-		</bean>
-	</beans>
-
-	<beans profile="storage.xml">
-		<!-- Configure Test tab with xml storage -->
-		<bean name="testStorage" class="org.wearefrank.ladybug.storage.xml.XmlStorage">
-			<property name="name" value="Test"/>
-			<property name="reportsFolder" value="../ladybug/ladybug-test-webapp/src/test/testtool"/>
-		</bean>
-	</beans>
-
 	<beans profile="storage.database">
 		<!-- White box view and TestTool (creating and storing reports) are using debugStorage -->
 		<bean
@@ -290,7 +254,7 @@
 			depends-on="ladybugDatabaseChangelog"
 			>
 			<property name="name" value="Debug"/>
-			<property name="maxStorageSize" value="#{maxStorageSize}"/>
+			<property name="maxStorageSize" value="#{10 * 1024 * 1024}"/>
 			<property name="storeReportXml" value="true"/>
 		</bean>
 		<!-- Configure Test tab with database storage -->

@@ -13,18 +13,19 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.wearefrank.ladybug.test.webapp.test.webapp;
+package org.wearefrank.ladybug.test.webapp.springmvc;
 
-import org.wearefrank.ladybug.Checkpoint;
-import org.wearefrank.ladybug.Report;
-import org.wearefrank.ladybug.filter.CheckpointMatcher;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
-public class Matcher implements CheckpointMatcher {
+import java.io.IOException;
 
-    public boolean match(Report report, Checkpoint checkpoint) {
-        if (checkpoint.getName() != null && checkpoint.getName().equals("Hide this checkpoint")) {
-            return false;
-        }
-        return true;
-    }
+public class RootRedirectingServlet extends HttpServlet {
+	@Override
+	public void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+		String path = req.getContextPath() + "/index.jsp";
+		System.out.println("Redirecting to: " + path);
+		resp.sendRedirect(path);
+	}
 }
