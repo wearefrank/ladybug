@@ -101,6 +101,7 @@ public class ApiAuthorizationFilter implements ContainerRequestFilter {
 		addConfigurationPart("PUT/"  + Constants.LADYBUG_API_PATH + "/testtool/node-link-strategy$", observerRoles);
 		addConfigurationPart("GET/"  + Constants.LADYBUG_API_PATH + "/metadata/.*$", observerRoles);
 		addConfigurationPart("GET/"  + Constants.LADYBUG_API_PATH + "/report/.*$", observerRoles);
+		addConfigurationPart("GET/"  + Constants.LADYBUG_API_PATH + "/v1/traces$", observerRoles);
 	}
 
 	public void setDataAdminRoles(List<String> dataAdminRoles) {

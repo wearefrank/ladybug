@@ -60,4 +60,11 @@ public class TracingApi extends ApiBase {
             }
         }
     }
+
+    @GET
+    @Produces(MediaType.TEXT_PLAIN)
+    public Response info() {
+        return Response.ok(delegate.getInfo()).build();
+    }
+
 }
