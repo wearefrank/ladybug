@@ -67,6 +67,8 @@ public class ApiAuthorizationFilter implements ContainerRequestFilter {
 		//   Deny access to all API resources by default and for example prevent that when by accident only
 		//   setDataAdminRoles() is called it allows access to resources that should be disallowed by a call to
 		//   setTesterRoles() (making /runner/run/.* override /runner/.* for the run resources)
+		// Call this with null here; the user can specify the roles via beans that will be autowired into this class in
+		// cxf-beans.xml after construction.
 		setObserverRoles(null);
 		setDataAdminRoles(null);
 		setTesterRoles(null);
