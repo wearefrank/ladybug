@@ -90,6 +90,7 @@ describe('Tests with views and filtering', () => {
     cy.inIframeBody('[data-cy-debug="table"]').find(`th:contains(Application)`).should('not.exist')
     // Test that the FF! opens Ladybug so that we filter on Application by default
     cy.checkActiveFilterSphere('Application', 'ladybug-ff-test-webapp').should('be.visible')
+    cy.inIframeBody('[data-cy-debug="filter"]').click()
     cy.inIframeBody('[data-cy-debug="filterLabel"]:contains(Application)')
       .parent()
       .contains('Clear')
