@@ -5,7 +5,7 @@ on:
       - master
   pull_request:
 jobs:
-  frontend:
+  jaxrs:
     strategy:
       fail-fast: false
       matrix:
@@ -30,7 +30,7 @@ jobs:
             spring-profile: none
             selected-specs: cypress/e2e/open-telemetry/**
             authenticationTest: no-authentication
-    name: Test ladybug without FF!, ${{ matrix.name }}
+    name: Test ladybug-test-webapp (jaxrs), ${{ matrix.name }}
     runs-on: ubuntu-latest
 
     steps:

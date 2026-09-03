@@ -6,7 +6,7 @@
 <%@ page import="org.wearefrank.ladybug.storage.CrudStorage"%>
 <%@ page import="org.wearefrank.ladybug.storage.LogStorage"%>
 <%@ page import="org.wearefrank.ladybug.storage.Storage"%>
-<%@ page import="org.wearefrank.ladybug.test.webapp.test.webapp.ComplexReports"%>
+<%@ page import="org.wearefrank.ladybug.test.webapp.common.test.webapp.ComplexReports"%>
 <%@ page import="org.springframework.web.context.WebApplicationContext"%>
 <%@ page import="org.springframework.web.context.support.WebApplicationContextUtils"%>
 <%@ page import="java.util.ArrayList"%>

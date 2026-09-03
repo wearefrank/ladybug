@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.wearefrank.ladybug.test.webapp.extensions;
+package org.wearefrank.ladybug.test.webapp.common.extensions;
 
 import java.util.List;
 
