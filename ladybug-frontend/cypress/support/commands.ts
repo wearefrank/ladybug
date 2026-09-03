@@ -111,6 +111,8 @@ declare global {
 
       checkFileTreeLength(length: number): Chainable;
 
+      closeDebugTree(): Chainable;
+
       refreshApp(): Chainable;
 
       getDebugTableRows(): Chainable;
@@ -522,6 +524,31 @@ Cypress.Commands.add(
       'have.length',
       length,
     );
+  },
+);
+
+// Clicking the close button occasionally has no effect (observed on CI), most likely
+// because the report/checkpoint value panel is mid re-render when the click lands.
+// Retry the click itself instead of only retrying the assertion, since the tree
+// never becomes empty on its own if the click was never actually handled.
+Cypress.Commands.add(
+  'closeDebugTree' as keyof Chainable,
+  (): void => {
+    const MAX_ATTEMPTS = 3;
+    const attemptClose = (attemptsLeft: number): void => {
+      cy.get('[data-cy-debug-tree="close"]').click();
+      cy.get('body').then(($body) => {
+        const stillOpen = $body.find('[data-cy-debug-tree="root"] > app-tree-item').length > 0;
+        if (stillOpen && attemptsLeft > 1) {
+          attemptClose(attemptsLeft - 1);
+        } else if (stillOpen) {
+          throw new Error(
+            `closeDebugTree: clicked [data-cy-debug-tree="close"] ${MAX_ATTEMPTS} times, but the debug tree still has open items`,
+          );
+        }
+      });
+    };
+    attemptClose(MAX_ATTEMPTS);
   },
 );
 
