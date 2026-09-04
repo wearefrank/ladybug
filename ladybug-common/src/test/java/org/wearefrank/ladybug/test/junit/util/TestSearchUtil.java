@@ -80,6 +80,15 @@ public class TestSearchUtil {
 		assertFalse(SearchUtil.matches(null, "(.+)"));
 		assertFalse(SearchUtil.matches("", "(.+)"));
 
+		// Exact match between [[[ ]]]
+		assertTrue(SearchUtil.matches("some text", "[[[some text]]]"));
+		assertFalse(SearchUtil.matches("SOME TEXT", "[[[some text]]]"));
+		assertFalse(SearchUtil.matches("some tex", "[[[some text]]]"));
+		assertFalse(SearchUtil.matches("some text ", "[[[some text]]]"));
+		assertFalse(SearchUtil.matches(null, "[[[]]]"));
+		assertTrue(SearchUtil.matches("", "[[[]]]"));
+		assertFalse(SearchUtil.matches(null, "[[[null]]]"));
+		assertTrue(SearchUtil.matches("null", "[[[null]]]"));
 	}
 
 	private void assertAllMatch(String[] values, String[] searchValues) {
