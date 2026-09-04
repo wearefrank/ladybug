@@ -142,17 +142,17 @@ public class LadybugSpringBootApplication {
 		UserDetails dataAdminUser = User.builder()
 				.username("IbisDataAdmin")
 				.password("{noop}IbisDataAdmin")
-				.roles("IbisDataAdmin")
+				.roles("IbisDataAdmin", "IbisObserver")
 				.build();
 		UserDetails adminUser = User.builder()
 				.username("IbisAdmin")
 				.password("{noop}IbisAdmin")
-				.roles("IbisAdmin")
+				.roles("IbisAdmin", "IbisDataAdmin", "IbisObserver")
 				.build();
 		UserDetails testerUser = User.builder()
 				.username("IbisTester")
 				.password("{noop}IbisTester")
-				.roles("IbisTester")
+				.roles("IbisTester", "IbisAdmin", "IbisDataAdmin", "IbisObserver")
 				.build();
 		// Create an UserDetailsManager without any users.
 		return new InMemoryUserDetailsManager(observerUser, dataAdminUser, adminUser, testerUser);
