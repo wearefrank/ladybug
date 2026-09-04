@@ -106,15 +106,15 @@
 	reportNames.add(reportName = "Message encoded using Base64");
 	if (reportName.equals(createReportAction)) {
 		byte[] message = new byte[6];
-		// Two bytes for ë in UTF-8
+		// Two bytes for � in UTF-8
 		message[0] = (byte)195;
 		message[1] = (byte)171;
-		// Two bytes for © in UTF-8
+		// Two bytes for � in UTF-8
 		message[2] = (byte)194;
 		message[3] = (byte)169;
-		// One byte for ë in ISO-8859-1
+		// One byte for � in ISO-8859-1
 		message[4] = (byte)235;
-		// One byte for © in ISO-8859-1
+		// One byte for � in ISO-8859-1
 		message[5] = (byte)169;
 		// The last two bytes cannot be encoded in UTF-8 so Ladybug will use Base64 instead
 		testTool.startpoint(correlationId, null, reportName, message);
