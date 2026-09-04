@@ -83,7 +83,8 @@ label {
   outline: none !important;
 }
 
-.close {
+.btn-close:focus {
+  box-shadow: none !important;
   outline: none !important;
 }
 
