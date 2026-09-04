@@ -57,6 +57,10 @@ label {
   font-size: 0.7rem !important;
 }
 
+.form-select {
+  font-size: 0.7rem !important;
+}
+
 .form-group {
   margin-bottom: 1rem;
 }
