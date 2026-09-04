@@ -25,16 +25,18 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import org.wearefrank.ladybug.web.common.Constants;
+
 import jakarta.annotation.PostConstruct;
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.container.ContainerRequestFilter;
 import jakarta.ws.rs.container.PreMatching;
+import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response.Status;
 import jakarta.ws.rs.ext.Provider;
-import lombok.extern.slf4j.Slf4j;
 import lombok.Getter;
-
-import org.wearefrank.ladybug.web.common.Constants;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Filter requests based on their permission requirements.
@@ -77,7 +79,7 @@ public class ApiAuthorizationFilter implements ContainerRequestFilter {
 	}
 
 	/**
-	 * Init to be used when filter is applied for all resource of the applicatione (e.g. in a Quarkus application). This
+	 * Init to be used when filter is applied for all resource of the application (e.g. in a Quarkus application). This
 	 * is not needed and not recommended when filter is applied to the ApiServlet resources only (e.g. when configured
 	 * in CXF, see cxf-beans.xml in Ladybug project (ApiServlet extends CXFServlet))
 	 */
@@ -181,40 +183,40 @@ public class ApiAuthorizationFilter implements ContainerRequestFilter {
 					log.warn("Security has been disabled, this should only be the case when developing locally!");
 					initialWarningLogged = true;
 				}
-				log(requestContext, method, path, true, reason + " with security disabled");
+				log(requestContext, method, path, reason + " with security disabled");
 				return;
 			} else {
 				for (String role : mostSpecificConfigurationPart.getRoles()) {
 					if (role != null) {
 						noRolesFound = false;
 						if (requestContext.getSecurityContext().isUserInRole(role)) {
-							log(requestContext, method, path, true, reason);
+							log(requestContext, method, path, reason);
 							return;
 						}
 					}
 				}
 			}
 		}
-		String reason = " NOT ALLOWED becasue";
+		Status statusCode;
+		String logReason;
+		String guiReason;
 		if (mostSpecificConfigurationPart == null) {
-			reason = reason + " no matching pattern found";
+			statusCode = Response.Status.NOT_FOUND;
+			logReason = " no matching pattern found";
+			guiReason = "No matching pattern found for " + path + " in " + this.getClass().getName();
 		} else {
-			reason = reason + " user not in role for " + mostSpecificConfigurationPart;
+			statusCode = Response.Status.FORBIDDEN;
+			logReason = " NOT ALLOWED becasue user not in role for " + mostSpecificConfigurationPart;
 			if (noRolesFound) {
-				reason = reason + " (use ApiAuthorizationFilter.set*Roles())";
+				logReason = logReason + " (use ApiAuthorizationFilter.set*Roles())";
 			}
+			guiReason = "Not allowed by " + this.getClass().getName();
 		}
-		log(requestContext, method, path, false, reason);
-		// Return unauthorized.
-		// Return string "Not allowed!" to be able to see the request is unauthorized when CXF returns OK (200) instead
-		// of UNAUTHORIZED (401). From https://cxf.apache.org/docs/jax-rs-filters.html:
-		//   At the moment it is not possible to override a response status code from a CXF interceptor running before
-		//   JAXRSOutInterceptor, like CustomOutInterceptor above, which will be fixed.
-		requestContext.abortWith(Response.status(Response.Status.UNAUTHORIZED).entity("Not allowed!").build());
+		log(requestContext, method, path, logReason);
+		requestContext.abortWith(Response.status(statusCode).entity(guiReason).type(MediaType.TEXT_PLAIN).build());
 	}
 
-	private void log(ContainerRequestContext requestContext, String method, String path, boolean allowed,
-			String reason) {
+	private void log(ContainerRequestContext requestContext, String method, String path, String reason) {
 		String user = "";
 		if (requestContext.getSecurityContext().getUserPrincipal() != null) {
 			user = requestContext.getSecurityContext().getUserPrincipal().getName();
