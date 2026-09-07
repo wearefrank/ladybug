@@ -16,12 +16,7 @@
 
 	<!--
 	Shared Spring configuration for the Ladybug test webapps (ladybug-test-webapp and
-	ladybug-spring-boot-test-webapp). Beans whose value depends on the working directory of the
-	consuming webapp (reportsFilename, metadataFilename, ladybugDatabaseUrl and, in profile
-	storage.xml, xmlStorageReportsFolder) are not defined here and must be provided by the
-	importing webapp. Everything that only depends on those values, such as ladybugDataSource
-	and the debugStorage/testStorage beans of profiles storage.file and storage.xml, is defined
-	here and reuses them via SpEL bean-references.
+	ladybug-spring-boot-test-webapp).
 	-->
 
 	<!-- Make ${ladybug.dir:ladybug} read system property ladybug.dir with default value ladybug -->
