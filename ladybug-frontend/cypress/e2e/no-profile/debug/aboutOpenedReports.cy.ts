@@ -22,10 +22,13 @@ describe('About opened reports', () => {
     // if that fetch is still in flight when "close" is clicked below, its late response
     // re-populates the tree afterwards and makes checkFileTreeLength(0) flaky. Asserting on
     // the report name instead forces Cypress to retry until the correct report has loaded.
+    //
+    // When we search the opened report we expect three nodes because the tree
+    // is expanded by default.
     cy.getDebugTableRows().find('td:contains("Simple report")').first().click();
-    cy.getShownNodesOfReportTreeWithText('Simple report').should('have.length', 1);
+    cy.getShownNodesOfReportTreeWithText('Simple report').should('have.length', 3);
     cy.getDebugTableRows().find('td:contains("Another simple report")').first().click();
-    cy.getShownNodesOfReportTreeWithText('Another simple report').should('have.length', 1);
+    cy.getShownNodesOfReportTreeWithText('Another simple report').should('have.length', 3);
     cy.get('[data-cy-debug-tree="close"]').click();
     cy.get('[data-cy-debug="selectAll"]').click();
     cy.get('[data-cy-debug="openSelected"]').click();
