@@ -17,9 +17,11 @@
 	<!--
 	Shared Spring configuration for the Ladybug test webapps (ladybug-test-webapp and
 	ladybug-spring-boot-test-webapp). Beans whose value depends on the working directory of the
-	consuming webapp (reportsFilename, metadataFilename, ladybugDataSource and the debugStorage/
-	testStorage beans of profiles storage.file and storage.xml) are not defined here and must be
-	provided by the importing webapp.
+	consuming webapp (reportsFilename, metadataFilename, ladybugDatabaseUrl and, in profile
+	storage.xml, xmlStorageReportsFolder) are not defined here and must be provided by the
+	importing webapp. Everything that only depends on those values, such as ladybugDataSource
+	and the debugStorage/testStorage beans of profiles storage.file and storage.xml, is defined
+	here and reuses them via SpEL bean-references.
 	-->
 
 	<!-- Make ${ladybug.dir:ladybug} read system property ladybug.dir with default value ladybug -->
@@ -196,6 +198,17 @@
 	</bean>
 
 	<!--
+	Without connection pooling (considerably slows down GUI performance). E.g. when using:
+	<bean name="ladybugDataSource" class="org.h2.jdbcx.JdbcDataSource">
+		<property name="URL" value="#{ladybugDatabaseUrl}"/>
+	</bean>
+	-->
+	<bean name="ladybugDataSource" class="org.apache.commons.dbcp2.BasicDataSource" destroy-method="close">
+		<property name="driverClassName" value="org.h2.Driver"/>
+		<property name="url" value="#{ladybugDatabaseUrl}"/>
+	</bean>
+
+	<!--
 	DatabaseCrudStorage will make it possible to edit and delete reports in the Debug tab (with new GUI). This is okay
 	for testing purposes but don't copy this for other situations without careful consideration / reading the LogStorage
 	JavaDoc.
@@ -264,6 +277,29 @@
 			depends-on="ladybugDatabaseChangelog"
 			>
 			<property name="name" value="Test"/>
+		</bean>
+	</beans>
+
+	<beans profile="storage.file">
+		<!-- White box view and TestTool (creating and storing reports) are using debugStorage -->
+		<bean name="debugStorage" class="org.wearefrank.ladybug.storage.file.Storage">
+			<property name="name" value="Debug"/>
+			<property name="reportsFilename" value="#{reportsFilename}"/>
+			<property name="metadataFilename" value="#{metadataFilename}"/>
+		</bean>
+		<!-- Configure Test tab with file storage -->
+		<bean name="testStorage" class="org.wearefrank.ladybug.storage.file.TestStorage">
+			<property name="name" value="Test"/>
+			<property name="reportsFilename" value="#{reportsFilename}"/>
+			<property name="metadataFilename" value="#{metadataFilename}"/>
+		</bean>
+	</beans>
+
+	<beans profile="storage.xml">
+		<!-- Configure Test tab with xml storage -->
+		<bean name="testStorage" class="org.wearefrank.ladybug.storage.xml.XmlStorage">
+			<property name="name" value="Test"/>
+			<property name="reportsFolder" value="#{xmlStorageReportsFolder}"/>
 		</bean>
 	</beans>
 
