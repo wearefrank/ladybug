@@ -125,7 +125,7 @@ jobs:
         if: failure()
 
       - name: Collect failure data into a single artifact directory
-        if: failure()
+        if: always() # TODO: verify artifact upload works, restore to failure() afterwards
         run: |
           bash ladybug/.github/workflows/collect-artifact-data.sh artifact-data \
             "ladybug/ladybug-frontend/cypress/screenshots" \
@@ -135,7 +135,7 @@ jobs:
 
       - name: Store logs
         uses: actions/upload-artifact@v4
-        if: failure()
+        if: always() # TODO: verify artifact upload works, restore to failure() afterwards
         with:
           name: springmvc logs and videos ${{ matrix.name }}
           path: artifact-data/

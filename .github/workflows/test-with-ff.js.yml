@@ -281,7 +281,7 @@ jobs:
         run: tree -L 5 .
 
       - name: Collect failure data into a single artifact directory
-        if: failure()
+        if: always() # TODO: verify artifact upload works, restore to failure() afterwards
         run: |
           bash ladybug/.github/workflows/collect-artifact-data.sh artifact-data \
             "ladybug/ladybug-ff-cypress-test/cypress/screenshots" \
@@ -301,7 +301,7 @@ jobs:
             "ladybug/ladybug-ff-cypress-test/cypress.config.ts"
 
       - name: Store logs
-        if: failure()
+        if: always() # TODO: verify artifact upload works, restore to failure() afterwards
         uses: actions/upload-artifact@v4
         with:
           name: test-with-ff data test-app = ${{ matrix.test-app }} storage = ${{ matrix.storage }} dtap=${{ matrix.dtap }}
