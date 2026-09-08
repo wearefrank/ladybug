@@ -1,4 +1,4 @@
-name: Testing without FF!
+name: Testing ladybug-test-webapp (jaxrs)
 on:
   push:
     branches:
@@ -30,7 +30,7 @@ jobs:
             spring-profile: none
             selected-specs: cypress/e2e/open-telemetry/**
             authenticationTest: no-authentication
-    name: Test ladybug-test-webapp (jaxrs), ${{ matrix.name }}
+    name: ${{ matrix.name }}
     runs-on: ubuntu-latest
 
     steps:

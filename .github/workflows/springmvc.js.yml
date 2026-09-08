@@ -30,7 +30,7 @@ jobs:
             spring-profile: none
             selected-specs: cypress/e2e/open-telemetry/**
             uiTestMode: NO_AUTH
-    name: Test ladybug-spring-boot-test-webapp, ${{ matrix.name }}
+    name: ${{ matrix.name }}
     runs-on: ubuntu-latest
 
     steps:
