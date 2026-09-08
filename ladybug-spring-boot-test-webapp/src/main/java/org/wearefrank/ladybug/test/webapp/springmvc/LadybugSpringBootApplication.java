@@ -155,7 +155,14 @@ public class LadybugSpringBootApplication {
 				.password("{noop}IbisTester")
 				.roles("IbisTester", "IbisAdmin", "IbisDataAdmin", "IbisObserver")
 				.build();
+		// A user that combines the IbisObserver role with the IbisWebService role, used to test behavior for
+		// users that are not limited to a single Ladybug role.
+		UserDetails observerWebServiceUser = User.builder()
+				.username("IbisObserverWebService")
+				.password("{noop}IbisObserverWebService")
+				.roles("IbisObserver", "IbisWebService")
+				.build();
 		// Create an UserDetailsManager without any users.
-		return new InMemoryUserDetailsManager(observerUser, dataAdminUser, adminUser, testerUser);
+		return new InMemoryUserDetailsManager(observerUser, dataAdminUser, adminUser, testerUser, observerWebServiceUser);
 	}
 }

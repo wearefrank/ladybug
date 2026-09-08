@@ -15,6 +15,8 @@ import { Interception } from 'cypress/types/net-stubbing';
 
 const OBSERVER_USER = 'IbisObserver';
 const OBSERVER_PWD = 'IbisObserver';
+const OBSERVER_WEBSERVICE_USER = 'IbisObserverWebService';
+const OBSERVER_WEBSERVICE_PWD = 'IbisObserverWebService';
 const TESTER_USER = 'IbisTester';
 const TESTER_PWD = 'IbisTester';
 
@@ -169,10 +171,13 @@ Cypress.Commands.add('initializeApp' as keyof Chainable, (): void => {
 });
 
 Cypress.Commands.add('initializeAppAsObserver' as keyof Chainable, (): void => {
+  // Set via CYPRESS_observerHasWebServiceRole so that the same spec can be run against a user that has only the
+  // IbisObserver role and against a user that combines IbisObserver with IbisWebService, without changing the spec.
+  const observerHasWebServiceRole = Cypress.env('observerHasWebServiceRole') === 'true';
   cy.visit('', {
     auth: {
-      username: OBSERVER_USER,
-      password: OBSERVER_PWD,
+      username: observerHasWebServiceRole ? OBSERVER_WEBSERVICE_USER : OBSERVER_USER,
+      password: observerHasWebServiceRole ? OBSERVER_WEBSERVICE_PWD : OBSERVER_PWD,
     }
   });
   awaitLoadingSpinner();

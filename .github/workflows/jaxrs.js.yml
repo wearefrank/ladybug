@@ -22,6 +22,12 @@ jobs:
             spring-profile: none
             selected-specs: cypress/e2e/production-auth/**
             authenticationTest: production
+            observerHasWebServiceRole: false
+          - name: authorizationObserverWebService
+            spring-profile: none
+            selected-specs: cypress/e2e/production-auth/**
+            authenticationTest: production
+            observerHasWebServiceRole: true
           - name: backendAuthorization
             spring-profile: none
             selected-specs: cypress/e2e/backend-auth/**
@@ -162,6 +168,8 @@ jobs:
           spec: ${{ matrix.selected-specs }}
           config: baseUrl=http://localhost:8090/ladybug
           browser: chrome
+        env:
+          CYPRESS_observerHasWebServiceRole: ${{ matrix.observerHasWebServiceRole }}
   
       - name: Show files
         run: tree -d -L 5 .
