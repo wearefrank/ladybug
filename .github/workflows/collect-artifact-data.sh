@@ -30,6 +30,11 @@ mkdir -p "$staging_dir"
 for pattern in "$@"; do
   for match in $pattern; do
     if [ -e "$match" ]; then
+      # $PWD is not set by this script; it is the working directory this
+      # script was invoked from. None of the callers of this script override
+      # the default working directory, so $PWD is $GITHUB_WORKSPACE, the
+      # shared parent of the ladybug, frank-runner and frankframework
+      # checkouts.
       rel_match="$(realpath --relative-to="$PWD" "$match")"
       cp -r --parents "$rel_match" "$staging_dir"/
     fi
