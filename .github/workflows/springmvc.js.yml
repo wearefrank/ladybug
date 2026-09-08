@@ -141,6 +141,10 @@ jobs:
           CYPRESS_testerUsername: ${{ matrix.testerUsername }}
           CYPRESS_testerPassword: ${{ matrix.testerPassword }}
 
+      - name: Show which users were actually authenticated, as logged in ladybug.log
+        if: always() && matrix.observerUsername != ''
+        run: bash ladybug/.github/workflows/show-authenticated-users.sh ladybug/ladybug-spring-boot-test-webapp/data/ladybug.log
+
       - name: Show files
         run: tree -d -L 5 .
         if: failure()
