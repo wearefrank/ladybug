@@ -37,12 +37,12 @@ jobs:
       - name: Show chosen Spring profile for backend, chosen ladybug.ui.test.mode and chosen specs to run
         run: echo "Start backend with Spring profile ${{ matrix.spring-profile }}, ladybug.ui.test.mode=${{ matrix.uiTestMode }} and run specs ${{ matrix.selected-specs }}"
       - name: Checkout ladybug
-        uses: actions/checkout@v2
+        uses: actions/checkout@v5
         with:
           repository: wearefrank/ladybug
           path: ladybug
 
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v5
         name: Install pnpm
         with:
           version: 9.4
@@ -52,7 +52,7 @@ jobs:
         shell: bash
         run: |
           echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_OUTPUT
-      - uses: actions/cache@v4
+      - uses: actions/cache@v5
         name: Setup pnpm cache
         with:
           path: ${{ steps.store-path.outputs.STORE_PATH }}
@@ -62,13 +62,13 @@ jobs:
       - name: Show pnpm version (before pnpm install)
         run: pnpm -v
       - name: Install Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: 20
           cache: 'pnpm'
           cache-dependency-path: 'ladybug/ladybug-frontend/pnpm-lock.yaml'
 
-      - uses: actions/cache@v4
+      - uses: actions/cache@v5
         name: Cache Cypress
         with:
           path: ~/.cache/Cypress
@@ -85,7 +85,7 @@ jobs:
         working-directory: ladybug
 
       - name: Set up JDK
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           java-version: '21'
           distribution: 'temurin'
@@ -113,7 +113,7 @@ jobs:
         run: ./waitForUrl.sh http://localhost:8090 300
 
       - name: Run cypress with chrome browser
-        uses: cypress-io/github-action@v6.6.0
+        uses: cypress-io/github-action@v7.4.3
         with:
           working-directory: ladybug/ladybug-frontend
           spec: ${{ matrix.selected-specs }}

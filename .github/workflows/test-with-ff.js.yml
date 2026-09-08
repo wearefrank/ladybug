@@ -77,26 +77,26 @@ jobs:
         if: ${{ inputs.backendBranch != '' && steps.decideAboutBuildCode.outputs.buildCode == 'false' }}
         run: exit 1
       - name: Cache Frank!Runner dependencies - build
-        uses: actions/cache@v3
+        uses: actions/cache@v5
         with:
           path: frank-runner/build
           key: ${{ runner.os }}-frank-runner-build
           restore-keys: |
             ${{ runner.os }}-frank-runner-build
       - name: Cache Frank!Runner dependencies - download
-        uses: actions/cache@v3
+        uses: actions/cache@v5
         with:
           path: frank-runner/download
           key: ${{ runner.os }}-frank-runner-download
           restore-keys: |
             ${{ runner.os }}-frank-runner-download
       - name: Checkout Frank!Runner
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: wearefrank/frank-runner
           path: frank-runner
       - name: Checkout ladybug
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: wearefrank/ladybug
           path: ladybug
@@ -111,13 +111,13 @@ jobs:
 
       - name: Checkout frankframework - default
         if: ${{ steps.decideAboutBuildCode.outputs.buildCode == 'true' && inputs.ffFork == '' }}
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: frankframework/frankframework
           path: frankframework
       - name: Checkout frankframework - fork
         if: ${{ steps.decideAboutBuildCode.outputs.buildCode == 'true' && inputs.ffFork != '' }}
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: ${{ inputs.ffFork }}/frankframework
           path: frankframework
@@ -185,7 +185,7 @@ jobs:
         working-directory: ladybug/ladybug-ff-cypress-test
         run: cp cypress.config_cicd.ts cypress.config.ts
       - name: Use Node.js 24.x
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: 24.x
           cache: "yarn"
@@ -216,7 +216,7 @@ jobs:
       # Build the latest code if buildLatestFFandLadybugCode
       - name: Cache Maven downloads
         if: ${{ steps.decideAboutBuildCode.outputs.buildCode == 'true' }}
-        uses: actions/cache@v3
+        uses: actions/cache@v5
         with:
           path: ~/.m2/repository/
           key: ${{ runner.os }}-maven

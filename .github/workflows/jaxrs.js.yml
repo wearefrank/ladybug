@@ -37,11 +37,11 @@ jobs:
       - name: Show chosen Spring profile for backend and chosen specs to run
         run: echo "Start backend with Spring profile ${{ matrix.spring-profile }} and run specs ${{ matrix.selected-specs }}"
       - name: Checkout ladybug
-        uses: actions/checkout@v2
+        uses: actions/checkout@v5
         with:
           repository: wearefrank/ladybug
           path: ladybug
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v5
         name: Install pnpm
         with:
           version: 9.4
@@ -51,7 +51,7 @@ jobs:
         shell: bash
         run: |
           echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_OUTPUT  
-      - uses: actions/cache@v4
+      - uses: actions/cache@v5
         name: Setup pnpm cache
         with:
           path: ${{ steps.store-path.outputs.STORE_PATH }}
@@ -61,13 +61,13 @@ jobs:
       - name: Show pnpm version (before pnpm install)
         run: pnpm -v
       - name: Install Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: 20
           cache: 'pnpm'
           cache-dependency-path: 'ladybug/ladybug-frontend/pnpm-lock.yaml'
 
-      - uses: actions/cache@v4
+      - uses: actions/cache@v5
         name: Cache Cypress
         with:
           path: ~/.cache/Cypress
@@ -97,7 +97,7 @@ jobs:
         run: cp web.xml.out web.xml
 
       - name: Checkout frank-runner
-        uses: actions/checkout@v2
+        uses: actions/checkout@v5
         with:
           repository: wearefrank/frank-runner
           path: frank-runner
@@ -118,21 +118,21 @@ jobs:
         run: chmod a+x frank-runner/specials/ladybug/restart.sh
 
       - name: Cache Frank!Runner dependencies - build
-        uses: actions/cache@v3
+        uses: actions/cache@v5
         with:
           path: frank-runner/build
           key: ${{ runner.os }}-frank-runner-build
           restore-keys: |
             ${{ runner.os }}-frank-runner-build
       - name: Cache Frank!Runner dependencies - download
-        uses: actions/cache@v3
+        uses: actions/cache@v5
         with:
           path: frank-runner/download
           key: ${{ runner.os }}-frank-runner-download
           restore-keys: |
             ${{ runner.os }}-frank-runner-download
       - name: Cache Maven downloads
-        uses: actions/cache@v3
+        uses: actions/cache@v5
         with:
           path: ~/.m2/repository/
           key: ${{ runner.os }}-maven
@@ -156,7 +156,7 @@ jobs:
         working-directory: ladybug/.github/workflows
         run: ./waitForUrl.sh http://localhost:8090 300
       - name: Run cypress with chrome browser
-        uses: cypress-io/github-action@v6.6.0
+        uses: cypress-io/github-action@v7.4.3
         with:
           working-directory: ladybug/ladybug-frontend
           spec: ${{ matrix.selected-specs }}
