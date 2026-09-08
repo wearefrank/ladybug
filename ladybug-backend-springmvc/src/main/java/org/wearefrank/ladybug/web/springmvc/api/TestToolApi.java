@@ -23,6 +23,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -65,27 +66,23 @@ public class TestToolApi {
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	public ResponseEntity<?> getInfo() {
 		TestToolInfoResponse result = delegate.getTestToolInfo();
-		result.setRoles(frontendRolesResolver.getFrontendRoles(this.getRole()));
+		result.setRoles(frontendRolesResolver.getFrontendRoles(this::isUserInRoles));
 		return ResponseEntity.ok(result);
 	}
 
-	private String getRole() {
-		List<String> roles = SecurityContextHolder.getContext().getAuthentication().getAuthorities()
+	private boolean isUserInRoles(List<String> roles) {
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		if (authentication == null) {
+			return true;
+		}
+		List<String> grantedRoles = authentication.getAuthorities()
 				.stream()
 				.map(GrantedAuthority::getAuthority)
 				.filter((s) -> s.startsWith("ROLE_"))
 				.map((s) -> s.substring(5))
 				.collect(Collectors.toList());
-		log.debug("TestToolApi.getRole() sees roles {}", roles);
-		if (roles.size() != 1) {
-			log.error("Expected only one role in {}", roles);
-			// Do not fill in some string. If ever a role is introduced that has that name, then
-			// a security breach might be introduced.
-			return null;
-		}
-		String role = roles.get(0);
-		log.debug("User has role {}", role);
-		return role;
+		log.debug("TestToolApi.isUserInRoles() sees granted roles {}", grantedRoles);
+		return grantedRoles.stream().anyMatch(roles::contains);
 	}
 
 	// IbisObserver is permitted to revert the generatorEnabled state and the regex filter to factory
@@ -96,7 +93,7 @@ public class TestToolApi {
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	public ResponseEntity<?> resetInfo() {
 		TestToolInfoResponse result = delegate.resetInfo();
-		result.setRoles(frontendRolesResolver.getFrontendRoles(getRole()));
+		result.setRoles(frontendRolesResolver.getFrontendRoles(this::isUserInRoles));
 		return ResponseEntity.ok(result);
 	}
 
