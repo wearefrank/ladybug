@@ -173,7 +173,7 @@ Cypress.Commands.add('initializeApp' as keyof Chainable, (): void => {
 Cypress.Commands.add('initializeAppAsObserver' as keyof Chainable, (): void => {
   // Set via CYPRESS_observerHasWebServiceRole so that the same spec can be run against a user that has only the
   // IbisObserver role and against a user that combines IbisObserver with IbisWebService, without changing the spec.
-  const observerHasWebServiceRole = Cypress.env('observerHasWebServiceRole') === 'true';
+  const observerHasWebServiceRole = Cypress.env('observerHasWebServiceRole') === true;
   cy.visit('', {
     auth: {
       username: observerHasWebServiceRole ? OBSERVER_WEBSERVICE_USER : OBSERVER_USER,
