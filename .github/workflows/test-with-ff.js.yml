@@ -207,9 +207,9 @@ jobs:
       - name: Let Frank!Runner do its downloads
         working-directory: ladybug/ladybug-ff-cypress-test
         run: yarn run installFrankRunnerEnv
-      - name: Delete old Ladybug test reports
+      - name: Delete old Tomcat logs from cache, so that they cannot end up in this job's artifact
         working-directory: frank-runner
-        run: find . -path './build/apache-tomcat*/logs/testtool*' -delete
+        run: find . -path './build/apache-tomcat*/logs/*' -delete
       - name: Remove old catalina.out
         working-directory: frank-runner
         run: find . -path './build/apache-tomcat*/catalina.out' -delete
@@ -279,42 +279,23 @@ jobs:
       - name: Show files
         if: failure()
         run: tree -L 5 .
+
+      - name: Collect failure data into a single artifact directory
+        if: failure()
+        run: |
+          bash ladybug/.github/workflows/collect-artifact-data.sh artifact-data \
+            "frank-runner/specials/ladybug" \
+            "frank-runner/serverStartLog.log" \
+            "frank-runner/build/apache-tomcat-10*/logs" \
+            "frank-runner/build/**/apache-tomcat-1*/logs" \
+            "ladybug/ladybug-ff-cypress-test/cypress/videos" \
+            "${{ env.RESOURCES_DIR }}/DeploymentSpecifics.properties" \
+            "ladybug/ladybug-ff-test-webapp/serverStartLog.log"
+
       - name: Store logs
         if: failure()
-        uses: actions/upload-artifact@v4.4.0
+        uses: actions/upload-artifact@v4
         with:
-          name: data test-app = ${{ matrix.test-app }} storage = ${{ matrix.storage }} dtap=${{ matrix.dtap }}
-          path: |
-            frank-runner/specials/ladybug/
-            ladybug/ladybug-ff-cypress-test/cypress/videos/
-      - name: Store logs that appear under Tomcat
-        if: failure()
-        uses: actions/upload-artifact@v4.4.0
-        with:
-          name: tomcat logs - test-app = ${{ matrix.test-app }} storage = ${{ matrix.storage }} dtap=${{ matrix.dtap }}
-          path: |
-            frank-runner/build/apache-tomcat-10*/logs/*
-      # Zip file becomes corrupt if you try to include non-existing files.
-      - name: Store logs that only exist without webapp
-        if: ${{ failure() && matrix.test-app == 'false' }}
-        uses: actions/upload-artifact@v4.4.0
-        with:
-          name: logs = ${{ matrix.test-app }} storage = ${{ matrix.storage }} dtap=${{ matrix.dtap }}
-          path: |
-            frank-runner/serverStartLog.log
-            frank-runner/build/**/apache-tomcat-1*/logs/
-      - name: Store logs that only exist for PRD
-        if: ${{ failure() && matrix.dtap == 'PRD' }}
-        uses: actions/upload-artifact@v4.4.0
-        with:
-          name: DeploymentSpecifics.properties test-app = ${{ matrix.test-app }} storage = ${{ matrix.storage }} dtap=${{ matrix.dtap }}
-          path: |
-            ${{ env.RESOURCES_DIR }}/DeploymentSpecifics.properties
-      - name: Store logs for ladybug-ff-test-webapp
-        if: ${{ failure() && matrix.test-app == 'true' }}
-        uses: actions/upload-artifact@v4.4.0
-        with:
-          name: ladybug-ff-test-webapp related storage = ${{ matrix.storage }} dtap=${{ matrix.dtap }}
-          path: |
-            frank-runner/specials/ladybug/buildIafWebapp.log
-            ladybug/ladybug-ff-test-webapp/serverStartLog.log
+          name: test-with-ff data test-app = ${{ matrix.test-app }} storage = ${{ matrix.storage }} dtap=${{ matrix.dtap }}
+          path: artifact-data/
+          if-no-files-found: warn

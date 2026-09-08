@@ -142,8 +142,8 @@ jobs:
         run: rm -rf frank-runner/download/apache-tomcat-9*; rm -rf frank-runner/build/apache-tomcat-9*;
       - name: Show current time, allows you to check that logs are not old
         run: date
-      - name: Remove old catalina.out
-        run: rm -rf frank-runner/build/apache-tomcat-9.0.56/logs/catalina.out
+      - name: Remove old logs from cache, so that they cannot end up in this job's artifact
+        run: rm -rf frank-runner/build/apache-tomcat-9.0.56/logs/*
 
       - name: Let Frank!Runner do its downloads
         run: ./env.sh > installFrankRunnerEnv.log
@@ -167,24 +167,23 @@ jobs:
         run: tree -d -L 5 .
         if: failure()
 
-      - name: Store logs
-        uses: actions/upload-artifact@v4
+      - name: Collect failure data into a single artifact directory
         if: failure()
-        with:
-          name: logs and videos ${{ matrix.name }}
-          path: | 
-            frank-runner/specials/ladybug/build.properties
-            frank-runner/build/*/logs/*
-            ladybug/ladybug-frontend/cypress/screenshots/
-            ladybug/ladybug-frontend/cypress/videos/
-            ladybug/ladybug-frontend/cypress/firefox/screenshots/
-            ladybug/ladybug-frontend/cypress/firefox/videos/
+        run: |
+          bash ladybug/.github/workflows/collect-artifact-data.sh artifact-data \
+            "frank-runner/specials/ladybug/build.properties" \
+            "frank-runner/build/*/logs" \
+            "frank-runner/installFrankRunnerEnv.log" \
+            "ladybug/ladybug-frontend/cypress/screenshots" \
+            "ladybug/ladybug-frontend/cypress/videos" \
+            "ladybug/ladybug-frontend/cypress/firefox/screenshots" \
+            "ladybug/ladybug-frontend/cypress/firefox/videos"
 
       - name: Store logs
         uses: actions/upload-artifact@v4
         if: failure()
         with:
-          name: installFrankRunnerEnv ${{ matrix.name }}
-          path: | 
-            frank-runner/installFrankRunnerEnv.log
+          name: jaxrs logs and videos ${{ matrix.name }}
+          path: artifact-data/
+          if-no-files-found: warn
 
