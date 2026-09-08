@@ -128,11 +128,10 @@ jobs:
         if: failure()
         run: |
           bash ladybug/.github/workflows/collect-artifact-data.sh artifact-data \
-            "ladybug/ladybug-spring-boot-test-webapp/serverStartLog.log" \
             "ladybug/ladybug-frontend/cypress/screenshots" \
             "ladybug/ladybug-frontend/cypress/videos" \
-            "ladybug/ladybug-frontend/cypress/firefox/screenshots" \
-            "ladybug/ladybug-frontend/cypress/firefox/videos"
+            "ladybug/ladybug-spring-boot-test-webapp/data/ladybug.log" \
+            "ladybug/ladybug-frontend/cypress.env.json"
 
       - name: Store logs
         uses: actions/upload-artifact@v4
