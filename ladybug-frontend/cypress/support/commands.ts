@@ -13,13 +13,6 @@ import Chainable = Cypress.Chainable;
 import JQueryWithSelector = Cypress.JQueryWithSelector;
 import { Interception } from 'cypress/types/net-stubbing';
 
-const OBSERVER_USER = 'IbisObserver';
-const OBSERVER_PWD = 'IbisObserver';
-const OBSERVER_WEBSERVICE_USER = 'IbisObserverWebService';
-const OBSERVER_WEBSERVICE_PWD = 'IbisObserverWebService';
-const TESTER_USER = 'IbisTester';
-const TESTER_PWD = 'IbisTester';
-
 const TREE_ITEM_SELECTED_CLASS = 'sft-item-selected';
 
 const APPLICATION_COLUMN = 10;
@@ -31,9 +24,7 @@ declare global {
     interface Chainable {
       initializeApp(): Chainable;
 
-      initializeAppAsObserver(): Chainable;
-
-      initializeAppAsTester(): Chainable;
+      initializeAppAsUser(username: string, password: string): Chainable;
 
       resetApp(): Chainable;
 
@@ -170,24 +161,11 @@ Cypress.Commands.add('initializeApp' as keyof Chainable, (): void => {
   awaitLoadingSpinner();
 });
 
-Cypress.Commands.add('initializeAppAsObserver' as keyof Chainable, (): void => {
-  // Set via CYPRESS_observerHasWebServiceRole so that the same spec can be run against a user that has only the
-  // IbisObserver role and against a user that combines IbisObserver with IbisWebService, without changing the spec.
-  const observerHasWebServiceRole = Cypress.env('observerHasWebServiceRole') === true;
+Cypress.Commands.add('initializeAppAsUser' as keyof Chainable, (username: string, password: string): void => {
   cy.visit('', {
     auth: {
-      username: observerHasWebServiceRole ? OBSERVER_WEBSERVICE_USER : OBSERVER_USER,
-      password: observerHasWebServiceRole ? OBSERVER_WEBSERVICE_PWD : OBSERVER_PWD,
-    }
-  });
-  awaitLoadingSpinner();
-})
-
-Cypress.Commands.add('initializeAppAsTester' as keyof Chainable, (): void => {
-  cy.visit('', {
-    auth: {
-      username: TESTER_USER,
-      password: TESTER_PWD,
+      username,
+      password,
     }
   });
   awaitLoadingSpinner();

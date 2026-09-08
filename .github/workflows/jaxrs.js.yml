@@ -22,16 +22,26 @@ jobs:
             spring-profile: none
             selected-specs: cypress/e2e/production-auth/**
             authenticationTest: production
-            observerHasWebServiceRole: false
+            observerUsername: IbisObserver
+            observerPassword: IbisObserver
+            testerUsername: IbisTester
+            testerPassword: IbisTester
           - name: authorizationObserverWebService
             spring-profile: none
             selected-specs: cypress/e2e/production-auth/**
             authenticationTest: production
-            observerHasWebServiceRole: true
+            observerUsername: IbisObserverWebService
+            observerPassword: IbisObserverWebService
+            testerUsername: IbisTester
+            testerPassword: IbisTester
           - name: backendAuthorization
             spring-profile: none
             selected-specs: cypress/e2e/backend-auth/**
             authenticationTest: only-backend
+            observerUsername: IbisObserver
+            observerPassword: IbisObserver
+            testerUsername: IbisTester
+            testerPassword: IbisTester
           - name: openTelemetry
             spring-profile: none
             selected-specs: cypress/e2e/open-telemetry/**
@@ -169,7 +179,10 @@ jobs:
           config: baseUrl=http://localhost:8090/ladybug
           browser: chrome
         env:
-          CYPRESS_observerHasWebServiceRole: ${{ matrix.observerHasWebServiceRole }}
+          CYPRESS_observerUsername: ${{ matrix.observerUsername }}
+          CYPRESS_observerPassword: ${{ matrix.observerPassword }}
+          CYPRESS_testerUsername: ${{ matrix.testerUsername }}
+          CYPRESS_testerPassword: ${{ matrix.testerPassword }}
   
       - name: Show files
         run: tree -d -L 5 .
