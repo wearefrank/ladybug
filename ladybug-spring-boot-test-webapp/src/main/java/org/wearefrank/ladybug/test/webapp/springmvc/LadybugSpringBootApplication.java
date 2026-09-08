@@ -134,6 +134,7 @@ public class LadybugSpringBootApplication {
 
 	@Bean
 	InMemoryUserDetailsManager userDetailsManager() {
+		log.debug("Executing userDetaildManager() xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
 		UserDetails observerUser = User.builder()
 				.username("IbisObserver")
 				.password("{noop}IbisObserver")

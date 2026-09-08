@@ -165,6 +165,14 @@
             <goals>
               <goal>test-jar</goal>
             </goals>
+            <configuration>
+              <!-- logback-test.xml is only for ladybug-common's own tests. Consumers of this
+                   test-jar pull it onto their runtime classpath, where Logback would otherwise
+                   prefer it over Spring Boot's own generated logging config. -->
+              <excludes>
+                <exclude>logback-test.xml</exclude>
+              </excludes>
+            </configuration>
           </execution>
         </executions>
       </plugin>
