@@ -12,13 +12,7 @@ describe('Test user stories about testing with Ladybug', () => {
   it('Run report', () => {
     cy.createReportInLadybug('Example1a', 'Adapter1a', 'xxx').then(storageId => {
       cy.wrap('Found report just created, storageId=' + storageId)
-      cy.inIframeBody('[data-cy-debug="tableRow"]')
-        .find('td:nth-child(2)').each($cell => {
-          if (parseInt($cell.text()) === storageId) {
-            cy.wrap('Going to click cell with text' + $cell.text())
-            cy.wrap($cell).click()
-          }
-        })
+      cy.clickTableRowWithStorageId(storageId)
       cy.inIframeBody('[data-cy-debug-tree="root"]')
         .should('have.length.at.least', 1)
         .contains('Pipeline Example1a/Adapter1a').within(_ => {
@@ -39,13 +33,7 @@ describe('Test user stories about testing with Ladybug', () => {
     cy.createReportInLadybug('Example1a', 'Adapter1a', 'xxx').then(storageId => {
       cy.wrap('Found report just created, storageId=' + storageId)
       cy.stopAdapter('Example1a', 'Adapter1a');
-      cy.inIframeBody('[data-cy-debug="tableRow"]')
-        .find('td:nth-child(2)').each($cell => {
-          if (parseInt($cell.text()) === storageId) {
-            cy.wrap('Going to click cell with text' + $cell.text())
-            cy.wrap($cell).click()
-          }
-        })
+      cy.clickTableRowWithStorageId(storageId)
       cy.inIframeBody('[data-cy-debug-tree="root"]')
         .should('have.length.at.least', 1)
         .contains('Pipeline Example1a/Adapter1a').within(_ => {

@@ -30,6 +30,7 @@ const ibisTesterPwd = 'IbisTester'
 declare namespace Cypress {
   interface Chainable<Subject = any> {
     inIframeBody(query: string): Chainable<any>
+    clickTableRowWithStorageId(storageId: number): Chainable<any>
     enterLadybug(): void
     getNumLadybugReports(): Chainable<any>
     createReportWithTestPipelineApi(config: string, adapter: string, message: string, username?: string, password?: string): Chainable<any>
@@ -72,6 +73,15 @@ Cypress.Commands.add('inIframeBody', (query) => {
     .then(body => {
       cy.wrap(body).find(query)
     })
+})
+
+// The debug table can re-render while a matching row/cell is being located, which detaches
+// jQuery references collected via .each() and makes the eventual .click() flaky. Using
+// .contains() instead lets Cypress re-query the DOM and retry until the cell is actionable.
+Cypress.Commands.add('clickTableRowWithStorageId', (storageId) => {
+  cy.inIframeBody('[data-cy-debug="tableRow"]')
+    .contains('td:nth-child(2)', new RegExp(`^\\s*${storageId}\\s*$`))
+    .click()
 })
 
 Cypress.Commands.add('enterLadybug', () => {
@@ -173,13 +183,7 @@ Cypress.Commands.add('createReportInLadybug', (config: string, adapter: string, 
 Cypress.Commands.add('createReportAndOpen', (config: string, adapter: string, message: string, username?: string, password?: string) => {
   cy.createReportInLadybug('Example1a', 'Adapter1a', 'xxx').then(storageId => {
     cy.wrap('Found report just created, storageId=' + storageId)
-    cy.inIframeBody('[data-cy-debug="tableRow"]')
-      .find('td:nth-child(2)').each($cell => {
-        if (parseInt($cell.text()) === storageId) {
-          cy.wrap('Going to click cell with text' + $cell.text())
-          cy.wrap($cell).click()
-        }
-      })
+    cy.clickTableRowWithStorageId(storageId)
   })
 })
 
