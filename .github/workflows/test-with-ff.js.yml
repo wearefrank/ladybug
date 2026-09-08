@@ -284,13 +284,21 @@ jobs:
         if: failure()
         run: |
           bash ladybug/.github/workflows/collect-artifact-data.sh artifact-data \
-            "frank-runner/specials/ladybug" \
+            "ladybug/ladybug-ff-cypress-test/cypress/screenshots" \
+            "ladybug/ladybug-ff-cypress-test/cypress/videos" \
             "frank-runner/serverStartLog.log" \
+            "frank-runner/specials/ladybug/serverStartLog.log" \
+            "frank-runner/specials/ladybug/buildIafWebapp.log" \
+            "ladybug/ladybug-ff-test-webapp/serverStartLog.log" \
             "frank-runner/build/apache-tomcat-10*/logs" \
             "frank-runner/build/**/apache-tomcat-1*/logs" \
-            "ladybug/ladybug-ff-cypress-test/cypress/videos" \
+            "frank-runner/build.properties" \
+            "frank-runner/specials/ladybug/build.properties" \
+            "frank-runner/specials/iaf-webapp/build.properties" \
+            "ladybug/ladybug-ff-test-webapp/build.properties" \
             "${{ env.RESOURCES_DIR }}/DeploymentSpecifics.properties" \
-            "ladybug/ladybug-ff-test-webapp/serverStartLog.log"
+            "${{ env.RESOURCES_DIR }}/localUsers.yml" \
+            "ladybug/ladybug-ff-cypress-test/cypress.config.ts"
 
       - name: Store logs
         if: failure()
