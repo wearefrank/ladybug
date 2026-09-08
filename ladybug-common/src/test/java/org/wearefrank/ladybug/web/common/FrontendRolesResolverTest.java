@@ -16,10 +16,8 @@ public class FrontendRolesResolverTest {
 		FrontendRolesResolver instance = nonCumulativeInstance();
 		Predicate<List<String>> userInRole = roles -> roles.contains("SomeBackendTesterRole");
 		assertEquals(Arrays.asList("tester"), instance.getFrontendRoles(userInRole));
-		assertEquals(Arrays.asList("tester"), instance.getFrontendRoles("SomeBackendTesterRole"));
 		userInRole = roles -> roles.contains("SomeObserverRole");
 		assertEquals(Arrays.asList("observer"), instance.getFrontendRoles(userInRole));
-		assertEquals(Arrays.asList("observer"), instance.getFrontendRoles("SomeObserverRole"));
 	}
 
 	@Test
@@ -29,12 +27,8 @@ public class FrontendRolesResolverTest {
 		List<String> actual = new ArrayList<>(instance.getFrontendRoles(userInRole));
 		Collections.sort(actual);
 		assertEquals(Arrays.asList("admin", "observer", "tester"), actual);
-		actual = new ArrayList<>(instance.getFrontendRoles("SomeBackendTesterRole"));
-		Collections.sort(actual);
-		assertEquals(Arrays.asList("admin", "observer", "tester"), actual);
 		userInRole = roles -> roles.contains("SomeObserverRole");
 		assertEquals(Arrays.asList("observer"), instance.getFrontendRoles(userInRole));
-		assertEquals(Arrays.asList("observer"), instance.getFrontendRoles("SomeObserverRole"));
 	}
 
 	private FrontendRolesResolver nonCumulativeInstance() {
