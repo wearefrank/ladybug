@@ -14,10 +14,10 @@
 # under its full path, e.g. home/runner/work/ladybug/ladybug/frankframework/...,
 # burying the directory several levels deep instead of at the archive root.
 #
-# .ts files are NOT renamed to .ts.txt here. Windows does not associate .ts
-# files with a text editor by default, but that's fixed locally by changing
-# which application opens .ts files in Windows settings, rather than by
-# renaming files in this script.
+# On Martijn's computer, .ts files could not be opened quickly from
+# a downloaded artifact because .ts files were opened with the Windows media
+# player. In Windows Settings you can configure for each file type which app
+# should open it.
 #
 # Usage: collect-artifact-data.sh <staging-dir> <candidate-path-or-glob> ...
 set -euo pipefail
