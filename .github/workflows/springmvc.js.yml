@@ -124,8 +124,9 @@ jobs:
         run: tree -d -L 5 .
         if: failure()
 
+      # TODO: revert to `if: failure()` once done inspecting artifacts on success.
       - name: Collect failure data into a single artifact directory
-        if: failure()
+        if: always()
         run: |
           bash ladybug/.github/workflows/collect-artifact-data.sh artifact-data \
             "ladybug/ladybug-frontend/cypress/screenshots" \
@@ -133,9 +134,10 @@ jobs:
             "ladybug/ladybug-spring-boot-test-webapp/data/ladybug.log" \
             "ladybug/ladybug-frontend/cypress.env.json"
 
+      # TODO: revert to `if: failure()` once done inspecting artifacts on success.
       - name: Store logs
         uses: actions/upload-artifact@v4
-        if: failure()
+        if: always()
         with:
           name: springmvc logs and videos ${{ matrix.name }}
           path: artifact-data/
