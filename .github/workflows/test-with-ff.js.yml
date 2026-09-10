@@ -181,9 +181,6 @@ jobs:
       - name: Copy localUsers.yml
         if: ${{ matrix.dtap == 'PRD' }}
         run: cp ladybug/.github/workflows/with-ff/localUsers.yml.txt $RESOURCES_DIR/localUsers.yml
-      - name: Copy cypress.config_cicd.ts to cypress.config.ts to listen to correct port
-        working-directory: ladybug/ladybug-ff-cypress-test
-        run: cp cypress.config_cicd.ts cypress.config.ts
       - name: Use Node.js 24.x
         uses: actions/setup-node@v5
         with:
@@ -275,7 +272,7 @@ jobs:
         run: curl -v -i http://localhost:8090
       - name: Run the tests
         working-directory: ladybug/ladybug-ff-cypress-test
-        run: yarn cypress run --spec "${{ matrix.specs }}" --env "debugStorageName=${{ matrix.debugStorageName }},frankProjectResourcesDir=${{ env.RESOURCES_DIR }},frankProjectOriginalFiles=${{ env.FRANK_PROJECT_DIR }},storage=${{ matrix.storage }}"
+        run: yarn cypress run --config baseUrl=http://localhost:8090 --spec "${{ matrix.specs }}" --env "debugStorageName=${{ matrix.debugStorageName }},frankProjectResourcesDir=${{ env.RESOURCES_DIR }},frankProjectOriginalFiles=${{ env.FRANK_PROJECT_DIR }},storage=${{ matrix.storage }}"
       - name: Show files
         if: failure()
         run: tree -L 5 .
@@ -298,8 +295,7 @@ jobs:
             "frank-runner/specials/iaf-webapp/build.properties" \
             "ladybug/ladybug-ff-test-webapp/build.properties" \
             "${{ env.RESOURCES_DIR }}/DeploymentSpecifics.properties" \
-            "${{ env.RESOURCES_DIR }}/localUsers.yml" \
-            "ladybug/ladybug-ff-cypress-test/cypress.config.ts"
+            "${{ env.RESOURCES_DIR }}/localUsers.yml"
 
       # TODO: revert to `if: failure()` once done inspecting artifacts on success.
       - name: Store logs
