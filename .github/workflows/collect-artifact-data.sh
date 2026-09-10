@@ -14,9 +14,10 @@
 # under its full path, e.g. home/runner/work/ladybug/ladybug/frankframework/...,
 # burying the directory several levels deep instead of at the archive root.
 #
-# .ts files are renamed to .ts.txt, since Windows does not associate .ts
-# files with a text editor by default, which makes them awkward to open
-# from a downloaded artifact.
+# On Martijn's computer, some files could not be opened quickly from
+# a downloaded artifact because the wrong app was attached to the file type.
+# In Windows Settings you can configure for each file type which app
+# should open it.
 #
 # Usage: collect-artifact-data.sh <staging-dir> <candidate-path-or-glob> ...
 set -euo pipefail
@@ -40,7 +41,3 @@ for pattern in "$@"; do
     fi
   done
 done
-
-while IFS= read -r -d '' ts_file; do
-  mv "$ts_file" "${ts_file%.ts}.ts.txt"
-done < <(find "$staging_dir" -type f -name '*.ts' -print0)
