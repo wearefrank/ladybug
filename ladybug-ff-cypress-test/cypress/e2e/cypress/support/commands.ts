@@ -425,7 +425,14 @@ Cypress.Commands.add('executeJdbcQuery', { prevSubject: false }, () => {
     headers: {
       'Content-Type': 'application/json',
     },
-    body: '{"query":"SELECT * FROM LADYBUG","queryType":"AUTO","datasource":"jdbc/webapp","resultType":"csv","avoidLocking":false,"trimSpaces":false}',
+    body: {
+      query: 'SELECT * FROM LADYBUG',
+      queryType: 'AUTO',
+      datasource: Cypress.env('jdbcDatasource'),
+      resultType: 'csv',
+      avoidLocking: false,
+      trimSpaces: false,
+    },
   }).then((resp) => {
     expect(resp.status).to.equal(200);
   });
