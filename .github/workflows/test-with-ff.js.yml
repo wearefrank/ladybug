@@ -148,6 +148,12 @@ jobs:
       - name: Calculate path to original files (3)
         if: ${{ steps.decideAboutBuildCode.outputs.buildCode == 'true' && matrix.test-app == 'false' }}
         run: echo "FRANK_PROJECT_DIR=$(realpath frank-runner/examples/Frank2Example1)" >> $GITHUB_ENV
+      # Frank!Runner derives its JDBC datasource name from the basename of the directory it runs
+      # (ant property instance.name, see build.xml), which is always the same directory as FRANK_APP.
+      # This assumes no DeploymentSpecifics.properties sets instance.name explicitly, which would
+      # override the basename and make this calculation incorrect.
+      - name: Calculate Ladybug JDBC datasource name
+        run: echo "LADYBUG_JDBC_DATASOURCE=jdbc/$(basename "$FRANK_APP" | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
       - name: Get relative path of ladybug-ff-cypress-test
         id: relative-path-to-ladybug
         run: echo "RELATIVE_PATH_TO_LADYBUG_FF_TEST_WEBAPP=$(realpath --relative-to=$FRANK_APP ladybug/ladybug-ff-cypress-test)" >> $GITHUB_OUTPUT
@@ -272,13 +278,14 @@ jobs:
         run: curl -v -i http://localhost:8090
       - name: Run the tests
         working-directory: ladybug/ladybug-ff-cypress-test
-        run: yarn cypress run --config baseUrl=http://localhost:8090 --spec "${{ matrix.specs }}" --env "debugStorageName=${{ matrix.debugStorageName }},frankProjectResourcesDir=${{ env.RESOURCES_DIR }},frankProjectOriginalFiles=${{ env.FRANK_PROJECT_DIR }},storage=${{ matrix.storage }}"
+        run: yarn cypress run --config baseUrl=http://localhost:8090 --spec "${{ matrix.specs }}" --env "debugStorageName=${{ matrix.debugStorageName }},frankProjectResourcesDir=${{ env.RESOURCES_DIR }},frankProjectOriginalFiles=${{ env.FRANK_PROJECT_DIR }},storage=${{ matrix.storage }},jdbcDatasource=${{ env.LADYBUG_JDBC_DATASOURCE }}"
       - name: Show files
         if: failure()
         run: tree -L 5 .
 
+      # TODO: Only store artifacts on failure. For now I want to see artifacts to check the right test was done.
       - name: Collect failure data into a single artifact directory
-        if: failure()
+        if: always()
         run: |
           bash ladybug/.github/workflows/collect-artifact-data.sh artifact-data \
             "ladybug/ladybug-ff-cypress-test/cypress/screenshots" \
@@ -296,8 +303,9 @@ jobs:
             "${{ env.RESOURCES_DIR }}/DeploymentSpecifics.properties" \
             "${{ env.RESOURCES_DIR }}/localUsers.yml"
 
+      # TODO: Only store artifacts on failure. For now I want to see artifacts to check the right test was done.
       - name: Store logs
-        if: failure()
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: test-with-ff data test-app = ${{ matrix.test-app }} storage = ${{ matrix.storage }} dtap=${{ matrix.dtap }}

@@ -55,6 +55,7 @@ declare namespace Cypress {
     checkpointValueLabel(index: number): Chainable<any>
     visitAsTester(): void
     visitAs(username: string, password: string): void
+    goToEnvironmentVariables(): void
     enableReportGenerator(): void
     executeJdbcQuery(): void
     stopAdapter(configuration: string, adapter: string): void
@@ -410,6 +411,14 @@ Cypress.Commands.add('visitAs', { prevSubject: false }, (username, password) => 
   })
 })
 
+Cypress.Commands.add('goToEnvironmentVariables', { prevSubject: false }, () => {
+  cy.contains('Environment Variables').click()
+  // Adapter Status also has an input[name=search]. Wait for the actual
+  // navigation to the Environment Variables page so a caller does not
+  // interact with the search box still shown from the previous page.
+  cy.url().should('include', '/environment-variables')
+})
+
 Cypress.Commands.add('enableReportGenerator', { prevSubject: false }, () => {
   cy.inIframeBody('[data-cy-debug="openSettings"]').should('be.visible').click()
   cy.inIframeBody('[role=dialog]').should('be.visible')
@@ -425,7 +434,14 @@ Cypress.Commands.add('executeJdbcQuery', { prevSubject: false }, () => {
     headers: {
       'Content-Type': 'application/json',
     },
-    body: '{"query":"SELECT * FROM LADYBUG","queryType":"AUTO","datasource":"jdbc/webapp","resultType":"csv","avoidLocking":false,"trimSpaces":false}',
+    body: {
+      query: 'SELECT * FROM LADYBUG',
+      queryType: 'AUTO',
+      datasource: Cypress.env('jdbcDatasource'),
+      resultType: 'csv',
+      avoidLocking: false,
+      trimSpaces: false,
+    },
   }).then((resp) => {
     expect(resp.status).to.equal(200);
   });
