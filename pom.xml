@@ -265,6 +265,13 @@
         <artifactId>jakarta.servlet.jsp.jstl</artifactId>
         <version>3.0.1</version>
       </dependency>
+      <!-- Used by ladybug-spring-boot-test-webapp. Needed to allow this webapp
+           to log to a file. -->
+      <dependency>
+        <groupId>org.codehaus.janino</groupId>
+        <artifactId>janino</artifactId>
+        <version>${janino.version}</version>
+      </dependency>
       <dependency>
         <groupId>org.codehaus.janino</groupId>
         <artifactId>janino</artifactId>
