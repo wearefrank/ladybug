@@ -82,6 +82,7 @@
     <jackson.version>2.21.2</jackson.version>
     <jackson.databind.version>2.21.5</jackson.databind.version>
     <logback.version>1.6.3</logback.version>
+    <janino.version>3.1.12</janino.version>
   </properties>
 
   <dependencyManagement>
@@ -263,6 +264,13 @@
         <groupId>org.glassfish.web</groupId>
         <artifactId>jakarta.servlet.jsp.jstl</artifactId>
         <version>3.0.1</version>
+      </dependency>
+      <!-- Used by ladybug-spring-boot-test-webapp. Needed to allow this webapp
+           to log to a file. -->
+      <dependency>
+        <groupId>org.codehaus.janino</groupId>
+        <artifactId>janino</artifactId>
+        <version>${janino.version}</version>
       </dependency>
       <dependency>
         <groupId>jakarta.servlet</groupId>

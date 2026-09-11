@@ -77,26 +77,26 @@ jobs:
         if: ${{ inputs.backendBranch != '' && steps.decideAboutBuildCode.outputs.buildCode == 'false' }}
         run: exit 1
       - name: Cache Frank!Runner dependencies - build
-        uses: actions/cache@v3
+        uses: actions/cache@v5
         with:
           path: frank-runner/build
           key: ${{ runner.os }}-frank-runner-build
           restore-keys: |
             ${{ runner.os }}-frank-runner-build
       - name: Cache Frank!Runner dependencies - download
-        uses: actions/cache@v3
+        uses: actions/cache@v5
         with:
           path: frank-runner/download
           key: ${{ runner.os }}-frank-runner-download
           restore-keys: |
             ${{ runner.os }}-frank-runner-download
       - name: Checkout Frank!Runner
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: wearefrank/frank-runner
           path: frank-runner
       - name: Checkout ladybug
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: wearefrank/ladybug
           path: ladybug
@@ -111,13 +111,13 @@ jobs:
 
       - name: Checkout frankframework - default
         if: ${{ steps.decideAboutBuildCode.outputs.buildCode == 'true' && inputs.ffFork == '' }}
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: frankframework/frankframework
           path: frankframework
       - name: Checkout frankframework - fork
         if: ${{ steps.decideAboutBuildCode.outputs.buildCode == 'true' && inputs.ffFork != '' }}
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: ${{ inputs.ffFork }}/frankframework
           path: frankframework
@@ -181,11 +181,8 @@ jobs:
       - name: Copy localUsers.yml
         if: ${{ matrix.dtap == 'PRD' }}
         run: cp ladybug/.github/workflows/with-ff/localUsers.yml.txt $RESOURCES_DIR/localUsers.yml
-      - name: Copy cypress.config_cicd.ts to cypress.config.ts to listen to correct port
-        working-directory: ladybug/ladybug-ff-cypress-test
-        run: cp cypress.config_cicd.ts cypress.config.ts
       - name: Use Node.js 24.x
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: 24.x
           cache: "yarn"
@@ -207,16 +204,16 @@ jobs:
       - name: Let Frank!Runner do its downloads
         working-directory: ladybug/ladybug-ff-cypress-test
         run: yarn run installFrankRunnerEnv
-      - name: Delete old Ladybug test reports
+      - name: Delete old Tomcat logs from cache, so that they cannot end up in this job's artifact
         working-directory: frank-runner
-        run: find . -path './build/apache-tomcat*/logs/testtool*' -delete
+        run: find . -path './build/apache-tomcat*/logs/*' -delete
       - name: Remove old catalina.out
         working-directory: frank-runner
         run: find . -path './build/apache-tomcat*/catalina.out' -delete
       # Build the latest code if buildLatestFFandLadybugCode
       - name: Cache Maven downloads
         if: ${{ steps.decideAboutBuildCode.outputs.buildCode == 'true' }}
-        uses: actions/cache@v3
+        uses: actions/cache@v5
         with:
           path: ~/.m2/repository/
           key: ${{ runner.os }}-maven
@@ -275,46 +272,34 @@ jobs:
         run: curl -v -i http://localhost:8090
       - name: Run the tests
         working-directory: ladybug/ladybug-ff-cypress-test
-        run: yarn cypress run --spec "${{ matrix.specs }}" --env "debugStorageName=${{ matrix.debugStorageName }},frankProjectResourcesDir=${{ env.RESOURCES_DIR }},frankProjectOriginalFiles=${{ env.FRANK_PROJECT_DIR }},storage=${{ matrix.storage }}"
+        run: yarn cypress run --config baseUrl=http://localhost:8090 --spec "${{ matrix.specs }}" --env "debugStorageName=${{ matrix.debugStorageName }},frankProjectResourcesDir=${{ env.RESOURCES_DIR }},frankProjectOriginalFiles=${{ env.FRANK_PROJECT_DIR }},storage=${{ matrix.storage }}"
       - name: Show files
         if: failure()
         run: tree -L 5 .
+
+      - name: Collect failure data into a single artifact directory
+        if: failure()
+        run: |
+          bash ladybug/.github/workflows/collect-artifact-data.sh artifact-data \
+            "ladybug/ladybug-ff-cypress-test/cypress/screenshots" \
+            "ladybug/ladybug-ff-cypress-test/cypress/videos" \
+            "frank-runner/serverStartLog.log" \
+            "frank-runner/specials/ladybug/serverStartLog.log" \
+            "frank-runner/specials/ladybug/buildIafWebapp.log" \
+            "ladybug/ladybug-ff-test-webapp/serverStartLog.log" \
+            "frank-runner/build/apache-tomcat-10*/logs" \
+            "frank-runner/build/**/apache-tomcat-1*/logs" \
+            "frank-runner/build.properties" \
+            "frank-runner/specials/ladybug/build.properties" \
+            "frank-runner/specials/iaf-webapp/build.properties" \
+            "ladybug/ladybug-ff-test-webapp/build.properties" \
+            "${{ env.RESOURCES_DIR }}/DeploymentSpecifics.properties" \
+            "${{ env.RESOURCES_DIR }}/localUsers.yml"
+
       - name: Store logs
         if: failure()
-        uses: actions/upload-artifact@v4.4.0
+        uses: actions/upload-artifact@v4
         with:
-          name: data test-app = ${{ matrix.test-app }} storage = ${{ matrix.storage }} dtap=${{ matrix.dtap }}
-          path: |
-            frank-runner/specials/ladybug/
-            ladybug/ladybug-ff-cypress-test/cypress/videos/
-      - name: Store logs that appear under Tomcat
-        if: failure()
-        uses: actions/upload-artifact@v4.4.0
-        with:
-          name: tomcat logs - test-app = ${{ matrix.test-app }} storage = ${{ matrix.storage }} dtap=${{ matrix.dtap }}
-          path: |
-            frank-runner/build/apache-tomcat-10*/logs/*
-      # Zip file becomes corrupt if you try to include non-existing files.
-      - name: Store logs that only exist without webapp
-        if: ${{ failure() && matrix.test-app == 'false' }}
-        uses: actions/upload-artifact@v4.4.0
-        with:
-          name: logs = ${{ matrix.test-app }} storage = ${{ matrix.storage }} dtap=${{ matrix.dtap }}
-          path: |
-            frank-runner/serverStartLog.log
-            frank-runner/build/**/apache-tomcat-1*/logs/
-      - name: Store logs that only exist for PRD
-        if: ${{ failure() && matrix.dtap == 'PRD' }}
-        uses: actions/upload-artifact@v4.4.0
-        with:
-          name: DeploymentSpecifics.properties test-app = ${{ matrix.test-app }} storage = ${{ matrix.storage }} dtap=${{ matrix.dtap }}
-          path: |
-            ${{ env.RESOURCES_DIR }}/DeploymentSpecifics.properties
-      - name: Store logs for ladybug-ff-test-webapp
-        if: ${{ failure() && matrix.test-app == 'true' }}
-        uses: actions/upload-artifact@v4.4.0
-        with:
-          name: ladybug-ff-test-webapp related storage = ${{ matrix.storage }} dtap=${{ matrix.dtap }}
-          path: |
-            frank-runner/specials/ladybug/buildIafWebapp.log
-            ladybug/ladybug-ff-test-webapp/serverStartLog.log
+          name: test-with-ff data test-app = ${{ matrix.test-app }} storage = ${{ matrix.storage }} dtap=${{ matrix.dtap }}
+          path: artifact-data/
+          if-no-files-found: warn
