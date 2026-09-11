@@ -15,7 +15,6 @@
 */
 package org.wearefrank.ladybug.web.common;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.function.Predicate;
@@ -63,14 +62,6 @@ public class FrontendRolesResolver implements InitializingBean {
 		log.info("Frontend role {} when backend role one of {}", OBSERVER, observerRoles);
 		log.info("Frontend role {} when backend role one of {}", ADMIN, dataAdminRoles);
 		log.info("Frontend role {} when backend role one of {}", TESTER, testerRoles);
-	}
-
-	public List<String> getFrontendRoles(String userRole) {
-		if (userRole == null) {
-			log.warn("FrontendRolesResolver.getFrontendRoles(String) gets null role. Frontend will work as if every role granted");
-			return Arrays.asList(OBSERVER, ADMIN, TESTER);
-		}
-		return getFrontendRoles(backendRolesList -> backendRolesList.contains(userRole));
 	}
 
 	public List<String> getFrontendRoles(Predicate<List<String>> userInRolePredicate) {

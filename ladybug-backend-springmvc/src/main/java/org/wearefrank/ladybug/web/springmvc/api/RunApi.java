@@ -15,17 +15,11 @@
 */
 package org.wearefrank.ladybug.web.springmvc.api;
 
-import java.security.Principal;
-import java.util.List;
 import java.util.Map;
 
 import jakarta.annotation.security.RolesAllowed;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.context.SecurityContextHolder;
 
-import org.wearefrank.ladybug.SecurityContext;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -40,38 +34,6 @@ import org.wearefrank.ladybug.web.common.RunApiImpl;
 @RequestMapping("/runner")
 @RolesAllowed("IbisTester")
 public class RunApi {
-	/**
-	 * Kept as a static nested class instead of having {@link RunApi} implement {@link SecurityContext} directly.
-	 * RunApi is a Spring-managed {@code @RestController} secured with {@code @RolesAllowed}, so it is wrapped in a
-	 * method-security proxy. If RunApi implemented an interface, Spring would proxy it with a JDK dynamic proxy
-	 * instead of a CGLIB subclass, which only exposes the interface's methods and hides the class-level
-	 * {@code @RequestMapping} annotations, so the endpoint would never get registered.
-	 */
-	private static class SpringSecurityContext implements SecurityContext {
-		@Override
-		public Principal getUserPrincipal() {
-			return SecurityContextHolder.getContext().getAuthentication();
-		}
-
-		@Override
-		public boolean isUserInRoles(List<String> roles) {
-			Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-			if (authentication == null) {
-				return true;
-			}
-			for (GrantedAuthority authority : authentication.getAuthorities()) {
-				String role = authority.getAuthority();
-				if (role.startsWith("ROLE_")) {
-					role = role.substring(5);
-				}
-				if (roles.contains(role)) {
-					return true;
-				}
-			}
-			return false;
-		}
-	}
-
 	private @Autowired RunApiImpl delegate;
 
 	@PostMapping(value = "/run/{storageName}/{storageId}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)

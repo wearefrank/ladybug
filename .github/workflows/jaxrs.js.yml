@@ -22,10 +22,26 @@ jobs:
             spring-profile: none
             selected-specs: cypress/e2e/production-auth/**
             authenticationTest: production
+            observerUsername: IbisObserver
+            observerPassword: IbisObserver
+            testerUsername: IbisTester
+            testerPassword: IbisTester
+          - name: authorizationObserverWebService
+            spring-profile: none
+            selected-specs: cypress/e2e/production-auth/**
+            authenticationTest: production
+            observerUsername: IbisObserverWebService
+            observerPassword: IbisObserverWebService
+            testerUsername: IbisTester
+            testerPassword: IbisTester
           - name: backendAuthorization
             spring-profile: none
             selected-specs: cypress/e2e/backend-auth/**
             authenticationTest: only-backend
+            observerUsername: IbisObserver
+            observerPassword: IbisObserver
+            testerUsername: IbisTester
+            testerPassword: IbisTester
           - name: openTelemetry
             spring-profile: none
             selected-specs: cypress/e2e/open-telemetry/**
@@ -162,7 +178,16 @@ jobs:
           spec: ${{ matrix.selected-specs }}
           config: baseUrl=http://localhost:8090/ladybug
           browser: chrome
-  
+        env:
+          CYPRESS_observerUsername: ${{ matrix.observerUsername }}
+          CYPRESS_observerPassword: ${{ matrix.observerPassword }}
+          CYPRESS_testerUsername: ${{ matrix.testerUsername }}
+          CYPRESS_testerPassword: ${{ matrix.testerPassword }}
+
+      - name: Show which users were actually authenticated, as logged in ladybug.log
+        if: always() && matrix.observerUsername != ''
+        run: bash ladybug/.github/workflows/show-authenticated-users.sh ladybug/ladybug-test-webapp/data/ladybug.log
+
       - name: Show files
         run: tree -d -L 5 .
         if: failure()
