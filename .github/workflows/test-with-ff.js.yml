@@ -283,9 +283,8 @@ jobs:
         if: failure()
         run: tree -L 5 .
 
-      # TODO: Only store artifacts on failure. For now I want to see artifacts to check the right test was done.
       - name: Collect failure data into a single artifact directory
-        if: always()
+        if: failure()
         run: |
           bash ladybug/.github/workflows/collect-artifact-data.sh artifact-data \
             "ladybug/ladybug-ff-cypress-test/cypress/screenshots" \
@@ -303,9 +302,8 @@ jobs:
             "${{ env.RESOURCES_DIR }}/DeploymentSpecifics.properties" \
             "${{ env.RESOURCES_DIR }}/localUsers.yml"
 
-      # TODO: Only store artifacts on failure. For now I want to see artifacts to check the right test was done.
       - name: Store logs
-        if: always()
+        if: failure()
         uses: actions/upload-artifact@v4
         with:
           name: test-with-ff data test-app = ${{ matrix.test-app }} storage = ${{ matrix.storage }} dtap=${{ matrix.dtap }}
