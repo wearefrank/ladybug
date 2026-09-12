@@ -192,12 +192,12 @@
 		<property name="name" value="errorGeneratingStorage" />
 	</bean>
 
-	<!--
-	Without connection pooling (considerably slows down GUI performance). E.g. when using:
+	<!-- H2 without connection pooling (considerably slows down GUI performance)
 	<bean name="ladybugDataSource" class="org.h2.jdbcx.JdbcDataSource">
 		<property name="URL" value="#{ladybugDatabaseUrl}"/>
 	</bean>
 	-->
+	<!-- H2 with connection pooling -->
 	<bean name="ladybugDataSource" class="org.apache.commons.dbcp2.BasicDataSource" destroy-method="close">
 		<property name="driverClassName" value="org.h2.Driver"/>
 		<property name="url" value="#{ladybugDatabaseUrl}"/>
@@ -219,6 +219,33 @@
 		<property name="maxStorageSize" value="#{10 * 1024 * 1024}"/>
 		<property name="storeReportXml" value="true"/>
 	</bean>
+
+	<!-- Oracle with connection pooling -->
+	<!--
+	TODO:
+	Migration failed for changeset ladybug/DatabaseChangelog_ProofOfMigration.xml::Create MESSAGES::Lenard van der Maas:
+	     Reason: liquibase.exception.DatabaseException: ORA-02261: such unique or primary key already exists in the table
+	<bean name="ladybugDataSource" class="org.apache.commons.dbcp2.BasicDataSource" destroy-method="close">
+		<property name="driverClassName" value="oracle.jdbc.driver.OracleDriver"/>
+		<property name="url" value="jdbc:oracle:thin:@localhost:1521:xe"/>
+		<property name="username" value="ladybug_test_webapp_user"/>
+		<property name="password" value="ladybug_test_webapp_password"/>
+	</bean>
+	-->
+	<!-- PostgreSQL with connection pooling -->
+	<!--
+	TODO:
+	- Errors at startup caused by changeSet id="Insert test data into table MESSAGES" in DatabaseChangelog_Custom.xml (disable it or fix it when testing with PostgreSQL)
+	- <property name="storeReportXml" value="true"/> at storage.database gives (disable it or fix it when testing with PostgreSQL):
+		Caused by: java.sql.SQLFeatureNotSupportedException: Method org.postgresql.jdbc.PgPreparedStatement.setClob(int, Reader) is not yet implemented.
+		at org.postgresql.Driver.notImplemented(Driver.java:743)
+	<bean name="ladybugDataSource" class="org.apache.commons.dbcp2.BasicDataSource" destroy-method="close">
+		<property name="driverClassName" value="org.postgresql.Driver"/>
+		<property name="url" value="jdbc:postgresql://localhost:5432/ladybug-test-webapp"/>
+		<property name="username" value="ladybug-test-webapp_user"/>
+		<property name="password" value="ladybug-test-webapp_password"/>
+	</bean>
+	-->
 
 	<bean name="ladybugDatabaseChangelog" class="liquibase.integration.spring.SpringLiquibase">
 		<property name="dataSource" ref="ladybugDataSource" />
@@ -263,6 +290,11 @@
 			>
 			<property name="name" value="Debug"/>
 			<property name="maxStorageSize" value="#{10 * 1024 * 1024}"/>
+			<!--
+				With PostgreSQL this gives:
+					Caused by: java.sql.SQLFeatureNotSupportedException: Method org.postgresql.jdbc.PgPreparedStatement.setClob(int, Reader) is not yet implemented.
+					at org.postgresql.Driver.notImplemented(Driver.java:743)
+			-->
 			<property name="storeReportXml" value="true"/>
 		</bean>
 		<!-- Configure Test tab with database storage -->
