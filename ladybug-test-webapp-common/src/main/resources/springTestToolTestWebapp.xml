@@ -192,6 +192,10 @@
 		<property name="name" value="errorGeneratingStorage" />
 	</bean>
 
+	<bean name="maxStorageSize" class="java.lang.String">
+		<constructor-arg value="#{10 * 1024 * 1024}"/>
+	</bean>
+
 	<!--
 	DatabaseCrudStorage will make it possible to edit and delete reports in the Debug tab (with new GUI). This is okay
 	for testing purposes but don't copy this for other situations without careful consideration / reading the LogStorage
@@ -205,7 +209,7 @@
 		<property name="name" value="databaseStorage"/>
 		<!-- This constant is not factored out in a bean, because a SpEL bean-reference silently breaks under
 		     Spring Boot's bootstrapping. -->
-		<property name="maxStorageSize" value="#{10 * 1024 * 1024}"/>
+		<property name="maxStorageSize" value="#{maxStorageSize}"/>
 		<property name="storeReportXml" value="true"/>
 	</bean>
 
@@ -304,7 +308,7 @@
 			depends-on="ladybugDatabaseChangelog"
 			>
 			<property name="name" value="Debug"/>
-			<property name="maxStorageSize" value="#{10 * 1024 * 1024}"/>
+			<property name="maxStorageSize" value="#{maxStorageSize}"/>
 			<!--
 				With PostgreSQL this gives:
 					Caused by: java.sql.SQLFeatureNotSupportedException: Method org.postgresql.jdbc.PgPreparedStatement.setClob(int, Reader) is not yet implemented.
