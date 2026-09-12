@@ -192,17 +192,6 @@
 		<property name="name" value="errorGeneratingStorage" />
 	</bean>
 
-	<!-- H2 without connection pooling (considerably slows down GUI performance)
-	<bean name="ladybugDataSource" class="org.h2.jdbcx.JdbcDataSource">
-		<property name="URL" value="#{ladybugDatabaseUrl}"/>
-	</bean>
-	-->
-	<!-- H2 with connection pooling -->
-	<bean name="ladybugDataSource" class="org.apache.commons.dbcp2.BasicDataSource" destroy-method="close">
-		<property name="driverClassName" value="org.h2.Driver"/>
-		<property name="url" value="#{ladybugDatabaseUrl}"/>
-	</bean>
-
 	<!--
 	DatabaseCrudStorage will make it possible to edit and delete reports in the Debug tab (with new GUI). This is okay
 	for testing purposes but don't copy this for other situations without careful consideration / reading the LogStorage
@@ -218,6 +207,17 @@
 		     Spring Boot's bootstrapping. -->
 		<property name="maxStorageSize" value="#{10 * 1024 * 1024}"/>
 		<property name="storeReportXml" value="true"/>
+	</bean>
+
+	<!-- H2 without connection pooling (considerably slows down GUI performance)
+	<bean name="ladybugDataSource" class="org.h2.jdbcx.JdbcDataSource">
+		<property name="URL" value="#{ladybugDatabaseUrl}"/>
+	</bean>
+	-->
+	<!-- H2 with connection pooling -->
+	<bean name="ladybugDataSource" class="org.apache.commons.dbcp2.BasicDataSource" destroy-method="close">
+		<property name="driverClassName" value="org.h2.Driver"/>
+		<property name="url" value="#{ladybugDatabaseUrl}"/>
 	</bean>
 
 	<!-- Oracle with connection pooling -->
@@ -281,6 +281,21 @@
 
 	<!-- Profiles -->
 
+	<beans profile="storage.file">
+		<!-- White box view and TestTool (creating and storing reports) are using debugStorage -->
+		<bean name="debugStorage" class="org.wearefrank.ladybug.storage.file.Storage">
+			<property name="name" value="Debug"/>
+			<property name="reportsFilename" value="#{reportsFilename}"/>
+			<property name="metadataFilename" value="#{metadataFilename}"/>
+		</bean>
+		<!-- Configure Test tab with file storage -->
+		<bean name="testStorage" class="org.wearefrank.ladybug.storage.file.TestStorage">
+			<property name="name" value="Test"/>
+			<property name="reportsFilename" value="#{reportsFilename}"/>
+			<property name="metadataFilename" value="#{metadataFilename}"/>
+		</bean>
+	</beans>
+
 	<beans profile="storage.database">
 		<!-- White box view and TestTool (creating and storing reports) are using debugStorage -->
 		<bean
@@ -304,21 +319,6 @@
 			depends-on="ladybugDatabaseChangelog"
 			>
 			<property name="name" value="Test"/>
-		</bean>
-	</beans>
-
-	<beans profile="storage.file">
-		<!-- White box view and TestTool (creating and storing reports) are using debugStorage -->
-		<bean name="debugStorage" class="org.wearefrank.ladybug.storage.file.Storage">
-			<property name="name" value="Debug"/>
-			<property name="reportsFilename" value="#{reportsFilename}"/>
-			<property name="metadataFilename" value="#{metadataFilename}"/>
-		</bean>
-		<!-- Configure Test tab with file storage -->
-		<bean name="testStorage" class="org.wearefrank.ladybug.storage.file.TestStorage">
-			<property name="name" value="Test"/>
-			<property name="reportsFilename" value="#{reportsFilename}"/>
-			<property name="metadataFilename" value="#{metadataFilename}"/>
 		</bean>
 	</beans>
 
