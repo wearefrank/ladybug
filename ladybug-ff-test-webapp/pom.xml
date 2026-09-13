@@ -1,40 +1,72 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>org.wearefrank</groupId>
 	<artifactId>ladybug-ff-test-webapp</artifactId>
-	<version>${revision}</version>
+	<version>0.0.1-SNAPSHOT</version>
 	<packaging>war</packaging>
+
 	<properties>
-		<revision>0.0.1-SNAPSHOT</revision>
-		<ff.version>LATEST</ff.version>
+		<maven.compiler.release>21</maven.compiler.release>
 	</properties>
+
 	<dependencies>
 		<dependency>
 			<groupId>org.frankframework</groupId>
-			<artifactId>frankframework-webapp</artifactId>
-			<version>${ff.version}</version>
-			<type>war</type>
+			<artifactId>bootable-runner</artifactId>
+			<optional>true</optional>
 		</dependency>
 		<dependency>
 			<groupId>org.frankframework</groupId>
 			<artifactId>frankframework-core</artifactId>
-			<version>${ff.version}</version>
-			<!-- Have it at compile time but omit when packaging the ladybug-ff-test-webapp war.
-			     During compilation of custom Java classes the FF! classes have to be known.
-				 Do not include frankframework-core when packaging because the libraries are in
-				 frankframework-webapp already. When you add frankframework-core with scope compile,
-				 the build fails because it tries to download transitive dependencies that are not on
-				 the Nexus server of WeAreFrank! -->
-			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.frankframework</groupId>
+			<artifactId>frankframework-filesystem</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.frankframework</groupId>
+			<artifactId>frankframework-ladybug-debugger</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.frankframework</groupId>
+			<artifactId>frankframework-console-frontend</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.frankframework</groupId>
+			<artifactId>frankframework-console-backend</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.wearefrank</groupId>
+			<artifactId>ladybug-backend-springmvc</artifactId>
+			<version>4.1-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>com.h2database</groupId>
+			<artifactId>h2</artifactId>
+			<version>2.4.240</version>
 		</dependency>
 	</dependencies>
+
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>org.frankframework</groupId>
+				<artifactId>frankframework-bundle-minimal</artifactId>
+				<version>10.2.0</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
 
 	<repositories>
 		<!-- Enable F!F timestamp versions -->
 		<repository>
-			<id>ibissource</id>
-			<name>Ibissource</name>
+			<id>frankframework</id>
+			<name>Frank!Framework Nexus</name>
 			<url>https://nexus.frankframework.org/content/repositories/public</url>
 		</repository>
 	</repositories>
