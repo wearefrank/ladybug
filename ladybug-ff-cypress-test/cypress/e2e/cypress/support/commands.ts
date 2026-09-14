@@ -412,7 +412,12 @@ Cypress.Commands.add('visitAs', { prevSubject: false }, (username, password) => 
 })
 
 Cypress.Commands.add('goToEnvironmentVariables', { prevSubject: false }, () => {
-  cy.contains('Environment Variables').click()
+  // The nav link's pointer-events stay disabled until an async permissions
+  // check resolves. Clicking before that is a silent no-op that leaves the
+  // page on the previous route, so wait for the link to become clickable.
+  cy.contains('Environment Variables', { timeout: 10000 })
+    .should('not.have.css', 'pointer-events', 'none')
+    .click()
   // Adapter Status also has an input[name=search]. Wait for the actual
   // navigation to the Environment Variables page so a caller does not
   // interact with the search box still shown from the previous page.

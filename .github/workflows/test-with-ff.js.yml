@@ -216,9 +216,14 @@ jobs:
       - name: Remove old catalina.out
         working-directory: frank-runner
         run: find . -path './build/apache-tomcat*/catalina.out' -delete
-      # Build the latest code if buildLatestFFandLadybugCode
+      # Build the latest code if buildLatestFFandLadybugCode.
+      # Also cache for matrix.test-app == 'true': even without buildCode, starting
+      # ladybug-ff-test-webapp triggers a Maven build that resolves frankframework-webapp:LATEST
+      # and its full transitive dependency tree. Without this cache, every run re-downloads
+      # everything one small file at a time, which is slow and eats into GitHub Actions' network
+      # throughput limits.
       - name: Cache Maven downloads
-        if: ${{ steps.decideAboutBuildCode.outputs.buildCode == 'true' }}
+        if: ${{ steps.decideAboutBuildCode.outputs.buildCode == 'true' || matrix.test-app == 'true' }}
         uses: actions/cache@v5
         with:
           path: ~/.m2/repository/
