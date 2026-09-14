@@ -280,30 +280,25 @@ function normalizeNodeSelection (input: NodeSelection): TextWithSeq {
 
 Cypress.Commands.add('selectTreeNode', (path: NodeSelection[]) => {
   const head = normalizeNodeSelection(path.shift())
-  cy.inIframeBody(`[data-cy-debug-tree="root"] > app-tree-item > div > div:nth-child(1):contains(${head.text})`).then((elementsWithTexts) => {
-    const chosen = elementsWithTexts[head.seq]
-    return cy.wrap(chosen).parent().parent().then((element) => {
-      if (path.length === 0) {
-        return cy.wrap(element)
-      } else {
-        return selectTreeNodeImpl(element, path)
-      }
-    })
-  })
+  // Not using .then()/cy.wrap() to pick out the chosen element: that captures a snapshot
+  // reference which can detach if the tree re-renders before the caller's eventual .click().
+  // .eq() keeps this a live query so the whole chain re-runs on retry.
+  const chosen = cy.inIframeBody(`[data-cy-debug-tree="root"] > app-tree-item > div > div:nth-child(1):contains(${head.text})`).eq(head.seq)
+  if (path.length === 0) {
+    return chosen
+  } else {
+    return selectTreeNodeImpl(chosen, path)
+  }
 })
 
-function selectTreeNodeImpl (subject: JQuery<HTMLElement>, path: NodeSelection[]): Cypress.Chainable<any> | void {
+function selectTreeNodeImpl (subject: Cypress.Chainable<any>, path: NodeSelection[]): Cypress.Chainable<any> {
   const head = normalizeNodeSelection(path.shift())
-  cy.wrap(subject).find(`> div > div > div > app-tree-item > div > div:nth-child(1):contains(${head.text})`).then((elementsWithTexts) => {
-    const chosen = elementsWithTexts[head.seq]
-    if (path.length === 0) {
-      return cy.wrap(chosen)
-    } else {
-      cy.wrap(chosen).parent().parent().then((element) => {
-        return selectTreeNodeImpl(element, path)
-      })
-    }
-  })
+  const chosen = subject.parent().parent().find(`> div > div > div > app-tree-item > div > div:nth-child(1):contains(${head.text})`).eq(head.seq)
+  if (path.length === 0) {
+    return chosen
+  } else {
+    return selectTreeNodeImpl(chosen, path)
+  }
 }
 
 Cypress.Commands.add('awaitLoadingSpinner', () => {
