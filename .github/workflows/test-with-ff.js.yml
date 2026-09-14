@@ -231,14 +231,39 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-maven
       - name: Put build.properties in ladybug-ff-test-webapp
-        if: ${{ matrix.test-app == 'true' }}  
+        if: ${{ matrix.test-app == 'true' }}
         run: cp with-ff/build-ladybug-ff-test-webapp.properties ../../ladybug-ff-test-webapp/build.properties
         working-directory: ladybug/.github/workflows
+      # ladybug-ff-test-webapp/pom.xml refers to org.frankframework:frankframework-webapp as LATEST.
+      # Resolving LATEST forces Maven to re-walk the whole dependency tree of the Frank!Framework
+      # over the network on every run, which is slow and makes the Maven download cache useless.
+      # Substitute a concrete version instead, so Maven can resolve it from the (cached) local
+      # repository once it has been downloaded once. This queries the same Nexus repository that
+      # ladybug-ff-test-webapp/pom.xml itself declares under <repositories>, so the version found
+      # here is guaranteed to be resolvable from there.
+      - name: Get latest version of Frank!Framework from Nexus
+        id: getFfVersion
+        if: ${{ steps.decideAboutBuildCode.outputs.buildCode == 'false' && matrix.test-app == 'true' }}
+        run: |
+          version=$(curl -s https://nexus.frankframework.org/content/repositories/public/org/frankframework/frankframework-webapp/maven-metadata.xml | grep -oPm1 '(?<=<release>)[^<]+')
+          if [ -z "$version" ]; then
+            echo "Could not determine latest version of Frank!Framework from Nexus metadata" >&2
+            exit 1
+          fi
+          echo "ffVersion=$version" >> $GITHUB_OUTPUT
+      - name: Show latest version of Frank!Framework
+        if: ${{ steps.decideAboutBuildCode.outputs.buildCode == 'false' && matrix.test-app == 'true' }}
+        run: echo "Latest version of Frank!Framework from Nexus is ${{ steps.getFfVersion.outputs.ffVersion }}"
+      - name: Set Frank!Framework version in ladybug-ff-test-webapp
+        if: ${{ steps.decideAboutBuildCode.outputs.buildCode == 'false' && matrix.test-app == 'true' }}
+        working-directory: ladybug/ladybug-ff-test-webapp
+        run: sed -i "s#<ff.version>LATEST</ff.version>#<ff.version>${{ steps.getFfVersion.outputs.ffVersion }}</ff.version>#" pom.xml
       - name: Adjust pom.xml files so that ladybug and frankframework reference each other
         if: ${{ steps.decideAboutBuildCode.outputs.buildCode == 'true' && matrix.test-app == 'false' }}
         working-directory: frank-runner/specials/util/syncPomVersions
         run: ./run.sh
-      # If use the latest FF! build for ladybug-ff-test-webapp, we do not need to sync. Version is just referred as LATEST.
+      # If we build FF! from source for ladybug-ff-test-webapp, syncPomVersions substitutes the
+      # exact locally-built revision instead, so no separate version lookup is needed here.
       - name: Adjust pom.xml files so that ladybug-ff-test-webapp, FF! and ladybug can find each other
         if: ${{ steps.decideAboutBuildCode.outputs.buildCode == 'true' && matrix.test-app == 'true' }}
         working-directory: frank-runner/specials/util/syncPomVersions
@@ -304,6 +329,7 @@ jobs:
             "frank-runner/specials/ladybug/build.properties" \
             "frank-runner/specials/iaf-webapp/build.properties" \
             "ladybug/ladybug-ff-test-webapp/build.properties" \
+            "ladybug/ladybug-ff-test-webapp/pom.xml" \
             "${{ env.RESOURCES_DIR }}/DeploymentSpecifics.properties" \
             "${{ env.RESOURCES_DIR }}/localUsers.yml"
 
