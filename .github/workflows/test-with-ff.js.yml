@@ -237,21 +237,23 @@ jobs:
       # ladybug-ff-test-webapp/pom.xml refers to org.frankframework:frankframework-webapp as LATEST.
       # Resolving LATEST forces Maven to re-walk the whole dependency tree of the Frank!Framework
       # over the network on every run, which is slow and makes the Maven download cache useless.
-      # Substitute a concrete, released version instead, so Maven can resolve it from the (cached)
-      # local repository once it has been downloaded once.
-      - name: Get latest release version of Frank!Framework
+      # Substitute a concrete version instead, so Maven can resolve it from the (cached) local
+      # repository once it has been downloaded once. This queries the same Nexus repository that
+      # ladybug-ff-test-webapp/pom.xml itself declares under <repositories>, so the version found
+      # here is guaranteed to be resolvable from there.
+      - name: Get latest version of Frank!Framework from Nexus
         id: getFfVersion
         if: ${{ steps.decideAboutBuildCode.outputs.buildCode == 'false' && matrix.test-app == 'true' }}
         run: |
-          version=$(curl -s https://repo.maven.apache.org/maven2/org/frankframework/frankframework-webapp/maven-metadata.xml | grep -oPm1 '(?<=<release>)[^<]+')
+          version=$(curl -s https://nexus.frankframework.org/content/repositories/public/org/frankframework/frankframework-webapp/maven-metadata.xml | grep -oPm1 '(?<=<release>)[^<]+')
           if [ -z "$version" ]; then
-            echo "Could not determine latest release version of Frank!Framework from Maven Central metadata" >&2
+            echo "Could not determine latest version of Frank!Framework from Nexus metadata" >&2
             exit 1
           fi
           echo "ffVersion=$version" >> $GITHUB_OUTPUT
-      - name: Show latest release version of Frank!Framework
+      - name: Show latest version of Frank!Framework
         if: ${{ steps.decideAboutBuildCode.outputs.buildCode == 'false' && matrix.test-app == 'true' }}
-        run: echo "Latest release version of Frank!Framework is ${{ steps.getFfVersion.outputs.ffVersion }}"
+        run: echo "Latest version of Frank!Framework from Nexus is ${{ steps.getFfVersion.outputs.ffVersion }}"
       - name: Set Frank!Framework version in ladybug-ff-test-webapp
         if: ${{ steps.decideAboutBuildCode.outputs.buildCode == 'false' && matrix.test-app == 'true' }}
         working-directory: ladybug/ladybug-ff-test-webapp
