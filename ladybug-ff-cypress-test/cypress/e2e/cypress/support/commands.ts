@@ -45,6 +45,7 @@ declare namespace Cypress {
     apiDeleteAll(storageName: string)
     apiDeleteAllAsTester(storageName: string)
     selectTreeNode(path: NodeSelection[]): Cypress.Chainable<any>
+    awaitDebugTree(): void
     awaitLoadingSpinner(): void
     waitForVideo(): void
     trimmedText(): Chainable<any>
@@ -101,9 +102,18 @@ Cypress.Commands.add('getNumLadybugReports', () => {
     url: `iaf/ladybug/api/metadata/${Cypress.env('debugStorageName') as string}/count`,
     times: 1
   }).as('apiGetReports_2')
+  // The refresh button also fires a separate request for the table's own row data
+  // (no /count suffix). Waiting only for the count above let this command return before
+  // that second request had come back, so the table could still change under callers
+  // that immediately act on a row.
+  cy.intercept({
+    method: 'GET',
+    url: `iaf/ladybug/api/metadata/${Cypress.env('debugStorageName') as string}?*`,
+    times: 1
+  }).as('apiGetReportsList')
   cy.awaitLoadingSpinner()
   cy.inIframeBody('[data-cy-debug="refresh"]').click()
-  cy.wait('@apiGetReports_2').then(interception => {
+  cy.wait(['@apiGetReports_2', '@apiGetReportsList']).then(([interception]) => {
     const count: number = interception.response.body
     // Uncomment if PR https://github.com/wearefrank/ladybug-frontend/pull/363
     // has been merged and if its frontend is referenced by F!F pom.xml.
@@ -305,6 +315,19 @@ function selectTreeNodeImpl (subject: JQuery<HTMLElement>, path: NodeSelection[]
     }
   })
 }
+
+// [data-cy-debug-tree="root"] is the <ng-simple-tree> element itself, which is always
+// present once the debug tab is mounted, whether or not a report has been opened yet.
+// So asserting on its presence guards nothing; waiting for at least one app-tree-item is
+// what actually guards against querying the tree before it has been built.
+// Assumption: callers only use this right after navigating to a fresh page (e.g. via
+// cy.visit()), so the tree is genuinely empty beforehand and cannot already contain stale
+// items left over from a previously opened report. If a caller ever needs to await a
+// report being opened while another one is already showing, this guard is not sufficient
+// and would need to check for content specific to the new report instead of mere presence.
+Cypress.Commands.add('awaitDebugTree', () => {
+  cy.inIframeBody('[data-cy-debug-tree="root"] > app-tree-item').should('have.length.at.least', 1)
+})
 
 Cypress.Commands.add('awaitLoadingSpinner', () => {
   // We do not want to catch the moment that the loading spinner is NOT YET present

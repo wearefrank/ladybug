@@ -97,6 +97,10 @@ function openReport (expectedName: string): void {
   // TODO: Test exact value of status column if possible.
   cy.get('@reportRow').find('td:eq(6)').trimmedText().should('equal', 'Success')
   cy.get('@reportRow').contains(expectedName).click()
+  // Opening the report loads its data and builds the tree asynchronously. Without this
+  // guard, callers could start querying the tree (e.g. via selectTreeNode) before it had
+  // been (re)built, racing against its own rendering.
+  cy.awaitDebugTree()
 }
 
 describe('Checkpoint value truncation because of ibistesttool.maxMessageLength', () => {
