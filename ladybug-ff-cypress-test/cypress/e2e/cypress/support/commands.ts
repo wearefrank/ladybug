@@ -45,6 +45,7 @@ declare namespace Cypress {
     apiDeleteAll(storageName: string)
     apiDeleteAllAsTester(storageName: string)
     selectTreeNode(path: NodeSelection[]): Cypress.Chainable<any>
+    awaitDebugTree(expectedRootText: string): void
     awaitLoadingSpinner(): void
     waitForVideo(): void
     trimmedText(): Chainable<any>
@@ -289,26 +290,43 @@ function normalizeNodeSelection (input: NodeSelection): TextWithSeq {
 
 Cypress.Commands.add('selectTreeNode', (path: NodeSelection[]) => {
   const head = normalizeNodeSelection(path.shift())
-  // Not using .then()/cy.wrap() to pick out the chosen element: that captures a snapshot
-  // reference which can detach if the tree re-renders before the caller's eventual .click().
-  // .eq() keeps this a live query so the whole chain re-runs on retry.
-  const chosen = cy.inIframeBody(`[data-cy-debug-tree="root"] > app-tree-item > div > div:nth-child(1):contains(${head.text})`).eq(head.seq)
-  if (path.length === 0) {
-    return chosen
-  } else {
-    return selectTreeNodeImpl(chosen, path)
-  }
+  cy.inIframeBody(`[data-cy-debug-tree="root"] > app-tree-item > div > div:nth-child(1):contains(${head.text})`).then((elementsWithTexts) => {
+    const chosen = elementsWithTexts[head.seq]
+    return cy.wrap(chosen).parent().parent().then((element) => {
+      if (path.length === 0) {
+        return cy.wrap(element)
+      } else {
+        return selectTreeNodeImpl(element, path)
+      }
+    })
+  })
 })
 
-function selectTreeNodeImpl (subject: Cypress.Chainable<any>, path: NodeSelection[]): Cypress.Chainable<any> {
+function selectTreeNodeImpl (subject: JQuery<HTMLElement>, path: NodeSelection[]): Cypress.Chainable<any> | void {
   const head = normalizeNodeSelection(path.shift())
-  const chosen = subject.parent().parent().find(`> div > div > div > app-tree-item > div > div:nth-child(1):contains(${head.text})`).eq(head.seq)
-  if (path.length === 0) {
-    return chosen
-  } else {
-    return selectTreeNodeImpl(chosen, path)
-  }
+  cy.wrap(subject).find(`> div > div > div > app-tree-item > div > div:nth-child(1):contains(${head.text})`).then((elementsWithTexts) => {
+    const chosen = elementsWithTexts[head.seq]
+    if (path.length === 0) {
+      return cy.wrap(chosen)
+    } else {
+      cy.wrap(chosen).parent().parent().then((element) => {
+        return selectTreeNodeImpl(element, path)
+      })
+    }
+  })
 }
+
+// [data-cy-debug-tree="root"] is the <ng-simple-tree> element itself, which is always
+// present once the debug tab is mounted, whether or not a report has been opened yet.
+// So asserting on its presence guards nothing. Checking for any app-tree-item is not
+// enough either: if a report was already open, its (stale) tree items are still in the
+// DOM and would satisfy that check immediately, before the new report has replaced them.
+// Matching on the new report's own root label forces Cypress to keep retrying until the
+// tree has actually been rebuilt with the expected content.
+Cypress.Commands.add('awaitDebugTree', (expectedRootText: string) => {
+  cy.inIframeBody(`[data-cy-debug-tree="root"] > app-tree-item:contains(${expectedRootText})`)
+    .should('have.length.at.least', 1)
+})
 
 Cypress.Commands.add('awaitLoadingSpinner', () => {
   // We do not want to catch the moment that the loading spinner is NOT YET present
