@@ -17,9 +17,7 @@ describe('Basic tests', () => {
         cy.inIframeBody(`[data-cy-debug="tableRow"]:eq(0)`).should('have.length', 1).as('reportRow')
         cy.get('@reportRow').checkStatusFromRow('Success');
         cy.get('@reportRow').checkCorrelationIdFromRow('');
-        // Re-query fresh instead of clicking the aliased reference: the table can re-render
-        // right after the JDBC query, detaching the captured row before the click executes.
-        cy.inIframeBody(`[data-cy-debug="tableRow"]:eq(0)`).click();
+        cy.get('@reportRow').click();
         cy.inIframeBody('[data-cy-element-name="checkpointEditor"]')
           .should('contain.text', 'SELECT')
           .should('contain.text', 'FROM')

@@ -101,9 +101,18 @@ Cypress.Commands.add('getNumLadybugReports', () => {
     url: `iaf/ladybug/api/metadata/${Cypress.env('debugStorageName') as string}/count`,
     times: 1
   }).as('apiGetReports_2')
+  // The refresh button also fires a separate request for the table's own row data
+  // (no /count suffix). Waiting only for the count above let this command return before
+  // that second request had come back, so the table could still change under callers
+  // that immediately act on a row.
+  cy.intercept({
+    method: 'GET',
+    url: `iaf/ladybug/api/metadata/${Cypress.env('debugStorageName') as string}?*`,
+    times: 1
+  }).as('apiGetReportsList')
   cy.awaitLoadingSpinner()
   cy.inIframeBody('[data-cy-debug="refresh"]').click()
-  cy.wait('@apiGetReports_2').then(interception => {
+  cy.wait(['@apiGetReports_2', '@apiGetReportsList']).then(([interception]) => {
     const count: number = interception.response.body
     // Uncomment if PR https://github.com/wearefrank/ladybug-frontend/pull/363
     // has been merged and if its frontend is referenced by F!F pom.xml.
