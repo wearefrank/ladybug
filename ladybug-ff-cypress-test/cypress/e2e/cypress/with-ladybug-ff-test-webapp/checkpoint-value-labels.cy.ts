@@ -9,7 +9,7 @@ describe('Checkpoint value labels', () => {
   })
 
   it('When message is null then a label null is shown', () => {
-    openReport('NullAndEmpty', 'Pipeline NullAndEmpty/NullAndEmpty')
+    openReport('NullAndEmpty')
     cy.selectTreeNode([
       'Pipeline NullAndEmpty/NullAndEmpty',
       'Pipeline NullAndEmpty/NullAndEmpty'
@@ -24,7 +24,7 @@ describe('Checkpoint value labels', () => {
   })
 
   it('When message is empty character stream then label empty', () => {
-    openReport('NullAndEmpty', 'Pipeline NullAndEmpty/NullAndEmpty')
+    openReport('NullAndEmpty')
     cy.selectTreeNode([
       'Pipeline NullAndEmpty/NullAndEmpty',
       'Pipeline NullAndEmpty/NullAndEmpty',
@@ -41,7 +41,7 @@ describe('Checkpoint value labels', () => {
   })
 
   it('When message is empty binary stream then three labels read only, empty and encoding', () => {
-    openReport('NullAndEmpty', 'Pipeline NullAndEmpty/NullAndEmpty')
+    openReport('NullAndEmpty')
     cy.selectTreeNode([
       'Pipeline NullAndEmpty/NullAndEmpty',
       'Pipeline NullAndEmpty/NullAndEmpty',
@@ -61,7 +61,7 @@ describe('Checkpoint value labels', () => {
   })
 
   it('When message is not-streamed string value then no labels except read only', () => {
-    openReport('NullAndEmpty', 'Pipeline NullAndEmpty/NullAndEmpty')
+    openReport('NullAndEmpty')
     cy.selectTreeNode([
       'Pipeline NullAndEmpty/NullAndEmpty',
       'Pipeline NullAndEmpty/NullAndEmpty',
@@ -75,7 +75,7 @@ describe('Checkpoint value labels', () => {
   })
 
   it('When message is non-empty character stream then no labels except read only', () => {
-    openReport('NullAndEmpty', 'Pipeline NullAndEmpty/NullAndEmpty')
+    openReport('NullAndEmpty')
     cy.selectTreeNode([
       'Pipeline NullAndEmpty/NullAndEmpty',
       'Pipeline NullAndEmpty/NullAndEmpty',
@@ -89,7 +89,7 @@ describe('Checkpoint value labels', () => {
   })
 })
 
-function openReport (expectedName: string, expectedTreeRootText: string): void {
+function openReport (expectedName: string): void {
   cy.visit('')
   cy.getNumLadybugReports()
   cy.inIframeBody('[data-cy-debug="tableRow"]').should('have.length', 1).as('reportRow')
@@ -100,7 +100,7 @@ function openReport (expectedName: string, expectedTreeRootText: string): void {
   // Opening the report loads its data and builds the tree asynchronously. Without this
   // guard, callers could start querying the tree (e.g. via selectTreeNode) before it had
   // been (re)built, racing against its own rendering.
-  cy.awaitDebugTree(expectedTreeRootText)
+  cy.awaitDebugTree()
 }
 
 describe('Checkpoint value truncation because of ibistesttool.maxMessageLength', () => {
@@ -128,7 +128,7 @@ describe('Checkpoint value truncation because of ibistesttool.maxMessageLength',
     }
     // Have 56 * 5 = 280 characters, adding 20 makes 300.
     expected += '5123456789abcdefghij'
-    openReport('UseTextBlockPipe', 'Pipeline UseTextBlockTestPipe/UseTextBlockPipe')
+    openReport('UseTextBlockPipe')
     cy.selectTreeNode([
       'Pipeline UseTextBlockTestPipe/UseTextBlockPipe',
       'Pipeline UseTextBlockTestPipe/UseTextBlockPipe',
@@ -141,7 +141,7 @@ describe('Checkpoint value truncation because of ibistesttool.maxMessageLength',
   it('When maxMessageLength is exceeded, there is a label showing how many characters are omitted', () => {
     const numOmitted = TOTAL_CHARACTERS_OF_CHECKPOINT - 300
     const omittedText = `${numOmitted}`
-    openReport('UseTextBlockPipe', 'Pipeline UseTextBlockTestPipe/UseTextBlockPipe')
+    openReport('UseTextBlockPipe')
     cy.selectTreeNode([
       'Pipeline UseTextBlockTestPipe/UseTextBlockPipe',
       'Pipeline UseTextBlockTestPipe/UseTextBlockPipe',

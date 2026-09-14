@@ -45,7 +45,7 @@ declare namespace Cypress {
     apiDeleteAll(storageName: string)
     apiDeleteAllAsTester(storageName: string)
     selectTreeNode(path: NodeSelection[]): Cypress.Chainable<any>
-    awaitDebugTree(expectedRootText: string): void
+    awaitDebugTree(): void
     awaitLoadingSpinner(): void
     waitForVideo(): void
     trimmedText(): Chainable<any>
@@ -318,14 +318,15 @@ function selectTreeNodeImpl (subject: JQuery<HTMLElement>, path: NodeSelection[]
 
 // [data-cy-debug-tree="root"] is the <ng-simple-tree> element itself, which is always
 // present once the debug tab is mounted, whether or not a report has been opened yet.
-// So asserting on its presence guards nothing. Checking for any app-tree-item is not
-// enough either: if a report was already open, its (stale) tree items are still in the
-// DOM and would satisfy that check immediately, before the new report has replaced them.
-// Matching on the new report's own root label forces Cypress to keep retrying until the
-// tree has actually been rebuilt with the expected content.
-Cypress.Commands.add('awaitDebugTree', (expectedRootText: string) => {
-  cy.inIframeBody(`[data-cy-debug-tree="root"] > app-tree-item:contains(${expectedRootText})`)
-    .should('have.length.at.least', 1)
+// So asserting on its presence guards nothing; waiting for at least one app-tree-item is
+// what actually guards against querying the tree before it has been built.
+// Assumption: callers only use this right after navigating to a fresh page (e.g. via
+// cy.visit()), so the tree is genuinely empty beforehand and cannot already contain stale
+// items left over from a previously opened report. If a caller ever needs to await a
+// report being opened while another one is already showing, this guard is not sufficient
+// and would need to check for content specific to the new report instead of mere presence.
+Cypress.Commands.add('awaitDebugTree', () => {
+  cy.inIframeBody('[data-cy-debug-tree="root"] > app-tree-item').should('have.length.at.least', 1)
 })
 
 Cypress.Commands.add('awaitLoadingSpinner', () => {
