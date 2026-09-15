@@ -170,11 +170,8 @@ Cypress.Commands.add('getNumLadybugReports', () => {
   cy.inIframeBody('[data-cy-debug="refresh"]').click()
   cy.wait(['@apiGetReports_2', '@apiGetReportsList']).then(([interception]) => {
     const count: number = interception.response.body
-    // Uncomment if PR https://github.com/wearefrank/ladybug-frontend/pull/363
-    // has been merged and if its frontend is referenced by F!F pom.xml.
-    //
-    // cy.inIframeBody('[data-cy-debug="amountShown"]')
-    // .should('equal', "/" + count);
+    cy.inIframeBody('[data-cy-debug="amountShown"]')
+      .should('equal', "/" + count);
     cy.inIframeBody('[data-cy-debug="tableRow"]')
       .should('have.length', count)
     return cy.wrap(count)
