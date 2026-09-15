@@ -160,7 +160,7 @@ Cypress.Commands.add('getNumLadybugReports', () => {
   cy.inIframeBody('[data-cy-debug="refresh"]').click()
   cy.wait(['@apiGetReports_2', '@apiGetReportsList']).then(([interception]) => {
     const count: number = interception.response.body
-    cy.inIframeBody('[data-cy-debug="amountShown"]')
+    cy.inIframeBody('[data-cy-debug="amountShown"]').invoke('text')
       .should('equal', "/" + count);
     cy.inIframeBody('[data-cy-debug="tableRow"]')
       .should('have.length', count)
