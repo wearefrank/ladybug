@@ -1,3 +1,5 @@
+import { AUTHENTICATIONS } from "../support/commands"
+
 describe('dtap.stage=PRD', () => {
   /*
    * The code below is based on a suggestion from the internet, but it does not work.
@@ -31,14 +33,9 @@ describe('dtap.stage=PRD', () => {
       cy.createReportInLadybug('Example1a', 'Adapter1a', 'xxx', 'tester', 'IbisTester')
     })
 
-    const credentialsToTest: Array<{ username: string, pwd: string }> = [
-      { username: 'observer', pwd: 'IbisObserver' },
-      { username: 'admin', pwd: 'IbisAdmin' },
-      { username: 'dataAdmin', pwd: 'IbisDataAdmin' }
-    ]
-    for (const testCase of credentialsToTest) {
-      it(`Cannot Report rerun as ${testCase.username}`, () => {
-        cy.visitAs(testCase.username, testCase.pwd)
+    for (const testUser of Array.from(AUTHENTICATIONS.keys()).filter((user) => user !== 'tester')) {
+      it(`Cannot Report rerun as ${testUser}`, () => {
+        cy.visitAs(testUser)
         cy.getNumLadybugReports().should('equal', 1)
         cy.inIframeBody('[data-cy-debug="tableRow"]')
           .find('td:nth-child(2)')
@@ -58,7 +55,7 @@ describe('dtap.stage=PRD', () => {
     }
 
     it("When logged in as IbisTester then rerun allowed", () => {
-      cy.visitAs('tester', 'IbisTester')
+      cy.visitAs('tester')
       cy.getNumLadybugReports().should('equal', 1)
       cy.inIframeBody('[data-cy-debug="tableRow"]')
         .find('td:nth-child(2)')
