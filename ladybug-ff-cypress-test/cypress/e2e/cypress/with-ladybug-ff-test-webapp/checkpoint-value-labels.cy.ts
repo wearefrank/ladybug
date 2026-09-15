@@ -96,6 +96,11 @@ function openReport (expectedName: string): void {
   // Status column.
   // TODO: Test exact value of status column if possible.
   cy.get('@reportRow').find('td:eq(6)').trimmedText().should('equal', 'Success')
+  // Temporary diagnostic for issue #977, see enterLadybug(). Logs a timestamp comparable
+  // to the count/list response timestamps logged there, to see whether a reload lands
+  // right around this click when it next fails with "the page updated as a result of
+  // this command".
+  cy.logDiag('about to click report row')
   cy.get('@reportRow').contains(expectedName).click()
   // Opening the report loads its data and builds the tree asynchronously. Without this
   // guard, callers could start querying the tree (e.g. via selectTreeNode) before it had

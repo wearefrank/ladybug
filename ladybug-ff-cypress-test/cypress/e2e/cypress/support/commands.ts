@@ -47,6 +47,7 @@ declare namespace Cypress {
     selectTreeNode(path: NodeSelection[]): Cypress.Chainable<any>
     awaitDebugTree(): void
     awaitLoadingSpinner(): void
+    logDiag(message: string): void
     waitForVideo(): void
     trimmedText(): Chainable<any>
     checkpointValueEquals(expectedValue: string): void
@@ -87,12 +88,51 @@ Cypress.Commands.add('clickTableRowWithStorageId', (storageId) => {
 })
 
 Cypress.Commands.add('enterLadybug', () => {
+  // Temporary diagnostic for issue #977: cy.contains().click() on a table row keeps
+  // occasionally failing with "the page updated as a result of this command" further
+  // down the line, in callers that rely on getNumLadybugReports() as a stability guard.
+  // Logging every count/list response with its arrival time (shown in the command log
+  // captured by the failure screenshot) should show whether more than one automatic
+  // reload happens, and how its timing relates to the failing click. Remove once the
+  // guard has been fixed for real.
+  // Timestamps are absolute (Date.now()) so callers logging via cy.logDiag() elsewhere
+  // (e.g. right before a click that might race a reload) can be lined up against these.
+  cy.intercept(
+    {
+      method: 'GET',
+      url: `iaf/ladybug/api/metadata/${Cypress.env('debugStorageName') as string}/count`
+    },
+    (req) => {
+      req.continue(() => {
+        cy.log(`[diag] /count response at ${Date.now()}`)
+      })
+    }
+  )
+  cy.intercept(
+    {
+      method: 'GET',
+      url: `iaf/ladybug/api/metadata/${Cypress.env('debugStorageName') as string}?*`
+    },
+    (req) => {
+      req.continue(() => {
+        cy.log(`[diag] list response at ${Date.now()}`)
+      })
+    }
+  )
   cy.get('[data-cy-nav="status"]', { timeout: 10000 }).click()
   cy.get('[data-cy-nav="testingLadybug"]').should('not.be.visible')
   cy.get('[data-cy-nav="testing"]').click()
   cy.get('[data-cy-nav="testingLadybug"]').click()
   cy.awaitLoadingSpinner()
+  cy.log(`[diag] debug tab clicked at ${Date.now()}`)
   cy.inIframeBody('[data-cy-nav-tab="debug"]').click()
+})
+
+// Temporary diagnostic for issue #977, see enterLadybug(). Lets callers elsewhere (e.g.
+// right before a click that might race a reload) log a timestamp comparable to the
+// count/list response timestamps logged in enterLadybug().
+Cypress.Commands.add('logDiag', (message: string) => {
+  cy.log(`[diag] ${message} at ${Date.now()}`)
 })
 
 Cypress.Commands.add('getNumLadybugReports', () => {
