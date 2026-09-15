@@ -12,7 +12,7 @@ const crypto = require('crypto');
 // keep the trailing "(failed)" marker and append a short hash so distinct
 // long titles cannot collide. The original title is logged alongside the
 // screenshots so it stays traceable from the artifact.
-const MAX_SCREENSHOT_BASENAME_LENGTH = 100
+const MAX_SCREENSHOT_BASENAME_LENGTH = 40
 const SCREENSHOT_NAME_MAP_FILENAME = 'truncated-screenshot-names.log'
 
 module.exports = defineConfig({
