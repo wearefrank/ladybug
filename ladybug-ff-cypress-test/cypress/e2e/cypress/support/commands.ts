@@ -343,6 +343,10 @@ Cypress.Commands.add('awaitLoadingSpinner', () => {
   // We do not want to catch the moment that the loading spinner is NOT YET present
   cy.wait(400)
   cy.inIframeBody('[data-cy-loading-spinner]').should('not.exist')
+  // TODO issue https://github.com/wearefrank/ladybug/issues/977. Until the
+  // loading spinner is reliable, we do with a timeout that is larger than
+  // the debounce time of 300 ms applied in FilterService.
+  cy.wait(400)
 })
 
 // Wait so that the state of the UI is shown more clearly in videos.
