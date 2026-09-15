@@ -101,7 +101,12 @@ function openReport (expectedName: string): void {
   // right around this click when it next fails with "the page updated as a result of
   // this command".
   cy.logDiag('about to click report row')
-  cy.get('@reportRow').contains(expectedName).click()
+  // Query fresh from the live DOM instead of clicking through the '@reportRow' alias: a
+  // reload can land between locating the row above and clicking it here, which would
+  // detach the aliased node and make cy.click() fail with "the page updated as a result
+  // of this command". Querying at click time lets Cypress's retry re-locate the row if
+  // it gets recreated in the meantime, the same way clickTableRowWithStorageId does.
+  cy.inIframeBody('[data-cy-debug="tableRow"]').contains(expectedName).click()
   // Opening the report loads its data and builds the tree asynchronously. Without this
   // guard, callers could start querying the tree (e.g. via selectTreeNode) before it had
   // been (re)built, racing against its own rendering.
