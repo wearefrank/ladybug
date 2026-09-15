@@ -97,6 +97,11 @@ Cypress.Commands.add('enterLadybug', () => {
   // guard has been fixed for real.
   // Timestamps are absolute (Date.now()) so callers logging via cy.logDiag() elsewhere
   // (e.g. right before a click that might race a reload) can be lined up against these.
+  // Intercept handlers run outside Cypress's normal command queue, so they must not call
+  // queued cy commands (that broke every test using enterLadybug() with "Cypress detected
+  // that you returned a promise from a command while also invoking one or more cy
+  // commands in that promise"). Cypress.log() is the unqueued, direct logging API that is
+  // safe to call from here.
   cy.intercept(
     {
       method: 'GET',
@@ -104,7 +109,7 @@ Cypress.Commands.add('enterLadybug', () => {
     },
     (req) => {
       req.continue(() => {
-        cy.log(`[diag] /count response at ${Date.now()}`)
+        Cypress.log({ name: 'diag', message: `/count response at ${Date.now()}` })
       })
     }
   )
@@ -115,7 +120,7 @@ Cypress.Commands.add('enterLadybug', () => {
     },
     (req) => {
       req.continue(() => {
-        cy.log(`[diag] list response at ${Date.now()}`)
+        Cypress.log({ name: 'diag', message: `list response at ${Date.now()}` })
       })
     }
   )
