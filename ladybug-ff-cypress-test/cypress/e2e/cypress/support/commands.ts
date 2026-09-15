@@ -47,6 +47,7 @@ declare namespace Cypress {
     selectTreeNode(path: NodeSelection[]): Cypress.Chainable<any>
     awaitDebugTree(): void
     awaitLoadingSpinner(): void
+    logDiag(message: string): void
     waitForVideo(): void
     trimmedText(): Chainable<any>
     checkpointValueEquals(expectedValue: string): void
@@ -87,16 +88,61 @@ Cypress.Commands.add('clickTableRowWithStorageId', (storageId) => {
 })
 
 Cypress.Commands.add('enterLadybug', () => {
+  // Temporary diagnostic for issue #977: cy.contains().click() on a table row keeps
+  // occasionally failing with "the page updated as a result of this command" further
+  // down the line, in callers that rely on getNumLadybugReports() as a stability guard.
+  // Logging every count/list response with its arrival time (shown in the command log
+  // captured by the failure screenshot) should show whether more than one automatic
+  // reload happens, and how its timing relates to the failing click. Remove once the
+  // guard has been fixed for real.
+  // Timestamps are absolute (Date.now()) so callers logging via cy.logDiag() elsewhere
+  // (e.g. right before a click that might race a reload) can be lined up against these.
+  // Intercept handlers run outside Cypress's normal command queue, so they must not call
+  // queued cy commands (that broke every test using enterLadybug() with "Cypress detected
+  // that you returned a promise from a command while also invoking one or more cy
+  // commands in that promise"). Cypress.log() is the unqueued, direct logging API that is
+  // safe to call from here.
+  cy.intercept(
+    {
+      method: 'GET',
+      url: `iaf/ladybug/api/metadata/${Cypress.env('debugStorageName') as string}/count`
+    },
+    (req) => {
+      req.continue(() => {
+        Cypress.log({ name: 'diag', message: `/count response at ${Date.now()}` })
+      })
+    }
+  )
+  cy.intercept(
+    {
+      method: 'GET',
+      url: `iaf/ladybug/api/metadata/${Cypress.env('debugStorageName') as string}?*`
+    },
+    (req) => {
+      req.continue(() => {
+        Cypress.log({ name: 'diag', message: `list response at ${Date.now()}` })
+      })
+    }
+  )
   cy.get('[data-cy-nav="status"]', { timeout: 10000 }).click()
   cy.get('[data-cy-nav="testingLadybug"]').should('not.be.visible')
   cy.get('[data-cy-nav="testing"]').click()
   cy.get('[data-cy-nav="testingLadybug"]').click()
   cy.awaitLoadingSpinner()
+  cy.log(`[diag] debug tab clicked at ${Date.now()}`)
   cy.inIframeBody('[data-cy-nav-tab="debug"]').click()
+})
+
+// Temporary diagnostic for issue #977, see enterLadybug(). Lets callers elsewhere (e.g.
+// right before a click that might race a reload) log a timestamp comparable to the
+// count/list response timestamps logged in enterLadybug().
+Cypress.Commands.add('logDiag', (message: string) => {
+  cy.log(`[diag] ${message} at ${Date.now()}`)
 })
 
 Cypress.Commands.add('getNumLadybugReports', () => {
   cy.enterLadybug()
+  cy.awaitLoadingSpinner()
   cy.intercept({
     method: 'GET',
     url: `iaf/ladybug/api/metadata/${Cypress.env('debugStorageName') as string}/count`,
@@ -111,15 +157,11 @@ Cypress.Commands.add('getNumLadybugReports', () => {
     url: `iaf/ladybug/api/metadata/${Cypress.env('debugStorageName') as string}?*`,
     times: 1
   }).as('apiGetReportsList')
-  cy.awaitLoadingSpinner()
   cy.inIframeBody('[data-cy-debug="refresh"]').click()
   cy.wait(['@apiGetReports_2', '@apiGetReportsList']).then(([interception]) => {
     const count: number = interception.response.body
-    // Uncomment if PR https://github.com/wearefrank/ladybug-frontend/pull/363
-    // has been merged and if its frontend is referenced by F!F pom.xml.
-    //
-    // cy.inIframeBody('[data-cy-debug="amountShown"]')
-    // .should('equal', "/" + count);
+    cy.inIframeBody('[data-cy-debug="amountShown"]').invoke('text')
+      .should('equal', "/" + count);
     cy.inIframeBody('[data-cy-debug="tableRow"]')
       .should('have.length', count)
     return cy.wrap(count)
@@ -333,6 +375,10 @@ Cypress.Commands.add('awaitLoadingSpinner', () => {
   // We do not want to catch the moment that the loading spinner is NOT YET present
   cy.wait(400)
   cy.inIframeBody('[data-cy-loading-spinner]').should('not.exist')
+  // TODO issue https://github.com/wearefrank/ladybug/issues/977. Until the
+  // loading spinner is reliable, we do with a timeout that is larger than
+  // the debounce time of 300 ms applied in FilterService.
+  cy.wait(400)
 })
 
 // Wait so that the state of the UI is shown more clearly in videos.
