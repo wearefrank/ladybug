@@ -97,6 +97,17 @@ Cypress.Commands.add('enterLadybug', () => {
 
 Cypress.Commands.add('getNumLadybugReports', () => {
   cy.enterLadybug()
+  // Entering the debug tab mounts the table, which immediately fires its own automatic
+  // metadata load (with a debounce of a few hundred ms on the request for row data).
+  // Registering the intercepts below before that load has settled lets them catch that
+  // automatic request instead of the one caused by the refresh click further down: since
+  // it is not yet in flight when the interception is set up, cy.wait() later happily
+  // resolves with the automatic load's (still on-topic, so not obviously wrong) response,
+  // while the actual refresh request is left in flight and unobserved. It then completes
+  // and repaints the table right as a caller acts on a row it already located. Waiting for
+  // the automatic load to settle first guarantees the intercepts can only match the
+  // request the refresh click itself causes.
+  cy.awaitLoadingSpinner()
   cy.intercept({
     method: 'GET',
     url: `iaf/ladybug/api/metadata/${Cypress.env('debugStorageName') as string}/count`,
@@ -111,7 +122,6 @@ Cypress.Commands.add('getNumLadybugReports', () => {
     url: `iaf/ladybug/api/metadata/${Cypress.env('debugStorageName') as string}?*`,
     times: 1
   }).as('apiGetReportsList')
-  cy.awaitLoadingSpinner()
   cy.inIframeBody('[data-cy-debug="refresh"]').click()
   cy.wait(['@apiGetReports_2', '@apiGetReportsList']).then(([interception]) => {
     const count: number = interception.response.body
