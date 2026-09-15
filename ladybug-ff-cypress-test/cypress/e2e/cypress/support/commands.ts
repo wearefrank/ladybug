@@ -177,6 +177,17 @@ Cypress.Commands.add('getNumLadybugReports', () => {
     // .should('equal', "/" + count);
     cy.inIframeBody('[data-cy-debug="tableRow"]')
       .should('have.length', count)
+    // The assertion above can pass immediately against rows left over from the
+    // automatic load that happened when the debug tab mounted: since it only checks a
+    // count, it is satisfied as soon as that count matches, whether or not this
+    // request's own rows have been rendered yet. There is no DOM signal available that
+    // distinguishes "still showing the previous load's rows" from "now showing this
+    // load's rows" when both loads render the same number of rows, which is the usual
+    // case here. A failing run's video (see issue #977) showed the table still settling
+    // for roughly 1 to 1.3 seconds after this response arrived, so this margin is sized
+    // from that observation, not from FilterService's 300 ms request-side debounce
+    // (which waiting for the response above has already accounted for).
+    cy.wait(2000)
     return cy.wrap(count)
   })
 })
