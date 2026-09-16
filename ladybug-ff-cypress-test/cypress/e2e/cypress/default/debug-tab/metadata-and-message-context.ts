@@ -17,7 +17,12 @@ describe('Metadata and message context', () => {
     cy.visit('')
     cy.getNumLadybugReports()
     cy.inIframeBody('[data-cy-debug="tableRow"]').should('have.length', 1).as('reportRow')
-    cy.get('@reportRow').contains('Conclusion').click()
+    // Query fresh from the live DOM instead of clicking through the '@reportRow' alias
+    // (also below, in the other tests in this file): a reload can land between locating
+    // the row above and clicking it here, which would detach the aliased node and make
+    // cy.click() fail with "the page updated as a result of this command". Querying at
+    // click time lets Cypress's retry re-locate the row if it gets recreated meanwhile.
+    cy.inIframeBody('[data-cy-debug="tableRow"]').contains('Conclusion').click()
     cy.get('@reportRow').checkStatusFromRow('Success');
     cy.selectTreeNode([
       'Pipeline Conclusion/IngestDocument',
@@ -64,8 +69,8 @@ describe('Metadata and message context', () => {
   it('Hide and show message context', () => {
     cy.visit('')
     cy.getNumLadybugReports()
-    cy.inIframeBody('[data-cy-debug="tableRow"]').should('have.length', 1).as('reportRow')
-    cy.get('@reportRow').contains('Conclusion').click()
+    cy.inIframeBody('[data-cy-debug="tableRow"]').should('have.length', 1)
+    cy.inIframeBody('[data-cy-debug="tableRow"]').contains('Conclusion').click()
     cy.selectTreeNode([
       'Pipeline Conclusion/IngestDocument',
       'Pipeline Conclusion/IngestDocument'
@@ -86,8 +91,8 @@ describe('Metadata and message context', () => {
   it('Hide and show metadata', () => {
     cy.visit('')
     cy.getNumLadybugReports()
-    cy.inIframeBody('[data-cy-debug="tableRow"]').should('have.length', 1).as('reportRow')
-    cy.get('@reportRow').contains('Conclusion').click()
+    cy.inIframeBody('[data-cy-debug="tableRow"]').should('have.length', 1)
+    cy.inIframeBody('[data-cy-debug="tableRow"]').contains('Conclusion').click()
     cy.selectTreeNode([
       'Pipeline Conclusion/IngestDocument',
       'Pipeline Conclusion/IngestDocument'
@@ -106,8 +111,8 @@ describe('Metadata and message context', () => {
   it('Show metadata and message context together', () => {
     cy.visit('')
     cy.getNumLadybugReports()
-    cy.inIframeBody('[data-cy-debug="tableRow"]').should('have.length', 1).as('reportRow')
-    cy.get('@reportRow').contains('Conclusion').click()
+    cy.inIframeBody('[data-cy-debug="tableRow"]').should('have.length', 1)
+    cy.inIframeBody('[data-cy-debug="tableRow"]').contains('Conclusion').click()
     cy.selectTreeNode([
       'Pipeline Conclusion/IngestDocument',
       'Pipeline Conclusion/IngestDocument'

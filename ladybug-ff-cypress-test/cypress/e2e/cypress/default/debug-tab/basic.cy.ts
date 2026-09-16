@@ -17,7 +17,12 @@ describe('Basic tests', () => {
         cy.inIframeBody(`[data-cy-debug="tableRow"]:eq(0)`).should('have.length', 1).as('reportRow')
         cy.get('@reportRow').checkStatusFromRow('Success');
         cy.get('@reportRow').checkCorrelationIdFromRow('');
-        cy.get('@reportRow').click();
+        // Query fresh from the live DOM instead of clicking through the '@reportRow'
+        // alias: a reload can land between locating the row above and clicking it here,
+        // which would detach the aliased node and make cy.click() fail with "the page
+        // updated as a result of this command". Querying at click time lets Cypress's
+        // retry re-locate the row if it gets recreated in the meantime.
+        cy.inIframeBody('[data-cy-debug="tableRow"]:eq(0)').click();
         cy.inIframeBody('[data-cy-element-name="checkpointEditor"]')
           .should('contain.text', 'SELECT')
           .should('contain.text', 'FROM')
