@@ -158,10 +158,10 @@ describe('Checkpoint value truncation because of ibistesttool.maxMessageLength',
       'Pipe testPipe',
       { seq: 1, text: 'testPipe' }
     ]).click()
+    cy.checkNumCheckpointValueLabels(2)
     cy.checkpointValueLabel(0).should('contain.text', 'Read')
     cy.checkpointValueLabel(1)
       .should('contain.text', 'truncated')
       .should('contain.text', omittedText)
-    cy.checkNumCheckpointValueLabels(2)
   })
 })
