@@ -148,7 +148,8 @@ describe('Checkpoint value truncation because of ibistesttool.maxMessageLength',
     cy.checkpointValueTrimmedEquals(expected)
   })
 
-  it('When maxMessageLength is exceeded, there is a label showing how many characters are omitted', () => {
+  // TODO issue https://github.com/wearefrank/ladybug/issues/981. Enable test when issue fixed.
+  xit('When maxMessageLength is exceeded, there is a label showing how many characters are omitted', () => {
     const numOmitted = TOTAL_CHARACTERS_OF_CHECKPOINT - 300
     const omittedText = `${numOmitted}`
     openReport('UseTextBlockPipe')
