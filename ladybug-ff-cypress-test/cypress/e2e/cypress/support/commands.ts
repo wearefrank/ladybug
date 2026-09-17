@@ -33,7 +33,9 @@ export const AUTHENTICATIONS = new Map<string, Authentication>([
   ['observer', { username: 'observer', password: 'IbisObserver' }],
   ['dataAdmin', { username: 'dataAdmin', password: 'IbisDataAdmin' }],
   ['admin', { username: 'admin', password: 'IbisAdmin'}],
-  ['tester', { username: 'tester', password: 'IbisTester' }]
+  ['tester', { username: 'tester', password: 'IbisTester' }],
+  // User that does not exist
+  ['xxx', { username: 'xxx', password: 'xxx' }],
 ])
 
 declare global {
