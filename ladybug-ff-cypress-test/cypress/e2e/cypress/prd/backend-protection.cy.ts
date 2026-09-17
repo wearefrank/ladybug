@@ -26,8 +26,13 @@ describe('dtap.stage=PRD test whether API URLs are safe', () => {
   const storageName = Cypress.env('debugStorageName') as string;
 
   // TODO: Add a test user that has no roles and add tests that it has no rights. Requires restart of backend so postponed.
-  const metadataApiCases: TestCase[] = [
-    // Valid requests, checking user authorized / unauthorized.
+  const simpleCases: TestCase[] = [
+    /*
+     * MetadataApi
+     */
+
+    // Valid requests.
+
     { method: 'GET', url: `/iaf/ladybug/api/metadata/${storageName}?metadataNames=storageId`, user: 'observer', expectedStatus: 200 },
     { method: 'GET', url: `/iaf/ladybug/api/metadata/${storageName}?metadataNames=storageId`, user: 'tester', expectedStatus: 200 },
     { method: 'GET', url: `/iaf/ladybug/api/metadata/${storageName}?metadataNames=storageId`, user: 'xxx', expectedStatus: 401 },
@@ -37,15 +42,40 @@ describe('dtap.stage=PRD test whether API URLs are safe', () => {
     { method: 'GET', url: `/iaf/ladybug/api/metadata/${storageName}/count`, user: 'observer', expectedStatus: 200 },
     { method: 'GET', url: `/iaf/ladybug/api/metadata/${storageName}/count`, user: 'tester', expectedStatus: 200 },
     
-    // Nonsensical URLs
+    // Nonsensical URLs.
     
     // Required query parameter is missing.
     { method: 'GET', url: `/iaf/ladybug/api/metadata/${storageName}`, user: 'observer', expectedStatus: 400 },
     // Slash missing between base URL and path parameter.
     { method: 'GET', url: `/iaf/ladybug/api/metadata/${storageName}count`, user: 'observer', expectedStatus: 400 },
   ];
-  describe('MetadataApi', () => {
-    for (const t of metadataApiCases) {
+
+  const reportApiCases: TestCase[] = [
+    { method: 'GET', url: `iaf/ladybug/api/report/${storageName}/<<storageId>>`, user: 'observer', expectedStatus: 200 },
+    { method: 'GET', url: `iaf/ladybug/api/report/${storageName}/<<storageId>>`, user: 'tester', expectedStatus: 200 },
+    { method: 'GET', url: `iaf/ladybug/api/report/${storageName}/<<storageId>>/checkpoints/uids?view=White%20box&invert=false`, user: 'observer', expectedStatus: 200 },
+    { method: 'GET', url: `iaf/ladybug/api/report/${storageName}/<<storageId>>/checkpoints/uids?view=White%20box&invert=false`, user: 'tester', expectedStatus: 200 },
+    { method: 'GET', url: `iaf/ladybug/api/report/${storageName}?storageIds=<<storageId>>`, user: 'observer', expectedStatus: 200 },
+    { method: 'GET', url: `iaf/ladybug/api/report/${storageName}?storageIds=<<storageId>>`, user: 'tester', expectedStatus: 200 },
+    { method: 'GET', url: `iaf/ladybug/api/report/shownReports/${storageName}?storageIds=<<storageId>>&view=White%20box`, user: 'observer', expectedStatus: 200 },
+    { method: 'GET', url: `iaf/ladybug/api/report/shownReports/${storageName}?storageIds=<<storageId>>&view=White%20box`, user: 'tester', expectedStatus: 200 },
+
+    // Invalid URLs
+
+    // Missing all query parameters
+    { method: 'GET', url: `iaf/ladybug/api/report/${storageName}/<<storageId>>/checkpoints/uids`, user: 'tester', expectedStatus: 400 },
+    // Misses mandator query parameter "invert"
+    { method: 'GET', url: `iaf/ladybug/api/report/${storageName}/<<storageId>>/checkpoints/uids?view=White%20box`, user: 'observer', expectedStatus: 400 },
+    // Invalid view
+    // TODO: This faulty URL is not flagged - produces 200. Fix backend.
+    // { method: 'GET', url: `iaf/ladybug/api/report/${storageName}/<<storageId>>/checkpoints/uids?view=xxx&invert=false`, user: 'tester', expectedStatus: 400 },
+    // Missing mandatory query parameter storageIds
+    { method: 'GET', url: `iaf/ladybug/api/report/${storageName}`, user: 'observer', expectedStatus: 400 },
+    { method: 'GET', url: `iaf/ladybug/api/report/shownReports/${storageName}&view=White%20box`, user: 'observer', expectedStatus: 400 },
+  ]
+
+  describe('Simple cases that do not depend on anything', () => {
+    for (const t of simpleCases) {
       it(testCaseToString(t), () => doTest(t))
     }
   })
@@ -78,5 +108,18 @@ describe('dtap.stage=PRD test whether API URLs are safe', () => {
     afterEach(() => {
       cy.apiDeleteAllAsTester(storageName)
     })
+
+    for(const c of reportApiCases) {
+      it(testCaseToString(c), () => {
+        const url = c.url.replace('<<storageId>>', `${storageId}`);
+        const t: TestCase = {
+          method: c.method,
+          url,
+          user: c.user,
+          expectedStatus: c.expectedStatus,
+        }
+        doTest(t);
+      })
+    }
   })
 });
