@@ -56,6 +56,7 @@ declare global {
       checkActiveFilterSphere(field: string, value: string): Cypress.Chainable<any>
       apiDeleteAll(storageName: string)
       apiDeleteAllAsTester(storageName: string)
+      apiSetGeneratorEnabledAsTester(enabled: boolean): Chainable<any>
       selectTreeNode(path: NodeSelection[]): Cypress.Chainable<any>
       awaitLoadingSpinner(): void
       waitForVideo(): void
@@ -268,6 +269,18 @@ Cypress.Commands.add('apiDeleteAllAsTester', (storageName: string) => {
     method: 'DELETE',
     url: `/iaf/ladybug/api/report/all/${storageName}`,
     auth: AUTHENTICATIONS.get('tester')!
+  }).then(response => {
+    cy.wrap(response).its('status').should('equal', 200)
+  })
+})
+
+Cypress.Commands.add('apiSetGeneratorEnabledAsTester', (enabled: boolean) => {
+  cy.request({
+    method: 'POST',
+    url: '/iaf/ladybug/api/testtool',
+    auth: AUTHENTICATIONS.get('tester')!,
+    headers: { 'Content-Type': 'application/json' },
+    body: { generatorEnabled: enabled ? 'true' : 'false' }
   }).then(response => {
     cy.wrap(response).its('status').should('equal', 200)
   })

@@ -49,4 +49,34 @@ describe('dtap.stage=PRD test whether API URLs are safe', () => {
       it(testCaseToString(t), () => doTest(t))
     }
   })
+
+
+  describe('With report', () => {
+    let storageId: number;
+
+    before(() => {
+      cy.apiDeleteAllAsTester(storageName)
+      cy.apiSetGeneratorEnabledAsTester(true)
+    })
+
+    after(() => {
+      cy.apiSetGeneratorEnabledAsTester(false)
+    })
+
+    beforeEach(() => {
+      cy.createReportWithTestPipelineApi('Example1a', 'Adapter1a', 'xxx', 'tester', 'IbisTester')
+      cy.request({
+        method: 'GET',
+        url: `/iaf/ladybug/api/metadata/${storageName}?metadataNames=storageId`,
+        auth: AUTHENTICATIONS.get('tester')!,
+      }).then(response => {
+        cy.wrap(response.body).should('have.length', 1)
+        storageId = parseInt(response.body[0].storageId)
+      })
+    })
+
+    afterEach(() => {
+      cy.apiDeleteAllAsTester(storageName)
+    })
+  })
 });
