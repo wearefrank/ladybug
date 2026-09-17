@@ -14,9 +14,24 @@ function testCaseToString(t: TestCase): string {
 describe('dtap.stage=PRD test whether API URLs are safe', () => {
   const storageName = Cypress.env('debugStorageName') as string;
 
+  // TODO: Add a test user that has no roles and add tests that it has no rights. Requires restart of backend so postponed.
   const cases: TestCase[] = [
+    // Valid requests, checking user authorized / unauthorized.
+    { method: 'GET', url: `/iaf/ladybug/api/metadata/${storageName}?metadataNames=storageId`, user: 'observer', expectedStatus: 200 },
     { method: 'GET', url: `/iaf/ladybug/api/metadata/${storageName}?metadataNames=storageId`, user: 'tester', expectedStatus: 200 },
     { method: 'GET', url: `/iaf/ladybug/api/metadata/${storageName}?metadataNames=storageId`, user: 'xxx', expectedStatus: 401 },
+    { method: 'GET', url: `/iaf/ladybug/api/metadata/${storageName}/userHelp?metadataNames=storageId`, user: 'observer', expectedStatus: 200 },
+    { method: 'GET', url: `/iaf/ladybug/api/metadata/${storageName}/userHelp?metadataNames=storageId`, user: 'tester', expectedStatus: 200 },
+    { method: 'GET', url: `/iaf/ladybug/api/metadata/${storageName}/userHelp?metadataNames=storageId`, user: 'xxx', expectedStatus: 401 },
+    { method: 'GET', url: `/iaf/ladybug/api/metadata/${storageName}/count`, user: 'observer', expectedStatus: 200 },
+    { method: 'GET', url: `/iaf/ladybug/api/metadata/${storageName}/count`, user: 'tester', expectedStatus: 200 },
+    
+    // Nonsensical URLs
+    
+    // Required query parameter is missing.
+    { method: 'GET', url: `/iaf/ladybug/api/metadata/${storageName}`, user: 'observer', expectedStatus: 400 },
+    // Slash missing between base URL and path parameter.
+    { method: 'GET', url: `/iaf/ladybug/api/metadata/${storageName}count`, user: 'observer', expectedStatus: 400 },
   ];
   for (const t of cases) {
     it(testCaseToString(t), () => {
