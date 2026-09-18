@@ -1,5 +1,7 @@
 import { AUTHENTICATIONS } from "../support/commands";
 
+const API_BASE = '/iaf/ladybug/api/';
+
 interface TestCase {
   method: string;
   url: string;
@@ -14,7 +16,7 @@ function testCaseToString(t: TestCase): string {
 function doTest(t: TestCase): void {
   cy.request({
     method: t.method,
-    url: t.url,
+    url: `${API_BASE}${t.url}`,
     auth: AUTHENTICATIONS.get(t.user)!,
     failOnStatusCode: false,
   }).then(response => {
@@ -33,44 +35,44 @@ describe('dtap.stage=PRD test whether API URLs are safe', () => {
 
     // Valid requests.
 
-    { method: 'GET', url: `/iaf/ladybug/api/metadata/${storageName}?metadataNames=storageId`, user: 'observer', expectedStatus: 200 },
-    { method: 'GET', url: `/iaf/ladybug/api/metadata/${storageName}?metadataNames=storageId`, user: 'tester', expectedStatus: 200 },
-    { method: 'GET', url: `/iaf/ladybug/api/metadata/${storageName}?metadataNames=storageId`, user: 'xxx', expectedStatus: 401 },
-    { method: 'GET', url: `/iaf/ladybug/api/metadata/${storageName}/userHelp?metadataNames=storageId`, user: 'observer', expectedStatus: 200 },
-    { method: 'GET', url: `/iaf/ladybug/api/metadata/${storageName}/userHelp?metadataNames=storageId`, user: 'tester', expectedStatus: 200 },
-    { method: 'GET', url: `/iaf/ladybug/api/metadata/${storageName}/userHelp?metadataNames=storageId`, user: 'xxx', expectedStatus: 401 },
-    { method: 'GET', url: `/iaf/ladybug/api/metadata/${storageName}/count`, user: 'observer', expectedStatus: 200 },
-    { method: 'GET', url: `/iaf/ladybug/api/metadata/${storageName}/count`, user: 'tester', expectedStatus: 200 },
-    
+    { method: 'GET', url: `metadata/${storageName}?metadataNames=storageId`, user: 'observer', expectedStatus: 200 },
+    { method: 'GET', url: `metadata/${storageName}?metadataNames=storageId`, user: 'tester', expectedStatus: 200 },
+    { method: 'GET', url: `metadata/${storageName}?metadataNames=storageId`, user: 'xxx', expectedStatus: 401 },
+    { method: 'GET', url: `metadata/${storageName}/userHelp?metadataNames=storageId`, user: 'observer', expectedStatus: 200 },
+    { method: 'GET', url: `metadata/${storageName}/userHelp?metadataNames=storageId`, user: 'tester', expectedStatus: 200 },
+    { method: 'GET', url: `metadata/${storageName}/userHelp?metadataNames=storageId`, user: 'xxx', expectedStatus: 401 },
+    { method: 'GET', url: `metadata/${storageName}/count`, user: 'observer', expectedStatus: 200 },
+    { method: 'GET', url: `metadata/${storageName}/count`, user: 'tester', expectedStatus: 200 },
+
     // Nonsensical URLs.
-    
+
     // Required query parameter is missing.
-    { method: 'GET', url: `/iaf/ladybug/api/metadata/${storageName}`, user: 'observer', expectedStatus: 400 },
+    { method: 'GET', url: `metadata/${storageName}`, user: 'observer', expectedStatus: 400 },
     // Slash missing between base URL and path parameter.
-    { method: 'GET', url: `/iaf/ladybug/api/metadata/${storageName}count`, user: 'observer', expectedStatus: 400 },
+    { method: 'GET', url: `metadata/${storageName}count`, user: 'observer', expectedStatus: 400 },
   ];
 
   const reportApiCases: TestCase[] = [
-    { method: 'GET', url: `iaf/ladybug/api/report/${storageName}/<<storageId>>`, user: 'observer', expectedStatus: 200 },
-    { method: 'GET', url: `iaf/ladybug/api/report/${storageName}/<<storageId>>`, user: 'tester', expectedStatus: 200 },
-    { method: 'GET', url: `iaf/ladybug/api/report/${storageName}/<<storageId>>/checkpoints/uids?view=White%20box&invert=false`, user: 'observer', expectedStatus: 200 },
-    { method: 'GET', url: `iaf/ladybug/api/report/${storageName}/<<storageId>>/checkpoints/uids?view=White%20box&invert=false`, user: 'tester', expectedStatus: 200 },
-    { method: 'GET', url: `iaf/ladybug/api/report/${storageName}?storageIds=<<storageId>>`, user: 'observer', expectedStatus: 200 },
-    { method: 'GET', url: `iaf/ladybug/api/report/${storageName}?storageIds=<<storageId>>`, user: 'tester', expectedStatus: 200 },
-    { method: 'GET', url: `iaf/ladybug/api/report/shownReports/${storageName}?storageIds=<<storageId>>&view=White%20box`, user: 'observer', expectedStatus: 200 },
-    { method: 'GET', url: `iaf/ladybug/api/report/shownReports/${storageName}?storageIds=<<storageId>>&view=White%20box`, user: 'tester', expectedStatus: 200 },
+    { method: 'GET', url: `report/${storageName}/<<storageId>>`, user: 'observer', expectedStatus: 200 },
+    { method: 'GET', url: `report/${storageName}/<<storageId>>`, user: 'tester', expectedStatus: 200 },
+    { method: 'GET', url: `report/${storageName}/<<storageId>>/checkpoints/uids?view=White%20box&invert=false`, user: 'observer', expectedStatus: 200 },
+    { method: 'GET', url: `report/${storageName}/<<storageId>>/checkpoints/uids?view=White%20box&invert=false`, user: 'tester', expectedStatus: 200 },
+    { method: 'GET', url: `report/${storageName}?storageIds=<<storageId>>`, user: 'observer', expectedStatus: 200 },
+    { method: 'GET', url: `report/${storageName}?storageIds=<<storageId>>`, user: 'tester', expectedStatus: 200 },
+    { method: 'GET', url: `report/shownReports/${storageName}?storageIds=<<storageId>>&view=White%20box`, user: 'observer', expectedStatus: 200 },
+    { method: 'GET', url: `report/shownReports/${storageName}?storageIds=<<storageId>>&view=White%20box`, user: 'tester', expectedStatus: 200 },
 
     // Invalid URLs
 
     // Missing all query parameters
-    { method: 'GET', url: `iaf/ladybug/api/report/${storageName}/<<storageId>>/checkpoints/uids`, user: 'tester', expectedStatus: 400 },
+    { method: 'GET', url: `report/${storageName}/<<storageId>>/checkpoints/uids`, user: 'tester', expectedStatus: 400 },
     // Misses mandator query parameter "invert"
-    { method: 'GET', url: `iaf/ladybug/api/report/${storageName}/<<storageId>>/checkpoints/uids?view=White%20box`, user: 'observer', expectedStatus: 400 },
+    { method: 'GET', url: `report/${storageName}/<<storageId>>/checkpoints/uids?view=White%20box`, user: 'observer', expectedStatus: 400 },
     // Invalid view
-    { method: 'GET', url: `iaf/ladybug/api/report/${storageName}/<<storageId>>/checkpoints/uids?view=xxx&invert=false`, user: 'tester', expectedStatus: 400 },
+    { method: 'GET', url: `report/${storageName}/<<storageId>>/checkpoints/uids?view=xxx&invert=false`, user: 'tester', expectedStatus: 400 },
     // Missing mandatory query parameter storageIds
-    { method: 'GET', url: `iaf/ladybug/api/report/${storageName}`, user: 'observer', expectedStatus: 400 },
-    { method: 'GET', url: `iaf/ladybug/api/report/shownReports/${storageName}&view=White%20box`, user: 'observer', expectedStatus: 400 },
+    { method: 'GET', url: `report/${storageName}`, user: 'observer', expectedStatus: 400 },
+    { method: 'GET', url: `report/shownReports/${storageName}&view=White%20box`, user: 'observer', expectedStatus: 400 },
   ]
 
   describe('Simple cases that do not depend on anything', () => {
