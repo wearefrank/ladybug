@@ -1,5 +1,5 @@
 /*
-   Copyright 2020-2022, 2024-2025 WeAreFrank!, 2018 Nationale-Nederlanden
+   Copyright 2020-2022, 2024-2026 WeAreFrank!, 2018 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -157,6 +157,9 @@ public class Storage implements LogStorage {
 	@Override
 	public Report getReport(Integer storageId) throws StorageException {
 		Report report = reader.getReport(storageId, writer.getSynchronizeRotate());
+		if (report == null) {
+			throw new StorageException(String.format("Storage [%s] does not have storageId [%d]", getName(), storageId));
+		}
 		report.setStorage(this);
 		return report;
 	}
