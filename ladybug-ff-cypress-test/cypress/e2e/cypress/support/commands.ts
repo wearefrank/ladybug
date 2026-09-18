@@ -24,47 +24,60 @@
 // -- This will overwrite an existing command --
 // Cypress.Commands.overwrite('visit', (originalFn, url, options) => { ... })
 
-const ibisTesterUser = 'tester'
-const ibisTesterPwd = 'IbisTester'
+interface Authentication {
+  username: string;
+  password: string;
+}
 
-declare namespace Cypress {
-  interface Chainable<Subject = any> {
-    inIframeBody(query: string): Chainable<any>
-    clickTableRowWithStorageId(storageId: number): Chainable<any>
-    enterLadybug(): void
-    getNumLadybugReports(): Chainable<any>
-    createReportWithTestPipelineApi(config: string, adapter: string, message: string, username?: string, password?: string): Chainable<any>
-    getNumLadybugReportsForNameFilter(name: string): Chainable<number>
-    createReportInLadybug(config: string, adapter: string, message: string, username?: string, password?: string): Chainable<number>
-    createReportAndOpen(config: string, adapter: string, message: string, username?: string, password?: string);
-    getAllStorageIdsInTable(): Chainable<number[]>
-    guardedCopyReportToTestTab(alias: string)
-    checkTestTabHasReportNamed(name: string): Cypress.Chainable<any>
-    enterFilter(field: string, filter: string)
-    checkActiveFilterSphere(field: string, value: string): Cypress.Chainable<any>
-    apiDeleteAll(storageName: string)
-    apiDeleteAllAsTester(storageName: string)
-    selectTreeNode(path: NodeSelection[]): Cypress.Chainable<any>
-    awaitDebugTree(): void
-    awaitLoadingSpinner(): void
-    logDiag(message: string): void
-    waitForVideo(): void
-    trimmedText(): Chainable<any>
-    checkpointValueEquals(expectedValue: string): void
-    checkpointValueTrimmedEquals(expectedValue: string): void
-    checkpointValueEmpty(): void
-    checkNumCheckpointValueLabels(expectedNumLabels: number): void
-    checkpointValueLabel(index: number): Chainable<any>
-    visitAsTester(): void
-    visitAs(username: string, password: string): void
-    goToEnvironmentVariables(): void
-    enableReportGenerator(): void
-    executeJdbcQuery(): void
-    stopAdapter(configuration: string, adapter: string): void
-    startAdapter(configuration: string, adapter: string): void
-    awaitAdapterStatus(configuration: string, adapter: string, status: string, retries: number): void
-    checkCorrelationIdFromRow(row: unknown, expectedCorrelationId: string): void
-    checkStatusFromRow(row: unknown, expectedStatus: string): void
+export const AUTHENTICATIONS = new Map<string, Authentication>([
+  ['observer', { username: 'observer', password: 'IbisObserver' }],
+  ['dataAdmin', { username: 'dataAdmin', password: 'IbisDataAdmin' }],
+  ['admin', { username: 'admin', password: 'IbisAdmin'}],
+  ['tester', { username: 'tester', password: 'IbisTester' }],
+  // User that does not exist
+  ['xxx', { username: 'xxx', password: 'xxx' }],
+])
+
+declare global {
+  namespace Cypress {
+    interface Chainable<Subject = any> {
+      inIframeBody(query: string): Chainable<any>
+      clickTableRowWithStorageId(storageId: number): Chainable<any>
+      enterLadybug(): void
+      getNumLadybugReports(): Chainable<any>
+      createReportWithTestPipelineApi(config: string, adapter: string, message: string, username?: string, password?: string): Chainable<any>
+      getNumLadybugReportsForNameFilter(name: string): Chainable<number>
+      createReportInLadybug(config: string, adapter: string, message: string, username?: string, password?: string): Chainable<number>
+      createReportAndOpen(config: string, adapter: string, message: string, username?: string, password?: string);
+      getAllStorageIdsInTable(): Chainable<number[]>
+      guardedCopyReportToTestTab(alias: string)
+      checkTestTabHasReportNamed(name: string): Cypress.Chainable<any>
+      enterFilter(field: string, filter: string)
+      checkActiveFilterSphere(field: string, value: string): Cypress.Chainable<any>
+      apiDeleteAll(storageName: string)
+      apiDeleteAllAsTester(storageName: string)
+      apiSetGeneratorEnabledAsTester(enabled: boolean): Chainable<any>
+      selectTreeNode(path: NodeSelection[]): Cypress.Chainable<any>
+      awaitDebugTree(): void
+      awaitLoadingSpinner(): void
+      waitForVideo(): void
+      trimmedText(): Chainable<any>
+      checkpointValueEquals(expectedValue: string): void
+      checkpointValueTrimmedEquals(expectedValue: string): void
+      checkpointValueEmpty(): void
+      checkNumCheckpointValueLabels(expectedNumLabels: number): void
+      checkpointValueLabel(index: number): Chainable<any>
+      visitAsTester(): void
+      visitAs(username: string): void
+      goToEnvironmentVariables(): void
+      enableReportGenerator(): void
+      executeJdbcQuery(): void
+      stopAdapter(configuration: string, adapter: string): void
+      startAdapter(configuration: string, adapter: string): void
+      awaitAdapterStatus(configuration: string, adapter: string, status: string, retries: number): void
+      checkCorrelationIdFromRow(row: unknown, expectedCorrelationId: string): void
+      checkStatusFromRow(row: unknown, expectedStatus: string): void
+    }
   }
 }
 
@@ -306,10 +319,19 @@ Cypress.Commands.add('apiDeleteAllAsTester', (storageName: string) => {
   cy.request({
     method: 'DELETE',
     url: `/iaf/ladybug/api/report/all/${storageName}`,
-    auth: {
-      username: ibisTesterUser,
-      password: ibisTesterPwd
-    }
+    auth: AUTHENTICATIONS.get('tester')!
+  }).then(response => {
+    cy.wrap(response).its('status').should('equal', 200)
+  })
+})
+
+Cypress.Commands.add('apiSetGeneratorEnabledAsTester', (enabled: boolean) => {
+  cy.request({
+    method: 'POST',
+    url: '/iaf/ladybug/api/testtool',
+    auth: AUTHENTICATIONS.get('tester')!,
+    headers: { 'Content-Type': 'application/json' },
+    body: { generatorEnabled: enabled ? 'true' : 'false' }
   }).then(response => {
     cy.wrap(response).its('status').should('equal', 200)
   })
@@ -464,19 +486,13 @@ Cypress.Commands.add('checkpointValueLabel', { prevSubject: false }, (index: num
 
 Cypress.Commands.add('visitAsTester', { prevSubject: false }, () => {
   cy.visit('', {
-    auth: {
-      username: ibisTesterUser,
-      password: ibisTesterPwd
-    }
+    auth: AUTHENTICATIONS.get('tester')!,
   })
 })
 
-Cypress.Commands.add('visitAs', { prevSubject: false }, (username, password) => {
+Cypress.Commands.add('visitAs', { prevSubject: false }, (username: string) => {
   cy.visit('', {
-    auth: {
-      username,
-      password
-    }
+    auth: AUTHENTICATIONS.get(username)!,
   })
 })
 

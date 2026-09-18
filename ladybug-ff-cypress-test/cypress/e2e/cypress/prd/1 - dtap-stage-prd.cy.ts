@@ -1,16 +1,10 @@
-describe('dtap.stage=PRD', () => {
-  /*
-   * The code below is based on a suggestion from the internet, but it does not work.
-   * It lets the browser crash.
-   *
-  Cypress.on('uncaught:exception', (err) => {
-    if (err.message.includes('ResizeObserver loop completed with undelivered notifications')) {
-      return false
-    }
-    return true
-  })
-  */
+import { AUTHENTICATIONS } from "../support/commands"
 
+// Filename starts with 1 so that these texts are executed before other specs.
+// We want to check that the report generator is disabled by default before
+// other tests manipulate the report generator state.
+
+describe('dtap.stage=PRD', () => {
   it('Report generator is disabled by default', () => {
     cy.visitAsTester()
     cy.getNumLadybugReports().then(numReports => {
@@ -31,14 +25,10 @@ describe('dtap.stage=PRD', () => {
       cy.createReportInLadybug('Example1a', 'Adapter1a', 'xxx', 'tester', 'IbisTester')
     })
 
-    const credentialsToTest: Array<{ username: string, pwd: string }> = [
-      { username: 'observer', pwd: 'IbisObserver' },
-      { username: 'admin', pwd: 'IbisAdmin' },
-      { username: 'dataAdmin', pwd: 'IbisDataAdmin' }
-    ]
-    for (const testCase of credentialsToTest) {
-      it(`Cannot Report rerun as ${testCase.username}`, () => {
-        cy.visitAs(testCase.username, testCase.pwd)
+    // Do not test here for non-existing user. Protection of backend API is done in other tests.
+    for (const testUser of Array.from(AUTHENTICATIONS.keys()).filter((user) => user !== 'tester' && user !== 'xxx' )) {
+      it(`Cannot Report rerun as ${testUser}`, () => {
+        cy.visitAs(testUser)
         cy.getNumLadybugReports().should('equal', 1)
         cy.inIframeBody('[data-cy-debug="tableRow"]')
           .find('td:nth-child(2)')
@@ -58,7 +48,7 @@ describe('dtap.stage=PRD', () => {
     }
 
     it("When logged in as IbisTester then rerun allowed", () => {
-      cy.visitAs('tester', 'IbisTester')
+      cy.visitAs('tester')
       cy.getNumLadybugReports().should('equal', 1)
       cy.inIframeBody('[data-cy-debug="tableRow"]')
         .find('td:nth-child(2)')

@@ -90,6 +90,10 @@ public class ReportApi extends ApiBase {
 			return Response.ok(result).build();
 		} catch(HttpNotFoundException e) {
 			return Response.status(Response.Status.NOT_FOUND).entity(e.getMessage()).build();
+		} catch(HttpBadRequestException e) {
+			return Response.status(Response.Status.BAD_REQUEST).entity(e.getMessage()).build();
+		} catch(HttpInternalServerErrorException e) {
+			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e.getMessage()).build();
 		}
 	}
 
@@ -117,8 +121,11 @@ public class ReportApi extends ApiBase {
 			List<String> result = delegate.getCheckpointUids(storageName, storageId, viewName, invert);
 			return Response.ok(result).build();
 		}
-		catch(HttpNotFoundException e) {
-			return Response.status(Response.Status.NOT_FOUND).entity(e.getMessage()).build();
+		catch(HttpBadRequestException e) {
+			return Response.status(Response.Status.BAD_REQUEST).entity(e.getMessage()).build();
+		}
+		catch(HttpInternalServerErrorException e) {
+			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e.getMessage()).build();
 		}
 	}
 
@@ -144,6 +151,10 @@ public class ReportApi extends ApiBase {
 			return Response.ok(result).build();
 		} catch(HttpNotFoundException e) {
 			return Response.status(Response.Status.NOT_FOUND).entity(e.getMessage()).build();
+		} catch(HttpBadRequestException e) {
+			return Response.status(Response.Status.BAD_REQUEST).entity(e.getMessage()).build();
+		} catch(HttpInternalServerErrorException e) {
+			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e.getMessage()).build();
 		}
 	}
 
@@ -168,6 +179,10 @@ public class ReportApi extends ApiBase {
 			return Response.ok(result).build();
 		} catch(HttpNotFoundException e) {
 			return Response.status(Response.Status.NOT_FOUND).entity(e.getMessage()).build();
+		} catch(HttpBadRequestException e) {
+			return Response.status(Response.Status.BAD_REQUEST).entity(e.getMessage()).build();
+		} catch(HttpInternalServerErrorException e) {
+			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e.getMessage()).build();
 		}
 	}
 
