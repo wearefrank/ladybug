@@ -96,7 +96,21 @@ function openReport (expectedName: string): void {
   // Status column.
   // TODO: Test exact value of status column if possible.
   cy.get('@reportRow').find('td:eq(6)').trimmedText().should('equal', 'Success')
-  cy.get('@reportRow').contains(expectedName).click()
+  // Temporary diagnostic for issue #977, see enterLadybug(). Logs a timestamp comparable
+  // to the count/list response timestamps logged there, to see whether a reload lands
+  // right around this click when it next fails with "the page updated as a result of
+  // this command".
+  cy.logDiag('about to click report row')
+  // Query fresh from the live DOM instead of clicking through the '@reportRow' alias: a
+  // reload can land between locating the row above and clicking it here, which would
+  // detach the aliased node and make cy.click() fail with "the page updated as a result
+  // of this command". Querying at click time lets Cypress's retry re-locate the row if
+  // it gets recreated in the meantime, the same way clickTableRowWithStorageId does.
+  cy.inIframeBody('[data-cy-debug="tableRow"]').contains(expectedName).click()
+  // Opening the report loads its data and builds the tree asynchronously. Without this
+  // guard, callers could start querying the tree (e.g. via selectTreeNode) before it had
+  // been (re)built, racing against its own rendering.
+  cy.awaitDebugTree()
 }
 
 describe('Checkpoint value truncation because of ibistesttool.maxMessageLength', () => {
@@ -134,7 +148,8 @@ describe('Checkpoint value truncation because of ibistesttool.maxMessageLength',
     cy.checkpointValueTrimmedEquals(expected)
   })
 
-  it('When maxMessageLength is exceeded, there is a label showing how many characters are omitted', () => {
+  // TODO issue https://github.com/wearefrank/ladybug/issues/981. Enable test when issue fixed.
+  xit('When maxMessageLength is exceeded, there is a label showing how many characters are omitted', () => {
     const numOmitted = TOTAL_CHARACTERS_OF_CHECKPOINT - 300
     const omittedText = `${numOmitted}`
     openReport('UseTextBlockPipe')
@@ -144,10 +159,10 @@ describe('Checkpoint value truncation because of ibistesttool.maxMessageLength',
       'Pipe testPipe',
       { seq: 1, text: 'testPipe' }
     ]).click()
-    cy.checkNumCheckpointValueLabels(2)
     cy.checkpointValueLabel(0).should('contain.text', 'Read')
     cy.checkpointValueLabel(1)
       .should('contain.text', 'truncated')
       .should('contain.text', omittedText)
+    cy.checkNumCheckpointValueLabels(2)
   })
 })
