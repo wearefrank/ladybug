@@ -167,7 +167,7 @@ public class ReportApiImpl {
 		try {
 			report = getReport(storage, storageId);
 		} catch (StorageException e) {
-			throw new HttpInternalServerErrorException(String.format("Could not get report for storage id [%s]", storageId));
+			throw new HttpInternalServerErrorException(String.format("Could not get report for storage id [%s]", storageId), e);
 		}
 		if (report == null)
 			throw new HttpBadRequestException("Could not find report with id [" + storageId + "]");
