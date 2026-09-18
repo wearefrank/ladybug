@@ -67,8 +67,7 @@ describe('dtap.stage=PRD test whether API URLs are safe', () => {
     // Misses mandator query parameter "invert"
     { method: 'GET', url: `iaf/ladybug/api/report/${storageName}/<<storageId>>/checkpoints/uids?view=White%20box`, user: 'observer', expectedStatus: 400 },
     // Invalid view
-    // TODO: This faulty URL is not flagged - produces 200. Fix backend.
-    // { method: 'GET', url: `iaf/ladybug/api/report/${storageName}/<<storageId>>/checkpoints/uids?view=xxx&invert=false`, user: 'tester', expectedStatus: 400 },
+    { method: 'GET', url: `iaf/ladybug/api/report/${storageName}/<<storageId>>/checkpoints/uids?view=xxx&invert=false`, user: 'tester', expectedStatus: 400 },
     // Missing mandatory query parameter storageIds
     { method: 'GET', url: `iaf/ladybug/api/report/${storageName}`, user: 'observer', expectedStatus: 400 },
     { method: 'GET', url: `iaf/ladybug/api/report/shownReports/${storageName}&view=White%20box`, user: 'observer', expectedStatus: 400 },

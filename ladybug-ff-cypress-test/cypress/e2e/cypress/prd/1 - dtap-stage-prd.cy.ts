@@ -1,18 +1,10 @@
 import { AUTHENTICATIONS } from "../support/commands"
 
-describe('dtap.stage=PRD', () => {
-  /*
-   * The code below is based on a suggestion from the internet, but it does not work.
-   * It lets the browser crash.
-   *
-  Cypress.on('uncaught:exception', (err) => {
-    if (err.message.includes('ResizeObserver loop completed with undelivered notifications')) {
-      return false
-    }
-    return true
-  })
-  */
+// Filename starts with 1 so that these texts are executed before other specs.
+// We want to check that the report generator is disabled by default before
+// other tests manipulate the report generator state.
 
+describe('dtap.stage=PRD', () => {
   it('Report generator is disabled by default', () => {
     cy.visitAsTester()
     cy.getNumLadybugReports().then(numReports => {
