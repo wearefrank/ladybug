@@ -139,6 +139,8 @@ describe('Metadata and message context', () => {
 })
 
 describe('Test contents of message context', () => {
+  const requestBody = { hello: 'world' }
+
   before(() => {
     cy.apiDeleteAll(Cypress.env('debugStorageName') as string)
     cy.apiDeleteAll('Test')
@@ -147,7 +149,7 @@ describe('Test contents of message context', () => {
       method: 'GET',
       url,
       headers: { 'Content-Type': 'application/json' },
-      body: { hello: 'world' }
+      body: requestBody
     }).then(resp => {
       expect(resp.status).to.equal(200)
     })
@@ -168,6 +170,11 @@ describe('Test contents of message context', () => {
       .click()
     cy.inIframeBody('app-messagecontext-table')
       .contains('.key', 'Metadata.MimeType')
+      .siblings('[data-cy-messagecontext-table="value"]')
+      .invoke('text')
+      .should('equal', 'application/json')
+    cy.inIframeBody('app-messagecontext-table')
+      .contains('.key', 'Header.content-type')
       .siblings('[data-cy-messagecontext-table="value"]')
       .invoke('text')
       .should('equal', 'application/json')
