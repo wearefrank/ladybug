@@ -155,38 +155,42 @@ public class ReportApiImpl {
 										  int storageId,
 										  String viewName,
 										  boolean invert
-	) throws HttpNotFoundException, HttpBadRequestException {
+	) throws HttpBadRequestException, HttpInternalServerErrorException {
+		Storage storage = testTool.getStorage(storageName);
+		if (storage == null) {
+			throw new HttpBadRequestException(String.format("Unknown storage [%s]", storageName));
+		}
+		Report report;
 		try {
-			Storage storage = testTool.getStorage(storageName);
-			Report report = getReport(storage, storageId);
-			if (report == null)
-				throw new HttpNotFoundException("Could not find report with id [" + storageId + "]");
-			List<String> response = new ArrayList<String>();
-			boolean foundView = false;
-			for (View view : views) {
-				if (view.getName().equals(viewName)) {
-					foundView = true;
-					for (Checkpoint checkpoint : report.getCheckpoints()) {
-						if (view.showCheckpoint(report, checkpoint)) {
-							if (!invert) {
-								response.add(checkpoint.getUid());
-							}
-						} else {
-							if (invert) {
-								response.add(checkpoint.getUid());
-							}
+			report = getReport(storage, storageId);
+		} catch (StorageException e) {
+			throw new HttpInternalServerErrorException(String.format("Could not get report for storage id [%s]", storageId));
+		}
+		if (report == null)
+			throw new HttpBadRequestException("Could not find report with id [" + storageId + "]");
+		List<String> response = new ArrayList<String>();
+		boolean foundView = false;
+		for (View view : views) {
+			if (view.getName().equals(viewName)) {
+				foundView = true;
+				for (Checkpoint checkpoint : report.getCheckpoints()) {
+					if (view.showCheckpoint(report, checkpoint)) {
+						if (!invert) {
+							response.add(checkpoint.getUid());
+						}
+					} else {
+						if (invert) {
+							response.add(checkpoint.getUid());
 						}
 					}
-					break;
 				}
+				break;
 			}
-			if (!foundView) {
-				throw new HttpBadRequestException(String.format("Unknown view [%s]", viewName));
-			}
-			return response;
-		} catch (Exception e) {
-			throw new HttpNotFoundException("Exception while getting report [" + storageId + "] from storage [" + storageName + "]", e);
 		}
+		if (!foundView) {
+			throw new HttpBadRequestException(String.format("Unknown view [%s]", viewName));
+		}
+		return response;
 	}
 
 	public Map<Integer, Map<String, Object>> getReports(String storageName,
