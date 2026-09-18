@@ -208,11 +208,7 @@ public class ReportApiImpl {
 				map.put(storageId, reportEntry);
 			}
 			return map;
-		} catch (HttpBadRequestException e) {
-			throw e;
-		} catch (HttpInternalServerErrorException e) {
-			throw e;
-		} catch (Exception e) {
+		} catch (RuntimeException e) {
 			throw new HttpNotFoundException("Exception while getting report [" + storageIds + "] from storage [" + storageName + "] - detailed error message - " + e + Arrays.toString(e.getStackTrace()), e);
 		}
 	}
@@ -236,11 +232,7 @@ public class ReportApiImpl {
 				}
 			}
 			return map;
-		} catch (HttpBadRequestException e) {
-			throw e;
-		} catch (HttpInternalServerErrorException e) {
-			throw e;
-		} catch (Exception e) {
+		} catch (RuntimeException e) {
 			throw new HttpNotFoundException("Exception while getting report [" + storageIds + "] from storage [" + storageName + "] - detailed error message - " + e + Arrays.toString(e.getStackTrace()), e);
 		}
 	}
