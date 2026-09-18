@@ -82,6 +82,8 @@ public class ReportApi {
 			return ResponseEntity.ok(result);
 		} catch (HttpNotFoundException e) {
 			return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+		} catch (HttpInternalServerErrorException e) {
+			return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 
@@ -135,6 +137,8 @@ public class ReportApi {
 			return ResponseEntity.ok(result);
 		} catch(HttpNotFoundException e) {
 			return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+		} catch (HttpInternalServerErrorException e) {
+			return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 
@@ -149,6 +153,8 @@ public class ReportApi {
 			return ResponseEntity.ok(result);
 		} catch(HttpNotFoundException e) {
 			return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+		} catch (HttpInternalServerErrorException e) {
+			return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 	@DeleteMapping(value = "/{storage}")
