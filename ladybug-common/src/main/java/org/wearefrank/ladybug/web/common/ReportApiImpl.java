@@ -109,7 +109,7 @@ public class ReportApiImpl {
 
 	public Map<String, Object> getReport(String storageName,
 										 int storageId,
-										 boolean globalTransformer) throws HttpNotFoundException, HttpInternalServerErrorException {
+										 boolean globalTransformer) throws HttpNotFoundException, HttpBadRequestException, HttpInternalServerErrorException {
 		return getReportImpl(storageName, storageId, globalTransformer, (report) -> report);
 	}
 
@@ -117,8 +117,11 @@ public class ReportApiImpl {
 			String storageName,
 			int storageId,
 			boolean globalTransformation,
-			Function<Report, T> reportPreparation) throws HttpNotFoundException, HttpInternalServerErrorException {
+			Function<Report, T> reportPreparation) throws HttpNotFoundException, HttpBadRequestException, HttpInternalServerErrorException {
 		Storage storage = testTool.getStorage(storageName);
+		if (storage == null) {
+			throw new HttpBadRequestException(String.format("Unknown storage [%s]", storageName));
+		}
 		Report report = null;
 		try {
 			report = getReport(storage, storageId);
@@ -195,7 +198,7 @@ public class ReportApiImpl {
 
 	public Map<Integer, Map<String, Object>> getReports(String storageName,
 														List<Integer> storageIds,
-														boolean globalTransformer) throws HttpNotFoundException, HttpInternalServerErrorException {
+														boolean globalTransformer) throws HttpNotFoundException, HttpBadRequestException, HttpInternalServerErrorException {
 		try {
 			Storage storage = testTool.getStorage(storageName);
 			Map<Integer, Map<String, Object>> map = new HashMap<>();
@@ -205,6 +208,8 @@ public class ReportApiImpl {
 				map.put(storageId, reportEntry);
 			}
 			return map;
+		} catch (HttpBadRequestException e) {
+			throw e;
 		} catch (HttpInternalServerErrorException e) {
 			throw e;
 		} catch (Exception e) {
@@ -213,7 +218,7 @@ public class ReportApiImpl {
 	}
 
 	public Map<Integer, Map<String, Object>> getReportsForView(
-			String storageName, String viewName, List<Integer> storageIds, boolean globalTransformer) throws HttpNotFoundException, HttpInternalServerErrorException {
+			String storageName, String viewName, List<Integer> storageIds, boolean globalTransformer) throws HttpNotFoundException, HttpBadRequestException, HttpInternalServerErrorException {
 		try {
 			Map<Integer, Map<String, Object>> map = new HashMap<>();
 			if (viewName == null || StringUtils.isBlank(viewName)) {
@@ -231,6 +236,8 @@ public class ReportApiImpl {
 				}
 			}
 			return map;
+		} catch (HttpBadRequestException e) {
+			throw e;
 		} catch (HttpInternalServerErrorException e) {
 			throw e;
 		} catch (Exception e) {
