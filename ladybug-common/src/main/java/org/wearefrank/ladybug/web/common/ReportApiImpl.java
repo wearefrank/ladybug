@@ -155,15 +155,17 @@ public class ReportApiImpl {
 										  int storageId,
 										  String viewName,
 										  boolean invert
-	) throws HttpNotFoundException {
+	) throws HttpNotFoundException, HttpBadRequestException {
 		try {
 			Storage storage = testTool.getStorage(storageName);
 			Report report = getReport(storage, storageId);
 			if (report == null)
 				throw new HttpNotFoundException("Could not find report with id [" + storageId + "]");
 			List<String> response = new ArrayList<String>();
+			boolean foundView = false;
 			for (View view : views) {
 				if (view.getName().equals(viewName)) {
+					foundView = true;
 					for (Checkpoint checkpoint : report.getCheckpoints()) {
 						if (view.showCheckpoint(report, checkpoint)) {
 							if (!invert) {
@@ -177,6 +179,9 @@ public class ReportApiImpl {
 					}
 					break;
 				}
+			}
+			if (!foundView) {
+				throw new HttpBadRequestException(String.format("Unknown view [%s]", viewName));
 			}
 			return response;
 		} catch (Exception e) {

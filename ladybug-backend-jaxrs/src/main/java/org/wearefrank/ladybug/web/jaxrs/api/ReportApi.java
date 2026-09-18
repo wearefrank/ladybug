@@ -120,6 +120,9 @@ public class ReportApi extends ApiBase {
 		catch(HttpNotFoundException e) {
 			return Response.status(Response.Status.NOT_FOUND).entity(e.getMessage()).build();
 		}
+		catch(HttpBadRequestException e) {
+			return Response.status(Response.Status.BAD_REQUEST).entity(e.getMessage()).build();
+		}
 	}
 
 	// TODO issue https://github.com/wearefrank/frank-runner/pull/167.
