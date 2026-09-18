@@ -25,7 +25,8 @@ describe('dtap.stage=PRD', () => {
       cy.createReportInLadybug('Example1a', 'Adapter1a', 'xxx', 'tester', 'IbisTester')
     })
 
-    for (const testUser of Array.from(AUTHENTICATIONS.keys()).filter((user) => user !== 'tester')) {
+    // Do not test here for non-existing user. Protection of backend API is done in other tests.
+    for (const testUser of Array.from(AUTHENTICATIONS.keys()).filter((user) => user !== 'tester' && user !== 'xxx' )) {
       it(`Cannot Report rerun as ${testUser}`, () => {
         cy.visitAs(testUser)
         cy.getNumLadybugReports().should('equal', 1)
