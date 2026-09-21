@@ -6,6 +6,7 @@ interface TestCase {
   method: string;
   url: string;
   user: string;
+  body?: string;
   expectedStatus: number;
 }
 
@@ -19,6 +20,7 @@ function doTest(t: TestCase): void {
     url: `${API_BASE}${t.url}`,
     auth: AUTHENTICATIONS.get(t.user)!,
     headers: { 'Content-Type': 'application/json' },
+    body: t.body,
     failOnStatusCode: false,
   }).then(response => {
     cy.wrap(response).its('status').should('equal', t.expectedStatus)
@@ -64,6 +66,10 @@ describe('dtap.stage=PRD test whether API URLs are safe', () => {
     { method: 'GET', url: `report/${storageName}?storageIds=<<storageId>>`, user: 'tester', expectedStatus: 200 },
     { method: 'GET', url: `report/shownReports/${storageName}?storageIds=<<storageId>>&view=White%20box`, user: 'observer', expectedStatus: 200 },
     { method: 'GET', url: `report/shownReports/${storageName}?storageIds=<<storageId>>&view=White%20box`, user: 'tester', expectedStatus: 200 },
+    { method: 'PUT', url: `report/store/Test`, body: `{"${storageName}": [<<storageId>>]}`, user: 'observer', expectedStatus: 403 },
+    { method: 'PUT', url: `report/store/Test`, body: `{"${storageName}": [<<storageId>>]}`, user: 'dataAdmin', expectedStatus: 200 },
+    { method: 'PUT', url: `report/store/Test`, body: `{"${storageName}": [<<storageId>>]}`, user: 'admin', expectedStatus: 200 },
+    { method: 'PUT', url: `report/store/Test`, body: `{"${storageName}": [<<storageId>>]}`, user: 'tester', expectedStatus: 200 },
     { method: 'DELETE', url: `report/Test?storageIds=<<testStorageId>>`, user: 'observer', expectedStatus: 403 },
     { method: 'DELETE', url: `report/Test?storageIds=<<testStorageId>>`, user: 'dataAdmin', expectedStatus: 200 },
     { method: 'DELETE', url: `report/Test?storageIds=<<testStorageId>>`, user: 'admin', expectedStatus: 200 },
@@ -128,14 +134,20 @@ describe('dtap.stage=PRD test whether API URLs are safe', () => {
       cy.apiDeleteAllAsTester(TEST_STORAGE_NAME)
     })
 
+    function fillPlaceholders(v: string): string {
+      return v
+        .replace('<<storageId>>', `${storageId}`)
+        .replace('<<testStorageId>>', `${testStorageId}`)
+    }
+
     for(const c of withReportCases) {
       it(testCaseToString(c), () => {
-        const url = c.url
-          .replace('<<storageId>>', `${storageId}`)
-          .replace('<<testStorageId>>', `${testStorageId}`);
+        const url = fillPlaceholders(c.url);
+        const body = c.body === undefined ? undefined : fillPlaceholders(c.body);
         const t: TestCase = {
           method: c.method,
           url,
+          body,
           user: c.user,
           expectedStatus: c.expectedStatus,
         }
