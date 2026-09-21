@@ -202,17 +202,6 @@ public class ShownReportBuilder {
 		dest.setStartTime(source.getStartTime());
 	}
 
-	private Map<String, String> toMessageContextStrings(Map<String, Object> messageContext) {
-		if (messageContext == null) {
-			return null;
-		}
-		Map<String, String> result = new HashMap<>();
-		for (Map.Entry<String, Object> entry : messageContext.entrySet()) {
-			result.put(entry.getKey(), entry.getValue() == null ? null : entry.getValue().toString());
-		}
-		return result;
-	}
-
 	private void copyCheckpoint(Checkpoint source, ShownCheckpoint dest) {
 		dest.setName(source.getName());
 		dest.setMessage(source.getMessage());
@@ -229,5 +218,16 @@ public class ShownReportBuilder {
 		dest.setSourceClassName(source.getSourceClassName());
 		dest.setMessageClassName(source.getMessageClassName());
 		dest.setUid(source.getUid());
+	}
+
+	private Map<String, String> toMessageContextStrings(Map<String, Object> messageContext) {
+		if (messageContext == null) {
+			return null;
+		}
+		Map<String, String> result = new HashMap<>();
+		for (Map.Entry<String, Object> entry : messageContext.entrySet()) {
+			result.put(entry.getKey(), entry.getValue() == null ? null : entry.getValue().toString());
+		}
+		return result;
 	}
 }
