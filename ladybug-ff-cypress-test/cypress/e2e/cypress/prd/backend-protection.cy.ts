@@ -64,6 +64,10 @@ describe('dtap.stage=PRD test whether API URLs are safe', () => {
     { method: 'GET', url: `report/${storageName}?storageIds=<<storageId>>`, user: 'tester', expectedStatus: 200 },
     { method: 'GET', url: `report/shownReports/${storageName}?storageIds=<<storageId>>&view=White%20box`, user: 'observer', expectedStatus: 200 },
     { method: 'GET', url: `report/shownReports/${storageName}?storageIds=<<storageId>>&view=White%20box`, user: 'tester', expectedStatus: 200 },
+    { method: 'DELETE', url: `report/Test?storageIds=<<testStorageId>>`, user: 'observer', expectedStatus: 403 },
+    { method: 'DELETE', url: `report/Test?storageIds=<<testStorageId>>`, user: 'dataAdmin', expectedStatus: 200 },
+    { method: 'DELETE', url: `report/Test?storageIds=<<testStorageId>>`, user: 'admin', expectedStatus: 200 },
+    { method: 'DELETE', url: `report/Test?storageIds=<<testStorageId>>`, user: 'tester', expectedStatus: 200 },
 
     // Run API happy.
 
