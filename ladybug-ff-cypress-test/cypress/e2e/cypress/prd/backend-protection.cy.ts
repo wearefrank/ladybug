@@ -18,6 +18,7 @@ function doTest(t: TestCase): void {
     method: t.method,
     url: `${API_BASE}${t.url}`,
     auth: AUTHENTICATIONS.get(t.user)!,
+    headers: { 'Content-Type': 'application/json' },
     failOnStatusCode: false,
   }).then(response => {
     cy.wrap(response).its('status').should('equal', t.expectedStatus)
@@ -53,6 +54,8 @@ describe('dtap.stage=PRD test whether API URLs are safe', () => {
   ];
 
   const withReportCases: TestCase[] = [
+    // Report API happy.
+
     { method: 'GET', url: `report/${storageName}/<<storageId>>`, user: 'observer', expectedStatus: 200 },
     { method: 'GET', url: `report/${storageName}/<<storageId>>`, user: 'tester', expectedStatus: 200 },
     { method: 'GET', url: `report/${storageName}/<<storageId>>/checkpoints/uids?view=White%20box&invert=false`, user: 'observer', expectedStatus: 200 },
@@ -61,6 +64,10 @@ describe('dtap.stage=PRD test whether API URLs are safe', () => {
     { method: 'GET', url: `report/${storageName}?storageIds=<<storageId>>`, user: 'tester', expectedStatus: 200 },
     { method: 'GET', url: `report/shownReports/${storageName}?storageIds=<<storageId>>&view=White%20box`, user: 'observer', expectedStatus: 200 },
     { method: 'GET', url: `report/shownReports/${storageName}?storageIds=<<storageId>>&view=White%20box`, user: 'tester', expectedStatus: 200 },
+
+    // Run API happy.
+
+    { method: 'POST', url: 'runner/run/Test/<<testStorageId>>', user: 'tester', expectedStatus: 200 },
 
     // Invalid URLs
 
@@ -83,7 +90,7 @@ describe('dtap.stage=PRD test whether API URLs are safe', () => {
   describe('With report', () => {
     const TEST_STORAGE_NAME = 'Test';
     let storageId: number;
-    let testTabStorageId: number;
+    let testStorageId: number;
 
     before(() => {
       cy.apiDeleteAllAsTester(storageName)
@@ -104,7 +111,7 @@ describe('dtap.stage=PRD test whether API URLs are safe', () => {
         cy.wrap(response.body).should('have.length', 1)
         storageId = parseInt(response.body[0].storageId)
         cy.apiCopyReportToTestTabAsTester(storageName, storageId).then(newStorageId => {
-          testTabStorageId = newStorageId
+          testStorageId = newStorageId
         })
       })
     })
@@ -116,7 +123,9 @@ describe('dtap.stage=PRD test whether API URLs are safe', () => {
 
     for(const c of withReportCases) {
       it(testCaseToString(c), () => {
-        const url = c.url.replace('<<storageId>>', `${storageId}`);
+        const url = c.url
+          .replace('<<storageId>>', `${storageId}`)
+          .replace('<<testStorageId>>', `${testStorageId}`);
         const t: TestCase = {
           method: c.method,
           url,
