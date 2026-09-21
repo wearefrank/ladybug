@@ -67,6 +67,9 @@ describe('dtap.stage=PRD test whether API URLs are safe', () => {
 
     // Run API happy.
 
+    { method: 'POST', url: 'runner/run/Test/<<testStorageId>>', user: 'observer', expectedStatus: 403 },
+    { method: 'POST', url: 'runner/run/Test/<<testStorageId>>', user: 'dataAdmin', expectedStatus: 403 },
+    { method: 'POST', url: 'runner/run/Test/<<testStorageId>>', user: 'admin', expectedStatus: 403 },
     { method: 'POST', url: 'runner/run/Test/<<testStorageId>>', user: 'tester', expectedStatus: 200 },
 
     // Invalid URLs
