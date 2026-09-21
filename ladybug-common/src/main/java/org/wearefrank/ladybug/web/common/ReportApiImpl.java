@@ -109,7 +109,7 @@ public class ReportApiImpl {
 
 	public Map<String, Object> getReport(String storageName,
 										 int storageId,
-										 boolean globalTransformer) throws HttpNotFoundException, HttpInternalServerErrorException {
+										 boolean globalTransformer) throws HttpNotFoundException {
 		return getReportImpl(storageName, storageId, globalTransformer, (report) -> report);
 	}
 
@@ -117,13 +117,13 @@ public class ReportApiImpl {
 			String storageName,
 			int storageId,
 			boolean globalTransformation,
-			Function<Report, T> reportPreparation) throws HttpNotFoundException, HttpInternalServerErrorException {
+			Function<Report, T> reportPreparation) throws HttpNotFoundException {
 		Storage storage = testTool.getStorage(storageName);
 		Report report = null;
 		try {
 			report = getReport(storage, storageId);
-		} catch(StorageException e) {
-			throw new HttpInternalServerErrorException(e);
+		} catch(Exception e) {
+			throw new HttpNotFoundException(e);
 		}
 		if (report == null)
 			throw new HttpNotFoundException("Could not find report with id [" + storageId + "]");
@@ -155,47 +155,38 @@ public class ReportApiImpl {
 										  int storageId,
 										  String viewName,
 										  boolean invert
-	) throws HttpBadRequestException, HttpInternalServerErrorException {
-		Storage storage = testTool.getStorage(storageName);
-		if (storage == null) {
-			throw new HttpBadRequestException(String.format("Unknown storage [%s]", storageName));
-		}
-		Report report;
+	) throws HttpNotFoundException {
 		try {
-			report = getReport(storage, storageId);
-		} catch (StorageException e) {
-			throw new HttpInternalServerErrorException(String.format("Could not get report for storage id [%s]", storageId));
-		}
-		if (report == null)
-			throw new HttpBadRequestException("Could not find report with id [" + storageId + "]");
-		List<String> response = new ArrayList<String>();
-		boolean foundView = false;
-		for (View view : views) {
-			if (view.getName().equals(viewName)) {
-				foundView = true;
-				for (Checkpoint checkpoint : report.getCheckpoints()) {
-					if (view.showCheckpoint(report, checkpoint)) {
-						if (!invert) {
-							response.add(checkpoint.getUid());
-						}
-					} else {
-						if (invert) {
-							response.add(checkpoint.getUid());
+			Storage storage = testTool.getStorage(storageName);
+			Report report = getReport(storage, storageId);
+			if (report == null)
+				throw new HttpNotFoundException("Could not find report with id [" + storageId + "]");
+			List<String> response = new ArrayList<String>();
+			for (View view : views) {
+				if (view.getName().equals(viewName)) {
+					for (Checkpoint checkpoint : report.getCheckpoints()) {
+						if (view.showCheckpoint(report, checkpoint)) {
+							if (!invert) {
+								response.add(checkpoint.getUid());
+							}
+						} else {
+							if (invert) {
+								response.add(checkpoint.getUid());
+							}
 						}
 					}
+					break;
 				}
-				break;
 			}
+			return response;
+		} catch (Exception e) {
+			throw new HttpNotFoundException("Exception while getting report [" + storageId + "] from storage [" + storageName + "]", e);
 		}
-		if (!foundView) {
-			throw new HttpBadRequestException(String.format("Unknown view [%s]", viewName));
-		}
-		return response;
 	}
 
 	public Map<Integer, Map<String, Object>> getReports(String storageName,
 														List<Integer> storageIds,
-														boolean globalTransformer) throws HttpNotFoundException, HttpInternalServerErrorException {
+														boolean globalTransformer) throws HttpNotFoundException {
 		try {
 			Storage storage = testTool.getStorage(storageName);
 			Map<Integer, Map<String, Object>> map = new HashMap<>();
@@ -205,15 +196,13 @@ public class ReportApiImpl {
 				map.put(storageId, reportEntry);
 			}
 			return map;
-		} catch (HttpInternalServerErrorException e) {
-			throw e;
 		} catch (Exception e) {
 			throw new HttpNotFoundException("Exception while getting report [" + storageIds + "] from storage [" + storageName + "] - detailed error message - " + e + Arrays.toString(e.getStackTrace()), e);
 		}
 	}
 
 	public Map<Integer, Map<String, Object>> getReportsForView(
-			String storageName, String viewName, List<Integer> storageIds, boolean globalTransformer) throws HttpNotFoundException, HttpInternalServerErrorException {
+			String storageName, String viewName, List<Integer> storageIds, boolean globalTransformer) throws HttpNotFoundException {
 		try {
 			Map<Integer, Map<String, Object>> map = new HashMap<>();
 			if (viewName == null || StringUtils.isBlank(viewName)) {
@@ -231,8 +220,6 @@ public class ReportApiImpl {
 				}
 			}
 			return map;
-		} catch (HttpInternalServerErrorException e) {
-			throw e;
 		} catch (Exception e) {
 			throw new HttpNotFoundException("Exception while getting report [" + storageIds + "] from storage [" + storageName + "] - detailed error message - " + e + Arrays.toString(e.getStackTrace()), e);
 		}

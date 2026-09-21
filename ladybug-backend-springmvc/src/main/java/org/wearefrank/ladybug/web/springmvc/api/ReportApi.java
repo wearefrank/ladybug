@@ -82,8 +82,6 @@ public class ReportApi {
 			return ResponseEntity.ok(result);
 		} catch (HttpNotFoundException e) {
 			return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
-		} catch (HttpInternalServerErrorException e) {
-			return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 
@@ -109,10 +107,8 @@ public class ReportApi {
 		try {
 			List<String> result = delegate.getCheckpointUids(storageName, storageId, viewName, invert);
 			return ResponseEntity.ok(result);
-		} catch(HttpBadRequestException e) {
-			return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
-		} catch(HttpInternalServerErrorException e) {
-			return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+		} catch (HttpNotFoundException e) {
+			return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
 		}
 	}
 
@@ -137,8 +133,6 @@ public class ReportApi {
 			return ResponseEntity.ok(result);
 		} catch(HttpNotFoundException e) {
 			return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
-		} catch (HttpInternalServerErrorException e) {
-			return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 
@@ -153,8 +147,6 @@ public class ReportApi {
 			return ResponseEntity.ok(result);
 		} catch(HttpNotFoundException e) {
 			return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
-		} catch (HttpInternalServerErrorException e) {
-			return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 	@DeleteMapping(value = "/{storage}")
