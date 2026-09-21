@@ -95,15 +95,15 @@ describe('Metadata and message context', () => {
       'Pipeline Conclusion/IngestDocument',
       'Pipeline Conclusion/IngestDocument'
     ]).click()
-    cy.inIframeBody('app-metadata-table').should('not.exist')
+    cy.inIframeBody('app-checkpoint-metadata-table').should('not.exist')
     cy.inIframeBody('[data-cy-open-metadata-table]')
       .should('not.be.checked')
       .check()
-    cy.inIframeBody('app-metadata-table').contains('Source class name')
+    cy.inIframeBody('app-checkpoint-metadata-table').contains('Source class name')
     cy.inIframeBody('[data-cy-open-metadata-table]')
       .should('be.checked')
       .uncheck()
-    cy.inIframeBody('app-metadata-table').should('not.exist')
+    cy.inIframeBody('app-checkpoint-metadata-table').should('not.exist')
   })
 
   it('Show metadata and message context together', () => {
@@ -116,7 +116,7 @@ describe('Metadata and message context', () => {
       'Pipeline Conclusion/IngestDocument'
     ]).click()
     cy.inIframeBody('app-messagecontext-table').should('not.exist')
-    cy.inIframeBody('app-metadata-table').should('not.exist')
+    cy.inIframeBody('app-checkpoint-metadata-table').should('not.exist')
     cy.inIframeBody('[data-cy-open-messagecontext-table]')
       .should('not.be.checked')
       .check()
@@ -124,7 +124,7 @@ describe('Metadata and message context', () => {
       .should('not.be.checked')
       .check()
     cy.inIframeBody('app-messagecontext-table').contains('Header.user-agent')
-    cy.inIframeBody('app-metadata-table').contains('Source class name')
+    cy.inIframeBody('app-checkpoint-metadata-table').contains('Source class name')
     cy.inIframeBody('[data-cy-open-messagecontext-table]')
       .should('be.checked')
       .uncheck()
@@ -132,7 +132,7 @@ describe('Metadata and message context', () => {
       .should('be.checked')
       .uncheck()
     cy.inIframeBody('app-messagecontext-table').should('not.exist')
-    cy.inIframeBody('app-metadata-table').should('not.exist')
+    cy.inIframeBody('app-checkpoint-metadata-table').should('not.exist')
   })
 })
 
