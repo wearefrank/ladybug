@@ -56,6 +56,7 @@ declare global {
       checkActiveFilterSphere(field: string, value: string): Cypress.Chainable<any>
       apiDeleteAll(storageName: string)
       apiDeleteAllAsTester(storageName: string)
+      apiCopyReportToTestTabAsTester(storageName: string, storageId: number): Chainable<number>
       apiSetGeneratorEnabledAsTester(enabled: boolean): Chainable<any>
       selectTreeNode(path: NodeSelection[]): Cypress.Chainable<any>
       awaitDebugTree(): void
@@ -322,6 +323,19 @@ Cypress.Commands.add('apiDeleteAllAsTester', (storageName: string) => {
     auth: AUTHENTICATIONS.get('tester')!
   }).then(response => {
     cy.wrap(response).its('status').should('equal', 200)
+  })
+})
+
+Cypress.Commands.add('apiCopyReportToTestTabAsTester', (storageName: string, storageId: number) => {
+  return cy.request({
+    method: 'PUT',
+    url: '/iaf/ladybug/api/report/store/Test',
+    auth: AUTHENTICATIONS.get('tester')!,
+    headers: { 'Content-Type': 'application/json' },
+    body: { [storageName]: [storageId] }
+  }).then(response => {
+    cy.wrap(response).its('status').should('equal', 200)
+    return cy.wrap(response.body[0].storageId as number)
   })
 })
 

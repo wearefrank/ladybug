@@ -52,7 +52,7 @@ describe('dtap.stage=PRD test whether API URLs are safe', () => {
     { method: 'GET', url: `metadata/${storageName}count`, user: 'observer', expectedStatus: 400 },
   ];
 
-  const reportApiCases: TestCase[] = [
+  const withReportCases: TestCase[] = [
     { method: 'GET', url: `report/${storageName}/<<storageId>>`, user: 'observer', expectedStatus: 200 },
     { method: 'GET', url: `report/${storageName}/<<storageId>>`, user: 'tester', expectedStatus: 200 },
     { method: 'GET', url: `report/${storageName}/<<storageId>>/checkpoints/uids?view=White%20box&invert=false`, user: 'observer', expectedStatus: 200 },
@@ -81,7 +81,9 @@ describe('dtap.stage=PRD test whether API URLs are safe', () => {
 
 
   describe('With report', () => {
+    const TEST_STORAGE_NAME = 'Test';
     let storageId: number;
+    let testTabStorageId: number;
 
     before(() => {
       cy.apiDeleteAllAsTester(storageName)
@@ -101,14 +103,18 @@ describe('dtap.stage=PRD test whether API URLs are safe', () => {
       }).then(response => {
         cy.wrap(response.body).should('have.length', 1)
         storageId = parseInt(response.body[0].storageId)
+        cy.apiCopyReportToTestTabAsTester(storageName, storageId).then(newStorageId => {
+          testTabStorageId = newStorageId
+        })
       })
     })
 
     afterEach(() => {
       cy.apiDeleteAllAsTester(storageName)
+      cy.apiDeleteAllAsTester(TEST_STORAGE_NAME)
     })
 
-    for(const c of reportApiCases) {
+    for(const c of withReportCases) {
       it(testCaseToString(c), () => {
         const url = c.url.replace('<<storageId>>', `${storageId}`);
         const t: TestCase = {
