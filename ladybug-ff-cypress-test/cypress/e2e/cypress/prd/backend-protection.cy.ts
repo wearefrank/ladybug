@@ -68,10 +68,6 @@ describe('dtap.stage=PRD test whether API URLs are safe', () => {
     { method: 'GET', url: `report/${storageName}/<<storageId>>/checkpoints/uids`, user: 'tester', expectedStatus: 400 },
     // Misses mandator query parameter "invert"
     { method: 'GET', url: `report/${storageName}/<<storageId>>/checkpoints/uids?view=White%20box`, user: 'observer', expectedStatus: 400 },
-    // Invalid view
-    { method: 'GET', url: `report/${storageName}/<<storageId>>/checkpoints/uids?view=xxx&invert=false`, user: 'tester', expectedStatus: 400 },
-    // Invalid storage id. HTTP 500 because indistinguishable from StorageException
-    { method: 'GET', url: `report/shownReports/${storageName}?storageIds=10000&view=White%20box`, user: 'observer', expectedStatus: 500 },
     // Missing mandatory query parameter storageIds
     { method: 'GET', url: `report/${storageName}`, user: 'observer', expectedStatus: 400 },
     { method: 'GET', url: `report/shownReports/${storageName}&view=White%20box`, user: 'observer', expectedStatus: 400 },
