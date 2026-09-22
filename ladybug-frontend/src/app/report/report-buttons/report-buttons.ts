@@ -163,13 +163,13 @@ export class ReportButtons implements OnInit, OnDestroy {
     this.downloadRequest.emit(downloadOptions);
   }
 
-  protected toggleMetadataTable(): void {
-    this.clientSettingsService.setMetadataTableVisible(!this.clientSettingsService.isMetadataTableVisible());
+  protected onMetadataTableVisibleChange(event: Event): void {
+    const checked = (event.target as HTMLInputElement).checked;
+    this.clientSettingsService.setMetadataTableVisible(checked);
   }
 
-  protected toggleMessageContextTable(): void {
-    this.clientSettingsService.setMessageContextTableVisible(
-      !this.clientSettingsService.isMessageContextTableVisible(),
-    );
+  protected onMessageContextTableVisibleChange(event: Event): void {
+    const checked = (event.target as HTMLInputElement).checked;
+    this.clientSettingsService.setMessageContextTableVisible(checked);
   }
 }
