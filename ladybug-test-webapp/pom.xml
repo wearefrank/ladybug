@@ -11,7 +11,8 @@
   <artifactId>ladybug-test-webapp</artifactId>
   <packaging>war</packaging>
 
-  <name>Ladybug Test Tool Test Webapp that tests ladybug-backend-jaxrs</name>
+  <name>Wrapper of test webapp to handle JAX-RS auth.</name>
+
   <description>Simple vanilla webapp to test Ladybug</description>
 
   <properties>

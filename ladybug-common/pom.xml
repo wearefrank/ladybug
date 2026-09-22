@@ -10,7 +10,7 @@
 
   <artifactId>ladybug-common</artifactId>
 
-  <name>Ladybug common</name>
+  <name>Backend of Ladybug</name>
 
   <dependencies>
     <dependency>

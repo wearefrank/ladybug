@@ -10,7 +10,8 @@
 
   <artifactId>ladybug-test-webapp-common</artifactId>
 
-  <name>ladybug-test-webapp-common</name>
+  <name>Test webapp of Ladybug</name>
+
   <description>Common code for Ladybug test webapps</description>
 
   <properties>

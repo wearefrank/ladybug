@@ -10,7 +10,8 @@
 
   <artifactId>ladybug-spring-boot-test-webapp</artifactId>
 
-  <name>ladybug-spring-boot-test-webapp</name>
+  <name>Wrapper of test webapp to handle Spring MVC auth.</name>
+
   <description>Test app of ladybug-backend-springmvc based on Spring Boot that can be run from Maven without external Tomcat</description>
 
   <properties />

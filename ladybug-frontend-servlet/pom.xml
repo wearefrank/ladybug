@@ -12,7 +12,7 @@
   <artifactId>ladybug-frontend-servlet</artifactId>
   <version>${revision}</version>
 
-  <name>Ladybug servlet that provides ladybug-frontend</name>
+  <name>Servlet that provides ladybug-frontend</name>
 
   <dependencies>
     <dependency>
