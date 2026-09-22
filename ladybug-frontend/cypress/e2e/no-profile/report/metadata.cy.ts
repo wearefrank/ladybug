@@ -50,8 +50,10 @@ describe('Metadata', () => {
     cy.get('[data-cy-open-metadata-table]').should('be.checked');
     cy.get('[data-cy-metadata-table="table"]').should('exist');
     assertMetadataCheckboxConsistentWithTable();
-    // Selecting another checkpoint hides the table again; the checkbox must follow.
+    // The setting is global, so selecting another checkpoint keeps the table open; the checkbox must stay consistent.
     cy.clickEndCheckpointOfThreeNodeReport();
+    cy.get('[data-cy-open-metadata-table]').should('be.checked');
+    cy.get('[data-cy-metadata-table="table"]').should('be.visible');
     assertMetadataCheckboxConsistentWithTable();
   });
 });

@@ -231,8 +231,6 @@ export class CheckpointValueComponent implements OnInit, OnDestroy {
     if (originalCheckpoint.report === undefined) {
       throw new Error('CheckpointValueComponent.neworiginalCheckpoint(): Checkpoint does not have its report defined');
     }
-    this.clientSettingsService.setMetadataTableVisible(false);
-    this.clientSettingsService.setMessageContextTableVisible(false);
     this.originalCheckpoint = originalCheckpoint;
     this.emptyIsNull = this.originalCheckpoint.message === null;
     const requestedEditorContents: string =

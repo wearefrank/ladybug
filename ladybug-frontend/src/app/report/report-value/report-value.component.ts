@@ -322,7 +322,6 @@ export class ReportValueComponent implements OnInit, OnDestroy {
     // in the Angular zone, so we have to run in the Angular zone
     // explicitly.
     this.ngZone.run(() => {
-      this.clientSettingsService.setMetadataTableVisible(false);
       this.report = report;
       this.editedName = this.report.name;
       this.editedDescription = this.getEditorTextOfNullable(this.report.description);

@@ -64,8 +64,10 @@ describe('Message context', () => {
     // with no content and collapses to zero height; assert it exists, not that it is visible.
     cy.get('[data-cy-messagecontext-table="table"]').should('exist');
     assertMessageContextCheckboxConsistentWithTable();
-    // Selecting another checkpoint hides the table again; the checkbox must follow.
+    // The setting is global, so selecting another checkpoint keeps the table open; the checkbox must stay consistent.
     cy.clickEndCheckpointOfThreeNodeReport();
+    cy.get('[data-cy-open-messagecontext-table]').should('be.checked');
+    cy.get('[data-cy-messagecontext-table="table"]').should('be.visible');
     assertMessageContextCheckboxConsistentWithTable();
   });
 });
