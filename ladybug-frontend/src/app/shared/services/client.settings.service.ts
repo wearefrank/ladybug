@@ -15,8 +15,6 @@ export class ClientSettingsService {
   private tableSpacingSubject = new BehaviorSubject<number>(this.getTableSpacing());
   private amountOfRecordsInTableSubject = new BehaviorSubject<number>(this.getAmountOfRecordsInTable());
   private showStorageIdsInTestTabSubject = new BehaviorSubject<boolean>(this.isShowStorageIdsInTestTab());
-  // Not persisted to localStorage: this is per-node UI state, reset whenever a different
-  // report or checkpoint is selected, not a durable user preference.
   private metadataTableVisibleSubject = new BehaviorSubject<boolean>(false);
   private messageContextTableVisibleSubject = new BehaviorSubject<boolean>(false);
 
