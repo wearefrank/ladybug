@@ -30,17 +30,11 @@ function doTest(t: TestCase): void {
 describe('dtap.stage=PRD test whether API URLs are safe', () => {
   const storageName = Cypress.env('debugStorageName') as string;
 
-  // TODO: Add a test user that has no roles and add tests that it has no rights. Requires restart of backend so postponed.
   const simpleCases: TestCase[] = [
-    /*
-     * MetadataApi
-     */
-
-    // Valid requests.
-
     { method: 'GET', url: `metadata/${storageName}?metadataNames=storageId`, user: 'observer', expectedStatus: 200 },
     { method: 'GET', url: `metadata/${storageName}?metadataNames=storageId`, user: 'tester', expectedStatus: 200 },
     { method: 'GET', url: `metadata/${storageName}?metadataNames=storageId`, user: 'xxx', expectedStatus: 401 },
+    { method: 'GET', url: `metadata/${storageName}?metadataNames=storageId`, user: 'withoutRoles', expectedStatus: 403 },
     { method: 'GET', url: `metadata/${storageName}/userHelp?metadataNames=storageId`, user: 'observer', expectedStatus: 200 },
     { method: 'GET', url: `metadata/${storageName}/userHelp?metadataNames=storageId`, user: 'tester', expectedStatus: 200 },
     { method: 'GET', url: `metadata/${storageName}/userHelp?metadataNames=storageId`, user: 'xxx', expectedStatus: 401 },
@@ -56,8 +50,6 @@ describe('dtap.stage=PRD test whether API URLs are safe', () => {
   ];
 
   const withReportCases: TestCase[] = [
-    // Report API happy.
-
     { method: 'GET', url: `report/${storageName}/<<storageId>>`, user: 'observer', expectedStatus: 200 },
     { method: 'GET', url: `report/${storageName}/<<storageId>>`, user: 'tester', expectedStatus: 200 },
     { method: 'GET', url: `report/${storageName}/<<storageId>>/checkpoints/uids?view=White%20box&invert=false`, user: 'observer', expectedStatus: 200 },
@@ -74,8 +66,6 @@ describe('dtap.stage=PRD test whether API URLs are safe', () => {
     { method: 'DELETE', url: `report/Test?storageIds=<<testStorageId>>`, user: 'dataAdmin', expectedStatus: 200 },
     { method: 'DELETE', url: `report/Test?storageIds=<<testStorageId>>`, user: 'admin', expectedStatus: 200 },
     { method: 'DELETE', url: `report/Test?storageIds=<<testStorageId>>`, user: 'tester', expectedStatus: 200 },
-
-    // Run API happy.
 
     { method: 'POST', url: 'runner/run/Test/<<testStorageId>>', user: 'observer', expectedStatus: 403 },
     { method: 'POST', url: 'runner/run/Test/<<testStorageId>>', user: 'dataAdmin', expectedStatus: 403 },
