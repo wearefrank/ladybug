@@ -15,6 +15,9 @@
 */
 package org.wearefrank.ladybug.util;
 
+import java.beans.Encoder;
+import java.beans.Expression;
+import java.beans.PersistenceDelegate;
 import java.beans.XMLEncoder;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -307,6 +310,7 @@ public class Export {
 		try {
 			gzipOutputStream = new GZIPOutputStream(byteArrayOutputStream);
 			xmlEncoder = new XMLEncoder(gzipOutputStream);
+			registerMediaTypePersistenceDelegate(xmlEncoder);
 			xmlEncoder.writeObject(TestTool.getVersion());
 			xmlEncoder.writeObject(report);
 		} finally {
@@ -314,6 +318,30 @@ public class Export {
 			closeOutputStream(gzipOutputStream, "closing gzipOutputStream", log);
 		}
 		return byteArrayOutputStream.toByteArray();
+	}
+
+	// org.springframework.http.MediaType (e.g. held by a checkpoint's messageContext, see
+	// https://github.com/wearefrank/ladybug/issues/514) has no public no-arg constructor, so
+	// XMLEncoder cannot reconstruct it via reflection by default: it logs an
+	// InstantiationException and "Continuing ..." to stderr for every such value and omits it
+	// from the output. Registering this delegate tells XMLEncoder to instead persist a MediaType
+	// as a call to its own MediaType.parseMediaType(String) factory method, which both avoids the
+	// failed reflection attempt and keeps the value in the exported file. Resolved by class name
+	// through reflection, instead of a compile-time import/dependency on spring-web, because this
+	// module does not otherwise depend on it (see also MessageEncoderImpl.toString()).
+	private static void registerMediaTypePersistenceDelegate(XMLEncoder xmlEncoder) {
+		try {
+			Class<?> mediaTypeClass = Class.forName("org.springframework.http.MediaType");
+			xmlEncoder.setPersistenceDelegate(mediaTypeClass, new PersistenceDelegate() {
+				@Override
+				protected Expression instantiate(Object oldInstance, Encoder out) {
+					return new Expression(oldInstance, mediaTypeClass, "parseMediaType", new Object[] { oldInstance.toString() });
+				}
+			});
+		} catch (ClassNotFoundException e) {
+			// org.springframework.http.MediaType is not on the classpath in this environment, so
+			// no report can contain one and there is nothing to register a delegate for.
+		}
 	}
 
 	public static byte[] getReportBytes(Report report) throws StorageException {
