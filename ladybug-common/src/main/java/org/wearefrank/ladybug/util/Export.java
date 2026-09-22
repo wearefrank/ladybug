@@ -339,8 +339,10 @@ public class Export {
 				}
 			});
 		} catch (ClassNotFoundException e) {
-			// org.springframework.http.MediaType is not on the classpath in this environment, so
-			// no report can contain one and there is nothing to register a delegate for.
+			// Thrown by Class.forName() above when org.springframework.http.MediaType is not on
+			// the classpath (e.g. some ladybug-common unit tests run without spring-web). In that
+			// case no report can contain a MediaType instance, so there is nothing to register a
+			// delegate for.
 		}
 	}
 
