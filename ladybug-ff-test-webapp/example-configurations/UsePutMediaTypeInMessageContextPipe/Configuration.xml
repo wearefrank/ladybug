@@ -1,0 +1,37 @@
+<Configuration
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:noNamespaceSchemaLocation="../FrankConfig.xsd"
+>
+	<!--
+		Reproduces https://github.com/wearefrank/ladybug/issues/514 via report Download (not copy).
+
+		PutMediaTypeInMessageContextPipe attaches an org.springframework.http.MediaType instance
+		to the pipeline message's own context (Metadata.MimeType), instead of putting it in a
+		session variable. Unlike a checkpoint's message (which Ladybug immediately converts to a
+		String when the checkpoint is created, see PutMediaTypeInSessionPipe), a checkpoint's
+		messageContext map is stored as-is, so the MediaType instance stays a live object in the
+		stored report.
+
+		Export.getReportBytesPortable(), used when downloading a single report as a .ttr file,
+		serializes the whole Report/Checkpoint object graph with java.beans.XMLEncoder without
+		installing a custom ExceptionListener. XMLEncoder cannot reconstruct MediaType via
+		reflection (no public no-arg constructor), so this logs:
+
+			java.lang.InstantiationException: org.springframework.http.MediaType
+			Continuing ...
+			java.lang.RuntimeException: failed to evaluate: <unbound>=Class.new();
+			Continuing ...
+
+		Trigger with a GET request to: <context path>/api/putMediaTypeInMessageContext
+		Then download the resulting report from the Debug tab to see the log lines above.
+	-->
+	<Adapter name="UsePutMediaTypeInMessageContextPipe">
+		<Receiver>
+			<ApiListener uriPattern="putMediaTypeInMessageContext" method="GET" />
+		</Receiver>
+		<Pipeline>
+			<Pipe className="org.wearefrank.ladybug.ff.test.webapp.PutMediaTypeInMessageContextPipe"
+				name="testPipe" />
+		</Pipeline>
+	</Adapter>
+</Configuration>
