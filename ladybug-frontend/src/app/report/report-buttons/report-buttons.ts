@@ -4,6 +4,7 @@ import { StubStrategy } from '../../shared/enums/stub-strategy';
 import { FormsModule } from '@angular/forms';
 import { TestResult } from '../../shared/interfaces/test-result';
 import { AppVariablesService } from '../../shared/services/app.variables.service';
+import { ClientSettingsService } from '../../shared/services/client.settings.service';
 import {
   NgbDropdown,
   NgbDropdownButtonItem,
@@ -19,18 +20,7 @@ export interface ReportButtonsState {
   saveAllowed: boolean;
 }
 
-export type ButtonCommand =
-  | 'close'
-  | 'makeNull'
-  | 'prettify'
-  | 'save'
-  | 'copyReport'
-  | 'rerun'
-  | 'customReportAction'
-  | 'hideMetadata'
-  | 'showMetadata'
-  | 'hideMessageContext'
-  | 'showMessageContext';
+export type ButtonCommand = 'close' | 'makeNull' | 'prettify' | 'save' | 'copyReport' | 'rerun' | 'customReportAction';
 
 export interface DownloadOptions {
   downloadReport: boolean;
@@ -59,7 +49,6 @@ export class ReportButtons implements OnInit, OnDestroy {
   @Input({ required: true }) state$!: Observable<ReportButtonsState>;
   @Input() originalCheckpointStubStrategy$?: Observable<number | undefined>;
   @Input({ required: true }) originalReportStubStrategy$!: Observable<string | null | undefined>;
-  @Input({ required: true }) reset$!: Observable<void>;
   @Input({ required: true }) rerunResult$!: Observable<TestResult | undefined>;
 
   protected state: ReportButtonsState = {
@@ -75,6 +64,7 @@ export class ReportButtons implements OnInit, OnDestroy {
   protected metadataTableVisible = false;
   protected messageContextTableVisible = false;
   protected appVariablesService = inject(AppVariablesService);
+  private clientSettingsService = inject(ClientSettingsService);
   private ngZone = inject(NgZone);
   private subscriptions = new Subscription();
 
@@ -108,8 +98,13 @@ export class ReportButtons implements OnInit, OnDestroy {
       }),
     );
     this.subscriptions.add(
-      this.reset$.subscribe(() => {
-        this.ngZone.run(() => this.reset());
+      this.clientSettingsService.metadataTableVisibleObservable.subscribe((visible) => {
+        this.ngZone.run(() => (this.metadataTableVisible = visible));
+      }),
+    );
+    this.subscriptions.add(
+      this.clientSettingsService.messageContextTableVisibleObservable.subscribe((visible) => {
+        this.ngZone.run(() => (this.messageContextTableVisible = visible));
       }),
     );
     this.subscriptions.add(
@@ -169,25 +164,12 @@ export class ReportButtons implements OnInit, OnDestroy {
   }
 
   protected toggleMetadataTable(): void {
-    this.metadataTableVisible = !this.metadataTableVisible;
-    if (this.metadataTableVisible) {
-      this.reportCommand.emit('showMetadata');
-    } else {
-      this.reportCommand.emit('hideMetadata');
-    }
+    this.clientSettingsService.setMetadataTableVisible(!this.clientSettingsService.isMetadataTableVisible());
   }
 
   protected toggleMessageContextTable(): void {
-    this.messageContextTableVisible = !this.messageContextTableVisible;
-    if (this.messageContextTableVisible) {
-      this.reportCommand.emit('showMessageContext');
-    } else {
-      this.reportCommand.emit('hideMessageContext');
-    }
-  }
-
-  private reset(): void {
-    this.metadataTableVisible = false;
-    this.messageContextTableVisible = false;
+    this.clientSettingsService.setMessageContextTableVisible(
+      !this.clientSettingsService.isMessageContextTableVisible(),
+    );
   }
 }
