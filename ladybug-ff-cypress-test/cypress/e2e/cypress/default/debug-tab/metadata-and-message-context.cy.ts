@@ -76,15 +76,13 @@ describe('Metadata and message context', () => {
       'Pipeline Conclusion/IngestDocument'
     ]).click()
     cy.inIframeBody('app-messagecontext-table').should('not.exist')
-    // TODO: when data-cy tags are updated, update this Cypress query.
-    // Also do this for other tests in this file.
     cy.inIframeBody('[data-cy-open-messagecontext-table]')
-      .should('contain', 'Show messagecontext')
-      .click()
+      .should('not.be.checked')
+      .check()
     cy.inIframeBody('app-messagecontext-table').contains('Header.user-agent')
     cy.inIframeBody('[data-cy-open-messagecontext-table]')
-      .should('contain', 'Hide messagecontext')
-      .click()
+      .should('be.checked')
+      .uncheck()
     cy.inIframeBody('app-messagecontext-table').should('not.exist')
   })
 
@@ -97,15 +95,15 @@ describe('Metadata and message context', () => {
       'Pipeline Conclusion/IngestDocument',
       'Pipeline Conclusion/IngestDocument'
     ]).click()
-    cy.inIframeBody('app-metadata-table').should('not.exist')
+    cy.inIframeBody('app-checkpoint-metadata-table').should('not.exist')
     cy.inIframeBody('[data-cy-open-metadata-table]')
-      .should('contain', 'Show metadata')
-      .click()
-    cy.inIframeBody('app-metadata-table').contains('Source class name')
+      .should('not.be.checked')
+      .check()
+    cy.inIframeBody('app-checkpoint-metadata-table').contains('Source class name')
     cy.inIframeBody('[data-cy-open-metadata-table]')
-      .should('contain', 'Hide metadata')
-      .click()
-    cy.inIframeBody('app-metadata-table').should('not.exist')
+      .should('be.checked')
+      .uncheck()
+    cy.inIframeBody('app-checkpoint-metadata-table').should('not.exist')
   })
 
   it('Show metadata and message context together', () => {
@@ -118,22 +116,65 @@ describe('Metadata and message context', () => {
       'Pipeline Conclusion/IngestDocument'
     ]).click()
     cy.inIframeBody('app-messagecontext-table').should('not.exist')
-    cy.inIframeBody('app-metadata-table').should('not.exist')
+    cy.inIframeBody('app-checkpoint-metadata-table').should('not.exist')
     cy.inIframeBody('[data-cy-open-messagecontext-table]')
-      .should('contain', 'Show messagecontext')
-      .click()
+      .should('not.be.checked')
+      .check()
     cy.inIframeBody('[data-cy-open-metadata-table]')
-      .should('contain', 'Show metadata')
-      .click()
+      .should('not.be.checked')
+      .check()
     cy.inIframeBody('app-messagecontext-table').contains('Header.user-agent')
-    cy.inIframeBody('app-metadata-table').contains('Source class name')
+    cy.inIframeBody('app-checkpoint-metadata-table').contains('Source class name')
     cy.inIframeBody('[data-cy-open-messagecontext-table]')
-      .should('contain', 'Hide messagecontext')
-      .click()
+      .should('be.checked')
+      .uncheck()
     cy.inIframeBody('[data-cy-open-metadata-table]')
-      .should('contain', 'Hide metadata')
-      .click()
+      .should('be.checked')
+      .uncheck()
     cy.inIframeBody('app-messagecontext-table').should('not.exist')
-    cy.inIframeBody('app-metadata-table').should('not.exist')
+    cy.inIframeBody('app-checkpoint-metadata-table').should('not.exist')
+  })
+})
+
+describe('Test contents of message context', () => {
+  const requestBody = { hello: 'world' }
+
+  before(() => {
+    cy.apiDeleteAll(Cypress.env('debugStorageName') as string)
+    cy.apiDeleteAll('Test')
+    const url = Cypress.config('baseUrl') + '/api/service1a'
+    cy.request({
+      method: 'GET',
+      url,
+      headers: { 'Content-Type': 'application/json' },
+      body: requestBody
+    }).then(resp => {
+      expect(resp.status).to.equal(200)
+    })
+  })
+
+  it('Mime type is a meaningful string', () => {
+    cy.visit('')
+    cy.getNumLadybugReports()
+    cy.inIframeBody('[data-cy-debug="tableRow"]').should('have.length', 1)
+    cy.inIframeBody('[data-cy-debug="tableRow"]').click()
+    cy.selectTreeNode([
+      'Pipeline Example1a/Adapter1a',
+      'Pipeline Example1a/Adapter1a'
+    ]).click()
+    cy.inIframeBody('app-messagecontext-table').should('not.exist')
+    cy.inIframeBody('[data-cy-open-messagecontext-table]')
+      .should('not.be.checked')
+      .check()
+    cy.inIframeBody('app-messagecontext-table')
+      .contains('.key', 'Metadata.MimeType')
+      .siblings('[data-cy-messagecontext-table="value"]')
+      .invoke('text')
+      .should('equal', 'application/json')
+    cy.inIframeBody('app-messagecontext-table')
+      .contains('.key', 'Header.content-type')
+      .siblings('[data-cy-messagecontext-table="value"]')
+      .invoke('text')
+      .should('equal', 'application/json')
   })
 })
