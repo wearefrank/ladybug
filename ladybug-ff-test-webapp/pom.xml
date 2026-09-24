@@ -4,9 +4,14 @@
 	<groupId>org.wearefrank</groupId>
 	<artifactId>ladybug-ff-test-webapp</artifactId>
 	<version>${revision}</version>
+	<name>Ladybug FF! test webapp</name>
+	<description>Test webapp for Ladybug + FF! that adds custom code</description>
 	<packaging>war</packaging>
 	<properties>
 		<revision>0.0.1-SNAPSHOT</revision>
+		<!-- Do not checkin a change of this version. The CI/CD expect LATEST to be able
+		     to substitute the real FF! version to be tested. Substitute a real FF! version
+		     when running locally because otherwise the build becomes very slow. -->
 		<ff.version>LATEST</ff.version>
 	</properties>
 	<dependencies>
