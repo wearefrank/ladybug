@@ -10,8 +10,8 @@
 
   <artifactId>ladybug-test-webapp-common</artifactId>
 
-  <name>ladybug-test-webapp-common</name>
-  <description>Common code for Ladybug test webapps</description>
+  <name>Ladybug test webapp</name>
+  <description>Test webapp of Ladybug</description>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
