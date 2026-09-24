@@ -18,8 +18,8 @@ package org.wearefrank.ladybug.test.junit.util;
 import static org.junit.Assert.assertNull;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
+import java.beans.XMLEncoder;
+import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.zip.GZIPInputStream;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 import org.wearefrank.ladybug.Checkpoint;
@@ -39,6 +40,7 @@ import org.wearefrank.ladybug.test.junit.Common;
 import org.wearefrank.ladybug.test.junit.ReportRelatedTestCase;
 import org.wearefrank.ladybug.transform.ReportXmlTransformer;
 import org.wearefrank.ladybug.util.Export;
+import org.wearefrank.ladybug.xmldecoder.XMLDecoder;
 
 /**
  * @author Jaco de Groot
@@ -220,4 +222,17 @@ public class TestExport {
 		ReportRelatedTestCase.assertXml(resourcePath, testCaseName + "Export", actual);
 	}
 
+	@Test
+	public void testMediaTypeSerializationRoundtrip() {
+		ByteArrayOutputStream os = new ByteArrayOutputStream();
+		XMLEncoder encoder = new XMLEncoder(os);
+		// TODO: Enable line below.
+		// Export.registerMediaTypePersistenceDelegate(encoder);
+		encoder.writeObject(MediaType.parseMediaType("application/json"));
+		byte[] encoded = os.toByteArray();
+		XMLDecoder decoder = new XMLDecoder(new ByteArrayInputStream(encoded));
+		Object retrieved = decoder.readObject();
+		Assert.assertEquals("application/json", retrieved.toString());
+		Assert.assertTrue(retrieved instanceof MediaType);
+	}
 }

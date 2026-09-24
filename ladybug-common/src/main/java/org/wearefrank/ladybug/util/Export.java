@@ -329,7 +329,7 @@ public class Export {
 	// failed reflection attempt and keeps the value in the exported file. Resolved by class name
 	// through reflection, instead of a compile-time import/dependency on spring-web, because this
 	// module does not otherwise depend on it (see also MessageEncoderImpl.toString()).
-	private static void registerMediaTypePersistenceDelegate(XMLEncoder xmlEncoder) {
+	public static void registerMediaTypePersistenceDelegate(XMLEncoder xmlEncoder) {
 		try {
 			Class<?> mediaTypeClass = Class.forName("org.springframework.http.MediaType");
 			xmlEncoder.setPersistenceDelegate(mediaTypeClass, new PersistenceDelegate() {
