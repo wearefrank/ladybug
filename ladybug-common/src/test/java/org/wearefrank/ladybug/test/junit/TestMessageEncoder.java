@@ -27,6 +27,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
+import org.springframework.http.MediaType;
 import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
 
@@ -73,6 +74,15 @@ public class TestMessageEncoder {
 		checkpoint.setEncoding(MessageEncoderImpl.DATE_ENCODER);
 		assertEquals(new Date(0L), checkpoint.getMessageAsObject());
 		assertEquals(new Date(0L), checkpoint.getMessageAsObject(new Date(10L)));
+
+		// MediaType
+		MediaType mediaType = MediaType.parseMediaType("application/json");
+		actual = testTool.getMessageEncoder().toString(mediaType, null).getString();
+		checkpoint.setMessage(actual);
+		checkpoint.setEncoding(MessageEncoderImpl.MEDIA_TYPE_ENCODER);
+		Object roundTrip = checkpoint.getMessageAsObject();
+		assertEquals("application/json", roundTrip.toString());
+		assertTrue(roundTrip instanceof MediaType);
 
 		// Test Node
 		Node node = XmlUtil.stringToNode("<test/>");
