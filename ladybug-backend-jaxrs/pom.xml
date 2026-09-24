@@ -10,7 +10,8 @@
 
   <artifactId>ladybug-backend-jaxrs</artifactId>
 
-  <name>Ladybug API protected by JAX-RS authorization</name>
+  <name>Ladybug API JAX-RS</name>
+  <description>Ladybug API protected by JAX-RS authorization</description>
 
   <dependencies>
     <dependency>

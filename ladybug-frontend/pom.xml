@@ -10,7 +10,8 @@
 
   <artifactId>ladybug-frontend</artifactId>
 
-  <name>Angular frontend of Ladybug, packaged as JAR</name>
+  <name>Ladybug frontend</name>
+  <description>Angular frontend of Ladybug, packaged as JAR</description>
 
   <properties>
     <meta-inf.maven.output>${project.build.outputDirectory}/META-INF/maven/${project.groupId}/${project.artifactId}</meta-inf.maven.output>
