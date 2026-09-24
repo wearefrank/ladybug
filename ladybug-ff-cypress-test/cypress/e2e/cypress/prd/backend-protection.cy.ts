@@ -1,0 +1,148 @@
+import { AUTHENTICATIONS } from "../support/commands";
+
+const API_BASE = '/iaf/ladybug/api/';
+
+interface TestCase {
+  method: string;
+  url: string;
+  user: string;
+  body?: string;
+  expectedStatus: number;
+}
+
+function testCaseToString(t: TestCase): string {
+  return `${t.method} ${t.url} as ${t.user} should produce ${t.expectedStatus}`;
+}
+
+function doTest(t: TestCase): void {
+  cy.request({
+    method: t.method,
+    url: `${API_BASE}${t.url}`,
+    auth: AUTHENTICATIONS.get(t.user)!,
+    headers: { 'Content-Type': 'application/json' },
+    body: t.body,
+    failOnStatusCode: false,
+  }).then(response => {
+    cy.wrap(response).its('status').should('equal', t.expectedStatus)
+  })
+}
+
+describe('dtap.stage=PRD test whether API URLs are safe', () => {
+  const debugStorageName = Cypress.env('debugStorageName') as string;
+
+  const simpleCases: TestCase[] = [
+    { method: 'GET', url: `metadata/${debugStorageName}?metadataNames=storageId`, user: 'observer', expectedStatus: 200 },
+    { method: 'GET', url: `metadata/${debugStorageName}?metadataNames=storageId`, user: 'tester', expectedStatus: 200 },
+    { method: 'GET', url: `metadata/${debugStorageName}?metadataNames=storageId`, user: 'xxx', expectedStatus: 401 },
+    { method: 'GET', url: `metadata/${debugStorageName}?metadataNames=storageId`, user: 'withoutRoles', expectedStatus: 403 },
+    { method: 'GET', url: `metadata/${debugStorageName}/userHelp?metadataNames=storageId`, user: 'observer', expectedStatus: 200 },
+    { method: 'GET', url: `metadata/${debugStorageName}/userHelp?metadataNames=storageId`, user: 'tester', expectedStatus: 200 },
+    { method: 'GET', url: `metadata/${debugStorageName}/userHelp?metadataNames=storageId`, user: 'xxx', expectedStatus: 401 },
+    { method: 'GET', url: `metadata/${debugStorageName}/count`, user: 'observer', expectedStatus: 200 },
+    { method: 'GET', url: `metadata/${debugStorageName}/count`, user: 'tester', expectedStatus: 200 },
+
+    // Nonsensical URLs.
+
+    // Required query parameter is missing.
+    { method: 'GET', url: `metadata/${debugStorageName}`, user: 'observer', expectedStatus: 400 },
+    // Slash missing between base URL and path parameter.
+    { method: 'GET', url: `metadata/${debugStorageName}count`, user: 'observer', expectedStatus: 400 },
+  ];
+
+  const withReportCases: TestCase[] = [
+    { method: 'GET', url: `report/${debugStorageName}/<<debugStorageId>>`, user: 'observer', expectedStatus: 200 },
+    { method: 'GET', url: `report/${debugStorageName}/<<debugStorageId>>`, user: 'tester', expectedStatus: 200 },
+    { method: 'GET', url: `report/${debugStorageName}/<<debugStorageId>>/checkpoints/uids?view=White%20box&invert=false`, user: 'observer', expectedStatus: 200 },
+    { method: 'GET', url: `report/${debugStorageName}/<<debugStorageId>>/checkpoints/uids?view=White%20box&invert=false`, user: 'tester', expectedStatus: 200 },
+    { method: 'GET', url: `report/${debugStorageName}?storageIds=<<debugStorageId>>`, user: 'observer', expectedStatus: 200 },
+    { method: 'GET', url: `report/${debugStorageName}?storageIds=<<debugStorageId>>`, user: 'tester', expectedStatus: 200 },
+    { method: 'GET', url: `report/shownReports/${debugStorageName}?storageIds=<<debugStorageId>>&view=White%20box`, user: 'observer', expectedStatus: 200 },
+    { method: 'GET', url: `report/shownReports/${debugStorageName}?storageIds=<<debugStorageId>>&view=White%20box`, user: 'tester', expectedStatus: 200 },
+    { method: 'PUT', url: `report/store/Test`, body: `{"${debugStorageName}": [<<debugStorageId>>]}`, user: 'observer', expectedStatus: 403 },
+    { method: 'PUT', url: `report/store/Test`, body: `{"${debugStorageName}": [<<debugStorageId>>]}`, user: 'dataAdmin', expectedStatus: 200 },
+    { method: 'PUT', url: `report/store/Test`, body: `{"${debugStorageName}": [<<debugStorageId>>]}`, user: 'admin', expectedStatus: 200 },
+    { method: 'PUT', url: `report/store/Test`, body: `{"${debugStorageName}": [<<debugStorageId>>]}`, user: 'tester', expectedStatus: 200 },
+    { method: 'DELETE', url: `report/Test?storageIds=<<testStorageId>>`, user: 'observer', expectedStatus: 403 },
+    { method: 'DELETE', url: `report/Test?storageIds=<<testStorageId>>`, user: 'dataAdmin', expectedStatus: 200 },
+    { method: 'DELETE', url: `report/Test?storageIds=<<testStorageId>>`, user: 'admin', expectedStatus: 200 },
+    { method: 'DELETE', url: `report/Test?storageIds=<<testStorageId>>`, user: 'tester', expectedStatus: 200 },
+
+    { method: 'POST', url: 'runner/run/Test/<<testStorageId>>', user: 'observer', expectedStatus: 403 },
+    { method: 'POST', url: 'runner/run/Test/<<testStorageId>>', user: 'dataAdmin', expectedStatus: 403 },
+    { method: 'POST', url: 'runner/run/Test/<<testStorageId>>', user: 'admin', expectedStatus: 403 },
+    { method: 'POST', url: 'runner/run/Test/<<testStorageId>>', user: 'tester', expectedStatus: 200 },
+
+    // Invalid URLs
+
+    // Missing all query parameters
+    { method: 'GET', url: `report/${debugStorageName}/<<debugStorageId>>/checkpoints/uids`, user: 'tester', expectedStatus: 400 },
+    // Misses mandator query parameter "invert"
+    { method: 'GET', url: `report/${debugStorageName}/<<debugStorageId>>/checkpoints/uids?view=White%20box`, user: 'observer', expectedStatus: 400 },
+    // Missing mandatory query parameter storageIds
+    { method: 'GET', url: `report/${debugStorageName}`, user: 'observer', expectedStatus: 400 },
+    { method: 'GET', url: `report/shownReports/${debugStorageName}&view=White%20box`, user: 'observer', expectedStatus: 400 },
+  ]
+
+  describe('Simple cases that do not depend on anything', () => {
+    for (const t of simpleCases) {
+      it(testCaseToString(t), () => doTest(t))
+    }
+  })
+
+
+  describe('With report', () => {
+    const TEST_STORAGE_NAME = 'Test';
+    let debugStorageId: number;
+    let testStorageId: number;
+
+    before(() => {
+      cy.apiDeleteAllAsTester(debugStorageName)
+      cy.apiSetGeneratorEnabledAsTester(true)
+    })
+
+    after(() => {
+      cy.apiSetGeneratorEnabledAsTester(false)
+    })
+
+    beforeEach(() => {
+      cy.createReportWithTestPipelineApi('Example1a', 'Adapter1a', 'xxx', 'tester', 'IbisTester')
+      cy.request({
+        method: 'GET',
+        url: `/iaf/ladybug/api/metadata/${debugStorageName}?metadataNames=storageId`,
+        auth: AUTHENTICATIONS.get('tester')!,
+      }).then(response => {
+        cy.wrap(response.body).should('have.length', 1)
+        debugStorageId = parseInt(response.body[0].storageId)
+        cy.apiCopyReportToTestTabAsTester(debugStorageName, debugStorageId).then(newStorageId => {
+          testStorageId = newStorageId
+        })
+      })
+    })
+
+    afterEach(() => {
+      cy.apiDeleteAllAsTester(debugStorageName)
+      cy.apiDeleteAllAsTester(TEST_STORAGE_NAME)
+    })
+
+    function fillPlaceholders(v: string): string {
+      return v
+        .replace('<<debugStorageId>>', `${debugStorageId}`)
+        .replace('<<testStorageId>>', `${testStorageId}`)
+    }
+
+    for(const c of withReportCases) {
+      it(testCaseToString(c), () => {
+        const url = fillPlaceholders(c.url);
+        const body = c.body === undefined ? undefined : fillPlaceholders(c.body);
+        const t: TestCase = {
+          method: c.method,
+          url,
+          body,
+          user: c.user,
+          expectedStatus: c.expectedStatus,
+        }
+        doTest(t);
+      })
+    }
+  })
+});
