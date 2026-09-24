@@ -330,8 +330,9 @@ public class Export {
 	// through reflection, instead of a compile-time import/dependency on spring-web, because this
 	// module does not otherwise depend on it (see also MessageEncoderImpl.toString()).
 	public static void registerMediaTypePersistenceDelegate(XMLEncoder xmlEncoder) {
+		String mediaTypeClassName = "org.springframework.http.MediaType";
 		try {
-			Class<?> mediaTypeClass = Class.forName("org.springframework.http.MediaType");
+			Class<?> mediaTypeClass = Class.forName(mediaTypeClassName);
 			xmlEncoder.setPersistenceDelegate(mediaTypeClass, new PersistenceDelegate() {
 				@Override
 				protected Expression instantiate(Object oldInstance, Encoder out) {
@@ -339,10 +340,8 @@ public class Export {
 				}
 			});
 		} catch (ClassNotFoundException e) {
-			// Thrown by Class.forName() above when org.springframework.http.MediaType is not on
-			// the classpath (e.g. some ladybug-common unit tests run without spring-web). In that
-			// case no report can contain a MediaType instance, so there is nothing to register a
-			// delegate for.
+			// The unit tests use a stub that is available in src/test/java.
+			log.error("Cannot encode or decode class [{}]", mediaTypeClassName);
 		}
 	}
 

@@ -32,6 +32,7 @@ import java.util.zip.GZIPInputStream;
 import org.junit.Assert;
 import org.junit.Test;
 
+import org.springframework.http.MediaType;
 import org.wearefrank.ladybug.Checkpoint;
 import org.wearefrank.ladybug.Report;
 import org.wearefrank.ladybug.storage.StorageException;
@@ -226,10 +227,17 @@ public class TestExport {
 	public void testMediaTypeSerializationRoundtrip() {
 		ByteArrayOutputStream os = new ByteArrayOutputStream();
 		XMLEncoder encoder = new XMLEncoder(os);
-		// TODO: Enable line below.
-		// Export.registerMediaTypePersistenceDelegate(encoder);
+		Export.registerMediaTypePersistenceDelegate(encoder);
 		encoder.writeObject(MediaType.parseMediaType("application/json"));
+		encoder.close();
 		byte[] encoded = os.toByteArray();
+		try {
+			String encodedAsString = new String(encoded, "UTF-8");
+			System.out.println(String.format("MediaType is encoded in a report like: [%s]", encodedAsString));
+		} catch(Exception e) {
+			System.out.println(e.getStackTrace());
+			Assert.fail();
+		}
 		XMLDecoder decoder = new XMLDecoder(new ByteArrayInputStream(encoded));
 		Object retrieved = decoder.readObject();
 		Assert.assertEquals("application/json", retrieved.toString());

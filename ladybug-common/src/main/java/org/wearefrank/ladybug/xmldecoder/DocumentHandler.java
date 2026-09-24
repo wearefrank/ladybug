@@ -68,7 +68,8 @@ public final class DocumentHandler extends DefaultHandler {
             "org.wearefrank.ladybug.Report",
             "org.wearefrank.ladybug.Checkpoint",
             "java.util.HashMap",
-            "java.util.Collections");
+            "java.util.Collections",
+            "org.springframework.http.MediaType");
 
     public final static Map<String, String> OLD_REPORT_REPLACEMENT_CLASSES = Map.of(
             "nl.nn.testtool.Report", "org.wearefrank.ladybug.Report",
