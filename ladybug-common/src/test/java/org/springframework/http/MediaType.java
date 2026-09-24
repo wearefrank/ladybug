@@ -15,8 +15,14 @@
 */
 package org.springframework.http;
 
+import java.io.Serial;
+import java.io.Serializable;
+
 // Stub for unit tests, to be excluded from production!
-public class MediaType {
+public class MediaType implements Serializable {
+    @Serial
+    private static final long serialVersionUID = 1083L;
+
     private final String mediaType;
 
     public MediaType(String mediaType) {

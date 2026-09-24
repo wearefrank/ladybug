@@ -13,8 +13,6 @@ import org.springframework.http.MediaType;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.junit.Assert.assertNull;
-
 public class TestRerunEncodingMediaType extends ReportRelatedTestCase {
     private Object fetchedFromStub = null;
 
@@ -54,7 +52,7 @@ public class TestRerunEncodingMediaType extends ReportRelatedTestCase {
     }
 
     @Test
-    public void whenMessageContainsMediaTypeThenReportCanBeStored() throws Exception {
+    public void whenMessageContextContainsMediaTypeThenReportCanBeStored() {
         testTool.setRerunner(new CustomRerunner());
         String correlationId = ReportRelatedTestCase.getCorrelationId();
         testTool.startpoint(correlationId, null, reportName, "Original start value");
