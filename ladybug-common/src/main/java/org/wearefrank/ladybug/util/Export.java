@@ -325,7 +325,7 @@ public class Export {
 	// XMLEncoder cannot reconstruct it via reflection by default: it logs an
 	// InstantiationException and "Continuing ..." to stderr for every such value and omits it
 	// from the output. Registering this delegate tells XMLEncoder to instead persist a MediaType
-	// as a call to its own MediaType.parseMediaType(String) factory method, which both avoids the
+	// as a call to its own MediaType.valueOf(String) factory method, which both avoids the
 	// failed reflection attempt and keeps the value in the exported file. Resolved by class name
 	// through reflection, instead of a compile-time import/dependency on spring-web, because this
 	// module does not otherwise depend on it (see also MessageEncoderImpl.toString()).
@@ -336,7 +336,7 @@ public class Export {
 			xmlEncoder.setPersistenceDelegate(mediaTypeClass, new PersistenceDelegate() {
 				@Override
 				protected Expression instantiate(Object oldInstance, Encoder out) {
-					return new Expression(oldInstance, mediaTypeClass, "parseMediaType", new Object[] { oldInstance.toString() });
+					return new Expression(oldInstance, mediaTypeClass, "valueOf", new Object[] { oldInstance.toString() });
 				}
 			});
 		} catch (ClassNotFoundException e) {

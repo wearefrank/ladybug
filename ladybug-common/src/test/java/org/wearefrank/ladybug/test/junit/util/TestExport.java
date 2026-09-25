@@ -230,7 +230,7 @@ public class TestExport {
 		ByteArrayOutputStream os = new ByteArrayOutputStream();
 		XMLEncoder encoder = new XMLEncoder(os);
 		Export.registerMediaTypePersistenceDelegate(encoder);
-		encoder.writeObject(MediaType.parseMediaType("application/json"));
+		encoder.writeObject(MediaType.valueOf("application/json"));
 		encoder.close();
 		byte[] encoded = os.toByteArray();
 		try {

@@ -34,7 +34,7 @@ public class MediaType implements Serializable {
         return this.mediaType;
     }
 
-    public static MediaType parseMediaType(String value) {
+    public static MediaType valueOf(String value) {
         return new MediaType(value);
     }
 }

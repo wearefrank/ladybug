@@ -201,7 +201,7 @@ public class MessageEncoderImpl implements MessageEncoder {
 			} else if (encoding.equals(MEDIA_TYPE_ENCODER)) {
 				// Resolved by class name instead of a compile-time import/dependency on spring-web, see toString()
 				Class<?> mediaTypeClass = Class.forName("org.springframework.http.MediaType");
-				return (T)mediaTypeClass.getMethod("parseMediaType", String.class).invoke(null, message);
+				return (T)mediaTypeClass.getMethod("valueOf", String.class).invoke(null, message);
 			} else {
 				return (T)message;
 			}

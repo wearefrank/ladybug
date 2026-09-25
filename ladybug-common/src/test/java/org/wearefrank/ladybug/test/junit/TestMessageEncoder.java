@@ -76,7 +76,7 @@ public class TestMessageEncoder {
 		assertEquals(new Date(0L), checkpoint.getMessageAsObject(new Date(10L)));
 
 		// MediaType
-		MediaType mediaType = MediaType.parseMediaType("application/json");
+		MediaType mediaType = MediaType.valueOf("application/json");
 		actual = testTool.getMessageEncoder().toString(mediaType, null).getString();
 		checkpoint.setMessage(actual);
 		checkpoint.setEncoding(MessageEncoderImpl.MEDIA_TYPE_ENCODER);
