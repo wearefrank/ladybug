@@ -9,16 +9,34 @@ import java.beans.XMLEncoder;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
+import java.sql.Timestamp;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.PriorityQueue;
 import java.util.Properties;
+import java.util.Stack;
 import java.util.TreeMap;
+import java.util.TreeSet;
+import java.util.Vector;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentSkipListMap;
+import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.LinkedTransferQueue;
+import java.util.concurrent.PriorityBlockingQueue;
 
 import org.junit.Test;
 
@@ -74,6 +92,30 @@ public class TestSafeClasses {
 	}
 
 	@Test
+	public void timestampKeepsItsNanos() {
+		Timestamp timestamp = new Timestamp(1790343533123L);
+		timestamp.setNanos(123456789);
+		Result result = decode(encode(timestamp));
+		assertFalse(result.exceptions.toString(), result.isBlocked());
+		assertEquals(timestamp, result.value);
+		assertEquals(123456789, ((Timestamp) result.value).getNanos());
+	}
+
+
+	@Test
+	public void zoneOffsetCanOnlyBeCreatedWithOfTotalSeconds() {
+		Result result = decode("<object class=\"java.time.ZoneOffset\" method=\"ofTotalSeconds\"><int>7200</int></object>");
+		assertFalse(result.exceptions.toString(), result.isBlocked());
+		assertEquals(java.time.ZoneOffset.ofHours(2), result.value);
+		assertTrue(decode("<object class=\"java.time.ZoneOffset\" method=\"of\"><string>+02:00</string></object>").isBlocked());
+	}
+
+	@Test
+	public void onlySetNanosCanBeCalledOnTimestamp() {
+		assertTrue(decode("<object class=\"java.sql.Timestamp\"><long>0</long><void property=\"time\"><long>5</long></void></object>").isBlocked());
+	}
+
+	@Test
 	public void immutableClassCanOnlyBeCreatedWithConfiguredFactory() {
 		assertTrue(decode("<object class=\"java.util.UUID\" method=\"randomUUID\"/>").isBlocked());
 		assertFalse(decode("<object class=\"java.util.UUID\" method=\"fromString\">"
@@ -104,6 +146,29 @@ public class TestSafeClasses {
 		properties.put("k", "v");
 		Result result = decode(encode(properties));
 		assertEquals(properties, result.value);
+	}
+
+	@Test
+	public void collectionImplementationsCanBeDecoded() {
+		List<Collection<String>> collections = List.of(new ArrayList<>(), new LinkedList<>(), new ArrayDeque<>(), new Vector<>(),
+				new Stack<>(), new HashSet<>(), new LinkedHashSet<>(), new TreeSet<>(), new PriorityQueue<>(),
+				new CopyOnWriteArraySet<>(), new ConcurrentLinkedQueue<>(), new ConcurrentLinkedDeque<>(),
+				new ConcurrentSkipListSet<>(), new LinkedBlockingQueue<>(), new LinkedBlockingDeque<>(),
+				new PriorityBlockingQueue<>(), new LinkedTransferQueue<>());
+		for (Collection<String> collection: collections) {
+			collection.add("a");
+			collection.add("b");
+			Result result = decode(encode(collection));
+			assertFalse(result.exceptions.toString(), result.isBlocked());
+			assertEquals(collection.getClass(), result.value.getClass());
+			// Copy because queues do not implement equals()
+			assertEquals(new ArrayList<>(collection), new ArrayList<>((Collection<?>) result.value));
+		}
+	}
+
+	@Test
+	public void otherCollectionImplementationsAreBlocked() {
+		assertTrue(decode("<object class=\"java.util.concurrent.CopyOnWriteArrayList\"/>").isBlocked());
 	}
 
 	@Test

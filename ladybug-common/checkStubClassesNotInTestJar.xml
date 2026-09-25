@@ -8,6 +8,8 @@
       <filterchain>
         <tokenfilter>
           <trim />
+          <!-- Comment lines become blank and are removed by ignoreblank -->
+          <replaceregex pattern="^#.*$" replace="" />
           <ignoreblank />
           <!-- Keep only the first column, the class name -->
           <replaceregex pattern="\s*,.*$" replace="" />

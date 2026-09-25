@@ -19,6 +19,7 @@ import java.beans.IntrospectionException;
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Method;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -26,13 +27,27 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.PriorityQueue;
 import java.util.Properties;
 import java.util.Set;
+import java.util.Stack;
 import java.util.TreeMap;
+import java.util.TreeSet;
+import java.util.Vector;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentSkipListMap;
+import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.LinkedTransferQueue;
+import java.util.concurrent.PriorityBlockingQueue;
 
 import org.wearefrank.ladybug.Checkpoint;
 import org.wearefrank.ladybug.Report;
@@ -47,8 +62,10 @@ import org.wearefrank.ladybug.util.SpecialEncodings;
  * safe classes:
  * <ol>
  * <li>Classes meant to be immutable, like java.math.BigDecimal. They can only be instantiated, using
- * the constructor or static method configured for them. No methods can be called on the instances.</li>
- * <li>Collections: {@link ArrayList} and the maps of java.util and java.util.concurrent that XMLEncoder
+ * the constructor or static method configured for them. No methods can be called on the instances, except
+ * java.sql.Timestamp.setNanos(), because XMLEncoder writes a Timestamp as new Timestamp(long) followed by
+ * setNanos(int).</li>
+ * <li>Collections: the lists, sets, queues and maps of java.util and java.util.concurrent that XMLEncoder
  * can write. They can be instantiated and only filled, using add() for a {@link Collection}
  * and put() for a {@link Map}. The static factory methods of {@link Collections} that XMLEncoder uses
  * for wrapped collections, like unmodifiableMap(), are allowed too.</li>
@@ -66,12 +83,31 @@ public final class SafeClasses {
 
 	// Category 1: maps each class name to the constructor ("new") or static method that creates an instance
 	private static final Map<String, String> IMMUTABLE_CLASSES = createImmutableClasses();
+	private static final String TIMESTAMP_CLASS = "java.sql.Timestamp";
 
 	// Category 2. Only well-known classes of which the constructors and add() or put() have no side effects.
 	// Allowing any implementation of Map or Collection would not be safe: some libraries have implementations
 	// that execute code while they are filled, like LazyMap and TransformedMap of Apache Commons Collections.
+	// Left out on purpose: CopyOnWriteArrayList, because XMLEncoder writes it without its elements, and
+	// ArrayBlockingQueue, because XMLEncoder cannot write it (it has no no-arg constructor).
 	private static final Set<String> COLLECTION_CLASSES = Set.of(
 			ArrayList.class.getName(),
+			LinkedList.class.getName(),
+			ArrayDeque.class.getName(),
+			Vector.class.getName(),
+			Stack.class.getName(),
+			HashSet.class.getName(),
+			LinkedHashSet.class.getName(),
+			TreeSet.class.getName(),
+			PriorityQueue.class.getName(),
+			CopyOnWriteArraySet.class.getName(),
+			ConcurrentLinkedQueue.class.getName(),
+			ConcurrentLinkedDeque.class.getName(),
+			ConcurrentSkipListSet.class.getName(),
+			LinkedBlockingQueue.class.getName(),
+			LinkedBlockingDeque.class.getName(),
+			PriorityBlockingQueue.class.getName(),
+			LinkedTransferQueue.class.getName(),
 			HashMap.class.getName(),
 			LinkedHashMap.class.getName(),
 			TreeMap.class.getName(),
@@ -99,6 +135,9 @@ public final class SafeClasses {
 		Map<String, String> result = new LinkedHashMap<>();
 		// XMLEncoder writes new Date(long)
 		result.put("java.util.Date", CONSTRUCTOR);
+		result.put(TIMESTAMP_CLASS, CONSTRUCTOR);
+		// java.sql.Date and java.sql.Time are not supported on purpose, see the comment at MessageEncoderImpl.TIMESTAMP_ENCODER
+		result.put("java.time.ZoneOffset", SpecialEncodings.ZONE_OFFSET_FACTORY);
 		for (String className: SpecialEncodings.SPECIALLY_ENCODED_CLASSES) {
 			result.put(className, SpecialEncodings.getFactoryName(className));
 		}
@@ -171,7 +210,10 @@ public final class SafeClasses {
 		if (target instanceof Map) {
 			return "put".equals(methodName) && args.length == 2;
 		}
-		// Includes the instances of immutable classes
+		if (TIMESTAMP_CLASS.equals(target.getClass().getName())) {
+			return "setNanos".equals(methodName) && args.length == 1 && args[0] instanceof Integer;
+		}
+		// Includes the instances of the other immutable classes
 		return false;
 	}
 

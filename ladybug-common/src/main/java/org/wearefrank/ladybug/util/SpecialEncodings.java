@@ -31,6 +31,7 @@ import java.lang.reflect.Executable;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.nio.charset.StandardCharsets;
+import java.time.ZoneOffset;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -46,6 +47,12 @@ public final class SpecialEncodings {
 	public static final List<String> SPECIALLY_ENCODED_CLASSES = List.copyOf(FACTORY_METHODS.keySet());
 	private static final String ENCODER_SUFFIX = ".toString()";
 	private static final String CONSTRUCTOR = "new";
+	private static final String COMMENT_PREFIX = "#";
+	/**
+	 * The static method that XMLEncoder and XMLDecoder use for {@link ZoneOffset}, see speciallyEncodedClasses.txt
+	 * for why ZoneOffset is not in that file.
+	 */
+	public static final String ZONE_OFFSET_FACTORY = "ofTotalSeconds";
 
 	private static Map<String, String> readSpeciallyEncodedClasses() {
 		try (InputStream in = SpecialEncodings.class.getClassLoader().getResourceAsStream(SPECIALLY_ENCODED_CLASSES_RESOURCE)) {
@@ -56,7 +63,7 @@ public final class SpecialEncodings {
 			Map<String, String> result = new LinkedHashMap<>();
 			reader.lines()
 					.map(String::trim)
-					.filter(line -> !line.isEmpty())
+					.filter(line -> !line.isEmpty() && !line.startsWith(COMMENT_PREFIX))
 					.forEach(line -> {
 						String[] columns = line.split(",");
 						if (columns.length != 2 || columns[0].isBlank() || columns[1].isBlank()) {
@@ -175,5 +182,12 @@ public final class SpecialEncodings {
 				log.error("Cannot encode or decode class [{}], check speciallyEncodedClasses.txt", className, e);
 			}
 		}
+		xmlEncoder.setPersistenceDelegate(ZoneOffset.class, new PersistenceDelegate() {
+			@Override
+			protected Expression instantiate(Object oldInstance, Encoder out) {
+				return new Expression(oldInstance, ZoneOffset.class, ZONE_OFFSET_FACTORY,
+						new Object[]{((ZoneOffset) oldInstance).getTotalSeconds()});
+			}
+		});
 	}
 }
