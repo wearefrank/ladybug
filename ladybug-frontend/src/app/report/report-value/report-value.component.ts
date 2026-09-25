@@ -135,7 +135,7 @@ export class ReportValueComponent implements OnInit, OnDestroy {
     );
     this.subscriptions.add(this.saveDone$.subscribe(() => this.saveModal.closeModal()));
     this.subscriptions.add(
-      this.clientSettingsService.metadataTableVisibleObservable.subscribe((visible) => {
+      this.clientSettingsService.metadataTableVisible$.subscribe((visible) => {
         this.metadataTableVisible = visible;
       }),
     );

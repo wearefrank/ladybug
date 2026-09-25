@@ -98,12 +98,12 @@ export class ReportButtons implements OnInit, OnDestroy {
       }),
     );
     this.subscriptions.add(
-      this.clientSettingsService.metadataTableVisibleObservable.subscribe((visible) => {
+      this.clientSettingsService.metadataTableVisible$.subscribe((visible) => {
         this.ngZone.run(() => (this.metadataTableVisible = visible));
       }),
     );
     this.subscriptions.add(
-      this.clientSettingsService.messageContextTableVisibleObservable.subscribe((visible) => {
+      this.clientSettingsService.messageContextTableVisible$.subscribe((visible) => {
         this.ngZone.run(() => (this.messageContextTableVisible = visible));
       }),
     );

@@ -22,8 +22,8 @@ export class ClientSettingsService {
   public tableSpacingObservable = this.tableSpacingSubject as Observable<number>;
   public amountOfRecordsInTableObservable = this.amountOfRecordsInTableSubject as Observable<number>;
   public showStorageIdsInTestTabObservable = this.showStorageIdsInTestTabSubject as Observable<boolean>;
-  public metadataTableVisibleObservable = this.metadataTableVisibleSubject as Observable<boolean>;
-  public messageContextTableVisibleObservable = this.messageContextTableVisibleSubject as Observable<boolean>;
+  public metadataTableVisible$ = this.metadataTableVisibleSubject as Observable<boolean>;
+  public messageContextTableVisible$ = this.messageContextTableVisibleSubject as Observable<boolean>;
 
   public getTableSpacing(): number {
     const MAX_ALLOWED_DROPDOWN_VALUE = 8;

@@ -67,12 +67,12 @@ export class CheckpointValueComponent implements OnInit, OnDestroy {
     );
     this.subscriptions.add(this.saveDone$.subscribe(() => this.saveModal.closeModal()));
     this.subscriptions.add(
-      this.clientSettingsService.metadataTableVisibleObservable.subscribe((visible) => {
+      this.clientSettingsService.metadataTableVisible$.subscribe((visible) => {
         this.metadataTableVisible = visible;
       }),
     );
     this.subscriptions.add(
-      this.clientSettingsService.messageContextTableVisibleObservable.subscribe((visible) => {
+      this.clientSettingsService.messageContextTableVisible$.subscribe((visible) => {
         this.messageContextTableVisible = visible;
       }),
     );
