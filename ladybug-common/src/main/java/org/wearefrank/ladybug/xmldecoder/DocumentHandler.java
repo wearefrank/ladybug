@@ -70,7 +70,9 @@ public final class DocumentHandler extends DefaultHandler {
                     "org.wearefrank.ladybug.Report",
                     "org.wearefrank.ladybug.Checkpoint",
                     "java.util.HashMap",
-                    "java.util.Collections"),
+                    "java.util.ArrayList",
+                    "java.util.Collections",
+                    "java.util.Date"),
             SpecialEncodings.SPECIALLY_ENCODED_CLASSES.stream()).toList();
 
     public final static Map<String, String> OLD_REPORT_REPLACEMENT_CLASSES = Map.of(
