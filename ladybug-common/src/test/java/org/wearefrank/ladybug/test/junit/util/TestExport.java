@@ -35,6 +35,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import org.springframework.http.MediaType;
+import org.springframework.util.MimeType;
 import org.wearefrank.ladybug.Checkpoint;
 import org.wearefrank.ladybug.Report;
 import org.wearefrank.ladybug.storage.StorageException;
@@ -43,6 +44,7 @@ import org.wearefrank.ladybug.test.junit.Common;
 import org.wearefrank.ladybug.test.junit.ReportRelatedTestCase;
 import org.wearefrank.ladybug.transform.ReportXmlTransformer;
 import org.wearefrank.ladybug.util.Export;
+import org.wearefrank.ladybug.util.SpecialEncodings;
 import org.wearefrank.ladybug.xmldecoder.XMLDecoder;
 
 /**
@@ -227,22 +229,31 @@ public class TestExport {
 
 	@Test
 	public void testMediaTypeSerializationRoundtrip() {
+		testRoundTripOfSpecialEncoding(MediaType.valueOf("application/json"));
+	}
+
+	@Test
+	public void testMimeTypeSerializationRoundtrip() {
+		testRoundTripOfSpecialEncoding(MimeType.valueOf("FakeMime/type"));
+	}
+
+	void testRoundTripOfSpecialEncoding(Object instanceOfClassToTest) {
 		ByteArrayOutputStream os = new ByteArrayOutputStream();
 		XMLEncoder encoder = new XMLEncoder(os);
-		Export.registerMediaTypePersistenceDelegate(encoder);
-		encoder.writeObject(MediaType.valueOf("application/json"));
+		SpecialEncodings.registerExportDelegates(encoder);
+		encoder.writeObject(instanceOfClassToTest);
 		encoder.close();
 		byte[] encoded = os.toByteArray();
 		try {
 			String encodedAsString = new String(encoded, "UTF-8");
-			System.out.println(String.format("MediaType is encoded in a report like: [%s]", encodedAsString));
+			System.out.println(String.format("[%s] is encoded in a report like: [%s]", instanceOfClassToTest.getClass().getName(), encodedAsString));
 		} catch(Exception e) {
 			System.out.println(e.getStackTrace());
 			Assert.fail();
 		}
 		XMLDecoder decoder = new XMLDecoder(new ByteArrayInputStream(encoded));
 		Object retrieved = decoder.readObject();
-		Assert.assertEquals("application/json", retrieved.toString());
-		Assert.assertTrue(retrieved instanceof MediaType);
+		Assert.assertEquals(instanceOfClassToTest.toString(), retrieved.toString());
+		Assert.assertTrue(retrieved.getClass().isInstance(instanceOfClassToTest));
 	}
 }

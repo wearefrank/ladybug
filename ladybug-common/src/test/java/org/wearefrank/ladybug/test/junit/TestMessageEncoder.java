@@ -28,6 +28,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
 import org.springframework.http.MediaType;
+import org.springframework.util.MimeType;
 import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
 
@@ -79,10 +80,19 @@ public class TestMessageEncoder {
 		MediaType mediaType = MediaType.valueOf("application/json");
 		actual = testTool.getMessageEncoder().toString(mediaType, null).getString();
 		checkpoint.setMessage(actual);
-		checkpoint.setEncoding(MessageEncoderImpl.MEDIA_TYPE_ENCODER);
+		checkpoint.setEncoding("org.springframework.http.MediaType.toString()");
 		Object roundTrip = checkpoint.getMessageAsObject();
 		assertEquals("application/json", roundTrip.toString());
 		assertTrue(roundTrip instanceof MediaType);
+
+		// MimeType
+		MimeType mimeType = MimeType.valueOf("FakeMime/type");
+		actual = testTool.getMessageEncoder().toString(mimeType, null).getString();
+		checkpoint.setMessage(actual);
+		checkpoint.setEncoding("org.springframework.util.MimeType.toString()");
+		roundTrip = checkpoint.getMessageAsObject();
+		assertEquals("FakeMime/type", roundTrip.toString());
+		assertTrue(roundTrip instanceof MimeType);
 
 		// Test Node
 		Node node = XmlUtil.stringToNode("<test/>");

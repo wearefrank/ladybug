@@ -22,7 +22,7 @@
         </not>
       </condition>
     </fail>
-    <fail message="Test jar ${testJar} contains classes listed in speciallyEncodedClasses.txt (${speciallyEncodedClassFiles})">
+    <fail message="Test jar ${testJar} should not contain any of the classes listed in speciallyEncodedClasses.txt. These classes are stubs that are only relevant for the unit tests">
       <condition>
         <resourcecount count="0" when="greater">
           <zipfileset includes="${speciallyEncodedClassFiles}" src="${testJar}" />

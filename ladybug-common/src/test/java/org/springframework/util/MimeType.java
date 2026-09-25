@@ -13,28 +13,21 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.springframework.http;
+package org.springframework.util;
 
-import java.io.Serial;
-import java.io.Serializable;
+public class MimeType {
+    private final String value;
 
-// Stub for unit tests, to be excluded from production!
-public class MediaType implements Serializable {
-    @Serial
-    private static final long serialVersionUID = 1083L;
-
-    private final String mediaType;
-
-    public MediaType(String mediaType) {
-        this.mediaType = mediaType;
+    public MimeType(String value) {
+        this.value = value;
     }
 
     @Override
     public String toString() {
-        return this.mediaType;
+        return value;
     }
 
-    public static MediaType valueOf(String value) {
-        return new MediaType(value);
+    public static MimeType valueOf(String value) {
+        return new MimeType(value);
     }
 }

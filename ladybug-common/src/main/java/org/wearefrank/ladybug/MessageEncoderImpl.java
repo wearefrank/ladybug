@@ -38,6 +38,7 @@ import java.util.Date;
 import org.w3c.dom.Node;
 
 import lombok.SneakyThrows;
+import org.wearefrank.ladybug.util.SpecialEncodings;
 import org.wearefrank.ladybug.util.XmlUtil;
 import org.wearefrank.ladybug.xmldecoder.XMLDecoder;
 
@@ -55,7 +56,6 @@ public class MessageEncoderImpl implements MessageEncoder {
 	public static final String THROWABLE_ENCODER = "printStackTrace()";
 	public static final String TO_STRING_ENCODER = "toString()";
 	public static final String DOM_NODE_ENCODER = "XmlUtil.nodeToString()";
-	public static final String MEDIA_TYPE_ENCODER = "MediaType.toString()";
 	// Don't use static final SimpleDateFormat, see SimpleDateFormat javadoc: It is recommended to create separate format instances for each thread.
 	public static final String DATE_PATTERN = "yyyy-MM-dd'T'HH:mm:ss.SSSZ";
 	public static final String DATE_ENCODER = "SimpleDateFormat(\"" + DATE_PATTERN + "\")";
@@ -103,11 +103,11 @@ public class MessageEncoderImpl implements MessageEncoder {
 			} else if (message instanceof Date) {
 				toStringResult = new ToStringResult(new SimpleDateFormat(DATE_PATTERN).format((Date)message),
 						DATE_ENCODER);
-			} else if (message.getClass().getName().equals("org.springframework.http.MediaType")) {
-				// XMLEncoder cannot instantiate MediaType via reflection (no public no-arg constructor), causing
+			} else if (SpecialEncodings.getSpecialEncoderIfApplicable(message.getClass().getName()) != null) {
+				// XMLEncoder cannot instantiate this Java type via reflection (no public no-arg constructor), causing
 				// a java.lang.InstantiationException to be logged. Use toString() instead. Matched by class name
 				// instead of instanceof to avoid adding a spring-web dependency to this module.
-				toStringResult = new ToStringResult(message.toString(), MEDIA_TYPE_ENCODER);
+				toStringResult = new ToStringResult(message.toString(), SpecialEncodings.getSpecialEncoderIfApplicable(message.getClass().getName()));
 			} else {
 				String xml = null;
 				ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
@@ -197,11 +197,10 @@ public class MessageEncoderImpl implements MessageEncoder {
 				ByteArrayInputStream byteArrayInputStream = null;
 				byteArrayInputStream = new ByteArrayInputStream(message.getBytes("UTF-8"));
 				XMLDecoder xmlDecoder = new XMLDecoder(byteArrayInputStream);
-				return (T)xmlDecoder.readObject();
-			} else if (encoding.equals(MEDIA_TYPE_ENCODER)) {
-				// Resolved by class name instead of a compile-time import/dependency on spring-web, see toString()
-				Class<?> mediaTypeClass = Class.forName("org.springframework.http.MediaType");
-				return (T)mediaTypeClass.getMethod("valueOf", String.class).invoke(null, message);
+				return (T) xmlDecoder.readObject();
+			} else if (SpecialEncodings.getClassOfEncoderIfApplicable(encoding) != null) {
+				Class<?> clazz = Class.forName(SpecialEncodings.getClassOfEncoderIfApplicable(encoding));
+				return (T)clazz.getMethod("valueOf", String.class).invoke(null, message);
 			} else {
 				return (T)message;
 			}

@@ -173,6 +173,7 @@
               <excludes>
                 <exclude>logback-test.xml</exclude>
                 <exclude>org/springframework/http/MediaType.class</exclude>
+                <exclude>org/springframework/util/MimeType.class</exclude>
               </excludes>
             </configuration>
           </execution>
