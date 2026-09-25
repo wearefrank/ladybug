@@ -179,6 +179,52 @@
         </executions>
       </plugin>
       <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <version>3.1.0</version>
+        <executions>
+          <!-- The classes in speciallyEncodedClasses.txt may have stand-ins in src/test/java, which
+               must not leak into the test-jar where they would shadow the real classes for consumers. -->
+          <execution>
+            <id>verify-test-jar-without-specially-encoded-classes</id>
+            <goals>
+              <goal>run</goal>
+            </goals>
+            <phase>verify</phase>
+            <configuration>
+              <target>
+                <loadfile property="speciallyEncodedClassFiles" srcFile="${project.basedir}/src/main/resources/ladybug/speciallyEncodedClasses.txt">
+                  <filterchain>
+                    <tokenfilter>
+                      <trim />
+                      <ignoreblank />
+                      <replacestring from="." to="/" />
+                      <replaceregex pattern="^(.+)$" replace="\1.class," />
+                    </tokenfilter>
+                    <striplinebreaks />
+                  </filterchain>
+                </loadfile>
+                <property name="testJar" value="${project.build.directory}/${project.build.finalName}-tests.jar" />
+                <fail message="Test jar ${testJar} not found">
+                  <condition>
+                    <not>
+                      <available file="${testJar}" />
+                    </not>
+                  </condition>
+                </fail>
+                <fail message="Test jar ${testJar} contains classes listed in speciallyEncodedClasses.txt (${speciallyEncodedClassFiles})">
+                  <condition>
+                    <resourcecount count="0" when="greater">
+                      <zipfileset includes="${speciallyEncodedClassFiles}" src="${testJar}" />
+                    </resourcecount>
+                  </condition>
+                </fail>
+              </target>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
       </plugin>
       <plugin>

@@ -1,0 +1,2 @@
+org.springframework.http.MediaType
+org.springframework.util.MimeType

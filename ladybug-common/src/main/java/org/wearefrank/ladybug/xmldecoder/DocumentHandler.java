@@ -29,14 +29,15 @@ import java.io.IOException;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParserFactory;
 
+import org.wearefrank.ladybug.util.SpecialEncodings;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -64,12 +65,13 @@ public final class DocumentHandler extends DefaultHandler {
 
     private ElementHandler handler;
 
-    public final static List<String> SAFE_CLASSES = Arrays.asList(
-            "org.wearefrank.ladybug.Report",
-            "org.wearefrank.ladybug.Checkpoint",
-            "java.util.HashMap",
-            "java.util.Collections",
-            "org.springframework.http.MediaType");
+    public final static List<String> SAFE_CLASSES = Stream.concat(
+            Stream.of(
+                    "org.wearefrank.ladybug.Report",
+                    "org.wearefrank.ladybug.Checkpoint",
+                    "java.util.HashMap",
+                    "java.util.Collections"),
+            SpecialEncodings.SPECIALLY_ENCODED_CLASSES.stream()).toList();
 
     public final static Map<String, String> OLD_REPORT_REPLACEMENT_CLASSES = Map.of(
             "nl.nn.testtool.Report", "org.wearefrank.ladybug.Report",
