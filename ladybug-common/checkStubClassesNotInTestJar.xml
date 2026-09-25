@@ -9,6 +9,8 @@
         <tokenfilter>
           <trim />
           <ignoreblank />
+          <!-- Keep only the first column, the class name -->
+          <replaceregex pattern="\s*,.*$" replace="" />
           <replacestring from="." to="/" />
           <replaceregex pattern="^(.+)$" replace="\1.class," />
         </tokenfilter>

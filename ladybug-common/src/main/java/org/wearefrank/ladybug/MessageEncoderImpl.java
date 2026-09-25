@@ -200,7 +200,7 @@ public class MessageEncoderImpl implements MessageEncoder {
 				return (T) xmlDecoder.readObject();
 			} else if (SpecialEncodings.getClassOfEncoderIfApplicable(encoding) != null) {
 				Class<?> clazz = Class.forName(SpecialEncodings.getClassOfEncoderIfApplicable(encoding));
-				return (T)clazz.getMethod("valueOf", String.class).invoke(null, message);
+				return (T)SpecialEncodings.instantiate(clazz, message);
 			} else {
 				return (T)message;
 			}

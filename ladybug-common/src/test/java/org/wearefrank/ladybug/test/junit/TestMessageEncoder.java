@@ -19,8 +19,18 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.text.SimpleDateFormat;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZonedDateTime;
 import java.util.Date;
+import java.util.List;
+import java.util.UUID;
 
 import javax.xml.parsers.ParserConfigurationException;
 
@@ -33,6 +43,7 @@ import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
 
 import org.wearefrank.ladybug.Checkpoint;
+import org.wearefrank.ladybug.MessageEncoder.ToStringResult;
 import org.wearefrank.ladybug.MessageEncoderImpl;
 import org.wearefrank.ladybug.Report;
 import org.wearefrank.ladybug.TestTool;
@@ -110,4 +121,32 @@ public class TestMessageEncoder {
 		assertEquals("test", node.getNodeName());
 	}
 
+
+	@Test
+	public void testSpeciallyEncodedClassesWithOtherFactoryThanValueOf() {
+		TestTool testTool = new TestTool();
+		Report report = new Report();
+		report.setTestTool(testTool);
+		Checkpoint checkpoint = new Checkpoint();
+		checkpoint.setReport(report);
+		List<Object> values = List.of(
+				Instant.parse("2026-09-25T13:38:53.123Z"),
+				LocalDate.parse("2026-09-25"),
+				LocalDateTime.parse("2026-09-25T15:38:53.123"),
+				OffsetDateTime.parse("2026-09-25T15:38:53.123+02:00"),
+				ZonedDateTime.parse("2026-09-25T15:38:53.123+02:00[Europe/Amsterdam]"),
+				Duration.parse("PT1H2M3S"),
+				UUID.fromString("0f8fad5b-d9cb-469f-a165-70867728950e"),
+				new BigDecimal("1234.5600"),
+				new BigDecimal("1E+3"),
+				new BigInteger("123456789012345678901234567890"));
+		for (Object value: values) {
+			ToStringResult toStringResult = testTool.getMessageEncoder().toString(value, null);
+			assertEquals(value.toString(), toStringResult.getString());
+			assertEquals(value.getClass().getName() + ".toString()", toStringResult.getEncoding());
+			checkpoint.setMessage(toStringResult.getString());
+			checkpoint.setEncoding(toStringResult.getEncoding());
+			assertEquals(value, checkpoint.getMessageAsObject());
+		}
+	}
 }

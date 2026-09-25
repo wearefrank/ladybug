@@ -24,11 +24,20 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.zip.GZIPInputStream;
 
 import org.junit.Assert;
@@ -235,6 +244,20 @@ public class TestExport {
 	@Test
 	public void testMimeTypeSerializationRoundtrip() {
 		testRoundTripOfSpecialEncoding(MimeType.valueOf("FakeMime/type"));
+	}
+
+	@Test
+	public void testSerializationRoundtripOfClassesWithOtherFactoryThanValueOf() {
+		testRoundTripOfSpecialEncoding(Instant.parse("2026-09-25T13:38:53.123Z"));
+		testRoundTripOfSpecialEncoding(LocalDate.parse("2026-09-25"));
+		testRoundTripOfSpecialEncoding(LocalDateTime.parse("2026-09-25T15:38:53.123"));
+		testRoundTripOfSpecialEncoding(OffsetDateTime.parse("2026-09-25T15:38:53.123+02:00"));
+		testRoundTripOfSpecialEncoding(ZonedDateTime.parse("2026-09-25T15:38:53.123+02:00[Europe/Amsterdam]"));
+		testRoundTripOfSpecialEncoding(Duration.parse("PT1H2M3S"));
+		testRoundTripOfSpecialEncoding(UUID.fromString("0f8fad5b-d9cb-469f-a165-70867728950e"));
+		testRoundTripOfSpecialEncoding(new BigDecimal("1234.5600"));
+		testRoundTripOfSpecialEncoding(new BigDecimal("1E+3"));
+		testRoundTripOfSpecialEncoding(new BigInteger("123456789012345678901234567890"));
 	}
 
 	void testRoundTripOfSpecialEncoding(Object instanceOfClassToTest) {
