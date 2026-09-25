@@ -193,32 +193,10 @@
             <phase>verify</phase>
             <configuration>
               <target>
-                <loadfile property="speciallyEncodedClassFiles" srcFile="${project.basedir}/src/main/resources/ladybug/speciallyEncodedClasses.txt">
-                  <filterchain>
-                    <tokenfilter>
-                      <trim />
-                      <ignoreblank />
-                      <replacestring from="." to="/" />
-                      <replaceregex pattern="^(.+)$" replace="\1.class," />
-                    </tokenfilter>
-                    <striplinebreaks />
-                  </filterchain>
-                </loadfile>
-                <property name="testJar" value="${project.build.directory}/${project.build.finalName}-tests.jar" />
-                <fail message="Test jar ${testJar} not found">
-                  <condition>
-                    <not>
-                      <available file="${testJar}" />
-                    </not>
-                  </condition>
-                </fail>
-                <fail message="Test jar ${testJar} contains classes listed in speciallyEncodedClasses.txt (${speciallyEncodedClassFiles})">
-                  <condition>
-                    <resourcecount count="0" when="greater">
-                      <zipfileset includes="${speciallyEncodedClassFiles}" src="${testJar}" />
-                    </resourcecount>
-                  </condition>
-                </fail>
+                <ant antfile="${project.basedir}/checkStubClassesNotInTestJar.xml" inheritAll="false">
+                  <property name="speciallyEncodedClassesFile" value="${project.basedir}/src/main/resources/ladybug/speciallyEncodedClasses.txt" />
+                  <property name="testJar" value="${project.build.directory}/${project.build.finalName}-tests.jar" />
+                </ant>
               </target>
             </configuration>
           </execution>
