@@ -84,16 +84,8 @@ export class ClientSettingsService {
     this.setShowStorageIdsInTestTab(!this.isShowStorageIdsInTestTab());
   }
 
-  public isMetadataTableVisible(): boolean {
-    return this.metadataTableVisibleSubject.value;
-  }
-
   public setMetadataTableVisible(value: boolean): void {
     this.metadataTableVisibleSubject.next(value);
-  }
-
-  public isMessageContextTableVisible(): boolean {
-    return this.messageContextTableVisibleSubject.value;
   }
 
   public setMessageContextTableVisible(value: boolean): void {
