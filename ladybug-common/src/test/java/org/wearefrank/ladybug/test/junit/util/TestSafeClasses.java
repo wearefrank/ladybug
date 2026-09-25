@@ -157,6 +157,22 @@ public class TestSafeClasses {
 	}
 
 	@Test
+	public void oldReportClassNamesAreReplaced() {
+		Result result = decode("<object class=\"nl.nn.testtool.Report\" id=\"Report0\">"
+				+ "<void property=\"name\"><string>old report</string></void>"
+				+ "<void property=\"checkpoints\"><void method=\"add\"><object class=\"nl.nn.testtool.Checkpoint\">"
+				+ "<void property=\"message\"><string>message</string></void>"
+				+ "<void property=\"report\"><object idref=\"Report0\"/></void>"
+				+ "</object></void></void></object>");
+		assertFalse(result.exceptions.toString(), result.isBlocked());
+		Report report = (Report) result.value;
+		assertEquals("old report", report.getName());
+		Checkpoint checkpoint = report.getCheckpoints().get(0);
+		assertEquals("message", checkpoint.getMessage());
+		assertEquals(report, checkpoint.getReport());
+	}
+
+	@Test
 	public void transientPropertiesAndOtherMethodsOfReportAreBlocked() {
 		assertTrue(decode("<object class=\"org.wearefrank.ladybug.Report\"><void property=\"testTool\"><null/></void></object>").isBlocked());
 		assertTrue(decode("<object class=\"org.wearefrank.ladybug.Report\"><void method=\"toXml\"/></object>").isBlocked());
