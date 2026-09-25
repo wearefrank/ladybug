@@ -25,11 +25,11 @@
         >Make null</button>
         <div class="separate">
           <div class="checkbox">
-            <input data-cy-open-metadata-table id="metadata" type="checkbox" [value]="metadataTableVisible" (click)="toggleMetadataTable()"/>
+            <input data-cy-open-metadata-table id="metadata" type="checkbox" [checked]="metadataTableVisible" (change)="onMetadataTableVisibleChange($event)"/>
             <label for="metadata">metadata</label>
           </div>
           <div class="checkbox">
-            <input data-cy-open-messagecontext-table id="messagecontext" type="checkbox" [value]="messageContextTableVisible" (click)="toggleMessageContextTable()"/>
+            <input data-cy-open-messagecontext-table id="messagecontext" type="checkbox" [checked]="messageContextTableVisible" (change)="onMessageContextTableVisibleChange($event)"/>
             <label for="messagecontext">messagecontext</label>
           </div>
           <select data-cy-checkpoint-stub-strategy #checkpointStubStrategy id="checkpointStubStrategy" class="form-select" [(ngModel)]="currentCheckpointStubStrategyStr"
@@ -80,7 +80,7 @@
       </button>
       @if (state.isReport) {
         <div>
-          <input data-cy-open-metadata-table id="metadata" type="checkbox" [value]="metadataTableVisible" (change)="toggleMetadataTable()">
+          <input data-cy-open-metadata-table id="metadata" type="checkbox" [checked]="metadataTableVisible" (change)="onMetadataTableVisibleChange($event)">
           <label for="metadata">metadata</label>
         </div>
       }
