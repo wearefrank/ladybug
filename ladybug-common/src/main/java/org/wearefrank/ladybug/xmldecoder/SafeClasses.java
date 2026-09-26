@@ -175,10 +175,11 @@ public final class SafeClasses {
 	}
 
 	/**
-	 * Throws an exception because reading or writing fields is never needed to decode a Ladybug report xml.
+	 * Returns the exception to throw on field access, because reading or writing fields is never needed to
+	 * decode a Ladybug report xml. The caller throws it, so the compiler can check that nothing happens after it.
 	 */
-	public static void rejectFieldAccess(String fieldName) {
-		throw new IllegalArgumentException(String.format(
+	public static IllegalArgumentException fieldAccessRejected(String fieldName) {
+		return new IllegalArgumentException(String.format(
 				"Unsupported field access while parsing Ladybug report xml: [%s]", fieldName));
 	}
 

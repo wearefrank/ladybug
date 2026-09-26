@@ -100,8 +100,7 @@ public final class DocumentHandler extends DefaultHandler {
         setElementHandler("var", VarElementHandler.class); // NON-NLS: the element name
         setElementHandler("true", TrueElementHandler.class); // NON-NLS: the element name
         setElementHandler("false", FalseElementHandler.class); // NON-NLS: the element name
-        // FieldElementHandler is using findClass
-        // setElementHandler("field", FieldElementHandler.class); // NON-NLS: the element name
+        // No handler for the field element, field access is not supported (see SafeClasses)
         setElementHandler("method", MethodElementHandler.class); // NON-NLS: the element name
         setElementHandler("property", PropertyElementHandler.class); // NON-NLS: the element name
     }

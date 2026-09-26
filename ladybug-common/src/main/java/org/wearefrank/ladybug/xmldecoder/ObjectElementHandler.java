@@ -138,7 +138,7 @@ class ObjectElementHandler extends NewElementHandler {
     @Override
     protected final ValueObject getValueObject(Class<?> type, Object[] args) throws Exception {
         if (this.field != null) {
-            SafeClasses.rejectFieldAccess(this.field);
+            throw SafeClasses.fieldAccessRejected(this.field);
         }
         if (this.idref != null) {
             return ValueObjectImpl.create(getVariable(this.idref));
