@@ -29,7 +29,6 @@ import java.io.IOException;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -64,11 +63,8 @@ public final class DocumentHandler extends DefaultHandler {
 
     private ElementHandler handler;
 
-    public final static List<String> SAFE_CLASSES = Arrays.asList(
-            "org.wearefrank.ladybug.Report",
-            "org.wearefrank.ladybug.Checkpoint",
-            "java.util.HashMap",
-            "java.util.Collections");
+    // See SafeClasses for why method calls are checked too
+    public final static List<String> SAFE_CLASSES = SafeClasses.ALL;
 
     public final static Map<String, String> OLD_REPORT_REPLACEMENT_CLASSES = Map.of(
             "nl.nn.testtool.Report", "org.wearefrank.ladybug.Report",
@@ -83,8 +79,7 @@ public final class DocumentHandler extends DefaultHandler {
         setElementHandler("java", JavaElementHandler.class); // NON-NLS: the element name
         setElementHandler("null", NullElementHandler.class); // NON-NLS: the element name
         setElementHandler("array", ArrayElementHandler.class); // NON-NLS: the element name
-        // ClassElementHandler is using findClass
-        // setElementHandler("class", ClassElementHandler.class); // NON-NLS: the element name
+        // ClassElementHandler was using findClass, so not used and deleted from this codebase.
         setElementHandler("string", StringElementHandler.class); // NON-NLS: the element name
         setElementHandler("object", ObjectElementHandler.class); // NON-NLS: the element name
 
@@ -104,8 +99,7 @@ public final class DocumentHandler extends DefaultHandler {
         setElementHandler("var", VarElementHandler.class); // NON-NLS: the element name
         setElementHandler("true", TrueElementHandler.class); // NON-NLS: the element name
         setElementHandler("false", FalseElementHandler.class); // NON-NLS: the element name
-        // FieldElementHandler is using findClass
-        // setElementHandler("field", FieldElementHandler.class); // NON-NLS: the element name
+        // No handler for the field element, field access is not supported (see SafeClasses)
         setElementHandler("method", MethodElementHandler.class); // NON-NLS: the element name
         setElementHandler("property", PropertyElementHandler.class); // NON-NLS: the element name
     }

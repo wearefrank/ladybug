@@ -1,5 +1,5 @@
 /*
-   Copyright 2021-2023, 2025 WeAreFrank!
+   Copyright 2021-2023, 2025-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -32,12 +32,16 @@ import java.nio.charset.CharacterCodingException;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CharsetEncoder;
+import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.ZoneOffset;
 import java.util.Date;
 
 import org.w3c.dom.Node;
 
 import lombok.SneakyThrows;
+import org.wearefrank.ladybug.util.SpecialEncodings;
 import org.wearefrank.ladybug.util.XmlUtil;
 import org.wearefrank.ladybug.xmldecoder.XMLDecoder;
 
@@ -58,6 +62,21 @@ public class MessageEncoderImpl implements MessageEncoder {
 	// Don't use static final SimpleDateFormat, see SimpleDateFormat javadoc: It is recommended to create separate format instances for each thread.
 	public static final String DATE_PATTERN = "yyyy-MM-dd'T'HH:mm:ss.SSSZ";
 	public static final String DATE_ENCODER = "SimpleDateFormat(\"" + DATE_PATTERN + "\")";
+	// Keeps the nanoseconds and, unlike Timestamp.toString(), does not depend on the time zone of the server.
+	//
+	// The other subclasses of java.util.Date in java.sql have no encoder on purpose. A java.sql.Date is a
+	// calendar date stored as midnight in the time zone of the server and a java.sql.Time is a time of day
+	// stored on a hidden date, usually 1970-01-01. Stored as an Instant they round-trip exactly, but may be shown
+	// as another day or time in another time zone, for example 2026-09-24T22:00:00Z for 2026-09-25 in the
+	// Netherlands. Stored as 2026-09-25 or 14:00:00 they are readable, but depend on the time zone of the server
+	// that reads the report. Some users mean a date or time in their own time zone, others mean a moment in time
+	// that is shown differently in each time zone. As no choice suits every user and these classes are not likely
+	// to appear in reports (the Frank!Framework converts JDBC DATE and TIME values to java.time.LocalDate and
+	// java.time.LocalTime), they are handled as a java.util.Date. In the message of a checkpoint they become a
+	// java.util.Date and in XMLEncoder output they are not safe classes (see SafeClasses).
+	public static final String TIMESTAMP_ENCODER = "Timestamp.toInstant().toString()";
+	// ZoneOffset is not in speciallyEncodedClasses.txt, see the comment in that file
+	public static final String ZONE_OFFSET_ENCODER = "ZoneOffset.toString()";
 	public static final String WAITING_FOR_STREAM_MESSAGE = "Waiting for stream to be read, captured and closed...";
 
 	@Override
@@ -99,9 +118,19 @@ public class MessageEncoderImpl implements MessageEncoder {
 			} else if (message instanceof Node) {
 				Node node = (Node)message;
 				toStringResult = new ToStringResult(XmlUtil.nodeToString(node), DOM_NODE_ENCODER);
+			} else if (message instanceof Timestamp) {
+				// Before Date, because a Timestamp is a Date
+				toStringResult = new ToStringResult(((Timestamp)message).toInstant().toString(), TIMESTAMP_ENCODER);
 			} else if (message instanceof Date) {
 				toStringResult = new ToStringResult(new SimpleDateFormat(DATE_PATTERN).format((Date)message),
 						DATE_ENCODER);
+			} else if (message instanceof ZoneOffset) {
+				toStringResult = new ToStringResult(message.toString(), ZONE_OFFSET_ENCODER);
+			} else if (SpecialEncodings.getSpecialEncoderIfApplicable(message.getClass().getName()) != null) {
+				// XMLEncoder cannot instantiate this Java type via reflection (no public no-arg constructor), causing
+				// a java.lang.InstantiationException to be logged. Use toString() instead. Matched by class name
+				// instead of instanceof to avoid adding a spring-web dependency to this module.
+				toStringResult = new ToStringResult(message.toString(), SpecialEncodings.getSpecialEncoderIfApplicable(message.getClass().getName()));
 			} else {
 				String xml = null;
 				ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
@@ -185,13 +214,20 @@ public class MessageEncoderImpl implements MessageEncoder {
 				}
 			} else if (encoding.equals(DOM_NODE_ENCODER)) {
 				return (T)XmlUtil.stringToNode(message);
+			} else if (encoding.equals(ZONE_OFFSET_ENCODER)) {
+				return (T)ZoneOffset.of(message);
+			} else if (encoding.equals(TIMESTAMP_ENCODER)) {
+				return (T)Timestamp.from(Instant.parse(message));
 			} else if (encoding.equals(DATE_ENCODER)) {
 				return (T)new SimpleDateFormat(DATE_PATTERN).parse(message);
 			} else if (encoding.equals(XML_ENCODER)) {
 				ByteArrayInputStream byteArrayInputStream = null;
 				byteArrayInputStream = new ByteArrayInputStream(message.getBytes("UTF-8"));
 				XMLDecoder xmlDecoder = new XMLDecoder(byteArrayInputStream);
-				return (T)xmlDecoder.readObject();
+				return (T) xmlDecoder.readObject();
+			} else if (SpecialEncodings.getClassOfEncoderIfApplicable(encoding) != null) {
+				Class<?> clazz = Class.forName(SpecialEncodings.getClassOfEncoderIfApplicable(encoding));
+				return (T)SpecialEncodings.instantiate(clazz, message);
 			} else {
 				return (T)message;
 			}

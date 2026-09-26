@@ -93,6 +93,7 @@ final class MethodElementHandler extends NewElementHandler {
     @Override
     protected ValueObject getValueObject(Class<?> type, Object[] args) throws Exception {
         Object bean = getContextBean();
+        SafeClasses.checkInvocation((type != null) ? type : bean, this.name, args);
         Class<?>[] types = getArgumentTypes(args);
         Method method = (type != null)
                 ? MethodFinder.findStaticMethod(type, this.name, types)
