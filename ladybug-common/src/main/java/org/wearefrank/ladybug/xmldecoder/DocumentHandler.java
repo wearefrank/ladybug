@@ -79,8 +79,7 @@ public final class DocumentHandler extends DefaultHandler {
         setElementHandler("java", JavaElementHandler.class); // NON-NLS: the element name
         setElementHandler("null", NullElementHandler.class); // NON-NLS: the element name
         setElementHandler("array", ArrayElementHandler.class); // NON-NLS: the element name
-        // ClassElementHandler is using findClass
-        // setElementHandler("class", ClassElementHandler.class); // NON-NLS: the element name
+        // ClassElementHandler was using findClass, so not used and deleted from this codebase.
         setElementHandler("string", StringElementHandler.class); // NON-NLS: the element name
         setElementHandler("object", ObjectElementHandler.class); // NON-NLS: the element name
 
