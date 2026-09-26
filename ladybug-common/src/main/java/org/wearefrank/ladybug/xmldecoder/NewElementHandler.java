@@ -54,7 +54,7 @@ import org.wearefrank.ladybug.xmldecoder.finder.ConstructorFinder;
  *
  * @author Sergey A. Malenkov
  */
-class NewElementHandler extends ElementHandler {
+abstract class NewElementHandler extends ElementHandler {
     private List<Object> arguments = new ArrayList<Object>();
     private ValueObject value = ValueObjectImpl.VOID;
 
@@ -134,26 +134,13 @@ class NewElementHandler extends ElementHandler {
     /**
      * Calculates the value of this element
      * using the base class and the array of arguments.
-     * By default, it creates an instance of the base class.
-     * This method should be overridden in those handlers
-     * that extend behavior of this element.
      *
      * @param type  the base class
      * @param args  the array of arguments
      * @return the value of this element
      * @throws Exception if calculation is failed
      */
-    ValueObject getValueObject(Class<?> type, Object[] args) throws Exception {
-        if (type == null) {
-            throw new IllegalArgumentException("Class name is not set");
-        }
-        Class<?>[] types = getArgumentTypes(args);
-        Constructor<?> constructor = ConstructorFinder.findConstructor(type, types);
-        if (constructor.isVarArgs()) {
-            args = getArguments(args, constructor.getParameterTypes());
-        }
-        return ValueObjectImpl.create(constructor.newInstance(args));
-    }
+    abstract ValueObject getValueObject(Class<?> type, Object[] args) throws Exception;
 
     /**
      * Converts the array of arguments to the array of corresponding classes.
