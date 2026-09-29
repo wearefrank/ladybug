@@ -42,6 +42,7 @@ import org.junit.Test;
 
 import org.wearefrank.ladybug.Checkpoint;
 import org.wearefrank.ladybug.Report;
+import org.wearefrank.ladybug.xmldecoder.SafeClasses;
 import org.wearefrank.ladybug.xmldecoder.XMLDecoder;
 
 public class TestSafeClasses {
@@ -260,5 +261,46 @@ public class TestSafeClasses {
 	public void methodAndPropertyElementsAreChecked() {
 		assertTrue(decode("<object class=\"java.util.HashMap\"><method name=\"getClass\"/></object>").isBlocked());
 		assertTrue(decode("<object class=\"java.util.Date\"><long>0</long><property name=\"time\"><long>5</long></property></object>").isBlocked());
+	}
+
+	@Test
+	public void getClassIsBlockedOnEveryKindOfObject() {
+		assertTrue(decode("<object class=\"java.util.ArrayList\"><void method=\"getClass\"/></object>").isBlocked());
+		assertTrue(decode("<object class=\"java.math.BigDecimal\"><string>1.50</string>"
+				+ "<void method=\"getClass\"/></object>").isBlocked());
+		assertTrue(decode("<object class=\"org.wearefrank.ladybug.Report\"><void method=\"getClass\"/></object>").isBlocked());
+	}
+
+	// Regression test for the RCE demonstrated in the offendingReport.xml proof of concept: getClass() followed
+	// by Class.forName() to reach an arbitrary class (java.lang.ProcessBuilder), and from there arbitrary
+	// command execution. Blocked twice over: getClass() itself is rejected (see the test above), and even if it
+	// were not, the resulting java.lang.Class object could never be handed back as a value of the decoder.
+	@Test
+	public void classObjectsCannotBeUsedToReachArbitraryClasses() {
+		Result result = decode("<object class=\"org.wearefrank.ladybug.Report\" id=\"report\">"
+				+ "<void method=\"getClass\"><void method=\"forName\" id=\"processBuilderClass\">"
+				+ "<string>java.lang.ProcessBuilder</string></void></void></object>"
+				+ "<object idref=\"processBuilderClass\"><void method=\"new\"><string>calc</string></void></object>");
+		assertTrue(result.isBlocked());
+	}
+
+	// Direct, white-box test of the extra safety net in SafeClasses.checkClassLookup(), independent of whether
+	// getClass() or some other, not yet known, way of obtaining a Class object is used or ever added.
+	@Test
+	public void checkClassLookupRejectsClassesNotInAll() {
+		try {
+			SafeClasses.checkClassLookup(ProcessBuilder.class);
+			throw new AssertionError("Expected an IllegalArgumentException");
+		} catch (IllegalArgumentException e) {
+			assertEquals("Unsupported class while parsing Ladybug report xml: [java.lang.ProcessBuilder]",
+					e.getMessage());
+		}
+	}
+
+	@Test
+	public void checkClassLookupAllowsClassesInAll() {
+		SafeClasses.checkClassLookup(Report.class);
+		SafeClasses.checkClassLookup(ArrayList.class);
+		SafeClasses.checkClassLookup(java.math.BigDecimal.class);
 	}
 }

@@ -75,6 +75,12 @@ import org.wearefrank.ladybug.util.SpecialEncodings;
  * collection property by calling add() or put() on the result of the getter.</li>
  * </ol>
  * All other method calls and all field access are blocked.
+ * <p>
+ * As a further, independent safety net, getClass() is explicitly rejected (see
+ * {@link #isAllowedInstanceInvocation}) and no java.lang.Class object for a class outside {@link #ALL} can ever
+ * become a value handled by the decoder, no matter how it was produced (see {@link #checkClassLookup}). This
+ * defends against reaching arbitrary classes through a Class object, the classic way to defeat a class allow
+ * list like this one, even if some other, not yet known, way of obtaining one were ever introduced.
  */
 public final class SafeClasses {
 	private SafeClasses() {}
@@ -183,6 +189,27 @@ public final class SafeClasses {
 				"Unsupported field access while parsing Ladybug report xml: [%s]", fieldName));
 	}
 
+	/**
+	 * Throws an exception if the given class is not in {@link #ALL}, the classes that may be used in a Ladybug
+	 * report xml. Called from {@code ValueObjectImpl.create(Object)}, the single place every value the decoder
+	 * hands back passes through, whether it ends up bound to a variable, used as a method argument or returned
+	 * as the final decoded object. A {@link Class} object for a class outside {@link #ALL} must never reach any
+	 * of those places: once obtained, it becomes the target of further method calls (see
+	 * {@link #isAllowedStaticInvocation}), and from there, classes not on this allow list could otherwise be
+	 * reached, for example through {@code Class.forName(String)}. Blocking it centrally here, rather than only
+	 * at each known call site that could produce one, such as {@code getClass()} (see
+	 * {@link #isAllowedInstanceInvocation}) or the {@code class} attribute (see {@code DocumentHandler.findClass}),
+	 * defends against any current or future way of obtaining a Class instance.
+	 *
+	 * @param clazz the class to check, never {@code null}
+	 */
+	public static void checkClassLookup(Class<?> clazz) {
+		if (!ALL.contains(clazz.getName())) {
+			throw new IllegalArgumentException(String.format(
+					"Unsupported class while parsing Ladybug report xml: [%s]", clazz.getName()));
+		}
+	}
+
 	private static boolean isAllowedStaticInvocation(Class<?> clazz, String methodName, Object[] args) {
 		String className = clazz.getName();
 		if (IMMUTABLE_CLASSES.containsKey(className)) {
@@ -199,6 +226,13 @@ public final class SafeClasses {
 
 	private static boolean isAllowedInstanceInvocation(Object target, String methodName, Object[] args) {
 		if (target == null) {
+			return false;
+		}
+		// Explicitly block getClass(), instead of relying on it not being listed as allowed below: getClass()
+		// is the classic way to reach a java.lang.Class object, and from there any other class, without ever
+		// going through DocumentHandler.findClass(). See also ValueObjectImpl.create(), which blocks any
+		// Class object from becoming a value of the decoder, in case some other method call would ever return one.
+		if ("getClass".equals(methodName)) {
 			return false;
 		}
 		LadybugClass ladybugClass = LADYBUG_CLASSES.get(target.getClass());
