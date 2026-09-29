@@ -62,6 +62,14 @@ public class TestSafeClasses {
 			return isBlockedWith("Unsupported method call");
 		}
 
+		boolean isClassBlocked() {
+			return isBlockedWith("Unsupported class");
+		}
+
+		boolean isFieldAccessBlocked() {
+			return isBlockedWith("Unsupported field access");
+		}
+
 		private boolean isBlockedWith(String messagePrefix) {
 			return exceptions.stream().anyMatch(e -> e instanceof IllegalArgumentException
 					&& e.getMessage().startsWith(messagePrefix));
@@ -93,7 +101,7 @@ public class TestSafeClasses {
 		Result result = decode("<object class=\"java.util.HashMap\"><void method=\"getClass\"><void method=\"forName\">"
 				+ "<string>java.lang.System</string><void method=\"setProperty\"><string>" + PROPERTY + "</string>"
 				+ "<string>reached</string></void></void></void></object>");
-		assertTrue(result.isBlocked());
+		assertTrue(result.isMethodCallBlocked());
 		assertNull(System.getProperty(PROPERTY));
 	}
 
@@ -115,7 +123,7 @@ public class TestSafeClasses {
 	public void noMethodsCanBeCalledOnImmutableClass() {
 		SafeClassesTestAccess.setChallengeMethodInvocations(true);
 		Result result = decode("<object class=\"java.util.Date\"><long>0</long><void method=\"setTime\"><long>5</long></void></object>");
-		assertTrue(result.isBlocked());
+		assertTrue(result.isMethodCallBlocked());
 	}
 
 	@Test
@@ -134,18 +142,18 @@ public class TestSafeClasses {
 		Result result = decode("<object class=\"java.time.ZoneOffset\" method=\"ofTotalSeconds\"><int>7200</int></object>");
 		assertFalse(result.exceptions.toString(), result.isBlocked());
 		assertEquals(java.time.ZoneOffset.ofHours(2), result.value);
-		assertTrue(decode("<object class=\"java.time.ZoneOffset\" method=\"of\"><string>+02:00</string></object>").isBlocked());
+		assertTrue(decode("<object class=\"java.time.ZoneOffset\" method=\"of\"><string>+02:00</string></object>").isMethodCallBlocked());
 	}
 
 	@Test
 	public void onlySetNanosCanBeCalledOnTimestamp() {
 		SafeClassesTestAccess.setChallengeMethodInvocations(true);
-		assertTrue(decode("<object class=\"java.sql.Timestamp\"><long>0</long><void property=\"time\"><long>5</long></void></object>").isBlocked());
+		assertTrue(decode("<object class=\"java.sql.Timestamp\"><long>0</long><void property=\"time\"><long>5</long></void></object>").isMethodCallBlocked());
 	}
 
 	@Test
 	public void immutableClassCanOnlyBeCreatedWithConfiguredFactory() {
-		assertTrue(decode("<object class=\"java.util.UUID\" method=\"randomUUID\"/>").isBlocked());
+		assertTrue(decode("<object class=\"java.util.UUID\" method=\"randomUUID\"/>").isMethodCallBlocked());
 		assertFalse(decode("<object class=\"java.util.UUID\" method=\"fromString\">"
 				+ "<string>0f8fad5b-d9cb-469f-a165-70867728950e</string></object>").isBlocked());
 	}
@@ -155,8 +163,8 @@ public class TestSafeClasses {
 		Result result = decode("<object class=\"java.util.ArrayList\"><void method=\"add\"><string>a</string></void></object>");
 		assertFalse(result.isBlocked());
 		assertEquals(List.of("a"), result.value);
-		assertTrue(decode("<object class=\"java.util.ArrayList\"><void method=\"iterator\"/></object>").isBlocked());
-		assertTrue(decode("<object class=\"java.util.ArrayList\"><void method=\"stream\"/></object>").isBlocked());
+		assertTrue(decode("<object class=\"java.util.ArrayList\"><void method=\"iterator\"/></object>").isMethodCallBlocked());
+		assertTrue(decode("<object class=\"java.util.ArrayList\"><void method=\"stream\"/></object>").isMethodCallBlocked());
 	}
 
 	@Test
@@ -230,23 +238,30 @@ public class TestSafeClasses {
 
 	@Test
 	public void otherCollectionImplementationsAreBlocked() {
-		assertTrue(decode("<object class=\"java.util.concurrent.CopyOnWriteArrayList\"/>").isBlocked());
+		assertTrue(decode("<object class=\"java.util.concurrent.CopyOnWriteArrayList\"/>").isClassBlocked());
 	}
 
 	@Test
 	public void otherMapImplementationsAreBlocked() {
 		// java.util.jar.Attributes implements Map but is not listed as safe
-		assertTrue(decode("<object class=\"java.util.jar.Attributes\"/>").isBlocked());
+		assertTrue(decode("<object class=\"java.util.jar.Attributes\"/>").isClassBlocked());
+	}
+
+	@Test
+	public void classesThatAreNeitherSafeNorCollectionsCannotBeInstantiated() {
+		// java.lang.StringBuilder is neither an immutable class, a collection/map nor a Ladybug class,
+		// so it must be rejected before any constructor or method is even considered
+		assertTrue(decode("<object class=\"java.lang.StringBuilder\"/>").isClassBlocked());
 	}
 
 	@Test
 	public void mapsCanOnlyBeManipulatedNotQueriedOrIterated() {
 		SafeClassesTestAccess.setChallengeMethodInvocations(true);
-		assertTrue(decode("<object class=\"java.util.TreeMap\"><void method=\"comparator\"/></object>").isBlocked());
-		assertTrue(decode("<object class=\"java.util.Properties\"><void method=\"load\"><null/></void></object>").isBlocked());
-		assertTrue(decode("<object class=\"java.util.HashMap\"><void method=\"entrySet\"/></object>").isBlocked());
-		assertTrue(decode("<object class=\"java.util.HashMap\"><void method=\"keySet\"/></object>").isBlocked());
-		assertTrue(decode("<object class=\"java.util.HashMap\"><void method=\"get\"><string>k</string></void></object>").isBlocked());
+		assertTrue(decode("<object class=\"java.util.TreeMap\"><void method=\"comparator\"/></object>").isMethodCallBlocked());
+		assertTrue(decode("<object class=\"java.util.Properties\"><void method=\"load\"><null/></void></object>").isMethodCallBlocked());
+		assertTrue(decode("<object class=\"java.util.HashMap\"><void method=\"entrySet\"/></object>").isMethodCallBlocked());
+		assertTrue(decode("<object class=\"java.util.HashMap\"><void method=\"keySet\"/></object>").isMethodCallBlocked());
+		assertTrue(decode("<object class=\"java.util.HashMap\"><void method=\"get\"><string>k</string></void></object>").isMethodCallBlocked());
 	}
 
 	// Returns the content of the java element written by XMLEncoder
@@ -265,7 +280,7 @@ public class TestSafeClasses {
 				+ "<void method=\"put\"><string>k</string><string>v</string></void></object></object>");
 		assertFalse(result.isBlocked());
 		assertEquals(Map.of("k", "v"), result.value);
-		assertTrue(decode("<object class=\"java.util.Collections\" method=\"shuffle\"><object class=\"java.util.ArrayList\"/></object>").isBlocked());
+		assertTrue(decode("<object class=\"java.util.Collections\" method=\"shuffle\"><object class=\"java.util.ArrayList\"/></object>").isMethodCallBlocked());
 	}
 
 	@Test
@@ -305,9 +320,9 @@ public class TestSafeClasses {
 	@Test
 	public void transientPropertiesAndOtherMethodsOfReportAreBlocked() {
 		SafeClassesTestAccess.setChallengeMethodInvocations(true);
-		assertTrue(decode("<object class=\"org.wearefrank.ladybug.Report\"><void property=\"testTool\"><null/></void></object>").isBlocked());
-		assertTrue(decode("<object class=\"org.wearefrank.ladybug.Report\"><void method=\"toXml\"/></object>").isBlocked());
-		assertTrue(decode("<object class=\"org.wearefrank.ladybug.Checkpoint\"><void method=\"getReport\"/></object>").isBlocked());
+		assertTrue(decode("<object class=\"org.wearefrank.ladybug.Report\"><void property=\"testTool\"><null/></void></object>").isMethodCallBlocked());
+		assertTrue(decode("<object class=\"org.wearefrank.ladybug.Report\"><void method=\"toXml\"/></object>").isMethodCallBlocked());
+		assertTrue(decode("<object class=\"org.wearefrank.ladybug.Checkpoint\"><void method=\"getReport\"/></object>").isMethodCallBlocked());
 	}
 
 	@Test
@@ -315,28 +330,28 @@ public class TestSafeClasses {
 		SafeClassesTestAccess.setChallengeMethodInvocations(true);
 		// Checkpoint.setMessage(Object) instead of the bean setter Checkpoint.setMessage(String)
 		assertTrue(decode("<object class=\"org.wearefrank.ladybug.Checkpoint\"><void property=\"message\">"
-				+ "<object class=\"java.util.HashMap\"/></void></object>").isBlocked());
+				+ "<object class=\"java.util.HashMap\"/></void></object>").isMethodCallBlocked());
 	}
 
 	@Test
 	public void fieldAccessIsBlocked() {
-		assertTrue(decode("<object class=\"java.util.Collections\" field=\"EMPTY_LIST\"/>").isBlocked());
+		assertTrue(decode("<object class=\"java.util.Collections\" field=\"EMPTY_LIST\"/>").isFieldAccessBlocked());
 	}
 
 	@Test
 	public void methodAndPropertyElementsAreChecked() {
 		SafeClassesTestAccess.setChallengeMethodInvocations(true);
-		assertTrue(decode("<object class=\"java.util.HashMap\"><method name=\"getClass\"/></object>").isBlocked());
-		assertTrue(decode("<object class=\"java.util.Date\"><long>0</long><property name=\"time\"><long>5</long></property></object>").isBlocked());
+		assertTrue(decode("<object class=\"java.util.HashMap\"><method name=\"getClass\"/></object>").isMethodCallBlocked());
+		assertTrue(decode("<object class=\"java.util.Date\"><long>0</long><property name=\"time\"><long>5</long></property></object>").isMethodCallBlocked());
 	}
 
 	@Test
 	public void getClassIsBlockedOnEveryKindOfObject() {
 		SafeClassesTestAccess.setChallengeMethodInvocations(true);
-		assertTrue(decode("<object class=\"java.util.ArrayList\"><void method=\"getClass\"/></object>").isBlocked());
+		assertTrue(decode("<object class=\"java.util.ArrayList\"><void method=\"getClass\"/></object>").isMethodCallBlocked());
 		assertTrue(decode("<object class=\"java.math.BigDecimal\"><string>1.50</string>"
-				+ "<void method=\"getClass\"/></object>").isBlocked());
-		assertTrue(decode("<object class=\"org.wearefrank.ladybug.Report\"><void method=\"getClass\"/></object>").isBlocked());
+				+ "<void method=\"getClass\"/></object>").isMethodCallBlocked());
+		assertTrue(decode("<object class=\"org.wearefrank.ladybug.Report\"><void method=\"getClass\"/></object>").isMethodCallBlocked());
 	}
 
 	// Regression test for the RCE demonstrated in the offendingReport.xml proof of concept: getClass() followed
@@ -350,7 +365,7 @@ public class TestSafeClasses {
 				+ "<void method=\"getClass\"><void method=\"forName\" id=\"processBuilderClass\">"
 				+ "<string>java.lang.ProcessBuilder</string></void></void></object>"
 				+ "<object idref=\"processBuilderClass\"><void method=\"new\"><string>calc</string></void></object>");
-		assertTrue(result.isBlocked());
+		assertTrue(result.isMethodCallBlocked());
 	}
 
 	// Direct, white-box test of the extra safety net in SafeClasses.checkClassLookup(), independent of whether
