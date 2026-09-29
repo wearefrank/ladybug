@@ -114,7 +114,7 @@ final class JavaElementHandler extends ElementHandler {
     }
 
     /**
-     * Returns the owner of the owner document handler
+     * Returns the owner of the owner document handler. Safeguarded when wrapped into ValueObject.
      * as a value of &lt;java&gt; element.
      *
      * @return the owner of the owner document handler

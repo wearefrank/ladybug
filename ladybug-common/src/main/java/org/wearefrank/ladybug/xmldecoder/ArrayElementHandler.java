@@ -112,13 +112,14 @@ final class ArrayElementHandler extends NewElementHandler {
     /**
      * Creates an instance of the array.
      *
-     * @param type  the base class
+     * @param type  the base class, safeguarded because type is an argument of some ancestor.
      * @param args  the array of arguments
      * @return the value of this element
      */
     @Override
     protected ValueObject getValueObject(Class<?> type, Object[] args) {
         if (type == null) {
+            SafeClasses.checkClassLookup(Object.class);
             type = Object.class;
         }
         if (this.length != null) {
