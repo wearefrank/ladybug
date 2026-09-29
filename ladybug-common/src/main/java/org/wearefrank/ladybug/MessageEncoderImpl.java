@@ -135,6 +135,7 @@ public class MessageEncoderImpl implements MessageEncoder {
 				String xml = null;
 				ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
 				XMLEncoder encoder = new XMLEncoder(byteArrayOutputStream);
+				SpecialEncodings.registerExportDelegates(encoder);
 				XMLEncoderExceptionListener exceptionListener = new XMLEncoderExceptionListener();
 				encoder.setExceptionListener(exceptionListener);
 				encoder.writeObject(message);
