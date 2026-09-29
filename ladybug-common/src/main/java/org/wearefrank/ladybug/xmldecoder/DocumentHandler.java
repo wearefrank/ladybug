@@ -386,7 +386,7 @@ public final class DocumentHandler extends DefaultHandler {
         if (OLD_REPORT_REPLACEMENT_CLASSES.containsKey(name)) {
             name = OLD_REPORT_REPLACEMENT_CLASSES.get(name);
         }
-        if (!SAFE_CLASSES.contains(name)) {
+        if (!SafeClasses.isAllowedClassName(name)) {
             throw new IllegalArgumentException(String.format(
                     "Unsupported class while parsing Ladybug report xml: [%s]", name));
         }

@@ -145,6 +145,15 @@ public final class SafeClasses {
 	 */
 	public static final List<String> ALL = createAll();
 
+	/**
+	 * Only for unit tests that check the safety of method invocations. When true, every class may be looked up
+	 * and instantiated, not only the classes in {@link #ALL}, so a test can prove that dangerous methods of an
+	 * arbitrary class are blocked by the method checks alone. All other method invocations are still checked as
+	 * usual. Package-private and without a setter on purpose: it can only be written by test code in this
+	 * package (see SafeClassesTestAccess in src/test), so it is always false in production.
+	 */
+	static boolean challengeMethodInvocations = false;
+
 	private static Map<String, String> createImmutableClasses() {
 		Map<String, String> result = new LinkedHashMap<>();
 		// XMLEncoder writes new Date(long)
@@ -212,13 +221,23 @@ public final class SafeClasses {
 	 * @param clazz the class to check, never {@code null}
 	 */
 	public static void checkClassLookup(Class<?> clazz) {
-		if (!ALL.contains(clazz.getName())) {
+		if (!isAllowedClassName(clazz.getName())) {
 			throw new IllegalArgumentException(String.format(
 					"Unsupported class while parsing Ladybug report xml: [%s]", clazz.getName()));
 		}
 	}
 
+	/**
+	 * Returns whether the class with the given name may be used in a Ladybug report xml, see {@link #ALL}.
+	 */
+	static boolean isAllowedClassName(String className) {
+		return challengeMethodInvocations || ALL.contains(className);
+	}
+
 	private static boolean isAllowedStaticInvocation(Class<?> clazz, String methodName, Object[] args) {
+		if (challengeMethodInvocations && isConstructorMethodName(methodName)) {
+			return true;
+		}
 		String className = clazz.getName();
 		if (IMMUTABLE_CLASSES.containsKey(className)) {
 			String factoryMethod = IMMUTABLE_CLASSES.get(className);
