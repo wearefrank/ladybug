@@ -90,6 +90,10 @@ public final class SafeClasses {
 	private SafeClasses() {}
 
 	private static final String CONSTRUCTOR = "new";
+	// XMLEncoder itself never writes this, but a persistence delegate could plausibly use
+	// Class.newInstance()/Constructor.newInstance() instead of Expression's usual "new" marker to describe
+	// a plain construction. Treated as equivalent to CONSTRUCTOR everywhere a constructor call is allowed.
+	private static final String CONSTRUCTOR_REFLECTIVE = "newInstance";
 
 	// Category 1: maps each class name to the constructor ("new") or static method that creates an instance
 	private static final Map<String, String> IMMUTABLE_CLASSES = createImmutableClasses();
@@ -166,7 +170,7 @@ public final class SafeClasses {
 	 * Throws an exception unless the decoder is allowed to call the given method.
 	 *
 	 * @param target      the object to call the method on, or the class for a static method or constructor
-	 * @param methodName  the name of the method, "new" for a constructor
+	 * @param methodName  the name of the method, "new" or "newInstance" for a constructor
 	 * @param args        the arguments of the call
 	 */
 	public static void checkInvocation(Object target, String methodName, Object[] args) {
@@ -217,15 +221,25 @@ public final class SafeClasses {
 	private static boolean isAllowedStaticInvocation(Class<?> clazz, String methodName, Object[] args) {
 		String className = clazz.getName();
 		if (IMMUTABLE_CLASSES.containsKey(className)) {
-			return IMMUTABLE_CLASSES.get(className).equals(methodName) && args.length == 1;
+			String factoryMethod = IMMUTABLE_CLASSES.get(className);
+			boolean matches = CONSTRUCTOR.equals(factoryMethod)
+					? isConstructorMethodName(methodName)
+					: factoryMethod.equals(methodName);
+			return matches && args.length == 1;
 		}
 		if (COLLECTION_CLASSES.contains(className) || LADYBUG_CLASSES.containsKey(clazz)) {
-			return CONSTRUCTOR.equals(methodName);
+			return isConstructorMethodName(methodName);
 		}
 		if (clazz == Collections.class) {
 			return COLLECTIONS_FACTORY_METHODS.contains(methodName);
 		}
 		return false;
+	}
+
+	// "new" is the marker Expression uses for an ordinary constructor call; "newInstance" is accepted as an
+	// equivalent, in case a persistence delegate ever describes the same plain construction that way.
+	private static boolean isConstructorMethodName(String methodName) {
+		return CONSTRUCTOR.equals(methodName) || CONSTRUCTOR_REFLECTIVE.equals(methodName);
 	}
 
 	private static boolean isAllowedInstanceInvocation(Object target, String methodName, Object[] args) {
