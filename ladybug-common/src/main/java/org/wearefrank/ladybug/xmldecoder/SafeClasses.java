@@ -66,8 +66,12 @@ import org.wearefrank.ladybug.util.SpecialEncodings;
  * java.sql.Timestamp.setNanos(), because XMLEncoder writes a Timestamp as new Timestamp(long) followed by
  * setNanos(int).</li>
  * <li>Collections: the lists, sets, queues and maps of java.util and java.util.concurrent that XMLEncoder
- * can write. They can be instantiated and only filled, using add() for a {@link Collection}
- * and put() for a {@link Map}. The static factory methods of {@link Collections} that XMLEncoder uses
+ * can write. They can be instantiated and their contents can be manipulated, using the methods of
+ * {@link Collection} and {@link Map} that only add, remove or replace elements, such as add(), addAll(),
+ * remove(), removeAll(), retainAll(), clear(), put(), putAll() and replace(). Methods that would hand back
+ * a new object of a class that is not on this allow list, like entrySet() or iterator(), or that take a
+ * functional interface argument, like removeIf() or merge(), are deliberately not allowed; see
+ * {@link #isAllowedInstanceInvocation}. The static factory methods of {@link Collections} that XMLEncoder uses
  * for wrapped collections, like unmodifiableMap(), are allowed too.</li>
  * <li>The Ladybug classes {@link Report} and {@link Checkpoint}. They can be instantiated and filled,
  * using the setters of their persistent bean properties, the properties that XMLEncoder writes.
@@ -240,16 +244,52 @@ public final class SafeClasses {
 			return ladybugClass.isAllowed(methodName, args);
 		}
 		if (target instanceof Collection) {
-			return "add".equals(methodName) && args.length == 1;
+			return isAllowedCollectionInvocation(methodName, args);
 		}
 		if (target instanceof Map) {
-			return "put".equals(methodName) && args.length == 2;
+			return isAllowedMapInvocation(methodName, args);
 		}
 		if (TIMESTAMP_CLASS.equals(target.getClass().getName())) {
 			return "setNanos".equals(methodName) && args.length == 1 && args[0] instanceof Integer;
 		}
 		// Includes the instances of the other immutable classes
 		return false;
+	}
+
+	// Only methods that add, remove or replace elements. All of them only take elements, or a Collection that
+	// is itself already on this allow list, as arguments, and return void, a boolean or an element that was
+	// already in the collection. Methods that hand back a new object, like entrySet() or iterator(), whose
+	// concrete class is not on this allow list, or that take a functional interface argument, like removeIf(),
+	// are deliberately not allowed.
+	private static boolean isAllowedCollectionInvocation(String methodName, Object[] args) {
+		switch (methodName) {
+			case "add", "remove":
+				return args.length == 1;
+			case "addAll", "removeAll", "retainAll":
+				return args.length == 1 && args[0] instanceof Collection;
+			case "clear":
+				return args.length == 0;
+			default:
+				return false;
+		}
+	}
+
+	// Same idea as isAllowedCollectionInvocation(), for the methods of Map.
+	private static boolean isAllowedMapInvocation(String methodName, Object[] args) {
+		switch (methodName) {
+			case "put", "putIfAbsent":
+				return args.length == 2;
+			case "putAll":
+				return args.length == 1 && args[0] instanceof Map;
+			case "remove":
+				return args.length == 1 || args.length == 2;
+			case "replace":
+				return args.length == 2 || args.length == 3;
+			case "clear":
+				return args.length == 0;
+			default:
+				return false;
+		}
 	}
 
 	private static class LadybugClass {

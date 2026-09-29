@@ -124,12 +124,46 @@ public class TestSafeClasses {
 	}
 
 	@Test
-	public void collectionsCanOnlyBeFilled() {
+	public void collectionsCanBeFilledAndEmptied() {
 		Result result = decode("<object class=\"java.util.ArrayList\"><void method=\"add\"><string>a</string></void></object>");
 		assertFalse(result.isBlocked());
 		assertEquals(List.of("a"), result.value);
-		assertTrue(decode("<object class=\"java.util.ArrayList\"><void method=\"clear\"/></object>").isBlocked());
-		assertTrue(decode("<object class=\"java.util.HashMap\"><void method=\"remove\"><string>a</string></void></object>").isBlocked());
+		assertTrue(decode("<object class=\"java.util.ArrayList\"><void method=\"iterator\"/></object>").isBlocked());
+		assertTrue(decode("<object class=\"java.util.ArrayList\"><void method=\"stream\"/></object>").isBlocked());
+	}
+
+	@Test
+	public void collectionsCanBeManipulatedWithAddAllRemoveAllRetainAllAndClear() {
+		Result result = decode("<object class=\"java.util.ArrayList\">"
+				+ "<void method=\"addAll\"><object class=\"java.util.ArrayList\">"
+				+ "<void method=\"add\"><string>a</string></void><void method=\"add\"><string>b</string></void></object></void>"
+				+ "<void method=\"add\"><string>c</string></void>"
+				+ "<void method=\"remove\"><string>b</string></void>"
+				+ "<void method=\"removeAll\"><object class=\"java.util.ArrayList\">"
+				+ "<void method=\"add\"><string>c</string></void></object></void>"
+				+ "<void method=\"retainAll\"><object class=\"java.util.ArrayList\">"
+				+ "<void method=\"add\"><string>a</string></void></object></void>"
+				+ "</object>");
+		assertFalse(result.exceptions.toString(), result.isBlocked());
+		assertEquals(List.of("a"), result.value);
+		assertFalse(decode("<object class=\"java.util.ArrayList\"><void method=\"add\"><string>a</string></void>"
+				+ "<void method=\"clear\"/></object>").isBlocked());
+	}
+
+	@Test
+	public void mapsCanBeManipulatedWithPutAllRemoveReplaceAndClear() {
+		Result result = decode("<object class=\"java.util.HashMap\">"
+				+ "<void method=\"putAll\"><object class=\"java.util.HashMap\">"
+				+ "<void method=\"put\"><string>k</string><string>v</string></void>"
+				+ "<void method=\"put\"><string>k2</string><string>v2</string></void></object></void>"
+				+ "<void method=\"remove\"><string>k2</string></void>"
+				+ "<void method=\"replace\"><string>k</string><string>v3</string></void>"
+				+ "<void method=\"putIfAbsent\"><string>k4</string><string>v4</string></void>"
+				+ "</object>");
+		assertFalse(result.exceptions.toString(), result.isBlocked());
+		assertEquals(Map.of("k", "v3", "k4", "v4"), result.value);
+		assertFalse(decode("<object class=\"java.util.HashMap\"><void method=\"put\"><string>k</string><string>v</string></void>"
+				+ "<void method=\"clear\"/></object>").isBlocked());
 	}
 
 	@Test
@@ -179,10 +213,12 @@ public class TestSafeClasses {
 	}
 
 	@Test
-	public void mapsCanOnlyBeFilled() {
+	public void mapsCanOnlyBeManipulatedNotQueriedOrIterated() {
 		assertTrue(decode("<object class=\"java.util.TreeMap\"><void method=\"comparator\"/></object>").isBlocked());
 		assertTrue(decode("<object class=\"java.util.Properties\"><void method=\"load\"><null/></void></object>").isBlocked());
-		assertTrue(decode("<object class=\"java.util.concurrent.ConcurrentHashMap\"><void method=\"clear\"/></object>").isBlocked());
+		assertTrue(decode("<object class=\"java.util.HashMap\"><void method=\"entrySet\"/></object>").isBlocked());
+		assertTrue(decode("<object class=\"java.util.HashMap\"><void method=\"keySet\"/></object>").isBlocked());
+		assertTrue(decode("<object class=\"java.util.HashMap\"><void method=\"get\"><string>k</string></void></object>").isBlocked());
 	}
 
 	// Returns the content of the java element written by XMLEncoder
