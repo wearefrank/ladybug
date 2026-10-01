@@ -77,7 +77,7 @@
 
     <spring.version>6.2.19</spring.version>
     <spring.security.version>6.5.9</spring.security.version>
-    <cxf.version>4.2.0</cxf.version>
+    <cxf.version>4.2.3</cxf.version>
     <spring.boot.version>3.5.4</spring.boot.version>
     <tomcat.embed.version>10.1.44</tomcat.embed.version>
     <jackson.version.stripped>2.22</jackson.version.stripped>
