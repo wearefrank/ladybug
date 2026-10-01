@@ -27,7 +27,6 @@ describe('ReportButtons', () => {
     });
     component.originalReportStubStrategy$ = originalReportStubStrategySubject;
     component.rerunResult$ = new Subject<TestResult | undefined>() as Observable<TestResult | undefined>;
-    component.reset$ = new Subject<void>();
     fixture.detectChanges();
   });
 
