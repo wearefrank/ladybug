@@ -112,7 +112,7 @@ final class ArrayElementHandler extends NewElementHandler {
     /**
      * Creates an instance of the array.
      *
-     * @param type  the base class, safeguarded because type is an argument of some ancestor.
+     * @param type  the base class
      * @param args  the array of arguments
      * @return the value of this element
      */
