@@ -126,15 +126,29 @@ public class TestPrimitiveTypes {
 	public void idAndIdrefCanBeUsedToReuseAPreviouslyDecodedIntOrString() {
 		List<Exception> exceptions = new ArrayList<>();
 		// An element with an id attribute is only stored as a variable, not itself returned by readObject();
-		// only the <var idref=".."/> that looks it back up becomes a top-level decoded object.
+		// only the <var idref=".."/> that looks it back up becomes a top-level decoded object. The decoy variable
+		// "other", stored after "n" and "s" but before either is looked up, makes sure idref resolves by the
+		// specific id given: a lookup that instead returned whatever variable was stored most recently would
+		// wrongly return the decoy's value for both <var> elements below.
 		String xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><java class=\"java.beans.XMLDecoder\">"
-				+ "<int id=\"n\">99</int><var idref=\"n\"/>"
-				+ "<string id=\"s\">reused</string><var idref=\"s\"/>"
+				+ "<int id=\"n\">99</int>"
+				+ "<string id=\"s\">reused</string>"
+				+ "<int id=\"other\">-1</int>"
+				+ "<var idref=\"n\"/>"
+				+ "<var idref=\"s\"/>"
 				+ "</java>";
 		XMLDecoder decoder = new XMLDecoder(new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8)), null, exceptions::add);
 		assertEquals(99, decoder.readObject());
 		assertEquals("reused", decoder.readObject());
 		assertTrue(exceptions.toString(), exceptions.isEmpty());
+		// Only the two <var> elements were decoded as top-level objects: the three id'd elements, despite being
+		// decoded too, were only stored as variables, not added to the result of readObject().
+		try {
+			decoder.readObject();
+			throw new AssertionError("Expected an ArrayIndexOutOfBoundsException, no third object was written");
+		} catch (ArrayIndexOutOfBoundsException expected) {
+			// readObject() throws this when the stream has no (more) objects left, per its javadoc
+		}
 	}
 
 	@Test
