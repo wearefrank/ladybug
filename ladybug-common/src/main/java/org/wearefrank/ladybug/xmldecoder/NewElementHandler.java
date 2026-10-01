@@ -109,7 +109,6 @@ abstract class NewElementHandler extends ElementHandler {
      */
     @Override
     protected final Object getContextBean() {
-        // Safe. If the type were unsafe it would not have been written.
         return (this.type != null)
                 ? this.type
                 : super.getContextBean();
@@ -124,7 +123,6 @@ abstract class NewElementHandler extends ElementHandler {
     protected final ValueObject getValueObject() {
         if (this.arguments != null) {
             try {
-                // Safe. If the type were unsafe it would not have been written.
                 this.value = getValueObject(this.type, this.arguments.toArray());
             }
             catch (Exception exception) {
@@ -173,7 +171,7 @@ abstract class NewElementHandler extends ElementHandler {
      * Resolves variable arguments.
      *
      * @param arguments  the array of arguments
-     * @param types      the array of parameter types, safeguarded by getArgumentTypes().
+     * @param types      the array of parameter types
      * @return the resolved array of arguments
      */
     static Object[] getArguments(Object[] arguments, Class<?>[] types) {

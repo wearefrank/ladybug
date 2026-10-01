@@ -63,9 +63,6 @@ public final class DocumentHandler extends DefaultHandler {
 
     private ElementHandler handler;
 
-    // See SafeClasses for why method calls are checked too
-    public final static List<String> SAFE_CLASSES = SafeClasses.ALL;
-
     public final static Map<String, String> OLD_REPORT_REPLACEMENT_CLASSES = Map.of(
             "nl.nn.testtool.Report", "org.wearefrank.ladybug.Report",
             "nl.nn.testtool.Checkpoint", "org.wearefrank.ladybug.Checkpoint"
