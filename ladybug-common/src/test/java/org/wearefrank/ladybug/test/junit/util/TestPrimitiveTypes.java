@@ -220,3 +220,4 @@ public class TestPrimitiveTypes {
 		assertArrayEquals(new int[] {123, 456}, (int[]) result.value);
 	}
 }
+
