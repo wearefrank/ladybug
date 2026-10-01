@@ -390,6 +390,10 @@ public final class DocumentHandler extends DefaultHandler {
             throw new IllegalArgumentException(String.format(
                     "Unsupported class while parsing Ladybug report xml: [%s]", name));
         }
+        Class<?> primitiveType = SafeClasses.primitiveType(name);
+        if (primitiveType != null) {
+            return primitiveType;
+        }
         try {
             if (loader != null) {
                 try {
