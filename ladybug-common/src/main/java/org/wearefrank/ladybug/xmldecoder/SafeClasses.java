@@ -61,10 +61,14 @@ import org.wearefrank.ladybug.util.SpecialEncodings;
  * reach any other class. Therefore every method call is checked as well. There are three categories of
  * safe classes:
  * <ol>
- * <li>Classes meant to be immutable, like java.math.BigDecimal. They can only be instantiated, using
- * the constructor or static method configured for them. No methods can be called on the instances, except
- * java.sql.Timestamp.setNanos(), because XMLEncoder writes a Timestamp as new Timestamp(long) followed by
- * setNanos(int).</li>
+ * <li>Classes meant to be immutable, like java.math.BigDecimal, the eight classes that box a primitive
+ * type, like java.lang.Integer, and java.lang.String. They can only be instantiated, using the constructor or static method
+ * configured for them. No methods can be called on the instances, except java.sql.Timestamp.setNanos(),
+ * because XMLEncoder writes a Timestamp as new Timestamp(long) followed by setNanos(int). The eight primitive
+ * types themselves, like int, are allowed too, but only as the component type of an array (see
+ * {@link #primitiveType}): XMLEncoder writes an int[] as {@code <array class="int">} and an Integer[] as
+ * {@code <array class="java.lang.Integer">}, and creating that array needs the component type to be looked
+ * up first, just like creating any other array does.</li>
  * <li>Collections: the lists, sets, queues and maps of java.util and java.util.concurrent that XMLEncoder
  * can write. They can be instantiated and their contents can be manipulated, using the methods of
  * {@link Collection} and {@link Map} that only add, remove or replace elements, such as add(), addAll(),
@@ -94,6 +98,25 @@ public final class SafeClasses {
 	// Class.newInstance()/Constructor.newInstance() instead of Expression's usual "new" marker to describe
 	// a plain construction. Treated as equivalent to CONSTRUCTOR everywhere a constructor call is allowed.
 	private static final String CONSTRUCTOR_REFLECTIVE = "newInstance";
+
+	// The eight classes that box a primitive type, plus String. XMLEncoder never writes an
+	// <object class="java.lang.Integer"> or similar for a scalar value, only the <int>/<long>/<string>/...
+	// shortcut (see IntElementHandler etc.), which does not need any class to be on this allow list. These
+	// classes are needed for arrays though: XMLEncoder writes a String[] as <array class="java.lang.String">,
+	// and that array creation (see ArrayElementHandler) first looks up the java.lang.String class, which must
+	// therefore be allowed. valueOf() is allowed too, so that one of these classes can also be instantiated
+	// directly, with <object class="..." method="valueOf">.
+	private static final List<Class<?>> SCALAR_WRAPPER_CLASSES = List.of(
+			Boolean.class, Byte.class, Character.class, Double.class, Float.class, Integer.class, Long.class,
+			Short.class, String.class);
+
+	// The names of the eight primitive types, as returned by e.g. int.class.getName(). Needed so that an array of
+	// a primitive type, which XMLEncoder writes as <array class="int">, can be created (see ArrayElementHandler):
+	// that array creation looks up the primitive type by name first, just like it does for a class. A primitive
+	// type itself is always safe: it is never the target of a method call, only ever the component type of an array.
+	private static final Map<String, Class<?>> PRIMITIVE_TYPES = Map.of(
+			"boolean", boolean.class, "byte", byte.class, "char", char.class, "double", double.class,
+			"float", float.class, "int", int.class, "long", long.class, "short", short.class);
 
 	// Category 1: maps each class name to the constructor ("new") or static method that creates an instance
 	private static final Map<String, String> IMMUTABLE_CLASSES = createImmutableClasses();
@@ -164,6 +187,9 @@ public final class SafeClasses {
 		for (String className: SpecialEncodings.SPECIALLY_ENCODED_CLASSES) {
 			result.put(className, SpecialEncodings.getFactoryName(className));
 		}
+		for (Class<?> scalarType: SCALAR_WRAPPER_CLASSES) {
+			result.put(scalarType.getName(), "valueOf");
+		}
 		return result;
 	}
 
@@ -171,8 +197,18 @@ public final class SafeClasses {
 		List<String> result = new ArrayList<>(IMMUTABLE_CLASSES.keySet());
 		result.addAll(COLLECTION_CLASSES);
 		result.add(Collections.class.getName());
+		result.addAll(PRIMITIVE_TYPES.keySet());
 		LADYBUG_CLASSES.keySet().forEach(clazz -> result.add(clazz.getName()));
 		return List.copyOf(result);
+	}
+
+	/**
+	 * Returns the primitive type with the given name, e.g. "int", or {@code null} if name is not the name of a
+	 * primitive type. {@code Class.forName()} cannot resolve these names, so {@code DocumentHandler.findClass()}
+	 * needs this to support an array of a primitive type, which XMLEncoder writes as e.g. {@code <array class="int">}.
+	 */
+	static Class<?> primitiveType(String name) {
+		return PRIMITIVE_TYPES.get(name);
 	}
 
 	/**
@@ -282,11 +318,28 @@ public final class SafeClasses {
 		if (target instanceof Map) {
 			return isAllowedMapInvocation(methodName, args);
 		}
+		if (target.getClass().isArray()) {
+			// The set()/get() emulation of array index access that ArrayElementHandler documents. Safe regardless
+			// of the array's component type: an array only ever reaches here if its component type already passed
+			// checkClassLookup when the array itself was created (see ArrayElementHandler.getValueObject).
+			return isAllowedArrayInvocation(methodName, args);
+		}
 		if (TIMESTAMP_CLASS.equals(target.getClass().getName())) {
 			return "setNanos".equals(methodName) && args.length == 1 && args[0] instanceof Integer;
 		}
 		// Includes the instances of the other immutable classes
 		return false;
+	}
+
+	private static boolean isAllowedArrayInvocation(String methodName, Object[] args) {
+		switch (methodName) {
+			case "set":
+				return args.length == 2;
+			case "get":
+				return args.length == 1;
+			default:
+				return false;
+		}
 	}
 
 	// Only methods that add, remove or replace elements. All of them only take elements, or a Collection that
