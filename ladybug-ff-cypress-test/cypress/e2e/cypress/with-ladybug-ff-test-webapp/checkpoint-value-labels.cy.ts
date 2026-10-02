@@ -87,6 +87,32 @@ describe('Checkpoint value labels', () => {
       .trimmedText()
       .should('equal', 'Read only')
   })
+
+  it('When message is a MediaType instance then the label shows encoder MediaType.toString()', () => {
+    // The reports created by the tests above are not needed anymore; start from a clean
+    // slate so openReport() finds exactly the one report created below (see its own
+    // assertion that the report table has exactly one row).
+    cy.apiDeleteAll(Cypress.env('debugStorageName') as string)
+    cy.apiDeleteAll('Test')
+    const url = Cypress.config('baseUrl') + '/api/putMediaTypeInSession'
+    cy.request('GET', url, null).then((resp) => {
+      expect(resp.status).to.equal(200)
+    })
+    openReport('UsePutMediaTypeInSessionPipe')
+    cy.selectTreeNode([
+      'Pipeline UsePutMediaTypeInSessionPipe/UsePutMediaTypeInSessionPipe',
+      'Pipeline UsePutMediaTypeInSessionPipe/UsePutMediaTypeInSessionPipe',
+      'Pipe testPipe',
+      'SessionKey mediaType'
+    ]).click()
+    cy.checkNumCheckpointValueLabels(2)
+    cy.checkpointValueLabel(0)
+      .trimmedText()
+      .should('equal', 'Read only')
+    cy.checkpointValueLabel(1)
+      .trimmedText()
+      .should('match', /MediaType\.toString\(\)$/)
+  })
 })
 
 function openReport (expectedName: string): void {

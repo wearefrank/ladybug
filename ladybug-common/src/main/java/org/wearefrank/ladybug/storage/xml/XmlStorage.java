@@ -16,6 +16,7 @@
 package org.wearefrank.ladybug.storage.xml;
 
 import org.wearefrank.ladybug.xmldecoder.XMLDecoder;
+import org.wearefrank.ladybug.util.SpecialEncodings;
 import java.beans.XMLEncoder;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -188,6 +189,7 @@ public class XmlStorage extends MemoryCrudStorage {
 
 			FileOutputStream outputStream = new FileOutputStream(file);
 			XMLEncoder encoder = new XMLEncoder(new BufferedOutputStream(outputStream));
+			SpecialEncodings.registerExportDelegates(encoder);
 			try {
 				encoder.writeObject(report);
 			} finally {

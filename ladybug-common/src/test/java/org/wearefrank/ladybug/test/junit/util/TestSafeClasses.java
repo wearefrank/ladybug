@@ -1,0 +1,390 @@
+package org.wearefrank.ladybug.test.junit.util;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
+import java.beans.XMLEncoder;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.nio.charset.StandardCharsets;
+import java.sql.Timestamp;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Hashtable;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.PriorityQueue;
+import java.util.Properties;
+import java.util.Stack;
+import java.util.TreeMap;
+import java.util.TreeSet;
+import java.util.Vector;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ConcurrentSkipListMap;
+import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.LinkedTransferQueue;
+import java.util.concurrent.PriorityBlockingQueue;
+
+import org.junit.After;
+import org.junit.Test;
+
+import org.wearefrank.ladybug.Checkpoint;
+import org.wearefrank.ladybug.Report;
+import org.wearefrank.ladybug.xmldecoder.SafeClasses;
+import org.wearefrank.ladybug.xmldecoder.SafeClassesTestAccess;
+import org.wearefrank.ladybug.xmldecoder.XMLDecoder;
+
+public class TestSafeClasses {
+	private static final String PROPERTY = "ladybug.TestSafeClasses";
+
+	private static class Result {
+		Object value;
+		final List<Exception> exceptions = new ArrayList<>();
+
+		boolean isBlocked() {
+			return isBlockedWith("Unsupported");
+		}
+
+		boolean isMethodCallBlocked() {
+			return isBlockedWith("Unsupported method call");
+		}
+
+		boolean isClassBlocked() {
+			return isBlockedWith("Unsupported class");
+		}
+
+		boolean isFieldAccessBlocked() {
+			return isBlockedWith("Unsupported field access");
+		}
+
+		private boolean isBlockedWith(String messagePrefix) {
+			return exceptions.stream().anyMatch(e -> e instanceof IllegalArgumentException
+					&& e.getMessage().startsWith(messagePrefix));
+		}
+	}
+
+	// Tests that check the safety of method invocations set SafeClasses.challengeMethodInvocations to true, so
+	// that classes outside SafeClasses.ALL can be instantiated and only the method checks stand in the way
+	@After
+	public void resetChallengeMethodInvocations() {
+		SafeClassesTestAccess.setChallengeMethodInvocations(false);
+	}
+
+	private static Result decode(String body) {
+		String xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><java class=\"java.beans.XMLDecoder\">" + body + "</java>";
+		Result result = new Result();
+		XMLDecoder decoder = new XMLDecoder(new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8)), null, result.exceptions::add);
+		try {
+			result.value = decoder.readObject();
+		} catch (ArrayIndexOutOfBoundsException e) {
+			// No object was decoded
+		}
+		return result;
+	}
+
+	@Test
+	public void getClassCannotBeUsedToReachOtherClasses() {
+		SafeClassesTestAccess.setChallengeMethodInvocations(true);
+		Result result = decode("<object class=\"java.util.HashMap\"><void method=\"getClass\"><void method=\"forName\">"
+				+ "<string>java.lang.System</string><void method=\"setProperty\"><string>" + PROPERTY + "</string>"
+				+ "<string>reached</string></void></void></void></object>");
+		assertTrue(result.isMethodCallBlocked());
+		assertNull(System.getProperty(PROPERTY));
+	}
+
+	@Test
+	public void methodsOfClassesThatAreNotSafeAreBlocked() {
+		SafeClassesTestAccess.setChallengeMethodInvocations(true);
+		Result result = decode("<object class=\"java.lang.StringBuilder\"><void method=\"append\"><string>a</string></void></object>");
+		assertTrue(result.exceptions.toString(), result.isMethodCallBlocked());
+	}
+
+	@Test
+	public void immutableClassCanBeInstantiated() {
+		Result result = decode("<object class=\"java.math.BigDecimal\"><string>1.50</string></object>");
+		assertFalse(result.isBlocked());
+		assertEquals(new java.math.BigDecimal("1.50"), result.value);
+	}
+
+	@Test
+	public void noMethodsCanBeCalledOnImmutableClass() {
+		SafeClassesTestAccess.setChallengeMethodInvocations(true);
+		Result result = decode("<object class=\"java.util.Date\"><long>0</long><void method=\"setTime\"><long>5</long></void></object>");
+		assertTrue(result.isMethodCallBlocked());
+	}
+
+	@Test
+	public void timestampKeepsItsNanos() {
+		Timestamp timestamp = new Timestamp(1790343533123L);
+		timestamp.setNanos(123456789);
+		Result result = decode(encode(timestamp));
+		assertFalse(result.exceptions.toString(), result.isBlocked());
+		assertEquals(timestamp, result.value);
+		assertEquals(123456789, ((Timestamp) result.value).getNanos());
+	}
+
+
+	@Test
+	public void zoneOffsetCanOnlyBeCreatedWithOfTotalSeconds() {
+		Result result = decode("<object class=\"java.time.ZoneOffset\" method=\"ofTotalSeconds\"><int>7200</int></object>");
+		assertFalse(result.exceptions.toString(), result.isBlocked());
+		assertEquals(java.time.ZoneOffset.ofHours(2), result.value);
+		assertTrue(decode("<object class=\"java.time.ZoneOffset\" method=\"of\"><string>+02:00</string></object>").isMethodCallBlocked());
+	}
+
+	@Test
+	public void onlySetNanosCanBeCalledOnTimestamp() {
+		SafeClassesTestAccess.setChallengeMethodInvocations(true);
+		assertTrue(decode("<object class=\"java.sql.Timestamp\"><long>0</long><void property=\"time\"><long>5</long></void></object>").isMethodCallBlocked());
+	}
+
+	@Test
+	public void immutableClassCanOnlyBeCreatedWithConfiguredFactory() {
+		assertTrue(decode("<object class=\"java.util.UUID\" method=\"randomUUID\"/>").isMethodCallBlocked());
+		assertFalse(decode("<object class=\"java.util.UUID\" method=\"fromString\">"
+				+ "<string>0f8fad5b-d9cb-469f-a165-70867728950e</string></object>").isBlocked());
+	}
+
+	@Test
+	public void collectionsCanBeFilledAndEmptied() {
+		Result result = decode("<object class=\"java.util.ArrayList\"><void method=\"add\"><string>a</string></void></object>");
+		assertFalse(result.isBlocked());
+		assertEquals(List.of("a"), result.value);
+		assertTrue(decode("<object class=\"java.util.ArrayList\"><void method=\"iterator\"/></object>").isMethodCallBlocked());
+		assertTrue(decode("<object class=\"java.util.ArrayList\"><void method=\"stream\"/></object>").isMethodCallBlocked());
+	}
+
+	@Test
+	public void collectionsCanBeManipulatedWithAddAllRemoveAllRetainAllAndClear() {
+		Result result = decode("<object class=\"java.util.ArrayList\">"
+				+ "<void method=\"addAll\"><object class=\"java.util.ArrayList\">"
+				+ "<void method=\"add\"><string>a</string></void><void method=\"add\"><string>b</string></void></object></void>"
+				+ "<void method=\"add\"><string>c</string></void>"
+				+ "<void method=\"remove\"><string>b</string></void>"
+				+ "<void method=\"removeAll\"><object class=\"java.util.ArrayList\">"
+				+ "<void method=\"add\"><string>c</string></void></object></void>"
+				+ "<void method=\"retainAll\"><object class=\"java.util.ArrayList\">"
+				+ "<void method=\"add\"><string>a</string></void></object></void>"
+				+ "</object>");
+		assertFalse(result.exceptions.toString(), result.isBlocked());
+		assertEquals(List.of("a"), result.value);
+		assertFalse(decode("<object class=\"java.util.ArrayList\"><void method=\"add\"><string>a</string></void>"
+				+ "<void method=\"clear\"/></object>").isBlocked());
+	}
+
+	@Test
+	public void mapsCanBeManipulatedWithPutAllRemoveReplaceAndClear() {
+		Result result = decode("<object class=\"java.util.HashMap\">"
+				+ "<void method=\"putAll\"><object class=\"java.util.HashMap\">"
+				+ "<void method=\"put\"><string>k</string><string>v</string></void>"
+				+ "<void method=\"put\"><string>k2</string><string>v2</string></void></object></void>"
+				+ "<void method=\"remove\"><string>k2</string></void>"
+				+ "<void method=\"replace\"><string>k</string><string>v3</string></void>"
+				+ "<void method=\"putIfAbsent\"><string>k4</string><string>v4</string></void>"
+				+ "</object>");
+		assertFalse(result.exceptions.toString(), result.isBlocked());
+		assertEquals(Map.of("k", "v3", "k4", "v4"), result.value);
+		assertFalse(decode("<object class=\"java.util.HashMap\"><void method=\"put\"><string>k</string><string>v</string></void>"
+				+ "<void method=\"clear\"/></object>").isBlocked());
+	}
+
+	@Test
+	public void mapImplementationsCanBeDecoded() {
+		List<Map<String, Object>> maps = List.of(new HashMap<>(), new LinkedHashMap<>(), new TreeMap<>(), new Hashtable<>(),
+				new ConcurrentHashMap<>(), new ConcurrentSkipListMap<>());
+		for (Map<String, Object> map: maps) {
+			map.put("k", "v");
+			Result result = decode(encode(map));
+			assertFalse(result.exceptions.toString(), result.isBlocked());
+			assertEquals(map.getClass(), result.value.getClass());
+			assertEquals("v", ((Map<?, ?>) result.value).get("k"));
+		}
+		Properties properties = new Properties();
+		properties.put("k", "v");
+		Result result = decode(encode(properties));
+		assertEquals(properties, result.value);
+	}
+
+	@Test
+	public void collectionImplementationsCanBeDecoded() {
+		List<Collection<String>> collections = List.of(new ArrayList<>(), new LinkedList<>(), new ArrayDeque<>(), new Vector<>(),
+				new Stack<>(), new HashSet<>(), new LinkedHashSet<>(), new TreeSet<>(), new PriorityQueue<>(),
+				new CopyOnWriteArraySet<>(), new ConcurrentLinkedQueue<>(), new ConcurrentLinkedDeque<>(),
+				new ConcurrentSkipListSet<>(), new LinkedBlockingQueue<>(), new LinkedBlockingDeque<>(),
+				new PriorityBlockingQueue<>(), new LinkedTransferQueue<>());
+		for (Collection<String> collection: collections) {
+			collection.add("a");
+			collection.add("b");
+			Result result = decode(encode(collection));
+			assertFalse(result.exceptions.toString(), result.isBlocked());
+			assertEquals(collection.getClass(), result.value.getClass());
+			// Copy because queues do not implement equals()
+			assertEquals(new ArrayList<>(collection), new ArrayList<>((Collection<?>) result.value));
+		}
+	}
+
+	@Test
+	public void otherCollectionImplementationsAreBlocked() {
+		assertTrue(decode("<object class=\"java.util.concurrent.CopyOnWriteArrayList\"/>").isClassBlocked());
+	}
+
+	@Test
+	public void otherMapImplementationsAreBlocked() {
+		// java.util.jar.Attributes implements Map but is not listed as safe
+		assertTrue(decode("<object class=\"java.util.jar.Attributes\"/>").isClassBlocked());
+	}
+
+	@Test
+	public void classesThatAreNeitherSafeNorCollectionsCannotBeInstantiated() {
+		// java.lang.StringBuilder is neither an immutable class, a collection/map nor a Ladybug class,
+		// so it must be rejected before any constructor or method is even considered
+		assertTrue(decode("<object class=\"java.lang.StringBuilder\"/>").isClassBlocked());
+	}
+
+	@Test
+	public void mapsCanOnlyBeManipulatedNotQueriedOrIterated() {
+		SafeClassesTestAccess.setChallengeMethodInvocations(true);
+		assertTrue(decode("<object class=\"java.util.TreeMap\"><void method=\"comparator\"/></object>").isMethodCallBlocked());
+		assertTrue(decode("<object class=\"java.util.Properties\"><void method=\"load\"><null/></void></object>").isMethodCallBlocked());
+		assertTrue(decode("<object class=\"java.util.HashMap\"><void method=\"entrySet\"/></object>").isMethodCallBlocked());
+		assertTrue(decode("<object class=\"java.util.HashMap\"><void method=\"keySet\"/></object>").isMethodCallBlocked());
+		assertTrue(decode("<object class=\"java.util.HashMap\"><void method=\"get\"><string>k</string></void></object>").isMethodCallBlocked());
+	}
+
+	// Returns the content of the java element written by XMLEncoder
+	private static String encode(Object object) {
+		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+		XMLEncoder encoder = new XMLEncoder(outputStream);
+		encoder.writeObject(object);
+		encoder.close();
+		String xml = outputStream.toString(StandardCharsets.UTF_8);
+		return xml.substring(xml.indexOf('>', xml.indexOf("<java")) + 1, xml.lastIndexOf("</java>"));
+	}
+
+	@Test
+	public void collectionsFactoryMethodsAreAllowed() {
+		Result result = decode("<object class=\"java.util.Collections\" method=\"unmodifiableMap\"><object class=\"java.util.HashMap\">"
+				+ "<void method=\"put\"><string>k</string><string>v</string></void></object></object>");
+		assertFalse(result.isBlocked());
+		assertEquals(Map.of("k", "v"), result.value);
+		assertTrue(decode("<object class=\"java.util.Collections\" method=\"shuffle\"><object class=\"java.util.ArrayList\"/></object>").isMethodCallBlocked());
+	}
+
+	@Test
+	public void reportCanBeFilledWithPersistentProperties() {
+		Result result = decode("<object class=\"org.wearefrank.ladybug.Report\" id=\"Report0\">"
+				+ "<void property=\"name\"><string>report name</string></void>"
+				+ "<void property=\"checkpoints\"><void method=\"add\"><object class=\"org.wearefrank.ladybug.Checkpoint\">"
+				+ "<void property=\"level\"><int>2</int></void>"
+				+ "<void property=\"message\"><string>message</string></void>"
+				+ "<void property=\"report\"><object idref=\"Report0\"/></void>"
+				+ "</object></void></void></object>");
+		assertFalse(result.exceptions.toString(), result.isBlocked());
+		Report report = (Report) result.value;
+		assertEquals("report name", report.getName());
+		Checkpoint checkpoint = report.getCheckpoints().get(0);
+		assertEquals(2, checkpoint.getLevel());
+		assertEquals("message", checkpoint.getMessage());
+		assertEquals(report, checkpoint.getReport());
+	}
+
+	@Test
+	public void oldReportClassNamesAreReplaced() {
+		Result result = decode("<object class=\"nl.nn.testtool.Report\" id=\"Report0\">"
+				+ "<void property=\"name\"><string>old report</string></void>"
+				+ "<void property=\"checkpoints\"><void method=\"add\"><object class=\"nl.nn.testtool.Checkpoint\">"
+				+ "<void property=\"message\"><string>message</string></void>"
+				+ "<void property=\"report\"><object idref=\"Report0\"/></void>"
+				+ "</object></void></void></object>");
+		assertFalse(result.exceptions.toString(), result.isBlocked());
+		Report report = (Report) result.value;
+		assertEquals("old report", report.getName());
+		Checkpoint checkpoint = report.getCheckpoints().get(0);
+		assertEquals("message", checkpoint.getMessage());
+		assertEquals(report, checkpoint.getReport());
+	}
+
+	@Test
+	public void transientPropertiesAndOtherMethodsOfReportAreBlocked() {
+		SafeClassesTestAccess.setChallengeMethodInvocations(true);
+		assertTrue(decode("<object class=\"org.wearefrank.ladybug.Report\"><void property=\"testTool\"><null/></void></object>").isMethodCallBlocked());
+		assertTrue(decode("<object class=\"org.wearefrank.ladybug.Report\"><void method=\"toXml\"/></object>").isMethodCallBlocked());
+		assertTrue(decode("<object class=\"org.wearefrank.ladybug.Checkpoint\"><void method=\"getReport\"/></object>").isMethodCallBlocked());
+	}
+
+	@Test
+	public void overloadedSetterWithOtherArgumentTypeIsBlocked() {
+		SafeClassesTestAccess.setChallengeMethodInvocations(true);
+		// Checkpoint.setMessage(Object) instead of the bean setter Checkpoint.setMessage(String)
+		assertTrue(decode("<object class=\"org.wearefrank.ladybug.Checkpoint\"><void property=\"message\">"
+				+ "<object class=\"java.util.HashMap\"/></void></object>").isMethodCallBlocked());
+	}
+
+	@Test
+	public void fieldAccessIsBlocked() {
+		assertTrue(decode("<object class=\"java.util.Collections\" field=\"EMPTY_LIST\"/>").isFieldAccessBlocked());
+	}
+
+	@Test
+	public void methodAndPropertyElementsAreChecked() {
+		SafeClassesTestAccess.setChallengeMethodInvocations(true);
+		assertTrue(decode("<object class=\"java.util.HashMap\"><method name=\"getClass\"/></object>").isMethodCallBlocked());
+		assertTrue(decode("<object class=\"java.util.Date\"><long>0</long><property name=\"time\"><long>5</long></property></object>").isMethodCallBlocked());
+	}
+
+	@Test
+	public void getClassIsBlockedOnEveryKindOfObject() {
+		SafeClassesTestAccess.setChallengeMethodInvocations(true);
+		assertTrue(decode("<object class=\"java.util.ArrayList\"><void method=\"getClass\"/></object>").isMethodCallBlocked());
+		assertTrue(decode("<object class=\"java.math.BigDecimal\"><string>1.50</string>"
+				+ "<void method=\"getClass\"/></object>").isMethodCallBlocked());
+		assertTrue(decode("<object class=\"org.wearefrank.ladybug.Report\"><void method=\"getClass\"/></object>").isMethodCallBlocked());
+	}
+
+	// Regression test for the RCE demonstrated in the offendingReport.xml proof of concept: getClass() followed
+	// by Class.forName() to reach an arbitrary class (java.lang.ProcessBuilder), and from there arbitrary
+	// command execution. Blocked twice over: getClass() itself is rejected (see the test above), and even if it
+	// were not, the resulting java.lang.Class object could never be handed back as a value of the decoder.
+	@Test
+	public void classObjectsCannotBeUsedToReachArbitraryClasses() {
+		SafeClassesTestAccess.setChallengeMethodInvocations(true);
+		Result result = decode("<object class=\"org.wearefrank.ladybug.Report\" id=\"report\">"
+				+ "<void method=\"getClass\"><void method=\"forName\" id=\"processBuilderClass\">"
+				+ "<string>java.lang.ProcessBuilder</string></void></void></object>"
+				+ "<object idref=\"processBuilderClass\"><void method=\"new\"><string>calc</string></void></object>");
+		assertTrue(result.isMethodCallBlocked());
+	}
+
+	// Direct, white-box test of the extra safety net in SafeClasses.checkClassLookup(), independent of whether
+	// getClass() or some other, not yet known, way of obtaining a Class object is used or ever added.
+	@Test
+	public void checkClassLookupRejectsClassesNotInAll() {
+		try {
+			SafeClasses.checkClassLookup(ProcessBuilder.class);
+			throw new AssertionError("Expected an IllegalArgumentException");
+		} catch (IllegalArgumentException e) {
+			assertEquals("Unsupported class while parsing Ladybug report xml: [java.lang.ProcessBuilder]",
+					e.getMessage());
+		}
+	}
+
+	@Test
+	public void checkClassLookupAllowsClassesInAll() {
+		SafeClasses.checkClassLookup(Report.class);
+		SafeClasses.checkClassLookup(ArrayList.class);
+		SafeClasses.checkClassLookup(java.math.BigDecimal.class);
+	}
+}

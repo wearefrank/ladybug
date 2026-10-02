@@ -119,6 +119,7 @@ final class ArrayElementHandler extends NewElementHandler {
     @Override
     protected ValueObject getValueObject(Class<?> type, Object[] args) {
         if (type == null) {
+            SafeClasses.checkClassLookup(Object.class);
             type = Object.class;
         }
         if (this.length != null) {
