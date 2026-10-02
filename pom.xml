@@ -77,12 +77,12 @@
 
     <spring.version>6.2.19</spring.version>
     <spring.security.version>6.5.9</spring.security.version>
-    <cxf.version>4.2.0</cxf.version>
+    <cxf.version>4.2.3</cxf.version>
     <spring.boot.version>3.5.4</spring.boot.version>
     <tomcat.embed.version>10.1.44</tomcat.embed.version>
     <jackson.version.stripped>2.22</jackson.version.stripped>
     <jackson.version>2.21.2</jackson.version>
-    <jackson.databind.version>2.21.6</jackson.databind.version>
+    <jackson.databind.version>2.21.7</jackson.databind.version>
     <logback.version>1.6.3</logback.version>
     <janino.version>3.1.12</janino.version>
   </properties>
@@ -248,13 +248,13 @@
       <dependency>
         <groupId>com.google.protobuf</groupId>
         <artifactId>protobuf-java</artifactId>
-        <version>4.34.1</version>
+        <version>4.36.2</version>
         <scope>compile</scope>
       </dependency>
       <dependency>
         <groupId>com.google.protobuf</groupId>
         <artifactId>protobuf-java-util</artifactId>
-        <version>4.34.1</version>
+        <version>4.36.2</version>
         <scope>compile</scope>
       </dependency>
       <dependency>
@@ -390,7 +390,7 @@
       <dependency>
         <groupId>org.liquibase</groupId>
         <artifactId>liquibase-core</artifactId>
-        <version>5.0.2</version>
+        <version>5.0.4</version>
         <scope>test</scope>
       </dependency>
       <dependency>
