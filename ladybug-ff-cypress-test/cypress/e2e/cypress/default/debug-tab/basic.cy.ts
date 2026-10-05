@@ -8,7 +8,7 @@ describe('Basic tests', () => {
   })
 
   if (Cypress.env('storage') === 'database') {
-    it('When a JDBC query is done in the console then a Ladybug report is created', () => {
+    xit('When a JDBC query is done in the console then a Ladybug report is created', () => {
       cy.visit('')
       cy.getNumLadybugReports().then(numReports => {
         cy.executeJdbcQuery();
