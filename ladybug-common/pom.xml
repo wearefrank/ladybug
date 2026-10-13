@@ -13,6 +13,11 @@
   <name>Ladybug backend</name>
   <description>Backend of Ladybug</description>
 
+  <properties>
+    <maven.compiler.release>21</maven.compiler.release>
+    <maven.compiler.target>21</maven.compiler.target>
+    <maven.compiler.source>21</maven.compiler.source>
+  </properties>
   <dependencies>
     <dependency>
       <groupId>jakarta.servlet</groupId>
