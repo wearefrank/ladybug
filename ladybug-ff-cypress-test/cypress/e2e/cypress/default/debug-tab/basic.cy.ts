@@ -7,6 +7,7 @@ describe('Basic tests', () => {
     })
   })
 
+  // TODO issue https://github.com/wearefrank/ladybug/issues/1034. Replace this test.
   if (Cypress.env('storage') === 'database') {
     xit('When a JDBC query is done in the console then a Ladybug report is created', () => {
       cy.visit('')
