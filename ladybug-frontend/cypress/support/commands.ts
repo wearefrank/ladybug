@@ -70,6 +70,8 @@ declare global {
 
       createOpenTelemetryReport(): Chainable;
 
+      runOtelTestCompanion(protocol: 'http/json' | 'http/protobuf'): Chainable;
+
       clearDebugStore(): Chainable;
 
       clearReportsInProgress(): Chainable;
@@ -363,6 +365,15 @@ Cypress.Commands.add('createOpenTelemetryReport' as keyof Chainable, (): void =>
   ).then((resp: Cypress.Response<ApiResponse>) => {
     expect(resp.status).equal(200);
   });
+})
+
+// Requires ladybug-otel-test-companion to be built. It sends the whole trace in a single request
+// and exits with a non-zero exit code when Ladybug does not accept the trace.
+Cypress.Commands.add('runOtelTestCompanion' as keyof Chainable, (protocol: 'http/json' | 'http/protobuf'): void => {
+  cy.exec(
+    `java -jar ../ladybug-otel-test-companion/target/ladybug-otel-test-companion.jar --ladybug.otel.protocol=${protocol} --ladybug.otel.batching=single-request`,
+    { timeout: 120_000 },
+  );
 })
 
 Cypress.Commands.add('clearDebugStore' as keyof Chainable, (): void => {

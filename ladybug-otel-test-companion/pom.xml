@@ -52,10 +52,21 @@
   </dependencies>
 
   <build>
+    <!-- Fixed name without version, so that the Cypress tests in ladybug-frontend can find the jar -->
+    <finalName>ladybug-otel-test-companion</finalName>
     <plugins>
       <plugin>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-maven-plugin</artifactId>
+        <executions>
+          <!-- Produce an executable jar. Not bound by default, because the root pom does not inherit from
+               spring-boot-starter-parent -->
+          <execution>
+            <goals>
+              <goal>repackage</goal>
+            </goals>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </build>
