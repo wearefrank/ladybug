@@ -21,10 +21,8 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -95,12 +93,6 @@ public class TraceSender implements CommandLineRunner {
 	@Value("${ladybug.otel.batching}")
 	private Batching batching;
 
-	@Value("${ladybug.otel.username:}")
-	private String username;
-
-	@Value("${ladybug.otel.password:}")
-	private String password;
-
 	@Value("${ladybug.otel.timeout-seconds:30}")
 	private long timeoutSeconds;
 
@@ -151,18 +143,14 @@ public class TraceSender implements CommandLineRunner {
 		} else {
 			marshaler.writeBinaryTo(body);
 		}
-		HttpRequest.Builder requestBuilder = HttpRequest.newBuilder(URI.create(endpoint))
+		HttpRequest request = HttpRequest.newBuilder(URI.create(endpoint))
 				.timeout(Duration.ofSeconds(timeoutSeconds))
 				.header("Content-Type", protocol.contentType)
-				.POST(HttpRequest.BodyPublishers.ofByteArray(body.toByteArray()));
-		if (!username.isEmpty()) {
-			String credentials = username + ":" + password;
-			requestBuilder.header("Authorization",
-					"Basic " + Base64.getEncoder().encodeToString(credentials.getBytes(StandardCharsets.UTF_8)));
-		}
+				.POST(HttpRequest.BodyPublishers.ofByteArray(body.toByteArray()))
+				.build();
 		List<String> spanNames = spans.stream().map(SpanData::getName).toList();
 		log.info("Sending spans {} to [{}] as {}", spanNames, endpoint, protocol.contentType);
-		HttpResponse<String> response = httpClient.send(requestBuilder.build(), HttpResponse.BodyHandlers.ofString());
+		HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
 		if (response.statusCode() / 100 != 2) {
 			throw new IllegalStateException("Failed to send spans " + spanNames + " to [" + endpoint + "], got HTTP status "
 					+ response.statusCode() + " with body: " + response.body());
