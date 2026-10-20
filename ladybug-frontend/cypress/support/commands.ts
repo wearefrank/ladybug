@@ -560,7 +560,16 @@ Cypress.Commands.add(
 Cypress.Commands.add('copyReportsToTestTab' as keyof Chainable, (names: string[]): Chainable => {
   for (let name of names) {
     cy.get('[data-cy-debug="tableRow"]').find(`td:contains(${name})`).click()
+    // Opening the report is asynchronous. Without waiting, the copy button may
+    // still copy the previously opened report.
+    cy.getShownNodesOfReportTreeWithText(name).should('exist');
+    cy.intercept({
+      method: 'PUT',
+      url: /\/api\/report\/store\//,
+      times: 1,
+    }).as('copyReportToTestTab');
     cy.get('[data-cy-debug-editor="copy"]').click();
+    cy.wait('@copyReportToTestTab');
   }
 })
 
