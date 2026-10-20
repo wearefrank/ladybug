@@ -36,11 +36,19 @@
 	</dependencies>
 
 	<repositories>
-		<!-- Enable F!F timestamp versions -->
 		<repository>
-			<id>ibissource</id>
-			<name>Ibissource</name>
-			<url>https://nexus.frankframework.org/content/repositories/public</url>
+			<id>central</id>
+			<name>Central Repository</name>
+			<url>https://repo.maven.apache.org/maven2</url>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+		</repository>
+		<!-- Enable ibis-echo2 timestamp versions -->
+		<repository>
+			<id>frankframework</id>
+			<name>Frank!Framework</name>
+			<url>https://nexus.frankframework.org/repository/thirdparty</url>
 		</repository>
 	</repositories>
 </project>
