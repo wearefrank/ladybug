@@ -188,7 +188,7 @@ Cypress.Commands.add('clearTestReports' as keyof Chainable, (): void => {
 
 Cypress.Commands.add('clearDatabaseStorage' as keyof Chainable, (): void => {
   cy.request(
-    `${Cypress.env('backendServer')}/index.jsp?clearDatabaseStorage=true`,
+    `${Cypress.expose('backendServer')}/index.jsp?clearDatabaseStorage=true`,
   ).then((resp: Cypress.Response<ApiResponse>): void => {
     expect(resp.status).equal(200);
   });
@@ -218,7 +218,7 @@ Cypress.Commands.add('navigateToDebugTab' as keyof Chainable, () => {
 Cypress.Commands.add('createReport' as keyof Chainable, (): void => {
   // No cy.visit because then the API call can happen multiple times.
   cy.request(
-    `${Cypress.env('backendServer')}/index.jsp?createReport=Simple%20report`,
+    `${Cypress.expose('backendServer')}/index.jsp?createReport=Simple%20report`,
   ).then((resp: Cypress.Response<ApiResponse>) => {
     expect(resp.status).equal(200);
   });
@@ -227,7 +227,7 @@ Cypress.Commands.add('createReport' as keyof Chainable, (): void => {
 Cypress.Commands.add('createOtherReport' as keyof Chainable, (): void => {
   // No cy.visit because then the API call can happen multiple times.
   cy.request(
-    `${Cypress.env('backendServer')}/index.jsp?createReport=Another%20simple%20report`,
+    `${Cypress.expose('backendServer')}/index.jsp?createReport=Another%20simple%20report`,
   ).then((resp: Cypress.Response<ApiResponse>) => {
     expect(resp.status).equal(200);
   });
@@ -238,7 +238,7 @@ Cypress.Commands.add(
   (): void => {
     // No cy.visit because then the API call can happen multiple times.
     cy.request(
-      `${Cypress.env('backendServer')}/index.jsp?createReport=Add%20report%20to%20database%20storage`,
+      `${Cypress.expose('backendServer')}/index.jsp?createReport=Add%20report%20to%20database%20storage`,
     ).then((resp: Cypress.Response<ApiResponse>) => {
       expect(resp.status).equal(200);
     });
@@ -247,7 +247,7 @@ Cypress.Commands.add(
 
 Cypress.Commands.add('createRunningReport' as keyof Chainable, (): void => {
   cy.request(
-    `${Cypress.env('backendServer')}/index.jsp?createReport=Waiting%20for%20thread%20to%20start`,
+    `${Cypress.expose('backendServer')}/index.jsp?createReport=Waiting%20for%20thread%20to%20start`,
   ).then((resp: Cypress.Response<ApiResponse>): void => {
     expect(resp.status).equal(200);
   });
@@ -258,7 +258,7 @@ Cypress.Commands.add(
   (): void => {
     // No cy.visit because then the API call can happen multiple times.
     cy.request(
-      `${Cypress.env('backendServer')}/index.jsp?createReport=Message%20is%20null`,
+      `${Cypress.expose('backendServer')}/index.jsp?createReport=Message%20is%20null`,
     ).then((resp: Cypress.Response<ApiResponse>) => {
       expect(resp.status).equal(200);
     });
@@ -270,7 +270,7 @@ Cypress.Commands.add(
   (): void => {
     // No cy.visit because then the API call can happen multiple times.
     cy.request(
-      `${Cypress.env('backendServer')}/index.jsp?createReport=Message%20is%20an%20empty%20string`,
+      `${Cypress.expose('backendServer')}/index.jsp?createReport=Message%20is%20an%20empty%20string`,
     ).then((resp: Cypress.Response<ApiResponse>): void => {
       expect(resp.status).equal(200);
     });
@@ -282,7 +282,7 @@ Cypress.Commands.add(
   (): void => {
     // No cy.visit because then the API call can happen multiple times.
     cy.request(
-      `${Cypress.env('backendServer')}/index.jsp?createReport=Hide%20a%20checkpoint%20in%20blackbox%20view`,
+      `${Cypress.expose('backendServer')}/index.jsp?createReport=Hide%20a%20checkpoint%20in%20blackbox%20view`,
     ).then((resp: Cypress.Response<ApiResponse>): void => {
       expect(resp.status).equal(200);
     });
@@ -294,7 +294,7 @@ Cypress.Commands.add(
   (): void => {
     // No cy.visit because then the API call can happen multiple times.
     cy.request(
-      `${Cypress.env('backendServer')}/index.jsp?createReport=Multiple%20startpoints`,
+      `${Cypress.expose('backendServer')}/index.jsp?createReport=Multiple%20startpoints`,
     ).then((resp: Cypress.Response<ApiResponse>): void => {
       expect(resp.status).equal(200);
     });
@@ -306,7 +306,7 @@ Cypress.Commands.add(
   (): void => {
     // No cy.visit because then the API call can happen multiple times.
     cy.request(
-      `${Cypress.env('backendServer')}/index.jsp?createReport=Json%20checkpoint`,
+      `${Cypress.expose('backendServer')}/index.jsp?createReport=Json%20checkpoint`,
     ).then((resp: Cypress.Response<ApiResponse>): void => {
       expect(resp.status).equal(200);
     });
@@ -316,7 +316,7 @@ Cypress.Commands.add(
 Cypress.Commands.add('createReportWithMessageContext' as keyof Chainable, (): void => {
   // No cy.visit because then the API call can happen multiple times.
   cy.request(
-    `${Cypress.env('backendServer')}/index.jsp?createReport=Report%20with%20message%20context`,
+    `${Cypress.expose('backendServer')}/index.jsp?createReport=Report%20with%20message%20context`,
   ).then((resp: Cypress.Response<ApiResponse>) => {
     expect(resp.status).equal(200);
   });
@@ -325,7 +325,7 @@ Cypress.Commands.add('createReportWithMessageContext' as keyof Chainable, (): vo
 Cypress.Commands.add('createReportOnlyLF' as keyof Chainable, (): void => {
   // No cy.visit because then the API call can happen multiple times.
   cy.request(
-    `${Cypress.env('backendServer')}/index.jsp?createReport=Add%20report%20with%20checkpoints%20having%20only%20LF%200x0A`,
+    `${Cypress.expose('backendServer')}/index.jsp?createReport=Add%20report%20with%20checkpoints%20having%20only%20LF%200x0A`,
   ).then((resp: Cypress.Response<ApiResponse>) => {
     expect(resp.status).equal(200);
   });
@@ -334,7 +334,7 @@ Cypress.Commands.add('createReportOnlyLF' as keyof Chainable, (): void => {
 Cypress.Commands.add('createReportOnlyCR' as keyof Chainable, (): void => {
   // No cy.visit because then the API call can happen multiple times.
   cy.request(
-    `${Cypress.env('backendServer')}/index.jsp?createReport=Add%20report%20with%20checkpoints%20having%20only%20CR%200x0D`,
+    `${Cypress.expose('backendServer')}/index.jsp?createReport=Add%20report%20with%20checkpoints%20having%20only%20CR%200x0D`,
   ).then((resp: Cypress.Response<ApiResponse>) => {
     expect(resp.status).equal(200);
   });
@@ -343,7 +343,7 @@ Cypress.Commands.add('createReportOnlyCR' as keyof Chainable, (): void => {
 Cypress.Commands.add('createReportWithStatusError' as keyof Chainable, (): void => {
   // No cy.visit because then the API call can happen multiple times.
   cy.request(
-    `${Cypress.env('backendServer')}/index.jsp?createReport=Complex%20error%20report`,
+    `${Cypress.expose('backendServer')}/index.jsp?createReport=Complex%20error%20report`,
   ).then((resp: Cypress.Response<ApiResponse>) => {
     expect(resp.status).equal(200);
   });
@@ -351,7 +351,7 @@ Cypress.Commands.add('createReportWithStatusError' as keyof Chainable, (): void 
 
 Cypress.Commands.add('createReportWithStubStrategyNull' as keyof Chainable, (): void => {
   cy.request(
-    `${Cypress.env('backendServer')}/index.jsp?createReport=Add%20report%20without%20stub%20strategy%20and%20without%20link%20method`,
+    `${Cypress.expose('backendServer')}/index.jsp?createReport=Add%20report%20without%20stub%20strategy%20and%20without%20link%20method`,
   ).then((resp: Cypress.Response<ApiResponse>) => {
     expect(resp.status).equal(200);
   });
@@ -359,7 +359,7 @@ Cypress.Commands.add('createReportWithStubStrategyNull' as keyof Chainable, (): 
 
 Cypress.Commands.add('createOpenTelemetryReport' as keyof Chainable, (): void => {
   cy.request(
-    `${Cypress.env('backendServer')}/index.jsp?createReport=OpenTelemetry%20report`,
+    `${Cypress.expose('backendServer')}/index.jsp?createReport=OpenTelemetry%20report`,
   ).then((resp: Cypress.Response<ApiResponse>) => {
     expect(resp.status).equal(200);
   });
@@ -367,7 +367,7 @@ Cypress.Commands.add('createOpenTelemetryReport' as keyof Chainable, (): void =>
 
 Cypress.Commands.add('clearDebugStore' as keyof Chainable, (): void => {
   cy.request(
-    `${Cypress.env('backendServer')}/index.jsp?clearDebugStorage=true`,
+    `${Cypress.expose('backendServer')}/index.jsp?clearDebugStorage=true`,
   ).then((resp: Cypress.Response<ApiResponse>): void => {
     expect(resp.status).equal(200);
   });
@@ -375,7 +375,7 @@ Cypress.Commands.add('clearDebugStore' as keyof Chainable, (): void => {
 
 Cypress.Commands.add('clearReportsInProgress' as keyof Chainable, (): void => {
   cy.request(
-    `${Cypress.env('backendServer')}/index.jsp?removeReportsInProgress`,
+    `${Cypress.expose('backendServer')}/index.jsp?removeReportsInProgress`,
   ).then((resp: Cypress.Response<ApiResponse>): void => {
     expect(resp.status).equal(200);
   });
@@ -560,7 +560,16 @@ Cypress.Commands.add(
 Cypress.Commands.add('copyReportsToTestTab' as keyof Chainable, (names: string[]): Chainable => {
   for (let name of names) {
     cy.get('[data-cy-debug="tableRow"]').find(`td:contains(${name})`).click()
+    // Opening the report is asynchronous. Without waiting, the copy button may
+    // still copy the previously opened report.
+    cy.getShownNodesOfReportTreeWithText(name).should('exist');
+    cy.intercept({
+      method: 'PUT',
+      url: /\/api\/report\/store\//,
+      times: 1,
+    }).as('copyReportToTestTab');
     cy.get('[data-cy-debug-editor="copy"]').click();
+    cy.wait('@copyReportToTestTab');
   }
 })
 
@@ -632,7 +641,7 @@ Cypress.Commands.add('setHostB' as keyof Chainable, () => {
 
 Cypress.Commands.add('setHost' as keyof Chainable, (host: string): void => {
   cy.request(
-    `${Cypress.env('backendServer')}/index.jsp?setHost=${host}`,
+    `${Cypress.expose('backendServer')}/index.jsp?setHost=${host}`,
   ).then((resp: Cypress.Response<ApiResponse>) => {
     expect(resp.status).equal(200);
   });
@@ -648,7 +657,7 @@ Cypress.Commands.add('setApplicationY' as keyof Chainable, () => {
 
 Cypress.Commands.add('setApplication' as keyof Chainable, (application: string): void => {
   cy.request(
-    `${Cypress.env('backendServer')}/index.jsp?setApplication=${application}`,
+    `${Cypress.expose('backendServer')}/index.jsp?setApplication=${application}`,
   ).then((resp: Cypress.Response<ApiResponse>) => {
     expect(resp.status).equal(200);
   });
@@ -656,12 +665,12 @@ Cypress.Commands.add('setApplication' as keyof Chainable, (application: string):
 
 Cypress.Commands.add('clearHostAndApplication' as keyof Chainable, () => {
   cy.request(
-    `${Cypress.env('backendServer')}/index.jsp?clearHost`,
+    `${Cypress.expose('backendServer')}/index.jsp?clearHost`,
   ).then((resp: Cypress.Response<ApiResponse>) => {
     expect(resp.status).equal(200);
   });
   cy.request(
-    `${Cypress.env('backendServer')}/index.jsp?clearApplication`,
+    `${Cypress.expose('backendServer')}/index.jsp?clearApplication`,
   ).then((resp: Cypress.Response<ApiResponse>) => {
     expect(resp.status).equal(200);
   });

@@ -315,7 +315,7 @@
       <dependency>
         <groupId>jakarta.enterprise</groupId>
         <artifactId>jakarta.enterprise.cdi-api</artifactId>
-        <version>4.1.0</version>
+        <version>5.0.0</version>
         <scope>provided</scope>
       </dependency>
       <!-- Resolve @JsonbTransient -->
@@ -409,12 +409,12 @@
   </dependencyManagement>
   <repositories>
     <repository>
-      <id>central</id>
-      <name>Central Repository</name>
-      <url>https://repo.maven.apache.org/maven2</url>
       <snapshots>
         <enabled>false</enabled>
       </snapshots>
+      <id>central</id>
+      <name>Central Repository</name>
+      <url>https://repo.maven.apache.org/maven2</url>
     </repository>
     <!-- Enable ibis-echo2 timestamp versions -->
     <repository>

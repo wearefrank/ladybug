@@ -1,6 +1,6 @@
 describe('Checkpoint value labels', () => {
   before(() => {
-    cy.apiDeleteAll(Cypress.env('debugStorageName') as string)
+    cy.apiDeleteAll(Cypress.expose('debugStorageName') as string)
     cy.apiDeleteAll('Test')
     const url = Cypress.config('baseUrl') + '/api/nullAndEmpty'
     cy.request('GET', url, null).then((resp) => {
@@ -92,7 +92,7 @@ describe('Checkpoint value labels', () => {
     // The reports created by the tests above are not needed anymore; start from a clean
     // slate so openReport() finds exactly the one report created below (see its own
     // assertion that the report table has exactly one row).
-    cy.apiDeleteAll(Cypress.env('debugStorageName') as string)
+    cy.apiDeleteAll(Cypress.expose('debugStorageName') as string)
     cy.apiDeleteAll('Test')
     const url = Cypress.config('baseUrl') + '/api/putMediaTypeInSession'
     cy.request('GET', url, null).then((resp) => {
@@ -141,7 +141,7 @@ function openReport (expectedName: string): void {
 
 describe('Checkpoint value truncation because of ibistesttool.maxMessageLength', () => {
   before(() => {
-    cy.apiDeleteAll(Cypress.env('debugStorageName') as string)
+    cy.apiDeleteAll(Cypress.expose('debugStorageName') as string)
     cy.apiDeleteAll('Test')
     cy.visit('')
     // Including the newlines, these are 7 * 56 = 392 characters.

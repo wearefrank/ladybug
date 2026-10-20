@@ -2,7 +2,7 @@ describe('With custom ToStreamPipe', () => {
   // Make this beforeEach() when issue https://github.com/wearefrank/ladybug/issues/344
   // will have been fixed.
   before(() => {
-    cy.apiDeleteAll(Cypress.env('debugStorageName') as string)
+    cy.apiDeleteAll(Cypress.expose('debugStorageName') as string)
     cy.apiDeleteAll('Test')
   })
 

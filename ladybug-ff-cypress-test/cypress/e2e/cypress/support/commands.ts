@@ -121,7 +121,7 @@ Cypress.Commands.add('enterLadybug', () => {
   cy.intercept(
     {
       method: 'GET',
-      url: `iaf/ladybug/api/metadata/${Cypress.env('debugStorageName') as string}/count`
+      url: `iaf/ladybug/api/metadata/${Cypress.expose('debugStorageName') as string}/count`
     },
     (req) => {
       req.continue(() => {
@@ -132,7 +132,7 @@ Cypress.Commands.add('enterLadybug', () => {
   cy.intercept(
     {
       method: 'GET',
-      url: `iaf/ladybug/api/metadata/${Cypress.env('debugStorageName') as string}?*`
+      url: `iaf/ladybug/api/metadata/${Cypress.expose('debugStorageName') as string}?*`
     },
     (req) => {
       req.continue(() => {
@@ -141,7 +141,9 @@ Cypress.Commands.add('enterLadybug', () => {
     }
   )
   cy.get('[data-cy-nav="status"]', { timeout: 10000 }).click()
-  cy.get('[data-cy-nav="testingLadybug"]').should('not.be.visible')
+  // Wait for the navigation to finish. Otherwise the route change can collapse the
+  // Testing menu again after it was expanded by the click below.
+  cy.location('hash').should('include', '/status')
   cy.get('[data-cy-nav="testing"]').click()
   cy.get('[data-cy-nav="testingLadybug"]').click()
   cy.awaitLoadingSpinner()
@@ -161,7 +163,7 @@ Cypress.Commands.add('getNumLadybugReports', () => {
   cy.awaitLoadingSpinner()
   cy.intercept({
     method: 'GET',
-    url: `iaf/ladybug/api/metadata/${Cypress.env('debugStorageName') as string}/count`,
+    url: `iaf/ladybug/api/metadata/${Cypress.expose('debugStorageName') as string}/count`,
     times: 1
   }).as('apiGetReports_2')
   // The refresh button also fires a separate request for the table's own row data
@@ -170,7 +172,7 @@ Cypress.Commands.add('getNumLadybugReports', () => {
   // that immediately act on a row.
   cy.intercept({
     method: 'GET',
-    url: `iaf/ladybug/api/metadata/${Cypress.env('debugStorageName') as string}?*`,
+    url: `iaf/ladybug/api/metadata/${Cypress.expose('debugStorageName') as string}?*`,
     times: 1
   }).as('apiGetReportsList')
   cy.inIframeBody('[data-cy-debug="refresh"]').click()
@@ -543,7 +545,7 @@ Cypress.Commands.add('executeJdbcQuery', { prevSubject: false }, () => {
     body: {
       query: 'SELECT * FROM LADYBUG',
       queryType: 'AUTO',
-      datasource: Cypress.env('jdbcDatasource'),
+      datasource: Cypress.expose('jdbcDatasource'),
       resultType: 'csv',
       avoidLocking: false,
       trimSpaces: false,
