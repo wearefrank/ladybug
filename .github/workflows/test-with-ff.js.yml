@@ -308,7 +308,7 @@ jobs:
         run: curl -v -i http://localhost:8090
       - name: Run the tests
         working-directory: ladybug/ladybug-ff-cypress-test
-        run: yarn cypress run --config baseUrl=http://localhost:8090 --spec "${{ matrix.specs }}" --env "debugStorageName=${{ matrix.debugStorageName }},frankProjectResourcesDir=${{ env.RESOURCES_DIR }},frankProjectOriginalFiles=${{ env.FRANK_PROJECT_DIR }},storage=${{ matrix.storage }},jdbcDatasource=${{ env.LADYBUG_JDBC_DATASOURCE }}"
+        run: yarn cypress run --config baseUrl=http://localhost:8090 --spec "${{ matrix.specs }}" --expose "debugStorageName=${{ matrix.debugStorageName }},frankProjectResourcesDir=${{ env.RESOURCES_DIR }},frankProjectOriginalFiles=${{ env.FRANK_PROJECT_DIR }},storage=${{ matrix.storage }},jdbcDatasource=${{ env.LADYBUG_JDBC_DATASOURCE }}"
       - name: Show files
         if: failure()
         run: tree -L 5 .

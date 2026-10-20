@@ -28,7 +28,7 @@ function doTest(t: TestCase): void {
 }
 
 describe('dtap.stage=PRD test whether API URLs are safe', () => {
-  const debugStorageName = Cypress.env('debugStorageName') as string;
+  const debugStorageName = Cypress.expose('debugStorageName') as string;
 
   const simpleCases: TestCase[] = [
     { method: 'GET', url: `metadata/${debugStorageName}?metadataNames=storageId`, user: 'observer', expectedStatus: 200 },
