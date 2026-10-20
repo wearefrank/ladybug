@@ -141,7 +141,9 @@ Cypress.Commands.add('enterLadybug', () => {
     }
   )
   cy.get('[data-cy-nav="status"]', { timeout: 10000 }).click()
-  cy.get('[data-cy-nav="testingLadybug"]').should('not.be.visible')
+  // Wait for the navigation to finish. Otherwise the route change can collapse the
+  // Testing menu again after it was expanded by the click below.
+  cy.location('hash').should('include', '/status')
   cy.get('[data-cy-nav="testing"]').click()
   cy.get('[data-cy-nav="testingLadybug"]').click()
   cy.awaitLoadingSpinner()
