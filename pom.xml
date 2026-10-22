@@ -722,6 +722,13 @@
       </distributionManagement>
     </profile>
     <profile>
+      <!-- Runs Ladybug inside the Frank!Framework, see ladybug-ff-test-webapp/README.md -->
+      <id>ff</id>
+      <modules>
+        <module>ladybug-ff-test-webapp</module>
+      </modules>
+    </profile>
+    <profile>
       <id>ossrh</id>
       <build>
         <plugins>

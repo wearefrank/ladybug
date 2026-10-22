@@ -10,6 +10,11 @@
 
 	<properties>
 		<maven.compiler.release>21</maven.compiler.release>
+		<!-- Overwritten by the CI/CD, see bump-including-ladybug-ff-test-webapp in
+		     https://github.com/wearefrank/frank-runner/blob/master/specials/util/syncPomVersions/build.xml -->
+		<ff.version>10.2.0</ff.version>
+		<!-- Keep equal to property revision in the root pom.xml, so that profile ff builds against this repository -->
+		<ladybug.version>4.1-SNAPSHOT</ladybug.version>
 	</properties>
 
 	<dependencies>
@@ -41,7 +46,7 @@
 		<dependency>
 			<groupId>org.wearefrank</groupId>
 			<artifactId>ladybug-backend-springmvc</artifactId>
-			<version>4.1-SNAPSHOT</version>
+			<version>${ladybug.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.h2database</groupId>
@@ -55,7 +60,7 @@
 			<dependency>
 				<groupId>org.frankframework</groupId>
 				<artifactId>frankframework-bundle-minimal</artifactId>
-				<version>10.2.0</version>
+				<version>${ff.version}</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
