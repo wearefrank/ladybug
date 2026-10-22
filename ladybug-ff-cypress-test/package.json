@@ -7,16 +7,16 @@
   "author": "Martijn Dirkse <martijn@integrationpartners.nl>",
   "license": "MIT",
   "dependencies": {
-    "cypress": "15.21.1",
+    "cypress": "16.1.0",
     "husky": "^9.0.11",
     "typescript": "*"
   },
   "scripts": {
     "lint": "eslint cypress/**/*.ts",
-    "batch-file-storage": "cypress run --env \"debugStorageName=FileDebugStorage\"",
-    "batch-database-storage": "cypress run --env \"debugStorageName=DatabaseDebugStorage\"",
-    "interactive-file-storage": "cypress open --env \"debugStorageName=FileDebugStorage\"",
-    "interactive-database-storage": "cypress open --env \"debugStorageName=DatabaseDebugStorage\"",
+    "batch-file-storage": "cypress run --expose \"debugStorageName=FileDebugStorage\"",
+    "batch-database-storage": "cypress run --expose \"debugStorageName=DatabaseDebugStorage\"",
+    "interactive-file-storage": "cypress open --expose \"debugStorageName=FileDebugStorage\"",
+    "interactive-database-storage": "cypress open --expose \"debugStorageName=DatabaseDebugStorage\"",
     "installFrankRunnerEnv": "cd ../../frank-runner && ./env.sh > installFrankRunnerEnv.log"
   },
   "devDependencies": {

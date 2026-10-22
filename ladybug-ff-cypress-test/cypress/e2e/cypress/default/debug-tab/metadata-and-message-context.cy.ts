@@ -1,6 +1,6 @@
 describe('Metadata and message context', () => {
   before(() => {
-    cy.apiDeleteAll(Cypress.env('debugStorageName') as string)
+    cy.apiDeleteAll(Cypress.expose('debugStorageName') as string)
     cy.apiDeleteAll('Test')
     cy.wrap(Cypress.config('fixturesFolder')).then((fixturesFolder) => {
       const rawInputMessage = fixturesFolder + '/ConclusionInputs/valid'
@@ -140,7 +140,7 @@ describe('Test contents of message context', () => {
   const requestBody = { hello: 'world' }
 
   before(() => {
-    cy.apiDeleteAll(Cypress.env('debugStorageName') as string)
+    cy.apiDeleteAll(Cypress.expose('debugStorageName') as string)
     cy.apiDeleteAll('Test')
     const url = Cypress.config('baseUrl') + '/api/service1a'
     cy.request({
