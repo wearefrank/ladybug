@@ -84,7 +84,8 @@ export class SettingsService {
       if (optionsSettings.transformation !== undefined) {
         this._transformation = optionsSettings.transformation;
       }
-      if (optionsSettings.uiTestMode.toLowerCase() === 'dont_block_backend') {
+      const uiTestMode = optionsSettings.uiTestMode.toLowerCase();
+      if (uiTestMode === 'dont_block_backend' || uiTestMode === 'no_auth') {
         this.testModeEnabled = true;
       }
       if (this.testModeEnabled) {

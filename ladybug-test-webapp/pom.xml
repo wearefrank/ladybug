@@ -11,8 +11,8 @@
   <artifactId>ladybug-test-webapp</artifactId>
   <packaging>war</packaging>
 
-  <name>Ladybug Test Tool Test Webapp</name>
-  <description>Simple vanilla webapp to test Ladybug</description>
+  <name>Ladybug test webapp JAX-RS</name>
+  <description>Wrapper of test webapp to handle JAX-RS auth.</description>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -22,6 +22,10 @@
     <dependency>
       <groupId>org.wearefrank</groupId>
       <artifactId>ladybug-backend-jaxrs</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.wearefrank</groupId>
+      <artifactId>ladybug-test-webapp-common</artifactId>
     </dependency>
     <!-- Reuse transformReport.xslt from ibis-ladybug test resources. See also https://maven.apache.org/plugins/maven-jar-plugin/examples/create-test-jar.html -->
     <!-- Bad practice, but accepted for now. This artifact will automatically become available after running 'mvn install' once which makes it availabe in your local repository. -->

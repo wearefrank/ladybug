@@ -165,6 +165,7 @@ final class PropertyElementHandler extends AccessorElementHandler {
      * @throws NoSuchMethodException     if the getter is not found
      */
     private static Object getPropertyValue(Object bean, String name, Integer index) throws IllegalAccessException, IntrospectionException, InvocationTargetException, NoSuchMethodException {
+        SafeClasses.checkInvocation(bean, accessorName(GETTER, name), (index == null) ? new Object[0] : new Object[] {index});
         Class<?> type = bean.getClass();
         if (index == null) {
             return findGetter(type, name).invoke(bean);
@@ -190,6 +191,7 @@ final class PropertyElementHandler extends AccessorElementHandler {
      * @throws NoSuchMethodException     if the setter is not found
      */
     private static void setPropertyValue(Object bean, String name, Integer index, Object value) throws IllegalAccessException, IntrospectionException, InvocationTargetException, NoSuchMethodException {
+        SafeClasses.checkInvocation(bean, accessorName(SETTER, name), (index == null) ? new Object[] {value} : new Object[] {index, value});
         Class<?> type = bean.getClass();
         Class<?> param = (value != null)
                 ? value.getClass()
@@ -202,6 +204,13 @@ final class PropertyElementHandler extends AccessorElementHandler {
         } else {
             findSetter(type, name, int.class, param).invoke(bean, index, value);
         }
+    }
+
+    // The name of the getter or setter as checked by SafeClasses. Without a property name (array access) it is just the prefix
+    private static String accessorName(String prefix, String name) {
+        return (name == null || name.isEmpty())
+                ? prefix
+                : prefix + name.substring(0, 1).toUpperCase(java.util.Locale.ENGLISH) + name.substring(1);
     }
 
     /**

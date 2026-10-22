@@ -13,8 +13,8 @@
                 data-cy-debug="tableFilter"
                 [title]="toolTipSuggestions?.get(column.name)"
                 [matAutocomplete]="auto"
-                [(ngModel)]="filterService.userFiltersBeingEdited[column.name]"
-                (input)="filterService.onUserFilterChanged()">
+                [ngModel]="filterService.userFiltersBeingEdited[column.name]"
+                (ngModelChange)="filterService.updateFilter($event, column.name)">
               <div class="input-group-append input-group-append">
                 <button
                   class="btn btn-sm btn-danger button-clear-text input-group-text"

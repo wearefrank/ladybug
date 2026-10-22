@@ -6,13 +6,15 @@
 	<groupId>org.wearefrank</groupId>
 	<artifactId>ladybug-ff-test-webapp</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
+	<name>Ladybug FF! test webapp</name>
+	<description>Test webapp for Ladybug + FF! that adds custom code</description>
 	<packaging>war</packaging>
 
 	<properties>
 		<maven.compiler.release>21</maven.compiler.release>
 		<!-- Overwritten by the CI/CD, see bump-including-ladybug-ff-test-webapp in
 		     https://github.com/wearefrank/frank-runner/blob/master/specials/util/syncPomVersions/build.xml -->
-		<ff.version>10.2.0</ff.version>
+		<ff.version>LATEST</ff.version>
 		<!-- Keep equal to property revision in the root pom.xml, so that profile ff builds against this repository -->
 		<ladybug.version>4.1-SNAPSHOT</ladybug.version>
 	</properties>
@@ -68,11 +70,19 @@
 	</dependencyManagement>
 
 	<repositories>
-		<!-- Enable F!F timestamp versions -->
+		<repository>
+			<id>central</id>
+			<name>Central Repository</name>
+			<url>https://repo.maven.apache.org/maven2</url>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+		</repository>
+		<!-- Enable ibis-echo2 timestamp versions -->
 		<repository>
 			<id>frankframework</id>
-			<name>Frank!Framework Nexus</name>
-			<url>https://nexus.frankframework.org/content/repositories/public</url>
+			<name>Frank!Framework</name>
+			<url>https://nexus.frankframework.org/repository/thirdparty</url>
 		</repository>
 	</repositories>
 </project>

@@ -138,7 +138,7 @@ class ObjectElementHandler extends NewElementHandler {
     @Override
     protected final ValueObject getValueObject(Class<?> type, Object[] args) throws Exception {
         if (this.field != null) {
-            return ValueObjectImpl.create(FieldElementHandler.getFieldValue(getContextBean(), this.field));
+            throw SafeClasses.fieldAccessRejected(this.field);
         }
         if (this.idref != null) {
             return ValueObjectImpl.create(getVariable(this.idref));
@@ -162,6 +162,7 @@ class ObjectElementHandler extends NewElementHandler {
                     ? this.method
                     : "new"; // NON-NLS: the constructor marker
         }
+        SafeClasses.checkInvocation(bean, name, args);
         Expression expression = new Expression(bean, name, args);
         return ValueObjectImpl.create(expression.getValue());
     }

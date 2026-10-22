@@ -1,5 +1,6 @@
-import { Component, Input, OnDestroy, OnInit, output, ViewChild } from '@angular/core';
-import { BehaviorSubject, Observable, Subject, Subscription } from 'rxjs';
+import { Component, inject, Input, OnDestroy, OnInit, output, ViewChild } from '@angular/core';
+import { BehaviorSubject, Observable, Subscription } from 'rxjs';
+import { ClientSettingsService } from '../../shared/services/client.settings.service';
 import { MonacoEditorComponent } from '../../monaco-editor/monaco-editor.component';
 import { DifferenceModalComponent } from '../difference-modal/difference-modal.component';
 import { DifferencesBuilder } from '../../shared/util/differences-builder';
@@ -49,7 +50,7 @@ export class CheckpointValueComponent implements OnInit, OnDestroy {
   protected editorReadOnlySubject = new BehaviorSubject<boolean>(true);
   protected originalCheckpointStubStrategySubject = new BehaviorSubject<number | undefined>(undefined);
   protected originalReportStubStrategySubject = new BehaviorSubject<string | null | undefined>(undefined);
-  protected buttonComponentResetSubject = new Subject<void>();
+  private clientSettingsService = inject(ClientSettingsService);
   private actualEditorContents = '';
   private actualCheckpointStubStrategy?: number;
   private actualReportStubStrategy?: string | null;
@@ -65,6 +66,16 @@ export class CheckpointValueComponent implements OnInit, OnDestroy {
       }),
     );
     this.subscriptions.add(this.saveDone$.subscribe(() => this.saveModal.closeModal()));
+    this.subscriptions.add(
+      this.clientSettingsService.metadataTableVisible$.subscribe((visible) => {
+        this.metadataTableVisible = visible;
+      }),
+    );
+    this.subscriptions.add(
+      this.clientSettingsService.messageContextTableVisible$.subscribe((visible) => {
+        this.messageContextTableVisible = visible;
+      }),
+    );
     this.editorReadOnlySubject.next(false);
   }
 
@@ -125,22 +136,6 @@ export class CheckpointValueComponent implements OnInit, OnDestroy {
       }
       case 'customReportAction': {
         this.button.emit('customReportAction');
-        break;
-      }
-      case 'showMetadata': {
-        this.metadataTableVisible = true;
-        break;
-      }
-      case 'hideMetadata': {
-        this.metadataTableVisible = false;
-        break;
-      }
-      case 'hideMessageContext': {
-        this.messageContextTableVisible = false;
-        break;
-      }
-      case 'showMessageContext': {
-        this.messageContextTableVisible = true;
         break;
       }
     }
@@ -236,8 +231,6 @@ export class CheckpointValueComponent implements OnInit, OnDestroy {
     if (originalCheckpoint.report === undefined) {
       throw new Error('CheckpointValueComponent.neworiginalCheckpoint(): Checkpoint does not have its report defined');
     }
-    this.metadataTableVisible = false;
-    this.messageContextTableVisible = false;
     this.originalCheckpoint = originalCheckpoint;
     this.emptyIsNull = this.originalCheckpoint.message === null;
     const requestedEditorContents: string =
@@ -250,7 +243,6 @@ export class CheckpointValueComponent implements OnInit, OnDestroy {
     this.editorContentsSubject.next(requestedEditorContents);
     this.originalCheckpointStubStrategySubject.next(originalCheckpoint.stub);
     this.originalReportStubStrategySubject.next(originalCheckpoint.report.stubStrategy);
-    this.buttonComponentResetSubject.next();
   }
 
   private editToNull(): void {

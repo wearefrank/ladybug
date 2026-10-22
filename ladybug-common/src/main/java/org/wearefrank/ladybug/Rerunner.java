@@ -1,5 +1,5 @@
 /*
-   Copyright 2020-2021, 2025 WeAreFrank!
+   Copyright 2020-2021, 2025-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@ import org.wearefrank.ladybug.run.ReportRunner;
  * @author Jaco de Groot
  */
 public interface Rerunner {
-
 	/**
 	 * Rerun a previous generated report. This method should at least trigger
 	 * the same first checkpoint as has been triggered when the original report
@@ -31,7 +30,9 @@ public interface Rerunner {
 	 *                        can be linked to the original report so stub strategy can be copied and stubbing can be
 	 *                        applied
 	 * @param originalReport  the original report that should be rerun
-	 * @param securityContext ...
+	 * @param securityContext can be used to do implementation specific security checks. For example, Tibet2 connects to
+	 *                        LDAP to check the role for the principal name:
+	 *                        https://github.com/frankframework/frankframework/blob/v7.9.8/ladybug/src/main/java/nl/nn/ibistesttool/tibet2/Debugger.java#L75
 	 * @param reportRunner    ...
 	 * @return                an error message when an error occurred 
 	 */

@@ -1,0 +1,25 @@
+<Configuration
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:noNamespaceSchemaLocation="../FrankConfig.xsd"
+>
+	<!--
+		Reproduces https://github.com/wearefrank/ladybug/issues/514.
+
+		PutMediaTypeInSessionPipe stores an org.springframework.http.MediaType instance
+		directly under session key "mediaType", instead of a String or a Message. Ladybug
+		traces every value stored in the PipeLineSession as a checkpoint using the raw
+		object as its message, so this produces a report with a checkpoint (named
+		"SessionKey mediaType") whose message is a MediaType instance rather than a String.
+
+		Trigger with a GET request to: <context path>/api/putMediaTypeInSession
+	-->
+	<Adapter name="UsePutMediaTypeInSessionPipe">
+		<Receiver>
+			<ApiListener uriPattern="putMediaTypeInSession" method="GET" />
+		</Receiver>
+		<Pipeline>
+			<Pipe className="org.wearefrank.ladybug.ff.test.webapp.PutMediaTypeInSessionPipe"
+				name="testPipe" sessionKey="mediaType" />
+		</Pipeline>
+	</Adapter>
+</Configuration>

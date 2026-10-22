@@ -109,4 +109,8 @@ public class TracingApiImpl {
 
 		return map;
 	}
+
+	public String getInfo() {
+		return "You've found the correct URL for OTEL to POST to :-)";
+	}
 }

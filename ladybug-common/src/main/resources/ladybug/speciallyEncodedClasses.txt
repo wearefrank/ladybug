@@ -1,0 +1,40 @@
+# Classes that XMLEncoder cannot write by default, because they have no public no-arg constructor,
+# and that MessageEncoderImpl encodes as their toString() when they are the message of a checkpoint.
+# Each line has two columns: the class name and the static method that creates an instance from the
+# result of toString(), or "new" for the constructor that takes that String. Lines starting with # are
+# comments. A report (.ttr file) is a .gz file of an XML file. The XML file provides commands to
+# instantiate the report. The syntax understood by XMLDecoder allows manipulations that would be
+# security breaches in the context of Ladybug. Only commands that are needed to instantiate a
+# report are allowed; everything else in the XML is blocked, see class SafeClasses. The classes in
+# this file can only be instantiated, which is done using the method in the second column.
+#
+# java.time.ZoneOffset is not in this file on purpose. Its factory ZoneOffset.of(String) hides
+# ZoneId.of(String) with the same signature, which java.beans (and therefore XMLEncoder and XMLDecoder)
+# cannot choose between. It is handled separately in MessageEncoderImpl and SpecialEncodings.
+#
+# java.time.ZoneId and java.nio.charset.Charset cannot be listed in this file either. The classes in this
+# file are matched on their exact class name, because MessageEncoderImpl compares class names and XMLEncoder
+# looks up a persistence delegate for the exact class of an object. But ZoneId and Charset are abstract. Their
+# instances belong to internal JDK subclasses, for example ZoneId.of("Europe/Amsterdam") is a
+# java.time.ZoneRegion and Charset.forName("UTF-8") is a sun.nio.cs.UTF_8, with a separate class for most
+# charsets. Listing ZoneId or Charset would never match, and listing the internal subclasses would depend on
+# JDK internals that may change between Java versions. Supporting them would need separate code, like for
+# ZoneOffset, that checks with instanceof and writes ZoneId.of(String) or Charset.forName(String).
+#
+org.springframework.http.MediaType,valueOf
+org.springframework.util.MimeType,valueOf
+java.time.Instant,parse
+java.time.LocalDate,parse
+java.time.LocalDateTime,parse
+java.time.LocalTime,parse
+java.time.OffsetDateTime,parse
+java.time.OffsetTime,parse
+java.time.ZonedDateTime,parse
+java.time.Duration,parse
+java.time.Period,parse
+java.time.Year,parse
+java.time.YearMonth,parse
+java.time.MonthDay,parse
+java.util.UUID,fromString
+java.math.BigDecimal,new
+java.math.BigInteger,new

@@ -24,40 +24,63 @@
 // -- This will overwrite an existing command --
 // Cypress.Commands.overwrite('visit', (originalFn, url, options) => { ... })
 
-const ibisTesterUser = 'tester'
-const ibisTesterPwd = 'IbisTester'
+interface Authentication {
+  username: string;
+  password: string;
+}
 
-declare namespace Cypress {
-  interface Chainable<Subject = any> {
-    inIframeBody(query: string): Chainable<any>
-    enterLadybug(): void
-    getNumLadybugReports(): Chainable<any>
-    createReportWithTestPipelineApi(config: string, adapter: string, message: string, username?: string, password?: string): Chainable<any>
-    getNumLadybugReportsForNameFilter(name: string): Chainable<number>
-    createReportInLadybug(config: string, adapter: string, message: string, username?: string, password?: string): Chainable<number>
-    createReportAndOpen(config: string, adapter: string, message: string, username?: string, password?: string);
-    getAllStorageIdsInTable(): Chainable<number[]>
-    guardedCopyReportToTestTab(alias: string)
-    checkTestTabHasReportNamed(name: string): Cypress.Chainable<any>
-    enterFilter(field: string, filter: string)
-    checkActiveFilterSphere(field: string, value: string): Cypress.Chainable<any>
-    apiDeleteAll(storageName: string)
-    apiDeleteAllAsTester(storageName: string)
-    selectTreeNode(path: NodeSelection[]): Cypress.Chainable<any>
-    awaitLoadingSpinner(): void
-    waitForVideo(): void
-    trimmedText(): Chainable<any>
-    checkpointValueEquals(expectedValue: string): void
-    checkpointValueTrimmedEquals(expectedValue: string): void
-    checkpointValueEmpty(): void
-    checkNumCheckpointValueLabels(expectedNumLabels: number): void
-    checkpointValueLabel(index: number): Chainable<any>
-    visitAsTester(): void
-    visitAs(username: string, password: string): void
-    enableReportGenerator(): void
-    executeJdbcQuery(): void
-    checkCorrelationIdFromRow(row: unknown, expectedCorrelationId: string): void
-    checkStatusFromRow(row: unknown, expectedStatus: string): void
+export const AUTHENTICATIONS = new Map<string, Authentication>([
+  ['observer', { username: 'observer', password: 'IbisObserver' }],
+  ['dataAdmin', { username: 'dataAdmin', password: 'IbisDataAdmin' }],
+  ['admin', { username: 'admin', password: 'IbisAdmin'}],
+  ['tester', { username: 'tester', password: 'IbisTester' }],
+  // User does not have roles
+  ['withoutRoles', { username: 'withoutRoles', password: 'withoutRoles'} ],
+  // User that does not exist
+  ['xxx', { username: 'xxx', password: 'xxx' }],
+])
+
+declare global {
+  namespace Cypress {
+    interface Chainable<Subject = any> {
+      inIframeBody(query: string): Chainable<any>
+      clickTableRowWithStorageId(storageId: number): Chainable<any>
+      enterLadybug(): void
+      getNumLadybugReports(): Chainable<any>
+      createReportWithTestPipelineApi(config: string, adapter: string, message: string, username?: string, password?: string): Chainable<any>
+      getNumLadybugReportsForNameFilter(name: string): Chainable<number>
+      createReportInLadybug(config: string, adapter: string, message: string, username?: string, password?: string): Chainable<number>
+      createReportAndOpen(config: string, adapter: string, message: string, username?: string, password?: string);
+      getAllStorageIdsInTable(): Chainable<number[]>
+      guardedCopyReportToTestTab(alias: string)
+      checkTestTabHasReportNamed(name: string): Cypress.Chainable<any>
+      enterFilter(field: string, filter: string)
+      checkActiveFilterSphere(field: string, value: string): Cypress.Chainable<any>
+      apiDeleteAll(storageName: string)
+      apiDeleteAllAsTester(storageName: string)
+      apiCopyReportToTestTabAsTester(storageName: string, storageId: number): Chainable<number>
+      apiSetGeneratorEnabledAsTester(enabled: boolean): Chainable<any>
+      selectTreeNode(path: NodeSelection[]): Cypress.Chainable<any>
+      awaitDebugTree(): void
+      awaitLoadingSpinner(): void
+      waitForVideo(): void
+      trimmedText(): Chainable<any>
+      checkpointValueEquals(expectedValue: string): void
+      checkpointValueTrimmedEquals(expectedValue: string): void
+      checkpointValueEmpty(): void
+      checkNumCheckpointValueLabels(expectedNumLabels: number): void
+      checkpointValueLabel(index: number): Chainable<any>
+      visitAsTester(): void
+      visitAs(username: string): void
+      goToEnvironmentVariables(): void
+      enableReportGenerator(): void
+      executeJdbcQuery(): void
+      stopAdapter(configuration: string, adapter: string): void
+      startAdapter(configuration: string, adapter: string): void
+      awaitAdapterStatus(configuration: string, adapter: string, status: string, retries: number): void
+      checkCorrelationIdFromRow(row: unknown, expectedCorrelationId: string): void
+      checkStatusFromRow(row: unknown, expectedStatus: string): void
+    }
   }
 }
 
@@ -71,31 +94,92 @@ Cypress.Commands.add('inIframeBody', (query) => {
     })
 })
 
+// The debug table can re-render while a matching row/cell is being located, which detaches
+// jQuery references collected via .each() and makes the eventual .click() flaky. Using
+// .contains() instead lets Cypress re-query the DOM and retry until the cell is actionable.
+Cypress.Commands.add('clickTableRowWithStorageId', (storageId) => {
+  cy.inIframeBody('[data-cy-debug="tableRow"]')
+    .contains('td:nth-child(2)', new RegExp(`^\\s*${storageId}\\s*$`))
+    .click()
+})
+
 Cypress.Commands.add('enterLadybug', () => {
+  // Temporary diagnostic for issue #977: cy.contains().click() on a table row keeps
+  // occasionally failing with "the page updated as a result of this command" further
+  // down the line, in callers that rely on getNumLadybugReports() as a stability guard.
+  // Logging every count/list response with its arrival time (shown in the command log
+  // captured by the failure screenshot) should show whether more than one automatic
+  // reload happens, and how its timing relates to the failing click. Remove once the
+  // guard has been fixed for real.
+  // Timestamps are absolute (Date.now()) so callers logging via cy.logDiag() elsewhere
+  // (e.g. right before a click that might race a reload) can be lined up against these.
+  // Intercept handlers run outside Cypress's normal command queue, so they must not call
+  // queued cy commands (that broke every test using enterLadybug() with "Cypress detected
+  // that you returned a promise from a command while also invoking one or more cy
+  // commands in that promise"). Cypress.log() is the unqueued, direct logging API that is
+  // safe to call from here.
+  cy.intercept(
+    {
+      method: 'GET',
+      url: `iaf/ladybug/api/metadata/${Cypress.expose('debugStorageName') as string}/count`
+    },
+    (req) => {
+      req.continue(() => {
+        Cypress.log({ name: 'diag', message: `/count response at ${Date.now()}` })
+      })
+    }
+  )
+  cy.intercept(
+    {
+      method: 'GET',
+      url: `iaf/ladybug/api/metadata/${Cypress.expose('debugStorageName') as string}?*`
+    },
+    (req) => {
+      req.continue(() => {
+        Cypress.log({ name: 'diag', message: `list response at ${Date.now()}` })
+      })
+    }
+  )
   cy.get('[data-cy-nav="status"]', { timeout: 10000 }).click()
-  cy.get('[data-cy-nav="testingLadybug"]').should('not.be.visible')
+  // Wait for the navigation to finish. Otherwise the route change can collapse the
+  // Testing menu again after it was expanded by the click below.
+  cy.location('hash').should('include', '/status')
   cy.get('[data-cy-nav="testing"]').click()
   cy.get('[data-cy-nav="testingLadybug"]').click()
   cy.awaitLoadingSpinner()
+  cy.log(`[diag] debug tab clicked at ${Date.now()}`)
   cy.inIframeBody('[data-cy-nav-tab="debug"]').click()
+})
+
+// Temporary diagnostic for issue #977, see enterLadybug(). Lets callers elsewhere (e.g.
+// right before a click that might race a reload) log a timestamp comparable to the
+// count/list response timestamps logged in enterLadybug().
+Cypress.Commands.add('logDiag', (message: string) => {
+  cy.log(`[diag] ${message} at ${Date.now()}`)
 })
 
 Cypress.Commands.add('getNumLadybugReports', () => {
   cy.enterLadybug()
+  cy.awaitLoadingSpinner()
   cy.intercept({
     method: 'GET',
-    url: `iaf/ladybug/api/metadata/${Cypress.env('debugStorageName') as string}/count`,
+    url: `iaf/ladybug/api/metadata/${Cypress.expose('debugStorageName') as string}/count`,
     times: 1
   }).as('apiGetReports_2')
-  cy.awaitLoadingSpinner()
+  // The refresh button also fires a separate request for the table's own row data
+  // (no /count suffix). Waiting only for the count above let this command return before
+  // that second request had come back, so the table could still change under callers
+  // that immediately act on a row.
+  cy.intercept({
+    method: 'GET',
+    url: `iaf/ladybug/api/metadata/${Cypress.expose('debugStorageName') as string}?*`,
+    times: 1
+  }).as('apiGetReportsList')
   cy.inIframeBody('[data-cy-debug="refresh"]').click()
-  cy.wait('@apiGetReports_2').then(interception => {
+  cy.wait(['@apiGetReports_2', '@apiGetReportsList']).then(([interception]) => {
     const count: number = interception.response.body
-    // Uncomment if PR https://github.com/wearefrank/ladybug-frontend/pull/363
-    // has been merged and if its frontend is referenced by F!F pom.xml.
-    //
-    // cy.inIframeBody('[data-cy-debug="amountShown"]')
-    // .should('equal', "/" + count);
+    cy.inIframeBody('[data-cy-debug="amountShown"]').invoke('text')
+      .should('equal', "/" + count);
     cy.inIframeBody('[data-cy-debug="tableRow"]')
       .should('have.length', count)
     return cy.wrap(count)
@@ -170,13 +254,7 @@ Cypress.Commands.add('createReportInLadybug', (config: string, adapter: string, 
 Cypress.Commands.add('createReportAndOpen', (config: string, adapter: string, message: string, username?: string, password?: string) => {
   cy.createReportInLadybug('Example1a', 'Adapter1a', 'xxx').then(storageId => {
     cy.wrap('Found report just created, storageId=' + storageId)
-    cy.inIframeBody('[data-cy-debug="tableRow"]')
-      .find('td:nth-child(2)').each($cell => {
-        if (parseInt($cell.text()) === storageId) {
-          cy.wrap('Going to click cell with text' + $cell.text())
-          cy.wrap($cell).click()
-        }
-      })
+    cy.clickTableRowWithStorageId(storageId)
   })
 })
 
@@ -246,10 +324,32 @@ Cypress.Commands.add('apiDeleteAllAsTester', (storageName: string) => {
   cy.request({
     method: 'DELETE',
     url: `/iaf/ladybug/api/report/all/${storageName}`,
-    auth: {
-      username: ibisTesterUser,
-      password: ibisTesterPwd
-    }
+    auth: AUTHENTICATIONS.get('tester')!
+  }).then(response => {
+    cy.wrap(response).its('status').should('equal', 200)
+  })
+})
+
+Cypress.Commands.add('apiCopyReportToTestTabAsTester', (storageName: string, storageId: number) => {
+  return cy.request({
+    method: 'PUT',
+    url: '/iaf/ladybug/api/report/store/Test',
+    auth: AUTHENTICATIONS.get('tester')!,
+    headers: { 'Content-Type': 'application/json' },
+    body: { [storageName]: [storageId] }
+  }).then(response => {
+    cy.wrap(response).its('status').should('equal', 200)
+    return cy.wrap(response.body[0].storageId as number)
+  })
+})
+
+Cypress.Commands.add('apiSetGeneratorEnabledAsTester', (enabled: boolean) => {
+  cy.request({
+    method: 'POST',
+    url: '/iaf/ladybug/api/testtool',
+    auth: AUTHENTICATIONS.get('tester')!,
+    headers: { 'Content-Type': 'application/json' },
+    body: { generatorEnabled: enabled ? 'true' : 'false' }
   }).then(response => {
     cy.wrap(response).its('status').should('equal', 200)
   })
@@ -298,10 +398,27 @@ function selectTreeNodeImpl (subject: JQuery<HTMLElement>, path: NodeSelection[]
   })
 }
 
+// [data-cy-debug-tree="root"] is the <ng-simple-tree> element itself, which is always
+// present once the debug tab is mounted, whether or not a report has been opened yet.
+// So asserting on its presence guards nothing; waiting for at least one app-tree-item is
+// what actually guards against querying the tree before it has been built.
+// Assumption: callers only use this right after navigating to a fresh page (e.g. via
+// cy.visit()), so the tree is genuinely empty beforehand and cannot already contain stale
+// items left over from a previously opened report. If a caller ever needs to await a
+// report being opened while another one is already showing, this guard is not sufficient
+// and would need to check for content specific to the new report instead of mere presence.
+Cypress.Commands.add('awaitDebugTree', () => {
+  cy.inIframeBody('[data-cy-debug-tree="root"] > app-tree-item').should('have.length.at.least', 1)
+})
+
 Cypress.Commands.add('awaitLoadingSpinner', () => {
   // We do not want to catch the moment that the loading spinner is NOT YET present
   cy.wait(400)
   cy.inIframeBody('[data-cy-loading-spinner]').should('not.exist')
+  // TODO issue https://github.com/wearefrank/ladybug/issues/977. Until the
+  // loading spinner is reliable, we do with a timeout that is larger than
+  // the debounce time of 300 ms applied in FilterService.
+  cy.wait(400)
 })
 
 // Wait so that the state of the UI is shown more clearly in videos.
@@ -387,20 +504,27 @@ Cypress.Commands.add('checkpointValueLabel', { prevSubject: false }, (index: num
 
 Cypress.Commands.add('visitAsTester', { prevSubject: false }, () => {
   cy.visit('', {
-    auth: {
-      username: ibisTesterUser,
-      password: ibisTesterPwd
-    }
+    auth: AUTHENTICATIONS.get('tester')!,
   })
 })
 
-Cypress.Commands.add('visitAs', { prevSubject: false }, (username, password) => {
+Cypress.Commands.add('visitAs', { prevSubject: false }, (username: string) => {
   cy.visit('', {
-    auth: {
-      username,
-      password
-    }
+    auth: AUTHENTICATIONS.get(username)!,
   })
+})
+
+Cypress.Commands.add('goToEnvironmentVariables', { prevSubject: false }, () => {
+  // The nav link's pointer-events stay disabled until an async permissions
+  // check resolves. Clicking before that is a silent no-op that leaves the
+  // page on the previous route, so wait for the link to become clickable.
+  cy.contains('Environment Variables', { timeout: 10000 })
+    .should('not.have.css', 'pointer-events', 'none')
+    .click()
+  // Adapter Status also has an input[name=search]. Wait for the actual
+  // navigation to the Environment Variables page so a caller does not
+  // interact with the search box still shown from the previous page.
+  cy.url().should('include', '/environment-variables')
 })
 
 Cypress.Commands.add('enableReportGenerator', { prevSubject: false }, () => {
@@ -418,11 +542,64 @@ Cypress.Commands.add('executeJdbcQuery', { prevSubject: false }, () => {
     headers: {
       'Content-Type': 'application/json',
     },
-    body: '{"query":"SELECT * FROM LADYBUG","queryType":"AUTO","datasource":"jdbc/webapp","resultType":"csv","avoidLocking":false,"trimSpaces":false}',
+    body: {
+      query: 'SELECT * FROM LADYBUG',
+      queryType: 'AUTO',
+      datasource: Cypress.expose('jdbcDatasource'),
+      resultType: 'csv',
+      avoidLocking: false,
+      trimSpaces: false,
+    },
   }).then((resp) => {
     expect(resp.status).to.equal(200);
   });
 })
+
+Cypress.Commands.add('stopAdapter', { prevSubject: false }, (configuration: string, adapter: string) => {
+  cy.request({
+    method: 'PUT',
+    url: `${Cypress.config('baseUrl')}/iaf/api/configurations/${encodeURIComponent(configuration)}/adapters/${encodeURIComponent(adapter)}`,
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: '{"action":"stop"}',
+  }).then((resp) => {
+    expect(resp.status).to.equal(202);
+    cy.awaitAdapterStatus(configuration, adapter, 'stopped', 20)
+  })
+})
+
+Cypress.Commands.add('startAdapter', { prevSubject: false }, (configuration: string, adapter: string) => {
+  cy.request({
+    method: 'PUT',
+    url: `${Cypress.config('baseUrl')}/iaf/api/configurations/${encodeURIComponent(configuration)}/adapters/${encodeURIComponent(adapter)}`,
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: '{"action":"start"}',
+  }).then((resp) => {
+    expect(resp.status).to.equal(202);
+    cy.awaitAdapterStatus(configuration, adapter, 'started', 20)
+  })
+})
+
+Cypress.Commands.add('awaitAdapterStatus', { prevSubject: false }, (configuration: string, adapter: string, status: string, retries: number) => {
+  cy.request({
+    method: 'GET',
+    url: `${Cypress.config('baseUrl')}/iaf/api/configurations/${encodeURIComponent(configuration)}/adapters/${encodeURIComponent(adapter)}`,
+  }).then((resp) => {
+    expect(resp.status).to.equal(200);
+    if (resp.body.state === status || retries <= 0) {
+      expect(resp.body.state).to.equal(status)
+    } else {
+      cy.wait(5000)
+      cy.awaitAdapterStatus(configuration, adapter, status, retries - 1);
+    }
+  })
+})
+
+// http://localhost/iaf/api/configurations/Example1a/adapters/Adapter1a
+// awaitAdapterStatus(configuration: string, adapter: string, status: string): void
 
 Cypress.Commands.add('checkCorrelationIdFromRow', { prevSubject: true }, (row, expectedCorrelationId) => {
   cy.wrap(row).find('td:eq(5)').trimmedText().should('equal', expectedCorrelationId)

@@ -10,7 +10,8 @@
 
   <artifactId>ladybug-backend-springmvc</artifactId>
 
-  <name>Ladybug API protected by Spring MVC authorization</name>
+  <name>Ladybug API Spring MVC</name>
+  <description>Ladybug API protected by Spring MVC authorization</description>
 
   <dependencies>
     <dependency>

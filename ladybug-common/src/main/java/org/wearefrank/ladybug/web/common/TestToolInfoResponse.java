@@ -23,7 +23,10 @@ import java.util.List;
 public class TestToolInfoResponse {
 	public static enum UI_TEST_MODE {
 		DEFAULT,
-		DONT_BLOCK_BACKEND;
+		DONT_BLOCK_BACKEND,
+		// Don't use for ladybug-backend-jaxrs because that webapp
+		// tweaks web.xml to enable/disable authorization.
+		NO_AUTH;
 	}
 
 	private @Getter @Setter boolean generatorEnabled;

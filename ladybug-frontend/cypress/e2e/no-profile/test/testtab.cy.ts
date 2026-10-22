@@ -66,6 +66,10 @@ describe('Test the Test tab', () => {
   it('Should not open delete modal when there are no tests', () => {
     cy.get('[data-cy-test="deleteAll"]').click();
     cy.get('[data-cy-delete-modal="confirm"]').should('exist').click();
+    // Wait for the delete request and table reload to finish before checking that
+    // deleteAll/deleteSelected no longer open the modal, otherwise this can race with
+    // the still-in-flight reload and see stale (non-empty) report data.
+    cy.checkTestTableNumRows(0);
     cy.get('[data-cy-test="deleteAll"]').click();
     cy.get('[data-cy-delete-modal="confirm"]').should('not.exist');
     cy.get('[data-cy-test="deleteSelected"]').click();

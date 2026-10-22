@@ -6,6 +6,10 @@
 \ladybug-ff-test-webapp
 /ladybug-ff-cypress-test
 \ladybug-ff-cypress-test
+/ladybug-test-webapp-common
+\ladybug-test-webapp-common
+/ladybug-test-webapp
+\ladybug-test-webapp
 /external-ladybug-director
 \external-ladybug-director
 /test-multi-instance-dropdown

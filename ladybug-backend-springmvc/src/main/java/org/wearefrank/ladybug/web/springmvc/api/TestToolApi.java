@@ -15,15 +15,11 @@
 */
 package org.wearefrank.ladybug.web.springmvc.api;
 
-import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -44,19 +40,19 @@ import jakarta.annotation.security.RolesAllowed;
 import lombok.Setter;
 import org.wearefrank.ladybug.web.common.TestToolInfoResponse;
 
-import org.springframework.security.core.GrantedAuthority;
 import org.wearefrank.ladybug.web.common.shownreport.ShownReport;
 
 @RestController
 @RequestMapping("/testtool")
 @RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
-@Slf4j
 public class TestToolApi {
 	@Autowired
 	private @Setter TestToolApiImpl delegate;
 
 	@Autowired
 	private @Setter FrontendRolesResolver frontendRolesResolver;
+
+	private final SpringSecurityContext securityContext = new SpringSecurityContext();
 
 	/**
 	 * @return Response containing test tool data.
@@ -65,27 +61,8 @@ public class TestToolApi {
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	public ResponseEntity<?> getInfo() {
 		TestToolInfoResponse result = delegate.getTestToolInfo();
-		result.setRoles(frontendRolesResolver.getFrontendRoles(this.getRole()));
+		result.setRoles(frontendRolesResolver.getFrontendRoles(securityContext::isUserInRoles));
 		return ResponseEntity.ok(result);
-	}
-
-	private String getRole() {
-		List<String> roles = SecurityContextHolder.getContext().getAuthentication().getAuthorities()
-				.stream()
-				.map(GrantedAuthority::getAuthority)
-				.filter((s) -> s.startsWith("ROLE_"))
-				.map((s) -> s.substring(5))
-				.collect(Collectors.toList());
-		log.debug("TestToolApi.getRole() sees roles {}", roles);
-		if (roles.size() != 1) {
-			log.error("Expected only one role in {}", roles);
-			// Do not fill in some string. If ever a role is introduced that has that name, then
-			// a security breach might be introduced.
-			return null;
-		}
-		String role = roles.get(0);
-		log.debug("User has role {}", role);
-		return role;
 	}
 
 	// IbisObserver is permitted to revert the generatorEnabled state and the regex filter to factory
@@ -96,7 +73,7 @@ public class TestToolApi {
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	public ResponseEntity<?> resetInfo() {
 		TestToolInfoResponse result = delegate.resetInfo();
-		result.setRoles(frontendRolesResolver.getFrontendRoles(getRole()));
+		result.setRoles(frontendRolesResolver.getFrontendRoles(securityContext::isUserInRoles));
 		return ResponseEntity.ok(result);
 	}
 

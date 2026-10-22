@@ -1139,17 +1139,18 @@ public class TestTool {
 				} else {
 					errorMessage = debugger.rerun(correlationId, report, securityContext, reportRunner);
 				}
-			} finally {
-				if (reportGeneratorEnabled) {
-					// Verify that originalReport has been removed from originalReports by checkpoint()
-					Report originalReport;
-					synchronized(originalReports) {
-						originalReport = (Report)originalReports.remove(correlationId);
-					}
-					if (errorMessage == null && originalReport != null) {
-						errorMessage = "Rerun didn't trigger any checkpoint or new report didn't get correlationId '"
-								+ correlationId + "'";
-					}
+			} catch(Throwable t) {
+				errorMessage = t.getMessage();
+			}
+			if (reportGeneratorEnabled) {
+				// Verify that originalReport has been removed from originalReports by checkpoint()
+				Report originalReport;
+				synchronized(originalReports) {
+					originalReport = (Report)originalReports.remove(correlationId);
+				}
+				if (errorMessage == null && originalReport != null) {
+					errorMessage = "Rerun didn't trigger any checkpoint or new report didn't get correlationId '"
+							+ correlationId + "'";
 				}
 			}
 		}

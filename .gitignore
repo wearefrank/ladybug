@@ -15,7 +15,6 @@ bin
 .externalToolBuilders
 .vscode/
 
-data
 wip
 skip-replace-inject.txt
 .flattened-pom.xml

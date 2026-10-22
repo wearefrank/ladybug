@@ -269,9 +269,14 @@ public class DatabaseStorage implements Storage {
 			delete(deleteQuery, maxNrOfReports);
 		}
 		if (getMaxStorageDays() > -1) {
-			String deleteQuery = "delete from " + getTable() + " where " + getEndTimeColum()
-					+ " < now() - interval '" + getMaxStorageDays() + " days'";
-			int nrOfDeletedReports = ladybugJdbcTemplate.update(deleteQuery);
+			// Compute the cutoff in Java and bind it as a JDBC parameter instead of
+			// using "now() - interval 'N days'": interval arithmetic in that form is
+			// PostgreSQL-specific, and other databases reject it (H2 fails with error
+			// 22007 "Cannot parse INTERVAL constant") from inside the report-store
+			// path, which breaks storing reports altogether.
+			Timestamp cutoff = new Timestamp(System.currentTimeMillis() - getMaxStorageDays() * 24L * 60L * 60L * 1000L);
+			String deleteQuery = "delete from " + getTable() + " where " + getEndTimeColum() + " < ?";
+			int nrOfDeletedReports = ladybugJdbcTemplate.update(deleteQuery, cutoff);
 			log.debug("Checked for reports older than " + getMaxStorageDays() + " days: "
 					+ nrOfDeletedReports + " reports deleted.");
 		}

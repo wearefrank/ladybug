@@ -2,7 +2,7 @@ const NUM_COLUMNS_WHITE_BOX_VIEW = 10
 
 describe('Tests with views and filtering', () => {
   before(() => {
-    cy.apiDeleteAll(Cypress.env('debugStorageName') as string)
+    cy.apiDeleteAll(Cypress.expose('debugStorageName') as string)
     cy.apiDeleteAll('Test')
     cy.visit('')
     cy.createReportWithTestPipelineApi('Example1a', 'Adapter1a', 'xxx')
@@ -28,7 +28,7 @@ describe('Tests with views and filtering', () => {
     readonly enabled: boolean
   }
 
-  const isDatabaseStorage: boolean = Cypress.env('debugStorageName') === 'DatabaseDebugStorage'
+  const isDatabaseStorage: boolean = Cypress.expose('debugStorageName') === 'DatabaseDebugStorage'
 
   const columnAndNameCombinations: ColumnAndName[] = [
     { name: 'Storage Id', colNr: 1, enabled: !isDatabaseStorage },
