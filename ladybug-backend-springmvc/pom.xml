@@ -13,6 +13,18 @@
   <name>Ladybug API Spring MVC</name>
   <description>Ladybug API protected by Spring MVC authorization</description>
 
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.wearefrank</groupId>
+        <artifactId>ladybug-dependencies</artifactId>
+        <version>${revision}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
   <dependencies>
     <dependency>
       <groupId>org.wearefrank</groupId>
