@@ -115,20 +115,8 @@ public class TraceSender implements CommandLineRunner {
 				.build()) {
 			createTrace(tracerProvider.get(getClass().getName()));
 		}
-		// Divide the spans over requests ourselves instead of using a BatchSpanProcessor, so that the requests made are
-		// deterministic
-		List<List<SpanData>> batches = switch (batching) {
-			case SINGLE_REQUEST -> List.of(finishedSpans);
-			case HELLO_WORLD_SEPARATE -> {
-				Map<Boolean, List<SpanData>> isHelloWorld = finishedSpans.stream()
-						.collect(Collectors.partitioningBy(span -> HELLO_WORLD_SPAN_NAME.equals(span.getName())));
-				yield List.of(isHelloWorld.get(true), isHelloWorld.get(false));
-			}
-		};
-		switch (protocol) {
-			case HTTP_PROTOBUF -> sendProtobuf(batches);
-			case HTTP_JSON -> sendJson(batches);
-		}
+		List<List<SpanData>> batches = getBatches(finishedSpans);
+		sendBatches(batches);
 		log.info("Trace sent successfully in {} request(s)", batches.size());
 	}
 
@@ -139,6 +127,26 @@ public class TraceSender implements CommandLineRunner {
 			tracer.spanBuilder(GOODBYE_WORLD_SPAN_NAME).setParent(Context.current()).startSpan().end();
 		} finally {
 			root.end();
+		}
+	}
+
+	private List<List<SpanData>> getBatches(List<SpanData> finishedSpans) {
+		// Divide the spans over requests ourselves instead of using a BatchSpanProcessor, so that the requests made are
+		// deterministic
+		return switch (batching) {
+			case SINGLE_REQUEST -> List.of(finishedSpans);
+			case HELLO_WORLD_SEPARATE -> {
+				Map<Boolean, List<SpanData>> isHelloWorld = finishedSpans.stream()
+						.collect(Collectors.partitioningBy(span -> HELLO_WORLD_SPAN_NAME.equals(span.getName())));
+				yield List.of(isHelloWorld.get(true), isHelloWorld.get(false));
+			}
+		};
+	}
+
+	private void sendBatches(List<List<SpanData>> batches) throws IOException, InterruptedException {
+		switch (protocol) {
+			case HTTP_PROTOBUF -> sendProtobuf(batches);
+			case HTTP_JSON -> sendJson(batches);
 		}
 	}
 
