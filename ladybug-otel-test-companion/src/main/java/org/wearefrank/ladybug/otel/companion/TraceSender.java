@@ -205,7 +205,6 @@ public class TraceSender implements CommandLineRunner {
 			}
 		};
 		OTLP_JSON_LOGGER.setLevel(Level.INFO);
-		OTLP_JSON_LOGGER.setUseParentHandlers(false);
 		OTLP_JSON_LOGGER.addHandler(handler);
 		try (SpanExporter exporter = OtlpJsonLoggingSpanExporter.create()) {
 			if (!exporter.export(spans).isSuccess()) {
