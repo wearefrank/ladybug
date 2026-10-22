@@ -313,8 +313,8 @@ jobs:
         if: failure()
         run: tree -L 5 .
 
-      - name: Collect failure data into a single artifact directory
-        if: failure()
+      - name: Collect data into a single artifact directory
+        if: always()
         run: |
           bash ladybug/.github/workflows/collect-artifact-data.sh artifact-data \
             "ladybug/ladybug-ff-cypress-test/cypress/screenshots" \
@@ -334,7 +334,7 @@ jobs:
             "${{ env.RESOURCES_DIR }}/localUsers.yml"
 
       - name: Store logs
-        if: failure()
+        if: always()
         uses: actions/upload-artifact@v5
         with:
           name: test-with-ff data test-app = ${{ matrix.test-app }} storage = ${{ matrix.storage }} dtap=${{ matrix.dtap }}
