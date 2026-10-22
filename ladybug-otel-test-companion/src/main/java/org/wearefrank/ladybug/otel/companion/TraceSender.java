@@ -15,7 +15,6 @@
 */
 package org.wearefrank.ladybug.otel.companion;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -26,6 +25,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import io.opentelemetry.api.common.AttributeKey;
@@ -34,13 +38,16 @@ import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
-import io.opentelemetry.exporter.internal.otlp.traces.TraceRequestMarshaler;
+import io.opentelemetry.exporter.logging.otlp.OtlpJsonLoggingSpanExporter;
+import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporter;
+import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.ReadWriteSpan;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.data.SpanData;
+import io.opentelemetry.sdk.trace.export.SpanExporter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
@@ -56,6 +63,8 @@ public class TraceSender implements CommandLineRunner {
 	private static final String ROOT_SPAN_NAME = "Otel root";
 	private static final String HELLO_WORLD_SPAN_NAME = "Otel here, hello world!";
 	private static final String GOODBYE_WORLD_SPAN_NAME = "Otel here, goodbye world";
+	// Keep a strong reference, otherwise the logger and the configuration done on it can be garbage collected
+	private static final Logger OTLP_JSON_LOGGER = Logger.getLogger(OtlpJsonLoggingSpanExporter.class.getName());
 
 	/**
 	 * The OTLP protocols that are supported, see OTEL_EXPORTER_OTLP_PROTOCOL in the OpenTelemetry specification.
@@ -116,9 +125,9 @@ public class TraceSender implements CommandLineRunner {
 				yield List.of(isHelloWorld.get(true), isHelloWorld.get(false));
 			}
 		};
-		HttpClient httpClient = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(timeoutSeconds)).build();
-		for (List<SpanData> batch : batches) {
-			send(httpClient, batch);
+		switch (protocol) {
+			case HTTP_PROTOBUF -> sendProtobuf(batches);
+			case HTTP_JSON -> sendJson(batches);
 		}
 		log.info("Trace sent successfully in {} request(s)", batches.size());
 	}
@@ -133,28 +142,83 @@ public class TraceSender implements CommandLineRunner {
 		}
 	}
 
-	private void send(HttpClient httpClient, List<SpanData> spans) throws IOException, InterruptedException {
-		// The public OtlpHttpSpanExporter only supports protobuf, so serialize with the marshaler it uses internally,
-		// which also supports the OTLP JSON encoding
-		TraceRequestMarshaler marshaler = TraceRequestMarshaler.create(spans);
-		ByteArrayOutputStream body = new ByteArrayOutputStream();
-		if (protocol == Protocol.HTTP_JSON) {
-			marshaler.writeJsonTo(body);
-		} else {
-			marshaler.writeBinaryTo(body);
+	private void sendProtobuf(List<List<SpanData>> batches) {
+		// Without retries, so that the requests made are deterministic
+		try (SpanExporter exporter = OtlpHttpSpanExporter.builder()
+				.setEndpoint(endpoint)
+				.setConnectTimeout(Duration.ofSeconds(timeoutSeconds))
+				.setTimeout(Duration.ofSeconds(timeoutSeconds))
+				.setRetryPolicy(null)
+				.build()) {
+			for (List<SpanData> batch : batches) {
+				List<String> spanNames = batch.stream().map(SpanData::getName).toList();
+				log.info("Sending spans {} to [{}] as {}", spanNames, endpoint, protocol.contentType);
+				CompletableResultCode result = exporter.export(batch).join(timeoutSeconds, TimeUnit.SECONDS);
+				if (!result.isSuccess()) {
+					throw new IllegalStateException("Failed to send spans " + spanNames + " to [" + endpoint + "]",
+							result.getFailureThrowable());
+				}
+			}
 		}
-		HttpRequest request = HttpRequest.newBuilder(URI.create(endpoint))
-				.timeout(Duration.ofSeconds(timeoutSeconds))
-				.header("Content-Type", protocol.contentType)
-				.POST(HttpRequest.BodyPublishers.ofByteArray(body.toByteArray()))
-				.build();
-		List<String> spanNames = spans.stream().map(SpanData::getName).toList();
-		log.info("Sending spans {} to [{}] as {}", spanNames, endpoint, protocol.contentType);
-		HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-		if (response.statusCode() / 100 != 2) {
-			throw new IllegalStateException("Failed to send spans " + spanNames + " to [" + endpoint + "], got HTTP status "
-					+ response.statusCode() + " with body: " + response.body());
+	}
+
+	private void sendJson(List<List<SpanData>> batches) throws IOException, InterruptedException {
+		HttpClient httpClient = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(timeoutSeconds)).build();
+		for (List<SpanData> batch : batches) {
+			HttpRequest request = HttpRequest.newBuilder(URI.create(endpoint))
+					.timeout(Duration.ofSeconds(timeoutSeconds))
+					.header("Content-Type", protocol.contentType)
+					.POST(HttpRequest.BodyPublishers.ofString(toOtlpJson(batch)))
+					.build();
+			List<String> spanNames = batch.stream().map(SpanData::getName).toList();
+			log.info("Sending spans {} to [{}] as {}", spanNames, endpoint, protocol.contentType);
+			HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+			if (response.statusCode() / 100 != 2) {
+				throw new IllegalStateException("Failed to send spans " + spanNames + " to [" + endpoint
+						+ "], got HTTP status " + response.statusCode() + " with body: " + response.body());
+			}
 		}
+	}
+
+	/**
+	 * Serializes the spans to an OTLP/JSON ExportTraceServiceRequest. The OpenTelemetry SDK has no public exporter
+	 * that sends OTLP/JSON over HTTP, but {@link OtlpJsonLoggingSpanExporter} logs each ResourceSpans as OTLP/JSON.
+	 * Capture those log records and wrap them in the request object.
+	 */
+	private static String toOtlpJson(List<SpanData> spans) {
+		List<String> resourceSpans = new ArrayList<>();
+		Handler handler = new Handler() {
+			@Override
+			public void publish(LogRecord logRecord) {
+				// The exporter also logs warnings when serialization fails, which then also shows in the export result
+				if (logRecord.getLevel() == Level.INFO) {
+					resourceSpans.add(logRecord.getMessage());
+				}
+			}
+
+			@Override
+			public void flush() {
+			}
+
+			@Override
+			public void close() {
+			}
+		};
+		OTLP_JSON_LOGGER.setLevel(Level.INFO);
+		OTLP_JSON_LOGGER.setUseParentHandlers(false);
+		OTLP_JSON_LOGGER.addHandler(handler);
+		try (SpanExporter exporter = OtlpJsonLoggingSpanExporter.create()) {
+			if (!exporter.export(spans).isSuccess()) {
+				throw new IllegalStateException("Failed to serialize spans to OTLP/JSON");
+			}
+		} finally {
+			OTLP_JSON_LOGGER.removeHandler(handler);
+		}
+		// Fails when the exporter no longer logs to a logger named after its class, which is not documented
+		if (resourceSpans.isEmpty()) {
+			throw new IllegalStateException("No OTLP/JSON captured from logger [" + OTLP_JSON_LOGGER.getName() + "]");
+		}
+		return "{\"resourceSpans\":[" + String.join(",", resourceSpans) + "]}";
 	}
 
 	private static class CollectingSpanProcessor implements SpanProcessor {

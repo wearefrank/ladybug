@@ -40,10 +40,15 @@
       <groupId>io.opentelemetry</groupId>
       <artifactId>opentelemetry-sdk-trace</artifactId>
     </dependency>
-    <!-- JSON serialization by the OTLP marshalers needs jackson-core, which spring-boot-starter-web brings -->
+    <!-- Sends OTLP/HTTP with protobuf encoding -->
     <dependency>
       <groupId>io.opentelemetry</groupId>
-      <artifactId>opentelemetry-exporter-otlp-common</artifactId>
+      <artifactId>opentelemetry-exporter-otlp</artifactId>
+    </dependency>
+    <!-- Produces the OTLP/JSON encoding. This needs jackson-core, which spring-boot-starter-web brings -->
+    <dependency>
+      <groupId>io.opentelemetry</groupId>
+      <artifactId>opentelemetry-exporter-logging-otlp</artifactId>
     </dependency>
     <dependency>
       <groupId>org.projectlombok</groupId>
