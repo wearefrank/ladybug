@@ -258,13 +258,13 @@ To work with Jaeger, you can run the following command:
 
 `docker run --rm -e COLLECTOR_ZIPKIN_HOST_PORT=:9411 -p 16686:16686 -p 4317:4317 -p 4318:4318 -p 9411:9411 jaegertracing/all-in-one:latest`
 
-You'll need to uncomment or add:
+The OpenTelemetry dependencies needed to export traces are optional dependencies of Ladybug. Your application has to add them itself: `io.opentelemetry:opentelemetry-sdk`, `io.opentelemetry:opentelemetry-exporter-zipkin`, `io.opentelemetry:opentelemetry-exporter-otlp` and `io.opentelemetry.semconv:opentelemetry-semconv`. When bean `openTelemetryEndpoint` is present but these dependencies are missing, the testTool bean fails to initialize with an error that lists the missing dependencies.
+
+Bean `openTelemetryEndpoint` is autowired into the testTool bean. Alternatively, you can set it explicitly in the testTool bean:
 
 ```
 <property name="openTelemetryEndpoint" ref="openTelemetryEndpoint"/>
 ```
-
-In the testTool bean.
 
 To choose between one of the collectors in the Ladybug application, there is a bean available to make your choice. You have to add the following and change the string value of this bean to the collector you want to use. For Zipkin, enter the endpoint in the string value. For Jaeger (which doesn't use a endpoint), you can just enter "jaeger":
 ```

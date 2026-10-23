@@ -43,7 +43,8 @@ public class OpenTelemetryUtil {
 	 * java.lang.ClassNotFoundException: io.opentelemetry.sdk.trace.export.SpanExporter
 	 * </code>
 	 * </p>
-	 * This happens because OpenTelemetry dependencies have scope provided for now.
+	 * This happens because OpenTelemetry dependencies are optional. TestTool checks that they are on the classpath
+	 * before calling this method.
 	 * 
 	 * @param openTelemetryEndpoint ...
 	 * @return ...

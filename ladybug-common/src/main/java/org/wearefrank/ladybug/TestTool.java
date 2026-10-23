@@ -105,7 +105,14 @@ public class TestTool {
 	private @Setter @Getter @Inject @Autowired Views views;
 	private @Setter @Getter int reportsInProgressThreshold = 300000;
 	boolean devMode = false; // See testConcurrentLastEndpointAndFirstStartpointForSameCorrelationId()
-	private @Qualifier("openTelemetryEndpoint") String openTelemetryEndpoint;
+	private @Setter @Autowired(required = false) @Qualifier("openTelemetryEndpoint") String openTelemetryEndpoint;
+	// One class of each optional dependency needed by OpenTelemetryUtil
+	private static final String[][] OPEN_TELEMETRY_REQUIRED_CLASSES = {
+		{"io.opentelemetry.sdk.OpenTelemetrySdk", "io.opentelemetry:opentelemetry-sdk"},
+		{"io.opentelemetry.exporter.zipkin.ZipkinSpanExporter", "io.opentelemetry:opentelemetry-exporter-zipkin"},
+		{"io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter", "io.opentelemetry:opentelemetry-exporter-otlp"},
+		{"io.opentelemetry.semconv.ServiceAttributes", "io.opentelemetry.semconv:opentelemetry-semconv"}
+	};
 	private Tracer tracer;
 
 	private @Getter @Setter String host = null;
@@ -123,7 +130,39 @@ public class TestTool {
 			view.setTestTool(this);
 		}
 		if (openTelemetryEndpoint != null) {
-			tracer = OpenTelemetryUtil.getOpenTelemetryTracer(openTelemetryEndpoint);
+			// Check before OpenTelemetryUtil is loaded, because loading it already fails when the optional
+			// OpenTelemetry dependencies are missing. This check cannot be moved to OpenTelemetryUtil: before any
+			// method of OpenTelemetryUtil runs, the JVM verifies its bytecode, which loads SDK classes like
+			// SpanExporter (it is assigned either a ZipkinSpanExporter or an OtlpGrpcSpanExporter). Without the
+			// optional dependencies this throws NoClassDefFoundError: io/opentelemetry/sdk/trace/export/SpanExporter
+			// before the check would get a chance to run.
+			checkOpenTelemetryDependencies();
+			try {
+				tracer = OpenTelemetryUtil.getOpenTelemetryTracer(openTelemetryEndpoint);
+			} catch (LinkageError e) {
+				throw new IllegalStateException("Bean openTelemetryEndpoint is configured (value: " + openTelemetryEndpoint
+						+ ") but OpenTelemetry could not be initialized, probably because of a missing (transitive) dependency", e);
+			}
+			if (tracer == null) {
+				log.warn("Bean openTelemetryEndpoint has value [" + openTelemetryEndpoint + "] which is neither a Zipkin endpoint"
+						+ " (containing port 9411) nor \"jaeger\", no OpenTelemetry traces will be exported");
+			}
+		}
+	}
+
+	private void checkOpenTelemetryDependencies() {
+		List<String> missing = new ArrayList<>();
+		for (String[] classAndArtifact : OPEN_TELEMETRY_REQUIRED_CLASSES) {
+			try {
+				Class.forName(classAndArtifact[0], false, getClass().getClassLoader());
+			} catch (ClassNotFoundException | LinkageError e) {
+				missing.add(classAndArtifact[1]);
+			}
+		}
+		if (!missing.isEmpty()) {
+			throw new IllegalStateException("Bean openTelemetryEndpoint is configured (value: " + openTelemetryEndpoint
+					+ ") but the following optional dependencies of Ladybug are not on the classpath: " + missing
+					+ ". Add them to your application or remove bean openTelemetryEndpoint");
 		}
 	}
 
