@@ -16,6 +16,7 @@ updates:
       - "/ladybug-common"
       - "/ladybug-backend-jaxrs"
       - "/ladybug-backend-springmvc"
+      - "/ladybug-dependencies"
       - "/ladybug-ff-test-webapp"
       - "/ladybug-frontend-servlet"
       - "/ladybug-test-webapp"

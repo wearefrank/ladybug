@@ -15,6 +15,18 @@
   <name>Ladybug frontend servlet</name>
   <description>Servlet that provides ladybug-frontend</description>
 
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.wearefrank</groupId>
+        <artifactId>ladybug-dependencies</artifactId>
+        <version>${revision}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
   <dependencies>
     <dependency>
       <groupId>org.wearefrank</groupId>
