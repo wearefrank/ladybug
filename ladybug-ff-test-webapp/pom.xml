@@ -47,8 +47,7 @@
 		<!-- Enable ibis-echo2 timestamp versions -->
 		<repository>
 			<id>frankframework</id>
-			<name>Frank!Framework</name>
-			<url>https://nexus.frankframework.org/repository/public/</url>
+			<url>https://nexus.frankframework.org/content/repositories/releases</url>
 		</repository>
 	</repositories>
 </project>
