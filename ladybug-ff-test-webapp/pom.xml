@@ -18,7 +18,7 @@
   <properties>
     <!-- Overwritten by the CI/CD, see bump-including-ladybug-ff-test-webapp in
          https://github.com/wearefrank/frank-runner/blob/master/specials/util/syncPomVersions/build.xml -->
-    <ff.version>LATEST</ff.version>
+    <ff.version>10.3.0</ff.version>
     <!-- Test webapp, not to be published -->
     <maven.deploy.skip>true</maven.deploy.skip>
   </properties>
