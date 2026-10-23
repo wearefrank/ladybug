@@ -44,10 +44,13 @@
 				<enabled>false</enabled>
 			</snapshots>
 		</repository>
+		<repository>
+			<id>frankframework-releases</id>
+			<url>https://nexus.frankframework.org/content/repositories/releases</url>
+		</repository>
 		<!-- Enable ibis-echo2 timestamp versions -->
 		<repository>
 			<id>frankframework</id>
-			<name>Frank!Framework</name>
 			<url>https://nexus.frankframework.org/repository/thirdparty</url>
 		</repository>
 	</repositories>
