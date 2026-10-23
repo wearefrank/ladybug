@@ -48,7 +48,7 @@
 		<repository>
 			<id>frankframework</id>
 			<name>Frank!Framework</name>
-			<url>https://nexus.frankframework.org/repository/thirdparty</url>
+			<url>https://nexus.frankframework.org/repository/public/</url>
 		</repository>
 	</repositories>
 </project>
