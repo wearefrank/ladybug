@@ -1,3 +1,5 @@
+import { execFile } from 'node:child_process';
+import path from 'node:path';
 import { defineConfig } from 'cypress';
 
 export default defineConfig({
@@ -15,6 +17,39 @@ export default defineConfig({
           launchOptions.args.push('--no-sandbox', '--disable-gpu');
         }
         return launchOptions;
+      });
+      on('task', {
+        // Runs ladybug-otel-test-companion. Rejects (failing the test) when the jar exits with a
+        // non-zero exit code, which it does when Ladybug does not accept the trace.
+        runOtelTestCompanion({ endpoint, protocol }: { endpoint: string; protocol: string }): Promise<string> {
+          const jar = path.join(
+            config.projectRoot,
+            '..',
+            'ladybug-otel-test-companion',
+            'target',
+            'ladybug-otel-test-companion.jar',
+          );
+          const args = [
+            '-jar',
+            jar,
+            `--ladybug.otel.endpoint=${endpoint}`,
+            `--ladybug.otel.protocol=${protocol}`,
+            '--ladybug.otel.batching=single-request',
+          ];
+          return new Promise((resolve, reject) => {
+            execFile('java', args, (error, stdout, stderr) => {
+              if (error) {
+                reject(new Error(`${error.message}
+stdout:
+${stdout}
+stderr:
+${stderr}`));
+              } else {
+                resolve(stdout);
+              }
+            });
+          });
+        },
       });
       // Cypress 16 only reads values from cypress.env.json and CYPRESS_* environment
       // variables into config.env (accessible through cy.env()). None of our values

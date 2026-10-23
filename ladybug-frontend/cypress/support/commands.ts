@@ -369,10 +369,11 @@ Cypress.Commands.add('createOpenTelemetryReport' as keyof Chainable, (): void =>
 
 // Requires ladybug-otel-test-companion to be built. It sends the whole trace in a single request
 // and exits with a non-zero exit code when Ladybug does not accept the trace. The trace is sent to
-// the backend configured by Cypress env variable backendServer.
+// the backend configured by exposed Cypress variable backendServer.
 Cypress.Commands.add('runOtelTestCompanion' as keyof Chainable, (protocol: 'http/json' | 'http/protobuf'): void => {
-  cy.exec(
-    `java -jar ../ladybug-otel-test-companion/target/ladybug-otel-test-companion.jar --ladybug.otel.endpoint=${Cypress.env('backendServer')}/ladybug/api/v1/traces --ladybug.otel.protocol=${protocol} --ladybug.otel.batching=single-request`,
+  cy.task(
+    'runOtelTestCompanion',
+    { endpoint: `${Cypress.expose('backendServer')}/ladybug/api/v1/traces`, protocol },
     { timeout: 120_000 },
   );
 })
