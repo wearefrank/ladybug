@@ -29,7 +29,7 @@ export default defineConfig({
             'target',
             'ladybug-otel-test-companion.jar',
           );
-          const args = [
+          const javaArguments = [
             '-jar',
             jar,
             `--ladybug.otel.endpoint=${endpoint}`,
@@ -37,13 +37,9 @@ export default defineConfig({
             '--ladybug.otel.batching=single-request',
           ];
           return new Promise((resolve, reject) => {
-            execFile('java', args, (error, stdout, stderr) => {
+            execFile('java', javaArguments, (error, stdout, stderr) => {
               if (error) {
-                reject(new Error(`${error.message}
-stdout:
-${stdout}
-stderr:
-${stderr}`));
+                reject(new Error([error.message, 'stdout:', stdout, 'stderr:', stderr].join('\n')));
               } else {
                 resolve(stdout);
               }
