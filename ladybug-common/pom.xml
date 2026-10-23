@@ -118,17 +118,27 @@
       <groupId>io.opentelemetry</groupId>
       <artifactId>opentelemetry-api</artifactId>
     </dependency>
+    <!-- Optional (only used by OpenTelemetryUtil) to keep transitive dependencies caused by Ladybug to a minimum.
+         Applications that want Ladybug to send traces to Zipkin or Jaeger declare these dependencies themselves. -->
     <dependency>
       <groupId>io.opentelemetry.semconv</groupId>
       <artifactId>opentelemetry-semconv</artifactId>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>io.opentelemetry</groupId>
+      <artifactId>opentelemetry-sdk</artifactId>
+      <optional>true</optional>
     </dependency>
     <dependency>
       <groupId>io.opentelemetry</groupId>
       <artifactId>opentelemetry-exporter-zipkin</artifactId>
+      <optional>true</optional>
     </dependency>
     <dependency>
       <groupId>io.opentelemetry</groupId>
       <artifactId>opentelemetry-exporter-otlp</artifactId>
+      <optional>true</optional>
     </dependency>
     <dependency>
       <groupId>io.opentelemetry.proto</groupId>
