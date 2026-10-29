@@ -3,7 +3,12 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>org.wearefrank</groupId>
+	<parent>
+		<groupId>org.wearefrank</groupId>
+		<artifactId>ladybug-parent</artifactId>
+		<version>${revision}</version>
+	</parent>
+
 	<artifactId>ladybug-ff-test-webapp</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>Ladybug FF! test webapp</name>
@@ -14,16 +19,14 @@
 		<maven.compiler.release>21</maven.compiler.release>
 		<!-- Overwritten by the CI/CD, see bump-including-ladybug-ff-test-webapp in
 		     https://github.com/wearefrank/frank-runner/blob/master/specials/util/syncPomVersions/build.xml -->
-		<ff.version>LATEST</ff.version>
+		<ff.version>10.3.0</ff.version>
 		<!-- Keep equal to property revision in the root pom.xml, so that profile ff builds against this repository -->
-		<ladybug.version>4.1-SNAPSHOT</ladybug.version>
 	</properties>
 
 	<dependencies>
 		<dependency>
 			<groupId>org.frankframework</groupId>
 			<artifactId>bootable-runner</artifactId>
-			<optional>true</optional>
 		</dependency>
 		<dependency>
 			<groupId>org.frankframework</groupId>
@@ -32,10 +35,6 @@
 		<dependency>
 			<groupId>org.frankframework</groupId>
 			<artifactId>frankframework-filesystem</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.frankframework</groupId>
-			<artifactId>frankframework-ladybug-debugger</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.frankframework</groupId>
@@ -48,7 +47,11 @@
 		<dependency>
 			<groupId>org.wearefrank</groupId>
 			<artifactId>ladybug-backend-springmvc</artifactId>
-			<version>${ladybug.version}</version>
+			<version>${revision}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.frankframework</groupId>
+			<artifactId>frankframework-ladybug-debugger</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>com.h2database</groupId>
@@ -61,7 +64,7 @@
 		<dependencies>
 			<dependency>
 				<groupId>org.frankframework</groupId>
-				<artifactId>frankframework-bundle-minimal</artifactId>
+				<artifactId>frankframework-parent</artifactId>
 				<version>${ff.version}</version>
 				<type>pom</type>
 				<scope>import</scope>

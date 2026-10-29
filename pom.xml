@@ -57,6 +57,7 @@
     <module>ladybug-test-webapp-common</module>
     <module>ladybug-test-webapp</module>
     <module>ladybug-spring-boot-test-webapp</module>
+    <module>ladybug-ff-test-webapp</module>
   </modules>
   <scm>
     <connection>scm:git:https://github.com/wearefrank/ladybug.git</connection>
@@ -794,13 +795,6 @@
           <url>file:target/site-deploy</url>
         </site>
       </distributionManagement>
-    </profile>
-    <profile>
-      <!-- Runs Ladybug inside the Frank!Framework, see ladybug-ff-test-webapp/README.md -->
-      <id>ff</id>
-      <modules>
-        <module>ladybug-ff-test-webapp</module>
-      </modules>
     </profile>
     <profile>
       <id>ossrh</id>
