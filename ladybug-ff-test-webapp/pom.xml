@@ -1,76 +1,75 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-		 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-	<modelVersion>4.0.0</modelVersion>
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
 
-	<parent>
-		<groupId>org.wearefrank</groupId>
-		<artifactId>ladybug-parent</artifactId>
-		<version>${revision}</version>
-	</parent>
+  <parent>
+    <groupId>org.wearefrank</groupId>
+    <artifactId>ladybug-parent</artifactId>
+    <version>${revision}</version>
+  </parent>
 
-	<groupId>org.wearefrank</groupId>
-	<artifactId>ladybug-ff-test-webapp</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
-	<packaging>war</packaging>
+  <groupId>org.wearefrank</groupId>
+  <artifactId>ladybug-ff-test-webapp</artifactId>
+  <version>0.0.1-SNAPSHOT</version>
+  <packaging>war</packaging>
 
-	<properties>
-		<maven.compiler.release>21</maven.compiler.release>
-	</properties>
+  <properties>
+    <maven.compiler.release>21</maven.compiler.release>
+  </properties>
 
-	<dependencies>
-		<dependency>
-			<groupId>org.frankframework</groupId>
-			<artifactId>bootable-runner</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.frankframework</groupId>
-			<artifactId>frankframework-core</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.frankframework</groupId>
-			<artifactId>frankframework-filesystem</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.frankframework</groupId>
-			<artifactId>frankframework-ladybug-debugger</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.frankframework</groupId>
-			<artifactId>frankframework-console-frontend</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.frankframework</groupId>
-			<artifactId>frankframework-console-backend</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>com.h2database</groupId>
-			<artifactId>h2</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.wearefrank</groupId>
-			<artifactId>ladybug-backend-springmvc</artifactId>
-		</dependency>
-	</dependencies>
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.frankframework</groupId>
+        <artifactId>frankframework-parent</artifactId>
+        <version>10.3.0</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
 
-	<dependencyManagement>
-		<dependencies>
-			<dependency>
-				<groupId>org.frankframework</groupId>
-				<artifactId>frankframework-parent</artifactId>
-				<version>10.2.0</version>
-				<type>pom</type>
-				<scope>import</scope>
-			</dependency>
-		</dependencies>
-	</dependencyManagement>
+  <dependencies>
+    <dependency>
+      <groupId>org.frankframework</groupId>
+      <artifactId>bootable-runner</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.frankframework</groupId>
+      <artifactId>frankframework-core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.frankframework</groupId>
+      <artifactId>frankframework-filesystem</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.frankframework</groupId>
+      <artifactId>frankframework-ladybug-debugger</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.frankframework</groupId>
+      <artifactId>frankframework-console-frontend</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.frankframework</groupId>
+      <artifactId>frankframework-console-backend</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.h2database</groupId>
+      <artifactId>h2</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.wearefrank</groupId>
+      <artifactId>ladybug-backend-springmvc</artifactId>
+    </dependency>
+  </dependencies>
 
-	<repositories>
-		<!-- Enable F!F timestamp versions -->
-		<repository>
-			<id>frankframework</id>
-			<name>Frank!Framework Nexus</name>
-			<url>https://nexus.frankframework.org/content/repositories/public</url>
-		</repository>
-	</repositories>
+  <repositories>
+    <!-- Enable F!F timestamp versions -->
+    <repository>
+      <id>frankframework</id>
+      <name>Frank!Framework Nexus</name>
+      <url>https://nexus.frankframework.org/content/repositories/public</url>
+    </repository>
+  </repositories>
 </project>
