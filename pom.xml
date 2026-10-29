@@ -85,6 +85,15 @@
     <janino.version>3.1.12</janino.version>
   </properties>
 
+  <!-- Don't define scopes here, define them in the modules that use the dependency. A managed scope
+       also applies to transitive dependencies. ladybug-ff-test-webapp inherits this pom and
+       imports the Frank!Framework BOM. An explicit entry here replaces the Frank!Framework entry,
+       including its scope, so a scope defined here also changes the scope of Frank!Framework
+       dependencies. For example, scope test for liquibase-core and h2 kept them out of the war of
+       ladybug-ff-test-webapp. Prefer BOM imports over explicit entries where a BOM exists; the
+       Frank!Framework BOM takes precedence over them. Script
+       ladybug-ff-test-webapp/ff-dependency-check/check-ff-dependencies.sh reports the remaining
+       differences with the Frank!Framework. -->
   <dependencyManagement>
     <dependencies>
       <dependency>

@@ -1,0 +1,21 @@
+# Dependencies of ladybug-ff-test-webapp that may differ from what the Frank!Framework gives the
+# same webapp outside the Ladybug project. One groupId:artifactId per line, followed by # and the
+# reason. Used by check-ff-dependencies.sh.
+#
+# Each entry below comes from an explicit entry in the dependencyManagement of the root pom.xml,
+# which overrides the Frank!Framework BOM.
+
+# Scope compile instead of provided: the root pom manages the version without the scope. Should
+# be fixed, the servlet API is provided by Tomcat.
+jakarta.servlet:jakarta.servlet-api
+# Root pom manages jakarta.enterprise.cdi-api 5.0.0, which is relocated to jakarta.cdi:jakarta.cdi-api
+jakarta.enterprise:jakarta.enterprise.cdi-api
+jakarta.cdi:jakarta.cdi-api
+jakarta.cdi:jakarta.cdi-lang-model-api
+# Root pom manages a newer Liquibase; opencsv is a dependency of Liquibase
+org.liquibase:liquibase-core
+com.opencsv:opencsv
+# Root pom manages an older version
+commons-codec:commons-codec
+org.apache.commons:commons-lang3
+org.slf4j:slf4j-api
