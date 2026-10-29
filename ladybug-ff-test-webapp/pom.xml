@@ -1,6 +1,6 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+		 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
@@ -9,18 +9,13 @@
 		<version>${revision}</version>
 	</parent>
 
+	<groupId>org.wearefrank</groupId>
 	<artifactId>ladybug-ff-test-webapp</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>Ladybug FF! test webapp</name>
-	<description>Test webapp for Ladybug + FF! that adds custom code</description>
 	<packaging>war</packaging>
 
 	<properties>
 		<maven.compiler.release>21</maven.compiler.release>
-		<!-- Overwritten by the CI/CD, see bump-including-ladybug-ff-test-webapp in
-		     https://github.com/wearefrank/frank-runner/blob/master/specials/util/syncPomVersions/build.xml -->
-		<ff.version>10.3.0</ff.version>
-		<!-- Keep equal to property revision in the root pom.xml, so that profile ff builds against this repository -->
 	</properties>
 
 	<dependencies>
@@ -38,6 +33,10 @@
 		</dependency>
 		<dependency>
 			<groupId>org.frankframework</groupId>
+			<artifactId>frankframework-ladybug-debugger</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.frankframework</groupId>
 			<artifactId>frankframework-console-frontend</artifactId>
 		</dependency>
 		<dependency>
@@ -45,18 +44,12 @@
 			<artifactId>frankframework-console-backend</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.wearefrank</groupId>
-			<artifactId>ladybug-backend-springmvc</artifactId>
-			<version>${revision}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.frankframework</groupId>
-			<artifactId>frankframework-ladybug-debugger</artifactId>
-		</dependency>
-		<dependency>
 			<groupId>com.h2database</groupId>
 			<artifactId>h2</artifactId>
-			<version>2.4.240</version>
+		</dependency>
+		<dependency>
+			<groupId>org.wearefrank</groupId>
+			<artifactId>ladybug-backend-springmvc</artifactId>
 		</dependency>
 	</dependencies>
 
@@ -65,7 +58,7 @@
 			<dependency>
 				<groupId>org.frankframework</groupId>
 				<artifactId>frankframework-parent</artifactId>
-				<version>${ff.version}</version>
+				<version>10.2.0</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
@@ -73,19 +66,11 @@
 	</dependencyManagement>
 
 	<repositories>
-		<repository>
-			<id>central</id>
-			<name>Central Repository</name>
-			<url>https://repo.maven.apache.org/maven2</url>
-			<snapshots>
-				<enabled>false</enabled>
-			</snapshots>
-		</repository>
-		<!-- Enable ibis-echo2 timestamp versions -->
+		<!-- Enable F!F timestamp versions -->
 		<repository>
 			<id>frankframework</id>
-			<name>Frank!Framework</name>
-			<url>https://nexus.frankframework.org/repository/thirdparty</url>
+			<name>Frank!Framework Nexus</name>
+			<url>https://nexus.frankframework.org/content/repositories/public</url>
 		</repository>
 	</repositories>
 </project>
