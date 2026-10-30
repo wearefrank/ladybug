@@ -132,11 +132,6 @@
         <type>pom</type>
         <scope>import</scope>
       </dependency>
-      <!-- Tomcat is deliberately not managed here. An explicit entry in this pom overrides the
-           Frank!Framework BOM in ladybug-ff-test-webapp, including its scope, which puts
-           a Tomcat 10 jar next to the Tomcat 11 (provided) of the Frank!Framework. Apache doesn't
-           publish a Tomcat BOM, so ladybug-spring-boot-test-webapp, the only user, sets the
-           Tomcat version itself. -->
       <dependency>
         <groupId>org.wearefrank</groupId>
         <artifactId>ladybug-test-webapp</artifactId>
@@ -253,6 +248,11 @@
         <version>4.36.2</version>
       </dependency>
       <dependency>
+        <groupId>org.apache.tomcat.embed</groupId>
+        <artifactId>tomcat-embed-core</artifactId>
+        <version>${tomcat.embed.version}</version>
+      </dependency>
+      <dependency>
         <groupId>org.glassfish.web</groupId>
         <artifactId>jakarta.servlet.jsp.jstl</artifactId>
         <version>3.0.1</version>
@@ -291,6 +291,7 @@
         <artifactId>arc</artifactId>
         <version>3.35.2</version>
         <!-- 2.7.0.Final doesn't compile with Java 8 -->
+        <scope>provided</scope>
         <exclusions>
           <!-- Exclude quarkus-core to prevent following warning when running JUnit: SLF4J: Class path contains multiple SLF4J bindings. -->
           <!-- And with jakarta.enterprise.cdi-api as a normal dependency all transitive dependencies can be excluded (Quarkus arc is then only needed for DefaultBean) -->
@@ -314,7 +315,7 @@
         <version>1.0</version>
         <scope>provided</scope>
       </dependency>
-      <!-- Modules use scope provided for now for OpenTelemetry dependencies other then opentelemetry-api (keep transitive dependencies caused by Ladybug to a minimum) -->
+      <!-- Scope provided for now for OpenTelemetry dependencies other then opentelemetry-api (keep transitive dependencies caused by Ladybug to a minimum) -->
       <dependency>
         <groupId>io.opentelemetry.semconv</groupId>
         <artifactId>opentelemetry-semconv</artifactId>
