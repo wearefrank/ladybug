@@ -5,16 +5,12 @@
 # Each entry below comes from an explicit entry in the dependencyManagement of the root pom.xml,
 # which overrides the Frank!Framework BOM.
 
-# Scope compile instead of provided: the root pom manages the version without the scope. Should
-# be fixed, the servlet API is provided by Tomcat.
-jakarta.servlet:jakarta.servlet-api
 # Root pom manages jakarta.enterprise.cdi-api 5.0.0, which is relocated to jakarta.cdi:jakarta.cdi-api
 jakarta.enterprise:jakarta.enterprise.cdi-api
-jakarta.cdi:jakarta.cdi-api
-jakarta.cdi:jakarta.cdi-lang-model-api
-# Root pom manages a newer Liquibase; opencsv is a dependency of Liquibase
-org.liquibase:liquibase-core
-com.opencsv:opencsv
+# Transitive dependency of Liquibase. The root pom manages liquibase-core without the exclusions
+# of the Frank!Framework BOM, which excludes jaxb-api. Should be fixed, the Frank!Framework bans
+# javax.xml.bind:jaxb-api with its enforcer rules.
+javax.xml.bind:jaxb-api
 # Root pom manages an older version
 commons-codec:commons-codec
 org.apache.commons:commons-lang3
