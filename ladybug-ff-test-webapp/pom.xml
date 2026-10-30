@@ -15,6 +15,7 @@
 
   <properties>
     <maven.compiler.release>21</maven.compiler.release>
+    <ff.version>10.3.0</ff.version>
   </properties>
 
   <dependencyManagement>
@@ -22,7 +23,7 @@
       <dependency>
         <groupId>org.frankframework</groupId>
         <artifactId>frankframework-parent</artifactId>
-        <version>10.3.0</version>
+        <version>${ff.version}</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
