@@ -39,6 +39,6 @@ jobs:
         distribution: 'temurin'
         cache: maven
     - name: Install Ladybug artifacts in the local Maven repository
-      run: mvn -B install -DskipTests
+      run: mvn -B install -DskipTests -Dmaven.skip.copyright=true
     - name: Check dependencies against Frank!Framework
       run: sh ladybug-ff-test-webapp/ff-dependency-check/check-ff-dependencies.sh
