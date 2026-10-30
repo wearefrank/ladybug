@@ -80,18 +80,14 @@
     <spring.security.version>6.5.9</spring.security.version>
     <cxf.version>4.2.3</cxf.version>
     <spring.boot.version>3.5.4</spring.boot.version>
+    <tomcat.embed.version>10.1.44</tomcat.embed.version>
     <jackson.version>2.21.2</jackson.version>
     <opentelemetry.version>1.62.0</opentelemetry.version>
     <logback.version>1.6.3</logback.version>
     <janino.version>3.1.12</janino.version>
   </properties>
 
-  <!-- Don't define scopes here, define them in the modules that use the dependency. A managed scope
-       also applies to transitive dependencies. ladybug-ff-test-webapp inherits this pom and
-       imports the Frank!Framework BOM. An explicit entry here replaces the Frank!Framework entry,
-       including its scope, so a scope defined here also changes the scope of Frank!Framework
-       dependencies. For example, scope test for liquibase-core and h2 kept them out of the war of
-       ladybug-ff-test-webapp. Prefer BOM imports over explicit entries where a BOM exists; the
+  <!-- Prefer BOM imports over explicit entries where a BOM exists; the
        Frank!Framework BOM takes precedence over them. Script
        ladybug-ff-test-webapp/ff-dependency-check/check-ff-dependencies.sh reports the remaining
        differences with the Frank!Framework. -->
@@ -272,11 +268,13 @@
         <groupId>jakarta.servlet</groupId>
         <artifactId>jakarta.servlet-api</artifactId>
         <version>6.1.0</version>
+        <scope>provided</scope>
       </dependency>
       <dependency>
         <groupId>org.projectlombok</groupId>
         <artifactId>lombok</artifactId>
         <version>${lombok.version}</version>
+        <scope>provided</scope>
       </dependency>
       <!--
       OptionalJtaTransactionManager implements PlatformTransactionManager having @Nullable which will make Javadoc fail with: class file for javax.annotation.meta.When not found
@@ -286,6 +284,7 @@
         <groupId>com.google.code.findbugs</groupId>
         <artifactId>annotations</artifactId>
         <version>3.0.1</version>
+        <scope>provided</scope>
       </dependency>
       <dependency>
         <groupId>io.quarkus.arc</groupId>
@@ -306,53 +305,69 @@
         <groupId>jakarta.enterprise</groupId>
         <artifactId>jakarta.enterprise.cdi-api</artifactId>
         <version>5.0.0</version>
+        <scope>provided</scope>
       </dependency>
       <!-- Resolve @JsonbTransient -->
       <dependency>
         <groupId>javax.json.bind</groupId>
         <artifactId>javax.json.bind-api</artifactId>
         <version>1.0</version>
+        <scope>provided</scope>
       </dependency>
       <!-- Modules use scope provided for now for OpenTelemetry dependencies other then opentelemetry-api (keep transitive dependencies caused by Ladybug to a minimum) -->
       <dependency>
         <groupId>io.opentelemetry.semconv</groupId>
         <artifactId>opentelemetry-semconv</artifactId>
         <version>1.41.0</version>
+        <scope>provided</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.tomcat.embed</groupId>
+        <artifactId>tomcat-embed-jasper</artifactId>
+        <version>${tomcat.embed.version}</version>
+        <scope>runtime</scope>
       </dependency>
       <dependency>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-test</artifactId>
         <version>${spring.boot.version}</version>
+        <scope>test</scope>
       </dependency>
       <dependency>
         <groupId>ch.qos.logback</groupId>
         <artifactId>logback-core</artifactId>
         <version>${logback.version}</version>
+        <scope>test</scope>
       </dependency>
       <dependency>
         <groupId>ch.qos.logback</groupId>
         <artifactId>logback-classic</artifactId>
         <version>${logback.version}</version>
+        <scope>test</scope>
       </dependency>
       <dependency>
         <groupId>com.h2database</groupId>
         <artifactId>h2</artifactId>
         <version>2.2.220</version>
+        <scope>test</scope>
       </dependency>
       <dependency>
         <groupId>org.liquibase</groupId>
         <artifactId>liquibase-core</artifactId>
         <version>5.0.4</version>
+        <scope>test</scope>
       </dependency>
       <dependency>
         <groupId>org.apache.commons</groupId>
         <artifactId>commons-dbcp2</artifactId>
         <version>2.14.0</version>
+        <scope>test</scope>
       </dependency>
       <dependency>
         <groupId>jakarta.transaction</groupId>
         <artifactId>jakarta.transaction-api</artifactId>
         <version>2.0.1</version>
+        <scope>test</scope>
       </dependency>
     </dependencies>
   </dependencyManagement>

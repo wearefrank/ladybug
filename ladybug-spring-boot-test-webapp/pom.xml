@@ -13,10 +13,7 @@
   <name>Ladybug test webapp Spring MVC</name>
   <description>Wrapper of test webapp to handle Spring MVC auth.</description>
 
-  <properties>
-    <!-- Not in the root pom, see the comment about Tomcat there -->
-    <tomcat.embed.version>10.1.44</tomcat.embed.version>
-  </properties>
+  <properties />
 
   <dependencies>
     <dependency>
@@ -34,13 +31,17 @@
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-web</artifactId>
     </dependency>
+    <!-- The root pom pins logback to scope=test; override back to compile so Spring Boot uses
+         Logback at runtime here instead of falling back to java.util.logging. -->
     <dependency>
       <groupId>ch.qos.logback</groupId>
       <artifactId>logback-classic</artifactId>
+      <scope>compile</scope>
     </dependency>
     <dependency>
       <groupId>ch.qos.logback</groupId>
       <artifactId>logback-core</artifactId>
+      <scope>compile</scope>
     </dependency>
     <!-- Needed for Spring Boot's default logback config, which uses <if> to decide whether to
          attach the FILE appender (based on logging.file.name); without it, logging silently
@@ -61,7 +62,6 @@
     <dependency>
       <groupId>org.apache.tomcat.embed</groupId>
       <artifactId>tomcat-embed-core</artifactId>
-      <version>${tomcat.embed.version}</version>
     </dependency>
     <dependency>
       <groupId>org.glassfish.web</groupId>
@@ -104,12 +104,10 @@
     <dependency>
       <groupId>org.projectlombok</groupId>
       <artifactId>lombok</artifactId>
-      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.tomcat.embed</groupId>
       <artifactId>tomcat-embed-jasper</artifactId>
-      <version>${tomcat.embed.version}</version>
       <scope>runtime</scope>
     </dependency>
     <dependency>
