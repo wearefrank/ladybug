@@ -4,6 +4,11 @@ Runs Ladybug inside the Frank!Framework. The Ladybug backend is taken from this
 repository (`ladybug-backend-springmvc`), so you can test your Ladybug changes
 together with the Frank!Framework.
 
+You can also run ladybug-ff-test-webapp using the Frank!Runner. Have a https://github.com/wearefrank/frank-runner
+checkout as a sibling of this project. Write fild `build.properties` in directory
+`ladybug-ff-test-webapp`, see `build-example.properties` to see what properties
+are supported. Then start using `restart.bat` or `restart.sh`.
+
 ## Running from IntelliJ
 
 1. Open `src/main/java/org/frankframework/runner/MainClass.java` and click the
