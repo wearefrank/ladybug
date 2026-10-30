@@ -13,7 +13,27 @@
   <name>Ladybug test webapp Spring MVC</name>
   <description>Wrapper of test webapp to handle Spring MVC auth.</description>
 
-  <properties />
+  <properties>
+    <tomcat.embed.version>10.1.44</tomcat.embed.version>
+  </properties>
+
+  <!-- Embedded Tomcat is managed here instead of in the root pom, because the root pom's
+       dependencyManagement would also pin the Tomcat version of ladybug-ff-test-webapp, which
+       gets its (newer) Tomcat from the Frank!Framework. -->
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.apache.tomcat.embed</groupId>
+        <artifactId>tomcat-embed-core</artifactId>
+        <version>${tomcat.embed.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.tomcat.embed</groupId>
+        <artifactId>tomcat-embed-jasper</artifactId>
+        <version>${tomcat.embed.version}</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
 
   <dependencies>
     <dependency>
