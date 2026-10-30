@@ -57,6 +57,7 @@
     <module>ladybug-test-webapp-common</module>
     <module>ladybug-test-webapp</module>
     <module>ladybug-spring-boot-test-webapp</module>
+    <module>ladybug-ff-test-webapp</module>
   </modules>
   <scm>
     <connection>scm:git:https://github.com/wearefrank/ladybug.git</connection>
@@ -79,16 +80,57 @@
     <spring.security.version>6.5.9</spring.security.version>
     <cxf.version>4.2.3</cxf.version>
     <spring.boot.version>3.5.4</spring.boot.version>
-    <tomcat.embed.version>10.1.44</tomcat.embed.version>
-    <jackson.version.stripped>2.22</jackson.version.stripped>
     <jackson.version>2.21.2</jackson.version>
-    <jackson.databind.version>2.21.7</jackson.databind.version>
+    <opentelemetry.version>1.62.0</opentelemetry.version>
     <logback.version>1.6.3</logback.version>
     <janino.version>3.1.12</janino.version>
   </properties>
 
+  <!-- Prefer BOM imports over explicit entries where a BOM exists; the
+       Frank!Framework BOM takes precedence over them. Script
+       ladybug-ff-test-webapp/ff-dependency-check/check-ff-dependencies.sh reports the remaining
+       differences with the Frank!Framework. -->
   <dependencyManagement>
     <dependencies>
+      <dependency>
+        <groupId>com.fasterxml.jackson</groupId>
+        <artifactId>jackson-bom</artifactId>
+        <version>${jackson.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-framework-bom</artifactId>
+        <version>${spring.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.springframework.security</groupId>
+        <artifactId>spring-security-bom</artifactId>
+        <version>${spring.security.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+      <!-- Keeps all JUnit artifacts on one version, also the ones pulled in transitively -->
+      <dependency>
+        <groupId>org.junit</groupId>
+        <artifactId>junit-bom</artifactId>
+        <version>6.1.3</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+      <!-- Manages opentelemetry-api, the exporters and the SDK artifacts they depend on.
+           opentelemetry-semconv and opentelemetry-proto are released separately without a BOM,
+           they are managed below. -->
+      <dependency>
+        <groupId>io.opentelemetry</groupId>
+        <artifactId>opentelemetry-bom</artifactId>
+        <version>${opentelemetry.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
       <dependency>
         <groupId>org.wearefrank</groupId>
         <artifactId>ladybug-test-webapp</artifactId>
@@ -136,21 +178,6 @@
         <version>${cxf.version}</version>
       </dependency>
       <dependency>
-        <groupId>com.fasterxml.jackson.jakarta.rs</groupId>
-        <artifactId>jackson-jakarta-rs-json-provider</artifactId>
-        <version>${jackson.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>com.fasterxml.jackson.core</groupId>
-        <artifactId>jackson-annotations</artifactId>
-        <version>${jackson.version.stripped}</version>
-      </dependency>
-      <dependency>
-        <groupId>com.fasterxml.jackson.core</groupId>
-        <artifactId>jackson-databind</artifactId>
-        <version>${jackson.databind.version}</version>
-      </dependency>
-      <dependency>
         <groupId>org.ibissource</groupId>
         <artifactId>ibis-echo2</artifactId>
         <version>2.0.5-20250211.112303</version>
@@ -166,26 +193,6 @@
         <version>3.20.0</version>
       </dependency>
       <dependency>
-        <groupId>org.springframework</groupId>
-        <artifactId>spring-beans</artifactId>
-        <version>${spring.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.springframework</groupId>
-        <artifactId>spring-context</artifactId>
-        <version>${spring.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.springframework</groupId>
-        <artifactId>spring-jdbc</artifactId>
-        <version>${spring.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.springframework</groupId>
-        <artifactId>spring-web</artifactId>
-        <version>${spring.version}</version>
-      </dependency>
-      <dependency>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-web</artifactId>
         <version>${spring.boot.version}</version>
@@ -195,16 +202,6 @@
             <artifactId>log4j-api</artifactId>
           </exclusion>
         </exclusions>
-      </dependency>
-      <dependency>
-        <groupId>org.springframework.security</groupId>
-        <artifactId>spring-security-web</artifactId>
-        <version>${spring.security.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.springframework.security</groupId>
-        <artifactId>spring-security-config</artifactId>
-        <version>${spring.security.version}</version>
       </dependency>
       <dependency>
         <groupId>net.sf.saxon</groupId>
@@ -230,15 +227,9 @@
         <version>2.7.3</version>
       </dependency>
       <dependency>
-        <groupId>io.opentelemetry</groupId>
-        <artifactId>opentelemetry-api</artifactId>
-        <version>1.62.0</version>
-      </dependency>
-      <dependency>
         <groupId>io.opentelemetry.proto</groupId>
         <artifactId>opentelemetry-proto</artifactId>
         <version>1.9.0-alpha</version>
-        <scope>compile</scope>
       </dependency>
       <dependency>
         <groupId>commons-codec</groupId>
@@ -249,18 +240,11 @@
         <groupId>com.google.protobuf</groupId>
         <artifactId>protobuf-java</artifactId>
         <version>4.36.2</version>
-        <scope>compile</scope>
       </dependency>
       <dependency>
         <groupId>com.google.protobuf</groupId>
         <artifactId>protobuf-java-util</artifactId>
         <version>4.36.2</version>
-        <scope>compile</scope>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.tomcat.embed</groupId>
-        <artifactId>tomcat-embed-core</artifactId>
-        <version>${tomcat.embed.version}</version>
       </dependency>
       <dependency>
         <groupId>org.glassfish.web</groupId>
@@ -333,40 +317,9 @@
         <scope>provided</scope>
       </dependency>
       <dependency>
-        <groupId>io.opentelemetry</groupId>
-        <artifactId>opentelemetry-exporter-zipkin</artifactId>
-        <version>1.61.0</version>
-        <scope>provided</scope>
-      </dependency>
-      <dependency>
-        <groupId>io.opentelemetry</groupId>
-        <artifactId>opentelemetry-exporter-otlp</artifactId>
-        <version>1.61.0</version>
-        <scope>provided</scope>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.tomcat.embed</groupId>
-        <artifactId>tomcat-embed-jasper</artifactId>
-        <version>${tomcat.embed.version}</version>
-        <scope>runtime</scope>
-      </dependency>
-      <dependency>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-test</artifactId>
         <version>${spring.boot.version}</version>
-        <scope>test</scope>
-      </dependency>
-      <dependency>
-        <groupId>org.junit.jupiter</groupId>
-        <artifactId>junit-jupiter</artifactId>
-        <version>6.1.3</version>
-        <scope>test</scope>
-      </dependency>
-      <!-- https://junit.org/junit5/docs/current/user-guide/#migrating-from-junit4 -->
-      <dependency>
-        <groupId>org.junit.vintage</groupId>
-        <artifactId>junit-vintage-engine</artifactId>
-        <version>6.1.3</version>
         <scope>test</scope>
       </dependency>
       <dependency>

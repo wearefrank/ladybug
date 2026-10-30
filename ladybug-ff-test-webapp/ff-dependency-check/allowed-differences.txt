@@ -1,0 +1,17 @@
+# Dependencies of ladybug-ff-test-webapp that may differ from what the Frank!Framework gives the
+# same webapp outside the Ladybug project. One groupId:artifactId per line, followed by # and the
+# reason. Used by check-ff-dependencies.sh.
+#
+# Each entry below comes from an explicit entry in the dependencyManagement of the root pom.xml,
+# which overrides the Frank!Framework BOM.
+
+# Root pom manages jakarta.enterprise.cdi-api 5.0.0, which is relocated to jakarta.cdi:jakarta.cdi-api
+jakarta.enterprise:jakarta.enterprise.cdi-api
+# Transitive dependency of Liquibase. The root pom manages liquibase-core without the exclusions
+# of the Frank!Framework BOM, which excludes jaxb-api. Should be fixed, the Frank!Framework bans
+# javax.xml.bind:jaxb-api with its enforcer rules.
+javax.xml.bind:jaxb-api
+# Root pom manages an older version
+commons-codec:commons-codec
+org.apache.commons:commons-lang3
+org.slf4j:slf4j-api
