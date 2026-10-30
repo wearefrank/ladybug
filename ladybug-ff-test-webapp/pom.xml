@@ -64,23 +64,23 @@
     </dependency>
   </dependencies>
 
-	<repositories>
-		<repository>
-			<id>central</id>
-			<name>Central Repository</name>
-			<url>https://repo.maven.apache.org/maven2</url>
-			<snapshots>
-				<enabled>false</enabled>
-			</snapshots>
-		</repository>
-		<repository>
-			<id>frankframework-releases</id>
-			<url>https://nexus.frankframework.org/content/repositories/releases</url>
-		</repository>
-		<!-- Enable ibis-echo2 timestamp versions -->
-		<repository>
-			<id>frankframework</id>
-			<url>https://nexus.frankframework.org/repository/thirdparty</url>
-		</repository>
-	</repositories>
+  <repositories>
+    <repository>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+      <id>central</id>
+      <name>Central Repository</name>
+      <url>https://repo.maven.apache.org/maven2</url>
+    </repository>
+    <repository>
+      <id>frankframework-releases</id>
+      <url>https://nexus.frankframework.org/content/repositories/releases</url>
+    </repository>
+    <!-- Enable ibis-echo2 timestamp versions -->
+    <repository>
+      <id>frankframework</id>
+      <url>https://nexus.frankframework.org/repository/thirdparty</url>
+    </repository>
+  </repositories>
 </project>
