@@ -54,9 +54,17 @@
       <groupId>org.frankframework</groupId>
       <artifactId>frankframework-console-backend</artifactId>
     </dependency>
+    <!-- Explicit scope because the root pom manages liquibase-core and h2 with scope test,
+         which overrides the Frank!Framework scope compile -->
+    <dependency>
+      <groupId>org.liquibase</groupId>
+      <artifactId>liquibase-core</artifactId>
+      <scope>compile</scope>
+    </dependency>
     <dependency>
       <groupId>com.h2database</groupId>
       <artifactId>h2</artifactId>
+      <scope>compile</scope>
     </dependency>
     <dependency>
       <groupId>org.wearefrank</groupId>
