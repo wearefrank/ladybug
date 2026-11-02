@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { MonacoEditorComponent } from '../../monaco-editor/monaco-editor.component';
 import { AngularSplitModule } from 'angular-split';
 import { HttpService } from '../../shared/services/http.service';
-import { BehaviorSubject, catchError, firstValueFrom, Observable, Subject, Subscription } from 'rxjs';
+import { BehaviorSubject, catchError, firstValueFrom, Observable, Subscription } from 'rxjs';
 import { ErrorHandling } from '../../shared/classes/error-handling.service';
 import { Transformation } from '../../shared/interfaces/transformation';
 import { DifferenceModalComponent } from '../difference-modal/difference-modal.component';
@@ -21,6 +21,7 @@ import { ReportMetadataTable } from '../report-metadata-table/report-metadata-ta
 import { OverwriteTransformationComponent } from '../overwrite-transformation-modal/overwrite-transformation-modal.component';
 import { MatDialog } from '@angular/material/dialog';
 import { HierarchicalReport } from '../../shared/interfaces/hierarchical-report';
+import { ClientSettingsService } from '../../shared/services/client.settings.service';
 
 export interface Variable {
   name: string;
@@ -102,7 +103,7 @@ export class ReportValueComponent implements OnInit, OnDestroy {
   protected reportContentRequestSubject = new BehaviorSubject<string | undefined>(undefined);
   protected reportReadOnlySubject = new BehaviorSubject<boolean>(true);
   protected originalReportStubStrategySubject = new BehaviorSubject<string | null | undefined>(undefined);
-  protected buttonComponentResetSubject = new Subject<void>();
+  private clientSettingsService = inject(ClientSettingsService);
   private _height = 0;
   private http = inject(HttpService);
   private errorHandler = inject(ErrorHandling);
@@ -133,6 +134,11 @@ export class ReportValueComponent implements OnInit, OnDestroy {
       }),
     );
     this.subscriptions.add(this.saveDone$.subscribe(() => this.saveModal.closeModal()));
+    this.subscriptions.add(
+      this.clientSettingsService.metadataTableVisible$.subscribe((visible) => {
+        this.metadataTableVisible = visible;
+      }),
+    );
   }
 
   ngOnDestroy(): void {
@@ -188,20 +194,6 @@ export class ReportValueComponent implements OnInit, OnDestroy {
       case 'customReportAction': {
         this.button.emit('customReportAction');
         break;
-      }
-      case 'showMetadata': {
-        this.metadataTableVisible = true;
-        break;
-      }
-      case 'hideMetadata': {
-        this.metadataTableVisible = false;
-        break;
-      }
-      case 'hideMessageContext': {
-        throw new Error('Message context does not exist for report nodes');
-      }
-      case 'showMessageContext': {
-        throw new Error('Message context does not exist for report nodes');
       }
     }
   }
@@ -330,7 +322,6 @@ export class ReportValueComponent implements OnInit, OnDestroy {
     // in the Angular zone, so we have to run in the Angular zone
     // explicitly.
     this.ngZone.run(() => {
-      this.metadataTableVisible = false;
       this.report = report;
       this.editedName = this.report.name;
       this.editedDescription = this.getEditorTextOfNullable(this.report.description);
@@ -343,7 +334,6 @@ export class ReportValueComponent implements OnInit, OnDestroy {
       this.transformationContentRequestSubject.next(this.getEditorTextOfNullable(this.report!.transformation));
       this.reportContentRequestSubject.next(this.report.xml);
       this.originalReportStubStrategySubject.next(report.stubStrategy);
-      this.buttonComponentResetSubject.next();
       this.onInputChange();
     });
   }

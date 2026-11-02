@@ -53,14 +53,14 @@ describe('With running reports', () => {
 describe('Test Reports in progress warning', () => {
   beforeEach(() => {
     cy.createRunningReport();
-    cy.request(Cypress.env('backendServer') + '/index.jsp?setReportInProgressThreshold=1').then((resp) => {
+    cy.request(Cypress.expose('backendServer') + '/index.jsp?setReportInProgressThreshold=1').then((resp) => {
       expect(resp.status).equal(200);
     });
     cy.initializeApp();
   });
 
   afterEach(() => {
-    cy.request(Cypress.env('backendServer') + '/index.jsp?setReportInProgressThreshold=300000').then((resp) => {
+    cy.request(Cypress.expose('backendServer') + '/index.jsp?setReportInProgressThreshold=300000').then((resp) => {
       expect(resp.status).equal(200);
     });
     cy.resetApp();

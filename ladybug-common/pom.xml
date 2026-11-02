@@ -10,7 +10,8 @@
 
   <artifactId>ladybug-common</artifactId>
 
-  <name>Ladybug common</name>
+  <name>Ladybug backend</name>
+  <description>Backend of Ladybug</description>
 
   <dependencies>
     <dependency>
@@ -165,6 +166,40 @@
             <goals>
               <goal>test-jar</goal>
             </goals>
+            <configuration>
+              <!-- logback-test.xml is only for ladybug-common's own tests. Consumers of this
+                   test-jar pull it onto their runtime classpath, where Logback would otherwise
+                   prefer it over Spring Boot's own generated logging config. -->
+              <excludes>
+                <exclude>logback-test.xml</exclude>
+                <exclude>org/springframework/http/MediaType.class</exclude>
+                <exclude>org/springframework/util/MimeType.class</exclude>
+              </excludes>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <version>3.1.0</version>
+        <executions>
+          <!-- The classes in speciallyEncodedClasses.txt may have stand-ins in src/test/java, which
+               must not leak into the test-jar where they would shadow the real classes for consumers. -->
+          <execution>
+            <id>verify-test-jar-without-specially-encoded-classes</id>
+            <goals>
+              <goal>run</goal>
+            </goals>
+            <phase>verify</phase>
+            <configuration>
+              <target>
+                <ant antfile="${project.basedir}/checkStubClassesNotInTestJar.xml" inheritAll="false">
+                  <property name="speciallyEncodedClassesFile" value="${project.basedir}/src/main/resources/ladybug/speciallyEncodedClasses.txt" />
+                  <property name="testJar" value="${project.build.directory}/${project.build.finalName}-tests.jar" />
+                </ant>
+              </target>
+            </configuration>
           </execution>
         </executions>
       </plugin>

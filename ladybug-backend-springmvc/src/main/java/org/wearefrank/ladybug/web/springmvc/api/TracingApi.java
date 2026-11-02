@@ -57,4 +57,11 @@ public class TracingApi {
 			}
 		}
 	}
+
+	@GetMapping(produces = MediaType.TEXT_PLAIN_VALUE)
+	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	public ResponseEntity<?> info() {
+		return ResponseEntity.ok(delegate.getInfo());
+	}
+
 }

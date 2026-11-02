@@ -14,14 +14,14 @@ describe('Information to check the test environment', () => {
 
   it('See property ibistesttool.custom', () => {
     cy.visitAsTester()
-    cy.contains('Environment Variables').click()
+    cy.goToEnvironmentVariables()
     cy.get('input[name=search]').type('ibistesttool.custom{enter}')
     cy.waitForVideo()
   })
 
   it('See property configurations.dir', () => {
     cy.visitAsTester()
-    cy.contains('Environment Variables').click()
+    cy.goToEnvironmentVariables()
     cy.get('input[name=search]').type('configurations.dir{enter}')
     cy.waitForVideo()
   })

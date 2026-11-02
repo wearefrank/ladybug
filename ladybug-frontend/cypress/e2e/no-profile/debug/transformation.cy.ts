@@ -61,7 +61,14 @@ describe('Tests for report transformation', () => {
 });
 
 function openTheReport() {
-  cy.assertDebugTableLength(1).click();
+  cy.assertDebugTableLength(1);
+  // Do not chain .click() onto the subject yielded by assertDebugTableLength()'s
+  // should() - if a metadata reload re-renders the table row right after the
+  // assertion resolved, Cypress errors out because the element it already
+  // located disappeared mid-click, instead of re-querying and retrying.
+  // Querying again here lets Cypress find (and, if needed, retry against)
+  // the current row.
+  cy.getDebugTableRows().click();
   cy.checkFileTreeLength(1);
   cy.clickRootNodeInFileTree();
 }

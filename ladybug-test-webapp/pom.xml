@@ -11,8 +11,8 @@
   <artifactId>ladybug-test-webapp</artifactId>
   <packaging>war</packaging>
 
-  <name>Ladybug Test Tool Test Webapp that tests ladybug-backend-jaxrs</name>
-  <description>Simple vanilla webapp to test Ladybug</description>
+  <name>Ladybug test webapp JAX-RS</name>
+  <description>Wrapper of test webapp to handle JAX-RS auth.</description>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

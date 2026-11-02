@@ -27,7 +27,7 @@ describe('Test api that is by external applications', () => {
 })
 
 function metadataUrl(limit: number, offset?: number): string {
-  const backendServer = Cypress.env('backendServer');
+  const backendServer = Cypress.expose('backendServer');
   let result = `${backendServer}/ladybug/api/metadata/Debug?metadataNames=storageId&metadataNames=name&limit=${limit}`;
   if (offset !== undefined) {
     result += `&offset=${offset}`;

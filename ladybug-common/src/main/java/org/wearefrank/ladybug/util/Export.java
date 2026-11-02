@@ -15,6 +15,9 @@
 */
 package org.wearefrank.ladybug.util;
 
+import java.beans.Encoder;
+import java.beans.Expression;
+import java.beans.PersistenceDelegate;
 import java.beans.XMLEncoder;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -307,6 +310,7 @@ public class Export {
 		try {
 			gzipOutputStream = new GZIPOutputStream(byteArrayOutputStream);
 			xmlEncoder = new XMLEncoder(gzipOutputStream);
+			SpecialEncodings.registerExportDelegates(xmlEncoder);
 			xmlEncoder.writeObject(TestTool.getVersion());
 			xmlEncoder.writeObject(report);
 		} finally {

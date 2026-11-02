@@ -27,7 +27,7 @@ public class ShownCheckpoint extends TreeNode implements Serializable {
 	private static final long serialVersionUID = 104;
 	private @Getter @Setter String message;
 	private @Getter @Setter String encoding;
-	private @Getter @Setter Map<String, Object> messageContext;
+	private @Getter @Setter Map<String, String> messageContext;
 	// Primitive type, cannot be null.
 	private @Getter @Setter int type;
 	private @Getter @Setter int level = 0;

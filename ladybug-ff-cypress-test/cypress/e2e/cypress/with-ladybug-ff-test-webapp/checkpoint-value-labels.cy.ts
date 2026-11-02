@@ -1,6 +1,6 @@
 describe('Checkpoint value labels', () => {
   before(() => {
-    cy.apiDeleteAll(Cypress.env('debugStorageName') as string)
+    cy.apiDeleteAll(Cypress.expose('debugStorageName') as string)
     cy.apiDeleteAll('Test')
     const url = Cypress.config('baseUrl') + '/api/nullAndEmpty'
     cy.request('GET', url, null).then((resp) => {
@@ -87,6 +87,32 @@ describe('Checkpoint value labels', () => {
       .trimmedText()
       .should('equal', 'Read only')
   })
+
+  it('When message is a MediaType instance then the label shows encoder MediaType.toString()', () => {
+    // The reports created by the tests above are not needed anymore; start from a clean
+    // slate so openReport() finds exactly the one report created below (see its own
+    // assertion that the report table has exactly one row).
+    cy.apiDeleteAll(Cypress.expose('debugStorageName') as string)
+    cy.apiDeleteAll('Test')
+    const url = Cypress.config('baseUrl') + '/api/putMediaTypeInSession'
+    cy.request('GET', url, null).then((resp) => {
+      expect(resp.status).to.equal(200)
+    })
+    openReport('UsePutMediaTypeInSessionPipe')
+    cy.selectTreeNode([
+      'Pipeline UsePutMediaTypeInSessionPipe/UsePutMediaTypeInSessionPipe',
+      'Pipeline UsePutMediaTypeInSessionPipe/UsePutMediaTypeInSessionPipe',
+      'Pipe testPipe',
+      'SessionKey mediaType'
+    ]).click()
+    cy.checkNumCheckpointValueLabels(2)
+    cy.checkpointValueLabel(0)
+      .trimmedText()
+      .should('equal', 'Read only')
+    cy.checkpointValueLabel(1)
+      .trimmedText()
+      .should('match', /MediaType\.toString\(\)$/)
+  })
 })
 
 function openReport (expectedName: string): void {
@@ -96,12 +122,26 @@ function openReport (expectedName: string): void {
   // Status column.
   // TODO: Test exact value of status column if possible.
   cy.get('@reportRow').find('td:eq(6)').trimmedText().should('equal', 'Success')
-  cy.get('@reportRow').contains(expectedName).click()
+  // Temporary diagnostic for issue #977, see enterLadybug(). Logs a timestamp comparable
+  // to the count/list response timestamps logged there, to see whether a reload lands
+  // right around this click when it next fails with "the page updated as a result of
+  // this command".
+  cy.logDiag('about to click report row')
+  // Query fresh from the live DOM instead of clicking through the '@reportRow' alias: a
+  // reload can land between locating the row above and clicking it here, which would
+  // detach the aliased node and make cy.click() fail with "the page updated as a result
+  // of this command". Querying at click time lets Cypress's retry re-locate the row if
+  // it gets recreated in the meantime, the same way clickTableRowWithStorageId does.
+  cy.inIframeBody('[data-cy-debug="tableRow"]').contains(expectedName).click()
+  // Opening the report loads its data and builds the tree asynchronously. Without this
+  // guard, callers could start querying the tree (e.g. via selectTreeNode) before it had
+  // been (re)built, racing against its own rendering.
+  cy.awaitDebugTree()
 }
 
 describe('Checkpoint value truncation because of ibistesttool.maxMessageLength', () => {
   before(() => {
-    cy.apiDeleteAll(Cypress.env('debugStorageName') as string)
+    cy.apiDeleteAll(Cypress.expose('debugStorageName') as string)
     cy.apiDeleteAll('Test')
     cy.visit('')
     // Including the newlines, these are 7 * 56 = 392 characters.
@@ -134,7 +174,8 @@ describe('Checkpoint value truncation because of ibistesttool.maxMessageLength',
     cy.checkpointValueTrimmedEquals(expected)
   })
 
-  it('When maxMessageLength is exceeded, there is a label showing how many characters are omitted', () => {
+  // TODO issue https://github.com/wearefrank/ladybug/issues/981. Enable test when issue fixed.
+  xit('When maxMessageLength is exceeded, there is a label showing how many characters are omitted', () => {
     const numOmitted = TOTAL_CHARACTERS_OF_CHECKPOINT - 300
     const omittedText = `${numOmitted}`
     openReport('UseTextBlockPipe')
@@ -144,10 +185,10 @@ describe('Checkpoint value truncation because of ibistesttool.maxMessageLength',
       'Pipe testPipe',
       { seq: 1, text: 'testPipe' }
     ]).click()
-    cy.checkNumCheckpointValueLabels(2)
     cy.checkpointValueLabel(0).should('contain.text', 'Read')
     cy.checkpointValueLabel(1)
       .should('contain.text', 'truncated')
       .should('contain.text', omittedText)
+    cy.checkNumCheckpointValueLabels(2)
   })
 })

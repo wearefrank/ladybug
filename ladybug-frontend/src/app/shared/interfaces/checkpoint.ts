@@ -7,7 +7,7 @@ export interface Checkpoint {
   index: number;
   level: number;
   message: string | null;
-  messageContext: Record<string, string>;
+  messageContext: Record<string, string> | null;
   messageClassName?: string;
   name: string;
   noCloseReceivedForStream?: boolean;

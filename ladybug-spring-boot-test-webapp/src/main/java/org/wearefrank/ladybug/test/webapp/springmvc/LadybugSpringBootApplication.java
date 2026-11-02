@@ -17,6 +17,7 @@ package org.wearefrank.ladybug.test.webapp.springmvc;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.wearefrank.ladybug.storage.database.DbmsSupport;
@@ -133,6 +134,16 @@ public class LadybugSpringBootApplication {
 	}
 
 	@Bean
+	WebMvcConfigurer authenticatedUserLoggingConfigurer() {
+		return new WebMvcConfigurer() {
+			@Override
+			public void addInterceptors(InterceptorRegistry registry) {
+				registry.addInterceptor(new AuthenticatedUserLoggingInterceptor());
+			}
+		};
+	}
+
+	@Bean
 	InMemoryUserDetailsManager userDetailsManager() {
 		UserDetails observerUser = User.builder()
 				.username("IbisObserver")
@@ -142,19 +153,26 @@ public class LadybugSpringBootApplication {
 		UserDetails dataAdminUser = User.builder()
 				.username("IbisDataAdmin")
 				.password("{noop}IbisDataAdmin")
-				.roles("IbisDataAdmin")
+				.roles("IbisDataAdmin", "IbisObserver")
 				.build();
 		UserDetails adminUser = User.builder()
 				.username("IbisAdmin")
 				.password("{noop}IbisAdmin")
-				.roles("IbisAdmin")
+				.roles("IbisAdmin", "IbisDataAdmin", "IbisObserver")
 				.build();
 		UserDetails testerUser = User.builder()
 				.username("IbisTester")
 				.password("{noop}IbisTester")
-				.roles("IbisTester")
+				.roles("IbisTester", "IbisAdmin", "IbisDataAdmin", "IbisObserver")
+				.build();
+		// A user that combines the IbisObserver role with the IbisWebService role, used to test behavior for
+		// users that are not limited to a single Ladybug role.
+		UserDetails observerWebServiceUser = User.builder()
+				.username("IbisObserverWebService")
+				.password("{noop}IbisObserverWebService")
+				.roles("IbisObserver", "IbisWebService")
 				.build();
 		// Create an UserDetailsManager without any users.
-		return new InMemoryUserDetailsManager(observerUser, dataAdminUser, adminUser, testerUser);
+		return new InMemoryUserDetailsManager(observerUser, dataAdminUser, adminUser, testerUser, observerWebServiceUser);
 	}
 }

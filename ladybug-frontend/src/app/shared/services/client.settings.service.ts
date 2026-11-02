@@ -15,11 +15,15 @@ export class ClientSettingsService {
   private tableSpacingSubject = new BehaviorSubject<number>(this.getTableSpacing());
   private amountOfRecordsInTableSubject = new BehaviorSubject<number>(this.getAmountOfRecordsInTable());
   private showStorageIdsInTestTabSubject = new BehaviorSubject<boolean>(this.isShowStorageIdsInTestTab());
+  private metadataTableVisibleSubject = new BehaviorSubject<boolean>(false);
+  private messageContextTableVisibleSubject = new BehaviorSubject<boolean>(false);
 
   // Cannot put public properties first because properties cannot be used before their initialization.
   public tableSpacingObservable = this.tableSpacingSubject as Observable<number>;
   public amountOfRecordsInTableObservable = this.amountOfRecordsInTableSubject as Observable<number>;
   public showStorageIdsInTestTabObservable = this.showStorageIdsInTestTabSubject as Observable<boolean>;
+  public metadataTableVisible$ = this.metadataTableVisibleSubject as Observable<boolean>;
+  public messageContextTableVisible$ = this.messageContextTableVisibleSubject as Observable<boolean>;
 
   public getTableSpacing(): number {
     const MAX_ALLOWED_DROPDOWN_VALUE = 8;
@@ -78,6 +82,14 @@ export class ClientSettingsService {
 
   public toggleShowStorageIdsInTestTab(): void {
     this.setShowStorageIdsInTestTab(!this.isShowStorageIdsInTestTab());
+  }
+
+  public setMetadataTableVisible(value: boolean): void {
+    this.metadataTableVisibleSubject.next(value);
+  }
+
+  public setMessageContextTableVisible(value: boolean): void {
+    this.messageContextTableVisibleSubject.next(value);
   }
 
   public backToFactory(): void {

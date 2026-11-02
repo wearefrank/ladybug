@@ -206,7 +206,7 @@ public class ShownReportBuilder {
 		dest.setName(source.getName());
 		dest.setMessage(source.getMessage());
 		dest.setEncoding(source.getEncoding());
-		dest.setMessageContext(source.getMessageContext());
+		dest.setMessageContext(toMessageContextStrings(source.getMessageContext()));
 		dest.setType(source.getType());
 		dest.setLevel(source.getLevel());
 		dest.setStub(source.getStub());
@@ -218,5 +218,16 @@ public class ShownReportBuilder {
 		dest.setSourceClassName(source.getSourceClassName());
 		dest.setMessageClassName(source.getMessageClassName());
 		dest.setUid(source.getUid());
+	}
+
+	private Map<String, String> toMessageContextStrings(Map<String, Object> messageContext) {
+		if (messageContext == null) {
+			return null;
+		}
+		Map<String, String> result = new HashMap<>();
+		for (Map.Entry<String, Object> entry : messageContext.entrySet()) {
+			result.put(entry.getKey(), entry.getValue() == null ? null : entry.getValue().toString());
+		}
+		return result;
 	}
 }

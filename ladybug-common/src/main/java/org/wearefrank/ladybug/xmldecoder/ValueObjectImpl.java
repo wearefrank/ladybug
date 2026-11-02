@@ -43,6 +43,13 @@ final class ValueObjectImpl implements ValueObject {
      * @return the object that describes value
      */
     static ValueObject create(Object value) {
+        if (value instanceof Class<?> clazz) {
+            // A Class object for a class that is not in SafeClasses.ALL is never a legitimate value of a
+            // Ladybug report xml: once obtained, it could be passed around and used as the target of further
+            // method calls. See SafeClasses.checkClassLookup() for why this check belongs here, in the single
+            // place all decoded values pass through, instead of at every call site that could produce one.
+            SafeClasses.checkClassLookup(clazz);
+        }
         return (value != null)
                 ? new ValueObjectImpl(value)
                 : NULL;

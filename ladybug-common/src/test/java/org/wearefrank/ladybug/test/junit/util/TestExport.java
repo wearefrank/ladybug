@@ -18,19 +18,40 @@ package org.wearefrank.ladybug.test.junit.util;
 import static org.junit.Assert.assertNull;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
+import java.beans.XMLEncoder;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.MonthDay;
+import java.time.OffsetDateTime;
+import java.time.OffsetTime;
+import java.time.Period;
+import java.time.Year;
+import java.time.YearMonth;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.zip.GZIPInputStream;
 
+import org.junit.Assert;
 import org.junit.Test;
 
+import org.springframework.http.MediaType;
+import org.springframework.util.MimeType;
 import org.wearefrank.ladybug.Checkpoint;
 import org.wearefrank.ladybug.Report;
 import org.wearefrank.ladybug.storage.StorageException;
@@ -39,6 +60,8 @@ import org.wearefrank.ladybug.test.junit.Common;
 import org.wearefrank.ladybug.test.junit.ReportRelatedTestCase;
 import org.wearefrank.ladybug.transform.ReportXmlTransformer;
 import org.wearefrank.ladybug.util.Export;
+import org.wearefrank.ladybug.util.SpecialEncodings;
+import org.wearefrank.ladybug.xmldecoder.XMLDecoder;
 
 /**
  * @author Jaco de Groot
@@ -220,4 +243,55 @@ public class TestExport {
 		ReportRelatedTestCase.assertXml(resourcePath, testCaseName + "Export", actual);
 	}
 
+	@Test
+	public void testMediaTypeSerializationRoundtrip() {
+		testRoundTripOfSpecialEncoding(MediaType.valueOf("application/json"));
+	}
+
+	@Test
+	public void testMimeTypeSerializationRoundtrip() {
+		testRoundTripOfSpecialEncoding(MimeType.valueOf("FakeMime/type"));
+	}
+
+	@Test
+	public void testSerializationRoundtripOfClassesWithOtherFactoryThanValueOf() {
+		testRoundTripOfSpecialEncoding(Instant.parse("2026-09-25T13:38:53.123Z"));
+		testRoundTripOfSpecialEncoding(LocalDate.parse("2026-09-25"));
+		testRoundTripOfSpecialEncoding(LocalDateTime.parse("2026-09-25T15:38:53.123"));
+		testRoundTripOfSpecialEncoding(LocalTime.parse("15:38:53.123456789"));
+		testRoundTripOfSpecialEncoding(OffsetDateTime.parse("2026-09-25T15:38:53.123+02:00"));
+		testRoundTripOfSpecialEncoding(OffsetTime.parse("09:00+02:00"));
+		testRoundTripOfSpecialEncoding(ZonedDateTime.parse("2026-09-25T15:38:53.123+02:00[Europe/Amsterdam]"));
+		testRoundTripOfSpecialEncoding(Duration.parse("PT1H2M3S"));
+		testRoundTripOfSpecialEncoding(Period.parse("P1Y2M3D"));
+		testRoundTripOfSpecialEncoding(Year.of(2026));
+		testRoundTripOfSpecialEncoding(YearMonth.of(2026, 9));
+		testRoundTripOfSpecialEncoding(MonthDay.of(2, 29));
+		testRoundTripOfSpecialEncoding(ZoneOffset.ofHours(2));
+		testRoundTripOfSpecialEncoding(ZoneOffset.UTC);
+		testRoundTripOfSpecialEncoding(UUID.fromString("0f8fad5b-d9cb-469f-a165-70867728950e"));
+		testRoundTripOfSpecialEncoding(new BigDecimal("1234.5600"));
+		testRoundTripOfSpecialEncoding(new BigDecimal("1E+3"));
+		testRoundTripOfSpecialEncoding(new BigInteger("123456789012345678901234567890"));
+	}
+
+	void testRoundTripOfSpecialEncoding(Object instanceOfClassToTest) {
+		ByteArrayOutputStream os = new ByteArrayOutputStream();
+		XMLEncoder encoder = new XMLEncoder(os);
+		SpecialEncodings.registerExportDelegates(encoder);
+		encoder.writeObject(instanceOfClassToTest);
+		encoder.close();
+		byte[] encoded = os.toByteArray();
+		try {
+			String encodedAsString = new String(encoded, "UTF-8");
+			System.out.println(String.format("[%s] is encoded in a report like: [%s]", instanceOfClassToTest.getClass().getName(), encodedAsString));
+		} catch(Exception e) {
+			System.out.println(e.getStackTrace());
+			Assert.fail();
+		}
+		XMLDecoder decoder = new XMLDecoder(new ByteArrayInputStream(encoded));
+		Object retrieved = decoder.readObject();
+		Assert.assertEquals(instanceOfClassToTest.toString(), retrieved.toString());
+		Assert.assertTrue(retrieved.getClass().isInstance(instanceOfClassToTest));
+	}
 }

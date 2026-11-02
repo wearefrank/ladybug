@@ -34,9 +34,7 @@ export interface HierarchicalReport extends TreeItem {
 export interface HierarchicalCheckpoint extends TreeItem {
   message: string | null;
   encoding: string | null;
-  // TODO issue https://github.com/wearefrank/ladybug/issues/863. Fix
-  // type mismatch of next field with the backend.
-  messageContext: string | null;
+  messageContext: Record<string, string> | null;
   type: number;
   level: number;
   stub: number;

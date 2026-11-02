@@ -1,10 +1,8 @@
 <ng-template #modal>
   <div data-cy-settings="root" class="modal-header">
     <h5 class="modal-title" id="settingsModal">Options</h5>
-    <button id="debugSettingsModalClose" data-cy-settings="close" type="button" class="close"
-            (click)="closeSettingsModal()">
-      <span>&times;</span>
-    </button>
+    <button id="debugSettingsModalClose" data-cy-settings="close" type="button" class="btn-close" aria-label="Close"
+            (click)="closeSettingsModal()"></button>
   </div>
 
   <form [formGroup]="settingsForm" (change)="formHasChanged()">
@@ -66,13 +64,11 @@
               </select>
             </div>
           </div>
-          <div class="form-group form-check-inline">
-            <div class="checkbox" title="When checked, the report transformation is applied when showing report XML">
-              <input data-cy-settings-transformation-enabled class="form-check-input" type="checkbox" [formControlName]="transformationEnabledKey">
-              <label class="form-check-label transform-label">
-                Use transformation for report XML
-              </label>
-            </div>
+          <div class="form-group form-check" title="When checked, the report transformation is applied when showing report XML">
+            <input data-cy-settings-transformation-enabled class="form-check-input" type="checkbox" id="transformationEnabled" [formControlName]="transformationEnabledKey">
+            <label class="form-check-label" for="transformationEnabled">
+              Use transformation for report XML
+            </label>
           </div>
         }
       </div>

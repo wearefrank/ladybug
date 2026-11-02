@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The classes in speciallyEncodedClasses.txt may have stand-ins in src/test/java, which
+     must not leak into the test-jar where they would shadow the real classes for consumers.
+     Expects properties speciallyEncodedClassesFile and testJar. -->
+<project name="checkStubClassesNotInTestJar" default="check">
+  <target name="check">
+    <loadfile property="speciallyEncodedClassFiles" srcFile="${speciallyEncodedClassesFile}">
+      <filterchain>
+        <tokenfilter>
+          <trim />
+          <!-- Comment lines become blank and are removed by ignoreblank -->
+          <replaceregex pattern="^#.*$" replace="" />
+          <ignoreblank />
+          <!-- Keep only the first column, the class name -->
+          <replaceregex pattern="\s*,.*$" replace="" />
+          <replacestring from="." to="/" />
+          <replaceregex pattern="^(.+)$" replace="\1.class," />
+        </tokenfilter>
+        <striplinebreaks />
+      </filterchain>
+    </loadfile>
+    <fail message="Test jar ${testJar} not found">
+      <condition>
+        <not>
+          <available file="${testJar}" />
+        </not>
+      </condition>
+    </fail>
+    <fail message="Test jar ${testJar} should not contain any of the classes listed in speciallyEncodedClasses.txt. These classes are stubs that are only relevant for the unit tests">
+      <condition>
+        <resourcecount count="0" when="greater">
+          <zipfileset includes="${speciallyEncodedClassFiles}" src="${testJar}" />
+        </resourcecount>
+      </condition>
+    </fail>
+  </target>
+</project>

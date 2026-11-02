@@ -57,16 +57,16 @@ label {
   font-size: 0.7rem !important;
 }
 
+.form-select {
+  font-size: 0.7rem !important;
+}
+
 .form-group {
   margin-bottom: 1rem;
 }
 
 .input-group-text {
   font-size: 0.7rem !important;
-}
-
-.transform-label {
-  font-size: 0.8rem;
 }
 
 .btn-info:hover,
@@ -83,7 +83,8 @@ label {
   outline: none !important;
 }
 
-.close {
+.btn-close:focus {
+  box-shadow: none !important;
   outline: none !important;
 }
 
