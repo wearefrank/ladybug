@@ -64,6 +64,13 @@ export class FilterService implements OnDestroy {
     this.initialize(this.currentView);
   }
 
+  getCurrentView(): View {
+    if (!this.currentView) {
+      throw new Error('Current view not yet set');
+    }
+    return this.currentView;
+  }
+
   setUrlFilters(urlFilters: MetadataFilter[]): void {
     this.urlFilters = urlFilters;
     if (this.currentView) {
@@ -148,6 +155,9 @@ export class FilterService implements OnDestroy {
 
   private setNumericMetadataNames(currentView: View): void {
     this.numericMetadataNames.clear();
+    // Field numericMetadataNames is only relevant for the data shown in debug-table-grid.component.ts.
+    // That table only shows columns from the current view, so there is no need to consider fields
+    // that only appear in URL filters.
     const metadataTypesMap: Map<string, string> = new Map<string, string>(Object.entries(currentView.metadataTypes));
     for (const metadataName of currentView.metadataNames) {
       const metadataType: string = metadataTypesMap.get(metadataName) ?? '';
@@ -167,13 +177,31 @@ export class FilterService implements OnDestroy {
         userFilterable: !this.notUserFilterableMetadataNames.has(metadataName),
       });
     }
+    // TODO: When the URL filters on a field that is not in the view, we do not have a mechanism to get the label.
+    // We do with the metadataName for now.
+    for (const metadataFilter of this.getUrlFiltersOfMetadataNamesNotInView(currentView)) {
+      this.columns.push({
+        name: metadataFilter.metadataName,
+        label: metadataFilter.metadataName,
+        userFilterable: !this.notUserFilterableMetadataNames.has(metadataFilter.metadataName),
+      });
+    }
+  }
+
+  private getUrlFiltersOfMetadataNamesNotInView(currentView: View): MetadataFilter[] {
+    const viewMetadataNamesSet = new Set<string>(currentView.metadataNames);
+    return this.urlFilters.filter((uf) => !viewMetadataNamesSet.has(uf.metadataName));
   }
 
   private update(userFilters: MetadataFilter[], currentView: View): void {
     const allFilters: MetadataFilter[] = [...this.viewFilters, ...userFilters];
+    const metadataNames = [
+      ...currentView.metadataNames,
+      ...this.getUrlFiltersOfMetadataNamesNotInView(currentView).map((uf) => uf.metadataName),
+    ];
     firstValueFrom(
       this.httpService.getMetadata(currentView, {
-        metadataNames: currentView.metadataNames,
+        metadataNames: metadataNames,
         filterHeader: allFilters.map((f) => f.metadataName),
         filter: allFilters.map((f) => f.value),
         limit: this.clientSettingsService.getAmountOfRecordsInTable(),
