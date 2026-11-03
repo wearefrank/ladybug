@@ -62,8 +62,7 @@ public class SearchUtil {
 			if (query.startsWith("[[[") && query.endsWith("]]]")) {
 				query = query.substring(3, query.length() - 3);
 				return value != null && value.equals(query);
-			}
-			else if (query.startsWith("(") && query.endsWith(")")) {
+			} else if (query.startsWith("(") && query.endsWith(")")) {
 				// Regex search
 				if (value == null) {
 					value = "";
