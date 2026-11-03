@@ -41,10 +41,10 @@ public class SearchUtil {
 	}
 
 	public static String getUserHelpWildcards() {
-		return "Search exactly and omit column from table when search value starts with [[[ and ends with ]]]."
-			+ " Search case insensitive using * as the wildcard character."
+		return "Search case insensitive using * as the wildcard character."
 			+ " Wildcards are automatically added at the beginning and the end unless the search value starts with [ and ends with ] or already starts or ends with the wildcard."
-			+ " The search is done case sensitive when the search value starts with [[ and ends with ]].";
+			+ " The search is done case sensitive when the search value starts with [[ and ends with ]]."
+			+ " Search exactly and omit column from table when search value starts with [[[ and ends with ]]].";
 	}
 
 	public static String getUserHelpRegex() {
@@ -63,7 +63,7 @@ public class SearchUtil {
 				query = query.substring(3, query.length() - 3);
 				return value != null && value.equals(query);
 			}
-			if (query.startsWith("(") && query.endsWith(")")) {
+			else if (query.startsWith("(") && query.endsWith(")")) {
 				// Regex search
 				if (value == null) {
 					value = "";
