@@ -95,7 +95,7 @@ describe('Tests with views and filtering', () => {
       .parent()
       .contains('Clear')
       .click()
-    cy.inIframeBody('app-active-filters').should('not.exist')
+    cy.checkActiveFilterSphere('Application', 'ladybug-ff-test-webapp').should('not.exist')
   })
 
   it('Filter on two criteria', () => {
