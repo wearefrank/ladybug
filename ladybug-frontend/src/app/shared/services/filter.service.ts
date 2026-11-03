@@ -177,7 +177,8 @@ export class FilterService implements OnDestroy {
         userFilterable: !this.notUserFilterableMetadataNames.has(metadataName),
       });
     }
-    // TODO: When the URL filters on a field that is not in the view, we do not have a mechanism to get the label.
+    // TODO issue https://github.com/wearefrank/ladybug/issues/1075.
+    // When the URL filters on a field that is not in the view, we do not have a mechanism to get the label.
     // We do with the metadataName for now.
     for (const metadataFilter of this.getUrlFiltersOfMetadataNamesNotInView(currentView)) {
       this.columns.push({
