@@ -29,7 +29,7 @@ describe('About opened reports', () => {
     cy.getShownNodesOfReportTreeWithText('Simple report').should('have.length', 3);
     cy.getDebugTableRows().find('td:contains("Another simple report")').first().click();
     cy.getShownNodesOfReportTreeWithText('Another simple report').should('have.length', 3);
-    cy.get('[data-cy-debug-tree="close"]').click();
+    cy.closeDebugTree();
     cy.get('[data-cy-debug="selectAll"]').click();
     cy.get('[data-cy-debug="openSelected"]').click();
     cy.contains('You can open only one report at a time!');

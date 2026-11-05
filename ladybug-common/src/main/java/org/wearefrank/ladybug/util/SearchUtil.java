@@ -1,5 +1,5 @@
 /*
-   Copyright 2020, 2022-2023, 2025 WeAreFrank!, 2018 Nationale-Nederlanden
+   Copyright 2020, 2022-2023, 2025-2026 WeAreFrank!, 2018 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -43,7 +43,8 @@ public class SearchUtil {
 	public static String getUserHelpWildcards() {
 		return "Search case insensitive using * as the wildcard character."
 			+ " Wildcards are automatically added at the beginning and the end unless the search value starts with [ and ends with ] or already starts or ends with the wildcard."
-			+ " The search is done case sensitive when the search value starts with [[ and ends with ]].";
+			+ " The search is done case sensitive when the search value starts with [[ and ends with ]]."
+			+ " Search exactly and omit column from table when search value starts with [[[ and ends with ]]].";
 	}
 
 	public static String getUserHelpRegex() {
@@ -58,7 +59,10 @@ public class SearchUtil {
 
 	public static boolean matches(Object value, String query) {
 		if (query != null && !"".equals(query)) {
-			if (query.startsWith("(") && query.endsWith(")")) {
+			if (query.startsWith("[[[") && query.endsWith("]]]")) {
+				query = query.substring(3, query.length() - 3);
+				return value != null && value.equals(query);
+			} else if (query.startsWith("(") && query.endsWith(")")) {
 				// Regex search
 				if (value == null) {
 					value = "";

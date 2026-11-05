@@ -105,6 +105,42 @@ describe('Tests for table filter', () => {
     cy.get('[data-cy-debug="filter"]').click();
     cy.get('[data-cy-debug="tableFilter"').eq(1).should('not.contain.value', '1')
   })
+
+  it('When exact filter is requested then column omitted from table', () => {
+    cy.assertDebugTableLength(2);
+    cy.get('[data-cy-debug="table"]').find('th:contains(Name)').should('be.visible');
+    cy.get('[data-cy-debug="filter"]').click();
+    cy.get('[data-cy-debug="tableFilter"]').eq(3).type('[[[Simple report]]]{enter}');
+    cy.assertDebugTableLength(1);
+    cy.get('[data-cy-debug="table"]').find('th:contains(Name)').should('not.exist');
+    // No [[[ ]]]
+    cy.get('[data-cy-active-filter]').should('contain.text', 'Name: Simple report');
+    cy.get('[data-cy-active-filter-exact]').should('be.visible');
+    cy.get('[data-cy-debug="tableFilter"]').eq(3).clear().type('{enter}');
+    cy.assertDebugTableLength(2);
+    cy.get('[data-cy-active-filter]').should('not.exist');
+    cy.get('[data-cy-active-filter-exact]').should('not.exist');
+    cy.get('[data-cy-debug="table"]').find('th:contains(Name)').should('be.visible');
+  })
+
+  it('When non-exact filter is requested then column not omitted from table', () => {
+    cy.assertDebugTableLength(2);
+    cy.get('[data-cy-debug="table"]').find('th:contains(Name)').should('be.visible');
+    cy.get('[data-cy-debug="filter"]').click();
+    // Filtering on simple report allows both "Simple report" and "Another simple report"
+    // if filtering is not exact.
+    cy.get('[data-cy-debug="tableFilter"]').eq(3).type('Another simple report{enter}');
+    cy.assertDebugTableLength(1);
+    cy.get('[data-cy-debug="table"]').find('th:contains(Name)').should('be.visible');
+    // No [[[ ]]]
+    cy.get('[data-cy-active-filter]').should('contain.text', 'Name: Another simple report');
+    cy.get('[data-cy-active-filter-exact]').should('not.exist');
+    cy.get('[data-cy-debug="tableFilter"]').eq(3).clear().type('{enter}');
+    cy.assertDebugTableLength(2);
+    cy.get('[data-cy-active-filter]').should('not.exist');
+    cy.get('[data-cy-active-filter-exact]').should('not.exist');
+    cy.get('[data-cy-debug="table"]').find('th:contains(Name)').should('be.visible');
+  })
 });
 
 describe('About URL filters and row filtering views', () => {

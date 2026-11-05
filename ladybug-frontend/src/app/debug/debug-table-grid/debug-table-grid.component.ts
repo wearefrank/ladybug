@@ -94,6 +94,8 @@ export class DebugTableGridComponent implements OnInit, OnDestroy {
     this.subscriptions.add(tableDataSubscription);
   }
 
+  // Argument is allowed to contain data about columns that are not shown.
+  // Only columns that are inTableData.columns are shown.
   // Not called directly in production - available for Karma tests.
   setTableData(argument: TableData): void {
     this.data = {
