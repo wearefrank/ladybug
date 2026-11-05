@@ -5,38 +5,39 @@ repository (`ladybug-backend-springmvc`), so you can test your Ladybug changes
 together with the Frank!Framework.
 
 You can also run ladybug-ff-test-webapp using the Frank!Runner. Have a https://github.com/wearefrank/frank-runner
-checkout as a sibling of this project. Write fild `build.properties` in directory
+checkout as a sibling of this project. Write file `build.properties` in directory
 `ladybug-ff-test-webapp`, see `build-example.properties` to see what properties
 are supported. Then start using `restart.bat` or `restart.sh`.
 
 ## Running from IntelliJ
 
-1. Open `src/main/java/org/frankframework/runner/MainClass.java` and click the
-   green run icon next to the `main` method. The first run fails, see below.
-2. Open Run | Edit Configurations... and select **MainClass** under **Application**.
-3. Check that the module classpath (**-cp**) is `ladybug-ff-test-webapp`. If this
-   field is not shown, add it with Modify options | Use classpath of module.
-4. Set **Working directory** to `$MODULE_WORKING_DIR$`.
-5. Choose Modify options | Add dependencies with "provided" scope to classpath.
-6. Click **OK** and run `MainClass` again.
+Select the run configuration **ladybug-ff-test-webapp** in the toolbar and click
+the green run icon. This run configuration is shared through
+`.run/ladybug-ff-test-webapp.run.xml` in the root of this repository, so
+IntelliJ picks it up automatically.
 
-Steps 2 to 4 are needed because IntelliJ starts `MainClass` from the root of
-this repository by default. The Frank!Framework uses the working directory as
-its project directory and refuses to start when it finds a `.github` folder
-there, with the following error:
+The run configuration starts `org.frankframework.runner.MainClass` with the
+following settings. Keep them if you change the run configuration or create your
+own, for example in another IDE:
 
-```
-java.io.IOException: assuming we're using IntelliJ, go to 'run options' enable [Use classpath of module] and set the working directory to [$MODULE_WORKING_DIR$].
-```
+* The classpath of module `ladybug-ff-test-webapp` is used and the working
+  directory is `$MODULE_WORKING_DIR$`. By default IntelliJ starts `MainClass` from
+  the root of this repository. The Frank!Framework uses the working directory as
+  its project directory and refuses to start when it finds a `.github` folder
+  there, with the following error:
 
-Step 5 is needed because some dependencies, for example `jakarta.servlet-api`,
-have scope `provided`. IntelliJ leaves these out of the classpath by default,
-but the embedded Tomcat of the Frank!Framework needs them. Without step 8 you
-get:
+  ```
+  java.io.IOException: assuming we're using IntelliJ, go to 'run options' enable [Use classpath of module] and set the working directory to [$MODULE_WORKING_DIR$].
+  ```
 
-```
-java.lang.ClassNotFoundException: jakarta.servlet.ServletException
-```
+* Dependencies with scope `provided` are added to the classpath. Some
+  dependencies, for example `jakarta.servlet-api`, have scope `provided`.
+  IntelliJ leaves these out of the classpath by default, but the embedded Tomcat
+  of the Frank!Framework needs them. Without them you get:
+
+  ```
+  java.lang.ClassNotFoundException: jakarta.servlet.ServletException
+  ```
 
 If IntelliJ shows "Java file is located outside of the module source root, so it
 won't be compiled" above `MainClass.java`, reload all Maven projects. This can
@@ -60,7 +61,8 @@ those too:
    banner at the top of the editor. To download the sources of all
    dependencies at once, click **Download Sources** in the Maven tool window.
 3. Click in the left margin of a line to set a breakpoint.
-4. Start `MainClass` with **Debug** (the bug icon) instead of **Run**.
+4. Start run configuration **ladybug-ff-test-webapp** with **Debug** (the bug
+   icon) instead of **Run**.
 
 Breakpoints only work properly when the sources match the version that runs.
 That is the version of property `ff.version`, see
@@ -90,6 +92,6 @@ To test against another version, override the property on the command line:
 mvn install -Dff.version=10.4.0
 ```
 
-When you run `MainClass` from IntelliJ, change the value of `ff.version` in
+When you run from IntelliJ, change the value of `ff.version` in
 `pom.xml` and reload all Maven projects. Do not commit that change unless you
 want to change the default.
