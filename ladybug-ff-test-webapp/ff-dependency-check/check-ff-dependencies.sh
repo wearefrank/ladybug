@@ -12,11 +12,15 @@ set -e
 
 cd "$(dirname "$0")"
 TREE_GOAL=org.apache.maven.plugins:maven-dependency-plugin:3.7.0:tree
+EVALUATE_GOAL=org.apache.maven.plugins:maven-help-plugin:3.5.1:evaluate
 # Relative to the module directory ladybug-ff-test-webapp, which is where Maven resolves outputFile
 WORK=target/ff-dependency-check
 
 rm -rf "../$WORK"
 mkdir -p "../$WORK/baseline"
+
+echo "Determining the version of this Ladybug project"
+LADYBUG_VERSION=$(mvn -B -q -f ../../pom.xml -N "$@" "$EVALUATE_GOAL" -Dexpression=project.version -DforceStdout)
 
 echo "Resolving dependencies of ladybug-ff-test-webapp"
 mvn -B -q -f ../../pom.xml -pl ladybug-ff-test-webapp "$@" "$TREE_GOAL" "-DoutputFile=$WORK/webapp-tree.txt"
@@ -25,4 +29,4 @@ echo "Resolving dependencies of the same webapp without the Ladybug parent pom"
 java CheckFfDependencies.java baseline-pom ../pom.xml "../$WORK/webapp-tree.txt" "../$WORK/baseline/pom.xml"
 mvn -B -q -f "../$WORK/baseline/pom.xml" "$@" "$TREE_GOAL" -DoutputFile=baseline-tree.txt
 
-java CheckFfDependencies.java compare "../$WORK/webapp-tree.txt" "../$WORK/baseline/baseline-tree.txt" allowed-differences.txt
+java CheckFfDependencies.java compare "../$WORK/webapp-tree.txt" "../$WORK/baseline/baseline-tree.txt" allowed-differences.txt "$LADYBUG_VERSION"

@@ -31,13 +31,18 @@ import org.w3c.dom.Node;
  * <li>{@code baseline-pom <webapp pom> <webapp tree> <output pom>}: writes a copy of the webapp pom
  * without the parent. Direct dependencies without a version get the version the webapp resolves,
  * except Frank!Framework artifacts, which get their version from the Frank!Framework BOM.</li>
- * <li>{@code compare <webapp tree> <baseline tree> <allowed differences>}: reports differences in
- * version or scope. Exits with 1 when a difference is not in the allowed differences file.</li>
+ * <li>{@code compare <webapp tree> <baseline tree> <allowed differences> <ladybug version>}: reports
+ * differences in version or scope. Exits with 1 when a difference is not in the allowed differences
+ * file, or when a Ladybug artifact (groupId org.wearefrank) does not have the version of this
+ * Ladybug project. The latter would mean that the webapp tests the Ladybug version chosen by the
+ * Frank!Framework (frankframework/ladybug/pom.xml) instead of the Ladybug code in this project.
+ * The baseline cannot catch that, because it gets the version the webapp resolves.</li>
  * </ul>
  * Trees are files written by {@code mvn dependency:tree -DoutputFile=...}.
  */
 public class CheckFfDependencies {
 	private static final String FF_GROUP_ID = "org.frankframework";
+	private static final String LADYBUG_GROUP_ID = "org.wearefrank";
 	// Indentation followed by groupId:artifactId:type[:classifier]:version[:scope], possibly followed by " (optional)"
 	private static final Pattern TREE_LINE = Pattern.compile("^([| +\\\\-]*)([^ ]+)( \\(optional\\))?$");
 	private static final int TREE_INDENT = 3;
@@ -45,11 +50,11 @@ public class CheckFfDependencies {
 	public static void main(String[] args) throws Exception {
 		if (args.length == 4 && args[0].equals("baseline-pom")) {
 			writeBaselinePom(Path.of(args[1]), Path.of(args[2]), Path.of(args[3]));
-		} else if (args.length == 4 && args[0].equals("compare")) {
-			System.exit(compare(Path.of(args[1]), Path.of(args[2]), Path.of(args[3])));
+		} else if (args.length == 5 && args[0].equals("compare")) {
+			System.exit(compare(Path.of(args[1]), Path.of(args[2]), Path.of(args[3]), args[4]));
 		} else {
 			System.err.println("Usage: java CheckFfDependencies.java baseline-pom <webapp pom> <webapp tree> <output pom>");
-			System.err.println("       java CheckFfDependencies.java compare <webapp tree> <baseline tree> <allowed differences>");
+			System.err.println("       java CheckFfDependencies.java compare <webapp tree> <baseline tree> <allowed differences> <ladybug version>");
 			System.exit(2);
 		}
 	}
@@ -118,8 +123,9 @@ public class CheckFfDependencies {
 		transformer.transform(new DOMSource(document), new StreamResult(outputPom.toFile()));
 	}
 
-	static int compare(Path webappTree, Path baselineTree, Path allowedFile) throws IOException {
+	static int compare(Path webappTree, Path baselineTree, Path allowedFile, String ladybugVersion) throws IOException {
 		Map<String, Dependency> webapp = readTree(webappTree);
+		boolean ladybugVersionOk = checkLadybugVersion(webapp, ladybugVersion);
 		Map<String, Dependency> baseline = readTree(baselineTree);
 		Map<String, String> allowed = readAllowed(allowedFile);
 
@@ -161,9 +167,37 @@ public class CheckFfDependencies {
 			System.out.println();
 			System.out.println(notAllowed + " difference(s) not allowed. Align the version or scope in the root pom.xml of Ladybug,");
 			System.out.println("or add groupId:artifactId with a reason to " + allowedFile);
-			return 1;
 		}
-		return 0;
+		return notAllowed > 0 || !ladybugVersionOk ? 1 : 0;
+	}
+
+	/** Checks that all Ladybug artifacts used by the webapp come from this Ladybug project */
+	static boolean checkLadybugVersion(Map<String, Dependency> webapp, String ladybugVersion) {
+		List<Dependency> ladybugArtifacts = webapp.values().stream()
+				.filter(d -> d.key().startsWith(LADYBUG_GROUP_ID + ":"))
+				.toList();
+		List<Dependency> wrongVersion = ladybugArtifacts.stream()
+				.filter(d -> !d.version().equals(ladybugVersion))
+				.toList();
+		boolean ok = false;
+		if (ladybugArtifacts.isEmpty()) {
+			System.out.println("ladybug-ff-test-webapp has no dependencies with groupId " + LADYBUG_GROUP_ID);
+		} else if (!wrongVersion.isEmpty()) {
+			System.out.println("Ladybug artifacts that do not have version " + ladybugVersion + " of this Ladybug project:");
+			for (Dependency dependency : wrongVersion) {
+				System.out.println("  " + dependency.key() + " " + describe(dependency));
+			}
+			System.out.println("The webapp would not test the Ladybug code of this project. Probably the Frank!Framework BOM");
+			System.out.println("(frankframework/ladybug/pom.xml) overrides the version managed by the root pom.xml of Ladybug.");
+		} else {
+			System.out.println("All " + ladybugArtifacts.size() + " Ladybug artifacts have version " + ladybugVersion + " of this Ladybug project:");
+			for (Dependency dependency : ladybugArtifacts) {
+				System.out.println("  " + dependency.key());
+			}
+			ok = true;
+		}
+		System.out.println();
+		return ok;
 	}
 
 	/** Lines with groupId:artifactId, optionally followed by # and a reason */
