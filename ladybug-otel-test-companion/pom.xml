@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>org.wearefrank</groupId>
+    <artifactId>ladybug-parent</artifactId>
+    <version>${revision}</version>
+  </parent>
+
+  <artifactId>ladybug-otel-test-companion</artifactId>
+
+  <name>Ladybug OpenTelemetry test companion</name>
+  <description>Sends OpenTelemetry related HTTP requests to Ladybug to test that end-to-end</description>
+
+  <dependencies>
+    <!-- Brings the embedded web server that will be needed when this app also has to listen to HTTP requests.
+         For now the web server is disabled, see spring.main.web-application-type in application.properties. -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-web</artifactId>
+    </dependency>
+    <!-- The root pom pins logback to scope=test; override back to compile so Spring Boot uses
+         Logback at runtime here instead of falling back to java.util.logging. -->
+    <dependency>
+      <groupId>ch.qos.logback</groupId>
+      <artifactId>logback-classic</artifactId>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>ch.qos.logback</groupId>
+      <artifactId>logback-core</artifactId>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>io.opentelemetry</groupId>
+      <artifactId>opentelemetry-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.opentelemetry</groupId>
+      <artifactId>opentelemetry-sdk-trace</artifactId>
+    </dependency>
+    <!-- Sends OTLP/HTTP with protobuf encoding -->
+    <dependency>
+      <groupId>io.opentelemetry</groupId>
+      <artifactId>opentelemetry-exporter-otlp</artifactId>
+    </dependency>
+    <!-- Produces the OTLP/JSON encoding. This needs jackson-core, which spring-boot-starter-web brings -->
+    <dependency>
+      <groupId>io.opentelemetry</groupId>
+      <artifactId>opentelemetry-exporter-logging-otlp</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.projectlombok</groupId>
+      <artifactId>lombok</artifactId>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <!-- Fixed name without version, so that the Cypress tests in ladybug-frontend can find the jar -->
+    <finalName>ladybug-otel-test-companion</finalName>
+    <plugins>
+      <plugin>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-maven-plugin</artifactId>
+        <executions>
+          <!-- Produce an executable jar. Not bound by default, because the root pom does not inherit from
+               spring-boot-starter-parent -->
+          <execution>
+            <goals>
+              <goal>repackage</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+</project>
