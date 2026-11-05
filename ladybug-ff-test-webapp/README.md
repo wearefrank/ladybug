@@ -42,7 +42,9 @@ own, for example in another IDE:
 If IntelliJ shows "Java file is located outside of the module source root, so it
 won't be compiled" above `MainClass.java`, reload all Maven projects. This can
 happen when IntelliJ reloaded the Maven projects while `pom.xml` contained merge
-conflicts.
+conflicts. The same warning above `ff-dependency-check/CheckFfDependencies.java`
+is expected and needs no action, see
+[Checking the Frank!Framework dependencies](#checking-the-frankframework-dependencies).
 
 When the Frank!Framework has started, it is available at http://localhost:8080.
 
@@ -95,3 +97,39 @@ mvn install -Dff.version=10.4.0
 When you run from IntelliJ, change the value of `ff.version` in
 `pom.xml` and reload all Maven projects. Do not commit that change unless you
 want to change the default.
+
+## Checking the Frank!Framework dependencies
+
+This module inherits `ladybug-parent`. The `dependencyManagement` of the root
+`pom.xml` can override the versions and scopes that the Frank!Framework BOM
+chooses. Then this webapp would not test the dependencies that a real
+Frank!Framework application gets. Directory `ff-dependency-check` contains a
+check for this. The GitHub workflow `ff-dependency-check.yml` runs it.
+
+The check reports dependencies whose version or scope differs from what the
+Frank!Framework gives the same webapp outside the Ladybug project. It fails when
+a difference is not listed in `ff-dependency-check/allowed-differences.txt`. It
+also fails when a Ladybug artifact (groupId `org.wearefrank`) does not have the
+version of this Ladybug project. That would mean that the webapp tests the
+Ladybug version chosen by the Frank!Framework instead of the Ladybug code in
+this repository.
+
+To run the check yourself, you need `mvn` and `java` (11 or higher) on the path.
+On Windows, use Git Bash. Run in the root of this repository:
+
+```
+mvn install
+sh ladybug-ff-test-webapp/ff-dependency-check/check-ff-dependencies.sh
+```
+
+When the check reports a difference that is intended, add it to
+`allowed-differences.txt` with the reason. Otherwise, fix the
+`dependencyManagement` of the root `pom.xml`.
+
+`check-ff-dependencies.sh` runs `CheckFfDependencies.java` directly with
+`java CheckFfDependencies.java ...`, without compiling it first. Java 11 and
+higher can run a single source file this way. The file is not part of any Maven
+module on purpose. Therefore, IntelliJ shows "Java file is located outside of
+the module source root, so it won't be compiled" above it. You can ignore this
+warning. Running Maven or reloading the Maven projects does not make it go
+away.
