@@ -541,35 +541,33 @@ public class DatabaseStorage implements Storage {
 		if (searchValue.startsWith("[[[") && searchValue.endsWith("]]]")) {
 			addExpression(query, column + " = ?");
 			searchValue = searchValue.substring(3, searchValue.length() - 3);
-			args.add(searchValue);
-			argTypes.add(Types.VARCHAR);
-			return;
-		}
-		if (!(searchValue.startsWith("[") && searchValue.endsWith("]"))
-				&& !(searchValue.startsWith("*") || searchValue.endsWith("*"))) {
-			searchValue = "*" + searchValue + "*";
-		}
-		if (searchValue.contains("*")) {
-			if (searchValue.startsWith("[[") && searchValue.endsWith("]]")) {
-				addExpression(query, column + " like ?");
-			} else {
-				addExpression(query, "lower(" + column + ") like lower(?)");
-			}
 		} else {
-			if (searchValue.startsWith("[[") && searchValue.endsWith("]]")) {
-				addExpression(query, column + " = ?");
-			} else {
-				addExpression(query, "lower(" + column + ") = lower(?)");
+			if (!(searchValue.startsWith("[") && searchValue.endsWith("]"))
+					&& !(searchValue.startsWith("*") || searchValue.endsWith("*"))) {
+				searchValue = "*" + searchValue + "*";
 			}
+			if (searchValue.contains("*")) {
+				if (searchValue.startsWith("[[") && searchValue.endsWith("]]")) {
+					addExpression(query, column + " like ?");
+				} else {
+					addExpression(query, "lower(" + column + ") like lower(?)");
+				}
+			} else {
+				if (searchValue.startsWith("[[") && searchValue.endsWith("]]")) {
+					addExpression(query, column + " = ?");
+				} else {
+					addExpression(query, "lower(" + column + ") = lower(?)");
+				}
+			}
+			if (searchValue.startsWith("[") && searchValue.endsWith("]")) {
+				searchValue = searchValue.substring(1, searchValue.length() - 1);
+			}
+			if (searchValue.startsWith("[") && searchValue.endsWith("]")) {
+				searchValue = searchValue.substring(1, searchValue.length() - 1);
+			}
+			searchValue = dbmsSupport.escapeLikePattern(searchValue);
+			searchValue = searchValue.replaceAll("\\*", "%");
 		}
-		if (searchValue.startsWith("[") && searchValue.endsWith("]")) {
-			searchValue = searchValue.substring(1, searchValue.length() - 1);
-		}
-		if (searchValue.startsWith("[") && searchValue.endsWith("]")) {
-			searchValue = searchValue.substring(1, searchValue.length() - 1);
-		}
-		searchValue = dbmsSupport.escapeLikePattern(searchValue);
-		searchValue = searchValue.replaceAll("\\*", "%");
 		args.add(searchValue);
 		argTypes.add(Types.VARCHAR);
 	}
