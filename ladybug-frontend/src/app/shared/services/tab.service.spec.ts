@@ -78,6 +78,22 @@ describe('TabService', () => {
       'filter-host': 'Host A',
     });
   });
+
+  it('When filter query is exact filter then recognized and filtered value extracted', () => {
+    const actual: MetadataFilter = service.filterQuery2MetadataFilter('metadataName', '[[[Some value]]]');
+    expect(actual.metadataName).toEqual('metadataName');
+    expect(actual.value).toEqual('[[[Some value]]]');
+    expect(actual.exact).toEqual(true);
+    expect(actual.shownValue).toEqual('Some value');
+  });
+
+  it('When filter query is not exact then shown value equals value', () => {
+    const actual: MetadataFilter = service.filterQuery2MetadataFilter('metadataName', 'Some value');
+    expect(actual.metadataName).toEqual('metadataName');
+    expect(actual.value).toEqual('Some value');
+    expect(actual.exact).toEqual(false);
+    expect(actual.shownValue).toEqual('Some value');
+  });
 });
 
 function getDefaultActivatedRouteSnapshotWithPath(path: string): ActivatedRouteSnapshot {
