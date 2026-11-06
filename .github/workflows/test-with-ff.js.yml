@@ -163,8 +163,6 @@ jobs:
         uses: ./ladybug/.github/actions/maven-cache
         with:
           mode: save
-      - name: Try to access server directly with curl
-        run: curl -v -i --max-time 30 http://localhost:8090
       - name: Run the tests
         working-directory: ladybug/ladybug-ff-cypress-test
         run: bash ../.github/workflows/with-ff/run-tests.sh
