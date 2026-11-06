@@ -1,0 +1,75 @@
+name: Start ladybug-test-webapp
+description: >
+  Checks out Frank!Runner, builds ladybug-test-webapp with Frank!Runner and starts it on port 8090.
+  Uses the caches of Frank!Runner downloads and Maven downloads, and saves them (on master) as soon
+  as the server is up. Used by both jobs of jaxrs.js.yml: the tests and the scheduled renewal of
+  the caches. Because both jobs use this action, they need the same downloads, so the renewal
+  fills the caches with what the tests need.
+
+  Ladybug must be checked out in directory ladybug of the workspace. This action uses the other
+  actions of .github/actions from there. Changes to ladybug-test-webapp that the tests need (for
+  example authentication) must be done before calling this action.
+inputs:
+  spring-profile:
+    description: Spring profile for the backend, or none to use the default.
+    required: false
+    default: none
+runs:
+  using: composite
+  steps:
+    - name: Checkout frank-runner
+      uses: actions/checkout@v5
+      with:
+        repository: wearefrank/frank-runner
+        path: frank-runner
+    - name: Configure Frank!Runner
+      shell: bash
+      run: |
+        # Skip backend unit tests, Javadoc and checking licenses
+        echo "maven.skip.tests=true" > frank-runner/specials/ladybug/build.properties
+        echo "maven.skip.javadoc=true" >> frank-runner/specials/ladybug/build.properties
+        echo "maven.skip.copyright=true" >> frank-runner/specials/ladybug/build.properties
+        # Port where ladybug-test-webapp is served
+        echo "tomcat.connector.port=8090" > frank-runner/build.properties
+        # Prevent Java exception about binding port 443 (for https)
+        echo "tomcat.secure.port=8443" >> frank-runner/build.properties
+        chmod a+x frank-runner/specials/ladybug/restart.sh
+    - name: Choose Spring profile for backend if it is not "none"
+      if: ${{ inputs.spring-profile != 'none' }}
+      shell: bash
+      run: echo "spring.profiles.active=${{ inputs.spring-profile }}" >> frank-runner/specials/ladybug/build.properties
+    # Caching is explained in the actions.
+    - name: Restore Frank!Runner downloads from cache
+      uses: ./ladybug/.github/actions/frank-runner-download-cache
+      with:
+        mode: restore
+    - name: Restore Maven downloads from cache
+      uses: ./ladybug/.github/actions/maven-cache
+      with:
+        mode: restore
+        name: jaxrs
+    - name: Show current time, allows you to check that logs are not old
+      shell: bash
+      run: date
+    - name: Let Frank!Runner do its downloads
+      working-directory: frank-runner
+      shell: bash
+      run: ./env.sh > installFrankRunnerEnv.log
+    - name: Start server using Frank!Runner
+      working-directory: frank-runner/specials/ladybug
+      shell: bash
+      run: ./restart.sh
+    - name: Wait for server to be available
+      working-directory: ladybug/.github/workflows
+      shell: bash
+      run: ./waitForUrl.sh http://localhost:8090 300
+    # Save the caches as soon as the server is up, so also when the tests fail. At that point
+    # Frank!Runner and Maven have downloaded everything they need.
+    - name: Save Frank!Runner downloads to cache
+      uses: ./ladybug/.github/actions/frank-runner-download-cache
+      with:
+        mode: save
+    - name: Save Maven downloads to cache
+      uses: ./ladybug/.github/actions/maven-cache
+      with:
+        mode: save

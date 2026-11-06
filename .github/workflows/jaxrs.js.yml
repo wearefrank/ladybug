@@ -4,8 +4,42 @@ on:
     branches:
       - master
   pull_request:
+  # Run daily on master to renew the caches that pull requests use. Caches are only saved on
+  # master (see .github/actions). Without this, pull requests miss the Frank!Runner download
+  # cache after an update of Frank!Runner and the Maven cache at the start of a month, until
+  # something is pushed to master. This also keeps the caches of master in use, so that GitHub
+  # does not delete them after 7 days without use. Also renews the caches of ladybug-frontend
+  # (pnpm store, Cypress binary) that springmvc.js.yml and maven.yml share. GitHub runs
+  # scheduled workflows on the default branch only and may start them later than scheduled.
+  # A scheduled run only runs job renew-caches, not the tests.
+  schedule:
+    - cron: "0 3 * * *"
 jobs:
+  # Fills the caches in a single job, by doing what the tests do up to starting the server.
+  renew-caches:
+    if: ${{ github.event_name == 'schedule' }}
+    name: Renew caches
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout ladybug
+        uses: actions/checkout@v5
+        with:
+          repository: wearefrank/ladybug
+          path: ladybug
+      # Must be the same Node.js version as in job jaxrs.
+      - name: Install Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 20
+      - name: Install frontend dependencies with pnpm
+        uses: ./ladybug/.github/actions/pnpm-install
+        with:
+          project-dir: ladybug/ladybug-frontend
+      - name: Start ladybug-test-webapp
+        uses: ./ladybug/.github/actions/start-ladybug-test-webapp
+
   jaxrs:
+    if: ${{ github.event_name != 'schedule' }}
     strategy:
       fail-fast: false
       matrix:
@@ -58,6 +92,7 @@ jobs:
           repository: wearefrank/ladybug
           path: ladybug
       # No "cache: pnpm" here. It would cache the pnpm store again, also for every branch.
+      # Must be the same Node.js version as in job renew-caches.
       - name: Install Node.js
         uses: actions/setup-node@v5
         with:
@@ -85,60 +120,11 @@ jobs:
         working-directory: ladybug/ladybug-test-webapp/src/main/webapp/WEB-INF
         run: cp web.xml.out web.xml
 
-      - name: Checkout frank-runner
-        uses: actions/checkout@v5
+      # Also saves the caches on master. See the action.
+      - name: Start ladybug-test-webapp
+        uses: ./ladybug/.github/actions/start-ladybug-test-webapp
         with:
-          repository: wearefrank/frank-runner
-          path: frank-runner
-      - name: Set property to skip backend unit tests
-        run: echo "maven.skip.tests=true" > frank-runner/specials/ladybug/build.properties
-      - name: Set properties to skip backend Javadoc
-        run: echo "maven.skip.javadoc=true" >> frank-runner/specials/ladybug/build.properties
-      - name: Set property to skip checking licenses
-        run: echo "maven.skip.copyright=true" >> frank-runner/specials/ladybug/build.properties
-      - name: Choose Spring profile for backend if it is not "none"
-        run: echo "spring.profiles.active=${{ matrix.spring-profile }}" >> frank-runner/specials/ladybug/build.properties
-        if: ${{ matrix.spring-profile != 'none' }}
-      - name: Set port where ladybug-test-webapp is served
-        run: echo "tomcat.connector.port=8090" > frank-runner/build.properties
-      - name: Prevent Java exception about binding port 443 (for https)
-        run: echo "tomcat.secure.port=8443" >> frank-runner/build.properties
-      - name: Make script executable that starts backend
-        run: chmod a+x frank-runner/specials/ladybug/restart.sh
-
-      # Caching is explained in the actions.
-      - name: Restore Frank!Runner downloads from cache
-        uses: ./ladybug/.github/actions/frank-runner-download-cache
-        with:
-          mode: restore
-      - name: Restore Maven downloads from cache
-        uses: ./ladybug/.github/actions/maven-cache
-        with:
-          mode: restore
-          name: jaxrs
-      - name: Show current time, allows you to check that logs are not old
-        run: date
-
-      - name: Let Frank!Runner do its downloads
-        run: ./env.sh > installFrankRunnerEnv.log
-        working-directory: frank-runner
-
-      - name: Start server using Frank!Runner
-        run: ./restart.sh
-        working-directory: frank-runner/specials/ladybug
-      - name: Wait for server to be available
-        working-directory: ladybug/.github/workflows
-        run: ./waitForUrl.sh http://localhost:8090 300
-      # Save the caches as soon as the server is up, so also when the tests fail. At that point
-      # Frank!Runner and Maven have downloaded everything they need.
-      - name: Save Frank!Runner downloads to cache
-        uses: ./ladybug/.github/actions/frank-runner-download-cache
-        with:
-          mode: save
-      - name: Save Maven downloads to cache
-        uses: ./ladybug/.github/actions/maven-cache
-        with:
-          mode: save
+          spring-profile: ${{ matrix.spring-profile }}
       - name: Run cypress with chrome browser
         uses: cypress-io/github-action@v7.4.3
         with:
