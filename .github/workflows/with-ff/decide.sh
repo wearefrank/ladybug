@@ -6,7 +6,6 @@
 #                     manually).
 #   FF_FORK           Input ffFork, can be empty.
 #   FF_BRANCH         Input ffBranch, can be empty.
-#   BACKEND_BRANCH    Input backendBranch, can be empty.
 #   TEST_APP          Matrix value test-app: true or false.
 #
 # Sets outputs:
@@ -25,7 +24,7 @@ fi
 set_output buildCode "${build_code}"
 
 if [[ "${build_code}" == "false" ]]; then
-  for input in "ffFork=${FF_FORK}" "ffBranch=${FF_BRANCH}" "backendBranch=${BACKEND_BRANCH}"; do
+  for input in "ffFork=${FF_FORK}" "ffBranch=${FF_BRANCH}"; do
     if [[ -n "${input#*=}" ]]; then
       echo "Input ${input%%=*} can only be set if input buildLatestFFandLadybugCode is true" >&2
       exit 1

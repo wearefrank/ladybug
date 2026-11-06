@@ -25,10 +25,6 @@ on:
         description: If buildLatestFfandLadybugCode and if supplied, check out this branch of Frank!Framework
         type: string
         required: false
-      backendBranch:
-        description: If buildLatestFFandLadybugCode and if supplied, check out this branch of ladybug backend
-        type: string
-        required: false
 jobs:
   testing:
     strategy:
@@ -65,22 +61,18 @@ jobs:
     # of the default of 6 hours. Waiting for the server alone may take up to 30 minutes.
     timeout-minutes: 90
     steps:
-      # Scripts, actions and other files in .github are used from a separate checkout of this
-      # commit, because directory ladybug may be checked out on another branch (input
-      # backendBranch). That branch may not have these files, or have other versions of them.
-      - name: Checkout .github of this commit
+      - name: Checkout ladybug
         uses: actions/checkout@v5
         with:
-          path: ci
-          sparse-checkout: .github
+          repository: wearefrank/ladybug
+          path: ladybug
       - name: Decide what to build and check the inputs
         id: decide
-        run: bash ci/.github/workflows/with-ff/decide.sh
+        run: bash ladybug/.github/workflows/with-ff/decide.sh
         env:
           BUILD_CODE_INPUT: ${{ inputs.buildLatestFFandLadybugCode }}
           FF_FORK: ${{ inputs.ffFork }}
           FF_BRANCH: ${{ inputs.ffBranch }}
-          BACKEND_BRANCH: ${{ inputs.backendBranch }}
           TEST_APP: ${{ matrix.test-app }}
       - name: Checkout Frank!Runner
         uses: actions/checkout@v5
@@ -92,16 +84,9 @@ jobs:
         run: git log -1
       # Caching is explained in the action.
       - name: Restore Frank!Runner downloads from cache
-        uses: ./ci/.github/actions/frank-runner-download-cache
+        uses: ./ladybug/.github/actions/frank-runner-download-cache
         with:
           mode: restore
-      # Without input backendBranch, ref is empty and the commit that triggered the run is used.
-      - name: Checkout ladybug
-        uses: actions/checkout@v5
-        with:
-          repository: wearefrank/ladybug
-          path: ladybug
-          ref: ${{ inputs.backendBranch }}
       # Without input ffBranch, ref is empty and the default branch is used.
       - name: Checkout frankframework
         if: ${{ steps.decide.outputs.buildCode == 'true' }}
@@ -112,12 +97,12 @@ jobs:
           ref: ${{ inputs.ffBranch }}
 
       - name: Calculate paths
-        run: bash ci/.github/workflows/with-ff/calculate-paths.sh
+        run: bash ladybug/.github/workflows/with-ff/calculate-paths.sh
         env:
           BUILD_CODE: ${{ steps.decide.outputs.buildCode }}
           TEST_APP: ${{ matrix.test-app }}
       - name: Configure Frank!Runner and the Frank application
-        run: bash ci/.github/workflows/with-ff/configure-frank-runner.sh
+        run: bash ladybug/.github/workflows/with-ff/configure-frank-runner.sh
         env:
           DTAP: ${{ matrix.dtap }}
           STORAGE: ${{ matrix.storage }}
@@ -132,7 +117,7 @@ jobs:
         run: node -v
       # Caching is explained in the action.
       - name: Install packages with pnpm
-        uses: ./ci/.github/actions/pnpm-install
+        uses: ./ladybug/.github/actions/pnpm-install
         with:
           project-dir: ladybug/ladybug-ff-cypress-test
       - name: Show current time, allows you to check that logs are not old
@@ -147,17 +132,17 @@ jobs:
       # throughput limits. Caching is explained in the action.
       - name: Restore Maven downloads from cache
         if: ${{ steps.decide.outputs.needsMaven == 'true' }}
-        uses: ./ci/.github/actions/maven-cache
+        uses: ./ladybug/.github/actions/maven-cache
         with:
           mode: restore
           name: ${{ steps.decide.outputs.mavenCacheName }}
       - name: Prepare building the backend
-        run: bash ci/.github/workflows/with-ff/prepare-backend.sh
+        run: bash ladybug/.github/workflows/with-ff/prepare-backend.sh
         env:
           BUILD_CODE: ${{ steps.decide.outputs.buildCode }}
           TEST_APP: ${{ matrix.test-app }}
       - name: Start the backend
-        run: bash ci/.github/workflows/with-ff/start-backend.sh
+        run: bash ladybug/.github/workflows/with-ff/start-backend.sh
         env:
           BUILD_CODE: ${{ steps.decide.outputs.buildCode }}
           TEST_APP: ${{ matrix.test-app }}
@@ -165,30 +150,30 @@ jobs:
       # Frank!Framework is public (also when authentication is required) and returns 200 when all
       # configurations and adapters are running, and 503 when one of them is not.
       - name: Wait until server is healthy
-        run: bash ci/.github/workflows/wait-for-server.sh http://localhost:8090/iaf/api/server/health 1800
+        run: bash ladybug/.github/workflows/wait-for-server.sh http://localhost:8090/iaf/api/server/health 1800
       # Save the caches as soon as the server is up, so also when the tests fail. At that point
       # Frank!Runner and Maven have downloaded everything they need.
       - name: Save Frank!Runner downloads to cache
-        uses: ./ci/.github/actions/frank-runner-download-cache
+        uses: ./ladybug/.github/actions/frank-runner-download-cache
         with:
           mode: save
       - name: Save Maven downloads to cache
         if: ${{ steps.decide.outputs.needsMaven == 'true' }}
-        uses: ./ci/.github/actions/maven-cache
+        uses: ./ladybug/.github/actions/maven-cache
         with:
           mode: save
       - name: Try to access server directly with curl
         run: curl -v -i --max-time 30 http://localhost:8090
       - name: Run the tests
         working-directory: ladybug/ladybug-ff-cypress-test
-        run: bash ../../ci/.github/workflows/with-ff/run-tests.sh
+        run: bash ../.github/workflows/with-ff/run-tests.sh
         env:
           SPECS: ${{ matrix.specs }}
           DEBUG_STORAGE_NAME: ${{ matrix.debugStorageName }}
           STORAGE: ${{ matrix.storage }}
       - name: Collect failure data into a single artifact directory
         if: failure()
-        run: bash ci/.github/workflows/with-ff/collect-failure-data.sh
+        run: bash ladybug/.github/workflows/with-ff/collect-failure-data.sh
 
       - name: Store logs
         if: failure()
