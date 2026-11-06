@@ -40,6 +40,22 @@ jobs:
       - name: Start ladybug-test-webapp
         uses: ./ladybug/.github/actions/start-ladybug-test-webapp
 
+      - name: Show files
+        if: failure()
+        run: tree -d -L 5 .
+      - name: Collect failure data into a single artifact directory
+        if: failure()
+        run: bash ladybug/.github/workflows/jaxrs/collect-failure-data.sh
+      # Artifacts belong to a single workflow run and job jaxrs never runs in the same run, so
+      # this name cannot clash with the artifacts of job jaxrs.
+      - name: Store logs
+        if: failure()
+        uses: actions/upload-artifact@v5
+        with:
+          name: jaxrs logs renew-caches
+          path: artifact-data/
+          if-no-files-found: warn
+
   jaxrs:
     if: ${{ github.event_name != 'schedule' }}
     # Usually takes about 10 minutes. Stops a hanging job, instead of the default of 6 hours.
