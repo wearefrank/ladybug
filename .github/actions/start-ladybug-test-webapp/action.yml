@@ -23,21 +23,10 @@ runs:
         repository: wearefrank/frank-runner
         path: frank-runner
     - name: Configure Frank!Runner
+      run: bash "${GITHUB_ACTION_PATH}/configure-frank-runner.sh"
       shell: bash
-      run: |
-        # Skip backend unit tests, Javadoc and checking licenses
-        echo "maven.skip.tests=true" > frank-runner/specials/ladybug/build.properties
-        echo "maven.skip.javadoc=true" >> frank-runner/specials/ladybug/build.properties
-        echo "maven.skip.copyright=true" >> frank-runner/specials/ladybug/build.properties
-        # Port where ladybug-test-webapp is served
-        echo "tomcat.connector.port=8090" > frank-runner/build.properties
-        # Prevent Java exception about binding port 443 (for https)
-        echo "tomcat.secure.port=8443" >> frank-runner/build.properties
-        chmod a+x frank-runner/specials/ladybug/restart.sh
-    - name: Choose Spring profile for backend if it is not "none"
-      if: ${{ inputs.spring-profile != 'none' }}
-      shell: bash
-      run: echo "spring.profiles.active=${{ inputs.spring-profile }}" >> frank-runner/specials/ladybug/build.properties
+      env:
+        SPRING_PROFILE: ${{ inputs.spring-profile }}
     # Caching is explained in the actions.
     - name: Restore Frank!Runner downloads from cache
       uses: ./ladybug/.github/actions/frank-runner-download-cache

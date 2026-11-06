@@ -111,14 +111,10 @@ jobs:
         if: ${{ matrix.authenticationTest == 'only-backend' }}
         working-directory: ladybug
         run: cp .github/workflows/test-auth-only-backend.properties ladybug-test-webapp/src/main/resources/test.properties
-      - name: Enable authentication - produce temp web.xml
+      - name: Enable authentication by removing the lines of web.xml that contain CICD_AUTH
         if: ${{ matrix.authenticationTest != 'no-authentication' }}
         working-directory: ladybug/ladybug-test-webapp/src/main/webapp/WEB-INF
-        run: grep -v "CICD_AUTH" web.xml > web.xml.out
-      - name: Enable authentication - copy temp web.xml back
-        if: ${{ matrix.authenticationTest != 'no-authentication' }}
-        working-directory: ladybug/ladybug-test-webapp/src/main/webapp/WEB-INF
-        run: cp web.xml.out web.xml
+        run: sed -i '/CICD_AUTH/d' web.xml
 
       # Also saves the caches on master. See the action.
       - name: Start ladybug-test-webapp
@@ -151,16 +147,7 @@ jobs:
 
       - name: Collect failure data into a single artifact directory
         if: failure()
-        run: |
-          bash ladybug/.github/workflows/collect-artifact-data.sh artifact-data \
-            "ladybug/ladybug-frontend/cypress/screenshots" \
-            "ladybug/ladybug-frontend/cypress/videos" \
-            "ladybug/ladybug-test-webapp/data/ladybug.log" \
-            "ladybug/ladybug-frontend/cypress.env.json" \
-            "ladybug/ladybug-test-webapp/src/main/resources/test.properties" \
-            "ladybug/ladybug-test-webapp/src/main/webapp/WEB-INF/web.xml" \
-            "frank-runner/specials/ladybug/build.properties" \
-            "frank-runner/build.properties"
+        run: bash ladybug/.github/workflows/jaxrs/collect-failure-data.sh
 
       - name: Store logs
         uses: actions/upload-artifact@v5

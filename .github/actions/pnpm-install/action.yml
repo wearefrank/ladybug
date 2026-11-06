@@ -16,9 +16,7 @@ description: >
   the cache. The version must be exact in package.json (like 16.1.0, not ^16.1.0), otherwise
   the key does not match the binary that is installed.
 
-  Caches are only saved on master. GitHub scopes caches to the branch that saved them, but every
-  branch and pull request can restore the caches of master. Saving only on master gives one set
-  of caches that all branches share, instead of a set of caches per branch.
+  Caches are only saved on master, see ../cache-common.sh. The logic is in pnpm-install.sh.
 inputs:
   project-dir:
     description: Directory of the pnpm project, relative to the workspace. Example ladybug/ladybug-frontend.
@@ -31,52 +29,54 @@ runs:
       with:
         package_json_file: ${{ inputs.project-dir }}/package.json
         run_install: false
-    - name: Show pnpm version
-      working-directory: ${{ inputs.project-dir }}
+    - name: Determine cache keys
+      id: prepare
+      run: bash "${GITHUB_ACTION_PATH}/pnpm-install.sh" prepare
       shell: bash
-      run: pnpm -v
-    - name: Get pnpm store directory, project name and Cypress version
-      id: info
-      working-directory: ${{ inputs.project-dir }}
-      shell: bash
-      run: |
-        echo "storePath=$(pnpm store path --silent)" >> $GITHUB_OUTPUT
-        echo "projectName=$(basename "$(pwd)")" >> $GITHUB_OUTPUT
-        echo "cypressVersion=$(node -p "const p = require('./package.json'); (p.devDependencies || {}).cypress || (p.dependencies || {}).cypress || ''")" >> $GITHUB_OUTPUT
+      env:
+        PROJECT_DIR: ${{ inputs.project-dir }}
     - name: Restore pnpm store from cache
       id: restorePnpmStore
       uses: actions/cache/restore@v5
       with:
-        path: ${{ steps.info.outputs.storePath }}
-        key: ${{ runner.os }}-pnpm-store-${{ steps.info.outputs.projectName }}-${{ hashFiles(format('{0}/pnpm-lock.yaml', inputs.project-dir)) }}
-        restore-keys: ${{ github.ref != 'refs/heads/master' && format('{0}-pnpm-store-{1}-', runner.os, steps.info.outputs.projectName) || '' }}
+        path: ${{ steps.prepare.outputs.storePath }}
+        key: ${{ steps.prepare.outputs.pnpmStoreKey }}
+        restore-keys: ${{ steps.prepare.outputs.pnpmStoreRestoreKeys }}
     - name: Restore Cypress binary from cache
       id: restoreCypress
-      if: ${{ steps.info.outputs.cypressVersion != '' }}
+      if: ${{ steps.prepare.outputs.hasCypress == 'true' }}
       uses: actions/cache/restore@v5
       with:
         path: ~/.cache/Cypress
-        key: ${{ runner.os }}-cypress-${{ steps.info.outputs.cypressVersion }}
+        key: ${{ steps.prepare.outputs.cypressKey }}
     - name: Install dependencies
       working-directory: ${{ inputs.project-dir }}
-      shell: bash
       run: pnpm install --frozen-lockfile
-    - name: Install Cypress binary if it is not there yet
-      if: ${{ steps.info.outputs.cypressVersion != '' }}
-      working-directory: ${{ inputs.project-dir }}
       shell: bash
+    - name: Install Cypress binary if it is not there yet
+      if: ${{ steps.prepare.outputs.hasCypress == 'true' }}
+      working-directory: ${{ inputs.project-dir }}
       run: pnpm exec cypress install
+      shell: bash
+    - name: Decide about saving the caches
+      id: decide
+      run: bash "${GITHUB_ACTION_PATH}/pnpm-install.sh" decide-about-saving
+      shell: bash
+      env:
+        PNPM_STORE_CACHE_HIT: ${{ steps.restorePnpmStore.outputs.cache-hit }}
+        CYPRESS_CACHE_HIT: ${{ steps.restoreCypress.outputs.cache-hit }}
+        HAS_CYPRESS: ${{ steps.prepare.outputs.hasCypress }}
     # When multiple matrix jobs try to save the same key, one of them succeeds and the others
     # log a warning.
     - name: Save pnpm store to cache
-      if: ${{ github.ref == 'refs/heads/master' && steps.restorePnpmStore.outputs.cache-hit != 'true' }}
+      if: ${{ steps.decide.outputs.savePnpmStore == 'true' }}
       uses: actions/cache/save@v5
       with:
-        path: ${{ steps.info.outputs.storePath }}
-        key: ${{ steps.restorePnpmStore.outputs.cache-primary-key }}
+        path: ${{ steps.prepare.outputs.storePath }}
+        key: ${{ steps.prepare.outputs.pnpmStoreKey }}
     - name: Save Cypress binary to cache
-      if: ${{ steps.info.outputs.cypressVersion != '' && github.ref == 'refs/heads/master' && steps.restoreCypress.outputs.cache-hit != 'true' }}
+      if: ${{ steps.decide.outputs.saveCypress == 'true' }}
       uses: actions/cache/save@v5
       with:
         path: ~/.cache/Cypress
-        key: ${{ steps.restoreCypress.outputs.cache-primary-key }}
+        key: ${{ steps.prepare.outputs.cypressKey }}

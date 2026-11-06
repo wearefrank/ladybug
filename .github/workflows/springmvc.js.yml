@@ -87,15 +87,12 @@ jobs:
       - name: Show current time, allows you to check that logs are not old
         run: date
 
-      - name: Start ladybug-spring-boot-test-webapp (default spring profile and uiTestMode)
-        if: matrix.spring-profile == 'none' && matrix.uiTestMode == 'DEFAULT'
+      - name: Start ladybug-spring-boot-test-webapp
         working-directory: ladybug/ladybug-spring-boot-test-webapp
-        run: mvn -B spring-boot:run -Dspring-boot.run.arguments="--server.port=8090" > serverStartLog.log 2>&1 &
-
-      - name: Start ladybug-spring-boot-test-webapp (non-default spring profile or uiTestMode)
-        if: matrix.spring-profile != 'none' || matrix.uiTestMode != 'DEFAULT'
-        working-directory: ladybug/ladybug-spring-boot-test-webapp
-        run: mvn -B spring-boot:run -Dspring-boot.run.arguments="--server.port=8090 --spring.profiles.active=${{ matrix.spring-profile }}" -Dspring-boot.run.jvmArguments="-Dladybug.ui.test.mode=${{ matrix.uiTestMode }}" > serverStartLog.log 2>&1 &
+        run: bash ../.github/workflows/springmvc/start-spring-boot-test-webapp.sh
+        env:
+          SPRING_PROFILE: ${{ matrix.spring-profile }}
+          UI_TEST_MODE: ${{ matrix.uiTestMode }}
 
       - name: Wait for server to be available
         working-directory: ladybug/.github/workflows
@@ -127,12 +124,7 @@ jobs:
 
       - name: Collect failure data into a single artifact directory
         if: failure()
-        run: |
-          bash ladybug/.github/workflows/collect-artifact-data.sh artifact-data \
-            "ladybug/ladybug-frontend/cypress/screenshots" \
-            "ladybug/ladybug-frontend/cypress/videos" \
-            "ladybug/ladybug-spring-boot-test-webapp/data/ladybug.log" \
-            "ladybug/ladybug-frontend/cypress.env.json"
+        run: bash ladybug/.github/workflows/springmvc/collect-failure-data.sh
 
       - name: Store logs
         uses: actions/upload-artifact@v5
