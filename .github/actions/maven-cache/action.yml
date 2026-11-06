@@ -1,0 +1,73 @@
+name: Maven cache
+description: >
+  Restores or saves the cache of ~/.m2/repository. Call this action with mode "restore" before
+  Maven runs and with mode "save" after Maven has downloaded everything it needs (for example
+  when the server is up). Mode "save" only saves on master and only if "restore" did not find
+  the cache. Mode "restore" passes the key and the cache hit to mode "save" through environment
+  variables.
+
+  The key changes every month, so that the cache is refreshed regularly and does not keep
+  collecting old versions of artifacts. There are no restore-keys for the same reason. Caches of
+  previous months are no longer used and GitHub deletes them after 7 days. The key also contains
+  the input "name", so that builds that need different Maven artifacts have different caches.
+
+  Caches are only saved on master. GitHub scopes caches to the branch that saved them, but every
+  branch and pull request can restore the caches of master. Saving only on master gives one set
+  of caches that all branches share, instead of a set of caches per branch.
+inputs:
+  mode:
+    description: restore or save
+    required: true
+  name:
+    description: >
+      Part of the cache key that tells which build uses the cache. Builds that need different
+      Maven artifacts should use different names. Only needed for mode restore.
+    required: false
+runs:
+  using: composite
+  steps:
+    - name: Check mode
+      if: ${{ inputs.mode != 'restore' && inputs.mode != 'save' }}
+      shell: bash
+      run: |
+        echo "Input mode must be restore or save, but is '${{ inputs.mode }}'"
+        exit 1
+    - name: Check name
+      if: ${{ inputs.mode == 'restore' && inputs.name == '' }}
+      shell: bash
+      run: |
+        echo "Input name is required for mode restore"
+        exit 1
+    - name: Check that the cache was restored before it is saved
+      if: ${{ inputs.mode == 'save' && env.MAVEN_CACHE_KEY == '' }}
+      shell: bash
+      run: |
+        echo "Call this action with mode restore before calling it with mode save"
+        exit 1
+    - name: Determine current month for the key of the Maven cache
+      id: month
+      if: ${{ inputs.mode == 'restore' }}
+      shell: bash
+      run: echo "month=$(date -u +%Y-%m)" >> $GITHUB_OUTPUT
+    - name: Restore Maven downloads from cache
+      id: restore
+      if: ${{ inputs.mode == 'restore' }}
+      uses: actions/cache/restore@v5
+      with:
+        path: ~/.m2/repository/
+        key: ${{ runner.os }}-maven-${{ inputs.name }}-${{ steps.month.outputs.month }}
+    # The key is not computed again when saving, because the month may have changed meanwhile.
+    - name: Remember key and cache hit for saving
+      if: ${{ inputs.mode == 'restore' }}
+      shell: bash
+      run: |
+        echo "MAVEN_CACHE_KEY=${{ steps.restore.outputs.cache-primary-key }}" >> $GITHUB_ENV
+        echo "MAVEN_CACHE_HIT=${{ steps.restore.outputs.cache-hit }}" >> $GITHUB_ENV
+    # When multiple matrix jobs try to save the same key, one of them succeeds and the others
+    # log a warning.
+    - name: Save Maven downloads to cache
+      if: ${{ inputs.mode == 'save' && github.ref == 'refs/heads/master' && env.MAVEN_CACHE_HIT != 'true' }}
+      uses: actions/cache/save@v5
+      with:
+        path: ~/.m2/repository/
+        key: ${{ env.MAVEN_CACHE_KEY }}

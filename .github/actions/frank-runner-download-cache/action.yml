@@ -1,0 +1,77 @@
+name: Frank!Runner download cache
+description: >
+  Restores or saves the cache of frank-runner/download. Frank!Runner must be checked out in
+  directory frank-runner of the workspace. Call this action with mode "restore" before Frank!Runner
+  runs and with mode "save" after Frank!Runner has downloaded everything it needs (for example
+  when the server is up). Mode "save" only saves on master and only if "restore" did not find
+  the cache. Mode "restore" passes the key and the cache hit to mode "save" through environment
+  variables.
+
+  The key depends on the files of Frank!Runner that define what it downloads. When Frank!Runner
+  is updated, a new cache is created from scratch, so that it contains only what the new version
+  needs. Caches with an old key are no longer used and GitHub deletes them after 7 days. There
+  are no restore-keys, because restoring an old cache would carry old versions of downloads along
+  into the new cache.
+
+  Only frank-runner/download is cached, not frank-runner/build. Frank!Runner recreates
+  frank-runner/build from frank-runner/download without network access. frank-runner/build also
+  holds runtime state (Tomcat logs, deployed webapps) that should not be cached.
+
+  Caches are only saved on master. GitHub scopes caches to the branch that saved them, but every
+  branch and pull request can restore the caches of master. Saving only on master gives one set
+  of caches that all branches share, instead of a set of caches per branch.
+inputs:
+  mode:
+    description: restore or save
+    required: true
+runs:
+  using: composite
+  steps:
+    - name: Check mode
+      if: ${{ inputs.mode != 'restore' && inputs.mode != 'save' }}
+      shell: bash
+      run: |
+        echo "Input mode must be restore or save, but is '${{ inputs.mode }}'"
+        exit 1
+    - name: Check that the cache was restored before it is saved
+      if: ${{ inputs.mode == 'save' && env.FRANK_RUNNER_DOWNLOAD_CACHE_KEY == '' }}
+      shell: bash
+      run: |
+        echo "Call this action with mode restore before calling it with mode save"
+        exit 1
+    # The paths must be the same when restoring and saving, otherwise the cache cannot be found.
+    # Excluded are the Frank!Framework WAR (a new snapshot every day, downloaded when needed) and
+    # Frank!Runner's runtime state (metadata about latest versions and a copy of its build.xml).
+    - name: Set paths of the cache
+      shell: bash
+      run: |
+        {
+          echo "FRANK_RUNNER_DOWNLOAD_CACHE_PATHS<<EOF"
+          echo "frank-runner/download"
+          echo "!frank-runner/download/frankframework-webapp-*"
+          echo "!frank-runner/download/metadata"
+          echo "!frank-runner/download/frank-runner"
+          echo "EOF"
+        } >> $GITHUB_ENV
+    - name: Restore Frank!Runner downloads from cache
+      id: restore
+      if: ${{ inputs.mode == 'restore' }}
+      uses: actions/cache/restore@v5
+      with:
+        path: ${{ env.FRANK_RUNNER_DOWNLOAD_CACHE_PATHS }}
+        key: ${{ runner.os }}-frank-runner-download-${{ hashFiles('frank-runner/build.xml', 'frank-runner/env.sh') }}
+    # Frank!Runner may regenerate env.sh, so the key is not computed again when saving.
+    - name: Remember key and cache hit for saving
+      if: ${{ inputs.mode == 'restore' }}
+      shell: bash
+      run: |
+        echo "FRANK_RUNNER_DOWNLOAD_CACHE_KEY=${{ steps.restore.outputs.cache-primary-key }}" >> $GITHUB_ENV
+        echo "FRANK_RUNNER_DOWNLOAD_CACHE_HIT=${{ steps.restore.outputs.cache-hit }}" >> $GITHUB_ENV
+    # When multiple matrix jobs try to save the same key, one of them succeeds and the others
+    # log a warning.
+    - name: Save Frank!Runner downloads to cache
+      if: ${{ inputs.mode == 'save' && github.ref == 'refs/heads/master' && env.FRANK_RUNNER_DOWNLOAD_CACHE_HIT != 'true' }}
+      uses: actions/cache/save@v5
+      with:
+        path: ${{ env.FRANK_RUNNER_DOWNLOAD_CACHE_PATHS }}
+        key: ${{ env.FRANK_RUNNER_DOWNLOAD_CACHE_KEY }}

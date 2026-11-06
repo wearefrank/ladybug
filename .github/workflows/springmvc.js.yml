@@ -58,60 +58,16 @@ jobs:
           repository: wearefrank/ladybug
           path: ladybug
 
-      - uses: pnpm/action-setup@v5
-        name: Install pnpm
-        with:
-          version: 9.4
-          run_install: false
-      - name: Get pnpm store directory
-        id: store-path
-        shell: bash
-        run: |
-          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_OUTPUT
-      # The pnpm store and the Cypress binary are cached in the same way as in jaxrs.js.yml.
-      # See there for an explanation.
-      - name: Restore pnpm store from cache
-        id: restorePnpmStore
-        uses: actions/cache/restore@v5
-        with:
-          path: ${{ steps.store-path.outputs.STORE_PATH }}
-          key: ${{ runner.os }}-pnpm-store-ladybug-frontend-${{ hashFiles('ladybug/ladybug-frontend/pnpm-lock.yaml') }}
-          restore-keys: ${{ github.ref != 'refs/heads/master' && format('{0}-pnpm-store-ladybug-frontend-', runner.os) || '' }}
-      - name: Show pnpm version (before pnpm install)
-        run: pnpm -v
-      # No "cache: pnpm" here. It would cache the same pnpm store again, also for every branch.
+      # No "cache: pnpm" here. It would cache the pnpm store again, also for every branch.
       - name: Install Node.js
         uses: actions/setup-node@v5
         with:
           node-version: 20
-      - name: Get Cypress version
-        id: cypressVersion
-        working-directory: ladybug/ladybug-frontend
-        run: echo "version=$(node -p "require('./package.json').devDependencies.cypress")" >> $GITHUB_OUTPUT
-      - name: Restore Cypress binary from cache
-        id: restoreCypress
-        uses: actions/cache/restore@v5
+      # Caching is explained in the action.
+      - name: Install frontend dependencies with pnpm
+        uses: ./ladybug/.github/actions/pnpm-install
         with:
-          path: ~/.cache/Cypress
-          key: ${{ runner.os }}-cypress-${{ steps.cypressVersion.outputs.version }}
-      - name: Install frontend dependencies
-        working-directory: ladybug/ladybug-frontend
-        run: pnpm install --frozen-lockfile
-      - name: Install Cypress binary if it is not there yet
-        working-directory: ladybug/ladybug-frontend
-        run: pnpm exec cypress install
-      - name: Save pnpm store to cache
-        if: ${{ github.ref == 'refs/heads/master' && steps.restorePnpmStore.outputs.cache-hit != 'true' }}
-        uses: actions/cache/save@v5
-        with:
-          path: ${{ steps.store-path.outputs.STORE_PATH }}
-          key: ${{ steps.restorePnpmStore.outputs.cache-primary-key }}
-      - name: Save Cypress binary to cache
-        if: ${{ github.ref == 'refs/heads/master' && steps.restoreCypress.outputs.cache-hit != 'true' }}
-        uses: actions/cache/save@v5
-        with:
-          path: ~/.cache/Cypress
-          key: ${{ steps.restoreCypress.outputs.cache-primary-key }}
+          project-dir: ladybug/ladybug-frontend
 
       - name: Set Cypress environment variables
         run: cp .github/workflows/cypress.env.json.cicd ladybug-frontend/cypress.env.json

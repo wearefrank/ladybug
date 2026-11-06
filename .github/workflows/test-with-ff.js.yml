@@ -29,16 +29,6 @@ on:
         description: If buildLatestFFandLadybugCode and if supplied, check out this branch of ladybug backend
         type: string
         required: false
-env:
-  # Paths of the cache of Frank!Runner downloads. The steps that restore and save this cache
-  # must use exactly the same paths, otherwise the cache cannot be found.
-  # Excluded are the Frank!Framework WAR (a new snapshot every day, downloaded when needed) and
-  # Frank!Runner's runtime state (metadata about latest versions and a copy of its build.xml).
-  FRANK_RUNNER_DOWNLOAD_CACHE_PATHS: |
-    frank-runner/download
-    !frank-runner/download/frankframework-webapp-*
-    !frank-runner/download/metadata
-    !frank-runner/download/frank-runner
 jobs:
   testing:
     strategy:
@@ -86,25 +76,24 @@ jobs:
       - name: Check that backendBranch is only set if it can be applied
         if: ${{ inputs.backendBranch != '' && steps.decideAboutBuildCode.outputs.buildCode == 'false' }}
         run: exit 1
+      # The actions in .github/actions are used from a separate checkout of this commit, because
+      # directory ladybug may be switched to another branch (input backendBranch). That branch
+      # may not have these actions, or have other versions of them.
+      - name: Checkout actions of this repository
+        uses: actions/checkout@v5
+        with:
+          path: ci
+          sparse-checkout: .github/actions
       - name: Checkout Frank!Runner
         uses: actions/checkout@v5
         with:
           repository: wearefrank/frank-runner
           path: frank-runner
-      # The key depends on the files of Frank!Runner that define what it downloads. When
-      # Frank!Runner is updated, a new cache is created from scratch, so that it contains only
-      # what the new version needs. Caches with an old key are no longer used and GitHub deletes
-      # them after 7 days. There are no restore-keys, because restoring an old cache would carry
-      # old versions of downloads along into the new cache. The cache is shared with jaxrs.js.yml.
-      # Only frank-runner/download is cached, not frank-runner/build. Frank!Runner recreates
-      # frank-runner/build from frank-runner/download without network access. frank-runner/build
-      # also holds runtime state (Tomcat logs, deployed webapps) that should not be cached.
+      # Caching is explained in the action.
       - name: Restore Frank!Runner downloads from cache
-        id: restoreFrankRunnerDownloads
-        uses: actions/cache/restore@v5
+        uses: ./ci/.github/actions/frank-runner-download-cache
         with:
-          path: ${{ env.FRANK_RUNNER_DOWNLOAD_CACHE_PATHS }}
-          key: ${{ runner.os }}-frank-runner-download-${{ hashFiles('frank-runner/build.xml', 'frank-runner/env.sh') }}
+          mode: restore
       - name: Checkout ladybug
         uses: actions/checkout@v5
         with:
@@ -202,63 +191,14 @@ jobs:
         uses: actions/setup-node@v5
         with:
           node-version: 24.x
-      # Installs the pnpm version of the packageManager field of package.json.
-      - name: Install pnpm
-        uses: pnpm/action-setup@v5
-        with:
-          package_json_file: ladybug/ladybug-ff-cypress-test/package.json
-          run_install: false
       - name: Show node version
         working-directory: ladybug/ladybug-ff-cypress-test
         run: node -v
-      - name: Show pnpm version
-        working-directory: ladybug/ladybug-ff-cypress-test
-        run: pnpm -v
-      - name: Get pnpm store directory
-        id: store-path
-        working-directory: ladybug/ladybug-ff-cypress-test
-        run: echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_OUTPUT
-      # The pnpm store and the Cypress binary are cached in the same way as in jaxrs.js.yml.
-      # See there for an explanation. The key of the pnpm store contains the name of the
-      # project, because ladybug-frontend has a pnpm store with other packages.
-      # The Cypress binary is shared with ladybug-frontend while both use the same version.
-      - name: Restore pnpm store from cache
-        id: restorePnpmStore
-        uses: actions/cache/restore@v5
+      # Caching is explained in the action.
+      - name: Install packages with pnpm
+        uses: ./ci/.github/actions/pnpm-install
         with:
-          path: ${{ steps.store-path.outputs.STORE_PATH }}
-          key: ${{ runner.os }}-pnpm-store-ladybug-ff-cypress-test-${{ hashFiles('ladybug/ladybug-ff-cypress-test/pnpm-lock.yaml') }}
-          restore-keys: ${{ github.ref != 'refs/heads/master' && format('{0}-pnpm-store-ladybug-ff-cypress-test-', runner.os) || '' }}
-      - name: Get Cypress version
-        id: cypressVersion
-        working-directory: ladybug/ladybug-ff-cypress-test
-        run: echo "version=$(node -p "require('./package.json').dependencies.cypress")" >> $GITHUB_OUTPUT
-      - name: Restore Cypress binary from cache
-        id: restoreCypress
-        uses: actions/cache/restore@v5
-        with:
-          path: ~/.cache/Cypress
-          key: ${{ runner.os }}-cypress-${{ steps.cypressVersion.outputs.version }}
-      - name: Install packages
-        working-directory: ladybug/ladybug-ff-cypress-test
-        run: pnpm install --frozen-lockfile
-      - name: Install Cypress binary if it is not there yet
-        working-directory: ladybug/ladybug-ff-cypress-test
-        run: pnpm exec cypress install
-      # When multiple matrix jobs try to save the same key, one of them succeeds and the others
-      # log a warning.
-      - name: Save pnpm store to cache
-        if: ${{ github.ref == 'refs/heads/master' && steps.restorePnpmStore.outputs.cache-hit != 'true' }}
-        uses: actions/cache/save@v5
-        with:
-          path: ${{ steps.store-path.outputs.STORE_PATH }}
-          key: ${{ steps.restorePnpmStore.outputs.cache-primary-key }}
-      - name: Save Cypress binary to cache
-        if: ${{ github.ref == 'refs/heads/master' && steps.restoreCypress.outputs.cache-hit != 'true' }}
-        uses: actions/cache/save@v5
-        with:
-          path: ~/.cache/Cypress
-          key: ${{ steps.restoreCypress.outputs.cache-primary-key }}
+          project-dir: ladybug/ladybug-ff-cypress-test
       - name: Show current time, allows you to check that logs are not old
         run: date
       - name: Let Frank!Runner do its downloads
@@ -270,21 +210,14 @@ jobs:
       # and its full transitive dependency tree. Without this cache, every run re-downloads
       # everything one small file at a time, which is slow and eats into GitHub Actions' network
       # throughput limits.
-      # The key changes every month, so that the cache is refreshed regularly and does not keep
-      # collecting old versions of artifacts. There are no restore-keys for the same reason.
-      # Caches of previous months are no longer used and GitHub deletes them after 7 days.
-      # The key includes buildCode and test-app, because these need different Maven artifacts.
-      - name: Determine current month for the key of the Maven cache
-        id: month
-        if: ${{ steps.decideAboutBuildCode.outputs.buildCode == 'true' || matrix.test-app == 'true' }}
-        run: echo "month=$(date -u +%Y-%m)" >> $GITHUB_OUTPUT
+      # The name includes buildCode and test-app, because these need different Maven artifacts.
+      # Caching is explained in the action.
       - name: Restore Maven downloads from cache
-        id: restoreMaven
         if: ${{ steps.decideAboutBuildCode.outputs.buildCode == 'true' || matrix.test-app == 'true' }}
-        uses: actions/cache/restore@v5
+        uses: ./ci/.github/actions/maven-cache
         with:
-          path: ~/.m2/repository/
-          key: ${{ runner.os }}-maven-test-with-ff-buildCode-${{ steps.decideAboutBuildCode.outputs.buildCode }}-test-app-${{ matrix.test-app }}-${{ steps.month.outputs.month }}
+          mode: restore
+          name: test-with-ff-buildCode-${{ steps.decideAboutBuildCode.outputs.buildCode }}-test-app-${{ matrix.test-app }}
       - name: Put build.properties in ladybug-ff-test-webapp
         if: ${{ matrix.test-app == 'true' }}
         run: cp with-ff/build-ladybug-ff-test-webapp.properties ../../ladybug-ff-test-webapp/build.properties
@@ -351,26 +284,17 @@ jobs:
       - name: Wait for server to be available
         working-directory: ladybug/.github/workflows
         run: ./waitForUrl.sh http://localhost:8090 1800
-      # Save the caches as soon as the server is up. At that point Frank!Runner and Maven have
-      # downloaded everything they need. Saving here instead of at the end of the job also saves
-      # the caches when the tests fail. A cache that already exists cannot be overwritten, so
-      # only save when there was no exact hit. When multiple matrix jobs try to save the same
-      # key, one of them succeeds and the others log a warning.
-      # Only save on master. GitHub scopes caches to the branch that saved them, but every branch
-      # and pull request can restore the caches of master. Saving only on master gives one set
-      # of caches that all branches share, instead of a set of caches per branch.
+      # Save the caches as soon as the server is up, so also when the tests fail. At that point
+      # Frank!Runner and Maven have downloaded everything they need.
       - name: Save Frank!Runner downloads to cache
-        if: ${{ github.ref == 'refs/heads/master' && steps.restoreFrankRunnerDownloads.outputs.cache-hit != 'true' }}
-        uses: actions/cache/save@v5
+        uses: ./ci/.github/actions/frank-runner-download-cache
         with:
-          path: ${{ env.FRANK_RUNNER_DOWNLOAD_CACHE_PATHS }}
-          key: ${{ steps.restoreFrankRunnerDownloads.outputs.cache-primary-key }}
+          mode: save
       - name: Save Maven downloads to cache
-        if: ${{ github.ref == 'refs/heads/master' && (steps.decideAboutBuildCode.outputs.buildCode == 'true' || matrix.test-app == 'true') && steps.restoreMaven.outputs.cache-hit != 'true' }}
-        uses: actions/cache/save@v5
+        if: ${{ steps.decideAboutBuildCode.outputs.buildCode == 'true' || matrix.test-app == 'true' }}
+        uses: ./ci/.github/actions/maven-cache
         with:
-          path: ~/.m2/repository/
-          key: ${{ steps.restoreMaven.outputs.cache-primary-key }}
+          mode: save
       - name: Be sure there are no old videos
         run: rm -rf ladybug/ladybug-ff-cypress-test/cypress/videos
       - name: Be sure there are no old screenshots

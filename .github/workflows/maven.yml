@@ -9,30 +9,15 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    # Checkout first, so that pnpm-lock.yaml is there to compute the key of the pnpm cache.
     - uses: actions/checkout@v5
       with:
         fetch-depth: 0
-    - uses: pnpm/action-setup@v5
-      name: Install pnpm
+    # Maven also runs pnpm install for ladybug-frontend. Installing here first makes the pnpm
+    # store and the Cypress binary come from the cache. Caching is explained in the action.
+    - name: Install frontend dependencies with pnpm
+      uses: ./.github/actions/pnpm-install
       with:
-        version: 9.4
-        run_install: false
-    - name: Get pnpm store directory
-      id: store-path
-      shell: bash
-      run: |
-        echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_OUTPUT
-    # The pnpm store is cached in the same way as in jaxrs.js.yml. See there for an explanation.
-    - name: Restore pnpm store from cache
-      id: restorePnpmStore
-      uses: actions/cache/restore@v5
-      with:
-        path: ${{ steps.store-path.outputs.STORE_PATH }}
-        key: ${{ runner.os }}-pnpm-store-ladybug-frontend-${{ hashFiles('ladybug-frontend/pnpm-lock.yaml') }}
-        restore-keys: ${{ github.ref != 'refs/heads/master' && format('{0}-pnpm-store-ladybug-frontend-', runner.os) || '' }}
-    - name: Show pnpm version (before pnpm install)
-      run: pnpm -v
+        project-dir: ladybug-frontend
 
     - name: Set up JDK 25
       uses: actions/setup-java@v5
@@ -42,13 +27,6 @@ jobs:
         cache: maven
     - name: Build with Maven
       run: mvn -B package
-    # Maven runs pnpm install for ladybug-frontend, which fills the pnpm store.
-    - name: Save pnpm store to cache
-      if: ${{ github.ref == 'refs/heads/master' && steps.restorePnpmStore.outputs.cache-hit != 'true' }}
-      uses: actions/cache/save@v5
-      with:
-        path: ${{ steps.store-path.outputs.STORE_PATH }}
-        key: ${{ steps.restorePnpmStore.outputs.cache-primary-key }}
 
     # The results are reported with the wrong job name. See issue of this GitHub Action:
     # https://github.com/ScaCap/action-surefire-report/issues/39
