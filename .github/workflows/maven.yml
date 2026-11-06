@@ -4,6 +4,10 @@ on:
   push:
     branches: [ "master" ]
   pull_request:
+  # Run daily on master to renew the Maven cache that pull requests use, like in jaxrs.js.yml (see
+  # there). This workflow has a single job, so a scheduled run just runs it.
+  schedule:
+    - cron: "0 3 * * *"
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -24,9 +28,19 @@ jobs:
       with:
         java-version: '25'
         distribution: 'temurin'
-        cache: maven
+    # No "cache: maven" in the step above. That cache is saved on every branch and is never
+    # updated. Caching is explained in the action.
+    - name: Restore Maven downloads from cache
+      uses: ./.github/actions/maven-cache
+      with:
+        mode: restore
+        name: maven-yml
     - name: Build with Maven
       run: mvn -B package
+    - name: Save Maven downloads to cache
+      uses: ./.github/actions/maven-cache
+      with:
+        mode: save
 
     # The results are reported with the wrong job name. See issue of this GitHub Action:
     # https://github.com/ScaCap/action-surefire-report/issues/39

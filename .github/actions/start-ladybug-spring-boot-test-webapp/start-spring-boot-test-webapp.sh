@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
-# Starts ladybug-spring-boot-test-webapp in the background on port 8090, with its output in
-# serverStartLog.log. Run from directory ladybug/ladybug-spring-boot-test-webapp.
+# Helper of action.yml in the same directory. Starts ladybug-spring-boot-test-webapp in the
+# background on port 8090, with its output in serverStartLog.log. Run from directory
+# ladybug/ladybug-spring-boot-test-webapp.
 #
 # Needs environment variables:
 #   SPRING_PROFILE  Spring profile for the backend, or none for the default.

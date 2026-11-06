@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# Waits until ladybug-spring-boot-test-webapp is healthy. Run from the workspace.
+# Helper of action.yml in the same directory. Waits until ladybug-spring-boot-test-webapp is
+# healthy.
 #
 # Health check: a GET of the Ladybug API, which the frontend also uses. With
 # ladybug.ui.test.mode=NO_AUTH, Spring Security lets every request through, so it returns 200.
@@ -16,5 +17,5 @@ else
   expected_status=401
 fi
 
-bash "$(dirname "${BASH_SOURCE[0]}")/../wait-for-server.sh" \
+bash "$(dirname "${BASH_SOURCE[0]}")/../../workflows/wait-for-server.sh" \
   http://localhost:8090/ladybug/api/testtool 300 "${expected_status}"
