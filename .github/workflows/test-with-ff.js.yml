@@ -171,11 +171,13 @@ jobs:
           DEBUG_STORAGE_NAME: ${{ matrix.debugStorageName }}
           STORAGE: ${{ matrix.storage }}
       - name: Collect failure data into a single artifact directory
-        if: failure()
+        if: always()
         run: bash ladybug/.github/workflows/with-ff/collect-failure-data.sh
 
+      # TODO: Change "always()" back to "failure()" when the changes to caching and health checks
+      # are checked. Until then, this always stores the videos (and logs), also when tests pass.
       - name: Store logs
-        if: failure()
+        if: always()
         uses: actions/upload-artifact@v5
         with:
           name: test-with-ff data test-app = ${{ matrix.test-app }} storage = ${{ matrix.storage }} dtap=${{ matrix.dtap }}

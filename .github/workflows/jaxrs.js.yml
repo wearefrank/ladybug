@@ -160,12 +160,14 @@ jobs:
         run: bash ladybug/.github/workflows/show-authenticated-users.sh ladybug/ladybug-test-webapp/data/ladybug.log
 
       - name: Collect failure data into a single artifact directory
-        if: failure()
+        if: always()
         run: bash ladybug/.github/workflows/jaxrs/collect-failure-data.sh
 
+      # TODO: Change "always()" back to "failure()" when the changes to caching and health checks
+      # are checked. Until then, this always stores the videos (and logs), also when tests pass.
       - name: Store logs
         uses: actions/upload-artifact@v5
-        if: failure()
+        if: always()
         with:
           name: jaxrs logs and videos ${{ matrix.name }}
           path: artifact-data/
