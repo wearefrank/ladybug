@@ -4,8 +4,52 @@ on:
     branches:
       - master
   pull_request:
+  # Run daily on master to renew the Maven cache that pull requests use, like in jaxrs.js.yml (see
+  # there). A scheduled run only runs job renew-caches, not the tests.
+  schedule:
+    - cron: "0 3 * * *"
 jobs:
+  # Fills the Maven cache in a single job, by doing what the tests do up to starting the server.
+  # The caches of ladybug-frontend (pnpm store, Cypress binary) are renewed by jaxrs.js.yml.
+  renew-caches:
+    if: ${{ github.event_name == 'schedule' }}
+    name: Renew caches
+    runs-on: ubuntu-latest
+    # Usually takes about 5 minutes. Stops a hanging job, instead of the default of 6 hours.
+    timeout-minutes: 30
+    steps:
+      - name: Checkout ladybug
+        uses: actions/checkout@v5
+        with:
+          repository: wearefrank/ladybug
+          path: ladybug
+      # Maven also builds ladybug-frontend, which needs pnpm. Must be the same Node.js version as
+      # in job springmvc.
+      - name: Install Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 20
+      - name: Install frontend dependencies with pnpm
+        uses: ./ladybug/.github/actions/pnpm-install
+        with:
+          project-dir: ladybug/ladybug-frontend
+      - name: Start ladybug-spring-boot-test-webapp
+        uses: ./ladybug/.github/actions/start-ladybug-spring-boot-test-webapp
+      - name: Collect failure data into a single artifact directory
+        if: failure()
+        run: bash ladybug/.github/workflows/springmvc/collect-failure-data.sh
+      # Artifacts belong to a single workflow run and job springmvc never runs in the same run, so
+      # this name cannot clash with the artifacts of job springmvc.
+      - name: Store logs
+        if: failure()
+        uses: actions/upload-artifact@v5
+        with:
+          name: springmvc logs renew-caches
+          path: artifact-data/
+          if-no-files-found: warn
+
   springmvc:
+    if: ${{ github.event_name != 'schedule' }}
     strategy:
       fail-fast: false
       matrix:
@@ -48,6 +92,8 @@ jobs:
             uiTestMode: NO_AUTH
     name: ${{ matrix.name }}
     runs-on: ubuntu-latest
+    # Usually takes about 8 minutes. Stops a hanging job, instead of the default of 6 hours.
+    timeout-minutes: 30
 
     steps:
       - name: Show chosen Spring profile for backend, chosen ladybug.ui.test.mode and chosen specs to run
@@ -58,80 +104,36 @@ jobs:
           repository: wearefrank/ladybug
           path: ladybug
 
-      - uses: pnpm/action-setup@v5
-        name: Install pnpm
-        with:
-          version: 9.4
-          run_install: false
-      - name: Get pnpm store directory
-        id: store-path
-        shell: bash
-        run: |
-          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_OUTPUT
-      - uses: actions/cache@v5
-        name: Setup pnpm cache
-        with:
-          path: ${{ steps.store-path.outputs.STORE_PATH }}
-          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-pnpm-store-
-      - name: Show pnpm version (before pnpm install)
-        run: pnpm -v
+      # No "cache: pnpm" here. It would cache the pnpm store again, also for every branch.
+      # Must be the same Node.js version as in job renew-caches.
       - name: Install Node.js
         uses: actions/setup-node@v5
         with:
           node-version: 20
-          cache: 'pnpm'
-          cache-dependency-path: 'ladybug/ladybug-frontend/pnpm-lock.yaml'
-
-      - uses: actions/cache@v5
-        name: Cache Cypress
+      # Caching is explained in the action.
+      - name: Install frontend dependencies with pnpm
+        uses: ./ladybug/.github/actions/pnpm-install
         with:
-          path: ~/.cache/Cypress
-          key: ${{ runner.os }}-cypress-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-cypress-
-
-      - name: Install Cypress
-        run: npx cypress install
-        working-directory: ladybug/ladybug-frontend
+          project-dir: ladybug/ladybug-frontend
 
       - name: Set Cypress environment variables
         run: cp .github/workflows/cypress.env.json.cicd ladybug-frontend/cypress.env.json
         working-directory: ladybug
 
-      - name: Set up JDK
-        uses: actions/setup-java@v5
+      # Also saves the Maven cache on master. See the action.
+      - name: Start ladybug-spring-boot-test-webapp
+        uses: ./ladybug/.github/actions/start-ladybug-spring-boot-test-webapp
         with:
-          java-version: '21'
-          distribution: 'temurin'
-          cache: maven
-
-      - name: Build ladybug-spring-boot-test-webapp and the modules it depends on
-        working-directory: ladybug
-        run: mvn -B -pl ladybug-spring-boot-test-webapp -am install -DskipTests -Dmaven.javadoc.skip=true -Dmaven.skip.copyright=true
-
-      - name: Show current time, allows you to check that logs are not old
-        run: date
-
-      - name: Start ladybug-spring-boot-test-webapp (default spring profile and uiTestMode)
-        if: matrix.spring-profile == 'none' && matrix.uiTestMode == 'DEFAULT'
-        working-directory: ladybug/ladybug-spring-boot-test-webapp
-        run: mvn -B spring-boot:run -Dspring-boot.run.arguments="--server.port=8090" > serverStartLog.log 2>&1 &
-
-      - name: Start ladybug-spring-boot-test-webapp (non-default spring profile or uiTestMode)
-        if: matrix.spring-profile != 'none' || matrix.uiTestMode != 'DEFAULT'
-        working-directory: ladybug/ladybug-spring-boot-test-webapp
-        run: mvn -B spring-boot:run -Dspring-boot.run.arguments="--server.port=8090 --spring.profiles.active=${{ matrix.spring-profile }}" -Dspring-boot.run.jvmArguments="-Dladybug.ui.test.mode=${{ matrix.uiTestMode }}" > serverStartLog.log 2>&1 &
-
-      - name: Wait for server to be available
-        working-directory: ladybug/.github/workflows
-        run: ./waitForUrl.sh http://localhost:8090 300
+          spring-profile: ${{ matrix.spring-profile }}
+          ui-test-mode: ${{ matrix.uiTestMode }}
 
       - name: Run cypress with chrome browser
         uses: cypress-io/github-action@v7.4.3
         with:
           working-directory: ladybug/ladybug-frontend
+          # Dependencies are installed above. Installing here would also make this action
+          # save its own caches for every branch.
+          install: false
           spec: ${{ matrix.selected-specs }}
           config: baseUrl=http://localhost:8090/ladybug
           browser: chrome
@@ -145,22 +147,15 @@ jobs:
         if: always() && matrix.observerUsername != ''
         run: bash ladybug/.github/workflows/show-authenticated-users.sh ladybug/ladybug-spring-boot-test-webapp/data/ladybug.log
 
-      - name: Show files
-        run: tree -d -L 5 .
-        if: failure()
-
       - name: Collect failure data into a single artifact directory
-        if: failure()
-        run: |
-          bash ladybug/.github/workflows/collect-artifact-data.sh artifact-data \
-            "ladybug/ladybug-frontend/cypress/screenshots" \
-            "ladybug/ladybug-frontend/cypress/videos" \
-            "ladybug/ladybug-spring-boot-test-webapp/data/ladybug.log" \
-            "ladybug/ladybug-frontend/cypress.env.json"
+        if: always()
+        run: bash ladybug/.github/workflows/springmvc/collect-failure-data.sh
 
+      # TODO: Change "always()" back to "failure()" when the changes to caching and health checks
+      # are checked. Until then, this always stores the videos (and logs), also when tests pass.
       - name: Store logs
         uses: actions/upload-artifact@v5
-        if: failure()
+        if: always()
         with:
           name: springmvc logs and videos ${{ matrix.name }}
           path: artifact-data/

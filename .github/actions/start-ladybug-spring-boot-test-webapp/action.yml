@@ -1,0 +1,64 @@
+name: Start ladybug-spring-boot-test-webapp
+description: >
+  Builds ladybug-spring-boot-test-webapp and the modules it depends on with Maven, starts it on
+  port 8090 and waits until it is healthy. Uses the cache of Maven downloads, and saves it (on
+  master) as soon as the server is healthy. Used by both jobs of springmvc.js.yml: the tests and
+  the scheduled renewal of the caches. Because both jobs use this action, they need the same
+  downloads, so the renewal fills the cache with what the tests need.
+
+  Ladybug must be checked out in directory ladybug of the workspace. This action uses the other
+  actions of .github/actions from there.
+inputs:
+  spring-profile:
+    description: Spring profile for the backend, or none to use the default.
+    required: false
+    default: none
+  ui-test-mode:
+    description: >
+      Value of ladybug.ui.test.mode, for example NO_AUTH or DEFAULT. Also determines the HTTP
+      status of the health check.
+    required: false
+    default: NO_AUTH
+runs:
+  using: composite
+  steps:
+    # No "cache: maven" here. That cache is saved on every branch and is never updated, see the
+    # maven-cache action.
+    - name: Set up JDK
+      uses: actions/setup-java@v5
+      with:
+        java-version: '21'
+        distribution: 'temurin'
+    # Caching is explained in the action.
+    - name: Restore Maven downloads from cache
+      uses: ./ladybug/.github/actions/maven-cache
+      with:
+        mode: restore
+        name: springmvc
+    - name: Build ladybug-spring-boot-test-webapp and the modules it depends on
+      working-directory: ladybug
+      shell: bash
+      run: mvn -B -pl ladybug-spring-boot-test-webapp -am install -DskipTests -Dmaven.javadoc.skip=true -Dmaven.skip.copyright=true
+    - name: Show current time, allows you to check that logs are not old
+      shell: bash
+      run: date
+    - name: Start ladybug-spring-boot-test-webapp
+      working-directory: ladybug/ladybug-spring-boot-test-webapp
+      shell: bash
+      run: bash "${GITHUB_ACTION_PATH}/start-spring-boot-test-webapp.sh"
+      env:
+        SPRING_PROFILE: ${{ inputs.spring-profile }}
+        UI_TEST_MODE: ${{ inputs.ui-test-mode }}
+    # Fails the job when the server is not healthy within 5 minutes. The health check is explained
+    # in the script.
+    - name: Wait until server is healthy
+      shell: bash
+      run: bash "${GITHUB_ACTION_PATH}/wait-until-healthy.sh"
+      env:
+        UI_TEST_MODE: ${{ inputs.ui-test-mode }}
+    # Save the cache as soon as the server is healthy, so also when the tests fail. At that point
+    # Maven has downloaded everything it needs, also for spring-boot:run.
+    - name: Save Maven downloads to cache
+      uses: ./ladybug/.github/actions/maven-cache
+      with:
+        mode: save

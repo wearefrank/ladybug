@@ -6,6 +6,7 @@
   "repository": "https://github.com/wearefrank/ladybug-ff-cypress-test",
   "author": "Martijn Dirkse <martijn@integrationpartners.nl>",
   "license": "MIT",
+  "//": "Keep the version of cypress exact (like 16.1.0, not ^16.1.0 or ~16.1.0). GitHub Actions caches the Cypress binary with this version in the cache key. With a range, the cache would keep a Cypress binary of an older version than the one that is installed.",
   "dependencies": {
     "cypress": "16.1.0",
     "husky": "^9.0.11",
@@ -27,5 +28,5 @@
     "eslint-plugin-n": "^15.0.0 || ^16.0.0 ",
     "eslint-plugin-promise": "^6.0.0"
   },
-  "packageManager": "yarn@4.1.1"
+  "packageManager": "pnpm@9.14.2"
 }

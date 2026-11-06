@@ -1,0 +1,82 @@
+name: pnpm install with cache
+description: >
+  Installs pnpm and the dependencies of a pnpm project, using caches for the pnpm store and the
+  Cypress binary. Node.js must already be available. The caches are saved right after the
+  installation, so no separate call is needed to save them.
+
+  pnpm: the version of the packageManager field of package.json of the project is installed.
+
+  pnpm store: the key contains the name of the project directory and a hash of pnpm-lock.yaml.
+  Only branches use restore-keys, to get most packages from an older cache when pnpm-lock.yaml
+  has changed. Master does not, so that the caches it saves contain only what the current
+  pnpm-lock.yaml needs.
+
+  Cypress binary: only when the project depends on Cypress. The binary only depends on the
+  version of Cypress, so that is the key. Projects that use the same version of Cypress share
+  the cache. The version must be exact in package.json (like 16.1.0, not ^16.1.0), otherwise
+  the key does not match the binary that is installed.
+
+  Caches are only saved on master, see ../cache-common.sh. The logic is in pnpm-install.sh.
+inputs:
+  project-dir:
+    description: Directory of the pnpm project, relative to the workspace. Example ladybug/ladybug-frontend.
+    required: true
+runs:
+  using: composite
+  steps:
+    - name: Install pnpm
+      uses: pnpm/action-setup@v5
+      with:
+        package_json_file: ${{ inputs.project-dir }}/package.json
+        run_install: false
+    - name: Determine cache keys
+      id: prepare
+      run: bash "${GITHUB_ACTION_PATH}/pnpm-install.sh" prepare
+      shell: bash
+      env:
+        PROJECT_DIR: ${{ inputs.project-dir }}
+    - name: Restore pnpm store from cache
+      id: restorePnpmStore
+      uses: actions/cache/restore@v5
+      with:
+        path: ${{ steps.prepare.outputs.storePath }}
+        key: ${{ steps.prepare.outputs.pnpmStoreKey }}
+        restore-keys: ${{ steps.prepare.outputs.pnpmStoreRestoreKeys }}
+    - name: Restore Cypress binary from cache
+      id: restoreCypress
+      if: ${{ steps.prepare.outputs.hasCypress == 'true' }}
+      uses: actions/cache/restore@v5
+      with:
+        path: ~/.cache/Cypress
+        key: ${{ steps.prepare.outputs.cypressKey }}
+    - name: Install dependencies
+      working-directory: ${{ inputs.project-dir }}
+      run: pnpm install --frozen-lockfile
+      shell: bash
+    - name: Install Cypress binary if it is not there yet
+      if: ${{ steps.prepare.outputs.hasCypress == 'true' }}
+      working-directory: ${{ inputs.project-dir }}
+      run: pnpm exec cypress install
+      shell: bash
+    - name: Decide about saving the caches
+      id: decide
+      run: bash "${GITHUB_ACTION_PATH}/pnpm-install.sh" decide-about-saving
+      shell: bash
+      env:
+        PNPM_STORE_CACHE_HIT: ${{ steps.restorePnpmStore.outputs.cache-hit }}
+        CYPRESS_CACHE_HIT: ${{ steps.restoreCypress.outputs.cache-hit }}
+        HAS_CYPRESS: ${{ steps.prepare.outputs.hasCypress }}
+    # When multiple matrix jobs try to save the same key, one of them succeeds and the others
+    # log a warning.
+    - name: Save pnpm store to cache
+      if: ${{ steps.decide.outputs.savePnpmStore == 'true' }}
+      uses: actions/cache/save@v5
+      with:
+        path: ${{ steps.prepare.outputs.storePath }}
+        key: ${{ steps.prepare.outputs.pnpmStoreKey }}
+    - name: Save Cypress binary to cache
+      if: ${{ steps.decide.outputs.saveCypress == 'true' }}
+      uses: actions/cache/save@v5
+      with:
+        path: ~/.cache/Cypress
+        key: ${{ steps.prepare.outputs.cypressKey }}
