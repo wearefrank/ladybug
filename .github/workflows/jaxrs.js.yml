@@ -4,6 +4,15 @@ on:
     branches:
       - master
   pull_request:
+env:
+  # Paths of the cache of Frank!Runner downloads. Must be the same as in test-with-ff.js.yml,
+  # because the cache is shared. The steps that restore and save this cache must use exactly
+  # the same paths, otherwise the cache cannot be found. See test-with-ff.js.yml for details.
+  FRANK_RUNNER_DOWNLOAD_CACHE_PATHS: |
+    frank-runner/download
+    !frank-runner/download/frankframework-webapp-*
+    !frank-runner/download/metadata
+    !frank-runner/download/frank-runner
 jobs:
   jaxrs:
     strategy:
@@ -66,34 +75,56 @@ jobs:
         id: store-path
         shell: bash
         run: |
-          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_OUTPUT  
-      - uses: actions/cache@v5
-        name: Setup pnpm cache
+          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_OUTPUT
+      # The pnpm store and the Cypress binary are cached in the same way in jaxrs.js.yml,
+      # springmvc.js.yml and maven.yml (pnpm store only). The caches are only saved on master.
+      # Branches and pull requests share the caches of master. See test-with-ff.js.yml.
+      # The pnpm store is keyed on pnpm-lock.yaml. Only branches use restore-keys, to get most
+      # packages from an older cache when pnpm-lock.yaml has changed. Master does not, so that
+      # the caches it saves contain only what the current pnpm-lock.yaml needs.
+      - name: Restore pnpm store from cache
+        id: restorePnpmStore
+        uses: actions/cache/restore@v5
         with:
           path: ${{ steps.store-path.outputs.STORE_PATH }}
-          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-pnpm-store-
+          key: ${{ runner.os }}-pnpm-store-ladybug-frontend-${{ hashFiles('ladybug/ladybug-frontend/pnpm-lock.yaml') }}
+          restore-keys: ${{ github.ref != 'refs/heads/master' && format('{0}-pnpm-store-ladybug-frontend-', runner.os) || '' }}
       - name: Show pnpm version (before pnpm install)
         run: pnpm -v
+      # No "cache: pnpm" here. It would cache the same pnpm store again, also for every branch.
       - name: Install Node.js
         uses: actions/setup-node@v5
         with:
           node-version: 20
-          cache: 'pnpm'
-          cache-dependency-path: 'ladybug/ladybug-frontend/pnpm-lock.yaml'
-
-      - uses: actions/cache@v5
-        name: Cache Cypress
+      # The Cypress binary only depends on the version of Cypress, so that is the key.
+      - name: Get Cypress version
+        id: cypressVersion
+        working-directory: ladybug/ladybug-frontend
+        run: echo "version=$(node -p "require('./package.json').devDependencies.cypress")" >> $GITHUB_OUTPUT
+      - name: Restore Cypress binary from cache
+        id: restoreCypress
+        uses: actions/cache/restore@v5
         with:
           path: ~/.cache/Cypress
-          key: ${{ runner.os }}-cypress-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-cypress-
-
-      - name: Install Cypress
-        run: npx cypress install
+          key: ${{ runner.os }}-cypress-${{ steps.cypressVersion.outputs.version }}
+      - name: Install frontend dependencies
         working-directory: ladybug/ladybug-frontend
+        run: pnpm install --frozen-lockfile
+      - name: Install Cypress binary if it is not there yet
+        working-directory: ladybug/ladybug-frontend
+        run: pnpm exec cypress install
+      - name: Save pnpm store to cache
+        if: ${{ github.ref == 'refs/heads/master' && steps.restorePnpmStore.outputs.cache-hit != 'true' }}
+        uses: actions/cache/save@v5
+        with:
+          path: ${{ steps.store-path.outputs.STORE_PATH }}
+          key: ${{ steps.restorePnpmStore.outputs.cache-primary-key }}
+      - name: Save Cypress binary to cache
+        if: ${{ github.ref == 'refs/heads/master' && steps.restoreCypress.outputs.cache-hit != 'true' }}
+        uses: actions/cache/save@v5
+        with:
+          path: ~/.cache/Cypress
+          key: ${{ steps.restoreCypress.outputs.cache-primary-key }}
 
       - name: Set Cypress environment variables
         run: cp .github/workflows/cypress.env.json.cicd ladybug-frontend/cypress.env.json
@@ -133,33 +164,27 @@ jobs:
       - name: Make script executable that starts backend
         run: chmod a+x frank-runner/specials/ladybug/restart.sh
 
-      - name: Cache Frank!Runner dependencies - build
-        uses: actions/cache@v5
+      # The key follows updates of Frank!Runner. See test-with-ff.js.yml for an explanation.
+      - name: Restore Frank!Runner downloads from cache
+        id: restoreFrankRunnerDownloads
+        uses: actions/cache/restore@v5
         with:
-          path: frank-runner/build
-          key: ${{ runner.os }}-frank-runner-build
-          restore-keys: |
-            ${{ runner.os }}-frank-runner-build
-      - name: Cache Frank!Runner dependencies - download
-        uses: actions/cache@v5
-        with:
-          path: frank-runner/download
-          key: ${{ runner.os }}-frank-runner-download
-          restore-keys: |
-            ${{ runner.os }}-frank-runner-download
-      - name: Cache Maven downloads
-        uses: actions/cache@v5
+          path: ${{ env.FRANK_RUNNER_DOWNLOAD_CACHE_PATHS }}
+          key: ${{ runner.os }}-frank-runner-download-${{ hashFiles('frank-runner/build.xml', 'frank-runner/env.sh') }}
+      # The key changes every month, so that the cache is refreshed regularly and does not keep
+      # collecting old versions of artifacts. There are no restore-keys for the same reason.
+      # Caches of previous months are no longer used and GitHub deletes them after 7 days.
+      - name: Determine current month for the key of the Maven cache
+        id: month
+        run: echo "month=$(date -u +%Y-%m)" >> $GITHUB_OUTPUT
+      - name: Restore Maven downloads from cache
+        id: restoreMaven
+        uses: actions/cache/restore@v5
         with:
           path: ~/.m2/repository/
-          key: ${{ runner.os }}-maven
-          restore-keys: |
-            ${{ runner.os }}-maven
-      - name: Remove old Tomcat version to keep it out of cache
-        run: rm -rf frank-runner/download/apache-tomcat-9*; rm -rf frank-runner/build/apache-tomcat-9*;
+          key: ${{ runner.os }}-maven-jaxrs-${{ steps.month.outputs.month }}
       - name: Show current time, allows you to check that logs are not old
         run: date
-      - name: Remove old logs from cache, so that they cannot end up in this job's artifact
-        run: rm -rf frank-runner/build/apache-tomcat-9.0.56/logs/*
 
       - name: Let Frank!Runner do its downloads
         run: ./env.sh > installFrankRunnerEnv.log
@@ -171,10 +196,28 @@ jobs:
       - name: Wait for server to be available
         working-directory: ladybug/.github/workflows
         run: ./waitForUrl.sh http://localhost:8090 300
+      # Save the caches as soon as the server is up, also when the tests fail. Only save on
+      # master, so that all branches and pull requests share the caches of master.
+      # See test-with-ff.js.yml for an explanation.
+      - name: Save Frank!Runner downloads to cache
+        if: ${{ github.ref == 'refs/heads/master' && steps.restoreFrankRunnerDownloads.outputs.cache-hit != 'true' }}
+        uses: actions/cache/save@v5
+        with:
+          path: ${{ env.FRANK_RUNNER_DOWNLOAD_CACHE_PATHS }}
+          key: ${{ steps.restoreFrankRunnerDownloads.outputs.cache-primary-key }}
+      - name: Save Maven downloads to cache
+        if: ${{ github.ref == 'refs/heads/master' && steps.restoreMaven.outputs.cache-hit != 'true' }}
+        uses: actions/cache/save@v5
+        with:
+          path: ~/.m2/repository/
+          key: ${{ steps.restoreMaven.outputs.cache-primary-key }}
       - name: Run cypress with chrome browser
         uses: cypress-io/github-action@v7.4.3
         with:
           working-directory: ladybug/ladybug-frontend
+          # Dependencies are installed above. Installing here would also make this action
+          # save its own caches for every branch.
+          install: false
           spec: ${{ matrix.selected-specs }}
           config: baseUrl=http://localhost:8090/ladybug
           browser: chrome
