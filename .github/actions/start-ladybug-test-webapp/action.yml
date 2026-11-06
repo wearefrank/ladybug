@@ -1,8 +1,8 @@
 name: Start ladybug-test-webapp
 description: >
-  Checks out Frank!Runner, builds ladybug-test-webapp with Frank!Runner and starts it on port 8090.
-  Uses the caches of Frank!Runner downloads and Maven downloads, and saves them (on master) as soon
-  as the server is up. Used by both jobs of jaxrs.js.yml: the tests and the scheduled renewal of
+  Checks out Frank!Runner, builds ladybug-test-webapp with Frank!Runner, starts it on port 8090
+  and waits until it is healthy. Uses the caches of Frank!Runner downloads and Maven downloads,
+  and saves them (on master) as soon as the server is healthy. Used by both jobs of jaxrs.js.yml: the tests and the scheduled renewal of
   the caches. Because both jobs use this action, they need the same downloads, so the renewal
   fills the caches with what the tests need.
 
@@ -14,6 +14,12 @@ inputs:
     description: Spring profile for the backend, or none to use the default.
     required: false
     default: none
+  authentication:
+    description: >
+      true if authentication is enabled in ladybug-test-webapp (web.xml). Determines the HTTP
+      status of the health check.
+    required: false
+    default: "false"
 runs:
   using: composite
   steps:
@@ -48,11 +54,14 @@ runs:
       working-directory: frank-runner/specials/ladybug
       shell: bash
       run: ./restart.sh
-    - name: Wait for server to be available
-      working-directory: ladybug/.github/workflows
+    # Fails the job when the server is not healthy within 5 minutes. The health check is explained
+    # in the script.
+    - name: Wait until server is healthy
+      run: bash "${GITHUB_ACTION_PATH}/wait-until-healthy.sh"
       shell: bash
-      run: ./waitForUrl.sh http://localhost:8090 300
-    # Save the caches as soon as the server is up, so also when the tests fail. At that point
+      env:
+        AUTHENTICATION: ${{ inputs.authentication }}
+    # Save the caches as soon as the server is healthy, so also when the tests fail. At that point
     # Frank!Runner and Maven have downloaded everything they need.
     - name: Save Frank!Runner downloads to cache
       uses: ./ladybug/.github/actions/frank-runner-download-cache

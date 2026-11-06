@@ -61,6 +61,9 @@ jobs:
             debugStorageName: "DatabaseDebugStorage"
     name: test-app = ${{ matrix.test-app }}, Ladybug storage = ${{ matrix.storage }}, dtap.stage=${{ matrix.dtap }}
     runs-on: ubuntu-latest
+    # Usually takes about 25 minutes, longer when building the code. Stops a hanging job, instead
+    # of the default of 6 hours. Waiting for the server alone may take up to 30 minutes.
+    timeout-minutes: 90
     steps:
       # Scripts, actions and other files in .github are used from a separate checkout of this
       # commit, because directory ladybug may be checked out on another branch (input
@@ -158,8 +161,11 @@ jobs:
         env:
           BUILD_CODE: ${{ steps.decide.outputs.buildCode }}
           TEST_APP: ${{ matrix.test-app }}
-      - name: Wait for server to be available
-        run: bash ci/.github/workflows/waitForUrl.sh http://localhost:8090 1800
+      # Fails the job when the server is not healthy within 30 minutes. The health check of the
+      # Frank!Framework is public (also when authentication is required) and returns 200 when all
+      # configurations and adapters are running, and 503 when one of them is not.
+      - name: Wait until server is healthy
+        run: bash ci/.github/workflows/wait-for-server.sh http://localhost:8090/iaf/api/server/health 1800
       # Save the caches as soon as the server is up, so also when the tests fail. At that point
       # Frank!Runner and Maven have downloaded everything they need.
       - name: Save Frank!Runner downloads to cache
@@ -172,7 +178,7 @@ jobs:
         with:
           mode: save
       - name: Try to access server directly with curl
-        run: curl -v -i http://localhost:8090
+        run: curl -v -i --max-time 30 http://localhost:8090
       - name: Run the tests
         working-directory: ladybug/ladybug-ff-cypress-test
         run: bash ../../ci/.github/workflows/with-ff/run-tests.sh

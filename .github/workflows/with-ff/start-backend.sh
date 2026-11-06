@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Starts the backend for test-with-ff.js.yml in the background, on port 8090. Run from the
-# workspace, after prepare-backend.sh. Use waitForUrl.sh to wait until the server is up.
+# workspace, after prepare-backend.sh. Use wait-for-server.sh to wait until the server is healthy.
 #
 # Needs environment variables:
 #   BUILD_CODE  true if the code of frankframework and ladybug is built.

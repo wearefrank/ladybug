@@ -48,6 +48,8 @@ jobs:
             uiTestMode: NO_AUTH
     name: ${{ matrix.name }}
     runs-on: ubuntu-latest
+    # Usually takes about 8 minutes. Stops a hanging job, instead of the default of 6 hours.
+    timeout-minutes: 30
 
     steps:
       - name: Show chosen Spring profile for backend, chosen ladybug.ui.test.mode and chosen specs to run
@@ -94,9 +96,12 @@ jobs:
           SPRING_PROFILE: ${{ matrix.spring-profile }}
           UI_TEST_MODE: ${{ matrix.uiTestMode }}
 
-      - name: Wait for server to be available
-        working-directory: ladybug/.github/workflows
-        run: ./waitForUrl.sh http://localhost:8090 300
+      # Fails the job when the server is not healthy within 5 minutes. The health check is
+      # explained in the script.
+      - name: Wait until server is healthy
+        run: bash ladybug/.github/workflows/springmvc/wait-until-healthy.sh
+        env:
+          UI_TEST_MODE: ${{ matrix.uiTestMode }}
 
       - name: Run cypress with chrome browser
         uses: cypress-io/github-action@v7.4.3
