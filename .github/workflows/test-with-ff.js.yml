@@ -186,10 +186,6 @@ jobs:
           SPECS: ${{ matrix.specs }}
           DEBUG_STORAGE_NAME: ${{ matrix.debugStorageName }}
           STORAGE: ${{ matrix.storage }}
-      - name: Show files
-        if: failure()
-        run: tree -L 5 .
-
       - name: Collect failure data into a single artifact directory
         if: failure()
         run: bash ci/.github/workflows/with-ff/collect-failure-data.sh

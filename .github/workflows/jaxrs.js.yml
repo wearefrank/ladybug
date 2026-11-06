@@ -40,9 +40,6 @@ jobs:
       - name: Start ladybug-test-webapp
         uses: ./ladybug/.github/actions/start-ladybug-test-webapp
 
-      - name: Show files
-        if: failure()
-        run: tree -d -L 5 .
       - name: Collect failure data into a single artifact directory
         if: failure()
         run: bash ladybug/.github/workflows/jaxrs/collect-failure-data.sh
@@ -161,10 +158,6 @@ jobs:
       - name: Show which users were actually authenticated, as logged in ladybug.log
         if: always() && matrix.observerUsername != ''
         run: bash ladybug/.github/workflows/show-authenticated-users.sh ladybug/ladybug-test-webapp/data/ladybug.log
-
-      - name: Show files
-        run: tree -d -L 5 .
-        if: failure()
 
       - name: Collect failure data into a single artifact directory
         if: failure()
