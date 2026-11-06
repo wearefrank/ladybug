@@ -20,7 +20,7 @@ case "${mode}" in
     project_name="$(basename "$(pwd)")"
     pnpm_store_key_prefix="${RUNNER_OS}-pnpm-store-${project_name}-"
     set_output pnpmStoreKey "${pnpm_store_key_prefix}$(hash_of_files pnpm-lock.yaml)"
-    if is_branch_that_saves_caches; then
+    if is_branch_master; then
       # Without restore-keys, a cache saved on master contains only what the current
       # pnpm-lock.yaml needs.
       set_output pnpmStoreRestoreKeys ""

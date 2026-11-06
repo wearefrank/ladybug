@@ -6,7 +6,7 @@ source "$(dirname "${BASH_SOURCE[0]}")/../helpers.sh"
 # Caches are only saved on master. GitHub scopes caches to the branch that saved them, but every
 # branch and pull request can restore the caches of master. Saving only on master gives one set
 # of caches that all branches share, instead of a set of caches per branch.
-is_branch_that_saves_caches() {
+is_branch_master() {
   [[ "${GITHUB_REF}" == "refs/heads/master" ]]
 }
 
@@ -28,7 +28,7 @@ hash_of_files() {
 decide_about_saving() {
   local output_name="$1"
   local cache_hit="$2"
-  if ! is_branch_that_saves_caches; then
+  if ! is_branch_master; then
     echo "Not saving the cache, because only master saves caches"
     set_output "${output_name}" false
   elif [[ "${cache_hit}" == "true" ]]; then
