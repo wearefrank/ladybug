@@ -11,7 +11,8 @@
 # Sets outputs:
 #   buildCode       true if the code of frankframework and ladybug is built, otherwise false.
 #   ffRepository    Repository of the Frank!Framework to check out if buildCode.
-#   needsMaven      true if Maven builds something, so the Maven cache is needed.
+#   needsMaven      true if Frank!Runner builds something with Maven, so the Maven cache is
+#                   needed.
 #   mavenCacheName  Name of the Maven cache.
 set -euo pipefail
 source "$(dirname "${BASH_SOURCE[0]}")/../../helpers.sh"
@@ -34,7 +35,9 @@ fi
 
 set_output ffRepository "${FF_FORK:-frankframework}/frankframework"
 
-# Maven builds the code if buildCode. ladybug-ff-test-webapp is always built by Maven.
+# Frank!Runner builds with Maven if buildCode (frank-runner/specials/ladybug), and always when it
+# starts ladybug-ff-test-webapp (via its build.xml), because that has a pom.xml and maven=true in
+# frank-runner.properties.
 if [[ "${build_code}" == "true" || "${TEST_APP}" == "true" ]]; then
   set_output needsMaven true
 else

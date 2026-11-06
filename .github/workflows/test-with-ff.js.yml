@@ -125,11 +125,12 @@ jobs:
       - name: Let Frank!Runner do its downloads
         working-directory: ladybug/ladybug-ff-cypress-test
         run: pnpm run installFrankRunnerEnv
-      # Maven builds the code if buildLatestFFandLadybugCode, and always builds
-      # ladybug-ff-test-webapp. Starting ladybug-ff-test-webapp resolves the full transitive
-      # dependency tree of the Frank!Framework. Without this cache, every run re-downloads
-      # everything one small file at a time, which is slow and eats into GitHub Actions' network
-      # throughput limits. Caching is explained in the action.
+      # Frank!Runner builds with Maven if buildLatestFFandLadybugCode (frank-runner/specials/ladybug),
+      # and always when it starts ladybug-ff-test-webapp (via its build.xml), because that has a
+      # pom.xml and maven=true in frank-runner.properties. Starting ladybug-ff-test-webapp
+      # resolves the full transitive dependency tree of the Frank!Framework. Without this cache,
+      # every run re-downloads everything one small file at a time, which is slow and eats into
+      # GitHub Actions' network throughput limits. Caching is explained in the action.
       - name: Restore Maven downloads from cache
         if: ${{ steps.decide.outputs.needsMaven == 'true' }}
         uses: ./ladybug/.github/actions/maven-cache
