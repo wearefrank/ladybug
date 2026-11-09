@@ -16,16 +16,16 @@ if [[ "${TEST_APP}" == "true" ]]; then
 fi
 
 if [[ "${BUILD_CODE}" == "false" && "${TEST_APP}" == "true" ]]; then
-  # ladybug-ff-test-webapp/pom.xml refers to org.frankframework:frankframework-webapp as LATEST.
-  # Resolving LATEST forces Maven to re-walk the whole dependency tree of the Frank!Framework
-  # over the network on every run, which is slow and makes the Maven download cache useless.
-  # Substitute a concrete version instead, so Maven can resolve it from the (cached) local
-  # repository once it has been downloaded once. This queries the same Nexus repository that
-  # ladybug-ff-test-webapp/pom.xml itself declares under <repositories>, so the version found
-  # here is guaranteed to be resolvable from there.
+  # Property ff.version of ladybug-ff-test-webapp/pom.xml holds a fixed version of the
+  # Frank!Framework. Replace it with the newest released version, so that ladybug is tested with
+  # the newest Frank!Framework. The version is looked up in the same Nexus repository that
+  # ladybug-ff-test-webapp/pom.xml declares under <repositories>, so Maven can resolve it from
+  # there. The grep fails this script when the replacement did not happen, for example because
+  # property ff.version was renamed or moved.
   ff_version="$(bash "${here}/../get-highest-ff-version.sh")"
   echo "Highest version of Frank!Framework from Nexus is ${ff_version}"
-  sed -i "s#<ff.version>LATEST</ff.version>#<ff.version>${ff_version}</ff.version>#" "${test_webapp}/pom.xml"
+  sed -i "s#<ff.version>[^<]*</ff.version>#<ff.version>${ff_version}</ff.version>#" "${test_webapp}/pom.xml"
+  grep -F "<ff.version>${ff_version}</ff.version>" "${test_webapp}/pom.xml"
 fi
 
 if [[ "${BUILD_CODE}" == "true" ]]; then
