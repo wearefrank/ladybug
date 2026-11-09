@@ -520,7 +520,7 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-site-plugin</artifactId>
-          <version>3.21.0</version>
+          <version>3.22.0</version>
           <configuration>
             <skip>true</skip>
             <!-- Speed up the build in CI (generated site isn't used) -->
