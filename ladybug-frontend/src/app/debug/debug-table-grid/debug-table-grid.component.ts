@@ -231,8 +231,8 @@ export class DebugTableGridComponent implements OnInit, OnDestroy {
   }
 
   private setCheckBoxSize(value: number): void {
-    const defaultCheckBoxSize = 13;
-    this.checkboxSize = `${defaultCheckBoxSize + value}px`;
+    const defaultCheckboxSize = 13;
+    this.checkboxSize = `${defaultCheckboxSize + value}px`;
   }
 
   private setFontSize(value: number): void {

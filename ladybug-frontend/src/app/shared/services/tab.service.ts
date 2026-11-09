@@ -161,7 +161,7 @@ export class TabService {
     if (routePath.length === 0) {
       return '';
     }
-    const kind = routePath.split('/')[0];
+    const kind = routePath.split('/', 1)[0];
     switch (kind) {
       case KEY_DEBUG: {
         const filters: MetadataFilter[] = this.routeGetFilters(route);
