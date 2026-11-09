@@ -64,7 +64,6 @@ jobs:
       - name: Checkout ladybug
         uses: actions/checkout@v5
         with:
-          repository: wearefrank/ladybug
           path: ladybug
       - name: Decide what to build and check the inputs
         id: decide
