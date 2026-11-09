@@ -136,7 +136,7 @@ export class DebugTreeComponent implements OnInit, OnDestroy {
     const last = this.tree.items.length - 1;
     const lastAdded = this.tree.items[last];
     if (lastAdded.children) {
-      const firstCheckpoint = lastAdded.children[0];
+      const [firstCheckpoint] = lastAdded.children;
       // Does not expand selected item for some reason as it should.
       this.tree.selectItem(firstCheckpoint.path);
     } else {
@@ -151,7 +151,7 @@ export class DebugTreeComponent implements OnInit, OnDestroy {
 
   private conditionalOpenFunction(item: CreateTreeItem): boolean {
     const type = item['type'];
-    return type === undefined || type === CheckpointType.Startpoint || type === CheckpointType.Endpoint;
+    return [undefined, CheckpointType.Startpoint, CheckpointType.Endpoint].includes(type);
   }
 
   protected toggleCheckpointAndStorageIdShown(): void {

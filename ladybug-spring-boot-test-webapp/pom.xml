@@ -14,7 +14,7 @@
   <description>Wrapper of test webapp to handle Spring MVC auth.</description>
 
   <properties>
-    <tomcat.embed.version>10.1.44</tomcat.embed.version>
+    <tomcat.embed.version>10.1.59</tomcat.embed.version>
   </properties>
 
   <!-- Embedded Tomcat is managed here instead of in the root pom, because the root pom's
