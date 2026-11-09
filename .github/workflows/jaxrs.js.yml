@@ -4,8 +4,59 @@ on:
     branches:
       - master
   pull_request:
+  # Run daily on master to renew the caches that pull requests use. Caches are only saved on
+  # master (see .github/actions). Without this, pull requests miss the Frank!Runner download
+  # cache after an update of Frank!Runner and the Maven cache at the start of a month, until
+  # something is pushed to master. This also keeps the caches of master in use, so that GitHub
+  # does not delete them after 7 days without use. Also renews the caches of ladybug-frontend
+  # (pnpm store, Cypress binary) that springmvc.js.yml and maven.yml share. GitHub runs
+  # scheduled workflows on the default branch only and may start them later than scheduled.
+  # A scheduled run only runs job renew-caches, not the tests.
+  schedule:
+    - cron: "0 3 * * *"
 jobs:
+  # Fills the caches in a single job, by doing what the tests do up to starting the server.
+  renew-caches:
+    if: ${{ github.event_name == 'schedule' }}
+    name: Renew caches
+    runs-on: ubuntu-latest
+    # Usually takes about 10 minutes. Stops a hanging job, instead of the default of 6 hours.
+    timeout-minutes: 30
+    steps:
+      - name: Checkout ladybug
+        uses: actions/checkout@v5
+        with:
+          repository: wearefrank/ladybug
+          path: ladybug
+      # Must be the same Node.js version as in job jaxrs.
+      - name: Install Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 20
+      - name: Install frontend dependencies with pnpm
+        uses: ./ladybug/.github/actions/pnpm-install
+        with:
+          project-dir: ladybug/ladybug-frontend
+      - name: Start ladybug-test-webapp
+        uses: ./ladybug/.github/actions/start-ladybug-test-webapp
+
+      - name: Collect failure data into a single artifact directory
+        if: failure()
+        run: bash ladybug/.github/workflows/jaxrs/collect-failure-data.sh
+      # Artifacts belong to a single workflow run and job jaxrs never runs in the same run, so
+      # this name cannot clash with the artifacts of job jaxrs.
+      - name: Store logs
+        if: failure()
+        uses: actions/upload-artifact@v5
+        with:
+          name: jaxrs logs renew-caches
+          path: artifact-data/
+          if-no-files-found: warn
+
   jaxrs:
+    if: ${{ github.event_name != 'schedule' }}
+    # Usually takes about 10 minutes. Stops a hanging job, instead of the default of 6 hours.
+    timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:
@@ -57,43 +108,17 @@ jobs:
         with:
           repository: wearefrank/ladybug
           path: ladybug
-      - uses: pnpm/action-setup@v5
-        name: Install pnpm
-        with:
-          version: 9.4
-          run_install: false
-      - name: Get pnpm store directory
-        id: store-path
-        shell: bash
-        run: |
-          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_OUTPUT  
-      - uses: actions/cache@v5
-        name: Setup pnpm cache
-        with:
-          path: ${{ steps.store-path.outputs.STORE_PATH }}
-          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-pnpm-store-
-      - name: Show pnpm version (before pnpm install)
-        run: pnpm -v
+      # No "cache: pnpm" here. It would cache the pnpm store again, also for every branch.
+      # Must be the same Node.js version as in job renew-caches.
       - name: Install Node.js
         uses: actions/setup-node@v5
         with:
           node-version: 20
-          cache: 'pnpm'
-          cache-dependency-path: 'ladybug/ladybug-frontend/pnpm-lock.yaml'
-
-      - uses: actions/cache@v5
-        name: Cache Cypress
+      # Caching is explained in the action.
+      - name: Install frontend dependencies with pnpm
+        uses: ./ladybug/.github/actions/pnpm-install
         with:
-          path: ~/.cache/Cypress
-          key: ${{ runner.os }}-cypress-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-cypress-
-
-      - name: Install Cypress
-        run: npx cypress install
-        working-directory: ladybug/ladybug-frontend
+          project-dir: ladybug/ladybug-frontend
 
       - name: Set Cypress environment variables
         run: cp .github/workflows/cypress.env.json.cicd ladybug-frontend/cypress.env.json
@@ -103,78 +128,24 @@ jobs:
         if: ${{ matrix.authenticationTest == 'only-backend' }}
         working-directory: ladybug
         run: cp .github/workflows/test-auth-only-backend.properties ladybug-test-webapp/src/main/resources/test.properties
-      - name: Enable authentication - produce temp web.xml
+      - name: Enable authentication by removing the lines of web.xml that contain CICD_AUTH
         if: ${{ matrix.authenticationTest != 'no-authentication' }}
         working-directory: ladybug/ladybug-test-webapp/src/main/webapp/WEB-INF
-        run: grep -v "CICD_AUTH" web.xml > web.xml.out
-      - name: Enable authentication - copy temp web.xml back
-        if: ${{ matrix.authenticationTest != 'no-authentication' }}
-        working-directory: ladybug/ladybug-test-webapp/src/main/webapp/WEB-INF
-        run: cp web.xml.out web.xml
+        run: sed -i '/CICD_AUTH/d' web.xml
 
-      - name: Checkout frank-runner
-        uses: actions/checkout@v5
+      # Also saves the caches on master. See the action.
+      - name: Start ladybug-test-webapp
+        uses: ./ladybug/.github/actions/start-ladybug-test-webapp
         with:
-          repository: wearefrank/frank-runner
-          path: frank-runner
-      - name: Set property to skip backend unit tests
-        run: echo "maven.skip.tests=true" > frank-runner/specials/ladybug/build.properties
-      - name: Set properties to skip backend Javadoc
-        run: echo "maven.skip.javadoc=true" >> frank-runner/specials/ladybug/build.properties
-      - name: Set property to skip checking licenses
-        run: echo "maven.skip.copyright=true" >> frank-runner/specials/ladybug/build.properties
-      - name: Choose Spring profile for backend if it is not "none"
-        run: echo "spring.profiles.active=${{ matrix.spring-profile }}" >> frank-runner/specials/ladybug/build.properties
-        if: ${{ matrix.spring-profile != 'none' }}
-      - name: Set port where ladybug-test-webapp is served
-        run: echo "tomcat.connector.port=8090" > frank-runner/build.properties
-      - name: Prevent Java exception about binding port 443 (for https)
-        run: echo "tomcat.secure.port=8443" >> frank-runner/build.properties
-      - name: Make script executable that starts backend
-        run: chmod a+x frank-runner/specials/ladybug/restart.sh
-
-      - name: Cache Frank!Runner dependencies - build
-        uses: actions/cache@v5
-        with:
-          path: frank-runner/build
-          key: ${{ runner.os }}-frank-runner-build
-          restore-keys: |
-            ${{ runner.os }}-frank-runner-build
-      - name: Cache Frank!Runner dependencies - download
-        uses: actions/cache@v5
-        with:
-          path: frank-runner/download
-          key: ${{ runner.os }}-frank-runner-download
-          restore-keys: |
-            ${{ runner.os }}-frank-runner-download
-      - name: Cache Maven downloads
-        uses: actions/cache@v5
-        with:
-          path: ~/.m2/repository/
-          key: ${{ runner.os }}-maven
-          restore-keys: |
-            ${{ runner.os }}-maven
-      - name: Remove old Tomcat version to keep it out of cache
-        run: rm -rf frank-runner/download/apache-tomcat-9*; rm -rf frank-runner/build/apache-tomcat-9*;
-      - name: Show current time, allows you to check that logs are not old
-        run: date
-      - name: Remove old logs from cache, so that they cannot end up in this job's artifact
-        run: rm -rf frank-runner/build/apache-tomcat-9.0.56/logs/*
-
-      - name: Let Frank!Runner do its downloads
-        run: ./env.sh > installFrankRunnerEnv.log
-        working-directory: frank-runner
-
-      - name: Start server using Frank!Runner
-        run: ./restart.sh
-        working-directory: frank-runner/specials/ladybug
-      - name: Wait for server to be available
-        working-directory: ladybug/.github/workflows
-        run: ./waitForUrl.sh http://localhost:8090 300
+          spring-profile: ${{ matrix.spring-profile }}
+          authentication: ${{ matrix.authenticationTest != 'no-authentication' }}
       - name: Run cypress with chrome browser
         uses: cypress-io/github-action@v7.4.3
         with:
           working-directory: ladybug/ladybug-frontend
+          # Dependencies are installed above. Installing here would also make this action
+          # save its own caches for every branch.
+          install: false
           spec: ${{ matrix.selected-specs }}
           config: baseUrl=http://localhost:8090/ladybug
           browser: chrome
@@ -188,26 +159,15 @@ jobs:
         if: always() && matrix.observerUsername != ''
         run: bash ladybug/.github/workflows/show-authenticated-users.sh ladybug/ladybug-test-webapp/data/ladybug.log
 
-      - name: Show files
-        run: tree -d -L 5 .
-        if: failure()
-
       - name: Collect failure data into a single artifact directory
-        if: failure()
-        run: |
-          bash ladybug/.github/workflows/collect-artifact-data.sh artifact-data \
-            "ladybug/ladybug-frontend/cypress/screenshots" \
-            "ladybug/ladybug-frontend/cypress/videos" \
-            "ladybug/ladybug-test-webapp/data/ladybug.log" \
-            "ladybug/ladybug-frontend/cypress.env.json" \
-            "ladybug/ladybug-test-webapp/src/main/resources/test.properties" \
-            "ladybug/ladybug-test-webapp/src/main/webapp/WEB-INF/web.xml" \
-            "frank-runner/specials/ladybug/build.properties" \
-            "frank-runner/build.properties"
+        if: always()
+        run: bash ladybug/.github/workflows/jaxrs/collect-failure-data.sh
 
+      # TODO: Change "always()" back to "failure()" when the changes to caching and health checks
+      # are checked. Until then, this always stores the videos (and logs), also when tests pass.
       - name: Store logs
         uses: actions/upload-artifact@v5
-        if: failure()
+        if: always()
         with:
           name: jaxrs logs and videos ${{ matrix.name }}
           path: artifact-data/

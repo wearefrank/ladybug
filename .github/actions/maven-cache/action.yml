@@ -1,0 +1,55 @@
+name: Maven cache
+description: >
+  Restores or saves the cache of ~/.m2/repository. Call this action with mode "restore" before
+  Maven runs and with mode "save" after Maven has downloaded everything it needs (for example
+  when the server is up). Mode "save" only saves on master and only if "restore" did not find
+  the cache. Mode "restore" passes the key and the cache hit to mode "save" through environment
+  variables.
+
+  The key changes every month, so that the cache is refreshed regularly and does not keep
+  collecting old versions of artifacts. There are no restore-keys for the same reason. Caches of
+  previous months are no longer used and GitHub deletes them after 7 days. The key also contains
+  the input "name", so that builds that need different Maven artifacts have different caches.
+
+  Caches are only saved on master, see ../cache-common.sh. The logic is in cache.sh.
+inputs:
+  mode:
+    description: restore or save
+    required: true
+  name:
+    description: >
+      Part of the cache key that tells which build uses the cache. Builds that need different
+      Maven artifacts should use different names. Only needed for mode restore.
+    required: false
+runs:
+  using: composite
+  steps:
+    - name: Prepare ${{ inputs.mode }} of Maven downloads
+      id: prepare
+      run: bash "${GITHUB_ACTION_PATH}/cache.sh" "${MODE}"
+      shell: bash
+      env:
+        MODE: ${{ inputs.mode }}
+        NAME: ${{ inputs.name }}
+    - name: Restore Maven downloads from cache
+      id: restore
+      if: ${{ inputs.mode == 'restore' }}
+      uses: actions/cache/restore@v5
+      with:
+        path: ~/.m2/repository/
+        key: ${{ steps.prepare.outputs.key }}
+    - name: Remember key and cache hit for saving
+      if: ${{ inputs.mode == 'restore' }}
+      run: bash "${GITHUB_ACTION_PATH}/cache.sh" remember
+      shell: bash
+      env:
+        CACHE_KEY: ${{ steps.restore.outputs.cache-primary-key }}
+        CACHE_HIT: ${{ steps.restore.outputs.cache-hit }}
+    # When multiple matrix jobs try to save the same key, one of them succeeds and the others
+    # log a warning.
+    - name: Save Maven downloads to cache
+      if: ${{ steps.prepare.outputs.save == 'true' }}
+      uses: actions/cache/save@v5
+      with:
+        path: ~/.m2/repository/
+        key: ${{ env.MAVEN_CACHE_KEY }}

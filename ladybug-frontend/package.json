@@ -48,6 +48,7 @@
     "xml-beautifier": "0.5.0",
     "zone.js": "0.15.1"
   },
+  "//": "Keep the version of cypress exact (like 16.1.0, not ^16.1.0 or ~16.1.0). GitHub Actions caches the Cypress binary with this version in the cache key. With a range, the cache would keep a Cypress binary of an older version than the one that is installed.",
   "devDependencies": {
     "@angular-devkit/build-angular": "20.2.1",
     "@angular-eslint/builder": "20.3.0",
