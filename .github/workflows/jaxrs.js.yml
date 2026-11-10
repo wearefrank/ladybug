@@ -199,6 +199,7 @@ jobs:
             "ladybug/ladybug-frontend/cypress/screenshots" \
             "ladybug/ladybug-frontend/cypress/videos" \
             "ladybug/ladybug-test-webapp/data/ladybug.log" \
+            "frank-runner/installFrankRunnerEnv.log" \
             "ladybug/ladybug-frontend/cypress.env.json" \
             "ladybug/ladybug-test-webapp/src/main/resources/test.properties" \
             "ladybug/ladybug-test-webapp/src/main/webapp/WEB-INF/web.xml" \

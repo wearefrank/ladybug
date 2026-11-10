@@ -156,6 +156,7 @@ jobs:
             "ladybug/ladybug-frontend/cypress/screenshots" \
             "ladybug/ladybug-frontend/cypress/videos" \
             "ladybug/ladybug-spring-boot-test-webapp/data/ladybug.log" \
+            "ladybug/ladybug-spring-boot-test-webapp/serverStartLog.log" \
             "ladybug/ladybug-frontend/cypress.env.json"
 
       - name: Store logs
