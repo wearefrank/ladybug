@@ -229,7 +229,7 @@
       <dependency>
         <groupId>io.opentelemetry.proto</groupId>
         <artifactId>opentelemetry-proto</artifactId>
-        <version>1.9.0-alpha</version>
+        <version>1.11.1-alpha</version>
       </dependency>
       <dependency>
         <groupId>commons-codec</groupId>
@@ -313,7 +313,7 @@
       <dependency>
         <groupId>io.opentelemetry.semconv</groupId>
         <artifactId>opentelemetry-semconv</artifactId>
-        <version>1.41.0</version>
+        <version>1.45.0</version>
         <scope>provided</scope>
       </dependency>
       <dependency>
@@ -498,7 +498,7 @@
         </plugin>
         <plugin>
           <artifactId>maven-surefire-plugin</artifactId>
-          <version>3.5.5</version>
+          <version>3.6.1</version>
           <configuration>
             <!-- redirectTestOutputToFile>true</redirectTestOutputToFile -->
           </configuration>
@@ -520,7 +520,7 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-site-plugin</artifactId>
-          <version>3.21.0</version>
+          <version>3.22.0</version>
           <configuration>
             <skip>true</skip>
             <!-- Speed up the build in CI (generated site isn't used) -->
@@ -530,7 +530,7 @@
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>flatten-maven-plugin</artifactId>
-          <version>1.8.0</version>
+          <version>1.9.0</version>
           <configuration>
             <updatePomFile>true</updatePomFile>
             <flattenMode>resolveCiFriendliesOnly</flattenMode>
