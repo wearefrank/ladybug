@@ -12,20 +12,11 @@
     "typescript": "*"
   },
   "scripts": {
-    "lint": "eslint cypress/**/*.ts",
     "batch-file-storage": "cypress run --expose \"debugStorageName=FileDebugStorage\"",
     "batch-database-storage": "cypress run --expose \"debugStorageName=DatabaseDebugStorage\"",
     "interactive-file-storage": "cypress open --expose \"debugStorageName=FileDebugStorage\"",
     "interactive-database-storage": "cypress open --expose \"debugStorageName=DatabaseDebugStorage\"",
     "installFrankRunnerEnv": "cd ../../frank-runner && ./env.sh > installFrankRunnerEnv.log"
-  },
-  "devDependencies": {
-    "@typescript-eslint/eslint-plugin": "^6.4.0",
-    "eslint": "^8.0.1",
-    "eslint-config-standard-with-typescript": "^43.0.1",
-    "eslint-plugin-import": "^2.25.2",
-    "eslint-plugin-n": "^15.0.0 || ^16.0.0 ",
-    "eslint-plugin-promise": "^6.0.0"
   },
   "packageManager": "yarn@4.1.1"
 }
