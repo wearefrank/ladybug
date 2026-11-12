@@ -171,6 +171,13 @@ jobs:
       - name: Copy localUsers.yml
         if: ${{ matrix.dtap == 'PRD' }}
         run: cp ladybug/.github/workflows/with-ff/localUsers.yml.txt $RESOURCES_DIR/localUsers.yml
+      # JDK for building Ladybug and the Frank!Framework, and for running GetHighestFfVersion.java.
+      # Maven downloads are cached by the step "Cache Maven downloads" below.
+      - name: Set up JDK 21
+        uses: actions/setup-java@v5
+        with:
+          java-version: '21'
+          distribution: 'temurin'
       - name: Use Node.js 24.x
         uses: actions/setup-node@v5
         with:
@@ -218,15 +225,15 @@ jobs:
         if: ${{ matrix.test-app == 'true' }}
         run: cp with-ff/build-ladybug-ff-test-webapp.properties ../../ladybug-ff-test-webapp/build.properties
         working-directory: ladybug/.github/workflows
-      - name: Get highest version of Frank!Framework from Nexus
+      - name: Get highest version of Frank!Framework from Maven Central and Nexus
         id: getFfVersion
         if: ${{ steps.decideAboutBuildCode.outputs.buildCode == 'false' && matrix.test-app == 'true' }}
         run: |
-          version=$(bash ladybug/.github/workflows/get-highest-ff-version.sh)
+          version=$(java ladybug/.github/workflows/GetHighestFfVersion.java)
           echo "ffVersion=$version" >> $GITHUB_OUTPUT
       - name: Show highest version of Frank!Framework
         if: ${{ steps.decideAboutBuildCode.outputs.buildCode == 'false' && matrix.test-app == 'true' }}
-        run: echo "Highest version of Frank!Framework from Nexus is ${{ steps.getFfVersion.outputs.ffVersion }}"
+        run: echo "Highest version of Frank!Framework from Maven Central and Nexus is ${{ steps.getFfVersion.outputs.ffVersion }}"
       - name: Set Frank!Framework version in ladybug-ff-test-webapp
         if: ${{ steps.decideAboutBuildCode.outputs.buildCode == 'false' && matrix.test-app == 'true' }}
         working-directory: ladybug/ladybug-ff-test-webapp
