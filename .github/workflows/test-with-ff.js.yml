@@ -15,7 +15,7 @@ on:
       buildLatestFFandLadybugCode:
         description: If true, build code of frankframework and ladybug and start server from frank-runner/specials/ladybug
         type: boolean
-        default: false
+        default: true
         required: true
       ffFork:
         description: If buildLatestFfandLadybugCode and if supplied, clone the Frank!Framework from this user or organization. Examples are "mhdirkse" or "jacodg".
