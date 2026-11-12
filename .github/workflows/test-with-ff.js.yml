@@ -60,7 +60,7 @@ jobs:
     steps:
       - name: Decide about building the code
         id: decideAboutBuildCode
-        run: if [[ "${{ github.event.inputs.buildLatestFFandLadybugCode }}" == "" ]]; then echo "false"; else echo "${{ github.event.inputs.buildLatestFFandLadybugCode }}"; fi > temp; echo "buildCode=$(cat temp)" >> $GITHUB_OUTPUT
+        run: if [[ "${{ github.event.inputs.buildLatestFFandLadybugCode }}" == "" ]]; then echo "true"; else echo "${{ github.event.inputs.buildLatestFFandLadybugCode }}"; fi > temp; echo "buildCode=$(cat temp)" >> $GITHUB_OUTPUT
       - name: Show decision
         run: echo "buildCode is ${{ steps.decideAboutBuildCode.outputs.buildCode }}"
       - name: Check that ffFork is only set if it can be applied
