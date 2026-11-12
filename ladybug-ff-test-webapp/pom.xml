@@ -14,8 +14,7 @@
   <packaging>war</packaging>
 
   <properties>
-    <maven.compiler.release>21</maven.compiler.release>
-    <ff.version>10.3.0</ff.version>
+    <ff.version>9.4.5</ff.version>
   </properties>
 
   <dependencyManagement>
