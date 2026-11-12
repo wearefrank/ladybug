@@ -11,7 +11,7 @@ describe('Views', () => {
   before(() => {
     cy.apiDeleteAll(Cypress.expose('debugStorageName') as string)
     cy.apiDeleteAll('Test')
-    cy.visit('')
+    cy.visitLadybug()
     cy.createReportWithTestPipelineApi('GrayBox', 'Caller', 'xxx')
     cy.wrap(Cypress.config('fixturesFolder')).then((fixturesFolder) => {
       const rawInputMessage = fixturesFolder + '/ConclusionInputs/valid'
@@ -80,18 +80,18 @@ describe('Views', () => {
 })
 
 function openReportInView (view: string, reportName: string): void {
-  cy.visit('')
+  cy.visitLadybug()
   cy.getNumLadybugReports().should('equal', 2)
-  cy.inIframeBody('[data-cy-change-view-dropdown]').select(view)
+  cy.inLadybug('[data-cy-change-view-dropdown]').select(view)
   cy.awaitLoadingSpinner()
   // Query fresh from the live DOM instead of using an alias, because a reload
   // can detach a previously found row.
-  cy.inIframeBody('[data-cy-debug="tableRow"]').contains(reportName).click()
+  cy.inLadybug('[data-cy-debug="tableRow"]').contains(reportName).click()
   cy.awaitDebugTree()
 }
 
 function tree (): Cypress.Chainable<any> {
-  return cy.inIframeBody('[data-cy-debug-tree="root"]')
+  return cy.inLadybug('[data-cy-debug-tree="root"]')
 }
 
 // Report node -> start checkpoint -> end checkpoint. The end checkpoint of the
