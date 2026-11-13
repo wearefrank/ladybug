@@ -43,7 +43,8 @@ export const AUTHENTICATIONS = new Map<string, Authentication>([
 declare global {
   namespace Cypress {
     interface Chainable<Subject = any> {
-      inIframeBody(query: string): Chainable<any>
+      inLadybug(query: string): Chainable<any>
+      visitLadybug(): void
       clickTableRowWithStorageId(storageId: number): Chainable<any>
       enterLadybug(): void
       getNumLadybugReports(): Chainable<any>
@@ -84,21 +85,45 @@ declare global {
   }
 }
 
-Cypress.Commands.add('inIframeBody', (query) => {
-  cy
-    .get('iframe')
-    .its('0.contentDocument')
-    .its('body')
-    .then(body => {
-      cy.wrap(body).find(query)
-    })
+// Tests can open Ladybug in two ways: inside the iframe of the Frank!Framework
+// console (cy.visit('')), or directly (cy.visitLadybug()). The second way makes
+// the snapshots in the Cypress command log show Ladybug, because Cypress does not
+// snapshot iframe contents.
+function isLadybugTopPage (pathname: string): boolean {
+  return pathname.startsWith('/iaf/ladybug')
+}
+
+// Finds elements inside Ladybug, whichever way Ladybug was opened. This is a
+// query, not a command, so Cypress re-runs the whole lookup on every retry,
+// including finding the iframe's current document. That keeps working when
+// the iframe reloads.
+Cypress.Commands.addQuery('inLadybug', function (query: string) {
+  return () => {
+    // cy.state() is internal Cypress API, but it is also used in the Cypress
+    // documentation of addQuery.
+    const win = (cy as any).state('window') as Window
+    if (isLadybugTopPage(win.location.pathname)) {
+      return Cypress.$(win.document).find(query)
+    }
+    const iframe = win.document.querySelector('iframe')
+    const iframeDocument = iframe?.contentDocument
+    if (iframeDocument === null || iframeDocument === undefined) {
+      // Iframe not there yet. Return nothing so that Cypress retries.
+      return Cypress.$()
+    }
+    return Cypress.$(iframeDocument).find(query)
+  }
+})
+
+Cypress.Commands.add('visitLadybug', () => {
+  cy.visit('/iaf/ladybug')
 })
 
 // The debug table can re-render while a matching row/cell is being located, which detaches
 // jQuery references collected via .each() and makes the eventual .click() flaky. Using
 // .contains() instead lets Cypress re-query the DOM and retry until the cell is actionable.
 Cypress.Commands.add('clickTableRowWithStorageId', (storageId) => {
-  cy.inIframeBody('[data-cy-debug="tableRow"]')
+  cy.inLadybug('[data-cy-debug="tableRow"]')
     .contains('td:nth-child(2)', new RegExp(`^\\s*${storageId}\\s*$`))
     .click()
 })
@@ -140,15 +165,20 @@ Cypress.Commands.add('enterLadybug', () => {
       })
     }
   )
-  cy.get('[data-cy-nav="status"]', { timeout: 10000 }).click()
-  // Wait for the navigation to finish. Otherwise the route change can collapse the
-  // Testing menu again after it was expanded by the click below.
-  cy.location('hash').should('include', '/status')
-  cy.get('[data-cy-nav="testing"]').click()
-  cy.get('[data-cy-nav="testingLadybug"]').click()
+  cy.location('pathname').then((pathname) => {
+    if (!isLadybugTopPage(pathname)) {
+      // In the Frank!Framework console: navigate to the page with the Ladybug iframe.
+      cy.get('[data-cy-nav="status"]', { timeout: 10000 }).click()
+      // Wait for the navigation to finish. Otherwise the route change can collapse the
+      // Testing menu again after it was expanded by the click below.
+      cy.location('hash').should('include', '/status')
+      cy.get('[data-cy-nav="testing"]').click()
+      cy.get('[data-cy-nav="testingLadybug"]').click()
+    }
+  })
   cy.awaitLoadingSpinner()
   cy.log(`[diag] debug tab clicked at ${Date.now()}`)
-  cy.inIframeBody('[data-cy-nav-tab="debug"]').click()
+  cy.inLadybug('[data-cy-nav-tab="debug"]').click()
 })
 
 // Temporary diagnostic for issue #977, see enterLadybug(). Lets callers elsewhere (e.g.
@@ -175,12 +205,12 @@ Cypress.Commands.add('getNumLadybugReports', () => {
     url: `iaf/ladybug/api/metadata/${Cypress.expose('debugStorageName') as string}?*`,
     times: 1
   }).as('apiGetReportsList')
-  cy.inIframeBody('[data-cy-debug="refresh"]').click()
+  cy.inLadybug('[data-cy-debug="refresh"]').click()
   cy.wait(['@apiGetReports_2', '@apiGetReportsList']).then(([interception]) => {
     const count: number = interception.response.body
-    cy.inIframeBody('[data-cy-debug="amountShown"]').invoke('text')
+    cy.inLadybug('[data-cy-debug="amountShown"]').invoke('text')
       .should('equal', "/" + count);
-    cy.inIframeBody('[data-cy-debug="tableRow"]')
+    cy.inLadybug('[data-cy-debug="tableRow"]')
       .should('have.length', count)
     return cy.wrap(count)
   })
@@ -225,15 +255,15 @@ Cypress.Commands.add('createReportWithTestPipelineApi', (config: string, adapter
 // Only works if some reports are expected to be omitted because of the filter
 Cypress.Commands.add('getNumLadybugReportsForNameFilter', (name) => {
   cy.getNumLadybugReports().then(totalNumReports => {
-    cy.inIframeBody('[data-cy-debug="filter"]').click()
+    cy.inLadybug('[data-cy-debug="filter"]').click()
     cy.enterFilter('Name', name)
-    cy.inIframeBody('[data-cy-debug="tableRow"]').its('length')
+    cy.inLadybug('[data-cy-debug="tableRow"]').its('length')
       .should('be.lessThan', totalNumReports).then(result => {
-        cy.inIframeBody('app-filter-side-drawer').find('label:contains(Name)')
+        cy.inLadybug('app-filter-side-drawer').find('label:contains(Name)')
           .parent().find('button:contains(Clear)').click()
-        cy.inIframeBody('[data-cy-debug="tableRow"]').should('have.length', totalNumReports)
-        cy.inIframeBody('app-filter-side-drawer').find('button:contains(Close)').click()
-        cy.inIframeBody('app-filter-side-drawer').find('label').should('not.exist')
+        cy.inLadybug('[data-cy-debug="tableRow"]').should('have.length', totalNumReports)
+        cy.inLadybug('app-filter-side-drawer').find('button:contains(Close)').click()
+        cy.inLadybug('app-filter-side-drawer').find('label').should('not.exist')
         return cy.wrap(result)
       })
   })
@@ -260,7 +290,7 @@ Cypress.Commands.add('createReportAndOpen', (config: string, adapter: string, me
 
 Cypress.Commands.add('getAllStorageIdsInTable', () => {
   const storageIds: number[] = []
-  cy.inIframeBody('[data-cy-debug="tableRow"]').each($row => {
+  cy.inLadybug('[data-cy-debug="tableRow"]').each($row => {
     cy.wrap($row).find('td:eq(1)').invoke('text').then(s => {
       storageIds.push(parseInt(s))
     })
@@ -280,7 +310,7 @@ Cypress.Commands.add('guardedCopyReportToTestTab', (alias) => {
     method: 'GET',
     url: /\/iaf\/ladybug\/api\/metadata\/Test*/g
   }).as('apiGetTestReports')
-  cy.inIframeBody('[data-cy-debug-editor="copy"]').click()
+  cy.inLadybug('[data-cy-debug-editor="copy"]').click()
   cy.wait(`@${alias}`).then((interception) => {
     cy.wrap(interception).its('request.url').should('contain', 'Test')
     cy.wrap(interception).its('response.statusCode').should('equal', 200)
@@ -289,8 +319,8 @@ Cypress.Commands.add('guardedCopyReportToTestTab', (alias) => {
 })
 
 Cypress.Commands.add('checkTestTabHasReportNamed', (name) => {
-  cy.inIframeBody('[data-cy-nav-tab="test"]').click()
-  cy.inIframeBody('[data-cy-test="table"] tbody tr')
+  cy.inLadybug('[data-cy-nav-tab="test"]').click()
+  cy.inLadybug('[data-cy-test="table"] tbody tr')
     .should('have.length', 1)
     .as('testtabReportRow')
   // TODO: It would be nice not to trim the text here.
@@ -301,16 +331,16 @@ Cypress.Commands.add('checkTestTabHasReportNamed', (name) => {
 
 Cypress.Commands.add('enterFilter', (field: string, filter: string) => {
   const fieldQuery = `label:contains(${field})`
-  cy.inIframeBody('app-filter-side-drawer').find(fieldQuery)
+  cy.inLadybug('app-filter-side-drawer').find(fieldQuery)
     .parent().find('input')
     .type(filter + '{enter}')
 })
 
 Cypress.Commands.add('checkActiveFilterSphere', (field: string, value: string) => {
   const expectedText = `${field}: ${value}`
-  cy.inIframeBody('app-active-filters').should('not.contain', '[');
-  cy.inIframeBody('app-active-filters').should('not.contain', ']');
-  return cy.inIframeBody('app-active-filters').contains(expectedText)
+  cy.inLadybug('app-active-filters').should('not.contain', '[');
+  cy.inLadybug('app-active-filters').should('not.contain', ']');
+  return cy.inLadybug('app-active-filters').contains(expectedText)
 })
 
 Cypress.Commands.add('apiDeleteAll', (storageName: string) => {
@@ -374,7 +404,7 @@ function normalizeNodeSelection (input: NodeSelection): TextWithSeq {
 
 Cypress.Commands.add('selectTreeNode', (path: NodeSelection[]) => {
   const head = normalizeNodeSelection(path.shift())
-  cy.inIframeBody(`[data-cy-debug-tree="root"] > app-tree-item > div > div:nth-child(1):contains(${head.text})`).then((elementsWithTexts) => {
+  cy.inLadybug(`[data-cy-debug-tree="root"] > app-tree-item > div > div:nth-child(1):contains(${head.text})`).then((elementsWithTexts) => {
     const chosen = elementsWithTexts[head.seq]
     return cy.wrap(chosen).parent().parent().then((element) => {
       if (path.length === 0) {
@@ -410,13 +440,13 @@ function selectTreeNodeImpl (subject: JQuery<HTMLElement>, path: NodeSelection[]
 // report being opened while another one is already showing, this guard is not sufficient
 // and would need to check for content specific to the new report instead of mere presence.
 Cypress.Commands.add('awaitDebugTree', () => {
-  cy.inIframeBody('[data-cy-debug-tree="root"] > app-tree-item').should('have.length.at.least', 1)
+  cy.inLadybug('[data-cy-debug-tree="root"] > app-tree-item').should('have.length.at.least', 1)
 })
 
 Cypress.Commands.add('awaitLoadingSpinner', () => {
   // We do not want to catch the moment that the loading spinner is NOT YET present
   cy.wait(400)
-  cy.inIframeBody('[data-cy-loading-spinner]').should('not.exist')
+  cy.inLadybug('[data-cy-loading-spinner]').should('not.exist')
   // TODO issue https://github.com/wearefrank/ladybug/issues/977. Until the
   // loading spinner is reliable, we do with a timeout that is larger than
   // the debounce time of 300 ms applied in FilterService.
@@ -440,7 +470,7 @@ function trimMonacoText (value: string): string {
 }
 
 Cypress.Commands.add('checkpointValueEquals', { prevSubject: false }, (expectedValue) => {
-  cy.inIframeBody('app-checkpoint-value');
+  cy.inLadybug('app-checkpoint-value');
   checkLadybugCheckpointValue((actualValue) => actualValue === expectedValue, 6, 1000)
 })
 
@@ -449,7 +479,7 @@ function checkLadybugCheckpointValue (checker: (string) => boolean, numberOfTime
     throw new Error('checkLadybugCheckpointValue number of tries exceeded')
   }
   cy.log(`Remaining number of tries: ${numberOfTimes}`).then(() => {
-    cy.inIframeBody('[data-cy-element-name="checkpointEditor"]').then((appEditor) => {
+    cy.inLadybug('[data-cy-element-name="checkpointEditor"]').then((appEditor) => {
       const textOfAppEditor: string = appEditor.text()
       cy.log(`Text out of scrollable element: ${trimForLog(textOfAppEditor)}`).then(() => {
         if (checker(textOfAppEditor)) {
@@ -486,22 +516,22 @@ function trimForLog (value: string): string {
 }
 
 Cypress.Commands.add('checkpointValueTrimmedEquals', { prevSubject: false }, (expectedValue) => {
-  cy.inIframeBody('app-checkpoint-value');
+  cy.inLadybug('app-checkpoint-value');
   checkLadybugCheckpointValue((actualValue: string) => trimMonacoText(actualValue) === expectedValue, 6, 1000)
 })
 
 Cypress.Commands.add('checkpointValueEmpty', { prevSubject: false }, () => {
-  cy.inIframeBody('app-checkpoint-value');
+  cy.inLadybug('app-checkpoint-value');
   checkLadybugCheckpointValue((actualValue: string) => actualValue.length === 0, 6, 1000)
 })
 
 Cypress.Commands.add('checkNumCheckpointValueLabels', { prevSubject: false }, (expectedNumLabels: number) => {
-  cy.inIframeBody('app-report-alert-message2 > div > div')
+  cy.inLadybug('app-report-alert-message2 > div > div')
     .should('have.length', expectedNumLabels)
 })
 
 Cypress.Commands.add('checkpointValueLabel', { prevSubject: false }, (index: number) => {
-  cy.inIframeBody(`app-report-alert-message2 > div > div:eq(${index})`)
+  cy.inLadybug(`app-report-alert-message2 > div > div:eq(${index})`)
 })
 
 Cypress.Commands.add('visitAsTester', { prevSubject: false }, () => {
@@ -530,11 +560,11 @@ Cypress.Commands.add('goToEnvironmentVariables', { prevSubject: false }, () => {
 })
 
 Cypress.Commands.add('enableReportGenerator', { prevSubject: false }, () => {
-  cy.inIframeBody('[data-cy-debug="openSettings"]').should('be.visible').click()
-  cy.inIframeBody('[role=dialog]').should('be.visible')
-  cy.inIframeBody('[data-cy-settings="generatorEnabled"]').select('Enabled');
-  cy.inIframeBody('[data-cy-settings="generatorEnabled"]').find(':selected').invoke('text').should('equal', 'Enabled');
-  cy.inIframeBody('[data-cy-settings="saveChanges"]').click()
+  cy.inLadybug('[data-cy-debug="openSettings"]').should('be.visible').click()
+  cy.inLadybug('[role=dialog]').should('be.visible')
+  cy.inLadybug('[data-cy-settings="generatorEnabled"]').select('Enabled');
+  cy.inLadybug('[data-cy-settings="generatorEnabled"]').find(':selected').invoke('text').should('equal', 'Enabled');
+  cy.inLadybug('[data-cy-settings="saveChanges"]').click()
 })
 
 Cypress.Commands.add('executeJdbcQuery', { prevSubject: false }, () => {
