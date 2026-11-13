@@ -147,16 +147,12 @@ describe('Test labels', () => {
 });
 
 function testTreeView(reportName: string): void {
-  cy.get('[data-cy-debug-tree="root"] > app-tree-item .item-name')
-    .eq(0)
-    .within(function ($node) {
-      cy.wrap($node).should('contain', reportName);
-    });
+  cy.getRootNodeOfDebugTree()
+    .find('[data-cy-tree-view="text"]')
+    .should('contain', reportName);
 
-  cy.get('[data-cy-debug-tree="root"] > app-tree-item > div')
-    .eq(0)
-    .get('div > app-tree-icon div.sft-icon-container i')
-    .as('tree-icons');
+  // The icons of all nodes, the report node first.
+  cy.get('[data-cy-debug-tree="root"] [data-cy-tree-view="icon"]').as('tree-icons');
 
   cy.get('@tree-icons').eq(1)
     .should('satisfy', ($el) => {

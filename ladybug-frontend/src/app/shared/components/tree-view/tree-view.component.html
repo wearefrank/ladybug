@@ -1,0 +1,34 @@
+@if (root) {
+  <ng-container [ngTemplateOutlet]="nodeTemplate" [ngTemplateOutletContext]="{ $implicit: root }" />
+}
+
+<ng-template #nodeTemplate let-node>
+  <div
+    class="sft-item"
+    [attr.data-cy-tree-view-key]="node.key"
+    [ngClass]="{ 'sft-item-selected': node.selected, 'sft-no-children': node.children.length === 0 }"
+    (click)="selectByUser(node)"
+  >
+    @if (node.children.length > 0) {
+      <div class="sft-chevron-container" data-cy-tree-view="chevron" (click)="toggleExpanded(node, $event)">
+        <i class="bi sft-chevron" [ngClass]="node.expanded ? 'bi-chevron-down' : 'bi-chevron-right'"></i>
+      </div>
+    }
+    <div class="sft-icon-container">
+      <i data-cy-tree-view="icon" [class]="getIconClass(node)"></i>
+    </div>
+    <div class="item-name" data-cy-tree-view="text" [title]="node.text" [ngClass]="{ red: node.highlighted }">
+      {{ node.text }}
+    </div>
+  </div>
+  @if (node.children.length > 0) {
+    <div class="sft-child-container" data-cy-tree-view="children" [hidden]="!node.expanded">
+      @for (child of node.children; track child.key; let first = $first) {
+        <div class="sft-item-child">
+          <div class="sft-item-vertical-line" [ngClass]="{ 'sft-item-vertical-line-extended': !first }"></div>
+          <ng-container [ngTemplateOutlet]="nodeTemplate" [ngTemplateOutletContext]="{ $implicit: child }" />
+        </div>
+      }
+    </div>
+  }
+</ng-template>

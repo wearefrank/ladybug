@@ -84,7 +84,10 @@ describe('Report buttons', () => {
     checkNoCheckpointIds();
   })
 
-  it('When node is collapsed and expanded then the same node remains selected', () => {
+  // The behavior of the tree itself is tested by the Karma tests of TreeViewComponent
+  // and DebugTreeComponent. This test checks that a selection made by the tree
+  // reaches the panel that shows the report or the checkpoint.
+  it('When a node is collapsed that contains the selected node then the collapsed node becomes selected', () => {
     cy.visit('');
     cy.createReport();
     cy.get('[data-cy-debug="refresh"]').click();
@@ -92,53 +95,18 @@ describe('Report buttons', () => {
     cy.getShownNodesOfReportTreeWithText('Simple report').should('have.length', 3)
       .eq(2)
       .click();
-    checkSelectedNode();
+    checkSelectedNode(2);
     cy.get('[data-cy-element-name="checkpointEditor"]').invoke('text').should('contain', 'Goodbye');
+    // The report node contains the selected node. The selected node is
+    // not allowed to become invisible, so the report node becomes selected.
     cy.collapseNode('Simple report', 0);
-    // Selected node is not visible
-    cy.get('[data-cy-element-name="checkpointEditor"]').invoke('text').should('contain', 'Goodbye');
     cy.getShownNodesOfReportTreeWithText('Simple report').should('have.length', 1);
+    cy.checkShownNodeWithTextSelected('Simple report', 0, true);
+    // The report is shown instead of the checkpoint.
+    cy.get('[data-cy-element-name="checkpointEditor"]').should('not.exist');
     cy.expandNode('Simple report', 0);
-    checkSelectedNode();
-    cy.get('[data-cy-element-name="checkpointEditor"]').invoke('text').should('contain', 'Goodbye');
     cy.getShownNodesOfReportTreeWithText('Simple report').should('have.length', 3);
-  })
-
-  it('When all nodes are collapsed and expanded then same node remains selected', () => {
-    cy.visit('');
-    cy.createReport();
-    cy.get('[data-cy-debug="refresh"]').click();
-    cy.assertDebugTableLength(1).click();
-    cy.getShownNodesOfReportTreeWithText('Simple report').should('have.length', 3)
-      .eq(2)
-      .click();
-    checkSelectedNode();
-    cy.get('[data-cy-element-name="checkpointEditor"]').invoke('text').should('contain', 'Goodbye');
-    cy.get('[data-cy-debug-tree="collapseAll"]').click();
-    // Selected node is not visible
-    cy.get('[data-cy-element-name="checkpointEditor"]').invoke('text').should('contain', 'Goodbye');
-    cy.getShownNodesOfReportTreeWithText('Simple report').should('have.length', 1);
-    cy.get('[data-cy-debug-tree="expandAll"]').click();
-    checkSelectedNode();
-    cy.get('[data-cy-element-name="checkpointEditor"]').invoke('text').should('contain', 'Goodbye');
-    cy.getShownNodesOfReportTreeWithText('Simple report').should('have.length', 3);
-  })
-
-  it('When node meets search key then red', () => {
-    cy.visit('');
-    cy.createReportWithStatusError();
-    cy.get('[data-cy-debug="refresh"]').click();
-    cy.assertDebugTableLength(1).click();
-    cy.getShownNodesOfReportTreeWithText('Complex').should('have.length', 4);
-    cy.getShownNodesOfReportTreeWithText('First').should('have.length', 6);
-    cy.getShownNodesOfReportTreeWithText('Second').should('have.length', 1);
-    cy.checkShownNodeWithTextSearched('Complex', false);
-    cy.checkShownNodeWithTextSearched('First', false);
-    cy.checkShownNodeWithTextSearched('Second', false);
-    cy.get('[data-cy-debug-tree="search"]').type('Complex');
-    cy.checkShownNodeWithTextSearched('Complex', true);
-    cy.checkShownNodeWithTextSearched('First', false);
-    cy.checkShownNodeWithTextSearched('Second', false);
+    checkSelectedNode(0);
   })
 });
 
@@ -152,8 +120,10 @@ function checkNoCheckpointIds() {
   }
 }
 
-function checkSelectedNode() {
-  cy.checkShownNodeWithTextSelected('Simple report', 0, false);
-  cy.checkShownNodeWithTextSelected('Simple report', 1, false);
-  cy.checkShownNodeWithTextSelected('Simple report', 2, true);
+// Checks that of the three nodes of the simple report, only the one with
+// the given index is selected. Requires all three nodes to be visible.
+function checkSelectedNode(selectedIndex: number) {
+  for (const index of [0, 1, 2]) {
+    cy.checkShownNodeWithTextSelected('Simple report', index, index === selectedIndex);
+  }
 }
