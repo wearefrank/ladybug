@@ -266,6 +266,43 @@ describe('TreeViewComponent', () => {
     });
   });
 
+  describe('command select', () => {
+    it('selects the node, expands its ancestors and does not emit', () => {
+      send({ command: 'new', node: exampleTree(), select: 'a1' });
+      send({ command: 'collapseAll' });
+      expect(isExpanded('b')).toBeFalse();
+      emitted = [];
+      send({ command: 'select', key: 'b1' });
+      expect(selectedKeys()).toEqual(['b1']);
+      expect(isExpanded('r')).toBeTrue();
+      expect(isExpanded('b')).toBeTrue();
+      expect(emitted).toEqual([]);
+    });
+
+    it('ignores an unknown key', () => {
+      send({ command: 'new', node: exampleTree(), select: 'a1' });
+      emitted = [];
+      send({ command: 'select', key: 'unknown' });
+      expect(selectedKeys()).toEqual(['a1']);
+      expect(emitted).toEqual([]);
+    });
+
+    it('is ignored before the first tree', () => {
+      send({ command: 'select', key: 'b1' });
+      expect(fixture.nativeElement.querySelectorAll('.sft-item').length).toBe(0);
+      expect(emitted).toEqual([]);
+      send({ command: 'new', node: exampleTree(), select: 'a1' });
+      expect(selectedKeys()).toEqual(['a1']);
+    });
+
+    it('is kept by a following update', () => {
+      send({ command: 'new', node: exampleTree(), select: 'a1' });
+      send({ command: 'select', key: 'b1' });
+      send({ command: 'update', node: exampleTree(), select: 'a2' });
+      expect(selectedKeys()).toEqual(['b1']);
+    });
+  });
+
   describe('user interaction', () => {
     beforeEach(() => {
       send({ command: 'new', node: exampleTree(), select: 'a1' });

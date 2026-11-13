@@ -57,7 +57,7 @@ export interface TreeViewNode extends Omit<TreeViewInputNode, 'children'> {
 }
 
 // Instruction to the tree view.
-export type TreeViewCommand = TreeViewShowCommand | TreeViewExpandCommand;
+export type TreeViewCommand = TreeViewShowCommand | TreeViewExpandCommand | TreeViewSelectCommand;
 
 // Instruction to the tree view to show a (new version of a) report.
 // Afterwards, the key of the selected node is emitted.
@@ -86,6 +86,21 @@ export interface TreeViewExpandCommand {
   command: 'expandAll' | 'collapseAll';
 }
 
+// Instruction to the tree view to select the node with the given key and
+// expand its ancestors. Ignored when no node has this key or when no tree
+// has been shown yet.
+//
+// Nothing is emitted, for two reasons. First, the caller knows the key
+// already. Second, emitting could cause an endless loop when two tree
+// views are kept in sync, as in the compare tab: a selection in the left
+// tree selects the corresponding node in the right tree. If that emitted,
+// it would select the corresponding node in the left tree again, which
+// would emit again, and so on.
+export interface TreeViewSelectCommand {
+  command: 'select';
+  key: string;
+}
+
 const ICON_CLASSES: Record<TreeViewNodeType, string> = {
   report: 'bi bi-folder icon-size',
   startpoint: 'bi bi-arrow-bar-right icon-size bolder-icon',
@@ -107,6 +122,8 @@ interface TreeViewState {
   show(command: TreeViewShowCommand): Initialized;
   expandAll(): void;
   collapseAll(): void;
+  // Selects the node with the given key, if there is one.
+  selectByKey(key: string): void;
   // Selects the node. Returns its key.
   selectByUser(node: TreeViewNode): string;
   // Returns the key of the node that is selected afterwards, or undefined
@@ -129,6 +146,10 @@ class Uninitialized implements TreeViewState {
 
   collapseAll(): void {
     // There are no nodes to collapse.
+  }
+
+  selectByKey(): void {
+    // There are no nodes to select.
   }
 
   // Cannot happen, because nothing is rendered that the user can click.
@@ -218,6 +239,13 @@ class Initialized implements TreeViewState {
   collapseAll(): void {
     this.setAllExpanded(false);
     this.expandAncestors(this.selected);
+  }
+
+  selectByKey(key: string): void {
+    const node = this.nodesByKey.get(key);
+    if (node) {
+      this.select(node);
+    }
   }
 
   selectByUser(node: TreeViewNode): string {
@@ -333,6 +361,11 @@ export class TreeViewComponent implements OnChanges, OnDestroy {
       }
       case 'collapseAll': {
         this.state.collapseAll();
+        break;
+      }
+      case 'select': {
+        // Does not emit on purpose, see TreeViewSelectCommand.
+        this.state.selectByKey(command.key);
         break;
       }
     }
