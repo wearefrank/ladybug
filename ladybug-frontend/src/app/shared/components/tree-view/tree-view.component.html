@@ -21,10 +21,7 @@
           @if (this.parentTree.options.hierarchyLines?.vertical) {
             <div
               class="sft-item-vertical-line"
-              [ngClass]="{'sft-item-vertical-line-extended': !first}"
-              [style]="shouldEnableVerticalLine(child, index) ?
-            this.parentTree.options.styles?.hierarchyLine?.vertical?.default :
-            this.parentTree.options.styles?.hierarchyLine?.vertical?.active"></div>
+              [ngClass]="{'sft-item-vertical-line-extended': !first}"></div>
           }
 <!--            @if (shouldEnableHorizontalLine(child)) {-->
 <!--              <div-->
