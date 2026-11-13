@@ -84,6 +84,9 @@ describe('Report buttons', () => {
     checkNoCheckpointIds();
   })
 
+  // The behavior of the tree itself is tested by the Karma tests of TreeViewComponent
+  // and DebugTreeComponent. This test checks that a selection made by the tree
+  // reaches the panel that shows the report or the checkpoint.
   it('When a node is collapsed that contains the selected node then the collapsed node becomes selected', () => {
     cy.visit('');
     cy.createReport();
@@ -104,62 +107,6 @@ describe('Report buttons', () => {
     cy.expandNode('Simple report', 0);
     cy.getShownNodesOfReportTreeWithText('Simple report').should('have.length', 3);
     checkSelectedNode(0);
-  })
-
-  it('When all nodes are collapsed and expanded then same node remains selected and visible', () => {
-    cy.visit('');
-    cy.createReport();
-    cy.get('[data-cy-debug="refresh"]').click();
-    cy.assertDebugTableLength(1).click();
-    cy.getShownNodesOfReportTreeWithText('Simple report').should('have.length', 3)
-      .eq(2)
-      .click();
-    checkSelectedNode(2);
-    cy.get('[data-cy-element-name="checkpointEditor"]').invoke('text').should('contain', 'Goodbye');
-    cy.get('[data-cy-debug-tree="collapseAll"]').click();
-    // Collapse all keeps the nodes that contain the selected node expanded,
-    // so in this report all nodes remain visible.
-    cy.getShownNodesOfReportTreeWithText('Simple report').should('have.length', 3);
-    checkSelectedNode(2);
-    cy.get('[data-cy-element-name="checkpointEditor"]').invoke('text').should('contain', 'Goodbye');
-    cy.get('[data-cy-debug-tree="expandAll"]').click();
-    checkSelectedNode(2);
-    cy.get('[data-cy-element-name="checkpointEditor"]').invoke('text').should('contain', 'Goodbye');
-    cy.getShownNodesOfReportTreeWithText('Simple report').should('have.length', 3);
-  })
-
-  it('When the report node is selected then collapse all collapses all nodes', () => {
-    cy.visit('');
-    cy.createReport();
-    cy.get('[data-cy-debug="refresh"]').click();
-    cy.assertDebugTableLength(1).click();
-    cy.getShownNodesOfReportTreeWithText('Simple report').should('have.length', 3)
-      .eq(0)
-      .click();
-    checkSelectedNode(0);
-    cy.get('[data-cy-debug-tree="collapseAll"]').click();
-    cy.getShownNodesOfReportTreeWithText('Simple report').should('have.length', 1);
-    cy.checkShownNodeWithTextSelected('Simple report', 0, true);
-    cy.get('[data-cy-debug-tree="expandAll"]').click();
-    cy.getShownNodesOfReportTreeWithText('Simple report').should('have.length', 3);
-    checkSelectedNode(0);
-  })
-
-  it('When node meets search key then red', () => {
-    cy.visit('');
-    cy.createReportWithStatusError();
-    cy.get('[data-cy-debug="refresh"]').click();
-    cy.assertDebugTableLength(1).click();
-    cy.getShownNodesOfReportTreeWithText('Complex').should('have.length', 4);
-    cy.getShownNodesOfReportTreeWithText('First').should('have.length', 6);
-    cy.getShownNodesOfReportTreeWithText('Second').should('have.length', 1);
-    cy.checkShownNodeWithTextSearched('Complex', false);
-    cy.checkShownNodeWithTextSearched('First', false);
-    cy.checkShownNodeWithTextSearched('Second', false);
-    cy.get('[data-cy-debug-tree="search"]').type('Complex');
-    cy.checkShownNodeWithTextSearched('Complex', true);
-    cy.checkShownNodeWithTextSearched('First', false);
-    cy.checkShownNodeWithTextSearched('Second', false);
   })
 });
 

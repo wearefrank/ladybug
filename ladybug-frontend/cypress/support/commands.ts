@@ -102,8 +102,6 @@ declare global {
 
       checkShownNodeWithTextSelected(reportName: string, index: number, selected: boolean): Chainable;
 
-      checkShownNodeWithTextSearched(reportName: string, searched: boolean): Chainable;
-
       collapseNode(text: string, index: number):Chainable;
 
       expandNode(text: string, index: number): Chainable;
@@ -477,12 +475,6 @@ Cypress.Commands.add('getShownNodesOfReportTreeWithText' as keyof Chainable, (te
 Cypress.Commands.add('checkShownNodeWithTextSelected' as keyof Chainable, (reportName: string, index: number, selected: boolean): void => {
   const predicate: string = selected === true ? 'have.class' : 'not.have.class';
   cy.getShownNodesOfReportTreeWithText(reportName).eq(index).parent().should(predicate, TREE_ITEM_SELECTED_CLASS);
-})
-
-Cypress.Commands.add('checkShownNodeWithTextSearched' as keyof Chainable, (reportName: string, searched: boolean): void => {
-  const predicate: string = searched === true ? 'have.css' : 'not.have.css';
-  // The text itself is red, not the whole node.
-  cy.getShownNodesOfReportTreeWithText(reportName).should(predicate, 'color', 'rgb(255, 0, 0)');
 })
 
 Cypress.Commands.add('collapseNode' as keyof Chainable, (text, index): void => {

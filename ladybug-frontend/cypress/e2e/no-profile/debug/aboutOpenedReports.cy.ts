@@ -36,18 +36,8 @@ describe('About opened reports', () => {
     cy.checkFileTreeLength(0);
   })
 
-  it('When we collapse a parent checkpoint then the child becomes invisible', () => {
-    cy.createReportWithInfopoint();
-    cy.initializeApp();
-    cy.getDebugTableRows().find('td:contains("Hide a checkpoint in blackbox view")').first().click();
-    cy.checkFileTreeLength(1);
-    // The second chevron belongs to the startpoint, the first child of the report node.
-    cy.get('[data-cy-debug-tree="root"] [data-cy-tree-view="chevron"]').eq(1).click()
-    cy.get('[data-cy-debug-tree="root"] [data-cy-tree-view="text"]:contains("Hide this checkpoint")').should(
-      'be.hidden',
-    );
-  });
-
+  // The nesting is computed by the backend, so this is tested here and not
+  // in the Karma tests.
   it('Correct nesting in debug tree for report with multiple startpoints', () => {
     cy.createReportWithMultipleStartpoints();
     cy.initializeApp();
@@ -78,9 +68,5 @@ describe('About opened reports', () => {
         expect($children.eq(0)).to.contain.text('Hello infopoint');
         expect($children.eq(1)).to.contain.text('endpoint 2');
       });
-    // Collapsing the outer startpoint hides everything that is nested in it.
-    cy.get('@outerStartpoint').find('[data-cy-tree-view="chevron"]').click();
-    cy.get('[data-cy-debug-tree="root"] [data-cy-tree-view="text"]:contains("startpoint 2")').should('be.hidden');
-    cy.get('[data-cy-debug-tree="root"] [data-cy-tree-view="text"]:contains("Hello infopoint")').should('be.hidden');
   });
 });
