@@ -91,9 +91,10 @@ interface TreeViewState {
   readonly root: TreeViewNode | null;
   // Returns the state after executing the command.
   execute(command: TreeViewCommand): Initialized;
-  // Both return the key of the node that is selected afterwards, or
-  // undefined when the selection did not change.
-  selectByUser(node: TreeViewNode): string | undefined;
+  // Selects the node. Returns its key.
+  selectByUser(node: TreeViewNode): string;
+  // Returns the key of the node that is selected afterwards, or undefined
+  // when the selection did not change.
   toggleExpanded(node: TreeViewNode): string | undefined;
 }
 
@@ -107,11 +108,11 @@ class Uninitialized implements TreeViewState {
   }
 
   // Cannot happen, because nothing is rendered that the user can click.
-  selectByUser(): string | undefined {
+  selectByUser(): never {
     throw new Error('Cannot select a node when the tree view has no tree');
   }
 
-  toggleExpanded(): string | undefined {
+  toggleExpanded(): never {
     throw new Error('Cannot expand or collapse a node when the tree view has no tree');
   }
 }
@@ -186,7 +187,7 @@ class Initialized implements TreeViewState {
     return Initialized.create(command.node, this.nodesByKey, [this.selected.key, command.select]);
   }
 
-  selectByUser(node: TreeViewNode): string | undefined {
+  selectByUser(node: TreeViewNode): string {
     this.select(node);
     return node.key;
   }
@@ -255,7 +256,7 @@ export class TreeViewComponent implements OnChanges, OnDestroy {
   }
 
   protected selectByUser(node: TreeViewNode): void {
-    this.emitIfSelected(this.state.selectByUser(node));
+    this.nodeSelected.emit(this.state.selectByUser(node));
   }
 
   protected toggleExpanded(node: TreeViewNode, event: Event): void {
