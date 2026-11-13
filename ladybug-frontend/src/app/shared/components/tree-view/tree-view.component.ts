@@ -85,9 +85,144 @@ const ICON_CLASSES: Record<TreeViewNodeType, string> = {
   threadEndpoint: 'bi bi-chevron-double-left icon-size scale-down bold-icon',
 };
 
-// Shows the tree of a report. After the first command, these invariants hold:
+// What the tree view can do depends on whether it has received a command.
+interface TreeViewState {
+  // The node to render, or null when there is nothing to render.
+  readonly root: TreeViewNode | null;
+  // Returns the state after executing the command.
+  execute(command: TreeViewCommand): Initialized;
+  // Both return the key of the node that is selected afterwards, or
+  // undefined when the selection did not change.
+  selectByUser(node: TreeViewNode): string | undefined;
+  toggleExpanded(node: TreeViewNode): string | undefined;
+}
+
+// No command received yet, so there is no tree.
+class Uninitialized implements TreeViewState {
+  readonly root = null;
+
+  execute(command: TreeViewCommand): Initialized {
+    // An update without a previous tree acts like 'new'.
+    return Initialized.create(command.node, new Map<string, TreeViewNode>(), [command.select]);
+  }
+
+  // Cannot happen, because nothing is rendered that the user can click.
+  selectByUser(): string | undefined {
+    throw new Error('Cannot select a node when the tree view has no tree');
+  }
+
+  toggleExpanded(): string | undefined {
+    throw new Error('Cannot expand or collapse a node when the tree view has no tree');
+  }
+}
+
+// A tree is shown. These invariants hold:
 // - Exactly one node is selected.
 // - All ancestors of the selected node are expanded.
+class Initialized implements TreeViewState {
+  private constructor(
+    readonly root: TreeViewNode,
+    private selected: TreeViewNode,
+    private readonly nodesByKey: Map<string, TreeViewNode>,
+    private readonly parents: Map<string, TreeViewNode>,
+  ) {}
+
+  // Builds the tree from the input. Expanded state is taken from
+  // previousNodesByKey for nodes with a known key; other nodes are
+  // expanded. The first of keysToSelect that is found is selected,
+  // or the root if none is found.
+  static create(
+    input: TreeViewInputNode,
+    previousNodesByKey: Map<string, TreeViewNode>,
+    keysToSelect: (string | undefined)[],
+  ): Initialized {
+    const nodesByKey = new Map<string, TreeViewNode>();
+    const parents = new Map<string, TreeViewNode>();
+    const root = Initialized.createNode(input, null, previousNodesByKey, nodesByKey, parents);
+    let selected = root;
+    for (const key of keysToSelect) {
+      const found = key === undefined ? undefined : nodesByKey.get(key);
+      if (found) {
+        selected = found;
+        break;
+      }
+    }
+    const result = new Initialized(root, selected, nodesByKey, parents);
+    result.select(selected);
+    return result;
+  }
+
+  private static createNode(
+    input: TreeViewInputNode,
+    parent: TreeViewNode | null,
+    previousNodesByKey: Map<string, TreeViewNode>,
+    nodesByKey: Map<string, TreeViewNode>,
+    parents: Map<string, TreeViewNode>,
+  ): TreeViewNode {
+    const node: TreeViewNode = {
+      ...input,
+      expanded: previousNodesByKey.get(input.key)?.expanded ?? true,
+      selected: false,
+      children: [],
+    };
+    nodesByKey.set(node.key, node);
+    if (parent) {
+      parents.set(node.key, parent);
+    }
+    node.children = input.children.map((child) =>
+      Initialized.createNode(child, node, previousNodesByKey, nodesByKey, parents),
+    );
+    return node;
+  }
+
+  get selectedKey(): string {
+    return this.selected.key;
+  }
+
+  execute(command: TreeViewCommand): Initialized {
+    if (command.command === 'new') {
+      return Initialized.create(command.node, new Map<string, TreeViewNode>(), [command.select]);
+    }
+    return Initialized.create(command.node, this.nodesByKey, [this.selected.key, command.select]);
+  }
+
+  selectByUser(node: TreeViewNode): string | undefined {
+    this.select(node);
+    return node.key;
+  }
+
+  toggleExpanded(node: TreeViewNode): string | undefined {
+    node.expanded = !node.expanded;
+    // Keep the selected node visible: when one of its ancestors is
+    // collapsed, the collapsed node becomes the selected node.
+    if (!node.expanded && this.isAncestor(node, this.selected)) {
+      this.select(node);
+      return node.key;
+    }
+    return undefined;
+  }
+
+  private select(node: TreeViewNode): void {
+    this.selected.selected = false;
+    node.selected = true;
+    this.selected = node;
+    for (let ancestor = this.parents.get(node.key); ancestor; ancestor = this.parents.get(ancestor.key)) {
+      ancestor.expanded = true;
+    }
+  }
+
+  private isAncestor(candidate: TreeViewNode, node: TreeViewNode): boolean {
+    for (let ancestor = this.parents.get(node.key); ancestor; ancestor = this.parents.get(ancestor.key)) {
+      if (ancestor === candidate) {
+        return true;
+      }
+    }
+    return false;
+  }
+}
+
+// Shows the tree of a report. See Initialized for the invariants that
+// hold after the first command.
 @Component({
   selector: 'app-tree-view',
   standalone: true,
@@ -101,11 +236,12 @@ export class TreeViewComponent implements OnChanges, OnDestroy {
   // and after each command.
   @Output() nodeSelected = new EventEmitter<string>();
 
-  protected root: TreeViewNode | null = null;
-  private selected: TreeViewNode | null = null;
-  private nodesByKey = new Map<string, TreeViewNode>();
-  private parents = new Map<string, TreeViewNode>();
+  private state: Uninitialized | Initialized = new Uninitialized();
   private subscription?: Subscription;
+
+  protected get root(): TreeViewNode | null {
+    return this.state.root;
+  }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['commands']) {
@@ -119,17 +255,12 @@ export class TreeViewComponent implements OnChanges, OnDestroy {
   }
 
   protected selectByUser(node: TreeViewNode): void {
-    this.select(node);
+    this.emitIfSelected(this.state.selectByUser(node));
   }
 
   protected toggleExpanded(node: TreeViewNode, event: Event): void {
     event.stopPropagation();
-    node.expanded = !node.expanded;
-    // Keep the selected node visible: when one of its ancestors is
-    // collapsed, the collapsed node becomes the selected node.
-    if (!node.expanded && this.selected && this.isAncestor(node, this.selected)) {
-      this.select(node);
-    }
+    this.emitIfSelected(this.state.toggleExpanded(node));
   }
 
   protected getIconClass(node: TreeViewNode): string {
@@ -144,58 +275,14 @@ export class TreeViewComponent implements OnChanges, OnDestroy {
   }
 
   private execute(command: TreeViewCommand): void {
-    const isUpdate = command.command === 'update';
-    const previousNodesByKey = isUpdate ? this.nodesByKey : new Map<string, TreeViewNode>();
-    const previousSelectedKey = isUpdate ? this.selected?.key : undefined;
-    this.nodesByKey = new Map<string, TreeViewNode>();
-    this.parents = new Map<string, TreeViewNode>();
-    this.selected = null;
-    this.root = this.createNode(command.node, previousNodesByKey, null);
-    const toSelect = this.findNode(previousSelectedKey) ?? this.findNode(command.select) ?? this.root;
-    this.select(toSelect);
+    const next = this.state.execute(command);
+    this.state = next;
+    this.nodeSelected.emit(next.selectedKey);
   }
 
-  private createNode(
-    input: TreeViewInputNode,
-    previousNodesByKey: Map<string, TreeViewNode>,
-    parent: TreeViewNode | null,
-  ): TreeViewNode {
-    const node: TreeViewNode = {
-      ...input,
-      expanded: previousNodesByKey.get(input.key)?.expanded ?? true,
-      selected: false,
-      children: [],
-    };
-    this.nodesByKey.set(node.key, node);
-    if (parent) {
-      this.parents.set(node.key, parent);
+  private emitIfSelected(key: string | undefined): void {
+    if (key !== undefined) {
+      this.nodeSelected.emit(key);
     }
-    node.children = input.children.map((child) => this.createNode(child, previousNodesByKey, node));
-    return node;
-  }
-
-  private findNode(key: string | undefined): TreeViewNode | undefined {
-    return key === undefined ? undefined : this.nodesByKey.get(key);
-  }
-
-  private select(node: TreeViewNode): void {
-    if (this.selected) {
-      this.selected.selected = false;
-    }
-    node.selected = true;
-    this.selected = node;
-    for (let ancestor = this.parents.get(node.key); ancestor; ancestor = this.parents.get(ancestor.key)) {
-      ancestor.expanded = true;
-    }
-    this.nodeSelected.emit(node.key);
-  }
-
-  private isAncestor(candidate: TreeViewNode, node: TreeViewNode): boolean {
-    for (let ancestor = this.parents.get(node.key); ancestor; ancestor = this.parents.get(ancestor.key)) {
-      if (ancestor === candidate) {
-        return true;
-      }
-    }
-    return false;
   }
 }
