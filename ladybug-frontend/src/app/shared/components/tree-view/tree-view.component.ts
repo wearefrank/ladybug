@@ -57,7 +57,11 @@ export interface TreeViewNode extends Omit<TreeViewInputNode, 'children'> {
 }
 
 // Instruction to the tree view.
-export type TreeViewCommand = TreeViewShowCommand | TreeViewExpandCommand | TreeViewSelectCommand;
+export type TreeViewCommand =
+  | TreeViewShowCommand
+  | TreeViewExpandCommand
+  | TreeViewSelectCommand
+  | TreeViewClearCommand;
 
 // Instruction to the tree view to show a (new version of a) report.
 // Afterwards, the key of the selected node is emitted.
@@ -101,6 +105,13 @@ export interface TreeViewSelectCommand {
   key: string;
 }
 
+// Instruction to the tree view to remove the tree, for example when the
+// report is closed. Afterwards nothing is shown and there is no selected
+// node, as before the first command. Nothing is emitted.
+export interface TreeViewClearCommand {
+  command: 'clear';
+}
+
 const ICON_CLASSES: Record<TreeViewNodeType, string> = {
   report: 'bi bi-folder icon-size',
   startpoint: 'bi bi-arrow-bar-right icon-size bolder-icon',
@@ -131,7 +142,7 @@ interface TreeViewState {
   toggleExpanded(node: TreeViewNode): string | undefined;
 }
 
-// No command received yet, so there is no tree.
+// No tree, because no tree has been shown yet or because it was cleared.
 class Uninitialized implements TreeViewState {
   readonly root = null;
 
@@ -366,6 +377,10 @@ export class TreeViewComponent implements OnChanges, OnDestroy {
       case 'select': {
         // Does not emit on purpose, see TreeViewSelectCommand.
         this.state.selectByKey(command.key);
+        break;
+      }
+      case 'clear': {
+        this.state = new Uninitialized();
         break;
       }
     }

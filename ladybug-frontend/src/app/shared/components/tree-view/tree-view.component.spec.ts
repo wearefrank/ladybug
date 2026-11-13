@@ -303,6 +303,34 @@ describe('TreeViewComponent', () => {
     });
   });
 
+  describe('command clear', () => {
+    it('removes the tree without emitting', () => {
+      send({ command: 'new', node: exampleTree(), select: 'a1' });
+      emitted = [];
+      send({ command: 'clear' });
+      expect(fixture.nativeElement.querySelectorAll('.sft-item').length).toBe(0);
+      expect(emitted).toEqual([]);
+    });
+
+    it('makes a following update act like new', () => {
+      send({ command: 'new', node: exampleTree(), select: 'a1' });
+      clickChevron('b');
+      send({ command: 'clear' });
+      send({ command: 'update', node: exampleTree(), select: 'b1' });
+      expect(selectedKeys()).toEqual(['b1']);
+      expect(isExpanded('b')).toBeTrue();
+    });
+
+    it('makes following expandAll, collapseAll and select do nothing', () => {
+      send({ command: 'new', node: exampleTree(), select: 'a1' });
+      send({ command: 'clear' });
+      send({ command: 'expandAll' });
+      send({ command: 'collapseAll' });
+      send({ command: 'select', key: 'b1' });
+      expect(fixture.nativeElement.querySelectorAll('.sft-item').length).toBe(0);
+    });
+  });
+
   describe('user interaction', () => {
     beforeEach(() => {
       send({ command: 'new', node: exampleTree(), select: 'a1' });
