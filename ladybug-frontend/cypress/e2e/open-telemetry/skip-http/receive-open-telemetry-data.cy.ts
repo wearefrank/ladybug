@@ -11,32 +11,21 @@ describe('Receive open telemetry data', () => {
     cy.clickRowInTable(0);
     cy.clickRowInTable(0);
     // Report node
-    cy.get('[data-cy-debug-tree="root"]')
-      .find('app-tree-icon').eq(0)
-      .parent()
+    cy.getRootNodeOfDebugTree()
       .should('contain.text', 'Root');
     // Parent checkpoint
-    cy.get('[data-cy-debug-tree="root"]')
-      .find('app-tree-item').eq(0)
-      .find('app-tree-item').eq(0)
-      .find('app-tree-icon').eq(0)
-      .parent()
+    cy.getRootNodeOfDebugTree()
+      .getChildNodesInDebugTree().eq(0)
       .should('contain.text', 'Root')
     // Child checkpoint
-    cy.get('[data-cy-debug-tree="root"]')
-      .find('app-tree-item').eq(0)
-      .find('app-tree-item').eq(0)
-      .find('app-tree-item').eq(0)
-      .find('app-tree-icon').eq(0)
-      .parent()
+    cy.getRootNodeOfDebugTree()
+      .getChildNodesInDebugTree().eq(0)
+      .getChildNodesInDebugTree().eq(0)
       .should('contain.text', 'Child')
     // End of parent checkpoint
-    cy.get('[data-cy-debug-tree="root"]')
-      .find('app-tree-item').eq(0)
-      .find('app-tree-item').eq(0)
-      .find('app-tree-item').eq(1)
-      .find('app-tree-icon').eq(0)
-      .parent()
+    cy.getRootNodeOfDebugTree()
+      .getChildNodesInDebugTree().eq(0)
+      .getChildNodesInDebugTree().eq(1)
       .should('contain.text', 'Root')
   })
 })

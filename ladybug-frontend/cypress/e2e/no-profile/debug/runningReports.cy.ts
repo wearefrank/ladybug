@@ -46,7 +46,7 @@ describe('With running reports', () => {
     cy.get('[data-cy-debug="openInProgress"]').click();
     cy.get('.toast-body').should('contain.text', 'Opened report in progress');
     cy.checkFileTreeLength(1);
-    cy.get('[data-cy-debug-tree="root"] app-tree-item .item-name').eq(0).should('contain.text', 'Waiting for thread to start');
+    cy.get('[data-cy-debug-tree="root"] [data-cy-tree-view="text"]').eq(0).should('contain.text', 'Waiting for thread to start');
   });
 });
 

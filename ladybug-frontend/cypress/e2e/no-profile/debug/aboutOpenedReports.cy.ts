@@ -41,8 +41,9 @@ describe('About opened reports', () => {
     cy.initializeApp();
     cy.getDebugTableRows().find('td:contains("Hide a checkpoint in blackbox view")').first().click();
     cy.checkFileTreeLength(1);
-    cy.get('[data-cy-debug-tree="root"] app-tree-item app-tree-icon .sft-chevron-container').eq(1).click()
-    cy.get('[data-cy-debug-tree="root"] app-tree-item > div > div:contains("Hide this checkpoint")').should(
+    // The second chevron belongs to the startpoint, the first child of the report node.
+    cy.get('[data-cy-debug-tree="root"] [data-cy-tree-view="chevron"]').eq(1).click()
+    cy.get('[data-cy-debug-tree="root"] [data-cy-tree-view="text"]:contains("Hide this checkpoint")').should(
       'be.hidden',
     );
   });
@@ -52,14 +53,34 @@ describe('About opened reports', () => {
     cy.initializeApp();
     cy.getDebugTableRows().find('td:contains("Multiple startpoints")').first().click();
     cy.checkFileTreeLength(1);
-    cy.get('[data-cy-debug-tree="root"] app-tree-item app-tree-icon .sft-chevron-container').eq(1).click()
-    cy.get('[data-cy-debug-tree="root"] app-tree-item > div > div:contains("Hello infopoint")').should('be.hidden');
-    cy.get(
-      '[data-cy-debug-tree="root"] app-tree-item > div > div:contains("startpoint 2") > div:contains("Multiple startpoints") > app-tree-item > div > div:contains("Multiple startpoints")',
-    )
-      .first()
-      .selectIfNotSelected()
-      .click();
-    cy.get('[data-cy-debug-tree="root"] app-tree-item > div > div:contains("startpoint 2")').should('be.hidden');
+    // Expected nesting:
+    //
+    // Multiple startpoints (report)
+    // +- Multiple startpoints (startpoint)
+    //    +- startpoint 2
+    //    |  +- Hello infopoint
+    //    |  +- endpoint 2
+    //    +- Multiple startpoints (endpoint)
+    cy.getRootNodeOfDebugTree().getChildNodesInDebugTree().should('have.length', 1).as('outerStartpoint');
+    cy.get('@outerStartpoint')
+      .getChildNodesInDebugTree()
+      .should(($children) => {
+        expect($children).to.have.length(2);
+        expect($children.eq(0)).to.contain.text('startpoint 2');
+        expect($children.eq(1)).to.contain.text('Multiple startpoints');
+      });
+    cy.get('@outerStartpoint')
+      .getChildNodesInDebugTree()
+      .eq(0)
+      .getChildNodesInDebugTree()
+      .should(($children) => {
+        expect($children).to.have.length(2);
+        expect($children.eq(0)).to.contain.text('Hello infopoint');
+        expect($children.eq(1)).to.contain.text('endpoint 2');
+      });
+    // Collapsing the outer startpoint hides everything that is nested in it.
+    cy.get('@outerStartpoint').find('[data-cy-tree-view="chevron"]').click();
+    cy.get('[data-cy-debug-tree="root"] [data-cy-tree-view="text"]:contains("startpoint 2")').should('be.hidden');
+    cy.get('[data-cy-debug-tree="root"] [data-cy-tree-view="text"]:contains("Hello infopoint")').should('be.hidden');
   });
 });
