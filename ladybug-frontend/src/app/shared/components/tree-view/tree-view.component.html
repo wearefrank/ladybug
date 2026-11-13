@@ -1,0 +1,45 @@
+<!-- I am not sure, but it may be wise to hide TreeItemComponent from 
+     users of this library. Users should interact using FileTreeItem. -->
+<div #element>
+  <div
+    class="sft-item"
+    [ngClass]="{'sft-item-selected': item.currentlySelected, 'sft-last-item': lastChild, 'sft-no-children': !item.hasChildren()}"
+    [style.color]="item.fontColor"
+    [style]="item.currentlySelected ? this.parentTree.options.styles?.treeItem?.active : this.parentTree.options.styles?.treeItem?.default"
+    (click)="onClick()"
+    (dblclick)="onDoubleClick()">
+    <app-tree-icon [parentTree]="parentTree" [item]="item" [expanded]="this.item.expanded"></app-tree-icon>
+    <div [title]="item.name"
+          [ngClass]="parentTree.options.determineFontColor ? parentTree.options.determineFontColor(item.originalValue) : ''"
+          class="item-name">{{ item.name }}
+    </div>
+  </div>
+  @if (item.hasChildren()) {
+    <div class="sft-child-container" [hidden]="!item.expanded">
+      @for (child of item.children; track $index; let last = $last; let first = $first; let index = $index) {
+        <div class="sft-item-child">
+          @if (this.parentTree.options.hierarchyLines?.vertical) {
+            <div
+              class="sft-item-vertical-line"
+              [ngClass]="{'sft-item-vertical-line-extended': !first}"
+              [style]="shouldEnableVerticalLine(child, index) ?
+            this.parentTree.options.styles?.hierarchyLine?.vertical?.default :
+            this.parentTree.options.styles?.hierarchyLine?.vertical?.active"></div>
+          }
+<!--            @if (shouldEnableHorizontalLine(child)) {-->
+<!--              <div-->
+<!--                class="sft-item-horizontal-line"-->
+<!--                [style]="this.parentTree.options.styles?.hierarchyLine?.horizontal"></div>-->
+<!--            }-->
+          <app-tree-item
+            #childElement
+            [item]="child"
+            [index]="index"
+            [parentTree]="parentTree"
+            [lastChild]="last == first ? false : last"
+          ></app-tree-item>
+        </div>
+      }
+    </div>
+  }
+</div>
