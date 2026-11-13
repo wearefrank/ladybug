@@ -56,8 +56,12 @@ export interface TreeViewNode extends Omit<TreeViewInputNode, 'children'> {
   children: TreeViewNode[];
 }
 
+// Instruction to the tree view.
+export type TreeViewCommand = TreeViewShowCommand | TreeViewExpandCommand;
+
 // Instruction to the tree view to show a (new version of a) report.
-export interface TreeViewCommand {
+// Afterwards, the key of the selected node is emitted.
+export interface TreeViewShowCommand {
   // 'new': discard the current tree and show the given tree. All nodes are
   //   expanded and the node with key `select` is selected.
   // 'update': replace the tree, but keep the selection and the expanded
@@ -70,6 +74,16 @@ export interface TreeViewCommand {
   // The key of the node to select when no previously selected node can be
   // kept. When absent or when no node has this key, the root is selected.
   select?: string;
+}
+
+// Instruction to the tree view to expand or collapse all nodes. The
+// selection does not change, so nothing is emitted.
+// 'expandAll': expand all nodes.
+// 'collapseAll': collapse all nodes except the ancestors of the selected
+//   node, so that the selected node stays visible.
+// Ignored when no tree has been shown yet.
+export interface TreeViewExpandCommand {
+  command: 'expandAll' | 'collapseAll';
 }
 
 const ICON_CLASSES: Record<TreeViewNodeType, string> = {
@@ -89,8 +103,10 @@ const ICON_CLASSES: Record<TreeViewNodeType, string> = {
 interface TreeViewState {
   // The node to render, or null when there is nothing to render.
   readonly root: TreeViewNode | null;
-  // Returns the state after executing the command.
-  execute(command: TreeViewCommand): Initialized;
+  // Returns the state that shows the tree of the command.
+  show(command: TreeViewShowCommand): Initialized;
+  expandAll(): void;
+  collapseAll(): void;
   // Selects the node. Returns its key.
   selectByUser(node: TreeViewNode): string;
   // Returns the key of the node that is selected afterwards, or undefined
@@ -102,9 +118,17 @@ interface TreeViewState {
 class Uninitialized implements TreeViewState {
   readonly root = null;
 
-  execute(command: TreeViewCommand): Initialized {
+  show(command: TreeViewShowCommand): Initialized {
     // An update without a previous tree acts like 'new'.
     return Initialized.create(command.node, new Map<string, TreeViewNode>(), [command.select]);
+  }
+
+  expandAll(): void {
+    // There are no nodes to expand.
+  }
+
+  collapseAll(): void {
+    // There are no nodes to collapse.
   }
 
   // Cannot happen, because nothing is rendered that the user can click.
@@ -180,11 +204,20 @@ class Initialized implements TreeViewState {
     return this.selected.key;
   }
 
-  execute(command: TreeViewCommand): Initialized {
+  show(command: TreeViewShowCommand): Initialized {
     if (command.command === 'new') {
       return Initialized.create(command.node, new Map<string, TreeViewNode>(), [command.select]);
     }
     return Initialized.create(command.node, this.nodesByKey, [this.selected.key, command.select]);
+  }
+
+  expandAll(): void {
+    this.setAllExpanded(true);
+  }
+
+  collapseAll(): void {
+    this.setAllExpanded(false);
+    this.expandAncestors(this.selected);
   }
 
   selectByUser(node: TreeViewNode): string {
@@ -207,8 +240,18 @@ class Initialized implements TreeViewState {
     this.selected.selected = false;
     node.selected = true;
     this.selected = node;
+    this.expandAncestors(node);
+  }
+
+  private expandAncestors(node: TreeViewNode): void {
     for (let ancestor = this.parents.get(node.key); ancestor; ancestor = this.parents.get(ancestor.key)) {
       ancestor.expanded = true;
+    }
+  }
+
+  private setAllExpanded(expanded: boolean): void {
+    for (const node of this.nodesByKey.values()) {
+      node.expanded = expanded;
     }
   }
 
@@ -234,7 +277,7 @@ class Initialized implements TreeViewState {
 export class TreeViewComponent implements OnChanges, OnDestroy {
   @Input({ required: true }) commands!: Observable<TreeViewCommand>;
   // Emits the key of the selected node, both when the user selects a node
-  // and after each command.
+  // and after commands 'new' and 'update'.
   @Output() nodeSelected = new EventEmitter<string>();
 
   private state: Uninitialized | Initialized = new Uninitialized();
@@ -276,9 +319,23 @@ export class TreeViewComponent implements OnChanges, OnDestroy {
   }
 
   private execute(command: TreeViewCommand): void {
-    const next = this.state.execute(command);
-    this.state = next;
-    this.nodeSelected.emit(next.selectedKey);
+    switch (command.command) {
+      case 'new':
+      case 'update': {
+        const next = this.state.show(command);
+        this.state = next;
+        this.nodeSelected.emit(next.selectedKey);
+        break;
+      }
+      case 'expandAll': {
+        this.state.expandAll();
+        break;
+      }
+      case 'collapseAll': {
+        this.state.collapseAll();
+        break;
+      }
+    }
   }
 
   private emitIfSelected(key: string | undefined): void {

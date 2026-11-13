@@ -200,6 +200,72 @@ describe('TreeViewComponent', () => {
     });
   });
 
+  describe('commands expandAll and collapseAll', () => {
+    it('expandAll expands all nodes and keeps the selection without emitting', () => {
+      send({ command: 'new', node: exampleTree(), select: 'a1' });
+      // Collapsing 'a' moves the selection from 'a1' to 'a'.
+      clickChevron('a');
+      clickChevron('b');
+      expect(emitted).toEqual(['a1', 'a']);
+      emitted = [];
+      send({ command: 'expandAll' });
+      for (const key of ['r', 'a', 'b']) {
+        expect(isExpanded(key)).withContext(key).toBeTrue();
+      }
+      expect(selectedKeys()).toEqual(['a']);
+      expect(emitted).toEqual([]);
+    });
+
+    it('collapseAll keeps only the ancestors of the selected node expanded', () => {
+      send({ command: 'new', node: exampleTree(), select: 'a1' });
+      emitted = [];
+      send({ command: 'collapseAll' });
+      expect(isExpanded('r')).toBeTrue();
+      expect(isExpanded('a')).toBeTrue();
+      expect(isExpanded('b')).toBeFalse();
+      expect(selectedKeys()).toEqual(['a1']);
+      expect(emitted).toEqual([]);
+    });
+
+    it('collapseAll collapses a selected node that has children', () => {
+      send({ command: 'new', node: exampleTree(), select: 'a' });
+      expect(emitted).toEqual(['a']);
+      emitted = [];
+      send({ command: 'collapseAll' });
+      expect(isExpanded('r')).toBeTrue();
+      expect(isExpanded('a')).toBeFalse();
+      expect(isExpanded('b')).toBeFalse();
+      expect(selectedKeys()).toEqual(['a']);
+      expect(emitted).toEqual([]);
+    });
+
+    it('collapseAll collapses everything when the root is selected', () => {
+      send({ command: 'new', node: exampleTree() });
+      send({ command: 'collapseAll' });
+      for (const key of ['r', 'a', 'b']) {
+        expect(isExpanded(key)).withContext(key).toBeFalse();
+      }
+      expect(selectedKeys()).toEqual(['r']);
+    });
+
+    it('update after collapseAll keeps the collapsed state', () => {
+      send({ command: 'new', node: exampleTree(), select: 'a1' });
+      send({ command: 'collapseAll' });
+      send({ command: 'update', node: exampleTree() });
+      expect(isExpanded('a')).toBeTrue();
+      expect(isExpanded('b')).toBeFalse();
+    });
+
+    it('ignores expandAll and collapseAll before the first tree', () => {
+      send({ command: 'expandAll' });
+      send({ command: 'collapseAll' });
+      expect(fixture.nativeElement.querySelectorAll('.sft-item').length).toBe(0);
+      expect(emitted).toEqual([]);
+      send({ command: 'new', node: exampleTree(), select: 'b1' });
+      expect(selectedKeys()).toEqual(['b1']);
+    });
+  });
+
   describe('user interaction', () => {
     beforeEach(() => {
       send({ command: 'new', node: exampleTree(), select: 'a1' });
