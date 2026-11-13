@@ -103,7 +103,7 @@ describe('TreeViewComponent', () => {
 
   describe('command new', () => {
     it('shows all nodes expanded and selects the requested node', () => {
-      send({ command: 'new', nodes: exampleTree(), select: 'a2' });
+      send({ command: 'new', node: exampleTree(), select: 'a2' });
       for (const key of ['r', 'a', 'a1', 'a2', 'b', 'b1']) {
         expect(hasItem(key)).withContext(key).toBeTrue();
       }
@@ -115,30 +115,30 @@ describe('TreeViewComponent', () => {
     });
 
     it('selects the root when select is absent', () => {
-      send({ command: 'new', nodes: exampleTree() });
+      send({ command: 'new', node: exampleTree() });
       expect(selectedKeys()).toEqual(['r']);
       expect(emitted).toEqual(['r']);
     });
 
     it('selects the root when no node has the requested key', () => {
-      send({ command: 'new', nodes: exampleTree(), select: 'unknown' });
+      send({ command: 'new', node: exampleTree(), select: 'unknown' });
       expect(selectedKeys()).toEqual(['r']);
       expect(emitted).toEqual(['r']);
     });
 
     it('discards the selection and expanded state of the previous tree', () => {
-      send({ command: 'new', nodes: exampleTree(), select: 'a1' });
+      send({ command: 'new', node: exampleTree(), select: 'a1' });
       clickChevron('b');
       expect(isExpanded('b')).toBeFalse();
-      send({ command: 'new', nodes: exampleTree(), select: 'b1' });
+      send({ command: 'new', node: exampleTree(), select: 'b1' });
       expect(isExpanded('b')).toBeTrue();
       expect(selectedKeys()).toEqual(['b1']);
       expect(emitted).toEqual(['a1', 'b1']);
     });
 
     it('removes nodes that are not in the new tree', () => {
-      send({ command: 'new', nodes: exampleTree() });
-      send({ command: 'new', nodes: report([node('c')]) });
+      send({ command: 'new', node: exampleTree() });
+      send({ command: 'new', node: report([node('c')]) });
       expect(hasItem('a')).toBeFalse();
       expect(hasItem('c')).toBeTrue();
     });
@@ -146,29 +146,29 @@ describe('TreeViewComponent', () => {
 
   describe('command update', () => {
     it('keeps the selected node when it is still present', () => {
-      send({ command: 'new', nodes: exampleTree(), select: 'a1' });
-      send({ command: 'update', nodes: exampleTree(), select: 'b1' });
+      send({ command: 'new', node: exampleTree(), select: 'a1' });
+      send({ command: 'update', node: exampleTree(), select: 'b1' });
       expect(selectedKeys()).toEqual(['a1']);
       expect(emitted).toEqual(['a1', 'a1']);
     });
 
     it('keeps the expanded state of nodes that are still present', () => {
-      send({ command: 'new', nodes: exampleTree(), select: 'a1' });
+      send({ command: 'new', node: exampleTree(), select: 'a1' });
       clickChevron('b');
-      send({ command: 'update', nodes: exampleTree() });
+      send({ command: 'update', node: exampleTree() });
       expect(isExpanded('b')).toBeFalse();
       expect(isExpanded('a')).toBeTrue();
     });
 
     it('expands nodes that are new', () => {
-      send({ command: 'new', nodes: exampleTree(), select: 'a1' });
-      send({ command: 'update', nodes: report([node('a', [node('a1')]), node('c', [node('c1')])]) });
+      send({ command: 'new', node: exampleTree(), select: 'a1' });
+      send({ command: 'update', node: report([node('a', [node('a1')]), node('c', [node('c1')])]) });
       expect(isExpanded('c')).toBeTrue();
     });
 
     it('shows the new text and attributes of nodes', () => {
-      send({ command: 'new', nodes: exampleTree() });
-      send({ command: 'update', nodes: report([node('a', [], { text: 'changed', highlighted: true })]) });
+      send({ command: 'new', node: exampleTree() });
+      send({ command: 'update', node: report([node('a', [], { text: 'changed', highlighted: true })]) });
       const text = item('a').querySelector('[data-cy-tree-view="text"]') as HTMLElement;
       expect(text.textContent!.trim()).toBe('changed');
       expect(text.classList).toContain('red');
@@ -176,25 +176,25 @@ describe('TreeViewComponent', () => {
     });
 
     it('selects the requested node when the selected node is gone, expanding its ancestors', () => {
-      send({ command: 'new', nodes: exampleTree(), select: 'a1' });
+      send({ command: 'new', node: exampleTree(), select: 'a1' });
       clickChevron('b');
-      send({ command: 'update', nodes: report([node('a', [node('a2')]), node('b', [node('b1')])]), select: 'b1' });
+      send({ command: 'update', node: report([node('a', [node('a2')]), node('b', [node('b1')])]), select: 'b1' });
       expect(selectedKeys()).toEqual(['b1']);
       expect(isExpanded('b')).toBeTrue();
       expect(emitted).toEqual(['a1', 'b1']);
     });
 
     it('selects the root when the selected node is gone and select is absent or unknown', () => {
-      send({ command: 'new', nodes: exampleTree(), select: 'a1' });
-      send({ command: 'update', nodes: report([node('b')]) });
+      send({ command: 'new', node: exampleTree(), select: 'a1' });
+      send({ command: 'update', node: report([node('b')]) });
       expect(selectedKeys()).toEqual(['r']);
-      send({ command: 'new', nodes: exampleTree(), select: 'a1' });
-      send({ command: 'update', nodes: report([node('b')]), select: 'unknown' });
+      send({ command: 'new', node: exampleTree(), select: 'a1' });
+      send({ command: 'update', node: report([node('b')]), select: 'unknown' });
       expect(selectedKeys()).toEqual(['r']);
     });
 
     it('acts like new when there is no previous tree', () => {
-      send({ command: 'update', nodes: exampleTree(), select: 'b1' });
+      send({ command: 'update', node: exampleTree(), select: 'b1' });
       expect(selectedKeys()).toEqual(['b1']);
       expect(isExpanded('a')).toBeTrue();
     });
@@ -202,7 +202,7 @@ describe('TreeViewComponent', () => {
 
   describe('user interaction', () => {
     beforeEach(() => {
-      send({ command: 'new', nodes: exampleTree(), select: 'a1' });
+      send({ command: 'new', node: exampleTree(), select: 'a1' });
       emitted = [];
     });
 
@@ -233,7 +233,7 @@ describe('TreeViewComponent', () => {
     it('chooses icon colors from type, valueIsError and level', () => {
       send({
         command: 'new',
-        nodes: report([
+        node: report([
           node('even', [], { type: 'infopoint', level: 2 }),
           node('odd', [], { type: 'infopoint', level: 1 }),
           node('abort', [], { type: 'abortpoint', level: 1 }),
@@ -251,7 +251,7 @@ describe('TreeViewComponent', () => {
     });
 
     it('shows a chevron only for nodes with children', () => {
-      send({ command: 'new', nodes: exampleTree() });
+      send({ command: 'new', node: exampleTree() });
       expect(item('a').querySelector('[data-cy-tree-view="chevron"]')).not.toBeNull();
       expect(item('a1').querySelector('[data-cy-tree-view="chevron"]')).toBeNull();
     });

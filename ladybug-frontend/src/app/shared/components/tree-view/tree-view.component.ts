@@ -58,15 +58,15 @@ export interface TreeViewNode extends Omit<TreeViewInputNode, 'children'> {
 
 // Instruction to the tree view to show a (new version of a) report.
 export interface TreeViewCommand {
-  // 'new': discard the current tree and show the given nodes. All nodes are
+  // 'new': discard the current tree and show the given tree. All nodes are
   //   expanded and the node with key `select` is selected.
-  // 'update': replace the nodes, but keep the selection and the expanded
+  // 'update': replace the tree, but keep the selection and the expanded
   //   state of nodes whose key is still present. Nodes that are new are
   //   expanded. If the selected node is gone, the node with key `select`
   //   is selected.
   command: 'new' | 'update';
   // The root of the tree. Keys must be unique within the tree.
-  nodes: TreeViewInputNode;
+  node: TreeViewInputNode;
   // The key of the node to select when no previously selected node can be
   // kept. When absent or when no node has this key, the root is selected.
   select?: string;
@@ -104,7 +104,7 @@ export class TreeViewComponent implements OnChanges, OnDestroy {
   protected root: TreeViewNode | null = null;
   private selected: TreeViewNode | null = null;
   private nodesByKey = new Map<string, TreeViewNode>();
-  private parents = new Map<TreeViewNode, TreeViewNode>();
+  private parents = new Map<string, TreeViewNode>();
   private subscription?: Subscription;
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -148,9 +148,9 @@ export class TreeViewComponent implements OnChanges, OnDestroy {
     const previousNodesByKey = isUpdate ? this.nodesByKey : new Map<string, TreeViewNode>();
     const previousSelectedKey = isUpdate ? this.selected?.key : undefined;
     this.nodesByKey = new Map<string, TreeViewNode>();
-    this.parents = new Map<TreeViewNode, TreeViewNode>();
+    this.parents = new Map<string, TreeViewNode>();
     this.selected = null;
-    this.root = this.createNode(command.nodes, previousNodesByKey, null);
+    this.root = this.createNode(command.node, previousNodesByKey, null);
     const toSelect = this.findNode(previousSelectedKey) ?? this.findNode(command.select) ?? this.root;
     this.select(toSelect);
   }
@@ -168,7 +168,7 @@ export class TreeViewComponent implements OnChanges, OnDestroy {
     };
     this.nodesByKey.set(node.key, node);
     if (parent) {
-      this.parents.set(node, parent);
+      this.parents.set(node.key, parent);
     }
     node.children = input.children.map((child) => this.createNode(child, previousNodesByKey, node));
     return node;
@@ -184,14 +184,14 @@ export class TreeViewComponent implements OnChanges, OnDestroy {
     }
     node.selected = true;
     this.selected = node;
-    for (let ancestor = this.parents.get(node); ancestor; ancestor = this.parents.get(ancestor)) {
+    for (let ancestor = this.parents.get(node.key); ancestor; ancestor = this.parents.get(ancestor.key)) {
       ancestor.expanded = true;
     }
     this.nodeSelected.emit(node.key);
   }
 
   private isAncestor(candidate: TreeViewNode, node: TreeViewNode): boolean {
-    for (let ancestor = this.parents.get(node); ancestor; ancestor = this.parents.get(ancestor)) {
+    for (let ancestor = this.parents.get(node.key); ancestor; ancestor = this.parents.get(ancestor.key)) {
       if (ancestor === candidate) {
         return true;
       }
