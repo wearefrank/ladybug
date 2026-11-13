@@ -1,0 +1,77 @@
+/* Taken from ng-simple-file-tree (tree-item and tree-icon components). */
+* {
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  --default-line-color: lightgrey;
+}
+
+.sft-item {
+  display: flex;
+  flex-direction: row;
+  justify-items: center;
+  padding: 0.125rem 0.35rem 0.125rem 0.125rem;
+  margin-bottom: 0.1rem;
+  cursor: pointer;
+  align-items: center;
+  text-overflow: clip;
+  width: fit-content;
+  border-radius: 5px;
+
+  &:hover {
+    background-color: rgba(253, 195, 0, 0.4);
+  }
+}
+
+.sft-item-selected {
+  background-color: #fdc300;
+
+  &:hover {
+    background-color: #fdc300;
+  }
+}
+
+.sft-no-children {
+  margin-left: 0.75rem;
+}
+
+.sft-item-child {
+  margin-left: 0.35rem;
+  padding-inline-start: 0.45rem;
+  cursor: pointer;
+  position: relative;
+}
+
+.sft-child-container {
+  margin-bottom: 0.25rem;
+}
+
+.sft-item-vertical-line {
+  position: absolute;
+  width: 1px;
+  background-color: var(--default-line-color);
+  left: 0.115rem;
+  bottom: 0.45rem;
+  top: -0.55rem;
+}
+
+.sft-item-vertical-line-extended {
+  top: -1rem;
+}
+
+.sft-chevron-container {
+  width: 12px;
+}
+
+.sft-chevron {
+  font-size: 0.75rem;
+  display: flex;
+  align-items: center;
+}
+
+.sft-icon-container {
+  width: 1.2rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
