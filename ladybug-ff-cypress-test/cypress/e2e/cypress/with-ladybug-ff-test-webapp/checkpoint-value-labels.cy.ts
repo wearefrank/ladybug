@@ -118,7 +118,7 @@ describe('Checkpoint value labels', () => {
 function openReport (expectedName: string): void {
   cy.visit('')
   cy.getNumLadybugReports()
-  cy.inIframeBody('[data-cy-debug="tableRow"]').should('have.length', 1).as('reportRow')
+  cy.inLadybug('[data-cy-debug="tableRow"]').should('have.length', 1).as('reportRow')
   // Status column.
   // TODO: Test exact value of status column if possible.
   cy.get('@reportRow').find('td:eq(6)').trimmedText().should('equal', 'Success')
@@ -132,7 +132,7 @@ function openReport (expectedName: string): void {
   // detach the aliased node and make cy.click() fail with "the page updated as a result
   // of this command". Querying at click time lets Cypress's retry re-locate the row if
   // it gets recreated in the meantime, the same way clickTableRowWithStorageId does.
-  cy.inIframeBody('[data-cy-debug="tableRow"]').contains(expectedName).click()
+  cy.inLadybug('[data-cy-debug="tableRow"]').contains(expectedName).click()
   // Opening the report loads its data and builds the tree asynchronously. Without this
   // guard, callers could start querying the tree (e.g. via selectTreeNode) before it had
   // been (re)built, racing against its own rendering.

@@ -1,4 +1,4 @@
-import { AUTHENTICATIONS } from "../support/commands";
+import { AUTHENTICATIONS } from "../support/authentications";
 
 const API_BASE = '/iaf/ladybug/api/';
 
