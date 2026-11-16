@@ -145,6 +145,28 @@
 		testTool.endpoint(correlationId, null, "endpoint 2", "Goodbye World!");
 		testTool.endpoint(correlationId, null, reportName, "Goodbye World!");
 	}
+	reportNames.add(reportName = "Report with child thread");
+	if (reportName.equals(createReportAction)) {
+		String childThreadId = "childThreadId-" + correlationId;
+		testTool.startpoint(correlationId, null, reportName, "Hello World!");
+		testTool.threadCreatepoint(correlationId, childThreadId);
+		Thread childThread = new Thread(() -> {
+			testTool.threadStartpoint(correlationId, childThreadId, null, "Child thread", "Hello child thread!");
+			testTool.startpoint(correlationId, null, "Nested in child thread", "Hello from child thread!");
+			testTool.infopoint(correlationId, null, "Infopoint in child thread", "Info from child thread");
+			testTool.endpoint(correlationId, null, "Nested in child thread", "Goodbye from child thread!");
+			testTool.threadEndpoint(correlationId, null, "Child thread", "Goodbye child thread!");
+		}, "ladybug-example-child-thread");
+		childThread.start();
+		// Wait for the child thread so that the order of the checkpoints is deterministic.
+		try {
+			childThread.join();
+		} catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
+		}
+		testTool.infopoint(correlationId, null, "Infopoint in parent thread", "Info from parent thread");
+		testTool.endpoint(correlationId, null, reportName, "Goodbye World!");
+	}
 	reportNames.add(reportName = "Complex success report");
 	if (reportName.equals(createReportAction)) {
 		ComplexReports.fillComplexSuccessReport(correlationId, reportName, testTool);
