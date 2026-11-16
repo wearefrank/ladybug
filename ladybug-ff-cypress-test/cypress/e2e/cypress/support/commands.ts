@@ -24,7 +24,7 @@
 // -- This will overwrite an existing command --
 // Cypress.Commands.overwrite('visit', (originalFn, url, options) => { ... })
 
-import { Authentication, AUTHENTICATIONS } from './authentications';
+import { AUTHENTICATIONS } from './authentications';
 
 declare global {
   namespace Cypress {
