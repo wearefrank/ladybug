@@ -53,16 +53,35 @@ describe('DebugTreeComponent', () => {
     return fixture.nativeElement.querySelector(selector) as HTMLElement | null;
   }
 
-  function texts(): string[] {
+  // The helpers below access the tree through the data-cy-tree-view-*
+  // attributes, see tree-view.component.html.
+
+  function textsOf(selector: string): string[] {
     const result: string[] = [];
-    for (const item of fixture.nativeElement.querySelectorAll('[data-cy-tree-view="text"]')) {
+    for (const item of fixture.nativeElement.querySelectorAll(`${selector} [data-cy-tree-view-text]`)) {
       result.push((item as HTMLElement).textContent!.trim());
     }
     return result;
   }
 
+  function texts(): string[] {
+    return textsOf('[data-cy-tree-view-node]');
+  }
+
   function selectedText(): string {
-    return element('.sft-item-selected [data-cy-tree-view="text"]')!.textContent!.trim();
+    return element('[data-cy-tree-view-selected] [data-cy-tree-view-text]')!.textContent!.trim();
+  }
+
+  function node(key: string): HTMLElement {
+    return element(`[data-cy-tree-view-node="${CSS.escape(key)}"]`)!;
+  }
+
+  function isExpanded(key: string): boolean {
+    return 'cyTreeViewExpanded' in node(key).dataset;
+  }
+
+  function typeOf(key: string): string | undefined {
+    return (node(key).querySelector('[data-cy-tree-view-type]') as HTMLElement).dataset['cyTreeViewType'];
   }
 
   function click(selector: string): void {
@@ -70,8 +89,9 @@ describe('DebugTreeComponent', () => {
     fixture.detectChanges();
   }
 
-  function iconClasses(key: string): DOMTokenList {
-    return element(`[data-cy-tree-view-key="${key}"] [data-cy-tree-view="icon"]`)!.classList;
+  function selectNode(key: string): void {
+    (node(key).querySelector('[data-cy-tree-view-select]') as HTMLElement).click();
+    fixture.detectChanges();
   }
 
   it('shows no buttons before a report is added', () => {
@@ -92,15 +112,15 @@ describe('DebugTreeComponent', () => {
     const report = exampleReport();
     component.addReportToTree(report);
     fixture.detectChanges();
-    click('[data-cy-tree-view-key="report"]');
-    click('[data-cy-tree-view-key="2"]');
+    selectNode('report');
+    selectNode('2');
     expect(selected).toEqual([report.children![0], report, report.children![0].children![1]]);
   });
 
   it('keeps the selection when ids are shown', () => {
     component.addReportToTree(exampleReport());
     fixture.detectChanges();
-    click('[data-cy-tree-view-key="1"]');
+    selectNode('1');
     click('[data-cy-debug-tree="toggleShowCheckpointId"]');
     expect(texts()).toEqual(['report (5)', 'start (0)', 'info (1)', 'end (2)']);
     expect(selectedText()).toBe('info (1)');
@@ -111,14 +131,14 @@ describe('DebugTreeComponent', () => {
     fixture.detectChanges();
     // 'start' is selected. Its ancestor stays expanded, 'start' itself collapses.
     click('[data-cy-debug-tree="collapseAll"]');
-    expect(element('[data-cy-tree-view-key="report"]')!.nextElementSibling!.hasAttribute('hidden')).toBeFalse();
-    expect(element('[data-cy-tree-view-key="0"]')!.nextElementSibling!.hasAttribute('hidden')).toBeTrue();
-    click('[data-cy-tree-view-key="report"]');
+    expect(isExpanded('report')).toBeTrue();
+    expect(isExpanded('0')).toBeFalse();
+    selectNode('report');
     click('[data-cy-debug-tree="collapseAll"]');
-    expect(element('[data-cy-tree-view-key="report"]')!.nextElementSibling!.hasAttribute('hidden')).toBeTrue();
+    expect(isExpanded('report')).toBeFalse();
     click('[data-cy-debug-tree="expandAll"]');
-    expect(element('[data-cy-tree-view-key="report"]')!.nextElementSibling!.hasAttribute('hidden')).toBeFalse();
-    expect(element('[data-cy-tree-view-key="0"]')!.nextElementSibling!.hasAttribute('hidden')).toBeFalse();
+    expect(isExpanded('report')).toBeTrue();
+    expect(isExpanded('0')).toBeTrue();
   });
 
   it('highlights nodes whose text contains the search term', () => {
@@ -128,11 +148,7 @@ describe('DebugTreeComponent', () => {
     input.value = 'nd';
     input.dispatchEvent(new KeyboardEvent('keyup'));
     fixture.detectChanges();
-    const highlighted: string[] = [];
-    for (const item of fixture.nativeElement.querySelectorAll('[data-cy-tree-view="text"].red')) {
-      highlighted.push((item as HTMLElement).textContent!.trim());
-    }
-    expect(highlighted).toEqual(['end']);
+    expect(textsOf('[data-cy-tree-view-highlighted]')).toEqual(['end']);
   });
 
   it('removes the tree and the buttons when closed', () => {
@@ -155,49 +171,48 @@ describe('DebugTreeComponent', () => {
     expect(selectedText()).toBe('start');
   });
 
-  describe('icons', () => {
-    it('shows the icon that belongs to the checkpoint type', () => {
+  describe('node types', () => {
+    it('gives each node the tree view type that belongs to the checkpoint type', () => {
       // The keys are the values of field `type` of HierarchicalCheckpoint, which
       // is how the backend sends the type of a checkpoint. The backend computes
       // them with org.wearefrank.ladybug.CheckpointType.toInt(), which is the
       // position in that enum plus one. The frontend enum CheckpointType in
       // shared/enums/checkpoint-type.ts has the same values. This test uses the
       // numbers instead of that enum to check the mapping from what the backend
-      // actually sends.
-      const expectedIcons: Record<number, string> = {
-        1: 'bi-arrow-bar-right', // startpoint
-        2: 'bi-arrow-bar-left', // endpoint
-        3: 'bi-x-lg', // abortpoint
-        4: 'bi-arrow-right', // inputpoint
-        5: 'bi-arrow-left', // outputpoint
-        6: 'bi-info-square', // infopoint
-        7: 'bi-fast-forward', // threadCreatepoint
-        8: 'bi-chevron-double-right', // threadStartpoint
-        9: 'bi-chevron-double-left', // threadEndpoint
+      // actually sends. Which icon belongs to a tree view type is tested in
+      // tree-view.component.spec.ts.
+      const expectedTypes: Record<number, string> = {
+        1: 'startpoint',
+        2: 'endpoint',
+        3: 'abortpoint',
+        4: 'inputpoint',
+        5: 'outputpoint',
+        6: 'infopoint',
+        7: 'threadCreatepoint',
+        8: 'threadStartpoint',
+        9: 'threadEndpoint',
       };
-      const types = Object.keys(expectedIcons).map(Number);
+      const types = Object.keys(expectedTypes).map(Number);
       const children = types.map((type) => checkpoint(type, `type ${type}`, { type }));
       component.addReportToTree({ name: 'report', storageId: 5, children } as HierarchicalReport);
       fixture.detectChanges();
-      expect(iconClasses('report')).toContain('bi-folder');
+      expect(typeOf('report')).toBe('report');
       for (const type of types) {
-        expect(iconClasses(`${type}`))
+        expect(typeOf(`${type}`))
           .withContext(`type ${type}`)
-          .toContain(expectedIcons[type]);
+          .toBe(expectedTypes[type]);
       }
     });
 
-    it('shows a red icon when the message is a thrown exception, and alternates colors by depth', () => {
+    it('marks a node as error when the message is a thrown exception', () => {
       const children = [
         checkpoint(0, 'exception', { type: 6, level: 0, encoding: 'printStackTrace()' }),
-        checkpoint(1, 'even', { children: [checkpoint(2, 'odd', { type: 6, level: 1 })] }),
+        checkpoint(1, 'normal', { type: 6, level: 0 }),
       ];
       component.addReportToTree({ name: 'report', storageId: 5, children } as HierarchicalReport);
       fixture.detectChanges();
-      expect(iconClasses('0')).toContain('red');
-      expect(iconClasses('1')).toContain('even');
-      expect(iconClasses('1')).not.toContain('red');
-      expect(iconClasses('2')).toContain('odd');
+      expect('cyTreeViewError' in node('0').dataset).toBeTrue();
+      expect('cyTreeViewError' in node('1').dataset).toBeFalse();
     });
   });
 });

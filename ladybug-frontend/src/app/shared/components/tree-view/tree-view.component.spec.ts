@@ -1,7 +1,20 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { By } from '@angular/platform-browser';
 import { Subject } from 'rxjs';
-import { TreeViewCommand, TreeViewComponent, TreeViewInputNode } from './tree-view.component';
+import { TreeViewCommand, TreeViewComponent, TreeViewInputNode, TreeViewNodeType } from './tree-view.component';
+
+// The Bootstrap icon that is shown for each type of node.
+const EXPECTED_ICONS: Record<TreeViewNodeType, string> = {
+  report: 'bi-folder',
+  startpoint: 'bi-arrow-bar-right',
+  endpoint: 'bi-arrow-bar-left',
+  abortpoint: 'bi-x-lg',
+  inputpoint: 'bi-arrow-right',
+  outputpoint: 'bi-arrow-left',
+  infopoint: 'bi-info-square',
+  threadCreatepoint: 'bi-fast-forward',
+  threadStartpoint: 'bi-chevron-double-right',
+  threadEndpoint: 'bi-chevron-double-left',
+};
 
 function node(
   key: string,
@@ -50,15 +63,32 @@ describe('TreeViewComponent', () => {
     fixture.detectChanges();
   });
 
+  // Every change of the view is followed by a check that the data-cy
+  // attributes agree with what is shown.
+  function render(): void {
+    fixture.detectChanges();
+    expectDataCyAgreesWithView();
+  }
+
   function send(command: TreeViewCommand): void {
     commands.next(command);
-    fixture.detectChanges();
+    render();
+  }
+
+  // The helpers below only use the data-cy-tree-view-* attributes, which
+  // are explained in tree-view.component.html. Except for the rendering
+  // tests at the end, the tests only use these helpers.
+
+  function allNodes(): HTMLElement[] {
+    return [...fixture.nativeElement.querySelectorAll('[data-cy-tree-view-node]')];
+  }
+
+  function findItem(key: string): HTMLElement | null {
+    return fixture.nativeElement.querySelector(`[data-cy-tree-view-node="${CSS.escape(key)}"]`);
   }
 
   function item(key: string): HTMLElement {
-    const result = fixture.nativeElement.querySelector(
-      `[data-cy-tree-view-key="${CSS.escape(key)}"]`,
-    ) as HTMLElement | null;
+    const result = findItem(key);
     if (result === null) {
       throw new Error(`No tree node with key ${key}`);
     }
@@ -66,37 +96,118 @@ describe('TreeViewComponent', () => {
   }
 
   function hasItem(key: string): boolean {
-    return fixture.nativeElement.querySelector(`[data-cy-tree-view-key="${CSS.escape(key)}"]`) !== null;
+    return findItem(key) !== null;
   }
 
   function selectedKeys(): string[] {
-    return fixture.debugElement
-      .queryAll(By.css('.sft-item-selected'))
-      .map((element) => (element.nativeElement as HTMLElement).dataset['cyTreeViewKey']!);
+    return allNodes()
+      .filter((element) => 'cyTreeViewSelected' in element.dataset)
+      .map((element) => element.dataset['cyTreeViewNode']!);
   }
 
-  // The children container is the next sibling of the item.
   function isExpanded(key: string): boolean {
-    const children = item(key).nextElementSibling as HTMLElement;
-    return !children.hidden;
+    const element = item(key);
+    if ('cyTreeViewExpanded' in element.dataset) {
+      return true;
+    }
+    if ('cyTreeViewCollapsed' in element.dataset) {
+      return false;
+    }
+    throw new Error(`Tree node ${key} has no children, so it is neither expanded nor collapsed`);
   }
 
-  function clickChevron(key: string): void {
-    (item(key).querySelector('[data-cy-tree-view="chevron"]') as HTMLElement).click();
-    fixture.detectChanges();
+  // A node is shown when all its ancestors are expanded.
+  function isShown(key: string): boolean {
+    for (let parent = item(key).dataset['cyTreeViewParent']; parent !== undefined; ) {
+      const parentElement = item(parent);
+      if (!('cyTreeViewExpanded' in parentElement.dataset)) {
+        return false;
+      }
+      parent = parentElement.dataset['cyTreeViewParent'];
+    }
+    return true;
   }
 
-  function clickItem(key: string): void {
-    item(key).click();
-    fixture.detectChanges();
+  function textOf(key: string): string {
+    return item(key).querySelector('[data-cy-tree-view-text]')!.textContent!.trim();
   }
 
+  function clickExpansionToggle(key: string): void {
+    (item(key).querySelector('[data-cy-tree-view-expansion-toggle]') as HTMLElement).click();
+    render();
+  }
+
+  function clickSelect(key: string): void {
+    (item(key).querySelector('[data-cy-tree-view-select]') as HTMLElement).click();
+    render();
+  }
+
+  // Checks that the data-cy-tree-view-* attributes agree with what is shown.
+  function expectDataCyAgreesWithView(): void {
+    const host = fixture.nativeElement as HTMLElement;
+    expect(host.querySelectorAll('.sft-item').length).withContext('number of nodes').toBe(allNodes().length);
+    for (const element of allNodes()) {
+      const key = element.dataset['cyTreeViewNode']!;
+      const context = `node ${key}`;
+      expect(element.classList).withContext(context).toContain('sft-item');
+
+      // The parent is the node whose child container holds this node.
+      const structuralParent = element.parentElement!.classList.contains('sft-item-child')
+        ? (element.parentElement!.parentElement!.previousElementSibling as HTMLElement)
+        : undefined;
+      expect(element.dataset['cyTreeViewParent'])
+        .withContext(`${context} parent`)
+        .toBe(structuralParent?.dataset['cyTreeViewNode']);
+
+      const expanded = 'cyTreeViewExpanded' in element.dataset;
+      const collapsed = 'cyTreeViewCollapsed' in element.dataset;
+      const childContainer = element.nextElementSibling as HTMLElement | null;
+      const hasChildren = childContainer?.classList.contains('sft-child-container') ?? false;
+      const toggle = element.querySelector('[data-cy-tree-view-expansion-toggle]');
+      if (hasChildren) {
+        expect(expanded !== collapsed)
+          .withContext(`${context} expanded xor collapsed`)
+          .toBeTrue();
+        expect(childContainer!.hidden).withContext(`${context} children hidden`).toBe(collapsed);
+        const chevron = toggle!.querySelector('.sft-chevron')!.classList;
+        expect(chevron.contains('bi-chevron-down')).withContext(`${context} chevron down`).toBe(expanded);
+        expect(chevron.contains('bi-chevron-right')).withContext(`${context} chevron right`).toBe(collapsed);
+      } else {
+        expect(expanded || collapsed)
+          .withContext(`${context} expanded or collapsed`)
+          .toBeFalse();
+        expect(toggle).withContext(`${context} toggle`).toBeNull();
+      }
+
+      expect(isShown(key)).withContext(`${context} shown`).toBe(element.checkVisibility());
+
+      expect('cyTreeViewSelected' in element.dataset)
+        .withContext(`${context} selected`)
+        .toBe(element.classList.contains('sft-item-selected'));
+
+      const text = element.querySelector('[data-cy-tree-view-text]') as HTMLElement;
+      expect('cyTreeViewHighlighted' in element.dataset)
+        .withContext(`${context} highlighted`)
+        .toBe(text.classList.contains('red'));
+
+      const icon = element.querySelector('[data-cy-tree-view-type]') as HTMLElement;
+      const type = icon.dataset['cyTreeViewType'] as TreeViewNodeType;
+      expect(icon.classList).withContext(`${context} icon`).toContain(EXPECTED_ICONS[type]);
+      expect(icon.classList.contains('red'))
+        .withContext(`${context} red icon`)
+        .toBe('cyTreeViewError' in element.dataset || type === 'abortpoint');
+
+      expect(element.querySelector('[data-cy-tree-view-select]')).withContext(`${context} select`).not.toBeNull();
+    }
+  }
+
+  // For the rendering tests, which check how the tree looks.
   function iconClasses(key: string): DOMTokenList {
-    return (item(key).querySelector('[data-cy-tree-view="icon"]') as HTMLElement).classList;
+    return (item(key).querySelector('[data-cy-tree-view-type]') as HTMLElement).classList;
   }
 
   it('shows nothing before the first command', () => {
-    expect(fixture.nativeElement.querySelectorAll('.sft-item').length).toBe(0);
+    expect(allNodes().length).toBe(0);
     expect(emitted).toEqual([]);
   });
 
@@ -113,6 +224,23 @@ describe('TreeViewComponent', () => {
       expect(emitted).toEqual(['a2']);
     });
 
+    it('exposes the parent of each node and leaves leaves neither expanded nor collapsed', () => {
+      send({ command: 'new', node: exampleTree() });
+      const parents = allNodes().map((element) => [
+        element.dataset['cyTreeViewNode'],
+        element.dataset['cyTreeViewParent'],
+      ]);
+      expect(parents).toEqual([
+        ['r', undefined],
+        ['a', 'r'],
+        ['a1', 'a'],
+        ['a2', 'a'],
+        ['b', 'r'],
+        ['b1', 'b'],
+      ]);
+      expect(() => isExpanded('a1')).toThrowError(/neither expanded nor collapsed/);
+    });
+
     it('selects the root when select is absent', () => {
       send({ command: 'new', node: exampleTree() });
       expect(selectedKeys()).toEqual(['r']);
@@ -127,7 +255,7 @@ describe('TreeViewComponent', () => {
 
     it('discards the selection and expanded state of the previous tree', () => {
       send({ command: 'new', node: exampleTree(), select: 'a1' });
-      clickChevron('b');
+      clickExpansionToggle('b');
       expect(isExpanded('b')).toBeFalse();
       send({ command: 'new', node: exampleTree(), select: 'b1' });
       expect(isExpanded('b')).toBeTrue();
@@ -153,7 +281,7 @@ describe('TreeViewComponent', () => {
 
     it('keeps the expanded state of nodes that are still present', () => {
       send({ command: 'new', node: exampleTree(), select: 'a1' });
-      clickChevron('b');
+      clickExpansionToggle('b');
       send({ command: 'update', node: exampleTree() });
       expect(isExpanded('b')).toBeFalse();
       expect(isExpanded('a')).toBeTrue();
@@ -167,16 +295,22 @@ describe('TreeViewComponent', () => {
 
     it('shows the new text and attributes of nodes', () => {
       send({ command: 'new', node: exampleTree() });
-      send({ command: 'update', node: report([node('a', [], { text: 'changed', highlighted: true })]) });
-      const text = item('a').querySelector('[data-cy-tree-view="text"]') as HTMLElement;
-      expect(text.textContent!.trim()).toBe('changed');
-      expect(text.classList).toContain('red');
+      send({
+        command: 'update',
+        node: report([node('a', [], { text: 'changed', type: 'infopoint', valueIsError: true, highlighted: true })]),
+      });
+      expect(textOf('a')).toBe('changed');
+      expect((item('a').querySelector('[data-cy-tree-view-type]') as HTMLElement).dataset['cyTreeViewType']).toBe(
+        'infopoint',
+      );
+      expect('cyTreeViewError' in item('a').dataset).toBeTrue();
+      expect('cyTreeViewHighlighted' in item('a').dataset).toBeTrue();
       expect(hasItem('b')).toBeFalse();
     });
 
     it('selects the requested node when the selected node is gone, expanding its ancestors', () => {
       send({ command: 'new', node: exampleTree(), select: 'a1' });
-      clickChevron('b');
+      clickExpansionToggle('b');
       send({ command: 'update', node: report([node('a', [node('a2')]), node('b', [node('b1')])]), select: 'b1' });
       expect(selectedKeys()).toEqual(['b1']);
       expect(isExpanded('b')).toBeTrue();
@@ -203,8 +337,8 @@ describe('TreeViewComponent', () => {
     it('expandAll expands all nodes and keeps the selection without emitting', () => {
       send({ command: 'new', node: exampleTree(), select: 'a1' });
       // Collapsing 'a' moves the selection from 'a1' to 'a'.
-      clickChevron('a');
-      clickChevron('b');
+      clickExpansionToggle('a');
+      clickExpansionToggle('b');
       expect(emitted).toEqual(['a1', 'a']);
       emitted = [];
       send({ command: 'expandAll' });
@@ -222,6 +356,9 @@ describe('TreeViewComponent', () => {
       expect(isExpanded('r')).toBeTrue();
       expect(isExpanded('a')).toBeTrue();
       expect(isExpanded('b')).toBeFalse();
+      expect(isShown('a1')).toBeTrue();
+      expect(isShown('b')).toBeTrue();
+      expect(isShown('b1')).toBeFalse();
       expect(selectedKeys()).toEqual(['a1']);
       expect(emitted).toEqual([]);
     });
@@ -258,7 +395,7 @@ describe('TreeViewComponent', () => {
     it('ignores expandAll and collapseAll before the first tree', () => {
       send({ command: 'expandAll' });
       send({ command: 'collapseAll' });
-      expect(fixture.nativeElement.querySelectorAll('.sft-item').length).toBe(0);
+      expect(allNodes().length).toBe(0);
       expect(emitted).toEqual([]);
       send({ command: 'new', node: exampleTree(), select: 'b1' });
       expect(selectedKeys()).toEqual(['b1']);
@@ -288,7 +425,7 @@ describe('TreeViewComponent', () => {
 
     it('is ignored before the first tree', () => {
       send({ command: 'select', key: 'b1' });
-      expect(fixture.nativeElement.querySelectorAll('.sft-item').length).toBe(0);
+      expect(allNodes().length).toBe(0);
       expect(emitted).toEqual([]);
       send({ command: 'new', node: exampleTree(), select: 'a1' });
       expect(selectedKeys()).toEqual(['a1']);
@@ -307,13 +444,13 @@ describe('TreeViewComponent', () => {
       send({ command: 'new', node: exampleTree(), select: 'a1' });
       emitted = [];
       send({ command: 'clear' });
-      expect(fixture.nativeElement.querySelectorAll('.sft-item').length).toBe(0);
+      expect(allNodes().length).toBe(0);
       expect(emitted).toEqual([]);
     });
 
     it('makes a following update act like new', () => {
       send({ command: 'new', node: exampleTree(), select: 'a1' });
-      clickChevron('b');
+      clickExpansionToggle('b');
       send({ command: 'clear' });
       send({ command: 'update', node: exampleTree(), select: 'b1' });
       expect(selectedKeys()).toEqual(['b1']);
@@ -326,7 +463,7 @@ describe('TreeViewComponent', () => {
       send({ command: 'expandAll' });
       send({ command: 'collapseAll' });
       send({ command: 'select', key: 'b1' });
-      expect(fixture.nativeElement.querySelectorAll('.sft-item').length).toBe(0);
+      expect(allNodes().length).toBe(0);
     });
   });
 
@@ -337,22 +474,22 @@ describe('TreeViewComponent', () => {
     });
 
     it('selects a clicked node and emits its key', () => {
-      clickItem('b1');
+      clickSelect('b1');
       expect(selectedKeys()).toEqual(['b1']);
       expect(emitted).toEqual(['b1']);
     });
 
-    it('toggles expanded when the chevron is clicked, without selecting', () => {
-      clickChevron('b');
+    it('toggles expanded when the expansion toggle is clicked, without selecting', () => {
+      clickExpansionToggle('b');
       expect(isExpanded('b')).toBeFalse();
-      clickChevron('b');
+      clickExpansionToggle('b');
       expect(isExpanded('b')).toBeTrue();
       expect(selectedKeys()).toEqual(['a1']);
       expect(emitted).toEqual([]);
     });
 
     it('selects a collapsed node when it is an ancestor of the selected node', () => {
-      clickChevron('r');
+      clickExpansionToggle('r');
       expect(isExpanded('r')).toBeFalse();
       expect(selectedKeys()).toEqual(['r']);
       expect(emitted).toEqual(['r']);
@@ -396,10 +533,19 @@ describe('TreeViewComponent', () => {
       }
     });
 
+    it('shows the icon that belongs to the type', () => {
+      const types = Object.keys(EXPECTED_ICONS).filter((type) => type !== 'report') as TreeViewNodeType[];
+      send({ command: 'new', node: report(types.map((type) => node(type, [], { type }))) });
+      expect(iconClasses('r')).toContain(EXPECTED_ICONS.report);
+      for (const type of types) {
+        expect(iconClasses(type)).withContext(type).toContain(EXPECTED_ICONS[type]);
+      }
+    });
+
     it('shows a chevron only for nodes with children', () => {
       send({ command: 'new', node: exampleTree() });
-      expect(item('a').querySelector('[data-cy-tree-view="chevron"]')).not.toBeNull();
-      expect(item('a1').querySelector('[data-cy-tree-view="chevron"]')).toBeNull();
+      expect(item('a').querySelector('.sft-chevron')).not.toBeNull();
+      expect(item('a1').querySelector('.sft-chevron')).toBeNull();
     });
   });
 });

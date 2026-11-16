@@ -1,32 +1,66 @@
 @if (root) {
-  <ng-container [ngTemplateOutlet]="nodeTemplate" [ngTemplateOutletContext]="{ $implicit: root }" />
+  <ng-container [ngTemplateOutlet]="nodeTemplate" [ngTemplateOutletContext]="{ $implicit: root, parentKey: null }" />
 }
 
-<ng-template #nodeTemplate let-node>
+<!--
+  The data-cy-tree-view-* attributes give tests access to the logical state
+  of the tree, independent of how it looks:
+  - data-cy-tree-view-node=<key> is on the element of each node. That element
+    does not contain the elements of its children, so a search inside it only
+    finds the attributes of the node itself.
+  - data-cy-tree-view-parent=<key of the parent> is on each node except the root.
+  - data-cy-tree-view-expanded or data-cy-tree-view-collapsed is on each node
+    with children. A node without children has neither. A node is shown when
+    all its ancestors are expanded.
+  - data-cy-tree-view-selected, data-cy-tree-view-highlighted and
+    data-cy-tree-view-error are on the node when that applies.
+  - Inside the node: data-cy-tree-view-type=<TreeViewNodeType>,
+    data-cy-tree-view-text holds the text, data-cy-tree-view-select is
+    clicked to select the node and data-cy-tree-view-expansion-toggle is
+    clicked to expand or collapse it.
+  tree-view.component.spec.ts checks that these attributes agree with what is
+  shown.
+-->
+<ng-template #nodeTemplate let-node let-parentKey="parentKey">
   <div
     class="sft-item"
-    [attr.data-cy-tree-view-key]="node.key"
+    [attr.data-cy-tree-view-node]="node.key"
+    [attr.data-cy-tree-view-parent]="parentKey"
+    [attr.data-cy-tree-view-expanded]="node.children.length > 0 && node.expanded ? '' : null"
+    [attr.data-cy-tree-view-collapsed]="node.children.length > 0 && !node.expanded ? '' : null"
+    [attr.data-cy-tree-view-selected]="node.selected ? '' : null"
+    [attr.data-cy-tree-view-highlighted]="node.highlighted ? '' : null"
+    [attr.data-cy-tree-view-error]="node.valueIsError ? '' : null"
     [ngClass]="{ 'sft-item-selected': node.selected, 'sft-no-children': node.children.length === 0 }"
     (click)="selectByUser(node)"
   >
     @if (node.children.length > 0) {
-      <div class="sft-chevron-container" data-cy-tree-view="chevron" (click)="toggleExpanded(node, $event)">
+      <div class="sft-chevron-container" data-cy-tree-view-expansion-toggle (click)="toggleExpanded(node, $event)">
         <i class="bi sft-chevron" [ngClass]="node.expanded ? 'bi-chevron-down' : 'bi-chevron-right'"></i>
       </div>
     }
     <div class="sft-icon-container">
-      <i data-cy-tree-view="icon" [class]="getIconClass(node)"></i>
+      <i [attr.data-cy-tree-view-type]="node.type" [class]="getIconClass(node)"></i>
     </div>
-    <div class="item-name" data-cy-tree-view="text" [title]="node.text" [ngClass]="{ red: node.highlighted }">
+    <div
+      class="item-name"
+      data-cy-tree-view-text
+      data-cy-tree-view-select
+      [title]="node.text"
+      [ngClass]="{ red: node.highlighted }"
+    >
       {{ node.text }}
     </div>
   </div>
   @if (node.children.length > 0) {
-    <div class="sft-child-container" data-cy-tree-view="children" [hidden]="!node.expanded">
+    <div class="sft-child-container" [hidden]="!node.expanded">
       @for (child of node.children; track child.key; let first = $first) {
         <div class="sft-item-child">
           <div class="sft-item-vertical-line" [ngClass]="{ 'sft-item-vertical-line-extended': !first }"></div>
-          <ng-container [ngTemplateOutlet]="nodeTemplate" [ngTemplateOutletContext]="{ $implicit: child }" />
+          <ng-container
+            [ngTemplateOutlet]="nodeTemplate"
+            [ngTemplateOutletContext]="{ $implicit: child, parentKey: node.key }"
+          />
         </div>
       }
     </div>

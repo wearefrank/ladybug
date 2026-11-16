@@ -148,27 +148,13 @@ describe('Test labels', () => {
 
 function testTreeView(reportName: string): void {
   cy.getRootNodeOfDebugTree()
-    .find('[data-cy-tree-view="text"]')
+    .find('[data-cy-tree-view-text]')
     .should('contain', reportName);
 
-  // The icons of all nodes, the report node first.
-  cy.get('[data-cy-debug-tree="root"] [data-cy-tree-view="icon"]').as('tree-icons');
-
-  cy.get('@tree-icons').eq(1)
-    .should('satisfy', ($el) => {
-      const classList = Array.from($el[0].classList);
-      return classList.includes('bi') && classList.includes('bi-arrow-bar-right');
-    })
-
-  cy.get('@tree-icons').eq(2)
-    .should('satisfy', ($el) => {
-      const classList = Array.from($el[0].classList);
-      return classList.includes('bi') && classList.includes('bi-info-square');
-    })
-
-  cy.get('@tree-icons').eq(3)
-    .should('satisfy', ($el) => {
-      const classList = Array.from($el[0].classList);
-      return classList.includes('bi') && classList.includes('bi-arrow-bar-left');
-    })
+  // The types of all nodes in the order in which they are shown, the report
+  // node first. Which icon belongs to a type is tested by Karma.
+  cy.get('[data-cy-debug-tree="root"] [data-cy-tree-view-type]').as('tree-types');
+  cy.get('@tree-types').eq(1).should('have.attr', 'data-cy-tree-view-type', 'startpoint');
+  cy.get('@tree-types').eq(2).should('have.attr', 'data-cy-tree-view-type', 'infopoint');
+  cy.get('@tree-types').eq(3).should('have.attr', 'data-cy-tree-view-type', 'endpoint');
 }
