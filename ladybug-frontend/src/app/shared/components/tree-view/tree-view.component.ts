@@ -127,6 +127,14 @@ const ICON_CLASSES: Record<TreeViewNodeType, string> = {
   threadEndpoint: 'bi bi-chevron-double-left icon-size scale-down bold-icon',
 };
 
+// Checkpoints that close a startpoint. Their level is one higher than the
+// level of the startpoint they close.
+const CLOSING_TYPES: ReadonlySet<TreeViewNodeType> = new Set<TreeViewNodeType>([
+  'endpoint',
+  'abortpoint',
+  'threadEndpoint',
+]);
+
 // What the tree view can do depends on whether it has received a command.
 interface TreeViewState {
   // The node to render, or null when there is nothing to render.
@@ -354,8 +362,7 @@ export class TreeViewComponent implements OnChanges, OnDestroy {
       result += ' red';
     }
     if (node.level !== null) {
-      const isClosing = node.type === 'endpoint' || node.type === 'abortpoint' || node.type === 'threadEndpoint';
-      const colorLevel = isClosing ? node.level - 1 : node.level;
+      const colorLevel = CLOSING_TYPES.has(node.type) ? node.level - 1 : node.level;
       result += colorLevel % 2 === 0 ? ' even' : ' odd';
     }
     return result;
