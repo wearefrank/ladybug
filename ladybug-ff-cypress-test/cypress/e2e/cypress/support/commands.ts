@@ -440,7 +440,7 @@ function selectTreeNodeImpl (subject: JQuery<HTMLElement>, path: NodeSelection[]
 // report being opened while another one is already showing, this guard is not sufficient
 // and would need to check for content specific to the new report instead of mere presence.
 Cypress.Commands.add('awaitDebugTree', () => {
-  cy.inLadybug('[data-cy-debug-tree="root"] > app-tree-item').should('have.length.at.least', 1)
+  cy.inLadybug(`[data-cy-debug-tree="root"] > ${TREE_NODE}`).should('have.length.at.least', 1)
 })
 
 Cypress.Commands.add('awaitLoadingSpinner', () => {
