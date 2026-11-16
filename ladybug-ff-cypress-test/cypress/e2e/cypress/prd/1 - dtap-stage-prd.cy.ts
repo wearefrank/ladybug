@@ -1,4 +1,4 @@
-import { AUTHENTICATIONS } from "../support/commands"
+import { AUTHENTICATIONS } from "../support/authentications"
 
 // Filename starts with 1 so that these texts are executed before other specs.
 // We want to check that the report generator is disabled by default before
