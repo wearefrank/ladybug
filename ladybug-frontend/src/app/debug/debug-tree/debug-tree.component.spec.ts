@@ -187,11 +187,10 @@ describe('DebugTreeComponent', () => {
       }
     });
 
-    it('shows a red icon when the message is a thrown exception, and alternates colors by level', () => {
+    it('shows a red icon when the message is a thrown exception, and alternates colors by depth', () => {
       const children = [
         checkpoint(0, 'exception', { type: 6, level: 0, encoding: 'printStackTrace()' }),
-        checkpoint(1, 'even', { type: 6, level: 2 }),
-        checkpoint(2, 'odd', { type: 6, level: 1 }),
+        checkpoint(1, 'even', { children: [checkpoint(2, 'odd', { type: 6, level: 1 })] }),
       ];
       component.addReportToTree({ name: 'report', storageId: 5, children } as HierarchicalReport);
       fixture.detectChanges();
