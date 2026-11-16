@@ -13,7 +13,6 @@ function node(
     type: 'startpoint',
     text: `text of ${key}`,
     valueIsError: false,
-    level: 0,
     highlighted: false,
     children,
     ...extra,
@@ -21,7 +20,7 @@ function node(
 }
 
 function report(children: TreeViewInputNode[]): TreeViewInputNode {
-  return node('r', children, { type: 'report', level: null });
+  return node('r', children, { type: 'report' });
 }
 
 // r
@@ -361,49 +360,40 @@ describe('TreeViewComponent', () => {
   });
 
   describe('rendering', () => {
-    it('chooses icon colors from type, valueIsError and level', () => {
+    it('chooses icon colors from type and valueIsError', () => {
       send({
         command: 'new',
         node: report([
-          node('even', [], { type: 'infopoint', level: 2 }),
-          node('odd', [], { type: 'infopoint', level: 1 }),
-          node('abort', [], { type: 'abortpoint', level: 1 }),
-          node('error', [], { type: 'outputpoint', level: 0, valueIsError: true }),
+          node('info', [], { type: 'infopoint' }),
+          node('abort', [], { type: 'abortpoint' }),
+          node('error', [], { type: 'outputpoint', valueIsError: true }),
         ]),
       });
-      expect(iconClasses('even')).toContain('even');
-      expect(iconClasses('even')).not.toContain('red');
-      expect(iconClasses('odd')).toContain('odd');
+      expect(iconClasses('info')).not.toContain('red');
       expect(iconClasses('abort')).toContain('red');
       expect(iconClasses('error')).toContain('red');
       expect(iconClasses('r')).toContain('bi-folder');
-      expect(iconClasses('r')).not.toContain('even');
-      expect(iconClasses('r')).not.toContain('odd');
     });
 
-    it('colors a closing checkpoint like its startpoint, although its level is one higher', () => {
+    it('alternates icon colors by depth, starting with black for the children of the root', () => {
       send({
         command: 'new',
         node: report([
-          node(
-            'start',
-            [node('child', [], { type: 'infopoint', level: 1 }), node('end', [], { type: 'endpoint', level: 1 })],
-            { type: 'startpoint', level: 0 },
-          ),
-          node('threadStart', [node('threadEnd', [], { type: 'threadEndpoint', level: 2 })], {
-            type: 'threadStartpoint',
-            level: 1,
-          }),
-          node('abort', [], { type: 'abortpoint', level: 1 }),
+          node('start', [
+            node('child', [node('grandchild', [], { type: 'infopoint' })]),
+            node('end', [], { type: 'endpoint' }),
+          ]),
+          node('abort', [], { type: 'abortpoint' }),
         ]),
       });
-      send({ command: 'expandAll' });
-      expect(iconClasses('start')).toContain('even');
-      expect(iconClasses('child')).toContain('odd');
-      expect(iconClasses('end')).toContain('even');
-      expect(iconClasses('threadStart')).toContain('odd');
-      expect(iconClasses('threadEnd')).toContain('odd');
-      expect(iconClasses('abort')).toContain('even');
+      expect(iconClasses('r')).not.toContain('even');
+      expect(iconClasses('r')).not.toContain('odd');
+      for (const key of ['start', 'abort', 'grandchild']) {
+        expect(iconClasses(key)).withContext(key).toContain('even');
+      }
+      for (const key of ['child', 'end']) {
+        expect(iconClasses(key)).withContext(key).toContain('odd');
+      }
     });
 
     it('shows a chevron only for nodes with children', () => {

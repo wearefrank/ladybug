@@ -117,7 +117,7 @@ export class DebugTreeComponent implements OnInit, OnDestroy {
 
   private toReportNode(report: HierarchicalReport): TreeViewInputNode {
     this.valuesByKey.set(REPORT_KEY, report);
-    return this.toNode(REPORT_KEY, 'report', this.getReportName(report), false, null, report.children);
+    return this.toNode(REPORT_KEY, 'report', this.getReportName(report), false, report.children);
   }
 
   private toCheckpointNode(checkpoint: HierarchicalCheckpoint): TreeViewInputNode {
@@ -128,7 +128,6 @@ export class DebugTreeComponent implements OnInit, OnDestroy {
       NODE_TYPES[checkpoint.type as CheckpointType],
       this.getCheckpointName(checkpoint),
       checkpoint.encoding === THROWABLE_ENCODER,
-      checkpoint.level,
       checkpoint.children,
     );
   }
@@ -138,7 +137,6 @@ export class DebugTreeComponent implements OnInit, OnDestroy {
     type: TreeViewNodeType,
     text: string,
     valueIsError: boolean,
-    level: number | null,
     children: HierarchicalCheckpoint[] | null,
   ): TreeViewInputNode {
     return {
@@ -146,7 +144,6 @@ export class DebugTreeComponent implements OnInit, OnDestroy {
       type,
       text,
       valueIsError,
-      level,
       highlighted: this.searchTerm !== '' && text.includes(this.searchTerm),
       children: (children ?? []).map((child) => this.toCheckpointNode(child)),
     };
