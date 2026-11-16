@@ -36,10 +36,12 @@ export interface TreeViewInputNode {
   // whose message holds a thrown exception (encoding printStackTrace()).
   // The icon of such a node is shown in red.
   valueIsError: boolean;
-  // The level of the checkpoint as provided by the backend. It is not
-  // the same as the depth in the tree: an endpoint is shown as a child
-  // of its startpoint but has the same level. Icons on even levels are
-  // black, icons on odd levels are gray. Null for a report.
+  // The level of the checkpoint as provided by the backend. A startpoint
+  // has level n, its children and its endpoint (or abortpoint) have level
+  // n + 1. Icons on even levels are black, icons on odd levels are gray.
+  // An endpoint, abortpoint or thread endpoint gets the color of its
+  // startpoint, so it is colored as if its level were one lower.
+  // Null for a report.
   level: number | null;
   // Draws attention to the node. Used in the compare tab when the node
   // differs from the corresponding node in the other tree, and in the
@@ -352,7 +354,9 @@ export class TreeViewComponent implements OnChanges, OnDestroy {
       result += ' red';
     }
     if (node.level !== null) {
-      result += node.level % 2 === 0 ? ' even' : ' odd';
+      const isClosing = node.type === 'endpoint' || node.type === 'abortpoint' || node.type === 'threadEndpoint';
+      const colorLevel = isClosing ? node.level - 1 : node.level;
+      result += colorLevel % 2 === 0 ? ' even' : ' odd';
     }
     return result;
   }

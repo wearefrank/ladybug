@@ -381,6 +381,31 @@ describe('TreeViewComponent', () => {
       expect(iconClasses('r')).not.toContain('odd');
     });
 
+    it('colors a closing checkpoint like its startpoint, although its level is one higher', () => {
+      send({
+        command: 'new',
+        node: report([
+          node(
+            'start',
+            [node('child', [], { type: 'infopoint', level: 1 }), node('end', [], { type: 'endpoint', level: 1 })],
+            { type: 'startpoint', level: 0 },
+          ),
+          node('threadStart', [node('threadEnd', [], { type: 'threadEndpoint', level: 2 })], {
+            type: 'threadStartpoint',
+            level: 1,
+          }),
+          node('abort', [], { type: 'abortpoint', level: 1 }),
+        ]),
+      });
+      send({ command: 'expandAll' });
+      expect(iconClasses('start')).toContain('even');
+      expect(iconClasses('child')).toContain('odd');
+      expect(iconClasses('end')).toContain('even');
+      expect(iconClasses('threadStart')).toContain('odd');
+      expect(iconClasses('threadEnd')).toContain('odd');
+      expect(iconClasses('abort')).toContain('even');
+    });
+
     it('shows a chevron only for nodes with children', () => {
       send({ command: 'new', node: exampleTree() });
       expect(item('a').querySelector('[data-cy-tree-view="chevron"]')).not.toBeNull();
