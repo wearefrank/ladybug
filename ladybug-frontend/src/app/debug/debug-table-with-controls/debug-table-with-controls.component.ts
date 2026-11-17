@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { Component, EventEmitter, inject, Input, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
 import { HelperService } from '../../shared/services/helper.service';
 import { HttpService } from '../../shared/services/http.service';
 import { TableSettingsModalComponent } from '../table-settings-modal/table-settings-modal.component';
@@ -32,6 +33,11 @@ import { HierarchicalReport } from '../../shared/interfaces/hierarchical-report'
 import { CompareData } from '../../compare/compare-data';
 import { DebugTableGridComponent } from '../debug-table-grid/debug-table-grid.component';
 import { FilterSideDrawerComponent } from '../filter-side-drawer/filter-side-drawer.component';
+
+export interface ViewUpdate {
+  view: View;
+  updatedReport?: HierarchicalReport;
+}
 
 @Component({
   selector: 'app-debug-table-with-controls',
@@ -66,7 +72,7 @@ export class DebugTableWithControlsComponent implements OnInit, OnDestroy {
   @Input({ required: true }) views!: View[];
   @Input({ required: true }) currentView!: View;
   @Input({ required: true }) reportClosed$!: Observable<boolean>;
-  @Output() viewChange: EventEmitter<View> = new EventEmitter<View>();
+  @Output() viewChange: EventEmitter<ViewUpdate> = new EventEmitter<ViewUpdate>();
   @Output() openReportEvent: EventEmitter<HierarchicalReport> = new EventEmitter<HierarchicalReport>();
 
   @ViewChild(TableSettingsModalComponent)
@@ -109,8 +115,6 @@ export class DebugTableWithControlsComponent implements OnInit, OnDestroy {
   }
 
   subscribeToObservables(): void {
-    const refreshAll = this.debugTab.refreshAll$.subscribe((condition?: RefreshCondition) => this.refresh(condition));
-    this.subscriptions.add(refreshAll);
     const refreshTable = this.debugTab.refreshTable$.subscribe((condition?: RefreshCondition) =>
       this.refresh(condition),
     );
@@ -135,10 +139,59 @@ export class DebugTableWithControlsComponent implements OnInit, OnDestroy {
   }
 
   changeView(view: View): void {
+    const previousView = this.currentView;
     this.currentView = view;
-    this.viewChange.next(this.currentView);
     // FilterService already triggers retrieving the records when the view is changed.
     this.update();
+    if (this.openedStorageId !== null && view.storageName !== previousView.storageName) {
+      // The opened report is not in the storage of the new view. It stays
+      // open, but it is no longer linked to the table.
+      this.openedStorageId = null;
+    }
+    if (this.openedStorageId === null) {
+      this.viewChange.next({ view });
+    } else {
+      this.fetchOpenedReportForView(view, this.openedStorageId);
+    }
+  }
+
+  private fetchOpenedReportForView(view: View, storageId: number): void {
+    this.httpService.getHierarchicalReports([storageId], view.storageName, view.name).subscribe({
+      next: (reports: HierarchicalReport[]): void => {
+        if (view !== this.currentView) {
+          // Superseded by another view change, which emits its own update.
+          return;
+        }
+        if (this.openedStorageId === storageId) {
+          this.viewChange.next({ view, updatedReport: reports[0] });
+        } else {
+          // The report this fetch is for is no longer shown. Meanwhile it was
+          // closed, or a report in progress was opened, or another report
+          // was opened from the table. A report in progress does not depend
+          // on the view. A report opened from the table was fetched for the
+          // current view, see openReport(). So whatever the tree shows now
+          // already matches the view. Showing the fetched report would
+          // replace it with a report the user no longer has open.
+          this.viewChange.next({ view });
+        }
+      },
+      error: (error: unknown): void => {
+        console.warn(error);
+        if (view !== this.currentView) {
+          return;
+        }
+        if (this.openedStorageId === storageId) {
+          // The report stays open as it was, but it no longer matches the view.
+          this.openedStorageId = null;
+          const detail = error instanceof HttpErrorResponse ? error.message : String(error);
+          this.toastService.showDanger(
+            `Could not show the opened report in view "${view.name}", it is no longer updated when the view changes`,
+            detail,
+          );
+        }
+        this.viewChange.next({ view });
+      },
+    });
   }
 
   loadMetadataCount(): void {
@@ -300,16 +353,26 @@ export class DebugTableWithControlsComponent implements OnInit, OnDestroy {
     }
   }
 
+  // Invariant: a report opened from the table is always shown as fetched for
+  // the current view. Method changeView() relies on this.
   openReport(storageId: number): void {
-    this.httpService
-      .getHierarchicalReports([storageId], this.currentView.storageName, this.currentView.name)
-      .pipe(catchError(this.errorHandler.handleError()))
-      .subscribe({
-        next: (data: HierarchicalReport[]): void => {
+    const view = this.currentView;
+    this.httpService.getHierarchicalReports([storageId], view.storageName, view.name).subscribe({
+      next: (data: HierarchicalReport[]): void => {
+        if (view === this.currentView) {
           this.openedStorageId = data[0].storageId;
           this.openReportEvent.next(data[0]);
-        },
-      });
+        } else if (view.storageName === this.currentView.storageName) {
+          // The view changed while fetching. Fetch the report again for the current view.
+          this.openReport(storageId);
+        } else {
+          this.toastService.showWarning(
+            `Did not open report with storage id ${storageId}, because the view changed to another storage meanwhile`,
+          );
+        }
+      },
+      error: (error: unknown): void => this.errorHandler.handleUnknownError(error),
+    });
   }
 
   openReportInProgress(index: number): void {

@@ -52,6 +52,10 @@ export class DebugReportComponent implements ReportComponentCallback, OnInit, On
     this.debugTreeComponent.addReportToTree(report);
   }
 
+  updateExistingReport(report: HierarchicalReport): void {
+    this.debugTreeComponent.updateExistingReport(report);
+  }
+
   closeEntireTree(): void {
     this.debugTreeComponent.closeEntireTree();
     this.sharedStrategy.changeReportValueState('none');
@@ -62,9 +66,10 @@ export class DebugReportComponent implements ReportComponentCallback, OnInit, On
     this.router.navigate(['/test']);
   }
 
-  onRefreshReport(_: HierarchicalReport): void {
-    this.debugTab.refreshAll({
-      reportIds: [this.sharedStrategy.nodeValueState!.storageId!],
+  onRefreshReport(report: HierarchicalReport): void {
+    this.debugTreeComponent.updateExistingReport(report);
+    this.debugTab.refreshTable({
+      reportIds: [report.storageId],
       displayToast: false,
     });
   }

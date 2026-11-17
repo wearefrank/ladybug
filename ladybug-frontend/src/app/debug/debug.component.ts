@@ -9,7 +9,10 @@ import { HierarchicalReport } from '../shared/interfaces/hierarchical-report';
 import { ActivatedRoute } from '@angular/router';
 import { MetadataFilter, TabService } from '../shared/services/tab.service';
 import { FilterService } from '../shared/services/filter.service';
-import { DebugTableWithControlsComponent } from './debug-table-with-controls/debug-table-with-controls.component';
+import {
+  DebugTableWithControlsComponent,
+  ViewUpdate,
+} from './debug-table-with-controls/debug-table-with-controls.component';
 
 @Component({
   selector: 'app-debug',
@@ -46,10 +49,13 @@ export class DebugComponent implements OnInit {
     this.customReportComponent.addReport(report);
   }
 
-  protected onViewChange(view: View): void {
-    this.currentView = view;
+  protected onViewChange(viewUpdate: ViewUpdate): void {
+    this.currentView = viewUpdate.view;
     this.retrieveErrorsAndWarnings();
     this.filterService.setCurrentView(this.currentView);
+    if (viewUpdate.updatedReport) {
+      this.customReportComponent.updateExistingReport(viewUpdate.updatedReport);
+    }
   }
 
   private retrieveViews(): void {
@@ -60,7 +66,7 @@ export class DebugComponent implements OnInit {
         next: (views: View[]) => {
           this.views = views;
           if (!this.currentView) {
-            this.onViewChange(this.views.find((v: View) => v.defaultView)!);
+            this.onViewChange({ view: this.views.find((v: View) => v.defaultView)! });
           }
         },
       });
