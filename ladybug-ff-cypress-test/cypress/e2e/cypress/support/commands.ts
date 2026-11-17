@@ -48,6 +48,7 @@ declare global {
       apiCopyReportToTestTabAsTester(storageName: string, storageId: number): Chainable<number>
       apiSetGeneratorEnabledAsTester(enabled: boolean): Chainable<any>
       selectTreeNode(path: NodeSelection[]): Cypress.Chainable<any>
+      getChildTreeNodes(): Cypress.Chainable<any>
       awaitDebugTree(): void
       awaitLoadingSpinner(): void
       waitForVideo(): void
@@ -388,23 +389,31 @@ function normalizeNodeSelection (input: NodeSelection): TextWithSeq {
   }
 }
 
-// The debug tree is rendered by TreeViewComponent of ladybug-frontend. Each node is an
-// element with attribute data-cy-tree-view-key. Its text is in a child element with
-// data-cy-tree-view="text". The children of a node are in the element that directly
-// follows it, each wrapped in a div.sft-item-child. See tree-view.component.html.
-const TREE_NODE = '[data-cy-tree-view-key]'
+// The debug tree is rendered by TreeViewComponent of ladybug-frontend. These tests only
+// use its data-cy-tree-view-* attributes, which are explained in tree-view.component.html:
+// - data-cy-tree-view-node=<key> is on the element of each node. That element does not
+//   contain the elements of its children, so a search inside it only finds the
+//   attributes of the node itself.
+// - data-cy-tree-view-parent=<key of the parent> is on each node except the root.
+// - data-cy-tree-view-text is inside the node and holds its text.
+const DEBUG_TREE = '[data-cy-debug-tree="root"]'
+const TREE_NODE = '[data-cy-tree-view-node]'
+// The node of the report.
+const TREE_ROOT_NODE = `${DEBUG_TREE} ${TREE_NODE}:not([data-cy-tree-view-parent])`
 
-// The children of a node are not inside the node, so only the text of the node itself
-// is searched.
-function treeNodeWithText (text: string): string {
-  return `${TREE_NODE}:has([data-cy-tree-view="text"]:contains(${text}))`
+function treeNodesWithParent (parentKey: string): string {
+  return `${DEBUG_TREE} ${TREE_NODE}[data-cy-tree-view-parent="${CSS.escape(parentKey)}"]`
+}
+
+function withText (text: string): string {
+  return `:has([data-cy-tree-view-text]:contains(${text}))`
 }
 
 // The path starts with the report node. Each next element selects a child of the
 // previously selected node. Yields the selected node, which can be clicked.
 Cypress.Commands.add('selectTreeNode', (path: NodeSelection[]) => {
   const head = normalizeNodeSelection(path.shift())
-  cy.inLadybug(`[data-cy-debug-tree="root"] > ${treeNodeWithText(head.text)}`).then((nodes) => {
+  cy.inLadybug(`${TREE_ROOT_NODE}${withText(head.text)}`).then((nodes) => {
     const chosen = nodes[head.seq]
     if (path.length === 0) {
       return cy.wrap(chosen)
@@ -416,10 +425,7 @@ Cypress.Commands.add('selectTreeNode', (path: NodeSelection[]) => {
 
 function selectTreeNodeImpl (subject: JQuery<HTMLElement>, path: NodeSelection[]): Cypress.Chainable<any> | void {
   const head = normalizeNodeSelection(path.shift())
-  cy.wrap(subject)
-    .next('.sft-child-container')
-    .children('.sft-item-child')
-    .children(treeNodeWithText(head.text))
+  cy.inLadybug(`${treeNodesWithParent(subject.attr('data-cy-tree-view-node')!)}${withText(head.text)}`)
     .then((nodes) => {
       const chosen = nodes[head.seq]
       if (path.length === 0) {
@@ -440,7 +446,12 @@ function selectTreeNodeImpl (subject: JQuery<HTMLElement>, path: NodeSelection[]
 // report being opened while another one is already showing, this guard is not sufficient
 // and would need to check for content specific to the new report instead of mere presence.
 Cypress.Commands.add('awaitDebugTree', () => {
-  cy.inLadybug(`[data-cy-debug-tree="root"] > ${TREE_NODE}`).should('have.length.at.least', 1)
+  cy.inLadybug(TREE_ROOT_NODE).should('have.length.at.least', 1)
+})
+
+// Yields the direct children of the subject, which is a node of the debug tree.
+Cypress.Commands.add('getChildTreeNodes', { prevSubject: 'element' }, (node: JQuery<HTMLElement>) => {
+  cy.inLadybug(treeNodesWithParent(node.attr('data-cy-tree-view-node')!))
 })
 
 Cypress.Commands.add('awaitLoadingSpinner', () => {

@@ -101,10 +101,5 @@ function endCheckpointShouldExist (reportName: string): void {
 }
 
 function childrenOfStartCheckpoint (reportName: string): Cypress.Chainable<any> {
-  // selectTreeNode yields the node of the start checkpoint. Its children are in the
-  // element that directly follows it, see selectTreeNode in commands.ts.
-  return cy.selectTreeNode([reportName, reportName])
-    .next('.sft-child-container')
-    .children('.sft-item-child')
-    .children('[data-cy-tree-view-key]')
+  return cy.selectTreeNode([reportName, reportName]).getChildTreeNodes()
 }
