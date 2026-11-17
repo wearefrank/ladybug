@@ -24,13 +24,7 @@
     <div class="sft-icon-container">
       <i [attr.data-cy-tree-view-type]="node.type" [class]="getIconClass(node)"></i>
     </div>
-    <div
-      class="item-name"
-      data-cy-tree-view-text
-      data-cy-tree-view-select
-      [title]="node.text"
-      [ngClass]="{ red: node.highlighted }"
-    >
+    <div data-cy-tree-view-text data-cy-tree-view-select [title]="node.text" [ngClass]="{ red: node.highlighted }">
       {{ node.text }}
     </div>
   </div>

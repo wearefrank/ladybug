@@ -69,11 +69,11 @@ describe('Report buttons', () => {
     checkNoCheckpointIds();
     cy.get('[data-cy-debug-tree="toggleShowCheckpointId"]').click();
     cy.get('[data-cy-debug-tree="root"]')
-      .find(`.item-name:eq(0)`)
+      .find(`[data-cy-tree-view-text]:eq(0)`)
       .contains('Simple report (3)');
     for(const nodeIndex of [1, 2]) {
       cy.get('[data-cy-debug-tree="root"]')
-        .find(`.item-name:eq(${nodeIndex})`)
+        .find(`[data-cy-tree-view-text]:eq(${nodeIndex})`)
         // We test the exact checkpoint id-s. These are deterministic.
         // This check makes sure that the storage id and the checkpoint
         // id are not confused - both are extracted from the uid by
@@ -113,7 +113,7 @@ describe('Report buttons', () => {
 function checkNoCheckpointIds() {
   for(const nodeIndex of [0, 1, 2]) {
     cy.get('[data-cy-debug-tree="root"]')
-      .find(`.item-name:eq(${nodeIndex})`)
+      .find(`[data-cy-tree-view-text]:eq(${nodeIndex})`)
       .invoke('text')
       .should('contain', 'Simple report')
       .should('not.contain', '(');
