@@ -39,9 +39,7 @@ describe('DebugTreeComponent', () => {
       imports: [DebugTreeComponent],
       providers: [provideHttpClient(withInterceptorsFromDi()), provideHttpClientTesting()],
     }).compileComponents();
-  });
 
-  beforeEach(() => {
     fixture = TestBed.createComponent(DebugTreeComponent);
     component = fixture.componentInstance;
     selected = [];
