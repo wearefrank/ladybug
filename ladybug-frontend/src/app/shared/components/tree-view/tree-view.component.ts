@@ -36,6 +36,13 @@ export interface TreeViewInputNode {
   // whose message holds a thrown exception (encoding printStackTrace()).
   // The icon of such a node is shown in red.
   valueIsError: boolean;
+  // The level of the checkpoint as provided by the backend. A startpoint
+  // has level n, its children and its endpoint (or abortpoint) have level
+  // n + 1. Icons on even levels are black, icons on odd levels are gray.
+  // An endpoint, abortpoint or thread endpoint gets the color of its
+  // startpoint, so it is colored as if its level were one lower.
+  // Null for a report.
+  level: number | null;
   // Draws attention to the node. Used in the compare tab when the node
   // differs from the corresponding node in the other tree, and in the
   // debug tab when the node matches the search string.
@@ -46,9 +53,6 @@ export interface TreeViewInputNode {
 // A node as it is rendered: the input plus the state that
 // changes when the user works with the tree.
 export interface TreeViewNode extends Omit<TreeViewInputNode, 'children'> {
-  // The depth in the shown tree: 0 for the root, 1 for its children, etc.
-  // Determines the icon color, see getIconClass().
-  depth: number;
   expanded: boolean;
   selected: boolean;
   children: TreeViewNode[];
@@ -216,7 +220,6 @@ class Initialized implements TreeViewState {
   ): TreeViewNode {
     const node: TreeViewNode = {
       ...input,
-      depth: parent ? parent.depth + 1 : 0,
       expanded: previousNodesByKey.get(input.key)?.expanded ?? true,
       selected: false,
       children: [],
@@ -350,11 +353,10 @@ export class TreeViewComponent implements OnChanges, OnDestroy {
     if (node.type === 'abortpoint' || node.valueIsError) {
       result += ' red';
     }
-    // The color alternates with the depth in the shown tree. The children
-    // of the root are black, their children gray, and so on. The root
-    // keeps the default color.
-    if (node.depth > 0) {
-      result += node.depth % 2 === 1 ? ' even' : ' odd';
+    if (node.level !== null) {
+      const isClosing = (['endpoint', 'abortpoint', 'threadEndpoint'] as TreeViewNodeType[]).includes(node.type);
+      const colorLevel = isClosing ? node.level - 1 : node.level;
+      result += colorLevel % 2 === 0 ? ' even' : ' odd';
     }
     return result;
   }

@@ -14,6 +14,8 @@
     all its ancestors are expanded.
   - data-cy-tree-view-selected, data-cy-tree-view-highlighted and
     data-cy-tree-view-error are on the node when that applies.
+  - data-cy-tree-view-level=<level> is on each node that has a level,
+    which determines the icon color.
   - Inside the node: data-cy-tree-view-type=<TreeViewNodeType>,
     data-cy-tree-view-text holds the text, data-cy-tree-view-select is
     clicked to select the node and data-cy-tree-view-expansion-toggle is
@@ -31,6 +33,7 @@
     [attr.data-cy-tree-view-selected]="node.selected ? '' : null"
     [attr.data-cy-tree-view-highlighted]="node.highlighted ? '' : null"
     [attr.data-cy-tree-view-error]="node.valueIsError ? '' : null"
+    [attr.data-cy-tree-view-level]="node.level"
     [ngClass]="{ 'sft-item-selected': node.selected, 'sft-no-children': node.children.length === 0 }"
     (click)="selectByUser(node)"
   >

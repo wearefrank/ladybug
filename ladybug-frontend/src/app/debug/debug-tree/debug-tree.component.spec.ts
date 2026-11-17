@@ -24,7 +24,7 @@ function checkpoint(id: number, name: string, extra: Partial<HierarchicalCheckpo
 //    +- end (2)
 function exampleReport(): HierarchicalReport {
   const start = checkpoint(0, 'start', {
-    children: [checkpoint(1, 'info', { type: 6, level: 1 }), checkpoint(2, 'end', { type: 2, level: 0 })],
+    children: [checkpoint(1, 'info', { type: 6, level: 1 }), checkpoint(2, 'end', { type: 2, level: 1 })],
   });
   return { name: 'report', storageId: 5, children: [start] } as HierarchicalReport;
 }
@@ -213,6 +213,15 @@ describe('DebugTreeComponent', () => {
       fixture.detectChanges();
       expect('cyTreeViewError' in node('0').dataset).toBeTrue();
       expect('cyTreeViewError' in node('1').dataset).toBeFalse();
+    });
+
+    it('passes the level of each checkpoint, and no level for the report', () => {
+      const children = [checkpoint(0, 'start', { level: 0, children: [checkpoint(1, 'info', { type: 6, level: 1 })] })];
+      component.addReportToTree({ name: 'report', storageId: 5, children } as HierarchicalReport);
+      fixture.detectChanges();
+      expect(node('report').dataset['cyTreeViewLevel']).toBeUndefined();
+      expect(node('0').dataset['cyTreeViewLevel']).toBe('0');
+      expect(node('1').dataset['cyTreeViewLevel']).toBe('1');
     });
   });
 });
