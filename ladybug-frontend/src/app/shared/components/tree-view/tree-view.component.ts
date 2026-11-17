@@ -127,7 +127,7 @@ const ICON_CLASSES: Record<TreeViewNodeType, string> = {
   threadEndpoint: 'bi bi-chevron-double-left icon-size scale-down bold-icon',
 };
 
-// What the tree view can do depends on whether it has received a command.
+// What the tree view can do depends on whether it currently shows a tree.
 interface TreeViewState {
   // The node to render, or null when there is nothing to render.
   readonly root: TreeViewNode | null;

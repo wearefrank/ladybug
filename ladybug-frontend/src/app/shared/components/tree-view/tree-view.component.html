@@ -2,27 +2,6 @@
   <ng-container [ngTemplateOutlet]="nodeTemplate" [ngTemplateOutletContext]="{ $implicit: root, parentKey: null }" />
 }
 
-<!--
-  The data-cy-tree-view-* attributes give tests access to the logical state
-  of the tree, independent of how it looks:
-  - data-cy-tree-view-node=<key> is on the element of each node. That element
-    does not contain the elements of its children, so a search inside it only
-    finds the attributes of the node itself.
-  - data-cy-tree-view-parent=<key of the parent> is on each node except the root.
-  - data-cy-tree-view-expanded or data-cy-tree-view-collapsed is on each node
-    with children. A node without children has neither. A node is shown when
-    all its ancestors are expanded.
-  - data-cy-tree-view-selected, data-cy-tree-view-highlighted and
-    data-cy-tree-view-error are on the node when that applies.
-  - data-cy-tree-view-level=<level> is on each node that has a level,
-    which determines the icon color.
-  - Inside the node: data-cy-tree-view-type=<TreeViewNodeType>,
-    data-cy-tree-view-text holds the text, data-cy-tree-view-select is
-    clicked to select the node and data-cy-tree-view-expansion-toggle is
-    clicked to expand or collapse it.
-  tree-view.component.spec.ts checks that these attributes agree with what is
-  shown.
--->
 <ng-template #nodeTemplate let-node let-parentKey="parentKey">
   <div
     class="sft-item"
