@@ -1,11 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { Component, EventEmitter, inject, Input, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
-import { HttpErrorResponse } from '@angular/common/http';
 import { HelperService } from '../../shared/services/helper.service';
 import { HttpService } from '../../shared/services/http.service';
 import { TableSettingsModalComponent } from '../table-settings-modal/table-settings-modal.component';
-import { catchError, Observable, Subscription } from 'rxjs';
+import { catchError, Subscription } from 'rxjs';
 import { Report } from '../../shared/interfaces/report';
 import { ToastService } from '../../shared/services/toast.service';
 import { TabService } from '../../shared/services/tab.service';
@@ -33,11 +32,7 @@ import { HierarchicalReport } from '../../shared/interfaces/hierarchical-report'
 import { CompareData } from '../../compare/compare-data';
 import { DebugTableGridComponent } from '../debug-table-grid/debug-table-grid.component';
 import { FilterSideDrawerComponent } from '../filter-side-drawer/filter-side-drawer.component';
-
-export interface ViewUpdate {
-  view: View;
-  updatedReport?: HierarchicalReport;
-}
+import { DebugTreeStateService } from '../debug-tree-state.service';
 
 @Component({
   selector: 'app-debug-table-with-controls',
@@ -71,9 +66,7 @@ export class DebugTableWithControlsComponent implements OnInit, OnDestroy {
   // The debug tab waits until the views are known before creating this component.
   @Input({ required: true }) views!: View[];
   @Input({ required: true }) currentView!: View;
-  @Input({ required: true }) reportClosed$!: Observable<boolean>;
-  @Output() viewChange: EventEmitter<ViewUpdate> = new EventEmitter<ViewUpdate>();
-  @Output() openReportEvent: EventEmitter<HierarchicalReport> = new EventEmitter<HierarchicalReport>();
+  @Output() viewChange: EventEmitter<View> = new EventEmitter<View>();
 
   @ViewChild(TableSettingsModalComponent)
   protected tableSettingsModal!: TableSettingsModalComponent;
@@ -88,12 +81,11 @@ export class DebugTableWithControlsComponent implements OnInit, OnDestroy {
   protected numberOfReportsInProgress = 0;
   protected estimatedMemoryUsage = '';
   protected reportsInProgressThreshold?: number;
-  protected selectedReportStorageId?: number;
   protected openInProgress: FormControl = new FormControl(1, this.defaultReportInProgressValidators);
   protected appVariablesService = inject(AppVariablesService);
   protected currentUploadFile = '';
 
-  protected openedStorageId: number | null = null;
+  protected treeState = inject(DebugTreeStateService);
   private reportsInProgress: Record<string, number> = {};
 
   private httpService = inject(HttpService);
@@ -123,8 +115,6 @@ export class DebugTableWithControlsComponent implements OnInit, OnDestroy {
       (amount) => (this.displayAmount = amount),
     );
     this.subscriptions.add(displayAmountSubscription);
-    const reportClosedSubscription = this.reportClosed$.subscribe(() => (this.openedStorageId = null));
-    this.subscriptions.add(reportClosedSubscription);
   }
 
   loadData(): void {
@@ -139,59 +129,11 @@ export class DebugTableWithControlsComponent implements OnInit, OnDestroy {
   }
 
   changeView(view: View): void {
-    const previousView = this.currentView;
     this.currentView = view;
     // FilterService already triggers retrieving the records when the view is changed.
     this.update();
-    if (this.openedStorageId !== null && view.storageName !== previousView.storageName) {
-      // The opened report is not in the storage of the new view. It stays
-      // open, but it is no longer linked to the table.
-      this.openedStorageId = null;
-    }
-    if (this.openedStorageId === null) {
-      this.viewChange.next({ view });
-    } else {
-      this.fetchOpenedReportForView(view, this.openedStorageId);
-    }
-  }
-
-  private fetchOpenedReportForView(view: View, storageId: number): void {
-    this.httpService.getHierarchicalReports([storageId], view.storageName, view.name).subscribe({
-      next: (reports: HierarchicalReport[]): void => {
-        if (view !== this.currentView) {
-          // Superseded by another view change, which emits its own update.
-          return;
-        }
-        if (this.openedStorageId === storageId) {
-          this.viewChange.next({ view, updatedReport: reports[0] });
-        } else {
-          // The report this fetch is for is no longer shown. Meanwhile it was
-          // closed, or a report in progress was opened, or another report
-          // was opened from the table. A report in progress does not depend
-          // on the view. A report opened from the table was fetched for the
-          // current view, see openReport(). So whatever the tree shows now
-          // already matches the view. Showing the fetched report would
-          // replace it with a report the user no longer has open.
-          this.viewChange.next({ view });
-        }
-      },
-      error: (error: unknown): void => {
-        console.warn(error);
-        if (view !== this.currentView) {
-          return;
-        }
-        if (this.openedStorageId === storageId) {
-          // The report stays open as it was, but it no longer matches the view.
-          this.openedStorageId = null;
-          const detail = error instanceof HttpErrorResponse ? error.message : String(error);
-          this.toastService.showDanger(
-            `Could not show the opened report in view "${view.name}", it is no longer updated when the view changes`,
-            detail,
-          );
-        }
-        this.viewChange.next({ view });
-      },
-    });
+    // The parent passes the view on to DebugTreeStateService.
+    this.viewChange.next(view);
   }
 
   loadMetadataCount(): void {
@@ -271,7 +213,6 @@ export class DebugTableWithControlsComponent implements OnInit, OnDestroy {
 
   openSelected(): void {
     if (this.checkedStorageIds.length === 1) {
-      this.selectedReportStorageId = this.checkedStorageIds[0];
       this.openReport(this.checkedStorageIds[0]);
     } else {
       this.toastService.showWarning('You can open only one report at a time!');
@@ -288,22 +229,27 @@ export class DebugTableWithControlsComponent implements OnInit, OnDestroy {
 
   deleteSelected(): void {
     if (this.checkedStorageIds.length > 0) {
-      this.httpService
-        .deleteReport(this.checkedStorageIds, this.currentView.storageName)
-        .pipe(catchError(this.errorHandler.handleError()))
-        .subscribe({
-          next: () => this.loadData(),
-        });
+      const storageName = this.currentView.storageName;
+      const storageIds = [...this.checkedStorageIds];
+      this.httpService.deleteReport(storageIds, storageName).subscribe({
+        next: () => {
+          this.treeState.deleted(storageName, storageIds);
+          this.loadData();
+        },
+        error: (error: unknown) => this.errorHandler.handleUnknownError(error),
+      });
     }
   }
 
   deleteAll(): void {
-    this.httpService
-      .deleteAllReports(this.currentView.storageName)
-      .pipe(catchError(this.errorHandler.handleError()))
-      .subscribe({
-        next: () => this.loadData(),
-      });
+    const storageName = this.currentView.storageName;
+    this.httpService.deleteAllReports(storageName).subscribe({
+      next: () => {
+        this.treeState.deleted(storageName, null);
+        this.loadData();
+      },
+      error: (error: unknown) => this.errorHandler.handleUnknownError(error),
+    });
   }
 
   compareTwoReports(): void {
@@ -353,51 +299,24 @@ export class DebugTableWithControlsComponent implements OnInit, OnDestroy {
     }
   }
 
-  // Invariant: a report opened from the table is always shown as fetched for
-  // the current view. Method changeView() relies on this.
   openReport(storageId: number): void {
-    const view = this.currentView;
-    this.httpService.getHierarchicalReports([storageId], view.storageName, view.name).subscribe({
-      next: (data: HierarchicalReport[]): void => {
-        if (view === this.currentView) {
-          this.openedStorageId = data[0].storageId;
-          this.openReportEvent.next(data[0]);
-        } else if (view.storageName === this.currentView.storageName) {
-          // The view changed while fetching. Fetch the report again for the current view.
-          this.openReport(storageId);
-        } else {
-          this.toastService.showWarning(
-            `Did not open report with storage id ${storageId}, because the view changed to another storage meanwhile`,
-          );
-        }
-      },
-      error: (error: unknown): void => this.errorHandler.handleUnknownError(error),
-    });
+    // The table grid emits the storage id as it is in the metadata, which is a string.
+    this.treeState.openStoredReport(+storageId);
   }
 
   openReportInProgress(index: number): void {
-    this.httpService
-      .getReportInProgress(index)
-      .pipe(catchError(this.errorHandler.handleError()))
-      .subscribe({
-        next: (report: HierarchicalReport) => {
-          this.openedStorageId = null;
-          this.openReportEvent.next(report);
-          this.toastService.showSuccess(`Opened report in progress with index [${index}]`);
-        },
-      });
+    this.treeState.openReportInProgress(index);
   }
 
   deleteReportInProgress(index: number): void {
-    this.httpService
-      .deleteReportInProgress(index)
-      .pipe(catchError(this.errorHandler.handleError()))
-      .subscribe({
-        next: (): void => {
-          this.loadReportInProgressSettings();
-          this.toastService.showSuccess(`Deleted report in progress with index [${index}]`);
-        },
-      });
+    this.httpService.deleteReportInProgress(index).subscribe({
+      next: (): void => {
+        this.loadReportInProgressSettings();
+        this.toastService.showSuccess(`Deleted report in progress with index [${index}]`);
+        this.treeState.reportInProgressDeleted(index);
+      },
+      error: (error: unknown) => this.errorHandler.handleUnknownError(error),
+    });
   }
 
   downloadReports(exportBinary: boolean, exportXML: boolean): void {

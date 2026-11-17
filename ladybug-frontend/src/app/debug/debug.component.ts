@@ -1,18 +1,15 @@
-import { Component, inject, OnInit, ViewChild } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { ToastService } from '../shared/services/toast.service';
 import { HttpService } from '../shared/services/http.service';
 import { View } from '../shared/interfaces/view';
-import { catchError, Subject } from 'rxjs';
+import { catchError } from 'rxjs';
 import { ErrorHandling } from '../shared/classes/error-handling.service';
 import { DebugReportComponent } from '../report/debug-report.component/debug-report.component';
-import { HierarchicalReport } from '../shared/interfaces/hierarchical-report';
 import { ActivatedRoute } from '@angular/router';
 import { MetadataFilter, TabService } from '../shared/services/tab.service';
 import { FilterService } from '../shared/services/filter.service';
-import {
-  DebugTableWithControlsComponent,
-  ViewUpdate,
-} from './debug-table-with-controls/debug-table-with-controls.component';
+import { DebugTableWithControlsComponent } from './debug-table-with-controls/debug-table-with-controls.component';
+import { DebugTreeStateService } from './debug-tree-state.service';
 
 @Component({
   selector: 'app-debug',
@@ -20,19 +17,20 @@ import {
   styleUrls: ['./debug.component.css'],
   standalone: true,
   imports: [DebugTableWithControlsComponent, DebugReportComponent],
+  // Shared by the debug table and the debug report, one instance per debug tab.
+  providers: [DebugTreeStateService],
 })
 export class DebugComponent implements OnInit {
-  @ViewChild('reportComponent') customReportComponent!: DebugReportComponent;
   currentView?: View;
   views?: View[];
 
-  protected reportClosedSubject = new Subject<boolean>();
   private httpService = inject(HttpService);
   private toastService = inject(ToastService);
   private errorHandler = inject(ErrorHandling);
   private tabService = inject(TabService);
   private filterService = inject(FilterService);
   private route = inject(ActivatedRoute);
+  private treeState = inject(DebugTreeStateService);
 
   ngOnInit(): void {
     const urlFilters: MetadataFilter[] = this.tabService.routeGetFilters(this.route.snapshot);
@@ -45,17 +43,11 @@ export class DebugComponent implements OnInit {
     this.tabService.visitDebugTab(this.route.snapshot);
   }
 
-  protected addReportToTree(report: HierarchicalReport): void {
-    this.customReportComponent.addReport(report);
-  }
-
-  protected onViewChange(viewUpdate: ViewUpdate): void {
-    this.currentView = viewUpdate.view;
+  protected onViewChange(view: View): void {
+    this.currentView = view;
     this.retrieveErrorsAndWarnings();
-    this.filterService.setCurrentView(this.currentView);
-    if (viewUpdate.updatedReport) {
-      this.customReportComponent.updateExistingReport(viewUpdate.updatedReport);
-    }
+    this.filterService.setCurrentView(view);
+    this.treeState.changeView(view);
   }
 
   private retrieveViews(): void {
@@ -66,7 +58,7 @@ export class DebugComponent implements OnInit {
         next: (views: View[]) => {
           this.views = views;
           if (!this.currentView) {
-            this.onViewChange({ view: this.views.find((v: View) => v.defaultView)! });
+            this.onViewChange(this.views.find((v: View) => v.defaultView)!);
           }
         },
       });
