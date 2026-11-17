@@ -150,7 +150,7 @@ class Uninitialized implements TreeViewState {
 
   show(command: TreeViewShowCommand): Initialized {
     // An update without a previous tree acts like 'new'.
-    return Initialized.create(command.node, new Map<string, TreeViewNode>(), [command.select]);
+    return new StateInitializedBuilder().build(command.node, new Map<string, TreeViewNode>(), [command.select]);
   }
 
   expandAll(): void {
@@ -179,59 +179,14 @@ class Uninitialized implements TreeViewState {
 // - Exactly one node is selected.
 // - All ancestors of the selected node are expanded.
 class Initialized implements TreeViewState {
-  private constructor(
+  // Use StateInitializedBuilder to create an instance.
+  constructor(
     readonly root: TreeViewNode,
     private selected: TreeViewNode,
     private readonly nodesByKey: Map<string, TreeViewNode>,
     private readonly parents: Map<string, TreeViewNode>,
-  ) {}
-
-  // Builds the tree from the input. Expanded state is taken from
-  // previousNodesByKey for nodes with a known key; other nodes are
-  // expanded. The first of keysToSelect that is found is selected,
-  // or the root if none is found.
-  static create(
-    input: TreeViewInputNode,
-    previousNodesByKey: Map<string, TreeViewNode>,
-    keysToSelect: (string | undefined)[],
-  ): Initialized {
-    const nodesByKey = new Map<string, TreeViewNode>();
-    const parents = new Map<string, TreeViewNode>();
-    const root = Initialized.createNode(input, null, previousNodesByKey, nodesByKey, parents);
-    let selected = root;
-    for (const key of keysToSelect) {
-      const found = key === undefined ? undefined : nodesByKey.get(key);
-      if (found) {
-        selected = found;
-        break;
-      }
-    }
-    const result = new Initialized(root, selected, nodesByKey, parents);
-    result.select(selected);
-    return result;
-  }
-
-  private static createNode(
-    input: TreeViewInputNode,
-    parent: TreeViewNode | null,
-    previousNodesByKey: Map<string, TreeViewNode>,
-    nodesByKey: Map<string, TreeViewNode>,
-    parents: Map<string, TreeViewNode>,
-  ): TreeViewNode {
-    const node: TreeViewNode = {
-      ...input,
-      expanded: previousNodesByKey.get(input.key)?.expanded ?? true,
-      selected: false,
-      children: [],
-    };
-    nodesByKey.set(node.key, node);
-    if (parent) {
-      parents.set(node.key, parent);
-    }
-    node.children = input.children.map((child) =>
-      Initialized.createNode(child, node, previousNodesByKey, nodesByKey, parents),
-    );
-    return node;
+  ) {
+    this.select(selected);
   }
 
   get selectedKey(): string {
@@ -240,9 +195,9 @@ class Initialized implements TreeViewState {
 
   show(command: TreeViewShowCommand): Initialized {
     if (command.command === 'new') {
-      return Initialized.create(command.node, new Map<string, TreeViewNode>(), [command.select]);
+      return new StateInitializedBuilder().build(command.node, new Map<string, TreeViewNode>(), [command.select]);
     }
-    return Initialized.create(command.node, this.nodesByKey, [this.selected.key, command.select]);
+    return new StateInitializedBuilder().build(command.node, this.nodesByKey, [this.selected.key, command.select]);
   }
 
   expandAll(): void {
@@ -303,6 +258,54 @@ class Initialized implements TreeViewState {
       }
     }
     return false;
+  }
+}
+
+// Builds an Initialized state from the input of a show command.
+class StateInitializedBuilder {
+  private previousNodesByKey = new Map<string, TreeViewNode>();
+  private nodesByKey = new Map<string, TreeViewNode>();
+  private parents = new Map<string, TreeViewNode>();
+
+  // Builds the tree from the input. Expanded state is taken from
+  // previousNodesByKey for nodes with a known key; other nodes are
+  // expanded. The first of keysToSelect that is found is selected,
+  // or the root if none is found.
+  build(
+    input: TreeViewInputNode,
+    previousNodesByKey: Map<string, TreeViewNode>,
+    keysToSelect: (string | undefined)[],
+  ): Initialized {
+    this.previousNodesByKey = previousNodesByKey;
+    this.nodesByKey = new Map<string, TreeViewNode>();
+    this.parents = new Map<string, TreeViewNode>();
+    const root = this.createNode(input, null);
+    return new Initialized(root, this.findSelected(root, keysToSelect), this.nodesByKey, this.parents);
+  }
+
+  private createNode(input: TreeViewInputNode, parent: TreeViewNode | null): TreeViewNode {
+    const node: TreeViewNode = {
+      ...input,
+      expanded: this.previousNodesByKey.get(input.key)?.expanded ?? true,
+      selected: false,
+      children: [],
+    };
+    this.nodesByKey.set(node.key, node);
+    if (parent) {
+      this.parents.set(node.key, parent);
+    }
+    node.children = input.children.map((child) => this.createNode(child, node));
+    return node;
+  }
+
+  private findSelected(root: TreeViewNode, keysToSelect: (string | undefined)[]): TreeViewNode {
+    for (const key of keysToSelect) {
+      const found = key === undefined ? undefined : this.nodesByKey.get(key);
+      if (found) {
+        return found;
+      }
+    }
+    return root;
   }
 }
 
