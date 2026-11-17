@@ -525,18 +525,20 @@ Cypress.Commands.add('checkShownNodeWithTextSelected' as keyof Chainable, (repor
 })
 
 Cypress.Commands.add('collapseNode' as keyof Chainable, (text, index): void => {
+  // Separate step, because have.attr changes the subject to the attribute value.
+  cy.getShownNodesOfReportTreeWithText(text).eq(index).should('have.attr', TREE_NODE_EXPANDED);
   cy.getShownNodesOfReportTreeWithText(text)
     .eq(index)
-    .should('have.attr', TREE_NODE_EXPANDED)
     .find(TREE_NODE_EXPANSION_TOGGLE)
     .should('have.length', 1)
     .click();
 })
 
 Cypress.Commands.add('expandNode' as keyof Chainable, (text, index): void => {
+  // Separate step, because have.attr changes the subject to the attribute value.
+  cy.getShownNodesOfReportTreeWithText(text).eq(index).should('have.attr', TREE_NODE_COLLAPSED);
   cy.getShownNodesOfReportTreeWithText(text)
     .eq(index)
-    .should('have.attr', TREE_NODE_COLLAPSED)
     .find(TREE_NODE_EXPANSION_TOGGLE)
     .should('have.length', 1)
     .click();
