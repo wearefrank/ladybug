@@ -179,26 +179,25 @@ describe('DebugTreeComponent', () => {
       // numbers instead of that enum to check the mapping from what the backend
       // actually sends. Which icon belongs to a tree view type is tested in
       // tree-view.component.spec.ts.
-      const expectedTypes: Record<number, string> = {
-        1: 'startpoint',
-        2: 'endpoint',
-        3: 'abortpoint',
-        4: 'inputpoint',
-        5: 'outputpoint',
-        6: 'infopoint',
-        7: 'threadCreatepoint',
-        8: 'threadStartpoint',
-        9: 'threadEndpoint',
-      };
-      const types = Object.keys(expectedTypes).map(Number);
-      const children = types.map((type) => checkpoint(type, `type ${type}`, { type }));
+      const expectedTypes = new Map<number, string>([
+        [1, 'startpoint'],
+        [2, 'endpoint'],
+        [3, 'abortpoint'],
+        [4, 'inputpoint'],
+        [5, 'outputpoint'],
+        [6, 'infopoint'],
+        [7, 'threadCreatepoint'],
+        [8, 'threadStartpoint'],
+        [9, 'threadEndpoint'],
+      ]);
+      const children = [...expectedTypes.keys()].map((type) => checkpoint(type, `type ${type}`, { type }));
       component.addReportToTree({ name: 'report', storageId: 5, children } as HierarchicalReport);
       fixture.detectChanges();
       expect(typeOf('report')).toBe('report');
-      for (const type of types) {
+      for (const [type, expected] of expectedTypes) {
         expect(typeOf(`${type}`))
           .withContext(`type ${type}`)
-          .toBe(expectedTypes[type]);
+          .toBe(expected);
       }
     });
 
