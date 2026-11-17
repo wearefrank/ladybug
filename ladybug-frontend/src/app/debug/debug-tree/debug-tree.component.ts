@@ -2,30 +2,8 @@ import { Component, EventEmitter, inject, OnDestroy, OnInit, Output } from '@ang
 import { Subject, Subscription } from 'rxjs';
 import { DebugTabService } from '../debug-tab.service';
 import { HierarchicalReport, HierarchicalCheckpoint } from '../../shared/interfaces/hierarchical-report';
-import { CheckpointType } from '../../shared/enums/checkpoint-type';
-import {
-  TreeViewCommand,
-  TreeViewComponent,
-  TreeViewInputNode,
-  TreeViewNodeType,
-} from '../../shared/components/tree-view/tree-view.component';
-
-// The tree always shows one report, so the root needs no unique key.
-const REPORT_KEY = 'report';
-const THROWABLE_ENCODER = 'printStackTrace()';
-
-const NODE_TYPES: Record<CheckpointType, TreeViewNodeType> = {
-  [CheckpointType.Startpoint]: 'startpoint',
-  [CheckpointType.Endpoint]: 'endpoint',
-  [CheckpointType.Abortpoint]: 'abortpoint',
-  [CheckpointType.Inputpoint]: 'inputpoint',
-  [CheckpointType.Outputpoint]: 'outputpoint',
-  [CheckpointType.Infopoint]: 'infopoint',
-  // Value 7 is THREAD_CREATEPOINT in the backend.
-  [CheckpointType.ThreadStartpointError]: 'threadCreatepoint',
-  [CheckpointType.ThreadStartpoint]: 'threadStartpoint',
-  [CheckpointType.ThreadEndpoint]: 'threadEndpoint',
-};
+import { TreeViewCommand, TreeViewComponent } from '../../shared/components/tree-view/tree-view.component';
+import { keyOf, REPORT_KEY, ReportTransformer } from './report-transformer';
 
 @Component({
   selector: 'app-debug-tree',
@@ -45,7 +23,7 @@ export class DebugTreeComponent implements OnInit, OnDestroy {
 
   private searchTerm = '';
   // The report and its checkpoints, by the key of their tree node.
-  private valuesByKey = new Map<string, HierarchicalReport | HierarchicalCheckpoint>();
+  private valuesByKey: ReadonlyMap<string, HierarchicalReport | HierarchicalCheckpoint> = new Map();
   private debugTab = inject(DebugTabService);
 
   ngOnInit(): void {
@@ -108,62 +86,11 @@ export class DebugTreeComponent implements OnInit, OnDestroy {
 
   private showReport(command: 'new' | 'update'): void {
     const report = this.lastReport!;
-    this.valuesByKey = new Map<string, HierarchicalReport | HierarchicalCheckpoint>();
-    const node = this.toReportNode(report);
+    const transformer = new ReportTransformer(this.searchTerm, this.checkpointAndStorageIdShown);
+    const node = transformer.transform(report);
+    this.valuesByKey = transformer.valuesByKey;
     const firstCheckpoint = report.children?.[0];
-    const select = firstCheckpoint === undefined ? REPORT_KEY : this.keyOf(firstCheckpoint);
+    const select = firstCheckpoint === undefined ? REPORT_KEY : keyOf(firstCheckpoint);
     this.commands.next({ command, node, select });
-  }
-
-  private toReportNode(report: HierarchicalReport): TreeViewInputNode {
-    this.valuesByKey.set(REPORT_KEY, report);
-    return this.toNode(REPORT_KEY, 'report', this.getReportName(report), false, null, report.children);
-  }
-
-  private toCheckpointNode(checkpoint: HierarchicalCheckpoint): TreeViewInputNode {
-    const key = this.keyOf(checkpoint);
-    this.valuesByKey.set(key, checkpoint);
-    return this.toNode(
-      key,
-      NODE_TYPES[checkpoint.type as CheckpointType],
-      this.getCheckpointName(checkpoint),
-      checkpoint.encoding === THROWABLE_ENCODER,
-      checkpoint.level,
-      checkpoint.children,
-    );
-  }
-
-  private toNode(
-    key: string,
-    type: TreeViewNodeType,
-    text: string,
-    valueIsError: boolean,
-    level: number | null,
-    children: HierarchicalCheckpoint[] | null,
-  ): TreeViewInputNode {
-    return {
-      key,
-      type,
-      text,
-      valueIsError,
-      level,
-      highlighted: this.searchTerm !== '' && text.includes(this.searchTerm),
-      children: (children ?? []).map((child) => this.toCheckpointNode(child)),
-    };
-  }
-
-  // The index of the checkpoint in the report. It does not depend on the
-  // view and it does not include the storage, which can differ when the
-  // same report is retrieved again.
-  private keyOf(checkpoint: HierarchicalCheckpoint): string {
-    return `${checkpoint.id}`;
-  }
-
-  private getReportName(report: HierarchicalReport): string {
-    return this.checkpointAndStorageIdShown ? `${report.name} (${report.storageId})` : report.name;
-  }
-
-  private getCheckpointName(checkpoint: HierarchicalCheckpoint): string {
-    return this.checkpointAndStorageIdShown ? `${checkpoint.name} (${checkpoint.id})` : checkpoint.name;
   }
 }
