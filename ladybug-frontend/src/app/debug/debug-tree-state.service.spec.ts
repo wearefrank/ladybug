@@ -216,17 +216,19 @@ describe('DebugTreeStateService', () => {
   it('refetches the linked report after saving, without warning about edits', () => {
     service.openStoredReport(2);
     respond(http, 'Debug/2/White box', 'r2 white');
-    service.saved(report('r2 saved'));
+    service.saved();
     respond(http, 'Debug/2/White box', 'r2 refetched');
     expect(shownNames()).toEqual(['new r2 white', 'update r2 refetched']);
     expect((commands[1] as { warnIfEdited: boolean }).warnIfEdited).toBeFalse();
   });
 
-  it('shows the saved report as given when the tree is not linked', () => {
+  it('refetches the saved report with its own view when the tree is not linked', () => {
     service.openStoredReport(2);
     respond(http, 'Debug/2/White box', 'r2 white');
     service.changeView(fileStorage);
-    service.saved(report('r2 saved'));
-    expect(shownNames()).toEqual(['new r2 white', 'update r2 saved']);
+    service.saved();
+    respond(http, 'Debug/2/White box', 'r2 refetched');
+    expect(shownNames()).toEqual(['new r2 white', 'update r2 refetched']);
+    expect(service.linkedStorageId).toBeNull();
   });
 });

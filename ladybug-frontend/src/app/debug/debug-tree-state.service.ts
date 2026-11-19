@@ -23,8 +23,6 @@ export type TreeCommand =
 interface RenderRequest {
   target: TreeTarget;
   view: View;
-  // When present, show this report instead of fetching it.
-  report?: HierarchicalReport;
   warnIfEdited: boolean;
 }
 
@@ -56,6 +54,8 @@ export class DebugTreeStateService implements OnDestroy {
   // The report the tree shows, null when the tree is empty. When it differs
   // from desired, a render is pending or the tree is no longer linked.
   private shown: TreeTarget | null = null;
+  // The view used to fetch the shown report, null when the tree is empty.
+  private shownView: View | null = null;
   private pending = false;
 
   // null cancels the pending render.
@@ -92,7 +92,7 @@ export class DebugTreeStateService implements OnDestroy {
     } else {
       // The table no longer shows the storage of the desired report. Keep
       // what the tree shows, but stop linking it to the table.
-      if (this.pending && !sameTarget(this.desired, this.shown)) {
+      if (this.pending && (this.shown === null || !sameTarget(this.desired, this.shown))) {
         this.toastService.showWarning(
           `Did not open report with storage id ${this.desired.storageId}, because the view changed to another storage`,
         );
@@ -117,17 +117,18 @@ export class DebugTreeStateService implements OnDestroy {
   closed(): void {
     this.desired = null;
     this.shown = null;
+    this.shownView = null;
     this.cancel();
   }
 
-  // The user saved changes to the shown report, which was fetched again as given.
-  saved(report: HierarchicalReport): void {
+  // The user saved changes to the shown report.
+  saved(): void {
     if (this.desired?.kind === 'stored') {
-      // Fetch again, because the view may have changed after saving.
+      // The view may have changed after saving.
       this.post({ target: this.desired, view: this.requireTableView(), warnIfEdited: false });
-    } else if (this.shown !== null) {
-      // The tree is not linked to the table, so the view does not matter.
-      this.post({ target: this.shown, view: this.requireTableView(), report, warnIfEdited: false });
+    } else if (this.shown?.kind === 'stored' && this.shownView !== null) {
+      // The tree is not linked to the table, so keep the view it was shown with.
+      this.post({ target: this.shown, view: this.shownView, warnIfEdited: false });
     }
   }
 
@@ -142,6 +143,7 @@ export class DebugTreeStateService implements OnDestroy {
       this.toastService.showWarning(`Closed report with storage id ${desired.storageId}, because it was deleted`);
       this.desired = null;
       this.shown = null;
+      this.shownView = null;
       this.cancel();
       this.treeCommandSubject.next({ command: 'close' });
     }
@@ -178,9 +180,7 @@ export class DebugTreeStateService implements OnDestroy {
 
   private render(request: RenderRequest): Observable<RenderResult> {
     let report$: Observable<HierarchicalReport>;
-    if (request.report !== undefined) {
-      report$ = of(request.report);
-    } else if (request.target.kind === 'stored') {
+    if (request.target.kind === 'stored') {
       report$ = this.httpService
         .getHierarchicalReports([request.target.storageId], request.target.storageName, request.view.name)
         .pipe(map((reports) => reports[0]));
@@ -206,19 +206,17 @@ export class DebugTreeStateService implements OnDestroy {
       this.toastService.showDanger(`Could not show ${describe(target)}${consequence}`, detail);
       return;
     }
-    const command = sameTarget(target, this.shown) ? 'update' : 'new';
+    const command = this.shown !== null && sameTarget(target, this.shown) ? 'update' : 'new';
     this.shown = target;
+    this.shownView = result.request.view;
     this.treeCommandSubject.next({ command, report: result.report, warnIfEdited: result.request.warnIfEdited });
-    if (target.kind === 'inProgress' && result.request.report === undefined) {
+    if (target.kind === 'inProgress') {
       this.toastService.showSuccess(`Opened report in progress with index [${target.index}]`);
     }
   }
 }
 
-function sameTarget(a: TreeTarget | null, b: TreeTarget | null): boolean {
-  if (a === null || b === null) {
-    return false;
-  }
+function sameTarget(a: TreeTarget, b: TreeTarget): boolean {
   if (a.kind === 'stored' && b.kind === 'stored') {
     return a.storageName === b.storageName && a.storageId === b.storageId;
   }

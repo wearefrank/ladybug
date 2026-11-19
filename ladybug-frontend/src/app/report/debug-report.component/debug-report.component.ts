@@ -56,7 +56,7 @@ export class DebugReportComponent implements ReportComponentCallback, OnInit, On
   }
 
   onRefreshReport(report: HierarchicalReport): void {
-    this.treeState.saved(report);
+    this.treeState.saved();
     this.debugTab.refreshTable({
       reportIds: [report.storageId],
       displayToast: false,
