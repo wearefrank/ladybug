@@ -139,9 +139,9 @@ interface TreeViewState {
   selectByKey(key: string): void;
   // Selects the node. Returns its key.
   selectByUser(node: TreeViewNode): string;
-  // Returns the key of the node that is selected afterwards, or undefined
+  // Returns the key of the node that is selected afterwards, or null
   // when the selection did not change.
-  toggleExpanded(node: TreeViewNode): string | undefined;
+  toggleExpanded(node: TreeViewNode): string | null;
 }
 
 // No tree, because no tree has been shown yet or because it was cleared.
@@ -221,7 +221,7 @@ class Initialized implements TreeViewState {
     return node.key;
   }
 
-  toggleExpanded(node: TreeViewNode): string | undefined {
+  toggleExpanded(node: TreeViewNode): string | null {
     node.expanded = !node.expanded;
     // Keep the selected node visible: when one of its ancestors is
     // collapsed, the collapsed node becomes the selected node.
@@ -229,7 +229,7 @@ class Initialized implements TreeViewState {
       this.select(node);
       return node.key;
     }
-    return undefined;
+    return null;
   }
 
   private select(node: TreeViewNode): void {
@@ -393,8 +393,8 @@ export class TreeViewComponent implements OnChanges, OnDestroy {
     }
   }
 
-  private emitIfSelected(key: string | undefined): void {
-    if (key !== undefined) {
+  private emitIfSelected(key: string | null): void {
+    if (key !== null) {
       this.nodeSelected.emit(key);
     }
   }
