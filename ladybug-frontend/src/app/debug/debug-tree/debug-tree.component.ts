@@ -1,48 +1,30 @@
-import { Component, EventEmitter, inject, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
-import { CreateTreeItem, FileTreeItem, FileTreeOptions, NgSimpleFileTree } from 'ng-simple-file-tree';
-import { SimpleFileTreeUtil as SimpleFileTreeUtility } from '../../shared/util/simple-file-tree-util';
+import { Component, EventEmitter, inject, OnDestroy, OnInit, Output } from '@angular/core';
+import { Subject, Subscription } from 'rxjs';
 import { DebugTabService } from '../debug-tab.service';
 import { HierarchicalReport, HierarchicalCheckpoint } from '../../shared/interfaces/hierarchical-report';
-import { CHECKPOINT_TYPE_STRINGS, CheckpointType } from '../../shared/enums/checkpoint-type';
-import { Subscription } from 'rxjs';
-
-interface FrankTreeNode {
-  name: string;
-  uid?: string;
-  iconClass?: string;
-  children?: FrankTreeNode[];
-  originalValue: HierarchicalReport | HierarchicalCheckpoint;
-}
+import { TreeViewCommand, TreeViewComponent } from '../../shared/components/tree-view/tree-view.component';
+import { keyOf, REPORT_KEY, ReportTransformer } from './report-transformer';
 
 @Component({
   selector: 'app-debug-tree',
   templateUrl: './debug-tree.component.html',
   styleUrls: ['./debug-tree.component.css'],
   standalone: true,
-  imports: [NgSimpleFileTree],
+  imports: [TreeViewComponent],
 })
 export class DebugTreeComponent implements OnInit, OnDestroy {
-  @ViewChild('tree') tree!: NgSimpleFileTree;
   @Output() selectReportEvent = new EventEmitter<HierarchicalReport | HierarchicalCheckpoint>();
 
   subscriptions: Subscription = new Subscription();
-  treeOptions: FileTreeOptions = {
-    hierarchyLines: {
-      vertical: true,
-    },
-    highlightOpenFolders: false,
-    folderBehaviourOnClick: 'select',
-    doubleClickToOpenFolders: false,
-    autoOpenCondition: this.conditionalOpenFunction,
-    determineIconClass: SimpleFileTreeUtility.conditionalCssClassNew,
-  };
 
+  protected commands = new Subject<TreeViewCommand>();
+  protected lastReport: HierarchicalReport | null = null;
   protected checkpointAndStorageIdShown = false;
 
-  private lastReport: HierarchicalReport | null = null;
+  private searchTerm = '';
+  // The report and its checkpoints, by the key of their tree node.
+  private valuesByKey: ReadonlyMap<string, HierarchicalReport | HierarchicalCheckpoint> = new Map();
   private debugTab = inject(DebugTabService);
-
-  private readonly THROWABLE_ENCODER: string = 'printStackTrace()';
 
   ngOnInit(): void {
     this.subscribeToSubscriptions();
@@ -59,99 +41,27 @@ export class DebugTreeComponent implements OnInit, OnDestroy {
 
   addReportToTree(report: HierarchicalReport): void {
     this.lastReport = report;
-    this.refreshReports();
+    this.showReport('new');
   }
 
   closeEntireTree(): void {
     this.lastReport = null;
-    this.tree.clearItems();
+    this.commands.next({ command: 'clear' });
+    // The search field is removed with the buttons, so forget its value.
+    this.searchTerm = '';
   }
 
-  private refreshReports(): void {
-    if (this.lastReport === null) {
-      this.closeEntireTree();
-    } else {
-      this.tree.clearItems();
-      this.addReportToTreeImpl(this.lastReport);
-    }
+  protected expandAll(): void {
+    this.commands.next({ command: 'expandAll' });
   }
 
-  private addReportToTreeImpl(report: HierarchicalReport): void {
-    const preparedReport: FrankTreeNode = this.prepareReportForTree(report);
-    const rootNodePath: string = this.tree.addItem(preparedReport);
-    this.selectFirstCheckpoint(rootNodePath);
-    if (this.tree.items) {
-      for (const item of this.tree.items) {
-        this.expandAll(item);
-      }
-    }
-  }
-
-  private expandAll(node: FileTreeItem): void {
-    node.expanded = true;
-    if (node.children) {
-      for (const childNode of node.children) {
-        this.expandAll(childNode);
-      }
-    }
-  }
-
-  private prepareReportForTree(report: HierarchicalReport): FrankTreeNode {
-    return {
-      name: this.getReportName(report),
-      originalValue: report,
-      children: report.children === null ? undefined : report.children.map((c) => this.prepareCheckpointForTree(c)),
-    };
-  }
-
-  private prepareCheckpointForTree(checkpoint: HierarchicalCheckpoint): FrankTreeNode {
-    return {
-      name: this.getCheckpointName(checkpoint),
-      uid: checkpoint.uid,
-      iconClass: this.getImage(checkpoint.type, checkpoint.encoding ?? '', checkpoint.level),
-      originalValue: checkpoint,
-      children:
-        checkpoint.children === null ? undefined : checkpoint.children.map((c) => this.prepareCheckpointForTree(c)),
-    };
-  }
-
-  private getReportName(report: HierarchicalReport): string {
-    return this.checkpointAndStorageIdShown ? `${report.name} (${report.storageId})` : report.name;
-  }
-
-  private getCheckpointName(checkpoint: HierarchicalCheckpoint): string {
-    return this.checkpointAndStorageIdShown ? `${checkpoint.name} (${checkpoint.id})` : checkpoint.name;
-  }
-
-  private getImage(type: CheckpointType, encoding: string, level: number): string {
-    let iconClass = CHECKPOINT_TYPE_STRINGS[type];
-    if (encoding === this.THROWABLE_ENCODER) {
-      iconClass += ' red';
-    }
-    iconClass += level % 2 == 0 ? ' even' : ' odd';
-    return iconClass;
-  }
-
-  private selectFirstCheckpoint(rootNodePath: string): void {
-    const last = this.tree.items.length - 1;
-    const lastAdded = this.tree.items[last];
-    if (lastAdded.children) {
-      const [firstCheckpoint] = lastAdded.children;
-      // Does not expand selected item for some reason as it should.
-      this.tree.selectItem(firstCheckpoint.path);
-    } else {
-      this.tree.selectItem(rootNodePath);
-    }
+  protected collapseAll(): void {
+    this.commands.next({ command: 'collapseAll' });
   }
 
   protected changeSearchTerm(event: KeyboardEvent): void {
-    const term: string = (event.target as HTMLInputElement).value;
-    this.tree.searchTree(term);
-  }
-
-  private conditionalOpenFunction(item: CreateTreeItem): boolean {
-    const type = item['type'];
-    return [undefined, CheckpointType.Startpoint, CheckpointType.Endpoint].includes(type);
+    this.searchTerm = (event.target as HTMLInputElement).value;
+    this.refreshReports();
   }
 
   protected toggleCheckpointAndStorageIdShown(): void {
@@ -159,8 +69,28 @@ export class DebugTreeComponent implements OnInit, OnDestroy {
     this.refreshReports();
   }
 
-  protected emitNodeSelected(item: FileTreeItem): void {
-    const createItem: FrankTreeNode = item.originalValue;
-    this.selectReportEvent.emit(createItem.originalValue);
+  protected emitNodeSelected(key: string): void {
+    const value = this.valuesByKey.get(key);
+    if (value !== undefined) {
+      this.selectReportEvent.emit(value);
+    }
+  }
+
+  // Shows the current report again, keeping the selection and the
+  // expanded state of the nodes.
+  private refreshReports(): void {
+    if (this.lastReport !== null) {
+      this.showReport('update');
+    }
+  }
+
+  private showReport(command: 'new' | 'update'): void {
+    const report = this.lastReport!;
+    const transformer = new ReportTransformer(this.searchTerm, this.checkpointAndStorageIdShown);
+    const node = transformer.transform(report);
+    this.valuesByKey = transformer.valuesByKey;
+    const firstCheckpoint = report.children?.[0];
+    const select = firstCheckpoint === undefined ? REPORT_KEY : keyOf(firstCheckpoint);
+    this.commands.next({ command, node, select });
   }
 }

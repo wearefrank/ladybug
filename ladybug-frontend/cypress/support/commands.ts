@@ -13,7 +13,47 @@ import Chainable = Cypress.Chainable;
 import JQueryWithSelector = Cypress.JQueryWithSelector;
 import { Interception } from 'cypress/types/net-stubbing';
 
-const TREE_ITEM_SELECTED_CLASS = 'sft-item-selected';
+// The tree view of the debug tree. The tree is accessed through the
+// data-cy-tree-view-* attributes, which are explained in
+// tree-view.component.html. Each node is an element with attribute
+// data-cy-tree-view-node. That element does not contain the elements of the
+// children of the node, so searching inside it only finds the node's own
+// attributes. The structure of the tree is given by attribute
+// data-cy-tree-view-parent.
+const DEBUG_TREE = '[data-cy-debug-tree="root"]';
+const TREE_NODE = '[data-cy-tree-view-node]';
+const TREE_ROOT_NODE = `${TREE_NODE}:not([data-cy-tree-view-parent])`;
+const TREE_NODE_TEXT = '[data-cy-tree-view-text]';
+const TREE_NODE_SELECT = '[data-cy-tree-view-select]';
+const TREE_NODE_EXPANSION_TOGGLE = '[data-cy-tree-view-expansion-toggle]';
+const TREE_NODE_SELECTED = 'data-cy-tree-view-selected';
+const TREE_NODE_EXPANDED = 'data-cy-tree-view-expanded';
+const TREE_NODE_COLLAPSED = 'data-cy-tree-view-collapsed';
+
+function treeNodeWithKey(key: string): string {
+  return `[data-cy-tree-view-node="${CSS.escape(key)}"]`;
+}
+
+function treeNodesWithParent(key: string): string {
+  return `[data-cy-tree-view-parent="${CSS.escape(key)}"]`;
+}
+
+// A node is shown when all its ancestors are expanded.
+function isShownTreeNode(node: HTMLElement): boolean {
+  const tree = node.closest(DEBUG_TREE)!;
+  for (let parentKey = node.getAttribute('data-cy-tree-view-parent'); parentKey !== null; ) {
+    const parent = tree.querySelector(treeNodeWithKey(parentKey))!;
+    if (!parent.hasAttribute(TREE_NODE_EXPANDED)) {
+      return false;
+    }
+    parentKey = parent.getAttribute('data-cy-tree-view-parent');
+  }
+  return true;
+}
+
+function treeNodeTextContains(node: HTMLElement, text: string): boolean {
+  return Cypress.$(node).find(TREE_NODE_TEXT).text().includes(text);
+}
 
 const APPLICATION_COLUMN = 10;
 
@@ -74,8 +114,6 @@ declare global {
 
       clearReportsInProgress(): Chainable;
 
-      selectIfNotSelected(): Chainable;
-
       checkTestTableNumRows(length: number): Chainable;
 
       checkTestTableReportsAre(reportNames: string[]): Chainable;
@@ -90,11 +128,15 @@ declare global {
 
       clickEndCheckpointOfThreeNodeReport(): Chainable;
 
+      getRootNodeOfDebugTree(): Chainable;
+
+      getChildNodesInDebugTree(): Chainable;
+
       getShownNodesOfReportTreeWithText(text: string): Chainable;
 
-      checkShownNodeWithTextSelected(reportName: string, index: number, selected: boolean): Chainable;
+      selectTreeNode(): Chainable;
 
-      checkShownNodeWithTextSearched(reportName: string, searched: boolean): Chainable;
+      checkShownNodeWithTextSelected(reportName: string, index: number, selected: boolean): Chainable;
 
       collapseNode(text: string, index: number):Chainable;
 
@@ -384,16 +426,6 @@ Cypress.Commands.add('clearReportsInProgress' as keyof Chainable, (): void => {
 });
 
 Cypress.Commands.add(
-  'selectIfNotSelected' as keyof Chainable,
-  { prevSubject: 'element' },
-  (node: JQueryWithSelector<HTMLElement>): void => {
-    if (!node[0].classList.contains('selected')) {
-      cy.wrap(node).click();
-    }
-  },
-);
-
-Cypress.Commands.add(
   'checkTestTableNumRows' as keyof Chainable,
   (length: number): void => {
     cy.getTestTableRows().should('have.length', length);
@@ -420,8 +452,8 @@ Cypress.Commands.add(
   'debugTreeGuardedCopyReport' as keyof Chainable,
   (reportName: string, numExpandedNodes: number, aliasSuffix: string): void => {
     const alias = `debugTreeGuardedCopyReport_${aliasSuffix}`;
-    cy.get('[data-cy-debug-tree="root"]')
-      .find(`app-tree-item .item-name:contains(${reportName})`)
+    cy.get(DEBUG_TREE)
+      .find(`${TREE_NODE_TEXT}:contains(${reportName})`)
       .should('have.length', numExpandedNodes);
     cy.intercept({
       method: 'PUT',
@@ -442,53 +474,72 @@ Cypress.Commands.add(
 
 Cypress.Commands.add('clickRootNodeInFileTree' as keyof Chainable, (): void => {
   cy.wait(200);
-  cy.get('[data-cy-debug-tree="root"] > app-tree-item')
-    .eq(0)
-    .find('.sft-item')
-    .eq(0)
-    .click();
+  cy.getRootNodeOfDebugTree().selectTreeNode();
 });
 
+// The report node has one child, the startpoint. The end checkpoint is
+// the first child of that startpoint.
 Cypress.Commands.add('clickEndCheckpointOfThreeNodeReport' as keyof Chainable, (): void => {
-  cy.get('[data-cy-debug-tree="root"] > app-tree-item')
+  cy.getRootNodeOfDebugTree()
+    .getChildNodesInDebugTree()
     .eq(0)
-    .find('app-tree-item')
+    .getChildNodesInDebugTree()
     .eq(0)
-    .find('app-tree-item')
-    .eq(0)
-    .find('.sft-item')
-    .eq(0)
-    .click();
+    .selectTreeNode();
 });
 
-Cypress.Commands.add('getShownNodesOfReportTreeWithText' as keyof Chainable, (text): void => {
-  cy.get('[data-cy-debug-tree="root"] app-tree-icon:visible').parent().find(`:contains(${text})`);
+// The node of the report, the root of the debug tree.
+Cypress.Commands.add('getRootNodeOfDebugTree' as keyof Chainable, (): void => {
+  cy.get(DEBUG_TREE).find(TREE_ROOT_NODE).should('have.length', 1);
 });
+
+// The direct children of the subject, which is a node of the debug tree.
+Cypress.Commands.add(
+  'getChildNodesInDebugTree' as keyof Chainable,
+  { prevSubject: 'element' },
+  (node: JQueryWithSelector<HTMLElement>): void => {
+    cy.get(DEBUG_TREE).find(treeNodesWithParent(node.attr('data-cy-tree-view-node')!));
+  },
+);
+
+// Returns the shown nodes whose text contains the argument, in the order in
+// which they are shown. A node is shown when all its ancestors are expanded.
+Cypress.Commands.add('getShownNodesOfReportTreeWithText' as keyof Chainable, (text: string): void => {
+  cy.get(DEBUG_TREE)
+    .find(TREE_NODE)
+    .filter((_, node) => isShownTreeNode(node) && treeNodeTextContains(node, text));
+});
+
+// Selects the subject, which is a node of a tree view, the way a user does.
+Cypress.Commands.add(
+  'selectTreeNode' as keyof Chainable,
+  { prevSubject: 'element' },
+  (node: JQueryWithSelector<HTMLElement>): void => {
+    cy.wrap(node).find(TREE_NODE_SELECT).should('have.length', 1).click();
+  },
+);
 
 Cypress.Commands.add('checkShownNodeWithTextSelected' as keyof Chainable, (reportName: string, index: number, selected: boolean): void => {
-  const predicate: string = selected === true ? 'have.class' : 'not.have.class';
-  cy.getShownNodesOfReportTreeWithText(reportName).eq(index).parent().should(predicate, TREE_ITEM_SELECTED_CLASS);
-})
-
-Cypress.Commands.add('checkShownNodeWithTextSearched' as keyof Chainable, (reportName: string, searched: boolean): void => {
-  const predicate: string = searched === true ? 'have.css' : 'not.have.css';
-  cy.getShownNodesOfReportTreeWithText(reportName).parent().should(predicate, 'color', 'rgb(255, 0, 0)');
+  const predicate: string = selected === true ? 'have.attr' : 'not.have.attr';
+  cy.getShownNodesOfReportTreeWithText(reportName).eq(index).should(predicate, TREE_NODE_SELECTED);
 })
 
 Cypress.Commands.add('collapseNode' as keyof Chainable, (text, index): void => {
+  // Separate step, because have.attr changes the subject to the attribute value.
+  cy.getShownNodesOfReportTreeWithText(text).eq(index).should('have.attr', TREE_NODE_EXPANDED);
   cy.getShownNodesOfReportTreeWithText(text)
     .eq(index)
-    .parent()
-    .find('.sft-chevron-container')
+    .find(TREE_NODE_EXPANSION_TOGGLE)
     .should('have.length', 1)
     .click();
 })
 
 Cypress.Commands.add('expandNode' as keyof Chainable, (text, index): void => {
+  // Separate step, because have.attr changes the subject to the attribute value.
+  cy.getShownNodesOfReportTreeWithText(text).eq(index).should('have.attr', TREE_NODE_COLLAPSED);
   cy.getShownNodesOfReportTreeWithText(text)
     .eq(index)
-    .parent()
-    .find('.bi-chevron-right')
+    .find(TREE_NODE_EXPANSION_TOGGLE)
     .should('have.length', 1)
     .click();
 })
@@ -503,10 +554,8 @@ Cypress.Commands.add(
 Cypress.Commands.add(
   'checkFileTreeLength' as keyof Chainable,
   (length: number): void => {
-    cy.get('[data-cy-debug-tree="root"] > app-tree-item').should(
-      'have.length',
-      length,
-    );
+    // The debug tree has at most one root: the open report.
+    cy.get(DEBUG_TREE).find(TREE_ROOT_NODE).should('have.length', length);
   },
 );
 
@@ -521,7 +570,7 @@ Cypress.Commands.add(
     const attemptClose = (attemptsLeft: number): void => {
       cy.get('[data-cy-debug-tree="close"]').click();
       cy.get('body').then(($body) => {
-        const stillOpen = $body.find('[data-cy-debug-tree="root"] > app-tree-item').length > 0;
+        const stillOpen = $body.find(`${DEBUG_TREE} ${TREE_ROOT_NODE}`).length > 0;
         if (stillOpen && attemptsLeft > 1) {
           attemptClose(attemptsLeft - 1);
         } else if (stillOpen) {

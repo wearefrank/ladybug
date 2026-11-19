@@ -48,6 +48,7 @@ declare global {
       apiCopyReportToTestTabAsTester(storageName: string, storageId: number): Chainable<number>
       apiSetGeneratorEnabledAsTester(enabled: boolean): Chainable<any>
       selectTreeNode(path: NodeSelection[]): Cypress.Chainable<any>
+      getChildTreeNodes(): Cypress.Chainable<any>
       awaitDebugTree(): void
       awaitLoadingSpinner(): void
       waitForVideo(): void
@@ -388,37 +389,56 @@ function normalizeNodeSelection (input: NodeSelection): TextWithSeq {
   }
 }
 
+// The debug tree is rendered by TreeViewComponent of ladybug-frontend. These tests only
+// use its data-cy-tree-view-* attributes, which are explained in tree-view.component.html:
+// - data-cy-tree-view-node=<key> is on the element of each node. That element does not
+//   contain the elements of its children, so a search inside it only finds the
+//   attributes of the node itself.
+// - data-cy-tree-view-parent=<key of the parent> is on each node except the root.
+// - data-cy-tree-view-text is inside the node and holds its text.
+const DEBUG_TREE = '[data-cy-debug-tree="root"]'
+const TREE_NODE = '[data-cy-tree-view-node]'
+// The node of the report.
+const TREE_ROOT_NODE = `${DEBUG_TREE} ${TREE_NODE}:not([data-cy-tree-view-parent])`
+
+function treeNodesWithParent (parentKey: string): string {
+  return `${DEBUG_TREE} ${TREE_NODE}[data-cy-tree-view-parent="${CSS.escape(parentKey)}"]`
+}
+
+function withText (text: string): string {
+  return `:has([data-cy-tree-view-text]:contains(${text}))`
+}
+
+// The path starts with the report node. Each next element selects a child of the
+// previously selected node. Yields the selected node, which can be clicked.
 Cypress.Commands.add('selectTreeNode', (path: NodeSelection[]) => {
   const head = normalizeNodeSelection(path.shift())
-  cy.inLadybug(`[data-cy-debug-tree="root"] > app-tree-item > div > div:nth-child(1):contains(${head.text})`).then((elementsWithTexts) => {
-    const chosen = elementsWithTexts[head.seq]
-    return cy.wrap(chosen).parent().parent().then((element) => {
-      if (path.length === 0) {
-        return cy.wrap(element)
-      } else {
-        return selectTreeNodeImpl(element, path)
-      }
-    })
+  cy.inLadybug(`${TREE_ROOT_NODE}${withText(head.text)}`).then((nodes) => {
+    const chosen = nodes[head.seq]
+    if (path.length === 0) {
+      return cy.wrap(chosen)
+    } else {
+      return selectTreeNodeImpl(Cypress.$(chosen), path)
+    }
   })
 })
 
 function selectTreeNodeImpl (subject: JQuery<HTMLElement>, path: NodeSelection[]): Cypress.Chainable<any> | void {
   const head = normalizeNodeSelection(path.shift())
-  cy.wrap(subject).find(`> div > div > div > app-tree-item > div > div:nth-child(1):contains(${head.text})`).then((elementsWithTexts) => {
-    const chosen = elementsWithTexts[head.seq]
-    if (path.length === 0) {
-      return cy.wrap(chosen)
-    } else {
-      cy.wrap(chosen).parent().parent().then((element) => {
-        return selectTreeNodeImpl(element, path)
-      })
-    }
-  })
+  cy.inLadybug(`${treeNodesWithParent(subject.attr('data-cy-tree-view-node')!)}${withText(head.text)}`)
+    .then((nodes) => {
+      const chosen = nodes[head.seq]
+      if (path.length === 0) {
+        return cy.wrap(chosen)
+      } else {
+        return selectTreeNodeImpl(Cypress.$(chosen), path)
+      }
+    })
 }
 
-// [data-cy-debug-tree="root"] is the <ng-simple-tree> element itself, which is always
+// [data-cy-debug-tree="root"] is the <app-tree-view> element itself, which is always
 // present once the debug tab is mounted, whether or not a report has been opened yet.
-// So asserting on its presence guards nothing; waiting for at least one app-tree-item is
+// So asserting on its presence guards nothing; waiting for the node of the report is
 // what actually guards against querying the tree before it has been built.
 // Assumption: callers only use this right after navigating to a fresh page (e.g. via
 // cy.visit()), so the tree is genuinely empty beforehand and cannot already contain stale
@@ -426,7 +446,12 @@ function selectTreeNodeImpl (subject: JQuery<HTMLElement>, path: NodeSelection[]
 // report being opened while another one is already showing, this guard is not sufficient
 // and would need to check for content specific to the new report instead of mere presence.
 Cypress.Commands.add('awaitDebugTree', () => {
-  cy.inLadybug('[data-cy-debug-tree="root"] > app-tree-item').should('have.length.at.least', 1)
+  cy.inLadybug(TREE_ROOT_NODE).should('have.length.at.least', 1)
+})
+
+// Yields the direct children of the subject, which is a node of the debug tree.
+Cypress.Commands.add('getChildTreeNodes', { prevSubject: 'element' }, (node: JQuery<HTMLElement>) => {
+  cy.inLadybug(treeNodesWithParent(node.attr('data-cy-tree-view-node')!))
 })
 
 Cypress.Commands.add('awaitLoadingSpinner', () => {

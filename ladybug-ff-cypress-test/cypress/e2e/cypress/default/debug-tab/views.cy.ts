@@ -101,9 +101,5 @@ function endCheckpointShouldExist (reportName: string): void {
 }
 
 function childrenOfStartCheckpoint (reportName: string): Cypress.Chainable<any> {
-  // selectTreeNode yields the label of the start checkpoint. Go up to its
-  // app-tree-item, see selectTreeNode in commands.ts for the DOM structure.
-  return cy.selectTreeNode([reportName, reportName])
-    .parent().parent()
-    .find('> div > div > div > app-tree-item')
+  return cy.selectTreeNode([reportName, reportName]).getChildTreeNodes()
 }
