@@ -153,8 +153,10 @@ describe('TreeViewComponent', () => {
       expect(element.classList).withContext(context).toContain('sft-item');
 
       // The parent is the node whose child container holds this node.
-      const structuralParent = element.parentElement!.classList.contains('sft-item-child')
-        ? (element.parentElement!.parentElement!.previousElementSibling as HTMLElement)
+      // Each node is wrapped in its own <app-tree-view-node> host element.
+      const childWrapper = element.parentElement!.parentElement!;
+      const structuralParent = childWrapper.classList.contains('sft-item-child')
+        ? (childWrapper.parentElement!.previousElementSibling as HTMLElement)
         : undefined;
       expect(element.dataset['cyTreeViewParent'])
         .withContext(`${context} parent`)

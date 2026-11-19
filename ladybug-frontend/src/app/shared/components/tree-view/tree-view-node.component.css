@@ -1,4 +1,8 @@
 /* Taken from ng-simple-file-tree (tree-item and tree-icon components). */
+:host {
+  display: block;
+}
+
 * {
   -webkit-user-select: none;
   -ms-user-select: none;

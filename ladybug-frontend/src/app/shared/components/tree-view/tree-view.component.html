@@ -1,44 +1,8 @@
 @if (root) {
-  <ng-container [ngTemplateOutlet]="nodeTemplate" [ngTemplateOutletContext]="{ $implicit: root, parentKey: null }" />
+  <app-tree-view-node
+    [node]="root"
+    [parentKey]="null"
+    (selectRequested)="selectByUser($event)"
+    (toggleRequested)="toggleExpanded($event)"
+  />
 }
-
-<ng-template #nodeTemplate let-node let-parentKey="parentKey">
-  <div
-    class="sft-item"
-    [attr.data-cy-tree-view-node]="node.key"
-    [attr.data-cy-tree-view-parent]="parentKey"
-    [attr.data-cy-tree-view-expanded]="node.children.length > 0 && node.expanded ? '' : null"
-    [attr.data-cy-tree-view-collapsed]="node.children.length > 0 && !node.expanded ? '' : null"
-    [attr.data-cy-tree-view-selected]="node.selected ? '' : null"
-    [attr.data-cy-tree-view-highlighted]="node.highlighted ? '' : null"
-    [attr.data-cy-tree-view-error]="node.valueIsError ? '' : null"
-    [attr.data-cy-tree-view-level]="node.level"
-    [ngClass]="{ 'sft-item-selected': node.selected, 'sft-no-children': node.children.length === 0 }"
-    (click)="selectByUser(node)"
-  >
-    @if (node.children.length > 0) {
-      <div class="sft-chevron-container" data-cy-tree-view-expansion-toggle (click)="toggleExpanded(node, $event)">
-        <i class="bi sft-chevron" [ngClass]="node.expanded ? 'bi-chevron-down' : 'bi-chevron-right'"></i>
-      </div>
-    }
-    <div class="sft-icon-container">
-      <i [attr.data-cy-tree-view-type]="node.type" [class]="getIconClass(node)"></i>
-    </div>
-    <div data-cy-tree-view-text data-cy-tree-view-select [title]="node.text" [ngClass]="{ red: node.highlighted }">
-      {{ node.text }}
-    </div>
-  </div>
-  @if (node.children.length > 0) {
-    <div class="sft-child-container" [hidden]="!node.expanded">
-      @for (child of node.children; track child.key; let first = $first) {
-        <div class="sft-item-child">
-          <div class="sft-item-vertical-line" [ngClass]="{ 'sft-item-vertical-line-extended': !first }"></div>
-          <ng-container
-            [ngTemplateOutlet]="nodeTemplate"
-            [ngTemplateOutletContext]="{ $implicit: child, parentKey: node.key }"
-          />
-        </div>
-      }
-    </div>
-  }
-</ng-template>
