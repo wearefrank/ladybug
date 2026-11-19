@@ -1,6 +1,6 @@
-import { NgClass, NgTemplateOutlet } from '@angular/common';
 import { Component, EventEmitter, Input, OnChanges, OnDestroy, Output, SimpleChanges } from '@angular/core';
 import { Observable, Subscription } from 'rxjs';
+import { TreeViewNodeComponent } from './tree-view-node.component';
 
 // The kinds of nodes the tree view can show. Each kind has its own icon.
 // A report is the root of the tree. The other kinds are checkpoints; their
@@ -113,19 +113,6 @@ export interface TreeViewSelectCommand {
 export interface TreeViewClearCommand {
   command: 'clear';
 }
-
-const ICON_CLASSES: Record<TreeViewNodeType, string> = {
-  report: 'bi bi-folder icon-size',
-  startpoint: 'bi bi-arrow-bar-right icon-size bolder-icon',
-  endpoint: 'bi bi-arrow-bar-left icon-size bolder-icon',
-  abortpoint: 'bi bi-x-lg icon-size scale-down bolder-icon',
-  inputpoint: 'bi bi-arrow-right icon-size scale-down bolder-icon',
-  outputpoint: 'bi bi-arrow-left icon-size scale-down bolder-icon',
-  infopoint: 'bi bi-info-square icon-size scale-down bold-icon',
-  threadCreatepoint: 'bi bi-fast-forward icon-size bold-icon',
-  threadStartpoint: 'bi bi-chevron-double-right icon-size scale-down bold-icon',
-  threadEndpoint: 'bi bi-chevron-double-left icon-size scale-down bold-icon',
-};
 
 // What the tree view can do depends on whether it currently shows a tree.
 interface TreeViewState {
@@ -314,9 +301,8 @@ class StateInitializedBuilder {
 @Component({
   selector: 'app-tree-view',
   standalone: true,
-  imports: [NgClass, NgTemplateOutlet],
+  imports: [TreeViewNodeComponent],
   templateUrl: './tree-view.component.html',
-  styleUrl: './tree-view.component.css',
 })
 export class TreeViewComponent implements OnChanges, OnDestroy {
   @Input({ required: true }) commands!: Observable<TreeViewCommand>;
@@ -346,22 +332,8 @@ export class TreeViewComponent implements OnChanges, OnDestroy {
     this.nodeSelected.emit(this.state.selectByUser(node));
   }
 
-  protected toggleExpanded(node: TreeViewNode, event: Event): void {
-    event.stopPropagation();
+  protected toggleExpanded(node: TreeViewNode): void {
     this.emitIfSelected(this.state.toggleExpanded(node));
-  }
-
-  protected getIconClass(node: TreeViewNode): string {
-    let result = ICON_CLASSES[node.type];
-    if (node.type === 'abortpoint' || node.valueIsError) {
-      result += ' red';
-    }
-    if (node.level !== null) {
-      const isClosing = (['endpoint', 'abortpoint', 'threadEndpoint'] as TreeViewNodeType[]).includes(node.type);
-      const colorLevel = isClosing ? node.level - 1 : node.level;
-      result += colorLevel % 2 === 0 ? ' even' : ' odd';
-    }
-    return result;
   }
 
   private execute(command: TreeViewCommand): void {
