@@ -50,7 +50,7 @@ export class DebugTreeStateService implements OnDestroy {
   private httpService = inject(HttpService);
   private toastService = inject(ToastService);
 
-  private view?: View;
+  private tableView?: View;
   // The report the tree should show, null when the tree should not follow the table.
   private desired: TreeTarget | null = null;
   // The report the tree shows, null when the tree is empty. When it differs
@@ -81,13 +81,13 @@ export class DebugTreeStateService implements OnDestroy {
   }
 
   changeView(view: View): void {
-    const previousView = this.view;
-    this.view = view;
+    const previousTableView = this.tableView;
+    this.tableView = view;
     if (this.desired?.kind !== 'stored') {
       // A report in progress does not depend on the view.
       return;
     }
-    if (view.storageName === previousView?.storageName) {
+    if (view.storageName === previousTableView?.storageName) {
       this.post({ target: this.desired, view, warnIfEdited: true });
     } else {
       // The table no longer shows the storage of the desired report. Keep
@@ -103,14 +103,14 @@ export class DebugTreeStateService implements OnDestroy {
   }
 
   openStoredReport(storageId: number): void {
-    const view = this.requireView();
+    const view = this.requireTableView();
     this.desired = { kind: 'stored', storageName: view.storageName, storageId };
     this.post({ target: this.desired, view, warnIfEdited: true });
   }
 
   openReportInProgress(index: number): void {
     this.desired = { kind: 'inProgress', index };
-    this.post({ target: this.desired, view: this.requireView(), warnIfEdited: true });
+    this.post({ target: this.desired, view: this.requireTableView(), warnIfEdited: true });
   }
 
   // The tree was closed by the user.
@@ -124,10 +124,10 @@ export class DebugTreeStateService implements OnDestroy {
   saved(report: HierarchicalReport): void {
     if (this.desired?.kind === 'stored') {
       // Fetch again, because the view may have changed after saving.
-      this.post({ target: this.desired, view: this.requireView(), warnIfEdited: false });
+      this.post({ target: this.desired, view: this.requireTableView(), warnIfEdited: false });
     } else if (this.shown !== null) {
       // The tree is not linked to the table, so the view does not matter.
-      this.post({ target: this.shown, view: this.requireView(), report, warnIfEdited: false });
+      this.post({ target: this.shown, view: this.requireTableView(), report, warnIfEdited: false });
     }
   }
 
@@ -169,11 +169,11 @@ export class DebugTreeStateService implements OnDestroy {
     this.renderRequests.next(null);
   }
 
-  private requireView(): View {
-    if (this.view === undefined) {
+  private requireTableView(): View {
+    if (this.tableView === undefined) {
       throw new Error('DebugTreeStateService: no view yet');
     }
-    return this.view;
+    return this.tableView;
   }
 
   private render(request: RenderRequest): Observable<RenderResult> {
