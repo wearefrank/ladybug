@@ -4,7 +4,7 @@ import { Component, EventEmitter, inject, Input, OnDestroy, OnInit, Output, View
 import { HelperService } from '../../shared/services/helper.service';
 import { HttpService } from '../../shared/services/http.service';
 import { TableSettingsModalComponent } from '../table-settings-modal/table-settings-modal.component';
-import { catchError, Observable, Subscription } from 'rxjs';
+import { catchError, Subscription } from 'rxjs';
 import { Report } from '../../shared/interfaces/report';
 import { ToastService } from '../../shared/services/toast.service';
 import { TabService } from '../../shared/services/tab.service';
@@ -32,6 +32,7 @@ import { HierarchicalReport } from '../../shared/interfaces/hierarchical-report'
 import { CompareData } from '../../compare/compare-data';
 import { DebugTableGridComponent } from '../debug-table-grid/debug-table-grid.component';
 import { FilterSideDrawerComponent } from '../filter-side-drawer/filter-side-drawer.component';
+import { DebugTreeStateService } from '../debug-tree-state.service';
 
 @Component({
   selector: 'app-debug-table-with-controls',
@@ -65,9 +66,7 @@ export class DebugTableWithControlsComponent implements OnInit, OnDestroy {
   // The debug tab waits until the views are known before creating this component.
   @Input({ required: true }) views!: View[];
   @Input({ required: true }) currentView!: View;
-  @Input({ required: true }) reportClosed$!: Observable<boolean>;
   @Output() viewChange: EventEmitter<View> = new EventEmitter<View>();
-  @Output() openReportEvent: EventEmitter<HierarchicalReport> = new EventEmitter<HierarchicalReport>();
 
   @ViewChild(TableSettingsModalComponent)
   protected tableSettingsModal!: TableSettingsModalComponent;
@@ -82,12 +81,11 @@ export class DebugTableWithControlsComponent implements OnInit, OnDestroy {
   protected numberOfReportsInProgress = 0;
   protected estimatedMemoryUsage = '';
   protected reportsInProgressThreshold?: number;
-  protected selectedReportStorageId?: number;
   protected openInProgress: FormControl = new FormControl(1, this.defaultReportInProgressValidators);
   protected appVariablesService = inject(AppVariablesService);
   protected currentUploadFile = '';
 
-  protected openedStorageId: number | null = null;
+  protected treeState = inject(DebugTreeStateService);
   private reportsInProgress: Record<string, number> = {};
 
   private httpService = inject(HttpService);
@@ -109,8 +107,6 @@ export class DebugTableWithControlsComponent implements OnInit, OnDestroy {
   }
 
   subscribeToObservables(): void {
-    const refreshAll = this.debugTab.refreshAll$.subscribe((condition?: RefreshCondition) => this.refresh(condition));
-    this.subscriptions.add(refreshAll);
     const refreshTable = this.debugTab.refreshTable$.subscribe((condition?: RefreshCondition) =>
       this.refresh(condition),
     );
@@ -119,8 +115,6 @@ export class DebugTableWithControlsComponent implements OnInit, OnDestroy {
       (amount) => (this.displayAmount = amount),
     );
     this.subscriptions.add(displayAmountSubscription);
-    const reportClosedSubscription = this.reportClosed$.subscribe(() => (this.openedStorageId = null));
-    this.subscriptions.add(reportClosedSubscription);
   }
 
   loadData(): void {
@@ -136,9 +130,10 @@ export class DebugTableWithControlsComponent implements OnInit, OnDestroy {
 
   changeView(view: View): void {
     this.currentView = view;
-    this.viewChange.next(this.currentView);
     // FilterService already triggers retrieving the records when the view is changed.
     this.update();
+    // The parent passes the view on to DebugTreeStateService.
+    this.viewChange.next(view);
   }
 
   loadMetadataCount(): void {
@@ -218,7 +213,6 @@ export class DebugTableWithControlsComponent implements OnInit, OnDestroy {
 
   openSelected(): void {
     if (this.checkedStorageIds.length === 1) {
-      this.selectedReportStorageId = this.checkedStorageIds[0];
       this.openReport(this.checkedStorageIds[0]);
     } else {
       this.toastService.showWarning('You can open only one report at a time!');
@@ -235,22 +229,27 @@ export class DebugTableWithControlsComponent implements OnInit, OnDestroy {
 
   deleteSelected(): void {
     if (this.checkedStorageIds.length > 0) {
-      this.httpService
-        .deleteReport(this.checkedStorageIds, this.currentView.storageName)
-        .pipe(catchError(this.errorHandler.handleError()))
-        .subscribe({
-          next: () => this.loadData(),
-        });
+      const storageName = this.currentView.storageName;
+      const storageIds = [...this.checkedStorageIds];
+      this.httpService.deleteReport(storageIds, storageName).subscribe({
+        next: () => {
+          this.treeState.deleted(storageName, storageIds);
+          this.loadData();
+        },
+        error: (error: unknown) => this.errorHandler.handleUnknownError(error),
+      });
     }
   }
 
   deleteAll(): void {
-    this.httpService
-      .deleteAllReports(this.currentView.storageName)
-      .pipe(catchError(this.errorHandler.handleError()))
-      .subscribe({
-        next: () => this.loadData(),
-      });
+    const storageName = this.currentView.storageName;
+    this.httpService.deleteAllReports(storageName).subscribe({
+      next: () => {
+        this.treeState.deleted(storageName, null);
+        this.loadData();
+      },
+      error: (error: unknown) => this.errorHandler.handleUnknownError(error),
+    });
   }
 
   compareTwoReports(): void {
@@ -301,40 +300,23 @@ export class DebugTableWithControlsComponent implements OnInit, OnDestroy {
   }
 
   openReport(storageId: number): void {
-    this.httpService
-      .getHierarchicalReports([storageId], this.currentView.storageName, this.currentView.name)
-      .pipe(catchError(this.errorHandler.handleError()))
-      .subscribe({
-        next: (data: HierarchicalReport[]): void => {
-          this.openedStorageId = data[0].storageId;
-          this.openReportEvent.next(data[0]);
-        },
-      });
+    // The table grid emits the storage id as it is in the metadata, which is a string.
+    this.treeState.openStoredReport(+storageId);
   }
 
   openReportInProgress(index: number): void {
-    this.httpService
-      .getReportInProgress(index)
-      .pipe(catchError(this.errorHandler.handleError()))
-      .subscribe({
-        next: (report: HierarchicalReport) => {
-          this.openedStorageId = null;
-          this.openReportEvent.next(report);
-          this.toastService.showSuccess(`Opened report in progress with index [${index}]`);
-        },
-      });
+    this.treeState.openReportInProgress(index);
   }
 
   deleteReportInProgress(index: number): void {
-    this.httpService
-      .deleteReportInProgress(index)
-      .pipe(catchError(this.errorHandler.handleError()))
-      .subscribe({
-        next: (): void => {
-          this.loadReportInProgressSettings();
-          this.toastService.showSuccess(`Deleted report in progress with index [${index}]`);
-        },
-      });
+    this.httpService.deleteReportInProgress(index).subscribe({
+      next: (): void => {
+        this.loadReportInProgressSettings();
+        this.toastService.showSuccess(`Deleted report in progress with index [${index}]`);
+        this.treeState.reportInProgressDeleted(index);
+      },
+      error: (error: unknown) => this.errorHandler.handleUnknownError(error),
+    });
   }
 
   downloadReports(exportBinary: boolean, exportXML: boolean): void {
