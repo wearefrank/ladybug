@@ -176,12 +176,6 @@
         <artifactId>ladybug-spring-boot-test-webapp</artifactId>
         <version>${revision}</version>
       </dependency>
-      <dependency>
-        <groupId>org.wearefrank</groupId>
-        <artifactId>ladybug-otel-deps</artifactId>
-        <version>${revision}</version>
-        <type>pom</type>
-      </dependency>
 
       <dependency>
         <groupId>org.apache.cxf</groupId>
@@ -273,12 +267,6 @@
         <groupId>org.codehaus.janino</groupId>
         <artifactId>janino</artifactId>
         <version>${janino.version}</version>
-      </dependency>
-      <!-- Optional in ladybug-common, see the comment there -->
-      <dependency>
-        <groupId>io.opentelemetry.semconv</groupId>
-        <artifactId>opentelemetry-semconv</artifactId>
-        <version>1.45.0</version>
       </dependency>
       <dependency>
         <groupId>io.opentelemetry.proto</groupId>
