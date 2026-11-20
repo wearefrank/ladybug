@@ -110,9 +110,14 @@
       <groupId>io.opentelemetry</groupId>
       <artifactId>opentelemetry-api</artifactId>
     </dependency>
+    <!-- Optional (only used by OpenTelemetryUtil) to keep transitive dependencies caused by Ladybug to a minimum.
+         Applications that want Ladybug to send traces to Zipkin or Jaeger declare these dependencies themselves. -->
     <dependency>
-      <groupId>io.opentelemetry.semconv</groupId>
-      <artifactId>opentelemetry-semconv</artifactId>
+      <groupId>org.wearefrank</groupId>
+      <artifactId>ladybug-otel-deps</artifactId>
+      <version>${revision}</version>
+      <type>pom</type>
+      <optional>true</optional>
     </dependency>
     <dependency>
       <groupId>io.opentelemetry.proto</groupId>
@@ -130,15 +135,10 @@
       <groupId>com.google.protobuf</groupId>
       <artifactId>protobuf-java-util</artifactId>
     </dependency>
+    <!-- Already a runtime dependency of protobuf-java-util. Used directly to handle the OTLP/JSON encoding. -->
     <dependency>
-      <groupId>io.opentelemetry</groupId>
-      <artifactId>opentelemetry-exporter-zipkin</artifactId>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>io.opentelemetry</groupId>
-      <artifactId>opentelemetry-exporter-otlp</artifactId>
-      <scope>provided</scope>
+      <groupId>com.google.code.gson</groupId>
+      <artifactId>gson</artifactId>
     </dependency>
     <dependency>
       <groupId>org.junit.jupiter</groupId>

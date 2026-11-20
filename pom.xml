@@ -57,7 +57,11 @@
     <module>ladybug-test-webapp-common</module>
     <module>ladybug-test-webapp</module>
     <module>ladybug-spring-boot-test-webapp</module>
+    <module>ladybug-otel-test-companion</module>
     <module>ladybug-ff-test-webapp</module>
+    <module>ladybug-otel-deps</module>
+    <module>ladybug-test-webapp-otel</module>
+    <module>ladybug-spring-boot-test-webapp-otel</module>
   </modules>
   <scm>
     <connection>scm:git:https://github.com/wearefrank/ladybug.git</connection>
@@ -132,9 +136,14 @@
         <scope>import</scope>
       </dependency>
       <dependency>
-        <groupId>org.wearefrank</groupId>
-        <artifactId>ladybug-test-webapp</artifactId>
-        <version>${revision}</version>
+        <groupId>io.opentelemetry.semconv</groupId>
+        <artifactId>opentelemetry-semconv</artifactId>
+        <version>1.45.0</version>
+      </dependency>
+      <dependency>
+        <groupId>io.opentelemetry.proto</groupId>
+        <artifactId>opentelemetry-proto</artifactId>
+        <version>1.11.1-alpha</version>
       </dependency>
       <dependency>
         <groupId>org.wearefrank</groupId>
@@ -164,6 +173,17 @@
       <dependency>
         <groupId>org.wearefrank</groupId>
         <artifactId>ladybug-test-webapp-common</artifactId>
+        <version>${revision}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.wearefrank</groupId>
+        <artifactId>ladybug-test-webapp</artifactId>
+        <version>${revision}</version>
+        <type>war</type>
+      </dependency>
+      <dependency>
+        <groupId>org.wearefrank</groupId>
+        <artifactId>ladybug-spring-boot-test-webapp</artifactId>
         <version>${revision}</version>
       </dependency>
 
@@ -227,11 +247,6 @@
         <version>2.7.3</version>
       </dependency>
       <dependency>
-        <groupId>io.opentelemetry.proto</groupId>
-        <artifactId>opentelemetry-proto</artifactId>
-        <version>1.11.1-alpha</version>
-      </dependency>
-      <dependency>
         <groupId>commons-codec</groupId>
         <artifactId>commons-codec</artifactId>
         <version>1.17.0</version>
@@ -245,6 +260,11 @@
         <groupId>com.google.protobuf</groupId>
         <artifactId>protobuf-java-util</artifactId>
         <version>4.36.2</version>
+      </dependency>
+      <dependency>
+        <groupId>com.google.code.gson</groupId>
+        <artifactId>gson</artifactId>
+        <version>2.8.9</version>
       </dependency>
       <dependency>
         <groupId>org.glassfish.web</groupId>
@@ -307,13 +327,6 @@
         <groupId>javax.json.bind</groupId>
         <artifactId>javax.json.bind-api</artifactId>
         <version>1.0</version>
-        <scope>provided</scope>
-      </dependency>
-      <!-- Scope provided for now for OpenTelemetry dependencies other then opentelemetry-api (keep transitive dependencies caused by Ladybug to a minimum) -->
-      <dependency>
-        <groupId>io.opentelemetry.semconv</groupId>
-        <artifactId>opentelemetry-semconv</artifactId>
-        <version>1.45.0</version>
         <scope>provided</scope>
       </dependency>
       <dependency>

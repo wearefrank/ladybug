@@ -111,6 +111,11 @@ jobs:
         working-directory: ladybug
         run: mvn -B -pl ladybug-spring-boot-test-webapp -am install -DskipTests -Dmaven.javadoc.skip=true -Dmaven.skip.copyright=true
 
+      - name: Build ladybug-otel-test-companion, which the specs run to send traces
+        if: matrix.name == 'openTelemetry'
+        working-directory: ladybug
+        run: mvn -B -pl ladybug-otel-test-companion package -DskipTests -Dmaven.javadoc.skip=true -Dmaven.skip.copyright=true
+
       - name: Show current time, allows you to check that logs are not old
         run: date
 
