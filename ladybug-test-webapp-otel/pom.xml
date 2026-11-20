@@ -23,6 +23,7 @@
     <dependency>
       <groupId>org.wearefrank</groupId>
       <artifactId>ladybug-otel-deps</artifactId>
+      <version>${revision}</version>
       <type>pom</type>
     </dependency>
   </dependencies>

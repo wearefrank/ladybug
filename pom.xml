@@ -136,6 +136,16 @@
         <scope>import</scope>
       </dependency>
       <dependency>
+        <groupId>io.opentelemetry.semconv</groupId>
+        <artifactId>opentelemetry-semconv</artifactId>
+        <version>1.45.0</version>
+      </dependency>
+      <dependency>
+        <groupId>io.opentelemetry.proto</groupId>
+        <artifactId>opentelemetry-proto</artifactId>
+        <version>1.11.1-alpha</version>
+      </dependency>
+      <dependency>
         <groupId>org.wearefrank</groupId>
         <artifactId>ladybug-frontend-servlet</artifactId>
         <version>${revision}</version>
@@ -267,11 +277,6 @@
         <groupId>org.codehaus.janino</groupId>
         <artifactId>janino</artifactId>
         <version>${janino.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>io.opentelemetry.proto</groupId>
-        <artifactId>opentelemetry-proto</artifactId>
-        <version>1.11.1-alpha</version>
       </dependency>
       <dependency>
         <groupId>jakarta.servlet</groupId>
