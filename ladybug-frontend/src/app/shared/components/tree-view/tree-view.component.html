@@ -1,0 +1,8 @@
+@if (root) {
+  <app-tree-view-node
+    [node]="root"
+    [parentKey]="null"
+    (selectRequested)="selectByUser($event)"
+    (toggleRequested)="toggleExpanded($event)"
+  />
+}

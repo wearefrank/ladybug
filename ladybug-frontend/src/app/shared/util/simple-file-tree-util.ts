@@ -27,7 +27,7 @@ export const SimpleFileTreeUtil = {
         item.setVisible(false);
       }
       if (item.item.children) {
-        this.hideOrShowCheckpoints(unmatched, [item.childElement]);
+        SimpleFileTreeUtil.hideOrShowCheckpoints(unmatched, [item.childElement]);
       }
     }
   },

@@ -5,3 +5,7 @@
 div:hover {
   cursor: pointer;
 }
+
+.exact {
+  color: red;
+}

@@ -13,7 +13,7 @@ describe('Test user stories about testing with Ladybug', () => {
     cy.createReportInLadybug('Example1a', 'Adapter1a', 'xxx').then(storageId => {
       cy.wrap('Found report just created, storageId=' + storageId)
       cy.clickTableRowWithStorageId(storageId)
-      cy.inIframeBody('[data-cy-debug-tree="root"]')
+      cy.inLadybug('[data-cy-debug-tree="root"]')
         .should('have.length.at.least', 1)
         .contains('Pipeline Example1a/Adapter1a').within(_ => {
           cy.contains('Pipeline Example1a/Adapter1a')
@@ -34,7 +34,7 @@ describe('Test user stories about testing with Ladybug', () => {
       cy.wrap('Found report just created, storageId=' + storageId)
       cy.stopAdapter('Example1a', 'Adapter1a');
       cy.clickTableRowWithStorageId(storageId)
-      cy.inIframeBody('[data-cy-debug-tree="root"]')
+      cy.inLadybug('[data-cy-debug-tree="root"]')
         .should('have.length.at.least', 1)
         .contains('Pipeline Example1a/Adapter1a').within(_ => {
           cy.contains('Pipeline Example1a/Adapter1a')
@@ -44,7 +44,7 @@ describe('Test user stories about testing with Ladybug', () => {
       // Martijn October 8 2024: I do not know why I have to do this query again.
       cy.checkTestTabHasReportNamed('Pipeline Example1a_Adapter1a')
         .find('[data-cy-test="runReport"]').click()
-      cy.inIframeBody('[data-cy-toast="warning"]')
+      cy.inLadybug('[data-cy-toast="warning"]')
         .should('be.visible')
         .should('contain.text', 'Adapter')
         .should('contain.text', 'STOPPED');

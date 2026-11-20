@@ -11,6 +11,12 @@ updates:
       interval: "monthly"
     ignore:
       - dependency-name: "monaco-editor" # Upgrading monaco editor results in failing tests, ignored upgrades for now
+      - dependency-name: "@angular*" # Angular and angular-eslint major versions must match; upgrade majors deliberately with ng update
+        update-types: ["version-update:semver-major"]
+  - package-ecosystem: "npm"
+    directory: "/ladybug-ff-cypress-test"
+    schedule:
+      interval: "monthly"
   - package-ecosystem: "maven"
     directories:
       - "/ladybug-common"

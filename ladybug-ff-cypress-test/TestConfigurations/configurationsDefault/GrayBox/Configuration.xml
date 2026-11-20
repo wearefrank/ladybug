@@ -1,0 +1,32 @@
+<Configuration
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:noNamespaceSchemaLocation="../FrankConfig.xsd"
+	>
+	<!--
+	Used to test the Gray box and Black box views of Ladybug.
+	- Gray box: the checkpoints of pipe "FixedMessage" are hidden.
+	- Black box: additionally the call to adapter "Called" is hidden,
+	  because IbisLocalSender is one of the senders hidden by the BlackBox filter.
+	-->
+	<Adapter name="Caller">
+		<Receiver name="CallerReceiver">
+			<ApiListener name="CallerListener" uriPattern="graybox"/>
+		</Receiver>
+		<Pipeline>
+			<EchoPipe name="FixedMessage" getInputFromFixedValue="Fixed message from caller">
+				<Forward name="success" path="CallOtherAdapter"/>
+			</EchoPipe>
+			<SenderPipe name="CallOtherAdapter">
+				<IbisLocalSender name="CallOtherAdapterSender" javaListener="GrayBoxCalled"/>
+			</SenderPipe>
+		</Pipeline>
+	</Adapter>
+	<Adapter name="Called">
+		<Receiver name="CalledReceiver">
+			<JavaListener name="GrayBoxCalled"/>
+		</Receiver>
+		<Pipeline>
+			<EchoPipe name="EchoInCalled"/>
+		</Pipeline>
+	</Adapter>
+</Configuration>

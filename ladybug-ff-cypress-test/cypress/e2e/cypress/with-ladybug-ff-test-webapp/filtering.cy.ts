@@ -24,6 +24,7 @@ describe('Tests with views and filtering', () => {
   interface ColumnAndName {
     readonly name: string
     readonly colNr: number
+    readonly testExactMatch: boolean
     // TODO: Get rid of this when issue https://github.com/wearefrank/ladybug/issues/429 is fixed
     readonly enabled: boolean
   }
@@ -31,81 +32,110 @@ describe('Tests with views and filtering', () => {
   const isDatabaseStorage: boolean = Cypress.expose('debugStorageName') === 'DatabaseDebugStorage'
 
   const columnAndNameCombinations: ColumnAndName[] = [
-    { name: 'Storage Id', colNr: 1, enabled: !isDatabaseStorage },
-    { name: 'End Time', colNr: 2, enabled: !isDatabaseStorage },
-    { name: 'Duration', colNr: 3, enabled: true },
-    { name: 'Name', colNr: 4, enabled: true },
-    { name: 'Correlation Id', colNr: 5, enabled: true },
-    { name: 'Status', colNr: 6, enabled: true },
-    { name: 'Checkpoints', colNr: 7, enabled: !isDatabaseStorage },
-    { name: 'Memory', colNr: 8, enabled: true },
-    { name: 'Size', colNr: 9, enabled: true },
-    { name: 'Input', colNr: 10, enabled: true }
+    { name: 'Storage Id', colNr: 1, testExactMatch: false, enabled: !isDatabaseStorage },
+    { name: 'End Time', colNr: 2, testExactMatch: false, enabled: !isDatabaseStorage },
+    { name: 'Duration', colNr: 3, testExactMatch: false, enabled: true },
+    { name: 'Duration', colNr: 3, testExactMatch: true, enabled: true },
+    { name: 'Name', colNr: 4, testExactMatch: false, enabled: true },
+    { name: 'Name', colNr: 4, testExactMatch: true, enabled: true },
+    { name: 'Correlation Id', colNr: 5, testExactMatch: false, enabled: true },
+    { name: 'Status', colNr: 6, testExactMatch: false, enabled: true },
+    { name: 'Checkpoints', colNr: 7, testExactMatch: false, enabled: !isDatabaseStorage },
+    { name: 'Memory', colNr: 8, testExactMatch: false, enabled: true },
+    { name: 'Size', colNr: 9, testExactMatch: false, enabled: true },
+    { name: 'Input', colNr: 10, testExactMatch: false, enabled: true },
   ]
 
   const testedColumnAndNameCombinations = columnAndNameCombinations.filter((testCase) => testCase.name !== 'Status')
 
   for (const testCase of testedColumnAndNameCombinations.filter((c) => c.enabled)) {
-    it(`Filter on field ${testCase.name}, expected at column ${testCase.colNr}`, () => {
+    let exactPhrase = '';
+    if (testCase.testExactMatch) {
+      exactPhrase = ', with exact matching';
+    }
+    it(`Filter on field ${testCase.name}, expected at column ${testCase.colNr}${exactPhrase}`, () => {
       cy.visit('')
       // Enter Ladybug
       cy.getNumLadybugReports().should('equal', 5)
+      cy.inLadybug('[data-cy-change-view-dropdown]').select('White box view no application');
       // Check the name and column number combination
-      cy.inIframeBody('[data-cy-debug="table"]').find(`th:eq(${testCase.colNr})`).contains(`${testCase.name}`)
-      cy.inIframeBody('[data-cy-debug="tableRow"]:eq(0)').find(`td:eq(${testCase.colNr})`).then((el: JQuery<HTMLElement>) => {
+      cy.inLadybug('[data-cy-debug="table"]').find(`th:eq(${testCase.colNr})`).contains(`${testCase.name}`)
+      cy.inLadybug('[data-cy-debug="tableRow"]:eq(0)').find(`td:eq(${testCase.colNr})`).then((el: JQuery<HTMLElement>) => {
         // TODO: It would be nice to get rid of this trim().
         const firstRowFieldValue = el.text().trim()
         cy.log(`Filtering on value: ${firstRowFieldValue}`)
-        cy.inIframeBody('[data-cy-debug="filter"]').click()
-        cy.enterFilter(testCase.name, firstRowFieldValue)
-        cy.inIframeBody('[data-cy-debug="tableRow"]').should('have.length.lessThan', 5)
-        cy.inIframeBody('[data-cy-debug="tableRow"]').should('have.length.greaterThan', 0)
+        cy.inLadybug('[data-cy-debug="filter"]').click()
+        let filterValue = firstRowFieldValue;
+        if (testCase.testExactMatch) {
+          filterValue = `[[[${filterValue}]]]`;
+        }
+        cy.enterFilter(testCase.name, filterValue);
+        cy.inLadybug('[data-cy-debug="tableRow"]').should('have.length.lessThan', 5)
+        cy.inLadybug('[data-cy-debug="tableRow"]').should('have.length.greaterThan', 0)
         cy.checkActiveFilterSphere(testCase.name, firstRowFieldValue).should('be.visible')
-        cy.inIframeBody('[data-cy-debug="clear-filter-btn"]').should('have.length', 1).click()
-        cy.inIframeBody('[data-cy-debug="tableRow"]').should('have.length', 5)
-        cy.inIframeBody('[data-cy-debug="close-filter-btn"]').click()
-        cy.inIframeBody('[data-cy-debug="close-filter-btn"]').should('not.exist')
+        cy.inLadybug('[data-cy-debug="clear-filter-btn"]').should('have.length', 1).click()
+        cy.inLadybug('[data-cy-debug="tableRow"]').should('have.length', 5)
+        cy.inLadybug('[data-cy-debug="close-filter-btn"]').click()
+        cy.inLadybug('[data-cy-debug="close-filter-btn"]').should('not.exist')
         cy.checkActiveFilterSphere(testCase.name, firstRowFieldValue).should('not.exist')
       })
     })
   }
 
+  it('Can manipulate filter on Application, even though column is not shown', () => {
+    cy.visit('')
+    cy.getNumLadybugReports().should('equal', 5)
+    cy.inLadybug('[data-cy-change-view-dropdown]').select('White box view no application');
+    cy.inLadybug('[data-cy-debug="table"]').find(`th:contains(Name)`).should('be.visible')
+    cy.inLadybug('[data-cy-debug="table"]').find(`th:contains(Application)`).should('not.exist')
+    // Test that the FF! opens Ladybug so that we filter on Application by default
+    cy.checkActiveFilterSphere('Application', 'ladybug-ff-test-webapp').should('be.visible')
+    cy.inLadybug('[data-cy-debug="filter"]').click()
+    cy.inLadybug('[data-cy-debug="filterLabel"]:contains(Application)')
+      .parent()
+      .contains('Clear')
+      .click()
+    cy.checkActiveFilterSphere('Application', 'ladybug-ff-test-webapp').should('not.exist')
+  })
+
   it('Filter on two criteria', () => {
     cy.visit('')
     // Enter Ladybug
     cy.getNumLadybugReports().should('equal', 5)
-    cy.inIframeBody('[data-cy-debug="filter"]').click()
+    cy.inLadybug('[data-cy-change-view-dropdown]').select('White box view no application');
+    cy.inLadybug('[data-cy-debug="filter"]').click()
     cy.enterFilter('Name', 'Adapter')
     cy.enterFilter('Input', 'yyy')
-    cy.inIframeBody('[data-cy-debug="close-filter-btn"]').click()
+    cy.inLadybug('[data-cy-debug="close-filter-btn"]').click()
     cy.checkActiveFilterSphere('Name', 'Adapter').should('be.visible')
     cy.checkActiveFilterSphere('Input', 'yyy').should('be.visible')
-    cy.inIframeBody('[data-cy-debug="tableRow"]').should('have.length', 1)
-    cy.inIframeBody('[data-cy-debug="filter"]').click()
-    cy.inIframeBody('[data-cy-debug="clear-filter-btn"]').should('have.length', 1).click()
-    cy.inIframeBody('[data-cy-debug="tableRow"]').should('have.length', 5)
+    cy.inLadybug('[data-cy-debug="tableRow"]').should('have.length', 1)
+    cy.inLadybug('[data-cy-debug="filter"]').click()
+    cy.inLadybug('[data-cy-debug="clear-filter-btn"]').should('have.length', 1).click()
+    cy.inLadybug('[data-cy-debug="tableRow"]').should('have.length', 5)
     cy.checkActiveFilterSphere('Name', 'Adapter').should('not.exist')
     cy.checkActiveFilterSphere('Input', 'yyy').should('not.exist')
-    cy.inIframeBody('[data-cy-debug="close-filter-btn"]').click()
-    cy.inIframeBody('[data-cy-debug="close-filter-btn"]').should('not.exist')
+    cy.inLadybug('[data-cy-debug="close-filter-btn"]').click()
+    cy.inLadybug('[data-cy-debug="close-filter-btn"]').should('not.exist')
   })
 
   it('Change view so that a column goes on which there was a filter and original filter not saved', () => {
     cy.visit('')
     // Enter Ladybug
     cy.getNumLadybugReports().should('equal', 5)
-    cy.inIframeBody('[data-cy-debug="filter"]').click()
+    cy.inLadybug('[data-cy-change-view-dropdown]').select('White box view no application');
+    cy.inLadybug('[data-cy-debug="filter"]').click()
     cy.enterFilter('Input', 'yyy')
-    cy.inIframeBody('[data-cy-debug="close-filter-btn"]').click()
-    cy.inIframeBody('[data-cy-debug="tableRow"]').should('have.length', 3)
+    cy.inLadybug('[data-cy-debug="close-filter-btn"]').click()
+    cy.inLadybug('[data-cy-debug="tableRow"]').should('have.length', 3)
     cy.checkActiveFilterSphere('Input', 'yyy').should('be.visible')
-    cy.inIframeBody('[data-cy-change-view-dropdown]').select('White box view no input')
-    cy.inIframeBody('[data-cy-debug="tableRow"]').should('have.length', 5)
+    cy.inLadybug('[data-cy-change-view-dropdown]').select('White box view no input')
+    cy.inLadybug('[data-cy-debug="tableRow"]').should('have.length', 5)
     cy.checkActiveFilterSphere('Input', 'yyy').should('not.exist')
     // Check that the original filter is not saved
-    cy.inIframeBody('[data-cy-change-view-dropdown]').select('White box')
+    cy.inLadybug('[data-cy-change-view-dropdown]').select('White box')
     cy.awaitLoadingSpinner()
-    cy.inIframeBody('[data-cy-debug="tableRow"]').should('have.length', 5)
+    cy.inLadybug('[data-cy-debug="tableRow"]').should('have.length', 5)
     cy.checkActiveFilterSphere('Input', 'yyy').should('not.exist')
   })
 })

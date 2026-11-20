@@ -173,7 +173,7 @@ export class HttpService {
   }
 
   private extractIdFromUid(uid: string): number {
-    const idString: string = uid.split('#')[1];
+    const idString: string = uid.split('#', 2)[1];
     if (isNumber(idString)) {
       return +idString;
     } else {

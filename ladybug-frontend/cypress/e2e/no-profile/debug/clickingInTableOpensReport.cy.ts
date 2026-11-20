@@ -55,7 +55,7 @@ describe('Clicking a report', () => {
     cy.getDebugTableRows().first().find('td').each((cell) => {
       cy.wrap(cell).should('have.class', 'highlight');
     });
-    cy.get('[data-cy-debug-tree="close"]').click();
+    cy.closeDebugTree();
     cy.get('[data-cy-debug-tree="buttons"]').should('not.exist');
     cy.getDebugTableRows().first().find('td').each((cell) => {
       cy.wrap(cell).should('not.have.class', 'highlight');

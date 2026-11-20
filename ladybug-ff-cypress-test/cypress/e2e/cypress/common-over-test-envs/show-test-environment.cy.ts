@@ -4,7 +4,7 @@ describe('Information to check the test environment', () => {
     cy.visitAsTester()
     cy.waitForVideo()
     cy.getNumLadybugReports().then(() => {
-      cy.inIframeBody('#version').invoke('text').then((s) => {
+      cy.inLadybug('#version').invoke('text').then((s) => {
         cy.log('Ladybug version is:')
         cy.log(`${s}`)
         cy.waitForVideo()

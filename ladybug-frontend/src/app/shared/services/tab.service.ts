@@ -9,6 +9,8 @@ import { HierarchicalReport } from '../interfaces/hierarchical-report';
 export interface MetadataFilter {
   metadataName: string;
   value: string;
+  exact: boolean;
+  shownValue: string;
 }
 
 export interface HtmlNavigation {
@@ -159,7 +161,7 @@ export class TabService {
     if (routePath.length === 0) {
       return '';
     }
-    const kind = routePath.split('/')[0];
+    const kind = routePath.split('/', 1)[0];
     switch (kind) {
       case KEY_DEBUG: {
         const filters: MetadataFilter[] = this.routeGetFilters(route);
@@ -221,13 +223,23 @@ export class TabService {
     filterParameters.sort();
     const result: MetadataFilter[] = [];
     for (const s of filterParameters) {
-      result.push({
-        metadataName: s.slice(FILTER_PREFIX.length),
-        // No need to decode. Angular should have done so.
-        value: queryParameters[s],
-      });
+      result.push(this.filterQuery2MetadataFilter(s.slice(FILTER_PREFIX.length), queryParameters[s]));
     }
     return result;
+  }
+
+  filterQuery2MetadataFilter(metadataName: string, query: string): MetadataFilter {
+    const exact = query.startsWith('[[[') && query.endsWith(']]]');
+    let shownValue: string = query;
+    if (exact) {
+      shownValue = query.slice(3, -3);
+    }
+    return {
+      metadataName,
+      value: query,
+      exact,
+      shownValue,
+    };
   }
 
   findTab(key: string): Tab | undefined {

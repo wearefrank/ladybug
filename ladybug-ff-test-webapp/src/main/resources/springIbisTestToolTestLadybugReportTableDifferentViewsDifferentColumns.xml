@@ -33,6 +33,8 @@
                 <value>estimatedMemoryUsage</value>
                 <value>storageSize</value>
                 <value>input</value>
+                <!-- We add this one to test that we can delete the default filter on it, even when not shown -->
+                <value>application</value>
             </list>
         </constructor-arg>
     </bean>
@@ -87,6 +89,25 @@
         </property>
     </bean>
 
+    <bean name="whiteBoxViewNoApplication" parent="whiteBoxView">
+        <property name="name" value="White box view no application" />
+        <property name="metadataNames">
+            <list>
+                <value>storageId</value>
+                <value>endTime</value>
+                <value>duration</value>
+                <value>name</value>
+                <value>correlationId</value>
+                <value>status</value>
+                <value>numberOfCheckpoints</value>
+                <value>estimatedMemoryUsage</value>
+                <value>storageSize</value>
+                <value>input</value>
+                <!-- We omit "application" -->
+            </list>
+        </property>
+    </bean>
+
     <bean name="views" class="org.wearefrank.ladybug.filter.Views" scope="prototype">
         <property name="views">
             <list>
@@ -96,6 +117,7 @@
                 <ref bean="whiteBoxViewNoName"/>
                 <ref bean="grayBoxView"/>
                 <ref bean="blackBoxView"/>
+                <ref bean="whiteBoxViewNoApplication"/>
             </list>
         </property>                
     </bean>

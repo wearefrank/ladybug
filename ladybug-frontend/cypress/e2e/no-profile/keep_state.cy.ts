@@ -47,13 +47,13 @@ describe('Tests for keeping state in tabs when switching tabs', () => {
     cy.uploadTwoReportsAndCheckTabs();
     cy.get('[data-cy-debug-tree="expandAll"]').click();
     let reportName = UPLOADED_REPORT_NAMES[1]
-    cy.getShownNodesOfReportTreeWithText(reportName).eq(2).click();
+    cy.getShownNodesOfReportTreeWithText(reportName).eq(2).selectTreeNode();
     cy.getShownNodesOfReportTreeWithText(reportName).should('have.length', 3);
     cy.checkShownNodeWithTextSelected(reportName, 2, true);
     cy.checkShownNodeWithTextSelected(reportName, 1, false);
     cy.get('[data-cy-nav-tab]').eq(2).click();
     reportName = UPLOADED_REPORT_NAMES[0];
-    cy.getShownNodesOfReportTreeWithText(reportName).eq(2).click();
+    cy.getShownNodesOfReportTreeWithText(reportName).eq(2).selectTreeNode();
     cy.getShownNodesOfReportTreeWithText(reportName).should('have.length', 3);
     cy.checkShownNodeWithTextSelected(reportName, 2, true);
     cy.checkShownNodeWithTextSelected(reportName, 1, false);
@@ -132,13 +132,13 @@ describe('Tests for keeping state in tabs when switching tabs - with URL filters
     cy.uploadTwoReportsAndCheckTabs();
     cy.get('[data-cy-debug-tree="expandAll"]').click();
     let reportName = UPLOADED_REPORT_NAMES[1]
-    cy.getShownNodesOfReportTreeWithText(reportName).eq(2).click();
+    cy.getShownNodesOfReportTreeWithText(reportName).eq(2).selectTreeNode();
     cy.getShownNodesOfReportTreeWithText(reportName).should('have.length', 3);
     cy.checkShownNodeWithTextSelected(reportName, 2, true);
     cy.checkShownNodeWithTextSelected(reportName, 1, false);
     cy.get('[data-cy-nav-tab]').eq(2).click();
     reportName = UPLOADED_REPORT_NAMES[0];
-    cy.getShownNodesOfReportTreeWithText(reportName).eq(2).click();
+    cy.getShownNodesOfReportTreeWithText(reportName).eq(2).selectTreeNode();
     cy.getShownNodesOfReportTreeWithText(reportName).should('have.length', 3);
     cy.checkShownNodeWithTextSelected(reportName, 2, true);
     cy.checkShownNodeWithTextSelected(reportName, 1, false);

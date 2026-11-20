@@ -1,3 +1,4 @@
+// TODO issue https://github.com/wearefrank/ladybug/issues/1134.
 describe('Test labels', () => {
   before(() => {
     cy.resetApp();
@@ -15,7 +16,8 @@ describe('Test labels', () => {
     cy.get('[data-cy-debug="selectAll"]').click();
     cy.get('[data-cy-debug="openSelected"]').click();
     cy.checkFileTreeLength(1);
-    testTreeView('Message is null');
+    testTreeView('Message is null', 'Null String');
+    testMessageLabelOfInfopoint('Null String', 'Message is null', 'Message is empty string');
   });
 
   it('Test label empty string', () => {
@@ -24,7 +26,8 @@ describe('Test labels', () => {
     cy.get('[data-cy-debug="selectAll"]').click();
     cy.get('[data-cy-debug="openSelected"]').click();
     cy.checkFileTreeLength(1);
-    testTreeView('Message is an empty string');
+    testTreeView('Message is an empty string', 'Empty String');
+    testMessageLabelOfInfopoint('Empty String', 'Message is empty string', 'Message is null');
   });
 
   it('When checkpoint is modified then label Edited is shown', () => {
@@ -146,33 +149,29 @@ describe('Test labels', () => {
   });
 });
 
-function testTreeView(reportName: string): void {
-  cy.get('[data-cy-debug-tree="root"] > app-tree-item .item-name')
-    .eq(0)
-    .within(function ($node) {
-      cy.wrap($node).should('contain', reportName);
-    });
+function testTreeView(reportName: string, infopointName: string): void {
+  cy.getRootNodeOfDebugTree()
+    .find('[data-cy-tree-view-text]')
+    .should('contain', reportName);
+  cy.getShownNodesOfReportTreeWithText(infopointName).should('have.length', 1);
 
-  cy.get('[data-cy-debug-tree="root"] > app-tree-item > div')
-    .eq(0)
-    .get('div > app-tree-icon div.sft-icon-container i')
-    .as('tree-icons');
+  // The types of all nodes in the order in which they are shown, the report
+  // node first. Which icon belongs to a type is tested by Karma.
+  cy.get('[data-cy-debug-tree="root"] [data-cy-tree-view-type]').as('tree-types');
+  cy.get('@tree-types').eq(1).should('have.attr', 'data-cy-tree-view-type', 'startpoint');
+  cy.get('@tree-types').eq(2).should('have.attr', 'data-cy-tree-view-type', 'infopoint');
+  cy.get('@tree-types').eq(3).should('have.attr', 'data-cy-tree-view-type', 'endpoint');
+}
 
-  cy.get('@tree-icons').eq(1)
-    .should('satisfy', ($el) => {
-      const classList = Array.from($el[0].classList);
-      return classList.includes('bi') && classList.includes('bi-arrow-bar-right');
-    })
-
-  cy.get('@tree-icons').eq(2)
-    .should('satisfy', ($el) => {
-      const classList = Array.from($el[0].classList);
-      return classList.includes('bi') && classList.includes('bi-info-square');
-    })
-
-  cy.get('@tree-icons').eq(3)
-    .should('satisfy', ($el) => {
-      const classList = Array.from($el[0].classList);
-      return classList.includes('bi') && classList.includes('bi-arrow-bar-left');
-    })
+// The startpoint is selected when the report is opened. Its message is not null or empty,
+// so there are no labels about that. Then select the infopoint, whose message is null or the
+// empty string, and check that the right label is shown above the checkpoint value.
+function testMessageLabelOfInfopoint(infopointName: string, expectedLabel: string, otherLabel: string): void {
+  cy.get('[data-cy-element-name="checkpointEditor"]').invoke('text').should('contain', 'Hello');
+  cy.get(`[data-cy-report="alert-messages"] :contains(${expectedLabel})`).should('not.exist');
+  cy.get(`[data-cy-report="alert-messages"] :contains(${otherLabel})`).should('not.exist');
+  cy.getShownNodesOfReportTreeWithText(infopointName).should('have.length', 1).selectTreeNode();
+  cy.get('[data-cy-element-name="checkpointEditor"]').invoke('text').should('not.contain', 'Hello');
+  cy.get(`[data-cy-report="alert-messages"] :contains(${expectedLabel})`).should('be.visible');
+  cy.get(`[data-cy-report="alert-messages"] :contains(${otherLabel})`).should('not.exist');
 }

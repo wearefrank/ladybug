@@ -11,7 +11,7 @@ export const ReportUtil = {
     if (!node) {
       return false;
     }
-    return !this.isCheckPoint(node);
+    return !ReportUtil.isCheckPoint(node);
   },
 
   isCheckPoint(node: ReportOrCheckpoint | HierarchicalReportOrCheckpoint): node is Checkpoint {
@@ -31,10 +31,10 @@ export const ReportUtil = {
     return !uid.includes('null');
   },
   getCheckpointIdFromUid(uid: string): number {
-    return +uid.split('#')[1];
+    return +uid.split('#', 2)[1];
   },
   getStorageIdFromUid(uid: string): number {
-    return +uid.split('#')[0];
+    return +uid.split('#', 1)[0];
   },
   isFromCrudStorage(node: Report | Checkpoint): boolean {
     return ReportUtil.isCheckPoint(node) ? node.parentReport.crudStorage : node.crudStorage;

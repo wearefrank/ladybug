@@ -24,7 +24,7 @@ describe('Variables', () => {
     cy.get('[data-cy-element-name="variableValue"]').should('have.length', 2);
     cy.get('[data-cy-report="save"]').click();
     cy.get('[data-cy-difference-modal="confirm"]').click();
-    cy.get('[data-cy-debug-tree="close"]').click();
+    cy.closeDebugTree();
     openTheReport();
     cy.clickRootNodeInFileTree();
     cy.get('[data-cy-element-name="variableName"]').should('have.length', 2);
