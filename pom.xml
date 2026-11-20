@@ -59,6 +59,9 @@
     <module>ladybug-spring-boot-test-webapp</module>
     <module>ladybug-otel-test-companion</module>
     <module>ladybug-ff-test-webapp</module>
+    <module>ladybug-otel-deps</module>
+    <module>ladybug-test-webapp-otel</module>
+    <module>ladybug-spring-boot-test-webapp-otel</module>
   </modules>
   <scm>
     <connection>scm:git:https://github.com/wearefrank/ladybug.git</connection>
@@ -134,11 +137,6 @@
       </dependency>
       <dependency>
         <groupId>org.wearefrank</groupId>
-        <artifactId>ladybug-test-webapp</artifactId>
-        <version>${revision}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.wearefrank</groupId>
         <artifactId>ladybug-frontend-servlet</artifactId>
         <version>${revision}</version>
       </dependency>
@@ -166,6 +164,23 @@
         <groupId>org.wearefrank</groupId>
         <artifactId>ladybug-test-webapp-common</artifactId>
         <version>${revision}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.wearefrank</groupId>
+        <artifactId>ladybug-test-webapp</artifactId>
+        <version>${revision}</version>
+        <type>war</type>
+      </dependency>
+      <dependency>
+        <groupId>org.wearefrank</groupId>
+        <artifactId>ladybug-spring-boot-test-webapp</artifactId>
+        <version>${revision}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.wearefrank</groupId>
+        <artifactId>ladybug-otel-deps</artifactId>
+        <version>${revision}</version>
+        <type>pom</type>
       </dependency>
 
       <dependency>
