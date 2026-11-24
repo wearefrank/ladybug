@@ -197,6 +197,8 @@ declare global {
       checkNoApplication(rowIndex: number): Chainable;
 
       openReportByClickInDebugTable(reportIndex: number): Chainable;
+
+      checkRunningBackendOneOf(options: string[]): Chainable;
     }
   }
 }
@@ -779,6 +781,16 @@ Cypress.Commands.add('openReportByClickInDebugTable', (reportIndex: number) => {
   // hitting the checkbox by taking <td> index 1 instead of 0.
   cy.getDebugTableRows().eq(reportIndex).find('td').eq(1).click();
 })
+
+Cypress.Commands.add('checkRunningBackendOneOf', (options: string[]) => {
+  cy.request(
+    `${Cypress.expose('backendServer')}/webapp-id.txt`,
+  ).then((resp: Cypress.Response<string>) => {
+    expect(resp.status).to.equal(200);
+    const actual: string = String(resp.body).trim();
+    expect(actual, 'running backend (webapp-id.txt)').to.be.oneOf(options);
+  });
+});
 
 function awaitLoadingSpinner(): void {
   cy.get('[data-cy-loading-spinner]', { timeout: 10000 }).should('not.exist');
