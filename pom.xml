@@ -75,9 +75,14 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <!-- property [ladybug.rootdir] is available to get the root of the project, because of the
     [directory-maven-plugin] -->
+    <!-- Not used by the compiler: maven-compiler-plugin below sets <release> explicitly, which
+    takes precedence. This line is read by the proprietary Jenkins server of the maintainers to
+    select the JDK it builds with. JDK 21 is needed because ladybug-ff-test-webapp depends on the
+    Frank!Framework, which is Java 21 bytecode. -->
     <maven.compiler.release>21</maven.compiler.release>
-    <maven.compiler.target>17</maven.compiler.target>
-    <maven.compiler.source>17</maven.compiler.source>
+    <!-- The Java version the code is compiled for. Production code should run on Java 17. Modules
+    that only need to run with Java 21 or later can override this. -->
+    <ladybug.java.release>17</ladybug.java.release>
     <lombok.version>1.18.48</lombok.version>
 
     <spring.version>6.2.19</spring.version>
@@ -399,8 +404,7 @@
           <artifactId>maven-compiler-plugin</artifactId>
           <version>3.15.0</version>
           <configuration>
-            <source>${maven.compiler.source}</source>
-            <target>${maven.compiler.target}</target>
+            <release>${ladybug.java.release}</release>
             <annotationProcessorPaths>
               <path>
                 <groupId>org.projectlombok</groupId>

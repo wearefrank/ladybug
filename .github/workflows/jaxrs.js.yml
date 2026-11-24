@@ -183,7 +183,7 @@ jobs:
       - name: Build ladybug-otel-test-companion, which the specs run to send traces
         if: matrix.name == 'openTelemetry'
         working-directory: ladybug
-        run: mvn -B -pl ladybug-otel-test-companion -am package -DskipTests -Dmaven.javadoc.skip=true -Dmaven.skip.copyright=true
+        run: mvn -B -pl ladybug-otel-test-companion -am clean package -DskipTests -Dmaven.javadoc.skip=true -Dmaven.skip.copyright=true
       - name: Run cypress with chrome browser
         uses: cypress-io/github-action@v7.4.3
         with:
