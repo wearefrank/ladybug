@@ -4,7 +4,7 @@
 
   <parent>
     <groupId>org.wearefrank</groupId>
-    <artifactId>ladybug-parent</artifactId>
+    <artifactId>ladybug-spring-boot-test-webapp</artifactId>
     <version>${revision}</version>
   </parent>
 
@@ -25,16 +25,4 @@
       <type>pom</type>
     </dependency>
   </dependencies>
-
-  <build>
-    <plugins>
-      <plugin>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-maven-plugin</artifactId>
-        <configuration>
-          <mainClass>org.wearefrank.ladybug.test.webapp.springmvc.LadybugSpringBootApplication</mainClass>
-        </configuration>
-      </plugin>
-    </plugins>
-  </build>
 </project>
