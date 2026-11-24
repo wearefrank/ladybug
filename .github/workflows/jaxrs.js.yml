@@ -126,6 +126,9 @@ jobs:
       - name: Choose Spring profile for backend if it is not "none"
         run: echo "spring.profiles.active=${{ matrix.spring-profile }}" >> frank-runner/specials/ladybug/build.properties
         if: ${{ matrix.spring-profile != 'none' }}
+      - name: Run ladybug-test-webapp-otel instead of ladybug-test-webapp
+        run: echo "test.with=ladybug-test-webapp-otel" >> frank-runner/specials/ladybug/build.properties
+        if: ${{ matrix.name == 'openTelemetry' }}
       - name: Set port where ladybug-test-webapp is served
         run: echo "tomcat.connector.port=8090" > frank-runner/build.properties
       - name: Prevent Java exception about binding port 443 (for https)
