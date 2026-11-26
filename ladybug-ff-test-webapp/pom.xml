@@ -15,6 +15,8 @@
 
   <properties>
     <ff.version>10.3.0</ff.version>
+    <!-- The Frank!Framework is Java 21 bytecode, so this webapp needs Java 21 anyway -->
+    <ladybug.java.release>21</ladybug.java.release>
   </properties>
 
   <dependencyManagement>

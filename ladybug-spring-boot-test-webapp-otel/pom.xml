@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>org.wearefrank</groupId>
+    <artifactId>ladybug-parent</artifactId>
+    <version>${revision}</version>
+  </parent>
+
+  <artifactId>ladybug-spring-boot-test-webapp-otel</artifactId>
+
+  <name>Ladybug test webapp otel (springmvc)</name>
+  <description>Ladybug test webapp that includes optional OpenTelemetry dependencies (springmvc)</description>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.wearefrank</groupId>
+      <artifactId>ladybug-spring-boot-test-webapp</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.wearefrank</groupId>
+      <artifactId>ladybug-otel-deps</artifactId>
+      <version>${revision}</version>
+      <type>pom</type>
+    </dependency>
+    <!-- The root dependencyManagement gives the following dependencies scope test or provided.
+         Managed scopes also apply to transitive dependencies, so the compile scope declared in
+         ladybug-spring-boot-test-webapp is lost here. Redeclare them to restore it. -->
+    <dependency>
+      <groupId>ch.qos.logback</groupId>
+      <artifactId>logback-classic</artifactId>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>ch.qos.logback</groupId>
+      <artifactId>logback-core</artifactId>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>jakarta.servlet</groupId>
+      <artifactId>jakarta.servlet-api</artifactId>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>jakarta.enterprise</groupId>
+      <artifactId>jakarta.enterprise.cdi-api</artifactId>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>jakarta.transaction</groupId>
+      <artifactId>jakarta.transaction-api</artifactId>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-dbcp2</artifactId>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.liquibase</groupId>
+      <artifactId>liquibase-core</artifactId>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.h2database</groupId>
+      <artifactId>h2</artifactId>
+      <scope>compile</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-maven-plugin</artifactId>
+        <configuration>
+          <mainClass>org.wearefrank.ladybug.test.webapp.springmvc.LadybugSpringBootApplication</mainClass>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+</project>

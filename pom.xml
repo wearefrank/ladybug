@@ -57,7 +57,11 @@
     <module>ladybug-test-webapp-common</module>
     <module>ladybug-test-webapp</module>
     <module>ladybug-spring-boot-test-webapp</module>
+    <module>ladybug-otel-test-companion</module>
     <module>ladybug-ff-test-webapp</module>
+    <module>ladybug-otel-deps</module>
+    <module>ladybug-test-webapp-otel</module>
+    <module>ladybug-spring-boot-test-webapp-otel</module>
   </modules>
   <scm>
     <connection>scm:git:https://github.com/wearefrank/ladybug.git</connection>
@@ -71,9 +75,14 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <!-- property [ladybug.rootdir] is available to get the root of the project, because of the
     [directory-maven-plugin] -->
+    <!-- Not used by the compiler: maven-compiler-plugin below sets <release> explicitly, which
+    takes precedence. This line is read by the proprietary Jenkins server of the maintainers to
+    select the JDK it builds with. JDK 21 is needed because ladybug-ff-test-webapp depends on the
+    Frank!Framework, which is Java 21 bytecode. -->
     <maven.compiler.release>21</maven.compiler.release>
-    <maven.compiler.target>17</maven.compiler.target>
-    <maven.compiler.source>17</maven.compiler.source>
+    <!-- The Java version the code is compiled for. Production code should run on Java 17. Modules
+    that only need to run with Java 21 or later can override this. -->
+    <ladybug.java.release>17</ladybug.java.release>
     <lombok.version>1.18.48</lombok.version>
 
     <spring.version>6.2.19</spring.version>
@@ -132,9 +141,14 @@
         <scope>import</scope>
       </dependency>
       <dependency>
-        <groupId>org.wearefrank</groupId>
-        <artifactId>ladybug-test-webapp</artifactId>
-        <version>${revision}</version>
+        <groupId>io.opentelemetry.semconv</groupId>
+        <artifactId>opentelemetry-semconv</artifactId>
+        <version>1.45.0</version>
+      </dependency>
+      <dependency>
+        <groupId>io.opentelemetry.proto</groupId>
+        <artifactId>opentelemetry-proto</artifactId>
+        <version>1.11.1-alpha</version>
       </dependency>
       <dependency>
         <groupId>org.wearefrank</groupId>
@@ -164,6 +178,17 @@
       <dependency>
         <groupId>org.wearefrank</groupId>
         <artifactId>ladybug-test-webapp-common</artifactId>
+        <version>${revision}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.wearefrank</groupId>
+        <artifactId>ladybug-test-webapp</artifactId>
+        <version>${revision}</version>
+        <type>war</type>
+      </dependency>
+      <dependency>
+        <groupId>org.wearefrank</groupId>
+        <artifactId>ladybug-spring-boot-test-webapp</artifactId>
         <version>${revision}</version>
       </dependency>
 
@@ -227,11 +252,6 @@
         <version>2.7.3</version>
       </dependency>
       <dependency>
-        <groupId>io.opentelemetry.proto</groupId>
-        <artifactId>opentelemetry-proto</artifactId>
-        <version>1.11.1-alpha</version>
-      </dependency>
-      <dependency>
         <groupId>commons-codec</groupId>
         <artifactId>commons-codec</artifactId>
         <version>1.17.0</version>
@@ -245,6 +265,11 @@
         <groupId>com.google.protobuf</groupId>
         <artifactId>protobuf-java-util</artifactId>
         <version>4.36.2</version>
+      </dependency>
+      <dependency>
+        <groupId>com.google.code.gson</groupId>
+        <artifactId>gson</artifactId>
+        <version>2.8.9</version>
       </dependency>
       <dependency>
         <groupId>org.glassfish.web</groupId>
@@ -307,13 +332,6 @@
         <groupId>javax.json.bind</groupId>
         <artifactId>javax.json.bind-api</artifactId>
         <version>1.0</version>
-        <scope>provided</scope>
-      </dependency>
-      <!-- Scope provided for now for OpenTelemetry dependencies other then opentelemetry-api (keep transitive dependencies caused by Ladybug to a minimum) -->
-      <dependency>
-        <groupId>io.opentelemetry.semconv</groupId>
-        <artifactId>opentelemetry-semconv</artifactId>
-        <version>1.45.0</version>
         <scope>provided</scope>
       </dependency>
       <dependency>
@@ -386,8 +404,7 @@
           <artifactId>maven-compiler-plugin</artifactId>
           <version>3.15.0</version>
           <configuration>
-            <source>${maven.compiler.source}</source>
-            <target>${maven.compiler.target}</target>
+            <release>${ladybug.java.release}</release>
             <annotationProcessorPaths>
               <path>
                 <groupId>org.projectlombok</groupId>
