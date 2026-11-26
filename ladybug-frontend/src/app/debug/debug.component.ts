@@ -10,6 +10,7 @@ import { MetadataFilter, TabService } from '../shared/services/tab.service';
 import { FilterService } from '../shared/services/filter.service';
 import { DebugTableWithControlsComponent } from './debug-table-with-controls/debug-table-with-controls.component';
 import { DebugTreeStateService } from './debug-tree-state.service';
+import { DebugTreeStateService2 } from './debug-tree-state2.service';
 
 @Component({
   selector: 'app-debug',
@@ -18,7 +19,7 @@ import { DebugTreeStateService } from './debug-tree-state.service';
   standalone: true,
   imports: [DebugTableWithControlsComponent, DebugReportComponent],
   // Shared by the debug table and the debug report, one instance per debug tab.
-  providers: [DebugTreeStateService],
+  providers: [DebugTreeStateService, DebugTreeStateService2],
 })
 export class DebugComponent implements OnInit {
   currentView?: View;
