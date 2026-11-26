@@ -41,6 +41,9 @@ jobs:
     - name: Build with Maven
       run: mvn -B package
 
+    - name: Check that everything is built with the right JDK
+      # JDK 17, see https://stackoverflow.com/questions/1096148/how-to-check-the-jdk-version-used-to-compile-a-class-file
+      run: .github/workflows/checkClassVersion.sh 61 ladybug-common ladybug-backend-jaxrs ladybug-backend-springmvc ladybug-frontend-servlet
     # The results are reported with the wrong job name. See issue of this GitHub Action:
     # https://github.com/ScaCap/action-surefire-report/issues/39
     # - name: Publish Test Report

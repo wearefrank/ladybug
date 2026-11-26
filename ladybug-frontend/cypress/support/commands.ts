@@ -110,6 +110,8 @@ declare global {
 
       createOpenTelemetryReport(): Chainable;
 
+      runOtelTestCompanion(protocol: 'http/json' | 'http/protobuf'): Chainable;
+
       clearDebugStore(): Chainable;
 
       clearReportsInProgress(): Chainable;
@@ -195,6 +197,8 @@ declare global {
       checkNoApplication(rowIndex: number): Chainable;
 
       openReportByClickInDebugTable(reportIndex: number): Chainable;
+
+      checkRunningBackendOneOf(options: string[]): Chainable;
     }
   }
 }
@@ -407,6 +411,17 @@ Cypress.Commands.add('createOpenTelemetryReport' as keyof Chainable, (): void =>
   ).then((resp: Cypress.Response<ApiResponse>) => {
     expect(resp.status).equal(200);
   });
+})
+
+// Requires ladybug-otel-test-companion to be built. It sends the whole trace in a single request
+// and exits with a non-zero exit code when Ladybug does not accept the trace. The trace is sent to
+// the backend configured by exposed Cypress variable backendServer.
+Cypress.Commands.add('runOtelTestCompanion' as keyof Chainable, (protocol: 'http/json' | 'http/protobuf'): void => {
+  cy.task(
+    'runOtelTestCompanion',
+    { endpoint: `${Cypress.expose('backendServer')}/ladybug/api/v1/traces`, protocol },
+    { timeout: 120_000 },
+  );
 })
 
 Cypress.Commands.add('clearDebugStore' as keyof Chainable, (): void => {
@@ -766,6 +781,16 @@ Cypress.Commands.add('openReportByClickInDebugTable', (reportIndex: number) => {
   // hitting the checkbox by taking <td> index 1 instead of 0.
   cy.getDebugTableRows().eq(reportIndex).find('td').eq(1).click();
 })
+
+Cypress.Commands.add('checkRunningBackendOneOf', (options: string[]) => {
+  cy.request(
+    `${Cypress.expose('backendServer')}/webapp-id.txt`,
+  ).then((resp: Cypress.Response<string>) => {
+    expect(resp.status).to.equal(200);
+    const actual: string = String(resp.body).trim();
+    expect(actual, 'running backend (webapp-id.txt)').to.be.oneOf(options);
+  });
+});
 
 function awaitLoadingSpinner(): void {
   cy.get('[data-cy-loading-spinner]', { timeout: 10000 }).should('not.exist');

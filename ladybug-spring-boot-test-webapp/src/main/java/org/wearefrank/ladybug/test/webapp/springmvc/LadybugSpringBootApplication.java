@@ -86,7 +86,9 @@ public class LadybugSpringBootApplication {
 	@Bean
 	ServletRegistrationBean<RootRedirectingServlet> rootRedirectingServletBean() {
 		ServletRegistrationBean<RootRedirectingServlet> bean = new ServletRegistrationBean<>(
-				new RootRedirectingServlet(), "/");
+				// "" matches only the context root. "/" would make this the default servlet, redirecting every
+				// request not matched by another servlet (including static resources) to index.jsp.
+				new RootRedirectingServlet(), "");
 		bean.setLoadOnStartup(1);
 		return bean;
 	}

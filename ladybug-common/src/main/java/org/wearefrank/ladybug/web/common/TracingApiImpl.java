@@ -15,6 +15,10 @@
 */
 package org.wearefrank.ladybug.web.common;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParseException;
+import com.google.gson.JsonParser;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.util.JsonFormat;
@@ -28,16 +32,20 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.wearefrank.ladybug.TestTool;
+import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
 
 import java.lang.invoke.MethodHandles;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 
 @Component
 public class TracingApiImpl {
 	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+
 
 	@Autowired
 	private @Setter TestTool testTool;
@@ -83,13 +91,62 @@ public class TracingApiImpl {
 		if (contentType != null && contentType.startsWith("application/x-protobuf")) {
 			request = ExportTraceServiceRequest.parseFrom(data);
 		} else if (contentType != null && contentType.startsWith("application/json")) {
-			String json = new String(data);
 			ExportTraceServiceRequest.Builder builder = ExportTraceServiceRequest.newBuilder();
-			JsonFormat.parser().merge(json, builder);
+			// OTLP/JSON receivers must ignore unknown fields, so that senders can use a newer version of the protocol
+			JsonFormat.parser().ignoringUnknownFields().merge(otlpJsonToProtobufJson(data), builder);
 			request = builder.build();
 		}
 
 		return request.getResourceSpansList();
+	}
+
+	/**
+	 * OTLP/JSON deviates from the standard Protobuf JSON mapping by hex encoding trace and span ids instead of base64
+	 * encoding them, see https://opentelemetry.io/docs/specs/otlp/#json-protobuf-encoding. Convert the ids of the spans
+	 * and their links to base64, so that the result can be parsed with {@link JsonFormat}.
+	 */
+	private String otlpJsonToProtobufJson(byte[] data) throws InvalidProtocolBufferException {
+		try {
+			JsonElement json = JsonParser.parseString(new String(data, StandardCharsets.UTF_8));
+			if (json.isJsonObject()) {
+				for (JsonObject resourceSpans : objectsInArray(json.getAsJsonObject(), "resourceSpans")) {
+					for (JsonObject scopeSpans : objectsInArray(resourceSpans, "scopeSpans")) {
+						for (JsonObject span : objectsInArray(scopeSpans, "spans")) {
+							hexToBase64(span, "traceId", "spanId", "parentSpanId");
+							for (JsonObject link : objectsInArray(span, "links")) {
+								hexToBase64(link, "traceId", "spanId");
+							}
+						}
+					}
+				}
+			}
+			return json.toString();
+		} catch (JsonParseException | DecoderException e) {
+			throw new InvalidProtocolBufferException("Invalid OTLP/JSON: " + e.getMessage());
+		}
+	}
+
+	private List<JsonObject> objectsInArray(JsonObject parent, String arrayName) {
+		List<JsonObject> result = new ArrayList<>();
+		JsonElement array = parent.get(arrayName);
+		if (array != null && array.isJsonArray()) {
+			for (JsonElement element : array.getAsJsonArray()) {
+				if (element.isJsonObject()) {
+					result.add(element.getAsJsonObject());
+				}
+			}
+		}
+		return result;
+	}
+
+	private void hexToBase64(JsonObject object, String... fieldNames) throws DecoderException {
+		for (String fieldName : fieldNames) {
+			JsonElement value = object.get(fieldName);
+			if (value != null && value.isJsonPrimitive()) {
+				byte[] id = Hex.decodeHex(value.getAsString());
+				object.addProperty(fieldName, Base64.getEncoder().encodeToString(id));
+			}
+		}
 	}
 
 	public String byteStringToHex(ByteString byteString) {

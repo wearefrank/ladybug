@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>org.wearefrank</groupId>
+    <artifactId>ladybug-parent</artifactId>
+    <version>${revision}</version>
+  </parent>
+
+  <artifactId>ladybug-test-webapp-otel</artifactId>
+  <packaging>war</packaging>
+
+  <name>Ladybug test webapp otel (jaxrs)</name>
+  <description>Ladybug test webapp that includes optional OpenTelemetry dependencies (jaxrs)</description>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.wearefrank</groupId>
+      <artifactId>ladybug-test-webapp</artifactId>
+      <type>war</type>
+    </dependency>
+    <dependency>
+      <groupId>org.wearefrank</groupId>
+      <artifactId>ladybug-otel-deps</artifactId>
+      <version>${revision}</version>
+      <type>pom</type>
+    </dependency>
+  </dependencies>
+</project>

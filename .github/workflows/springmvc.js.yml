@@ -107,21 +107,35 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
-      - name: Build ladybug-spring-boot-test-webapp and the modules it depends on
+      - name: Build ladybug-spring-boot-test-webapp, ladybug-spring-boot-test-webapp-otel and the modules they depend on
         working-directory: ladybug
-        run: mvn -B -pl ladybug-spring-boot-test-webapp -am install -DskipTests -Dmaven.javadoc.skip=true -Dmaven.skip.copyright=true
+        run: mvn -B -pl ladybug-spring-boot-test-webapp,ladybug-spring-boot-test-webapp-otel -am install -DskipTests -Dmaven.javadoc.skip=true -Dmaven.skip.copyright=true
+
+      - name: Build ladybug-otel-test-companion, which the specs run to send traces
+        if: matrix.name == 'openTelemetry'
+        working-directory: ladybug
+        run: mvn -B -pl ladybug-otel-test-companion package -DskipTests -Dmaven.javadoc.skip=true -Dmaven.skip.copyright=true
 
       - name: Show current time, allows you to check that logs are not old
         run: date
 
+      - name: Directory of test webapp
+        id: test-webapp-dir
+        shell: bash
+        run: |
+          if [[ "${{ matrix.name }}" == "openTelemetry" ]]; then
+            echo "dir=ladybug/ladybug-spring-boot-test-webapp-otel" >> "$GITHUB_OUTPUT"
+          else
+            echo "dir=ladybug/ladybug-spring-boot-test-webapp" >> "$GITHUB_OUTPUT"
+          fi
       - name: Start ladybug-spring-boot-test-webapp (default spring profile and uiTestMode)
         if: matrix.spring-profile == 'none' && matrix.uiTestMode == 'DEFAULT'
-        working-directory: ladybug/ladybug-spring-boot-test-webapp
+        working-directory: ${{ steps.test-webapp-dir.outputs.dir }}
         run: mvn -B spring-boot:run -Dspring-boot.run.arguments="--server.port=8090" > serverStartLog.log 2>&1 &
 
       - name: Start ladybug-spring-boot-test-webapp (non-default spring profile or uiTestMode)
         if: matrix.spring-profile != 'none' || matrix.uiTestMode != 'DEFAULT'
-        working-directory: ladybug/ladybug-spring-boot-test-webapp
+        working-directory: ${{ steps.test-webapp-dir.outputs.dir }}
         run: mvn -B spring-boot:run -Dspring-boot.run.arguments="--server.port=8090 --spring.profiles.active=${{ matrix.spring-profile }}" -Dspring-boot.run.jvmArguments="-Dladybug.ui.test.mode=${{ matrix.uiTestMode }}" > serverStartLog.log 2>&1 &
 
       - name: Wait for server to be available
@@ -143,7 +157,7 @@ jobs:
 
       - name: Show which users were actually authenticated, as logged in ladybug.log
         if: always() && matrix.observerUsername != ''
-        run: bash ladybug/.github/workflows/show-authenticated-users.sh ladybug/ladybug-spring-boot-test-webapp/data/ladybug.log
+        run: bash ladybug/.github/workflows/show-authenticated-users.sh ${{ steps.test-webapp-dir.outputs.dir }}/data/ladybug.log
 
       - name: Show files
         run: tree -d -L 5 .
@@ -155,8 +169,8 @@ jobs:
           bash ladybug/.github/workflows/collect-artifact-data.sh artifact-data \
             "ladybug/ladybug-frontend/cypress/screenshots" \
             "ladybug/ladybug-frontend/cypress/videos" \
-            "ladybug/ladybug-spring-boot-test-webapp/data/ladybug.log" \
-            "ladybug/ladybug-spring-boot-test-webapp/serverStartLog.log" \
+            "${{ steps.test-webapp-dir.outputs.dir }}/data/ladybug.log" \
+            "${{ steps.test-webapp-dir.outputs.dir }}/serverStartLog.log" \
             "ladybug/ladybug-frontend/cypress.env.json"
 
       - name: Store logs

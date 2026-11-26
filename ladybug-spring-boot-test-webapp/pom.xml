@@ -51,8 +51,6 @@
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-web</artifactId>
     </dependency>
-    <!-- The root pom pins logback to scope=test; override back to compile so Spring Boot uses
-         Logback at runtime here instead of falling back to java.util.logging. -->
     <dependency>
       <groupId>ch.qos.logback</groupId>
       <artifactId>logback-classic</artifactId>
