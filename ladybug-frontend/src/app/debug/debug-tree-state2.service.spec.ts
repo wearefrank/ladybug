@@ -87,34 +87,6 @@ describe('DebugTreeStateService2', () => {
     return TestBed.inject(DebugTreeStateService2);
   }
 
-  describe('before a view is chosen', () => {
-    beforeEach(() => {
-      service = createService();
-      commands = [];
-      service.treeCommand$.subscribe((c) => commands.push(c));
-    });
-
-    it('closes the tree when the first view is chosen', () => {
-      service.changeView(whiteBox);
-      expect(shownNamesOf(commands)).toEqual(['close']);
-      expect(service.openedStorageId).toBeNull();
-    });
-
-    it('refuses to open a stored report', () => {
-      expect(() => service.openStoredReport(2)).toThrowError();
-      expect(http.requests.length).toBe(0);
-    });
-
-    it('refuses to open a report in progress', () => {
-      expect(() => service.openReportInProgress(1)).toThrowError();
-      expect(http.requests.length).toBe(0);
-    });
-
-    it('refuses to close a report', () => {
-      expect(() => service.closeReport()).toThrowError();
-    });
-  });
-
   describe('with a view', () => {
     beforeEach(() => {
       service = createService();
@@ -348,6 +320,199 @@ describe('DebugTreeStateService2', () => {
       respond(http, 'inProgress/1', 'in progress');
       respond(http, 'Debug/2/White box', 'r2 white');
       expect(shownNamesOf(commands)).toEqual(['new r2 white']);
+      expect(service.openedStorageId).toBe(2);
+    });
+
+    it('when all reports deleted then debug tree report closed', () => {
+      service.openStoredReport(2);
+      respond(http, 'Debug/2/White box', 'r2 white');
+      expect(shownNamesOf(commands)).toEqual(['new r2 white']);
+      expect(service.openedStorageId).toBe(2);
+      service.allReportsDeleted();
+      expect(shownNamesOf(commands)).toEqual(['new r2 white', 'close']);
+      expect(service.openedStorageId).toBeNull();
+    });
+
+    it('when the open report is deleted then debug tree report closed', () => {
+      service.openStoredReport(2);
+      respond(http, 'Debug/2/White box', 'r2 white');
+      expect(shownNamesOf(commands)).toEqual(['new r2 white']);
+      expect(service.openedStorageId).toBe(2);
+      service.reportsDeleted([2, 3]);
+      expect(shownNamesOf(commands)).toEqual(['new r2 white', 'close']);
+      expect(service.openedStorageId).toBeNull();
+    });
+
+    it('when the open report is deleted as second index then debug tree report closed', () => {
+      service.openStoredReport(2);
+      respond(http, 'Debug/2/White box', 'r2 white');
+      expect(shownNamesOf(commands)).toEqual(['new r2 white']);
+      expect(service.openedStorageId).toBe(2);
+      service.reportsDeleted([3, 2]);
+      expect(shownNamesOf(commands)).toEqual(['new r2 white', 'close']);
+      expect(service.openedStorageId).toBeNull();
+    });
+
+    it('when a report is deleted that is not open in the debug tree then debug tree not affected', () => {
+      service.openStoredReport(2);
+      respond(http, 'Debug/2/White box', 'r2 white');
+      expect(shownNamesOf(commands)).toEqual(['new r2 white']);
+      expect(service.openedStorageId).toBe(2);
+      service.reportsDeleted([4, 5]);
+      expect(shownNamesOf(commands)).toEqual(['new r2 white']);
+      expect(service.openedStorageId).toBe(2);
+    });
+
+    it('when a report is deleted that has a storage id that equals the index of a report in progress, then not confused', () => {
+      service.openReportInProgress(1);
+      respond(http, 'inProgress/1', 'first');
+      expect(shownNamesOf(commands)).toEqual(['new first']);
+      service.openStoredReport(2);
+      respond(http, 'Debug/2/White box', 'r2 white');
+      expect(shownNamesOf(commands)).toEqual(['new first', 'new r2 white']);
+      expect(service.openedStorageId).toBe(2);
+      service.reportsDeleted([1]);
+      expect(shownNamesOf(commands)).toEqual(['new first', 'new r2 white']);
+      expect(service.openedStorageId).toBe(2);
+    });
+
+    it('when a report in progress is open and a stored report with its index as storage id is deleted, then not closed', () => {
+      service.openReportInProgress(1);
+      respond(http, 'inProgress/1', 'in progress');
+      expect(shownNamesOf(commands)).toEqual(['new in progress']);
+      service.reportsDeleted([1]);
+      expect(shownNamesOf(commands)).toEqual(['new in progress']);
+      expect(service.openedStorageId).toBeNull();
+    });
+
+    it('when a report in progress is open and all stored reports are deleted, then not closed', () => {
+      service.openReportInProgress(1);
+      respond(http, 'inProgress/1', 'in progress');
+      expect(shownNamesOf(commands)).toEqual(['new in progress']);
+      service.allReportsDeleted();
+      expect(shownNamesOf(commands)).toEqual(['new in progress']);
+      expect(service.openedStorageId).toBeNull();
+    });
+
+    it('when the report being fetched is deleted, then closed and the late response ignored', () => {
+      service.openStoredReport(2);
+      expect(service.openedStorageId).toBe(2);
+      service.reportsDeleted([2]);
+      expect(shownNamesOf(commands)).toEqual(['close']);
+      expect(service.openedStorageId).toBeNull();
+      respond(http, 'Debug/2/White box', 'r2 white');
+      expect(shownNamesOf(commands)).toEqual(['close']);
+      expect(service.openedStorageId).toBeNull();
+    });
+
+    it('when all reports are deleted while a report is fetched, then closed and the late response ignored', () => {
+      service.openStoredReport(2);
+      expect(service.openedStorageId).toBe(2);
+      service.allReportsDeleted();
+      expect(shownNamesOf(commands)).toEqual(['close']);
+      expect(service.openedStorageId).toBeNull();
+      respond(http, 'Debug/2/White box', 'r2 white');
+      expect(shownNamesOf(commands)).toEqual(['close']);
+      expect(service.openedStorageId).toBeNull();
+    });
+
+    it('when the shown report is saved, then it is reloaded as an update', () => {
+      service.openStoredReport(2);
+      respond(http, 'Debug/2/White box', 'r2 white');
+      service.saved();
+      expect(http.requests.length).toBe(2);
+      expect(service.openedStorageId).toBe(2);
+      respond(http, 'Debug/2/White box', 'r2 saved');
+      expect(shownNamesOf(commands)).toEqual(['new r2 white', 'update r2 saved']);
+      expect(service.openedStorageId).toBe(2);
+    });
+
+    it('when the shown report is saved after another report was clicked, then the shown report is reloaded', () => {
+      service.openStoredReport(2);
+      respond(http, 'Debug/2/White box', 'r2 white');
+      service.openStoredReport(3);
+      expect(service.openedStorageId).toBe(3);
+      service.saved();
+      expect(service.openedStorageId).toBe(2);
+      respond(http, 'Debug/3/White box', 'r3 white');
+      respond(http, 'Debug/2/White box', 'r2 saved');
+      expect(shownNamesOf(commands)).toEqual(['new r2 white', 'update r2 saved']);
+      expect(service.openedStorageId).toBe(2);
+    });
+
+    it('when the shown report is saved after a report in progress was clicked, then the shown report is reloaded', () => {
+      service.openStoredReport(2);
+      respond(http, 'Debug/2/White box', 'r2 white');
+      service.openReportInProgress(1);
+      expect(service.openedStorageId).toBeNull();
+      service.saved();
+      expect(service.openedStorageId).toBe(2);
+      respond(http, 'inProgress/1', 'in progress');
+      respond(http, 'Debug/2/White box', 'r2 saved');
+      expect(shownNamesOf(commands)).toEqual(['new r2 white', 'update r2 saved']);
+      expect(service.openedStorageId).toBe(2);
+    });
+
+    it('when the shown report is saved after the view changed within the storage, then it is reloaded with the new view', () => {
+      service.openStoredReport(2);
+      respond(http, 'Debug/2/White box', 'r2 white');
+      service.changeView(blackBox);
+      service.saved();
+      respond(http, 'Debug/2/Black box', 'r2 saved');
+      expect(shownNamesOf(commands)).toEqual(['new r2 white', 'update r2 saved']);
+      expect(service.openedStorageId).toBe(2);
+    });
+
+    it('when a report in progress is saved, then an error is shown and thrown and the tree is closed', () => {
+      service.openReportInProgress(1);
+      respond(http, 'inProgress/1', 'in progress');
+      expect(() => service.saved()).toThrowError();
+      expect(toast.showDanger).toHaveBeenCalledTimes(1);
+      expect(http.requests.length).toBe(1);
+      expect(shownNamesOf(commands)).toEqual(['new in progress', 'close']);
+    });
+
+    it('when saved while nothing is shown, then an error is thrown and nothing is fetched', () => {
+      expect(() => service.saved()).toThrowError();
+      service.openStoredReport(2);
+      respond(http, 'Debug/2/White box', 'r2 white');
+      service.closeReport();
+      expect(() => service.saved()).toThrowError();
+      expect(http.requests.length).toBe(1);
+      expect(shownNamesOf(commands)).toEqual(['new r2 white', 'close']);
+    });
+
+    // The only flow in which the tree shows a stored report from another storage than the view's:
+    // changeView() keeps a report in progress that is still being fetched, so the stored report
+    // that was shown before stays in the tree until the report in progress arrives.
+    it('when a stored report is saved while the view shows another storage, then it is not reloaded but closed with a warning', () => {
+      service.openStoredReport(2);
+      respond(http, 'Debug/2/White box', 'r2 white');
+      service.openReportInProgress(1);
+      service.changeView(fileStorage);
+      const httpRequestsBeforeSaved: string[] = http.requests.map((r) => r.description);
+      expect(shownNamesOf(commands)).toEqual(['new r2 white']);
+      service.saved();
+      expect(toast.showWarning).toHaveBeenCalledTimes(1);
+      expect(toast.showWarning.calls.mostRecent().args[0]).toContain('[Debug]');
+      expect(toast.showWarning.calls.mostRecent().args[0]).toContain('[fileStorage]');
+      expect(http.requests.map((r) => r.description)).toEqual(httpRequestsBeforeSaved);
+      expect(shownNamesOf(commands)).toEqual(['new r2 white', 'close']);
+      expect(service.openedStorageId).toBeNull();
+      respond(http, 'inProgress/1', 'in progress');
+      expect(shownNamesOf(commands)).toEqual(['new r2 white', 'close']);
+    });
+
+    it('when a stored report is saved after the view went to another storage and back, then it is reloaded', () => {
+      service.openStoredReport(2);
+      respond(http, 'Debug/2/White box', 'r2 white');
+      service.openReportInProgress(1);
+      service.changeView(fileStorage);
+      service.changeView(whiteBox);
+      service.saved();
+      expect(toast.showWarning).not.toHaveBeenCalled();
+      respond(http, 'Debug/2/White box', 'r2 saved');
+      expect(shownNamesOf(commands)).toEqual(['new r2 white', 'update r2 saved']);
       expect(service.openedStorageId).toBe(2);
     });
 

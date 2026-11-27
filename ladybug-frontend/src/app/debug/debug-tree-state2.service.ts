@@ -95,12 +95,48 @@ export class DebugTreeStateService2 implements OnDestroy {
     this.treeTargetSubject.next(this.desired);
   }
 
+  reportsDeleted(storageIds: number[]): void {
+    if (
+      this.desired !== null &&
+      this.desired.treeItem.kind === 'stored' &&
+      storageIds.includes(this.desired.treeItem.storageId)
+    ) {
+      this.closeReport();
+    }
+  }
+
+  allReportsDeleted(): void {
+    if (this.desired?.treeItem.kind === 'stored') {
+      this.closeReport();
+    }
+  }
+
   closeReport(): void {
     if (this.desired === null) {
       throw new Error('Cannot close report - a report could not have been opened without a view');
     }
     this.desired = { view: this.desired.view, treeItem: { kind: 'closed' } };
     this.treeTargetSubject.next(this.desired);
+  }
+
+  saved(): void {
+    if (this.shown === null || this.shown.treeItem.kind === 'closed') {
+      throw new Error('Cannot happen - nothing was shown but that nothing was saved');
+    }
+    if (this.shown !== null && this.shown.treeItem.kind === 'stored') {
+      if (this.shown.view.storageName === this.desired?.view.storageName) {
+        this.openStoredReport(this.shown.treeItem.storageId);
+      } else {
+        this.toastService.showWarning(
+          `Cannot show saved report [${this.shown.treeItem.storageId}] in storage [${this.shown.view.storageName}] because the view shows storage [${this.desired?.view.storageName}]`,
+        );
+        this.closeReport();
+      }
+    } else {
+      this.toastService.showDanger('Programming error - a report-in-progress cannot be saved');
+      this.closeReport();
+      throw new Error('Saving a report-in-progress should not happen');
+    }
   }
 
   private render(newTreeTarget: TreeTarget): Observable<TreeCommand> {
