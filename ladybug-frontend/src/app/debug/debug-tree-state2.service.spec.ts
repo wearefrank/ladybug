@@ -555,16 +555,17 @@ describe('DebugTreeStateService2', () => {
       expect(other).toEqual(commands);
     });
 
-    it('keeps history of report updates for when subscriber subscribes late', () => {
+    it('keeps last command of report updates for when subscriber subscribes late', () => {
       const unsubscribed = createServiceWithoutSubscriber();
       unsubscribed.changeView(whiteBox);
       unsubscribed.openStoredReport(2);
       respond(http, 'Debug/2/White box', 'r2 white');
       unsubscribed.openStoredReport(2);
       const late: TreeCommand[] = [];
+      // The last command in the ReplaySubject is 'new r2 white'. Earlier commands are lost.
       unsubscribed.treeCommand$.subscribe((c) => late.push(c));
       respond(http, 'Debug/2/White box', 'r2 again');
-      expect(shownNamesOf(late)).toEqual(['close', 'new r2 white', 'update r2 again']);
+      expect(shownNamesOf(late)).toEqual(['new r2 white', 'update r2 again']);
     });
 
     it('stops fetching and emitting after it is destroyed', () => {

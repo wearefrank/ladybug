@@ -46,7 +46,9 @@ export class DebugTreeStateService2 implements OnDestroy {
   private treeCommandBase$: Observable<TreeCommand> = this.treeTargetSubject.pipe(
     switchMap((target) => this.render(target)),
   );
-  private treeCommandSubject = new ReplaySubject<TreeCommand>();
+  // The argument is the buffer size. We only need the last command.
+  // When it happens to be 'update', then the tree view handles it like 'new'.
+  private treeCommandSubject = new ReplaySubject<TreeCommand>(1);
   treeCommand$ = this.treeCommandSubject.asObservable();
 
   private static _MOMENT_COUNTER = 0;
