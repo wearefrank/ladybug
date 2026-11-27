@@ -9,7 +9,7 @@ import { ActivatedRoute } from '@angular/router';
 import { MetadataFilter, TabService } from '../shared/services/tab.service';
 import { FilterService } from '../shared/services/filter.service';
 import { DebugTableWithControlsComponent } from './debug-table-with-controls/debug-table-with-controls.component';
-import { DebugTreeStateService2 } from './debug-tree-state2.service';
+import { DebugTreeStateService } from './debug-tree-state.service';
 
 @Component({
   selector: 'app-debug',
@@ -18,7 +18,7 @@ import { DebugTreeStateService2 } from './debug-tree-state2.service';
   standalone: true,
   imports: [DebugTableWithControlsComponent, DebugReportComponent],
   // Shared by the debug table and the debug report, one instance per debug tab.
-  providers: [DebugTreeStateService2],
+  providers: [DebugTreeStateService],
 })
 export class DebugComponent implements OnInit {
   currentView?: View;
@@ -30,7 +30,7 @@ export class DebugComponent implements OnInit {
   private tabService = inject(TabService);
   private filterService = inject(FilterService);
   private route = inject(ActivatedRoute);
-  private treeState = inject(DebugTreeStateService2);
+  private treeState = inject(DebugTreeStateService);
 
   ngOnInit(): void {
     const urlFilters: MetadataFilter[] = this.tabService.routeGetFilters(this.route.snapshot);

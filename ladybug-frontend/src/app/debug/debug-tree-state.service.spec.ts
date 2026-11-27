@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { Observable, Subject } from 'rxjs';
-import { DebugTreeStateService2, TreeCommand } from './debug-tree-state2.service';
+import { DebugTreeStateService, TreeCommand } from './debug-tree-state.service';
 import { HttpService } from '../shared/services/http.service';
 import { ToastService } from '../shared/services/toast.service';
 import { View } from '../shared/interfaces/view';
@@ -60,12 +60,12 @@ function fail(http: FakeHttpService, description: string): void {
   http.latest(description).response.error(new Error('failed'));
 }
 
-describe('DebugTreeStateService2', () => {
+describe('DebugTreeStateService', () => {
   const whiteBox = view('White box', 'Debug');
   const blackBox = view('Black box', 'Debug');
   const fileStorage = view('File storage', 'fileStorage');
 
-  let service: DebugTreeStateService2;
+  let service: DebugTreeStateService;
   let http: FakeHttpService;
   let toast: jasmine.SpyObj<ToastService>;
   let commands: TreeCommand[];
@@ -74,17 +74,17 @@ describe('DebugTreeStateService2', () => {
     return commandsStore.map((c) => (c.command === 'close' ? c.command : `${c.command} ${c.report.name}`));
   }
 
-  function createService(): DebugTreeStateService2 {
+  function createService(): DebugTreeStateService {
     http = new FakeHttpService();
     toast = jasmine.createSpyObj<ToastService>('ToastService', ['showWarning', 'showDanger', 'showSuccess']);
     TestBed.configureTestingModule({
       providers: [
-        DebugTreeStateService2,
+        DebugTreeStateService,
         { provide: HttpService, useValue: http },
         { provide: ToastService, useValue: toast },
       ],
     });
-    return TestBed.inject(DebugTreeStateService2);
+    return TestBed.inject(DebugTreeStateService);
   }
 
   describe('with a view', () => {
@@ -578,7 +578,7 @@ describe('DebugTreeStateService2', () => {
     });
   });
 
-  function createServiceWithoutSubscriber(): DebugTreeStateService2 {
+  function createServiceWithoutSubscriber(): DebugTreeStateService {
     TestBed.resetTestingModule();
     return createService();
   }

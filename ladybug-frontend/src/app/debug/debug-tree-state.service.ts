@@ -26,7 +26,7 @@ export type TreeCommand =
 type ReportFetch = { result: 'success'; report: HierarchicalReport } | { result: 'error'; error: unknown };
 
 @Injectable()
-export class DebugTreeStateService2 implements OnDestroy {
+export class DebugTreeStateService implements OnDestroy {
   private httpService = inject(HttpService);
   private toastService = inject(ToastService);
   private shown: TreeTarget | null = null;
@@ -53,8 +53,8 @@ export class DebugTreeStateService2 implements OnDestroy {
 
   private static _MOMENT_COUNTER = 0;
   private static NEXT_MOMENT(): number {
-    DebugTreeStateService2._MOMENT_COUNTER++;
-    return DebugTreeStateService2._MOMENT_COUNTER;
+    DebugTreeStateService._MOMENT_COUNTER++;
+    return DebugTreeStateService._MOMENT_COUNTER;
   }
 
   private subscriptions = new Subscription();
@@ -92,7 +92,7 @@ export class DebugTreeStateService2 implements OnDestroy {
     }
     this.desired = {
       view: this.desired.view,
-      treeItem: { kind: 'in-progress', index, atMoment: DebugTreeStateService2.NEXT_MOMENT() },
+      treeItem: { kind: 'in-progress', index, atMoment: DebugTreeStateService.NEXT_MOMENT() },
     };
     this.treeTargetSubject.next(this.desired);
   }

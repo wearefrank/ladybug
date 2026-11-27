@@ -32,7 +32,7 @@ import { HierarchicalReport } from '../../shared/interfaces/hierarchical-report'
 import { CompareData } from '../../compare/compare-data';
 import { DebugTableGridComponent } from '../debug-table-grid/debug-table-grid.component';
 import { FilterSideDrawerComponent } from '../filter-side-drawer/filter-side-drawer.component';
-import { DebugTreeStateService2 } from '../debug-tree-state2.service';
+import { DebugTreeStateService } from '../debug-tree-state.service';
 
 @Component({
   selector: 'app-debug-table-with-controls',
@@ -85,7 +85,7 @@ export class DebugTableWithControlsComponent implements OnInit, OnDestroy {
   protected appVariablesService = inject(AppVariablesService);
   protected currentUploadFile = '';
 
-  protected treeState = inject(DebugTreeStateService2);
+  protected treeState = inject(DebugTreeStateService);
   private reportsInProgress: Record<string, number> = {};
 
   private httpService = inject(HttpService);
@@ -132,7 +132,7 @@ export class DebugTableWithControlsComponent implements OnInit, OnDestroy {
     this.currentView = view;
     // FilterService already triggers retrieving the records when the view is changed.
     this.update();
-    // The parent passes the view on to DebugTreeStateService2.
+    // The parent passes the view on to DebugTreeStateService.
     this.viewChange.next(view);
   }
 

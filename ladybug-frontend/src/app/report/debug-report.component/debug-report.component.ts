@@ -7,7 +7,7 @@ import { DebugTabService } from '../../debug/debug-tab.service';
 import { HierarchicalReport } from '../../shared/interfaces/hierarchical-report';
 import { DebugTreeComponent } from '../../debug/debug-tree/debug-tree.component';
 import { ReportComponentCallback, ReportSharedStrategy } from '../../shared/classes/report-shared-strategy';
-import { DebugTreeStateService2, TreeCommand } from '../../debug/debug-tree-state2.service';
+import { DebugTreeStateService, TreeCommand } from '../../debug/debug-tree-state.service';
 import { Subscription } from 'rxjs';
 
 const MIN_HEIGHT = 20;
@@ -22,7 +22,7 @@ const MARGIN = 50;
 })
 export class DebugReportComponent implements ReportComponentCallback, OnInit, OnDestroy {
   @ViewChild(SplitComponent) splitter!: SplitComponent;
-  // Static, because DebugTreeStateService2 replays its last tree command on subscribe in ngOnInit.
+  // Static, because DebugTreeStateService replays its last tree command on subscribe in ngOnInit.
   @ViewChild(DebugTreeComponent, { static: true }) debugTreeComponent!: DebugTreeComponent;
 
   protected monacoEditorHeight!: number;
@@ -30,7 +30,7 @@ export class DebugReportComponent implements ReportComponentCallback, OnInit, On
   private router = inject(Router);
   private cdr = inject(ChangeDetectorRef);
   private debugTab = inject(DebugTabService);
-  private treeState = inject(DebugTreeStateService2);
+  private treeState = inject(DebugTreeStateService);
   private treeCommandSubscription?: Subscription;
 
   ngOnInit(): void {
