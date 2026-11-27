@@ -4,7 +4,7 @@ import { DebugTableWithControlsComponent } from './debug-table-with-controls.com
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { View } from '../../shared/interfaces/view';
 import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
-import { DebugTreeStateService } from '../debug-tree-state.service';
+import { DebugTreeStateService2 } from '../debug-tree-state2.service';
 
 describe('DebugTableWithControlsComponent', () => {
   let component: DebugTableWithControlsComponent;
@@ -13,7 +13,7 @@ describe('DebugTableWithControlsComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [DebugTableWithControlsComponent],
-      providers: [provideHttpClient(withInterceptorsFromDi()), provideHttpClientTesting(), DebugTreeStateService],
+      providers: [provideHttpClient(withInterceptorsFromDi()), provideHttpClientTesting(), DebugTreeStateService2],
     }).compileComponents();
   });
 

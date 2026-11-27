@@ -7,8 +7,7 @@ import { DebugTabService } from '../../debug/debug-tab.service';
 import { HierarchicalReport } from '../../shared/interfaces/hierarchical-report';
 import { DebugTreeComponent } from '../../debug/debug-tree/debug-tree.component';
 import { ReportComponentCallback, ReportSharedStrategy } from '../../shared/classes/report-shared-strategy';
-import { DebugTreeStateService, TreeCommand } from '../../debug/debug-tree-state.service';
-import { ToastService } from '../../shared/services/toast.service';
+import { DebugTreeStateService2, TreeCommand } from '../../debug/debug-tree-state2.service';
 import { Subscription } from 'rxjs';
 
 const MIN_HEIGHT = 20;
@@ -23,21 +22,21 @@ const MARGIN = 50;
 })
 export class DebugReportComponent implements ReportComponentCallback, OnInit, OnDestroy {
   @ViewChild(SplitComponent) splitter!: SplitComponent;
-  @ViewChild(DebugTreeComponent) debugTreeComponent!: DebugTreeComponent;
+  // Static, because DebugTreeStateService2 replays its last tree command on subscribe in ngOnInit.
+  @ViewChild(DebugTreeComponent, { static: true }) debugTreeComponent!: DebugTreeComponent;
 
   protected monacoEditorHeight!: number;
   protected sharedStrategy = inject(ReportSharedStrategy);
   private router = inject(Router);
   private cdr = inject(ChangeDetectorRef);
   private debugTab = inject(DebugTabService);
-  private treeState = inject(DebugTreeStateService);
-  private toastService = inject(ToastService);
+  private treeState = inject(DebugTreeStateService2);
   private treeCommandSubscription?: Subscription;
 
   ngOnInit(): void {
     this.sharedStrategy.setCallback(this);
     this.sharedStrategy.listenToHeight();
-    this.treeCommandSubscription = this.treeState.treeCommands$.subscribe((command) => this.onTreeCommand(command));
+    this.treeCommandSubscription = this.treeState.treeCommand$.subscribe((command) => this.onTreeCommand(command));
   }
 
   ngOnDestroy(): void {
@@ -48,7 +47,7 @@ export class DebugReportComponent implements ReportComponentCallback, OnInit, On
   // The user closed the report.
   closeEntireTree(): void {
     this.clearTree();
-    this.treeState.closed();
+    this.treeState.closeReport();
   }
 
   navigateToTestTab(): void {
@@ -76,9 +75,6 @@ export class DebugReportComponent implements ReportComponentCallback, OnInit, On
     if (command.command === 'close') {
       this.clearTree();
       return;
-    }
-    if (command.warnIfEdited && this.sharedStrategy.nodeValueState?.isEdited) {
-      this.toastService.showWarning('Unsaved changes were discarded');
     }
     if (command.command === 'new') {
       this.debugTreeComponent.addReportToTree(command.report);

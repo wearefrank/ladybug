@@ -32,7 +32,7 @@ import { HierarchicalReport } from '../../shared/interfaces/hierarchical-report'
 import { CompareData } from '../../compare/compare-data';
 import { DebugTableGridComponent } from '../debug-table-grid/debug-table-grid.component';
 import { FilterSideDrawerComponent } from '../filter-side-drawer/filter-side-drawer.component';
-import { DebugTreeStateService } from '../debug-tree-state.service';
+import { DebugTreeStateService2 } from '../debug-tree-state2.service';
 
 @Component({
   selector: 'app-debug-table-with-controls',
@@ -85,7 +85,7 @@ export class DebugTableWithControlsComponent implements OnInit, OnDestroy {
   protected appVariablesService = inject(AppVariablesService);
   protected currentUploadFile = '';
 
-  protected treeState = inject(DebugTreeStateService);
+  protected treeState = inject(DebugTreeStateService2);
   private reportsInProgress: Record<string, number> = {};
 
   private httpService = inject(HttpService);
@@ -132,7 +132,7 @@ export class DebugTableWithControlsComponent implements OnInit, OnDestroy {
     this.currentView = view;
     // FilterService already triggers retrieving the records when the view is changed.
     this.update();
-    // The parent passes the view on to DebugTreeStateService.
+    // The parent passes the view on to DebugTreeStateService2.
     this.viewChange.next(view);
   }
 
@@ -233,7 +233,7 @@ export class DebugTableWithControlsComponent implements OnInit, OnDestroy {
       const storageIds = [...this.checkedStorageIds];
       this.httpService.deleteReport(storageIds, storageName).subscribe({
         next: () => {
-          this.treeState.deleted(storageName, storageIds);
+          this.treeState.reportsDeleted(storageIds);
           this.loadData();
         },
         error: (error: unknown) => this.errorHandler.handleUnknownError(error),
@@ -245,7 +245,7 @@ export class DebugTableWithControlsComponent implements OnInit, OnDestroy {
     const storageName = this.currentView.storageName;
     this.httpService.deleteAllReports(storageName).subscribe({
       next: () => {
-        this.treeState.deleted(storageName, null);
+        this.treeState.allReportsDeleted();
         this.loadData();
       },
       error: (error: unknown) => this.errorHandler.handleUnknownError(error),
@@ -313,7 +313,6 @@ export class DebugTableWithControlsComponent implements OnInit, OnDestroy {
       next: (): void => {
         this.loadReportInProgressSettings();
         this.toastService.showSuccess(`Deleted report in progress with index [${index}]`);
-        this.treeState.reportInProgressDeleted(index);
       },
       error: (error: unknown) => this.errorHandler.handleUnknownError(error),
     });
