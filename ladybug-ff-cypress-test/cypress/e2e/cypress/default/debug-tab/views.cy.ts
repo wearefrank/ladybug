@@ -42,6 +42,24 @@ describe('Views', () => {
       endCheckpointShouldExist(GRAY_BOX_REPORT)
     })
 
+    it('Selecting gray box view after opening report updates the shown checkpoints accordingly', () => {
+      openReportInView('White box', GRAY_BOX_REPORT)
+      tree().should('contain', 'Pipe FixedMessage')
+      tree().should('contain', 'Sender CallOtherAdapterSender')
+      tree().should('contain', 'Pipeline GrayBox/Called')
+      endCheckpointShouldExist(GRAY_BOX_REPORT)
+      cy.inLadybug('[data-cy-change-view-dropdown]').select('Gray box')
+      // A single assertion so that all conditions must hold at the same time.
+      // Separate assertions could pass on the old White box tree (the sender is
+      // also there) or on a tree that is temporarily empty while reloading.
+      tree().should($tree => {
+        expect($tree.text()).to.contain('Sender CallOtherAdapterSender')
+        expect($tree.text()).not.to.contain('Pipe FixedMessage')
+        expect($tree.text()).not.to.contain('Pipe CallOtherAdapter')
+      })
+      endCheckpointShouldExist(GRAY_BOX_REPORT)
+    })
+
     it('Black box view shows only the end checkpoint', () => {
       openReportInView('Black box', GRAY_BOX_REPORT)
       tree().should('not.contain', 'Pipe FixedMessage')
