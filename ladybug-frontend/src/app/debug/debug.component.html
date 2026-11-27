@@ -5,9 +5,7 @@
         <app-debug-table-with-controls
           [views]="views"
           [currentView]="currentView"
-          (openReportEvent)="addReportToTree($event)"
           (viewChange)="onViewChange($event)"
-          [reportClosed$]="reportClosedSubject"
         ></app-debug-table-with-controls>
       }
     </div>
@@ -15,7 +13,7 @@
   <div class="border-bottom"></div>
   <div id="bottom-half" class="row bottom mb-0 pb-0 w-100">
     @if (currentView) {
-      <app-debug-report #reportComponent (closeReportEvent)="reportClosedSubject.next(true)"></app-debug-report>
+      <app-debug-report></app-debug-report>
     }
   </div>
 </div>

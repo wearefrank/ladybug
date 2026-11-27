@@ -26,6 +26,5 @@
 }
 <!-- Always present, also when there is no report, so that the tree view
      does not miss commands. Without a report it shows nothing. -->
-<div class="m-1 mb-5">
-  <app-tree-view data-cy-debug-tree="root" [commands]="commands" (nodeSelected)="emitNodeSelected($event)" />
-</div>
+<!-- The tree view has its own scrollbar, see debug-tree.component.css. -->
+<app-tree-view data-cy-debug-tree="root" class="m-1" [commands]="commands" (nodeSelected)="emitNodeSelected($event)" />

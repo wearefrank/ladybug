@@ -4,7 +4,7 @@ import { DebugTableWithControlsComponent } from './debug-table-with-controls.com
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { View } from '../../shared/interfaces/view';
 import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
-import { Subject } from 'rxjs';
+import { DebugTreeStateService } from '../debug-tree-state.service';
 
 describe('DebugTableWithControlsComponent', () => {
   let component: DebugTableWithControlsComponent;
@@ -13,7 +13,7 @@ describe('DebugTableWithControlsComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [DebugTableWithControlsComponent],
-      providers: [provideHttpClient(withInterceptorsFromDi()), provideHttpClientTesting()],
+      providers: [provideHttpClient(withInterceptorsFromDi()), provideHttpClientTesting(), DebugTreeStateService],
     }).compileComponents();
   });
 
@@ -28,7 +28,6 @@ describe('DebugTableWithControlsComponent', () => {
       metadataTypes: new Map(),
     } as View;
     component.views = [component.currentView];
-    component.reportClosed$ = new Subject<boolean>();
     fixture.detectChanges();
   });
 

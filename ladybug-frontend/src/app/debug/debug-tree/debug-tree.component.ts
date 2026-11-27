@@ -1,6 +1,5 @@
-import { Component, EventEmitter, inject, OnDestroy, OnInit, Output } from '@angular/core';
-import { Subject, Subscription } from 'rxjs';
-import { DebugTabService } from '../debug-tab.service';
+import { Component, EventEmitter, Output } from '@angular/core';
+import { Subject } from 'rxjs';
 import { HierarchicalReport, HierarchicalCheckpoint } from '../../shared/interfaces/hierarchical-report';
 import { TreeViewCommand, TreeViewComponent } from '../../shared/components/tree-view/tree-view.component';
 import { keyOf, REPORT_KEY, ReportTransformer } from './report-transformer';
@@ -12,10 +11,8 @@ import { keyOf, REPORT_KEY, ReportTransformer } from './report-transformer';
   standalone: true,
   imports: [TreeViewComponent],
 })
-export class DebugTreeComponent implements OnInit, OnDestroy {
+export class DebugTreeComponent {
   @Output() selectReportEvent = new EventEmitter<HierarchicalReport | HierarchicalCheckpoint>();
-
-  subscriptions: Subscription = new Subscription();
 
   protected commands = new Subject<TreeViewCommand>();
   protected lastReport: HierarchicalReport | null = null;
@@ -24,24 +21,15 @@ export class DebugTreeComponent implements OnInit, OnDestroy {
   private searchTerm = '';
   // The report and its checkpoints, by the key of their tree node.
   private valuesByKey: ReadonlyMap<string, HierarchicalReport | HierarchicalCheckpoint> = new Map();
-  private debugTab = inject(DebugTabService);
-
-  ngOnInit(): void {
-    this.subscribeToSubscriptions();
-  }
-
-  ngOnDestroy(): void {
-    this.subscriptions.unsubscribe();
-  }
-
-  subscribeToSubscriptions(): void {
-    const refreshAll: Subscription = this.debugTab.refreshAll$.subscribe(() => this.refreshReports());
-    this.subscriptions.add(refreshAll);
-  }
 
   addReportToTree(report: HierarchicalReport): void {
     this.lastReport = report;
     this.showReport('new');
+  }
+
+  updateExistingReport(report: HierarchicalReport): void {
+    this.lastReport = report;
+    this.showReport('update');
   }
 
   closeEntireTree(): void {

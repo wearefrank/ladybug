@@ -47,6 +47,37 @@ function exampleTree(): TreeViewInputNode {
   return report([node('a', [node('a1'), node('a2')]), node('b', [node('b1')])]);
 }
 
+// The trees below are for the scrolling tests. They are much larger than
+// the visible part of the tree view.
+
+// count nodes without children: <prefix>0, <prefix>1, ...
+function leaves(prefix: string, count: number): TreeViewInputNode[] {
+  return Array.from({ length: count }, (_, index) => node(`${prefix}${index}`));
+}
+
+// 10 nodes, 50 nodes that can be hidden, the node 'selected', then 50
+// nodes. When withHidden is false, the nodes 'hidden...' are left out,
+// as a view would do. The first 10 nodes are always there, so that the
+// selected node can be 80 pixels below the top also without the hidden
+// nodes; the scroll box cannot scroll above the start of the content.
+function treeAroundSelected(withHidden: boolean): TreeViewInputNode {
+  return report([
+    ...leaves('before', 10),
+    ...(withHidden ? leaves('hiddenBefore', 50) : []),
+    node('selected'),
+    ...leaves('after', 50),
+  ]);
+}
+
+// r
+// +- group0 .. group4, each with 10 children
+// +- last
+//    +- last0 .. last49
+function groupedTree(): TreeViewInputNode {
+  const groups = Array.from({ length: 5 }, (_, index) => node(`group${index}`, leaves(`child${index}_`, 10)));
+  return report([...groups, node('last', leaves('last', 50))]);
+}
+
 describe('TreeViewComponent', () => {
   let fixture: ComponentFixture<TreeViewComponent>;
   let commands: Subject<TreeViewCommand>;
@@ -131,6 +162,17 @@ describe('TreeViewComponent', () => {
 
   function textOf(key: string): string {
     return item(key).querySelector('[data-cy-tree-view-text]')!.textContent!.trim();
+  }
+
+  // The host element of the tree view, which is its scroll box.
+  function scrollBox(): HTMLElement {
+    return fixture.nativeElement;
+  }
+
+  // Distance from the top of the visible part of the scroll box to the
+  // top of the node.
+  function offsetOf(key: string): number {
+    return item(key).getBoundingClientRect().top - scrollBox().getBoundingClientRect().top;
   }
 
   function clickExpansionToggle(key: string): void {
@@ -569,6 +611,123 @@ describe('TreeViewComponent', () => {
       send({ command: 'new', node: exampleTree() });
       expect(item('a').querySelector('.sft-chevron')).not.toBeNull();
       expect(item('a1').querySelector('.sft-chevron')).toBeNull();
+    });
+  });
+
+  // These tests use the layout of the browser. The host element of the
+  // tree view is its scroll box. It gets a fixed height that is much
+  // smaller than the trees below, so that it has to scroll.
+  describe('scrolling', () => {
+    const HEIGHT = 200;
+    // Rounding of fractional pixels may cause small differences.
+    const TOLERANCE = 1;
+
+    beforeEach(() => {
+      scrollBox().style.height = `${HEIGHT}px`;
+    });
+
+    function expectOffset(key: string, expected: number): void {
+      expect(Math.abs(offsetOf(key) - expected))
+        .withContext(`offset of ${key} is ${offsetOf(key)}, expected ${expected}`)
+        .toBeLessThanOrEqual(TOLERANCE);
+    }
+
+    function isCompletelyVisible(key: string): boolean {
+      const offset = offsetOf(key);
+      return offset >= -TOLERANCE && offset + item(key).offsetHeight <= scrollBox().clientHeight + TOLERANCE;
+    }
+
+    // Scrolls without a command, as the user would, so that the node is
+    // the given distance below the top of the visible part.
+    function scrollUserTo(key: string, offset: number): void {
+      scrollBox().scrollTop += offsetOf(key) - offset;
+      expectOffset(key, offset);
+    }
+
+    it('keeps the selected node in place when update removes nodes above it', () => {
+      send({ command: 'new', node: treeAroundSelected(true) });
+      clickSelect('selected');
+      scrollUserTo('selected', 80);
+      send({ command: 'update', node: treeAroundSelected(false) });
+      expect(selectedKeys()).toEqual(['selected']);
+      expectOffset('selected', 80);
+    });
+
+    it('keeps the selected node in place when update adds nodes above it', () => {
+      send({ command: 'new', node: treeAroundSelected(false) });
+      clickSelect('selected');
+      scrollUserTo('selected', 80);
+      send({ command: 'update', node: treeAroundSelected(true) });
+      expectOffset('selected', 80);
+    });
+
+    it('shows the newly selected node when update removes the selected node', () => {
+      send({ command: 'new', node: treeAroundSelected(true) });
+      clickSelect('hiddenBefore40');
+      scrollUserTo('hiddenBefore40', 80);
+      send({ command: 'update', node: treeAroundSelected(false), select: 'after30' });
+      expect(selectedKeys()).toEqual(['after30']);
+      expect(isCompletelyVisible('after30')).toBeTrue();
+    });
+
+    it('shows the selected node after update when it was scrolled out of view', () => {
+      send({ command: 'new', node: treeAroundSelected(true) });
+      clickSelect('selected');
+      scrollBox().scrollTop = 0;
+      expect(isCompletelyVisible('selected')).toBeFalse();
+      send({ command: 'update', node: treeAroundSelected(false) });
+      expect(isCompletelyVisible('selected')).toBeTrue();
+    });
+
+    it('keeps the selected node in place on expandAll and collapseAll', () => {
+      send({ command: 'new', node: groupedTree() });
+      clickSelect('last0');
+      scrollUserTo('last0', 60);
+      send({ command: 'collapseAll' });
+      expect(isExpanded('group0')).toBeFalse();
+      expectOffset('last0', 60);
+      send({ command: 'expandAll' });
+      expect(isExpanded('group0')).toBeTrue();
+      expectOffset('last0', 60);
+    });
+
+    // Nodes have fractional positions but scrollTop is a whole number, so
+    // a node that is scrolled to the top edge can be a fraction of a pixel
+    // above it. It still counts as visible and is kept in place.
+    it('keeps a node in place that is scrolled to the top edge', () => {
+      send({ command: 'new', node: treeAroundSelected(false) });
+      clickSelect('selected');
+      scrollBox().scrollTop = scrollBox().scrollHeight;
+      // The node is above the visible part, so it is scrolled to the top edge.
+      send({ command: 'select', key: 'selected' });
+      const offset = offsetOf('selected');
+      expectOffset('selected', 0);
+      send({ command: 'update', node: treeAroundSelected(true) });
+      expectOffset('selected', offset);
+    });
+
+    it('shows a node selected by command select', () => {
+      send({ command: 'new', node: treeAroundSelected(true) });
+      send({ command: 'select', key: 'after40' });
+      expect(isCompletelyVisible('after40')).toBeTrue();
+    });
+
+    it('shows a new tree from the top', () => {
+      send({ command: 'new', node: treeAroundSelected(true) });
+      clickSelect('after40');
+      scrollUserTo('after40', 80);
+      send({ command: 'new', node: treeAroundSelected(false) });
+      expect(scrollBox().scrollTop).toBe(0);
+    });
+
+    it('does not scroll when the user collapses a node', () => {
+      send({ command: 'new', node: groupedTree() });
+      clickSelect('last0');
+      scrollUserTo('group4', 20);
+      const scrollTop = scrollBox().scrollTop;
+      clickExpansionToggle('group4');
+      expect(scrollBox().scrollTop).toBe(scrollTop);
+      expectOffset('group4', 20);
     });
   });
 });

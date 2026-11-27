@@ -257,6 +257,19 @@
 	if (reportName.equals(createReportAction)) {
         testTool.startpoint(null, null, reportName, "Some messege for report with correlationId null");
 	}
+	reportNames.add(reportName = "Report with many hidden checkpoints around a visible one");
+	if (reportName.equals(createReportAction)) {
+		testTool.startpoint(correlationId, null, reportName, "Start");
+		for (int i = 1; i <= 150; i++) {
+			testTool.infopoint(correlationId, null, "Hide this checkpoint", "Hidden checkpoint before visible checkpoint " + i);
+		}
+		testTool.infopoint(correlationId, null, "This checkpoint should be visible", "Visible checkpoint");
+		for (int i = 1; i <= 150; i++) {
+			testTool.infopoint(correlationId, null, "Hide this checkpoint", "Hidden checkpoint after visible checkpoint " + i);
+		}
+		testTool.endpoint(correlationId, null, reportName, "End");
+	}
+
 	// Other actions
 	if ("true".equals(request.getParameter("clearDebugStorage"))) {
 		LogStorage debugStorage = (LogStorage)webApplicationContext.getBean("debugStorage");

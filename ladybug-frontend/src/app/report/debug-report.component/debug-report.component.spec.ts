@@ -5,6 +5,7 @@ import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { routes } from '../../app-routing.module';
 import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
+import { DebugTreeStateService } from '../../debug/debug-tree-state.service';
 
 describe('DebugReportComponent', () => {
   let component: DebugReportComponent;
@@ -13,7 +14,7 @@ describe('DebugReportComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [DebugReportComponent, RouterTestingModule.withRoutes(routes)],
-      providers: [provideHttpClient(withInterceptorsFromDi()), provideHttpClientTesting()],
+      providers: [provideHttpClient(withInterceptorsFromDi()), provideHttpClientTesting(), DebugTreeStateService],
     }).compileComponents();
 
     fixture = TestBed.createComponent(DebugReportComponent);

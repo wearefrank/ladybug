@@ -1,13 +1,4 @@
-import {
-  ChangeDetectorRef,
-  Component,
-  inject,
-  ViewChild,
-  OnInit,
-  OnDestroy,
-  Output,
-  EventEmitter,
-} from '@angular/core';
+import { ChangeDetectorRef, Component, inject, ViewChild, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { AngularSplitModule, SplitComponent } from 'angular-split';
 import { ReportValueComponent } from '../report-value/report-value.component';
@@ -16,6 +7,8 @@ import { DebugTabService } from '../../debug/debug-tab.service';
 import { HierarchicalReport } from '../../shared/interfaces/hierarchical-report';
 import { DebugTreeComponent } from '../../debug/debug-tree/debug-tree.component';
 import { ReportComponentCallback, ReportSharedStrategy } from '../../shared/classes/report-shared-strategy';
+import { DebugTreeStateService, TreeCommand } from '../../debug/debug-tree-state.service';
+import { Subscription } from 'rxjs';
 
 const MIN_HEIGHT = 20;
 const MARGIN = 50;
@@ -28,43 +21,43 @@ const MARGIN = 50;
   providers: [ReportSharedStrategy],
 })
 export class DebugReportComponent implements ReportComponentCallback, OnInit, OnDestroy {
-  @Output() closeReportEvent = new EventEmitter<boolean>();
   @ViewChild(SplitComponent) splitter!: SplitComponent;
-  @ViewChild(DebugTreeComponent) debugTreeComponent!: DebugTreeComponent;
+  // Static, because DebugTreeStateService replays its last tree command on subscribe in ngOnInit.
+  @ViewChild(DebugTreeComponent, { static: true }) debugTreeComponent!: DebugTreeComponent;
 
   protected monacoEditorHeight!: number;
   protected sharedStrategy = inject(ReportSharedStrategy);
   private router = inject(Router);
   private cdr = inject(ChangeDetectorRef);
   private debugTab = inject(DebugTabService);
+  private treeState = inject(DebugTreeStateService);
+  private treeCommandSubscription?: Subscription;
 
   ngOnInit(): void {
     this.sharedStrategy.setCallback(this);
     this.sharedStrategy.listenToHeight();
+    this.treeCommandSubscription = this.treeState.treeCommand$.subscribe((command) => this.onTreeCommand(command));
   }
 
   ngOnDestroy(): void {
     this.sharedStrategy.unsubscribe();
+    this.treeCommandSubscription?.unsubscribe();
   }
 
-  // Entry point when report is opened from debug table.
-  addReport(report: HierarchicalReport): void {
-    this.debugTreeComponent.addReportToTree(report);
-  }
-
+  // The user closed the report.
   closeEntireTree(): void {
-    this.debugTreeComponent.closeEntireTree();
-    this.sharedStrategy.changeReportValueState('none');
-    this.closeReportEvent.emit(true);
+    this.clearTree();
+    this.treeState.closeReport();
   }
 
   navigateToTestTab(): void {
     this.router.navigate(['/test']);
   }
 
-  onRefreshReport(_: HierarchicalReport): void {
-    this.debugTab.refreshAll({
-      reportIds: [this.sharedStrategy.nodeValueState!.storageId!],
+  onRefreshReport(report: HierarchicalReport): void {
+    this.treeState.saved();
+    this.debugTab.refreshTable({
+      reportIds: [report.storageId],
       displayToast: false,
     });
   }
@@ -76,5 +69,24 @@ export class DebugReportComponent implements ReportComponentCallback, OnInit, On
       this.monacoEditorHeight = MIN_HEIGHT;
     }
     this.cdr.detectChanges();
+  }
+
+  private onTreeCommand(command: TreeCommand): void {
+    if (command.command === 'close') {
+      this.clearTree();
+      return;
+    }
+    if (command.command === 'new') {
+      this.debugTreeComponent.addReportToTree(command.report);
+    } else {
+      this.debugTreeComponent.updateExistingReport(command.report);
+    }
+  }
+
+  private clearTree(): void {
+    this.debugTreeComponent.closeEntireTree();
+    this.sharedStrategy.changeReportValueState('none');
+    // Forget whether the closed report was edited.
+    this.sharedStrategy.nodeValueState = undefined;
   }
 }
