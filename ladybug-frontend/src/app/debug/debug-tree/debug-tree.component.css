@@ -17,17 +17,40 @@ input[type='text']:focus {
   width: 100%;
 }
 
-.button-row {
-  position: sticky;
+/* A column that fills the split area: the buttons on top, the tree view
+   below in the remaining height. The tree view scrolls, so the buttons
+   always stay in view without position: sticky. Nothing is larger than
+   the split area, so the split area itself never needs a scrollbar. */
+:host {
   display: flex;
-  width: 100%;
+  flex-direction: column;
+  height: 100%;
+}
+
+.button-row {
+  /* Don't grow, don't shrink, derive size from sizes of children */
+  flex: none;
+  /* Lay out child elements */
+  display: flex;
   flex-direction: row;
   align-items: center;
-  margin: 0 0.25rem 0.5rem 0;
   gap: 0 0.25rem;
-  top: 0;
+  /* No width: 100%. As a flex item of the column the row is stretched to
+     the full width, minus its margin. With width: 100% plus the margin it
+     would be wider than the split area. */
+  margin: 0 0.25rem 0.5rem 0;
   padding: 0.25rem;
-  /*padding-bottom: 0.25rem;*/
   background-color: white;
-  z-index: 10;
+}
+
+/* flex: 1 gives the tree view the height that is left below the buttons.
+   min-height: 0 is needed for that to work. By default a flex item has
+   min-height: auto, meaning it never gets smaller than its content. A
+   large report would then make the tree view as tall as all its nodes,
+   it would overflow the column and its own scrollbar would never appear.
+   min-height: 0 removes that lower bound, so the tree view gets exactly
+   the remaining height and scrolls its content. */
+app-tree-view {
+  flex: 1;
+  min-height: 0;
 }

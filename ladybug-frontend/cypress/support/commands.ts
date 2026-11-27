@@ -94,6 +94,8 @@ declare global {
 
       createReportWithInfopoint(): Chainable;
 
+      createReportWithManyHiddenCheckpoints(): Chainable;
+
       createReportWithMultipleStartpoints(): Chainable;
 
       createJsonReport(): Chainable;
@@ -331,6 +333,20 @@ Cypress.Commands.add(
     // No cy.visit because then the API call can happen multiple times.
     cy.request(
       `${Cypress.expose('backendServer')}/index.jsp?createReport=Hide%20a%20checkpoint%20in%20blackbox%20view`,
+    ).then((resp: Cypress.Response<ApiResponse>): void => {
+      expect(resp.status).equal(200);
+    });
+  },
+);
+
+// 150 checkpoints that the black box view hides, a checkpoint that all
+// views show, then again 150 checkpoints that the black box view hides.
+Cypress.Commands.add(
+  'createReportWithManyHiddenCheckpoints' as keyof Chainable,
+  (): void => {
+    // No cy.visit because then the API call can happen multiple times.
+    cy.request(
+      `${Cypress.expose('backendServer')}/index.jsp?createReport=Report%20with%20many%20hidden%20checkpoints%20around%20a%20visible%20one`,
     ).then((resp: Cypress.Response<ApiResponse>): void => {
       expect(resp.status).equal(200);
     });

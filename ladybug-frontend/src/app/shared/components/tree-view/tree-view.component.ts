@@ -1,4 +1,16 @@
-import { Component, EventEmitter, Input, OnChanges, OnDestroy, Output, SimpleChanges } from '@angular/core';
+import {
+  afterNextRender,
+  Component,
+  ElementRef,
+  EventEmitter,
+  inject,
+  Injector,
+  Input,
+  OnChanges,
+  OnDestroy,
+  Output,
+  SimpleChanges,
+} from '@angular/core';
 import { Observable, Subscription } from 'rxjs';
 import { TreeViewNodeComponent } from './tree-view-node.component';
 
@@ -114,6 +126,84 @@ export interface TreeViewClearCommand {
   command: 'clear';
 }
 
+// Where the selected node was on screen before a command changed the tree.
+interface SelectedNodePosition {
+  key: string;
+  // Distance in pixels from the top of the visible part of the tree view
+  // to the top of the selected node.
+  offset: number;
+}
+
+// The host element of the tree view, which is its scroll box. Measures
+// and scrolls to the selected node as it is currently rendered.
+class ScrollBox {
+  // Nodes have fractional positions but scrollTop is a whole number. A node
+  // that is scrolled to an edge can therefore stick out of the visible part
+  // by a fraction of a pixel. It still counts as visible.
+  private static readonly ROUNDING_TOLERANCE = 1;
+
+  constructor(private readonly host: HTMLElement) {}
+
+  // The distance from the top of the visible part to the top of the
+  // selected node, or null when the selected node is not completely
+  // visible.
+  visibleSelectedNodeOffset(): number | null {
+    const element = this.selectedElement();
+    if (element === null) {
+      return null;
+    }
+    const offset = this.offsetOf(element);
+    const tolerance = ScrollBox.ROUNDING_TOLERANCE;
+    if (offset < -tolerance || offset + element.offsetHeight > this.host.clientHeight + tolerance) {
+      return null;
+    }
+    return offset;
+  }
+
+  // Scrolls so that the selected node is at the given distance from the
+  // top of the visible part.
+  moveSelectedNodeTo(offset: number): void {
+    const element = this.selectedElement();
+    if (element === null) {
+      return;
+    }
+    // distanceFromContentTop is measured from the top of all content,
+    // also the part scrolled out of view, down to the node. It consists of
+    // two parts: the part scrolled out of view above the visible part,
+    // which is scrollTop, and the part from the top of the visible part to
+    // the node, which is the offset.
+    this.host.scrollTop = this.distanceFromContentTop(element) - offset;
+  }
+
+  // Scrolls just enough to show the selected node; when it is visible
+  // already, nothing changes.
+  revealSelectedNode(): void {
+    this.selectedElement()?.scrollIntoView({ block: 'nearest' });
+  }
+
+  scrollToTop(): void {
+    this.host.scrollTop = 0;
+  }
+
+  // The rendered node that is selected. The class is set by
+  // TreeViewNodeComponent; it is the row of the node itself, without
+  // its children.
+  private selectedElement(): HTMLElement | null {
+    return this.host.querySelector<HTMLElement>('.sft-item-selected');
+  }
+
+  // The distance from the top of the visible part to the element.
+  private offsetOf(element: HTMLElement): number {
+    return element.getBoundingClientRect().top - this.host.getBoundingClientRect().top;
+  }
+
+  // The distance from the top of the content, including the part that is
+  // scrolled out of view, to the element. Does not depend on scrollTop.
+  private distanceFromContentTop(element: HTMLElement): number {
+    return element.getBoundingClientRect().top - this.host.getBoundingClientRect().top + this.host.scrollTop;
+  }
+}
+
 // What the tree view can do depends on whether it currently shows a tree.
 interface TreeViewState {
   // The node to render, or null when there is nothing to render.
@@ -129,6 +219,13 @@ interface TreeViewState {
   // Returns the key of the node that is selected afterwards, or null
   // when the selection did not change.
   toggleExpanded(node: TreeViewNode): string | null;
+  // Returns where the selected node is on screen, or null when there is
+  // no selected node or when it is not completely visible.
+  selectedNodePosition(scrollBox: ScrollBox): SelectedNodePosition | null;
+  // Scrolls so that the selected node is where it was before, when it is
+  // still the selected node. Otherwise scrolls just enough to show the
+  // selected node.
+  keepSelectedNodeInPlace(before: SelectedNodePosition | null, scrollBox: ScrollBox): void;
 }
 
 // No tree, because no tree has been shown yet or because it was cleared.
@@ -159,6 +256,15 @@ class Uninitialized implements TreeViewState {
 
   toggleExpanded(): never {
     throw new Error('Cannot expand or collapse a node when the tree view has no tree');
+  }
+
+  selectedNodePosition(): null {
+    // There is no selected node.
+    return null;
+  }
+
+  keepSelectedNodeInPlace(): void {
+    // There is no selected node to keep in place.
   }
 }
 
@@ -206,6 +312,19 @@ class Initialized implements TreeViewState {
   selectByUser(node: TreeViewNode): string {
     this.select(node);
     return node.key;
+  }
+
+  selectedNodePosition(scrollBox: ScrollBox): SelectedNodePosition | null {
+    const offset = scrollBox.visibleSelectedNodeOffset();
+    return offset === null ? null : { key: this.selected.key, offset };
+  }
+
+  keepSelectedNodeInPlace(before: SelectedNodePosition | null, scrollBox: ScrollBox): void {
+    if (before !== null && before.key === this.selected.key) {
+      scrollBox.moveSelectedNodeTo(before.offset);
+    } else {
+      scrollBox.revealSelectedNode();
+    }
   }
 
   toggleExpanded(node: TreeViewNode): string | null {
@@ -298,11 +417,28 @@ class StateInitializedBuilder {
 
 // Shows the tree of a report. See Initialized for the invariants that
 // hold after the first command.
+//
+// Scrolling: when a command changes which nodes are shown above the
+// selected node, for example 'update' after the user chose another view,
+// the selected node stays at the same height on screen. The content
+// around it moves instead. When that is not possible because a different
+// node is selected afterwards or because the selected node was not
+// visible, the tree view scrolls just enough to show the selected node.
 @Component({
   selector: 'app-tree-view',
   standalone: true,
   imports: [TreeViewNodeComponent],
   templateUrl: './tree-view.component.html',
+  // The tree view owns its scrollbar. The user of the component gives it
+  // a height, for example as a flex item, and the nodes scroll within it.
+  // The bottom padding (Bootstrap pb-5) is inside the scroll box, leaving
+  // empty space below the last node.
+  // Space around the tree view, such as a margin, is up to the user.
+  // overflow-anchor: none switches off the scroll anchoring of the browser,
+  // which some browsers do and others do not. Keeping the selected node in
+  // place is done by this component, see ScrollBox, the same way in every
+  // browser.
+  host: { class: 'pb-5', style: 'display: block; overflow: auto; overflow-anchor: none' },
 })
 export class TreeViewComponent implements OnChanges, OnDestroy {
   @Input({ required: true }) commands!: Observable<TreeViewCommand>;
@@ -312,6 +448,9 @@ export class TreeViewComponent implements OnChanges, OnDestroy {
 
   private state: Uninitialized | Initialized = new Uninitialized();
   private subscription?: Subscription;
+  // The host element is the scroll box, see the host style above.
+  private scrollBox = new ScrollBox(inject<ElementRef<HTMLElement>>(ElementRef).nativeElement);
+  private injector = inject(Injector);
 
   protected get root(): TreeViewNode | null {
     return this.state.root;
@@ -338,24 +477,39 @@ export class TreeViewComponent implements OnChanges, OnDestroy {
 
   private execute(command: TreeViewCommand): void {
     switch (command.command) {
-      case 'new':
-      case 'update': {
+      case 'new': {
         const next = this.state.show(command);
         this.state = next;
         this.nodeSelected.emit(next.selectedKey);
+        // A different report: start at the top, not at the scroll
+        // position of the previous report.
+        this.afterRender(() => this.scrollBox.scrollToTop());
+        break;
+      }
+      case 'update': {
+        const before = this.selectedNodePosition();
+        const next = this.state.show(command);
+        this.state = next;
+        this.nodeSelected.emit(next.selectedKey);
+        this.afterRender(() => this.keepSelectedNodeInPlace(before));
         break;
       }
       case 'expandAll': {
+        const before = this.selectedNodePosition();
         this.state.expandAll();
+        this.afterRender(() => this.keepSelectedNodeInPlace(before));
         break;
       }
       case 'collapseAll': {
+        const before = this.selectedNodePosition();
         this.state.collapseAll();
+        this.afterRender(() => this.keepSelectedNodeInPlace(before));
         break;
       }
       case 'select': {
         // Does not emit on purpose, see TreeViewSelectCommand.
         this.state.selectByKey(command.key);
+        this.afterRender(() => this.keepSelectedNodeInPlace(null));
         break;
       }
       case 'clear': {
@@ -369,5 +523,20 @@ export class TreeViewComponent implements OnChanges, OnDestroy {
     if (key !== null) {
       this.nodeSelected.emit(key);
     }
+  }
+
+  // Runs the action when Angular has updated the DOM for the changed state.
+  private afterRender(action: () => void): void {
+    afterNextRender({ write: action }, { injector: this.injector });
+  }
+
+  private selectedNodePosition(): SelectedNodePosition | null {
+    return this.state.selectedNodePosition(this.scrollBox);
+  }
+
+  // Asks the state at the moment of rendering, which is the state after
+  // the command.
+  private keepSelectedNodeInPlace(before: SelectedNodePosition | null): void {
+    this.state.keepSelectedNodeInPlace(before, this.scrollBox);
   }
 }
